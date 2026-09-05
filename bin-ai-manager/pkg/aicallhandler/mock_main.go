@@ -18,6 +18,7 @@ import (
 	dtmf "monorepo/bin-call-manager/models/dtmf"
 	service "monorepo/bin-common-handler/models/service"
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -123,6 +124,18 @@ func (mr *MockAIcallHandlerMockRecorder) EventPMPipecatcallInitialized(ctx, evt 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipecatcallInitialized", reflect.TypeOf((*MockAIcallHandler)(nil).EventPMPipecatcallInitialized), ctx, evt)
 }
 
+// EventTMTranscriptCreated mocks base method.
+func (m *MockAIcallHandler) EventTMTranscriptCreated(ctx context.Context, evt *transcript.Transcript) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventTMTranscriptCreated", ctx, evt)
+}
+
+// EventTMTranscriptCreated indicates an expected call of EventTMTranscriptCreated.
+func (mr *MockAIcallHandlerMockRecorder) EventTMTranscriptCreated(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventTMTranscriptCreated", reflect.TypeOf((*MockAIcallHandler)(nil).EventTMTranscriptCreated), ctx, evt)
+}
+
 // Get mocks base method.
 func (m *MockAIcallHandler) Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -153,6 +166,21 @@ func (mr *MockAIcallHandlerMockRecorder) GetByReferenceID(ctx, referenceID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
+// GetSkipCache mocks base method.
+func (m *MockAIcallHandler) GetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSkipCache", ctx, id)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSkipCache indicates an expected call of GetSkipCache.
+func (mr *MockAIcallHandlerMockRecorder) GetSkipCache(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSkipCache", reflect.TypeOf((*MockAIcallHandler)(nil).GetSkipCache), ctx, id)
+}
+
 // List mocks base method.
 func (m *MockAIcallHandler) List(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -166,6 +194,21 @@ func (m *MockAIcallHandler) List(ctx context.Context, size uint64, token string,
 func (mr *MockAIcallHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAIcallHandler)(nil).List), ctx, size, token, filters)
+}
+
+// ProcessListen mocks base method.
+func (m *MockAIcallHandler) ProcessListen(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProcessListen", ctx, id)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProcessListen indicates an expected call of ProcessListen.
+func (mr *MockAIcallHandlerMockRecorder) ProcessListen(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessListen", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessListen), ctx, id)
 }
 
 // ProcessStart mocks base method.
@@ -196,6 +239,18 @@ func (m *MockAIcallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) 
 func (mr *MockAIcallHandlerMockRecorder) ProcessTerminate(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminate", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminate), ctx, id)
+}
+
+// RunListenTurn mocks base method.
+func (m *MockAIcallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RunListenTurn", ctx, aicallID)
+}
+
+// RunListenTurn indicates an expected call of RunListenTurn.
+func (mr *MockAIcallHandlerMockRecorder) RunListenTurn(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunListenTurn", reflect.TypeOf((*MockAIcallHandler)(nil).RunListenTurn), ctx, aicallID)
 }
 
 // Send mocks base method.
@@ -259,18 +314,18 @@ func (mr *MockAIcallHandlerMockRecorder) Start(ctx, assistanceType, assistanceID
 }
 
 // ToolHandle mocks base method.
-func (m *MockAIcallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall) (map[string]any, error) {
+func (m *MockAIcallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ToolHandle", ctx, id, toolID, toolType, function)
+	ret := m.ctrl.Call(m, "ToolHandle", ctx, id, toolID, toolType, function, pipecatcallID)
 	ret0, _ := ret[0].(map[string]any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ToolHandle indicates an expected call of ToolHandle.
-func (mr *MockAIcallHandlerMockRecorder) ToolHandle(ctx, id, toolID, toolType, function any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) ToolHandle(ctx, id, toolID, toolType, function, pipecatcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToolHandle", reflect.TypeOf((*MockAIcallHandler)(nil).ToolHandle), ctx, id, toolID, toolType, function)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToolHandle", reflect.TypeOf((*MockAIcallHandler)(nil).ToolHandle), ctx, id, toolID, toolType, function, pipecatcallID)
 }
 
 // UpdateActiveflowID mocks base method.

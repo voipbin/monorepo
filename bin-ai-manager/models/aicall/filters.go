@@ -12,12 +12,13 @@ type FieldStruct struct {
 	AssistanceType AssistanceType `filter:"assistance_type"`
 	AssistanceID   uuid.UUID      `filter:"assistance_id"`
 	AIEngineModel  ai.EngineModel `filter:"ai_engine_model"`
-	ActiveflowID  uuid.UUID      `filter:"activeflow_id"`
-	ReferenceType ReferenceType  `filter:"reference_type"`
-	ReferenceID   uuid.UUID      `filter:"reference_id"`
-	ConfbridgeID  uuid.UUID      `filter:"confbridge_id"`
-	PipecatcallID uuid.UUID      `filter:"pipecatcall_id"`
-	Status        Status         `filter:"status"`
-	STTLanguage   string         `filter:"stt_language"`
-	Deleted       bool           `filter:"deleted"`
+	ActiveflowID   uuid.UUID      `filter:"activeflow_id"`
+	ReferenceType  ReferenceType  `filter:"reference_type"`
+	ReferenceID    uuid.UUID      `filter:"reference_id"`
+	ConfbridgeID   uuid.UUID      `filter:"confbridge_id"`
+	PipecatcallID  uuid.UUID      `filter:"pipecatcall_id"`
+	ListenCallID   uuid.UUID      `filter:"listen_call_id"`
+	Status         Status         `filter:"status"`
+	STTLanguage    string         `filter:"stt_language"`
+	Deleted        bool           `filter:"deleted"`
 }

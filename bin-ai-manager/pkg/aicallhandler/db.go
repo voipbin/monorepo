@@ -48,10 +48,10 @@ func (h *aicallHandler) Create(
 		AssistanceType: assistanceType,
 		AssistanceID:   assistanceID,
 
-		AIEngineModel: c.EngineModel,
-		AITTSType:     c.TTSType,
-		AITTSVoiceID:  c.TTSVoiceID,
-		AISTTType:     c.STTType,
+		AIEngineModel:      c.EngineModel,
+		AITTSType:          c.TTSType,
+		AITTSVoiceID:       c.TTSVoiceID,
+		AISTTType:          c.STTType,
 		AIVADConfig:        c.VADConfig,
 		AISmartTurnEnabled: c.SmartTurnEnabled,
 
@@ -186,6 +186,36 @@ func (h *aicallHandler) Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, 
 	return res, nil
 }
 
+// GetSkipCache returns the aicall read from the database, bypassing the Redis
+// snapshot cache. Error handling is identical to Get -- only the read differs.
+//
+// Use it only where a stale read would cause a wrong, irreversible decision;
+// see AIV1AIcallGetSkipCache's own doc comment in bin-common-handler for the
+// single such site.
+func (h *aicallHandler) GetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	log := logrus.WithFields(
+		logrus.Fields{
+			"func":      "GetSkipCache",
+			"aicall_id": id,
+		},
+	)
+
+	res, err := h.db.AIcallGetSkipCache(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get aicall info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"AICALL_NOT_FOUND",
+				"The AI call was not found.",
+			).Wrap(err)
+		}
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // Delete deletes the aicall.
 func (h *aicallHandler) Delete(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
 	log := logrus.WithFields(
@@ -222,7 +252,7 @@ func (h *aicallHandler) GetByReferenceID(ctx context.Context, referenceID uuid.U
 // List returns list of aicalls.
 func (h *aicallHandler) List(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "List",
+		"func":    "List",
 		"size":    size,
 		"token":   token,
 		"filters": filters,

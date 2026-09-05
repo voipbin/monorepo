@@ -19,6 +19,8 @@ const (
 	FieldToolCalls  Field = "tool_calls"
 	FieldToolCallID Field = "tool_call_id"
 
+	FieldOrigin Field = "origin"
+
 	FieldTMCreate Field = "tm_create"
 	FieldTMDelete Field = "tm_delete"
 

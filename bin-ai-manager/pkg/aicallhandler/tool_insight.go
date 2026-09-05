@@ -8,9 +8,11 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -1082,5 +1084,100 @@ func (h *aicallHandler) toolHandleGetCallTranscript(ctx context.Context, c *aica
 	// layer hole -- re-read design §3.6 before modifying renderBodyLines.
 	body := renderBodyLines(header, renderedLines, false, "transcript lines")
 	fillSuccess(res, "call_transcript", callID.String(), body)
+	return res
+}
+
+// notifyAgentMaxMessageLen bounds a proactive note's length.
+//
+// The tool description asks for one or two sentences written for a busy human
+// mid-call; this is the backstop for when the model ignores that. It is
+// generous on purpose -- the point is to stop a runaway generation from landing
+// a wall of text in the agent's panel mid-call, not to police phrasing.
+//
+// COUNTED IN CHARACTERS (runes), NOT BYTES (review round 1 finding LOW-1). The
+// cap exists to bound what a human reads in a panel, and no downstream storage
+// imposes a byte limit here -- so a len() byte count would silently cut a
+// Korean or Japanese note to roughly a third of the intended length while the
+// error message still said "characters".
+const notifyAgentMaxMessageLen = 500
+
+// parseNotifyAgentMessage extracts and validates the note from a notify_agent
+// tool call's arguments.
+func parseNotifyAgentMessage(arguments string) (string, error) {
+	var args struct {
+		Message string `json:"message"`
+	}
+	if err := json.Unmarshal([]byte(arguments), &args); err != nil {
+		return "", errors.Wrap(err, "invalid arguments")
+	}
+
+	msg := strings.TrimSpace(args.Message)
+	if msg == "" {
+		return "", fmt.Errorf("message is required and must not be empty")
+	}
+
+	if msgLen := utf8.RuneCountInString(msg); msgLen > notifyAgentMaxMessageLen {
+		return "", fmt.Errorf("message is too long: %d characters, maximum %d", msgLen, notifyAgentMaxMessageLen)
+	}
+
+	return msg, nil
+}
+
+// toolHandleNotifyAgent pushes a proactive note into the agent's Insight
+// Assistant panel.
+//
+// It takes listenTurn as a parameter rather than deriving it: ToolHandle
+// resolves it once, from Redis set membership, and shares that one answer with
+// the Origin tagging decision. Two independent derivations could disagree.
+//
+// The row it writes is role=assistant with Origin=proactive, NOT
+// role=notification. That distinction is load-bearing: getPipecatcallMessages
+// skips RoleNotification when assembling LLM context, so a notification-role row
+// would mean that when the agent replies "what did you mean by that?", the AI
+// would have no memory of its own notification. It is a genuine assistant
+// utterance and is stored as one.
+//
+// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.5, §5.6.
+func (h *aicallHandler) toolHandleNotifyAgent(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall, listenTurn bool) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleNotifyAgent",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool notify_agent.")
+
+	res := newToolResult(tc.ID)
+
+	if !listenTurn {
+		// This tool fired on the agent's own conversational turn, or the
+		// membership check could not run at all (ToolHandle degrades a Redis
+		// failure to listenTurn=false, which is provably correct during an
+		// outage). Reject rather than let RunLLM's best-effort suppression
+		// silently eat the agent's real question: with run_llm=false in effect,
+		// a notify_agent call during a Q&A turn means the agent gets an
+		// unrelated notification INSTEAD of the answer they asked for.
+		fillFailed(res, fmt.Errorf("notify_agent is only usable while proactively monitoring a call; you were asked a question - answer it directly instead"))
+		return res
+	}
+
+	msg, err := parseNotifyAgentMessage(tc.Function.Arguments)
+	if err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	tmp, errCreate := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID,
+		message.DirectionIncoming, message.RoleAssistant, msg, nil, "",
+		messagehandler.WithActiveAIID(h.resolveActiveAIIDFromAIcall(ctx, c)),
+		messagehandler.WithOrigin(message.OriginProactive))
+	if errCreate != nil {
+		log.Errorf("Could not create the proactive message. err: %v", errCreate)
+		fillFailed(res, fmt.Errorf("could not deliver the notification"))
+		return res
+	}
+	log.WithField("message", tmp).Debugf("Created the proactive notification message. message_id: %s", tmp.ID)
+
+	promListenNotifyTotal.Inc()
+
+	fillSuccess(res, "message", tmp.ID.String(), "Notification delivered to the agent.")
 	return res
 }

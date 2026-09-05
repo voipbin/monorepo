@@ -25,6 +25,7 @@ Reference types:
 - `call` — telephony call (via call-manager)
 - `conversation` — chat thread (via conversation-manager)
 - `task` — background processing task
+- `contact_case` — CRM Case panel session (the Insight Assistant)
 
 Status lifecycle:
 ```
@@ -35,7 +36,15 @@ Key fields:
 - `confbridge_id` — conference bridge hosting the call audio
 - `pipecatcall_id` — pipecat session ID for real-time audio
 - `host_id` — IP of the pipecat pod owning the session (for per-pod routing)
-- `metadata` — JSON map written at call-start. Currently carries one key: `prompt_snapshots` (a `[]PromptSnapshot` capturing the AI/team prompt versions active when the call began). Future keys may be added without schema migration.
+- `listen_call_id` — the live call this `contact_case` Insight AIcall is currently listening to, or `uuid.Nil` when it is not listening. A **real, indexed column** rather than a metadata key for exactly one reason: on call hangup, `EventCMCallHangup` must run `WHERE listen_call_id = ?` to find every AIcall watching that call (plural — two Cases can share one call), and JSON metadata is not usefully indexable. Deliberately **not** exposed on the webhook — internal plumbing, same treatment as `Message.PipecatcallID`.
+- `metadata` — JSON map written at call-start. Carries `prompt_snapshots` (a `[]PromptSnapshot` capturing the AI/team prompt versions active when the call began), plus, while the Insight Assistant is listening to a live call, two listen keys. Future keys may be added without schema migration.
+
+Listen metadata keys (present only while a `contact_case` AIcall is listening):
+
+| Key | Type | Notes |
+|---|---|---|
+| `listen_transcribe_id` | string (UUID) | The transcribe session this AIcall reads while listening. Read by the listen-start idempotency check and by every stop path, always with the AIcall row already in hand — hence metadata rather than a column |
+| `listen_owns_transcribe` | bool | Whether THIS AIcall started that session, as opposed to reusing one another AIcall already had running on the same call. **Only the owner may stop it**; a non-owner must never touch a session another listener still depends on |
 
 #### PromptSnapshot
 
@@ -53,6 +62,13 @@ Individual message within an AIcall conversation. Persisted in MySQL for context
 
 - `role`: `system` | `user` | `assistant` | `tool`
 - `direction`: `inbound` | `outbound`
+- `origin`: how the message came to exist, orthogonally to `role`. Three values:
+
+| Value | User-visible? | Notes |
+|---|---|---|
+| `""` (empty) | — | The default: every ordinary message, one that answers or asks something |
+| `proactive` | **Yes** | An AI-initiated notification sent via `notify_agent` while monitoring a live call. Real conversational content: stored as `role=assistant`, replayed into future LLM context so the AI remembers what it told the agent, and rendered with a distinct treatment by the frontends. Reaches tenant webhook payloads |
+| `listen_internal` | No — internal bookkeeping | The mechanical tool-call / tool-result rows a listen evaluation turn writes. **Never** replayed into any future LLM context — `getPipecatcallMessages` excludes them at the SQL layer, so they cannot evict the AIcall's own system prompt or the agent's Q&A history from the capped replay window. Still reaches webhook payloads, so it is documented rather than hidden |
 - `active_ai_id` — UUID of the AI configuration that was active when the message was created; `uuid.Nil` if the aicall or team lookup fails at creation time, or for non-AICall reference paths
 - Supports tool call payloads for function-calling workflows
 

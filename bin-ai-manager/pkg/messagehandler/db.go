@@ -62,6 +62,8 @@ func (h *messageHandler) Create(
 		ToolCalls:  tmpToolCalls,
 		ToolCallID: toolCallID,
 
+		Origin: p.origin,
+
 		PipecatcallID:  p.pipecatcallID,
 		DeliveryStatus: p.deliveryStatus,
 

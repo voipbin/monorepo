@@ -123,6 +123,57 @@ func (h *serviceHandler) ServiceAgentAIcallGet(ctx context.Context, a *auth.Auth
 	return res, nil
 }
 
+// ServiceAgentAIcallListen asks ai-manager to start Insight AI realtime call
+// listening on the given aicall.
+//
+// PERMISSION: amagent.PermissionAll, the AGENT tier -- NOT the
+// admin/manager bitmask the top-level AIcallTerminate uses. This endpoint
+// exists on the /service_agents/* surface precisely because square-talk (and
+// any other Agent-facing frontend) may only call that surface, and an ordinary
+// agent would be denied by the admin tier. See bin-api-manager/docs/auth.md and
+// docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.1.
+//
+// The ownership compare lives HERE, in the public method, not inside aicallGet:
+// that helper only fetches, and the sibling ServiceAgentAIcallGet above does
+// its own compare the same way. Moving it into the helper would change that
+// method's behaviour too.
+func (h *serviceHandler) ServiceAgentAIcallListen(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaicall.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, serviceerrors.ErrAuthenticationRequired
+	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ServiceAgentAIcallListen",
+		"customer_id": a.CustomerID,
+		"username":    a.DisplayName(),
+		"aicall_id":   id,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	tmp, err := h.aicallGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the aicall info. aicall_id: %v", id)
+	}
+
+	if tmp.CustomerID != a.CustomerID {
+		log.Info("The aicall does not belong to the agent's customer.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	listened, err := h.reqHandler.AIV1AIcallListen(ctx, id)
+	if err != nil {
+		log.Errorf("Could not start listening. err: %v", err)
+		return nil, err
+	}
+
+	res := listened.ConvertWebhookMessage()
+	return res, nil
+}
+
 // ServiceAgentAIcallCreate sends a request to ai-manager to create an aicall
 // for the service agent's customer. An activeflow is automatically created
 // and associated with the new aicall, mirroring the top-level AIcallCreate.

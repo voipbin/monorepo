@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -124,6 +125,45 @@ func (h *server) PostServiceAgentsAicalls(c *gin.Context) {
 	)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// PostServiceAgentsAicallsIdListen starts Insight AI realtime call listening on
+// the given aicall.
+//
+// Thin by design: auth identity, one service-handler call, 200. Everything the
+// trigger does -- eligibility, the confbridge wait, the transcribe session --
+// lives in ai-manager.
+func (h *server) PostServiceAgentsAicallsIdListen(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostServiceAgentsAicallsIdListen",
+		"request_address": c.ClientIP,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid aicall ID format. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentAIcallListen(c.Request.Context(), a, target)
+	if err != nil {
+		log.Errorf("Could not start listening. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}

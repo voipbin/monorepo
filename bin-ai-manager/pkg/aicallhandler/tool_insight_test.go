@@ -2,16 +2,19 @@ package aicallhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -3009,4 +3012,178 @@ func Test_paginateUntilExact(t *testing.T) {
 			t.Errorf("len(verified) = %d, want 0 (all rows were excluded)", len(verified))
 		}
 	})
+}
+
+// Test_toolHandleNotifyAgent covers the whole contract: the happy path writes
+// exactly one proactive row, and every rejection path writes none.
+func Test_toolHandleNotifyAgent(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("4d5e6f7a-8b9c-4d0e-9f1a-2b3c4d5e6f70")
+	customerID := uuid.FromStringOrNil("5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b")
+
+	tests := []struct {
+		name string
+
+		listenTurn bool
+		arguments  string
+
+		expectProactiveRow bool
+		expectResult       string
+	}{
+		{
+			name:               "happy path writes one proactive row",
+			listenTurn:         true,
+			arguments:          `{"message":"Customer just mentioned cancelling."}`,
+			expectProactiveRow: true,
+			expectResult:       "success",
+		},
+		{
+			name: "rejected outside a listen turn, with no row written",
+			// The important case. Allowing it would let RunLLM's best-effort
+			// suppression silently eat the agent's real answer.
+			listenTurn:         false,
+			arguments:          `{"message":"Customer just mentioned cancelling."}`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+		{
+			name:               "empty message rejected",
+			listenTurn:         true,
+			arguments:          `{"message":""}`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+		{
+			name:               "whitespace-only message rejected",
+			listenTurn:         true,
+			arguments:          `{"message":"   \n\t  "}`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+		{
+			name:               "oversized message rejected",
+			listenTurn:         true,
+			arguments:          `{"message":"` + strings.Repeat("x", notifyAgentMaxMessageLen+1) + `"}`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+		{
+			name:               "malformed arguments rejected",
+			listenTurn:         true,
+			arguments:          `{"message":`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			h := &aicallHandler{messageHandler: mockMessage}
+			ctx := context.Background()
+
+			c := &aicall.AIcall{
+				Identity:       commonidentity.Identity{ID: aicallID, CustomerID: customerID},
+				AssistanceType: aicall.AssistanceTypeAI,
+				ReferenceType:  aicall.ReferenceTypeContactCase,
+			}
+
+			if tt.expectProactiveRow {
+				mockMessage.EXPECT().
+					Create(ctx, uuid.Nil, customerID, aicallID, gomock.Any(),
+						message.DirectionIncoming, message.RoleAssistant, "Customer just mentioned cancelling.",
+						nil, "", gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, _, _, _, _ uuid.UUID,
+						_ message.Direction, _ message.Role, _ string,
+						_ []message.ToolCall, _ string, opts ...messagehandler.CreateOption,
+					) (*message.Message, error) {
+						if got := messagehandler.ResolveOriginForTest(opts...); got != message.OriginProactive {
+							t.Errorf("Origin mismatch. expected: %q, got: %q", message.OriginProactive, got)
+						}
+						return &message.Message{}, nil
+					})
+			}
+			// No EXPECT() at all in the rejection cases: gomock fails the test
+			// if Create is called anyway, which is exactly the assertion.
+
+			tc := &message.ToolCall{
+				ID:       "tool-1",
+				Function: message.FunctionCall{Name: message.FunctionCallNameNotifyAgent, Arguments: tt.arguments},
+			}
+
+			res := h.toolHandleNotifyAgent(ctx, c, tc, tt.listenTurn)
+			if res.Result != tt.expectResult {
+				t.Errorf("result mismatch. expected: %q, got: %q (message: %q)", tt.expectResult, res.Result, res.Message)
+			}
+		})
+	}
+}
+
+// Test_parseNotifyAgentMessage_LengthIsCountedInRunes is the direct regression
+// test for review round 1's LOW-1.
+//
+// The cap was measured with len() (bytes) while the error message said
+// "characters", so a Korean or Japanese note -- 3 bytes per character in UTF-8
+// -- was cut at roughly a third of the documented length. The cap bounds what a
+// human reads in a panel, so runes are the correct unit.
+func Test_parseNotifyAgentMessage_LengthIsCountedInRunes(t *testing.T) {
+	tests := []struct {
+		name string
+
+		message string
+
+		expectError bool
+	}{
+		{
+			name:        "an ASCII message at exactly the cap is accepted",
+			message:     strings.Repeat("x", notifyAgentMaxMessageLen),
+			expectError: false,
+		},
+		{
+			name:        "an ASCII message one over the cap is rejected",
+			message:     strings.Repeat("x", notifyAgentMaxMessageLen+1),
+			expectError: true,
+		},
+		{
+			name: "a multi-byte message at exactly the cap is accepted",
+			// 500 Hangul syllables = 1500 bytes. Under the old byte cap this
+			// was rejected at 167 characters.
+			message:     strings.Repeat("가", notifyAgentMaxMessageLen),
+			expectError: false,
+		},
+		{
+			name:        "a multi-byte message one CHARACTER over the cap is rejected",
+			message:     strings.Repeat("가", notifyAgentMaxMessageLen+1),
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			arguments, err := json.Marshal(map[string]string{"message": tt.message})
+			if err != nil {
+				t.Fatalf("could not build the arguments. err: %v", err)
+			}
+
+			got, errParse := parseNotifyAgentMessage(string(arguments))
+			if tt.expectError {
+				if errParse == nil {
+					t.Fatalf("expected an error")
+				}
+				if !strings.Contains(errParse.Error(), "characters") {
+					t.Errorf("the error must state the unit it actually measures. got: %v", errParse)
+				}
+				return
+			}
+
+			if errParse != nil {
+				t.Fatalf("unexpected error. err: %v", errParse)
+			}
+			if got != tt.message {
+				t.Errorf("message mismatch. expected %d runes, got %d", utf8.RuneCountInString(tt.message), utf8.RuneCountInString(got))
+			}
+		})
+	}
 }

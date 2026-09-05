@@ -13,8 +13,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aiaudithandler"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
@@ -82,12 +82,14 @@ var (
 	regV1AIsIDPromptHistoriesIDGet = regexp.MustCompile("/v1/ais/" + regUUID + "/prompt_histories/" + regUUID + "$")
 
 	// aicalls
-	regV1AIcallsGet                 = regexp.MustCompile(`/v1/aicalls\?`)
-	regV1AIcalls                    = regexp.MustCompile(`/v1/aicalls$`)
-	regV1AIcallsIDParticipants      = regexp.MustCompile("/v1/aicalls/" + regUUID + `/participants(\?|$)`)
-	regV1AIcallsID                  = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
-	regV1AIcallsIDTerminate         = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
-	regV1AIcallsIDToolExecute       = regexp.MustCompile("/v1/aicalls/" + regUUID + "/tool_execute$")
+	regV1AIcallsGet            = regexp.MustCompile(`/v1/aicalls\?`)
+	regV1AIcalls               = regexp.MustCompile(`/v1/aicalls$`)
+	regV1AIcallsIDParticipants = regexp.MustCompile("/v1/aicalls/" + regUUID + `/participants(\?|$)`)
+	regV1AIcallsIDQuery        = regexp.MustCompile("/v1/aicalls/" + regUUID + `\?`)
+	regV1AIcallsID             = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
+	regV1AIcallsIDTerminate    = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
+	regV1AIcallsIDListen       = regexp.MustCompile("/v1/aicalls/" + regUUID + "/listen$")
+	regV1AIcallsIDToolExecute  = regexp.MustCompile("/v1/aicalls/" + regUUID + "/tool_execute$")
 
 	// aiaudits
 	regV1AIAuditsGet = regexp.MustCompile(`/v1/aiaudits\?`)
@@ -108,9 +110,9 @@ var (
 	regV1MessagesID  = regexp.MustCompile("/v1/messages/" + regUUID + "$")
 
 	// service
-	regV1ServicesTypeAIcall  = regexp.MustCompile("/v1/services/type/aicall$")
-	regV1ServicesTypeSummary = regexp.MustCompile("/v1/services/type/summary$")
-	regV1ServicesTypeTask    = regexp.MustCompile("/v1/services/type/task$")
+	regV1ServicesTypeAIcall   = regexp.MustCompile("/v1/services/type/aicall$")
+	regV1ServicesTypeSummary  = regexp.MustCompile("/v1/services/type/summary$")
+	regV1ServicesTypeTask     = regexp.MustCompile("/v1/services/type/task$")
 	regV1ServicesTypeAnalysis = regexp.MustCompile("/v1/services/type/analysis$")
 
 	// summary
@@ -335,6 +337,14 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1AIcallsIDParticipantsGet(ctx, m)
 		requestType = "/v1/aicalls/<aicall-id>/participants"
 
+	// GET /aicalls/<aicall-id>?<query>
+	// Split from the anchored route below because regV1AIcallsID ends in "$",
+	// which no query-bearing URI can match. Both land in the same handler; the
+	// handler reads the query itself.
+	case regV1AIcallsIDQuery.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIcallsIDGet(ctx, m)
+		requestType = "/v1/aicalls/<aicall-id>"
+
 	// GET /aicalls/<aicall-id>
 	case regV1AIcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AIcallsIDGet(ctx, m)
@@ -349,6 +359,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIcallsIDTerminate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AIcallsIDTerminatePost(ctx, m)
 		requestType = "/v1/aicalls/<aicall-id>/terminate"
+
+	// POST /aicalls/<aicall-id>/listen
+	case regV1AIcallsIDListen.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIcallsIDListenPost(ctx, m)
+		requestType = "/v1/aicalls/<aicall-id>/listen"
 
 	// POST /aicalls/<aicall-id>/tool_execute
 	case regV1AIcallsIDToolExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

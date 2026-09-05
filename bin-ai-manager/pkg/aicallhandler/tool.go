@@ -21,13 +21,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall) (map[string]any, error) {
+func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "ToolHandle",
-		"aicall_id": id,
-		"tool_id":   toolID,
-		"tool_type": toolType,
-		"function":  function,
+		"func":           "ToolHandle",
+		"aicall_id":      id,
+		"tool_id":        toolID,
+		"tool_type":      toolType,
+		"function":       function,
+		"pipecatcall_id": pipecatcallID,
 	})
 
 	c, err := h.Get(ctx, id)
@@ -35,6 +36,45 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		return nil, errors.Wrapf(err, "could not get aicall %s", id)
 	}
 	log.WithField("aicall", c).Debugf("fetched aicall info.")
+
+	// Resolve, exactly once, whether this tool call arrived on a listen
+	// evaluation turn. Two consumers share this one answer -- the Origin tag
+	// below and toolHandleNotifyAgent's reject-guard -- deliberately, so they
+	// can never disagree.
+	//
+	// The ReferenceType pre-gate is a cached-field comparison, and it is safe to
+	// trust the cache for it: ReferenceType is immutable (it is never among
+	// AIcallUpdate's written fields). It confines the Redis round trip to the
+	// one reference type that can ever be listening, instead of charging every
+	// tool call on every AIcall type for it.
+	//
+	// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.5.
+	listenTurn := false
+	if c.ReferenceType == aicall.ReferenceTypeContactCase {
+		isMember, errMember := h.cache.ListenTurnPipecatcallIDIsMember(ctx, c.ID, pipecatcallID)
+		if errMember != nil {
+			// Degrade, do not fail closed. A Redis outage means the listen-turn
+			// registration and the debounce lock are failing too, so no genuine
+			// listen turn can be running at this moment -- every tool call
+			// arriving during an outage is structurally a real Q&A call.
+			// listenTurn=false is therefore not a guess; it is the provably
+			// correct value under this specific failure. Failing the tool call
+			// here would take ordinary Insight Q&A tool use down with Redis.
+			log.Warnf("Listen-turn membership check failed, assuming a real Q&A turn. err: %v", errMember)
+			promListenMembershipCheckFailedTotal.Inc()
+		} else {
+			listenTurn = isMember
+		}
+	}
+
+	// Mechanical tool-call/tool-result rows from a listen turn are tagged so
+	// getPipecatcallMessages can exclude them from every future replay. A
+	// proactive notify_agent OUTPUT row is not tagged -- that is real
+	// conversational content the agent sees and the AI should remember.
+	rowOrigin := message.OriginNone
+	if listenTurn {
+		rowOrigin = message.OriginListenInternal
+	}
 
 	tool := &message.ToolCall{
 		ID:       toolID,
@@ -45,7 +85,8 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	// create a message for tool handle request
 	toolCallActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
 	tmp, errCreate := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "",
-		messagehandler.WithActiveAIID(toolCallActiveAIID))
+		messagehandler.WithActiveAIID(toolCallActiveAIID),
+		messagehandler.WithOrigin(rowOrigin))
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
@@ -79,24 +120,38 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
 
 	var tmpMessageContent *messageContent
-	if fn, exists := mapFunctions[tool.Function.Name]; exists {
-		tmpMessageContent = fn(ctx, c, tool)
-	} else {
-		log.Debugf("unknown tool call: %s", tool.Function.Name)
-		// Record a failure result message before returning. Without this the
-		// tool-call request message created above stays permanently unpaired,
-		// which breaks every later turn of this aicall once the pipecat-side
-		// filter stops dropping unpaired tool-call messages (VOIP-1460).
-		errMsg := fmt.Sprintf("unknown tool call: %s", tool.Function.Name)
-		failContent := newToolResult(tool.ID)
-		fillFailed(failContent, stderrors.New(errMsg))
-		if _, errRecord := h.toolCreateResultMessage(ctx, c, tool, failContent, toolCallActiveAIID); errRecord != nil {
-			log.WithError(errRecord).Error("could not record the failure result message for the unknown tool call")
+	// Tagged switch on the tool name (staticcheck QF1002); the shape is
+	// otherwise exactly the design's own: one special case, everything else
+	// through mapFunctions.
+	switch tool.Function.Name {
+	case message.FunctionCallNameNotifyAgent:
+		// Dispatched outside mapFunctions deliberately. That map's value type is
+		// func(ctx, *aicall.AIcall, *message.ToolCall) *messageContent, shared by
+		// all 21 handlers; notify_agent is the only one that needs listenTurn,
+		// and widening the shared type for one handler would churn the other 20
+		// signatures for a value none of them use.
+		tmpMessageContent = h.toolHandleNotifyAgent(ctx, c, tool, listenTurn)
+
+	default:
+		fn, exists := mapFunctions[tool.Function.Name]
+		if !exists {
+			log.Debugf("unknown tool call: %s", tool.Function.Name)
+			// Record a failure result message before returning. Without this the
+			// tool-call request message created above stays permanently unpaired,
+			// which breaks every later turn of this aicall once the pipecat-side
+			// filter stops dropping unpaired tool-call messages (VOIP-1460).
+			errMsg := fmt.Sprintf("unknown tool call: %s", tool.Function.Name)
+			failContent := newToolResult(tool.ID)
+			fillFailed(failContent, stderrors.New(errMsg))
+			if _, errRecord := h.toolCreateResultMessage(ctx, c, tool, failContent, toolCallActiveAIID, rowOrigin); errRecord != nil {
+				log.WithError(errRecord).Error("could not record the failure result message for the unknown tool call")
+			}
+			return nil, stderrors.New(errMsg)
 		}
-		return nil, stderrors.New(errMsg)
+		tmpMessageContent = fn(ctx, c, tool)
 	}
 
-	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID)
+	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID, rowOrigin)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
@@ -159,6 +214,7 @@ func (h *aicallHandler) toolCreateResultMessage(
 	tool *message.ToolCall,
 	tmpContent *messageContent,
 	activeAIID uuid.UUID,
+	origin message.Origin,
 ) (*message.Message, error) {
 
 	content, err := json.Marshal(tmpContent)
@@ -167,7 +223,8 @@ func (h *aicallHandler) toolCreateResultMessage(
 	}
 
 	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleTool, string(content), nil, tool.ID,
-		messagehandler.WithActiveAIID(activeAIID))
+		messagehandler.WithActiveAIID(activeAIID),
+		messagehandler.WithOrigin(origin))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}

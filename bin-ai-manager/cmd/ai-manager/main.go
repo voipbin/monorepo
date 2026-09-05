@@ -53,6 +53,14 @@ var rootCmd = &cobra.Command{
 	Long:  "AI Manager Service for VoIPbin platform",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config.LoadGlobalConfig()
+
+		// Fail fast on a deploy-time misconfiguration, BEFORE anything starts
+		// serving. Returning the error here surfaces it through
+		// rootCmd.Execute()'s own logrus.Fatalf in main().
+		if errValidate := config.Validate(); errValidate != nil {
+			return errValidate
+		}
+
 		config.InitPrometheus()
 		return runDaemon()
 	},
@@ -130,7 +138,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	participantHandler := participanthandler.New(db)
 	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler, participantHandler)
-	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler, participantHandler)
+	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, cache, aiHandler, teamHandler, messageHandler, participantHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
 	// Build a dedicated engine for the analysis gateway. The provider is

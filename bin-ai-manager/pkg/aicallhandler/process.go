@@ -53,6 +53,17 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 		return tmp, nil
 	}
 
+	// Release any listening state this AIcall holds. The agent closed the panel,
+	// the session idled out, or the turn cap tripped -- either way the live call
+	// may still be running, and an owned STT session must not be left behind
+	// with its handle about to be forgotten.
+	//
+	// This is the AIcall-is-ending path reusing the same helper; it is not a
+	// call TO ProcessTerminate from stopListening, which would be a loop.
+	if tmp.ReferenceType == aicall.ReferenceTypeContactCase && tmp.ListenCallID != uuid.Nil {
+		h.stopListening(ctx, tmp)
+	}
+
 	// stop the aicall service
 	log.Debugf("Stopping activeflow service. activeflow_id: %s", tmp.ActiveflowID)
 	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, tmp.ActiveflowID, tmp.ID, 0); errStop != nil {

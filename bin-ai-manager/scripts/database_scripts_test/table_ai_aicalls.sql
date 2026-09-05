@@ -21,6 +21,11 @@ create table ai_aicalls(
   pipecatcall_id      binary(16),
   current_member_id   binary(16),
 
+  -- the live call this contact_case Insight AIcall is listening to, or the
+  -- all-zero uuid when it is not listening.
+  -- Mirrors bin-dbscheme-manager migration 6e848e2cf613.
+  listen_call_id      binary(16) not null default 0x00000000000000000000000000000000,
+
   status  varchar(255),   -- status
 
   gender    varchar(255), -- gender
@@ -61,3 +66,4 @@ create index idx_ai_aicalls_reference_type on ai_aicalls(reference_type);
 create index idx_ai_aicalls_reference_id on ai_aicalls(reference_id);
 create index idx_ai_aicalls_create on ai_aicalls(tm_create);
 create index idx_ai_aicalls_activeflow_id on ai_aicalls(activeflow_id);
+create index idx_ai_aicalls_listen_call_id on ai_aicalls(listen_call_id);

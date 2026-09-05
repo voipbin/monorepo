@@ -62,7 +62,7 @@ func Test_processV1AIcallsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"64b555fe-a773-11ed-9dc7-2fccabe21218","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"64b555fe-a773-11ed-9dc7-2fccabe21218","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","listen_call_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","listen_call_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -131,7 +131,7 @@ func Test_processV1AIcallsPost(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"6792a0d8-a773-11ed-b28c-c79bf61e95b2","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","listen_call_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -190,7 +190,7 @@ func Test_processV1AIcallsIDDelete(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"d9d804d8-ef03-4a23-906c-c192029b19fc","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"d9d804d8-ef03-4a23-906c-c192029b19fc","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","listen_call_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -249,7 +249,7 @@ func Test_processV1AIcallsIDGet(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"3e349bb8-7b31-4533-8e2b-6654ebc84e3e","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"3e349bb8-7b31-4533-8e2b-6654ebc84e3e","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","listen_call_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -308,7 +308,7 @@ func Test_processV1AIcallsIDTerminatePost(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"24a00d20-9199-11f0-b036-f7aebbe6e8f8","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"24a00d20-9199-11f0-b036-f7aebbe6e8f8","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","listen_call_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -347,15 +347,48 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 
 		responseToolHandle map[string]any
 
-		expectedID           uuid.UUID
-		expectedToolID       string
-		expectedToolType     message.ToolType
-		expectedToolFunction message.FunctionCall
+		expectedID            uuid.UUID
+		expectedToolID        string
+		expectedToolType      message.ToolType
+		expectedToolFunction  message.FunctionCall
+		expectedPipecatcallID uuid.UUID
 
 		expectedRes *sock.Response
 	}{
 		{
 			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tool_execute",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"tool-1234","type":"function","function":{"name":"connect","arguments":"{\"source\":{\"target\":\"+1234567890\"}}"},"pipecatcall_id":"2c1d4e6f-8a9b-4c0d-9e1f-3a5b7c9d1e2f"}`),
+			},
+
+			responseToolHandle: map[string]any{
+				"result":  "success",
+				"message": "",
+			},
+
+			expectedID:       uuid.FromStringOrNil("a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b"),
+			expectedToolID:   "tool-1234",
+			expectedToolType: message.ToolTypeFunction,
+			expectedToolFunction: message.FunctionCall{
+				Name:      "connect",
+				Arguments: `{"source":{"target":"+1234567890"}}`,
+			},
+			expectedPipecatcallID: uuid.FromStringOrNil("2c1d4e6f-8a9b-4c0d-9e1f-3a5b7c9d1e2f"),
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"message":"","result":"success"}`),
+			},
+		},
+		{
+			// Pins the rolling-deploy compatibility promise in
+			// V1DataAIcallsIDToolExecutePost.PipecatcallID's own doc comment: an
+			// old bin-pipecat-manager sends no such field, and it must unmarshal
+			// to uuid.Nil rather than fail the request.
+			name: "no pipecatcall_id in the body unmarshals to uuid.Nil",
 			request: &sock.Request{
 				URI:      "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tool_execute",
 				Method:   sock.RequestMethodPost,
@@ -375,6 +408,7 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 				Name:      "connect",
 				Arguments: `{"source":{"target":"+1234567890"}}`,
 			},
+			expectedPipecatcallID: uuid.Nil,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -396,7 +430,7 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ToolHandle(gomock.Any(), tt.expectedID, tt.expectedToolID, tt.expectedToolType, tt.expectedToolFunction).Return(tt.responseToolHandle, nil)
+			mockAIcall.EXPECT().ToolHandle(gomock.Any(), tt.expectedID, tt.expectedToolID, tt.expectedToolType, tt.expectedToolFunction, tt.expectedPipecatcallID).Return(tt.responseToolHandle, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -502,7 +536,7 @@ func Test_processV1AIcallsIDToolExecutePost_errorMapping(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ToolHandle(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, tt.handlerErr)
+			mockAIcall.EXPECT().ToolHandle(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, tt.handlerErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Fatalf("expected no error, got: %v", err)
@@ -512,4 +546,182 @@ func Test_processV1AIcallsIDToolExecutePost_errorMapping(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_processV1AIcallsIDGet_SkipCache pins that a GET carrying a query string
+// still routes and still parses its id.
+//
+// Two independent things would break it. (1) regV1AIcallsID is anchored with
+// "$", so a query string makes it match nothing and the request silently falls
+// through to the router's default -- hence the separate query-tolerant pattern.
+// (2) The handler used to split the URI on "/" and take element 3, which for a
+// query-bearing URI is "<uuid>?skip_cache=true" and parses to uuid.Nil -- hence
+// url.Parse.
+func Test_processV1AIcallsIDGet_SkipCache(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c")
+
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		expectSkipCache bool
+	}{
+		{
+			name: "no query string reads through the cache",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c",
+				Method: sock.RequestMethodGet,
+			},
+			expectSkipCache: false,
+		},
+		{
+			name: "skip_cache=true bypasses the cache",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c?skip_cache=true",
+				Method: sock.RequestMethodGet,
+			},
+			expectSkipCache: true,
+		},
+		{
+			name: "skip_cache=false reads through the cache",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c?skip_cache=false",
+				Method: sock.RequestMethodGet,
+			},
+			expectSkipCache: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				aicallHandler: mockAIcall,
+			}
+
+			if tt.expectSkipCache {
+				mockAIcall.EXPECT().GetSkipCache(gomock.Any(), aicallID).Return(&aicall.AIcall{}, nil)
+			} else {
+				mockAIcall.EXPECT().Get(gomock.Any(), aicallID).Return(&aicall.AIcall{}, nil)
+			}
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+			}
+			if res.StatusCode != 200 {
+				t.Errorf("status mismatch. expected: 200, got: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
+// Test_processV1AIcallsIDListenPost pins the new route end to end at the
+// transport layer: the regex, the dispatcher case, the id parse, and the one
+// business-handler call.
+//
+// IT ROUTES THROUGH processRequest, NOT processV1AIcallsIDListenPost DIRECTLY.
+// That is the same deliberate choice Test_processV1AIcallsIDGet_SkipCache made,
+// for the same reason: the known regex-anchoring behaviour of this dispatcher
+// (regV1AIcallsID ends in "$", which is why a separate query-tolerant pattern
+// had to be added) lives in the dispatcher, so a test that calls the handler
+// function directly would pass while production never routes the request at all.
+func Test_processV1AIcallsIDListenPost(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("6a1f0c22-9b3d-4e7f-8a5b-1c2d3e4f5a6b")
+
+	t.Run("valid id routes and calls ProcessListen exactly once", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSock := sockhandler.NewMockSockHandler(mc)
+		mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+		h := &listenHandler{sockHandler: mockSock, aicallHandler: mockAIcall}
+
+		mockAIcall.EXPECT().ProcessListen(gomock.Any(), aicallID).
+			Return(&aicall.AIcall{Identity: identity.Identity{ID: aicallID}}, nil).Times(1)
+
+		res, err := h.processRequest(&sock.Request{
+			URI:    "/v1/aicalls/6a1f0c22-9b3d-4e7f-8a5b-1c2d3e4f5a6b/listen",
+			Method: sock.RequestMethodPost,
+		})
+		if err != nil {
+			t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+		}
+		if res.StatusCode != 200 {
+			t.Errorf("status mismatch. expected: 200, got: %d", res.StatusCode)
+		}
+	})
+
+	t.Run("unknown id surfaces as 404, not a generic 500", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSock := sockhandler.NewMockSockHandler(mc)
+		mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+		h := &listenHandler{sockHandler: mockSock, aicallHandler: mockAIcall}
+
+		mockAIcall.EXPECT().ProcessListen(gomock.Any(), aicallID).Return(nil, dbhandler.ErrNotFound)
+
+		res, err := h.processRequest(&sock.Request{
+			URI:    "/v1/aicalls/6a1f0c22-9b3d-4e7f-8a5b-1c2d3e4f5a6b/listen",
+			Method: sock.RequestMethodPost,
+		})
+		if err != nil {
+			t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+		}
+		if res.StatusCode != 404 {
+			t.Errorf("status mismatch. expected: 404, got: %d", res.StatusCode)
+		}
+	})
+
+	t.Run("unparseable id never reaches ProcessListen", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSock := sockhandler.NewMockSockHandler(mc)
+		mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+		h := &listenHandler{sockHandler: mockSock, aicallHandler: mockAIcall}
+
+		// The invariant that matters, whichever layer enforces it: no
+		// business-handler call is made on a malformed id.
+		mockAIcall.EXPECT().ProcessListen(gomock.Any(), gomock.Any()).Times(0)
+
+		if _, err := h.processRequest(&sock.Request{
+			URI:    "/v1/aicalls/not-a-uuid/listen",
+			Method: sock.RequestMethodPost,
+		}); err != nil {
+			t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+		}
+	})
+
+	t.Run("GET on the same path does not dispatch to the listen handler", func(t *testing.T) {
+		// Pins the `&& m.Method == sock.RequestMethodPost` half of the switch
+		// case.
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSock := sockhandler.NewMockSockHandler(mc)
+		mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+		h := &listenHandler{sockHandler: mockSock, aicallHandler: mockAIcall}
+
+		mockAIcall.EXPECT().ProcessListen(gomock.Any(), gomock.Any()).Times(0)
+
+		if _, err := h.processRequest(&sock.Request{
+			URI:    "/v1/aicalls/6a1f0c22-9b3d-4e7f-8a5b-1c2d3e4f5a6b/listen",
+			Method: sock.RequestMethodGet,
+		}); err != nil {
+			t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+		}
+	})
 }

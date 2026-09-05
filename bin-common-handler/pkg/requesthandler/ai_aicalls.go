@@ -88,6 +88,36 @@ func (r *requestHandler) AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) 
 	return &res, nil
 }
 
+// AIV1AIcallGetSkipCache sends a request to ai-manager to get the aicall,
+// bypassing ai-manager's own Redis snapshot cache and reading the row from the
+// database.
+//
+// Use it ONLY where a stale read would produce a wrong, irreversible decision.
+// The one such site today is bin-ai-manager's messagehandler stale-reply guard
+// (docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.4(b)): the
+// guard drops a bot-LLM message whose pipecatcall id does not match the
+// AIcall's bound one, and AIcallUpdate's cache refresh discards its own error,
+// so a transiently-stale cached PipecatcallID would make the guard drop the
+// agent's genuine answer. The guard confirms against the database before
+// dropping. Everywhere else, prefer AIV1AIcallGet -- this variant defeats the
+// cache on purpose and costs a real query.
+func (r *requestHandler) AIV1AIcallGetSkipCache(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error) {
+
+	uri := fmt.Sprintf("/v1/aicalls/%s?skip_cache=true", aicallID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/aicalls/<aicall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amaicall.AIcall
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // AIV1AIcallDelete sends a request to ai-manager
 // to deleting a aicall.
 // it returns deleted aicall if it succeed.
@@ -114,6 +144,38 @@ func (r *requestHandler) AIV1AIcallTerminate(ctx context.Context, aicallID uuid.
 	uri := fmt.Sprintf("/v1/aicalls/%s/terminate", aicallID)
 
 	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aicalls/<aicall-id>/terminate", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amaicall.AIcall
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// AIV1AIcallListen sends a request to ai-manager to start Insight AI realtime
+// call listening on the given aicall.
+//
+// Mirrors AIV1AIcallTerminate's shape -- POST, no request body -- but with an
+// EXPLICIT 10s timeout rather than requestTimeoutDefault (3000ms). ai-manager's
+// ProcessListen runs up to three SEQUENTIAL cross-service RPCs synchronously
+// (TranscribeV1TranscribeGet, ContactV1CaseGet, CallV1CallGet), and each hop can
+// independently take up to its own default timeout -- so three hops can add up
+// to roughly 3x a single hop's timeout worst-case, failing the CLIENT's request
+// even when ai-manager's own precheck later succeeds.
+//
+// (The earlier justification, "none of the three is cache-first," was withdrawn:
+// CallV1CallGet IS cache-first. Do not reintroduce it if this value is ever
+// revisited.)
+//
+// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.1.
+func (r *requestHandler) AIV1AIcallListen(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error) {
+	uri := fmt.Sprintf("/v1/aicalls/%s/listen", aicallID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aicalls/<aicall-id>/listen", 10000, 0, ContentTypeNone, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +215,7 @@ func (r *requestHandler) AIV1AIcallToolExecute(
 	toolID string,
 	toolType ammessage.ToolType,
 	function *ammessage.FunctionCall,
+	pipecatcallID uuid.UUID,
 ) (map[string]any, error) {
 	uri := fmt.Sprintf("/v1/aicalls/%s/tool_execute", aicallID)
 
@@ -161,6 +224,11 @@ func (r *requestHandler) AIV1AIcallToolExecute(
 
 		Type:     toolType,
 		Function: *function,
+
+		// The session this tool call arrived on. ai-manager uses it to tell a
+		// listen evaluation turn from the agent's own Q&A turn. See
+		// docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.3a.
+		PipecatcallID: pipecatcallID,
 	}
 
 	m, err := json.Marshal(data)

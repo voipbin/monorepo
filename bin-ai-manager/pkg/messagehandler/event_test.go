@@ -1882,3 +1882,101 @@ func TestEventPMTeamMemberSwitched_from_ai_nil_participant_still_written(t *test
 
 	h.EventPMTeamMemberSwitched(context.Background(), evt)
 }
+
+// Test_EventPMMessageBotLLM_ForeignPipecatcall covers the guard's three
+// outcomes on the one handler that persists.
+//
+// The re-read case is the subtle one and the reason the guard is not a simple
+// comparison: AIcallUpdate's cache refresh discards its own error, so a
+// transient Redis write failure right after a real Send() leaves a stale
+// PipecatcallID cached for up to its TTL -- and a cache-only guard would then
+// drop the agent's genuine answer. Confirming against the database before
+// dropping is what makes the guard safe to turn on for contact_case at all.
+func Test_EventPMMessageBotLLM_ForeignPipecatcall(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("8a9b0c1d-2e3f-4a5b-8c9d-0e1f2a3b4c5d")
+	boundPCID := uuid.FromStringOrNil("9b0c1d2e-3f4a-4b5c-8d9e-1f2a3b3c4d5e")
+	foreignPCID := uuid.FromStringOrNil("0c1d2e3f-4a5b-4c6d-9e0f-2a3b4c5d6e7f")
+
+	tests := []struct {
+		name string
+
+		eventPipecatcallID  uuid.UUID
+		cachedPipecatcallID uuid.UUID
+
+		expectReRead              bool
+		expectReReadPipecatcallID uuid.UUID
+		expectPersist             bool
+	}{
+		{
+			name:                "matching id persists with no re-read",
+			eventPipecatcallID:  boundPCID,
+			cachedPipecatcallID: boundPCID,
+			expectReRead:        false,
+			expectPersist:       true,
+		},
+		{
+			name:                      "mismatch that still disagrees on re-read is dropped",
+			eventPipecatcallID:        foreignPCID,
+			cachedPipecatcallID:       boundPCID,
+			expectReRead:              true,
+			expectReReadPipecatcallID: boundPCID,
+			expectPersist:             false,
+		},
+		{
+			name:                      "mismatch that agrees on re-read still persists",
+			eventPipecatcallID:        foreignPCID,
+			cachedPipecatcallID:       boundPCID,
+			expectReRead:              true,
+			expectReReadPipecatcallID: foreignPCID,
+			expectPersist:             true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &messageHandler{reqHandler: mockReq, db: mockDB, notifyHandler: mockNotify, utilHandler: mockUtil}
+			ctx := context.Background()
+
+			evt := &pmmessage.Message{
+				ID:                       uuid.FromStringOrNil("1d2e3f4a-5b6c-4d7e-8f90-3a4b5c6d7e8f"),
+				Text:                     "some assistant text",
+				PipecatcallID:            tt.eventPipecatcallID,
+				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+				PipecatcallReferenceID:   aicallID,
+			}
+
+			mockReq.EXPECT().AIV1AIcallGet(ctx, aicallID).Return(&aicall.AIcall{
+				Identity:       identity.Identity{ID: aicallID},
+				AssistanceType: aicall.AssistanceTypeAI,
+				ReferenceType:  aicall.ReferenceTypeContactCase,
+				PipecatcallID:  tt.cachedPipecatcallID,
+			}, nil)
+
+			if tt.expectReRead {
+				mockReq.EXPECT().AIV1AIcallGetSkipCache(ctx, aicallID).Return(&aicall.AIcall{
+					Identity:       identity.Identity{ID: aicallID},
+					AssistanceType: aicall.AssistanceTypeAI,
+					ReferenceType:  aicall.ReferenceTypeContactCase,
+					PipecatcallID:  tt.expectReReadPipecatcallID,
+				}, nil)
+			}
+
+			if tt.expectPersist {
+				mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
+				mockDB.EXPECT().MessageGet(ctx, gomock.Any()).Return(&message.Message{}, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), message.EventTypeMessageCreated, gomock.Any())
+			}
+			// No EXPECT() in the drop case: gomock fails if anything persists.
+
+			h.EventPMMessageBotLLM(ctx, evt)
+		})
+	}
+}

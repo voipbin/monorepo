@@ -266,3 +266,30 @@ func TestCreateWebhookEvent(t *testing.T) {
 func ptrTime(t time.Time) *time.Time {
 	return &t
 }
+
+// Test_ConvertWebhookMessage_Origin pins that Origin reaches the external
+// surface. The frontends render a proactive notification differently from an
+// answer, and they key that entirely off this field
+// (docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.10.1) -- if it
+// were stripped by ConvertWebhookMessage the badge would silently never appear.
+func Test_ConvertWebhookMessage_Origin(t *testing.T) {
+	tests := []struct {
+		name   string
+		origin Origin
+	}{
+		{"proactive survives conversion", OriginProactive},
+		{"listen_internal survives conversion", OriginListenInternal},
+		{"empty origin survives conversion", OriginNone},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Message{Origin: tt.origin}
+
+			res := m.ConvertWebhookMessage()
+			if res.Origin != tt.origin {
+				t.Errorf("Origin mismatch. expected: %q, got: %q", tt.origin, res.Origin)
+			}
+		})
+	}
+}

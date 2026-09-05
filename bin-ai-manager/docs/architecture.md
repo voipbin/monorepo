@@ -52,8 +52,10 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `POST /v1/ais/<uuid>/direct-hash-regenerate` | Regenerate AI secret hash |
 | `GET /v1/aicalls?` | List AI call sessions (paginated) |
 | `GET /v1/aicalls/<uuid>` | Get AI call session |
+| `GET /v1/aicalls/<uuid>?skip_cache=true` | Get AI call session, bypassing the Redis snapshot cache (database-authoritative read) |
 | `POST /v1/aicalls` | Start AI call session |
 | `POST /v1/aicalls/<uuid>/terminate` | Terminate AI call |
+| `POST /v1/aicalls/<uuid>/listen` | Start Insight AI realtime call listening (`ProcessListen`); steps 1-6 run synchronously, steps 7-8 detached. Public path is `POST /service_agents/aicalls/{id}/listen` |
 | `POST /v1/aicalls/<uuid>/tool_execute` | Execute LLM tool (called by pipecat-manager) |
 | `GET /v1/aicalls/<uuid>/participants(\?|$)` | List participants of an AI call (paginated) |
 | `GET /v1/ais/<uuid>/participants(\?|$)` | List AI calls an AI agent participated in (paginated) |
@@ -84,7 +86,7 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 
 ## Event Subscriptions
 
-SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.ai-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 11 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). Since VOIP-1407 this topic-pattern binding is the **sole intake mechanism**:
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.ai-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 12 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). Since VOIP-1407 this topic-pattern binding is the **sole intake mechanism**:
 
 | Pattern | Purpose |
 |---------|---------|
@@ -95,6 +97,7 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 | `pipecat-manager.pipecatcall.*.initialized` / `.terminated` | Pipecat session lifecycle |
 | `pipecat-manager.team.*.member_switched` | AI team member switch |
 | `conference-manager.conference.*.deleted` | Conference terminated — finalizes a conference-type AI summary |
+| `transcribe-manager.transcript.*.created` | Insight AI realtime listen intake. Deliberately the cheapest handler in this service: it fires for **every** final STT result on the platform (flow-driven, summary-driven, customer-started), not only for calls being listened to, so it does one Redis `SMEMBERS` and nothing else — no DB query, no RPC, no LLM. An empty resolver set means "not a session we started" and is the overwhelmingly common outcome |
 
 The `conference-manager.conference.*.deleted` pattern was added by VOIP-1422: `summary.ReferenceTypeConference` is a real, publicly-reachable feature (`AISummaryCreate` → `startReferenceTypeConference`) with no other way to auto-finalize when the conference ends, so leaving this unbound meant conference-type summaries stayed stuck at `StatusProgressing` indefinitely. This is deliberately `conference_deleted`, not `conference_updated`: `conference_updated` is never published with `Status == StatusTerminated` in `bin-conference-manager`. `summaryHandler.EventCMConferenceUpdated` (name unchanged from before this pattern's correction, despite now being reached via `conference_deleted`) deliberately does **not** gate on the conference payload's `Status` field at all — `bin-conference-manager` has two `conference_deleted` publish sites (`Destroy()`, the auto-cleanup path when the last participant leaves, and `Delete()`, the customer-facing `DELETE /conferences/{id}` API) and they disagree on `Status` at publish time (`Terminated` vs `Terminating`, since `Delete()`'s own `ConferenceDelete()` DB call never touches the status column). The event type itself is treated as the terminal signal, matching the pattern already used by `EventCMCallHangup` just above it in the same file.
 

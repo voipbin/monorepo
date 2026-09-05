@@ -166,10 +166,36 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 
 	// Voice / task: keep existing behavior — persist, no delivery.
 	if ac.ReferenceType != aicall.ReferenceTypeConversation {
+		if ac.ReferenceType == aicall.ReferenceTypeContactCase && h.isForeignPipecatcall(ac, evt.PipecatcallID) {
+			// The cached AIcall says this event is foreign -- but AIcallUpdate's
+			// cache refresh discards its own error, so a transient Redis write
+			// failure right after a real Send() leaves a stale PipecatcallID
+			// cached, and dropping on that alone would discard the agent's
+			// genuine answer. Confirm against the database before dropping.
+			fresh, errFresh := h.reqHandler.AIV1AIcallGetSkipCache(ctx, evt.PipecatcallReferenceID)
+			if errFresh != nil {
+				log.Errorf("Could not re-read the aicall to confirm a foreign pipecatcall — dropping. err: %v", errFresh)
+				promForeignPipecatcallDroppedTotal.WithLabelValues("bot_llm").Inc()
+				return
+			}
+
+			if h.isForeignPipecatcall(fresh, evt.PipecatcallID) {
+				log.Infof("Dropping message from a foreign pipecatcall. aicall_id: %s, current_pcc: %s, event_pcc: %s",
+					fresh.ID, fresh.PipecatcallID, evt.PipecatcallID)
+				promForeignPipecatcallDroppedTotal.WithLabelValues("bot_llm").Inc()
+				return
+			}
+
+			// The cache was stale; this is a genuine reply. Fall through and
+			// persist it, using the authoritative row.
+			ac = fresh
+		}
+
 		activeAIID := h.resolveActiveAIIDFromAIcall(ctx, ac)
 		tmp, errCreate := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
 			message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "",
 			WithActiveAIID(activeAIID),
+			WithPipecatcallID(evt.PipecatcallID),
 			WithInReplyToMessageID(evt.InReplyToMessageID))
 		if errCreate != nil {
 			log.Errorf("Could not create the message. err: %v", errCreate)
@@ -271,7 +297,29 @@ func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, e
 		return
 	}
 
-	activeAIID := h.resolveActiveAIID(ctx, evt.PipecatcallReferenceID)
+	// Deliberately NO cache-bypass re-read here, unlike EventPMMessageBotLLM.
+	// This fires once per streamed token chunk; an uncached read per chunk would
+	// be a real hot-path cost. This handler never persists a row -- it only
+	// publishes an intermediate webhook -- so the worst case of a false-positive
+	// drop is one skipped intermediate-token webhook, which no user sees.
+	//
+	// The AIcall is fetched ONCE and reused for both the guard and the
+	// active-AI resolution, rather than calling resolveActiveAIID (which does
+	// its own AIV1AIcallGet) on top of a separate guard fetch.
+	activeAIID := uuid.Nil
+	if h.reqHandler != nil {
+		ac, errGet := h.reqHandler.AIV1AIcallGet(ctx, evt.PipecatcallReferenceID)
+		if errGet != nil {
+			logrus.Warnf("EventPMMessageBotLLMIntermediate: could not get aicall. aicall_id: %s, err: %v", evt.PipecatcallReferenceID, errGet)
+		} else {
+			if ac.ReferenceType == aicall.ReferenceTypeContactCase && h.isForeignPipecatcall(ac, evt.PipecatcallID) {
+				promForeignPipecatcallDroppedTotal.WithLabelValues("bot_llm_intermediate").Inc()
+				return
+			}
+			activeAIID = h.resolveActiveAIIDFromAIcall(ctx, ac)
+		}
+	}
+
 	webhookMsg := &message.IntermediateWebhookMessage{
 		Identity: identity.Identity{
 			ID:         evt.ID,

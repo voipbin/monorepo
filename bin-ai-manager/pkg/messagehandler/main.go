@@ -4,6 +4,7 @@ package messagehandler
 
 import (
 	"context"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
@@ -28,6 +29,7 @@ type createParams struct {
 	deliveryStatus     message.DeliveryStatus
 	activeAIID         uuid.UUID
 	inReplyToMessageID uuid.UUID
+	origin             message.Origin
 }
 
 // WithPipecatcallID sets the pipecatcall ID on createParams.
@@ -49,6 +51,18 @@ func WithActiveAIID(id uuid.UUID) CreateOption {
 // See VOIP-1234 design doc §4-1 for the cross-talk prevention this supports.
 func WithInReplyToMessageID(id uuid.UUID) CreateOption {
 	return func(p *createParams) { p.inReplyToMessageID = id }
+}
+
+// WithOrigin sets the message origin on createParams.
+//
+// message.OriginProactive marks an AI-initiated notification (notify_agent);
+// message.OriginListenInternal marks the mechanical tool-call/tool-result rows a
+// listen evaluation turn writes, which are excluded from every future LLM
+// replay. Omitting the option leaves message.OriginNone, which is what every
+// ordinary message wants. See docs/plans/
+// 2026-09-03-insight-ai-realtime-listen-design.md §5.6.2 and §5.4.5.
+func WithOrigin(o message.Origin) CreateOption {
+	return func(p *createParams) { p.origin = o }
 }
 
 type MessageHandler interface {
@@ -126,4 +140,32 @@ func NewMessageHandler(
 		engineDialogflowHandler: engineDialogflowHandler,
 		participantHandler:      participantHandler,
 	}
+}
+
+// ResolveOriginForTest applies the given options and reports the resulting
+// Origin. createParams is unexported, so a test in another package cannot
+// otherwise observe what an option actually set.
+// USE ONLY FROM TESTS.
+func ResolveOriginForTest(opts ...CreateOption) message.Origin {
+	p := createParams{}
+	for _, opt := range opts {
+		opt(&p)
+	}
+	return p.origin
+}
+
+// isForeignPipecatcall reports whether an inbound pipecat message event came
+// from a pipecatcall session the AIcall does not consider its current
+// conversational turn -- a listen evaluation turn, or a genuinely stale reply.
+// Such an event must not be persisted or delivered.
+//
+// It is applied only for aicall.ReferenceTypeContactCase, and only in the two
+// handlers a listen turn can actually reach. EventPMMessageUserLLM and
+// EventPMMessageUserTranscription are both driven by an STT leg, and a listen
+// turn starts with STTTypeNone, so the condition this checks for structurally
+// cannot occur on those paths.
+//
+// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.4(b).
+func (h *messageHandler) isForeignPipecatcall(ac *aicall.AIcall, evtPipecatcallID uuid.UUID) bool {
+	return ac.PipecatcallID != evtPipecatcallID
 }

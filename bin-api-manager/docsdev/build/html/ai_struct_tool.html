@@ -1433,6 +1433,7 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <section id="insight-tools">
 <span id="ai-struct-tool-insight"></span><h2>Insight Tools<a class="headerlink" href="#insight-tools" title="Link to this heading">¶</a></h2>
 <p>The following tools are exclusive to <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AIs (see <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-type"><span class="std std-ref">Type</span></a>) and are not selectable by <code class="docutils literal notranslate"><span class="pre">type=normal</span></code> AIs. Most are always scoped to the Case the Insight AI session was opened for and accept no argument to target a different Case or contact; <code class="docutils literal notranslate"><span class="pre">get_call_transcript</span></code> is the exception — it takes an explicit <code class="docutils literal notranslate"><span class="pre">call_id</span></code> and is scoped to the caller’s own account (tenant), not to the current Case’s contact/peer (see its own section below). <code class="docutils literal notranslate"><span class="pre">emit_info_card</span></code> is the exception in the other direction — it takes no Case/contact-scoped argument at all; it renders whatever title/description/fields the AI supplies.</p>
+<p>None of these tools has any side effect outside the session’s own message surface. Two of them do write there: <code class="docutils literal notranslate"><span class="pre">emit_info_card</span></code> renders a card into the session’s own stream, and <code class="docutils literal notranslate"><span class="pre">notify_agent</span></code> writes one message into the AI call’s own conversation thread — the same thread the agent is already reading, and the same surface a plain assistant reply already writes to. Neither can place calls, send email or SMS, change CRM records, or spend money. <code class="docutils literal notranslate"><span class="pre">notify_agent</span></code> is additionally usable only while the assistant is monitoring a live call.</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -1469,6 +1470,10 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <tr class="row-even"><td><p>emit_info_card</p></td>
 <td><p>Display a structured info card in the panel</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>notify_agent</p></td>
+<td><p>Push a proactive note to the agent’s panel</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
 </tr>
 </tbody>
 </table>
@@ -1715,6 +1720,40 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <span class="p">}</span>
 </pre></div>
 </div>
+</section>
+<section id="notify-agent">
+<span id="ai-struct-tool-notify-agent"></span><h3>notify_agent<a class="headerlink" href="#notify-agent" title="Link to this heading">¶</a></h3>
+<p>Pushes a short, actionable note to the human agent’s Insight Assistant panel, without the agent having asked anything.</p>
+<p>This is the <strong>one Insight tool that writes</strong>. Its only effect is a message in the AI call’s own conversation thread — the same thread the agent is already reading. It cannot place calls, send email or SMS, change CRM records, or spend money.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">notify_agent</span></code> is usable <strong>only while the assistant is monitoring a live call</strong> (see <a class="reference internal" href="ai_overview.html#ai-overview-insight-listening"><span class="std std-ref">Insight Assistant: live call listening</span></a>). Called during an ordinary question-and-answer turn it is rejected, so the agent still gets the answer they asked for.</p>
+</div>
+<p><strong>When to use:</strong></p>
+<ul class="simple">
+<li><p>You are watching a live call transcript and something just happened that the agent needs to know right now, per your configured instructions</p></li>
+</ul>
+<p><strong>When NOT to use:</strong></p>
+<ul class="simple">
+<li><p>The agent asked you a question — answer normally instead</p></li>
+<li><p>You have nothing new or actionable to say. Saying nothing is the correct and expected outcome for most checks</p></li>
+<li><p>You want to repeat something you already notified about on this call</p></li>
+</ul>
+<p><strong>Parameters:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The note to show the agent. One or two sentences.&quot;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The resulting message is delivered over the same webhook / WebSocket / poll path as any other AI message, and is marked <code class="docutils literal notranslate"><span class="pre">origin:</span> <span class="pre">&quot;proactive&quot;</span></code> (see <a class="reference internal" href="ai_struct_message.html#ai-struct-message-origin"><span class="std std-ref">Origin</span></a>).</p>
 </section>
 </section>
 <section id="run-llm-parameter">
@@ -2000,6 +2039,7 @@ It determines whether the LLM generates a response after tool execution:</p>
 <li><a class="reference internal" href="#get-contact-profile">get_contact_profile</a></li>
 <li><a class="reference internal" href="#get-call-transcript">get_call_transcript</a></li>
 <li><a class="reference internal" href="#emit-info-card">emit_info_card</a></li>
+<li><a class="reference internal" href="#notify-agent">notify_agent</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#run-llm-parameter">run_llm Parameter</a></li>

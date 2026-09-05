@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"sync"
 	"testing"
 
@@ -229,5 +230,281 @@ func TestLoadGlobalConfig(t *testing.T) {
 				t.Errorf("Expected non-nil config from Get()")
 			}
 		})
+	}
+}
+
+// Test_ListenConfigDefaults pins the shipped defaults for the Insight AI
+// realtime-listen flags. The first assertion is the important one: the feature
+// must ship dark. The rest guard against a zero-value default silently
+// disabling the debounce (interval 0 = a turn per transcript segment, the exact
+// unbounded-cost shape the design exists to avoid) or the turn cap.
+func Test_ListenConfigDefaults(t *testing.T) {
+	SetListenDefaultsForTest()
+
+	cfg := Get()
+
+	if cfg.AIcallListenEnabled {
+		t.Errorf("AIcallListenEnabled must default to false -- the feature ships dark")
+	}
+	if cfg.AIcallListenEvaluateIntervalSeconds != 20 {
+		t.Errorf("AIcallListenEvaluateIntervalSeconds mismatch. expected: 20, got: %d", cfg.AIcallListenEvaluateIntervalSeconds)
+	}
+	if cfg.AIcallListenWindowSize != 40 {
+		t.Errorf("AIcallListenWindowSize mismatch. expected: 40, got: %d", cfg.AIcallListenWindowSize)
+	}
+	if cfg.AIcallListenQAContextSize != 10 {
+		t.Errorf("AIcallListenQAContextSize mismatch. expected: 10, got: %d", cfg.AIcallListenQAContextSize)
+	}
+	if cfg.AIcallListenMaxTurnsPerAIcall != 60 {
+		t.Errorf("AIcallListenMaxTurnsPerAIcall mismatch. expected: 60, got: %d", cfg.AIcallListenMaxTurnsPerAIcall)
+	}
+	if cfg.AIcallListenBufferTTLHours != 6 {
+		t.Errorf("AIcallListenBufferTTLHours mismatch. expected: 6, got: %d", cfg.AIcallListenBufferTTLHours)
+	}
+	if cfg.AIcallListenTurnPipecatcallIDTTLSeconds != 180 {
+		t.Errorf("AIcallListenTurnPipecatcallIDTTLSeconds mismatch. expected: 180, got: %d", cfg.AIcallListenTurnPipecatcallIDTTLSeconds)
+	}
+	if cfg.AIcallListenDefaultLanguage != "en-US" {
+		t.Errorf("AIcallListenDefaultLanguage mismatch. expected: %q, got: %q", "en-US", cfg.AIcallListenDefaultLanguage)
+	}
+	if cfg.AIcallListenConfbridgeReadyPollIntervalSeconds != 2 {
+		t.Errorf("AIcallListenConfbridgeReadyPollIntervalSeconds mismatch. expected: 2, got: %d", cfg.AIcallListenConfbridgeReadyPollIntervalSeconds)
+	}
+	if cfg.AIcallListenConfbridgeReadyMaxWaitSeconds != 30 {
+		t.Errorf("AIcallListenConfbridgeReadyMaxWaitSeconds mismatch. expected: 30, got: %d", cfg.AIcallListenConfbridgeReadyMaxWaitSeconds)
+	}
+	if cfg.AIcallListenEnsureGoroutineTimeoutSeconds != 45 {
+		t.Errorf("AIcallListenEnsureGoroutineTimeoutSeconds mismatch. expected: 45, got: %d", cfg.AIcallListenEnsureGoroutineTimeoutSeconds)
+	}
+	if cfg.AIcallListenStartLockTTLSeconds != 60 {
+		t.Errorf("AIcallListenStartLockTTLSeconds mismatch. expected: 60, got: %d", cfg.AIcallListenStartLockTTLSeconds)
+	}
+	if cfg.AIcallListenStartLockReleaseTimeoutSeconds != 3 {
+		t.Errorf("AIcallListenStartLockReleaseTimeoutSeconds mismatch. expected: 3, got: %d", cfg.AIcallListenStartLockReleaseTimeoutSeconds)
+	}
+	// The goroutine timeout must have headroom over the max-wait budget it
+	// encloses -- pinned here as a standing invariant, not just a one-time
+	// default check, since the two are set independently.
+	if cfg.AIcallListenEnsureGoroutineTimeoutSeconds <= cfg.AIcallListenConfbridgeReadyMaxWaitSeconds {
+		t.Errorf("AIcallListenEnsureGoroutineTimeoutSeconds (%d) must be strictly greater than AIcallListenConfbridgeReadyMaxWaitSeconds (%d)", cfg.AIcallListenEnsureGoroutineTimeoutSeconds, cfg.AIcallListenConfbridgeReadyMaxWaitSeconds)
+	}
+	// And the start lock's TTL must in turn exceed that goroutine timeout
+	// (design §5.2.2, review round 15 finding HIGH-1): the lock must never be
+	// able to expire out from under a goroutine that is still working inside
+	// its own legitimate budget, because a second goroutine acquiring it would
+	// reopen exactly the same-AIcall clobbering race the lock exists to close.
+	if cfg.AIcallListenStartLockTTLSeconds <= cfg.AIcallListenEnsureGoroutineTimeoutSeconds {
+		t.Errorf("AIcallListenStartLockTTLSeconds (%d) must be strictly greater than AIcallListenEnsureGoroutineTimeoutSeconds (%d)", cfg.AIcallListenStartLockTTLSeconds, cfg.AIcallListenEnsureGoroutineTimeoutSeconds)
+	}
+	// The release bound is a small, independent timeout on the DETACHED
+	// context the lock's Release call runs under -- it must stay far below the
+	// TTL, and must never be conflated with it.
+	if cfg.AIcallListenStartLockReleaseTimeoutSeconds >= cfg.AIcallListenStartLockTTLSeconds {
+		t.Errorf("AIcallListenStartLockReleaseTimeoutSeconds (%d) must stay well below AIcallListenStartLockTTLSeconds (%d)", cfg.AIcallListenStartLockReleaseTimeoutSeconds, cfg.AIcallListenStartLockTTLSeconds)
+	}
+}
+
+// Test_Validate_ListenTiming is the direct regression test for review round 1's
+// MEDIUM-1.
+//
+// Test_ListenConfigDefaults above asserts the ordering invariant, but only
+// against values it sets itself -- it structurally cannot catch a real
+// environment-variable override that violates it. Validate can, and it runs at
+// startup before anything serves.
+func Test_Validate_ListenTiming(t *testing.T) {
+	tests := []struct {
+		name string
+
+		// mutate applies one misconfiguration on top of the shipped defaults.
+		mutate func()
+
+		expectError bool
+	}{
+		{
+			name:        "the shipped defaults pass",
+			mutate:      func() {},
+			expectError: false,
+		},
+		{
+			name: "a zero confbridge poll interval is rejected",
+			// AICALL_LISTEN_CONFBRIDGE_READY_POLL_INTERVAL_SECONDS=0 turns
+			// waitForConfbridgeReady into a busy-loop.
+			mutate:      func() { globalConfig.AIcallListenConfbridgeReadyPollIntervalSeconds = 0 },
+			expectError: true,
+		},
+		{
+			name: "a zero start-lock release timeout is rejected",
+			// AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS=0 makes every
+			// lock release run on an already-expired context, so every release
+			// silently no-ops and every lock strands for its full TTL.
+			mutate:      func() { globalConfig.AIcallListenStartLockReleaseTimeoutSeconds = 0 },
+			expectError: true,
+		},
+		{
+			name:        "a negative timing value is rejected",
+			mutate:      func() { globalConfig.AIcallListenBufferTTLHours = -1 },
+			expectError: true,
+		},
+		{
+			name:        "a zero evaluate interval is rejected",
+			mutate:      func() { globalConfig.AIcallListenEvaluateIntervalSeconds = 0 },
+			expectError: true,
+		},
+		{
+			name:        "a zero turn-id TTL is rejected",
+			mutate:      func() { globalConfig.AIcallListenTurnPipecatcallIDTTLSeconds = 0 },
+			expectError: true,
+		},
+		{
+			name: "a confbridge wait budget that outlasts the goroutine timeout is rejected",
+			// The poll runs INSIDE the goroutine timeout and needs headroom for
+			// the RPCs each poll makes.
+			mutate:      func() { globalConfig.AIcallListenConfbridgeReadyMaxWaitSeconds = 50 },
+			expectError: true,
+		},
+		{
+			name: "a goroutine timeout that outlasts the lock TTL is rejected",
+			// The lock must outlive the goroutine holding it, or it can expire
+			// under a goroutine still legitimately working.
+			mutate:      func() { globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds = 70 },
+			expectError: true,
+		},
+		{
+			name:        "equal values are rejected -- the ordering is STRICT",
+			mutate:      func() { globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds = 30 },
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetListenDefaultsForTest()
+			defer SetListenDefaultsForTest()
+
+			tt.mutate()
+
+			err := Validate()
+			if tt.expectError && err == nil {
+				t.Fatalf("expected a validation error, got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Fatalf("expected no validation error. err: %v", err)
+			}
+		})
+	}
+}
+
+// Test_Validate_ListenSizing is the direct regression test for review round 2's
+// MEDIUM-4: the three SIZING flags were not validated at all, and two of them
+// silently break a core mechanism at zero.
+func Test_Validate_ListenSizing(t *testing.T) {
+	tests := []struct {
+		name string
+
+		// mutate applies one misconfiguration on top of the shipped defaults.
+		mutate func()
+	}{
+		{
+			// AICALL_LISTEN_WINDOW_SIZE=0 makes the `LTRIM key 0 -1` inside
+			// the window-push Lua script a no-op, so the rolling window grows
+			// unbounded on the transcript-intake hot path for the whole buffer
+			// TTL.
+			name:   "a zero window size is rejected",
+			mutate: func() { globalConfig.AIcallListenWindowSize = 0 },
+		},
+		{
+			// A negative size trims from the wrong end, keeping the OLDEST
+			// lines instead of the newest.
+			name:   "a negative window size is rejected",
+			mutate: func() { globalConfig.AIcallListenWindowSize = -1 },
+		},
+		{
+			// AICALL_LISTEN_MAX_TURNS_PER_AICALL=0 makes the very first turn
+			// exceed the cap, silently disabling listening turns outright.
+			name:   "a zero max-turns cap is rejected",
+			mutate: func() { globalConfig.AIcallListenMaxTurnsPerAIcall = 0 },
+		},
+		{
+			name:   "a negative max-turns cap is rejected",
+			mutate: func() { globalConfig.AIcallListenMaxTurnsPerAIcall = -1 },
+		},
+		{
+			name:   "a zero QA context size is rejected",
+			mutate: func() { globalConfig.AIcallListenQAContextSize = 0 },
+		},
+		{
+			name:   "a negative QA context size is rejected",
+			mutate: func() { globalConfig.AIcallListenQAContextSize = -1 },
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetListenDefaultsForTest()
+			defer SetListenDefaultsForTest()
+
+			tt.mutate()
+
+			if err := Validate(); err == nil {
+				t.Fatalf("expected a validation error, got none")
+			}
+		})
+	}
+}
+
+// Test_Validate_SizingErrorNamesTheOffendingFlag pins that the sizing flags are
+// named in the message the same way the timing flags are -- an operator must be
+// able to read which flag is wrong straight off the startup log.
+func Test_Validate_SizingErrorNamesTheOffendingFlag(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func()
+		expect string
+	}{
+		{"window size", func() { globalConfig.AIcallListenWindowSize = 0 }, "aicall_listen_window_size"},
+		{"qa context size", func() { globalConfig.AIcallListenQAContextSize = 0 }, "aicall_listen_qa_context_size"},
+		{"max turns", func() { globalConfig.AIcallListenMaxTurnsPerAIcall = 0 }, "aicall_listen_max_turns_per_aicall"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetListenDefaultsForTest()
+			defer SetListenDefaultsForTest()
+
+			tt.mutate()
+
+			err := Validate()
+			if err == nil {
+				t.Fatalf("expected a validation error")
+			}
+			if !strings.Contains(err.Error(), tt.expect) {
+				t.Errorf("the error must name %s. got: %v", tt.expect, err)
+			}
+		})
+	}
+}
+
+// Test_Validate_ErrorNamesEveryOffendingValue pins that the failure message is
+// actionable: an operator must be able to read which flag is wrong straight off
+// the startup log, without bisecting their env.
+func Test_Validate_ErrorNamesEveryOffendingValue(t *testing.T) {
+	SetListenDefaultsForTest()
+	defer SetListenDefaultsForTest()
+
+	globalConfig.AIcallListenConfbridgeReadyPollIntervalSeconds = 0
+	globalConfig.AIcallListenStartLockReleaseTimeoutSeconds = 0
+
+	err := Validate()
+	if err == nil {
+		t.Fatalf("expected a validation error")
+	}
+
+	for _, want := range []string{
+		"aicall_listen_confbridge_ready_poll_interval_seconds",
+		"aicall_listen_start_lock_release_timeout_seconds",
+	} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("the error must name %s. got: %v", want, err)
+		}
 	}
 }

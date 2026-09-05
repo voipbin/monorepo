@@ -50,4 +50,5 @@ const (
 	FunctionCallNameGetContactProfile      FunctionCallName = "get_contact_profile"
 	FunctionCallNameGetCallTranscript      FunctionCallName = "get_call_transcript"
 	FunctionCallNameEmitInfoCard           FunctionCallName = "emit_info_card"
+	FunctionCallNameNotifyAgent            FunctionCallName = "notify_agent"
 )

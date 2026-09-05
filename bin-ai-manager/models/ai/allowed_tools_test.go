@@ -86,10 +86,21 @@ func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 		tool.ToolNameEmitInfoCard:           true,
 	}
 
+	// Sanctioned write exceptions -- a SEPARATE map, deliberately, so this test
+	// keeps failing loudly for any other write tool added to
+	// AllInsightToolNames. Adding a name here requires the same explicit
+	// design-level justification notify_agent got (docs/plans/
+	// 2026-09-03-insight-ai-realtime-listen-design.md §5.5.2): its only effect
+	// must be on the AIcall's own conversation thread -- no external action, no
+	// customer-data mutation, no spend.
+	knownSanctionedWrite := map[tool.ToolName]bool{
+		tool.ToolNameNotifyAgent: true,
+	}
+
 	for _, n := range tool.AllInsightToolNames {
-		if !knownReadOnly[n] {
-			t.Errorf("tool.AllInsightToolNames contains %q, which is not in this test's known-read-only allowlist -- "+
-				"verify it has no side effects outside the session's own message/expression surface, then add it to knownReadOnly in this test", n)
+		if !knownReadOnly[n] && !knownSanctionedWrite[n] {
+			t.Errorf("tool.AllInsightToolNames contains %q, which is in neither this test's known-read-only allowlist nor its sanctioned-write allowlist -- "+
+				"verify it has no side effects outside the session's own message/expression surface, then add it to the right map", n)
 		}
 	}
 }

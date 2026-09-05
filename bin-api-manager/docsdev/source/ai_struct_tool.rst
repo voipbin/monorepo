@@ -835,6 +835,8 @@ Insight Tools
 
 The following tools are exclusive to ``type=insight`` AIs (see :ref:`Type <ai-struct-ai-type>`) and are not selectable by ``type=normal`` AIs. Most are always scoped to the Case the Insight AI session was opened for and accept no argument to target a different Case or contact; ``get_call_transcript`` is the exception — it takes an explicit ``call_id`` and is scoped to the caller's own account (tenant), not to the current Case's contact/peer (see its own section below). ``emit_info_card`` is the exception in the other direction — it takes no Case/contact-scoped argument at all; it renders whatever title/description/fields the AI supplies.
 
+None of these tools has any side effect outside the session's own message surface. Two of them do write there: ``emit_info_card`` renders a card into the session's own stream, and ``notify_agent`` writes one message into the AI call's own conversation thread — the same thread the agent is already reading, and the same surface a plain assistant reply already writes to. Neither can place calls, send email or SMS, change CRM records, or spend money. ``notify_agent`` is additionally usable only while the assistant is monitoring a live call.
+
 ========================== ================================================= ===============
 Tool Name                  Description                                       run_llm Default
 ========================== ================================================= ===============
@@ -844,7 +846,8 @@ get_related_cases          List the contact's other cases                     ``
 get_case_notes             Retrieve internal agent notes on the current Case  ``true``
 get_contact_profile        Retrieve the Case contact's profile and addresses  ``true``
 get_call_transcript        Retrieve a call's merged live-transcription text   ``true``
-emit_info_card              Display a structured info card in the panel        ``true``
+emit_info_card             Display a structured info card in the panel        ``true``
+notify_agent               Push a proactive note to the agent's panel         ``false``
 ========================== ================================================= ===============
 
 .. _ai-struct-tool-get_contact_interactions:
@@ -1122,6 +1125,47 @@ Displays a structured "info card" (title, optional description, and up to 20 key
         },
         "required": ["title"]
     }
+
+
+.. _ai-struct-tool-notify_agent:
+
+notify_agent
+~~~~~~~~~~~~~
+
+Pushes a short, actionable note to the human agent's Insight Assistant panel, without the agent having asked anything.
+
+This is the **one Insight tool that writes**. Its only effect is a message in the AI call's own conversation thread — the same thread the agent is already reading. It cannot place calls, send email or SMS, change CRM records, or spend money.
+
+.. note:: **AI Implementation Hint**
+
+   ``notify_agent`` is usable **only while the assistant is monitoring a live call** (see :ref:`Insight Assistant: live call listening <ai-overview-insight-listening>`). Called during an ordinary question-and-answer turn it is rejected, so the agent still gets the answer they asked for.
+
+**When to use:**
+
+* You are watching a live call transcript and something just happened that the agent needs to know right now, per your configured instructions
+
+**When NOT to use:**
+
+* The agent asked you a question — answer normally instead
+* You have nothing new or actionable to say. Saying nothing is the correct and expected outcome for most checks
+* You want to repeat something you already notified about on this call
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "message": {
+                "type": "string",
+                "description": "The note to show the agent. One or two sentences."
+            }
+        },
+        "required": ["message"]
+    }
+
+The resulting message is delivered over the same webhook / WebSocket / poll path as any other AI message, and is marked ``origin: "proactive"`` (see :ref:`Origin <ai-struct-message-origin>`).
 
 
 run_llm Parameter

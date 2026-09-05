@@ -17,6 +17,7 @@ import (
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -146,6 +147,209 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
+}
+
+// ListenAIcallIDAdd mocks base method.
+func (m *MockCacheHandler) ListenAIcallIDAdd(ctx context.Context, transcribeID, aicallID uuid.UUID, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenAIcallIDAdd", ctx, transcribeID, aicallID, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenAIcallIDAdd indicates an expected call of ListenAIcallIDAdd.
+func (mr *MockCacheHandlerMockRecorder) ListenAIcallIDAdd(ctx, transcribeID, aicallID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenAIcallIDAdd", reflect.TypeOf((*MockCacheHandler)(nil).ListenAIcallIDAdd), ctx, transcribeID, aicallID, ttl)
+}
+
+// ListenAIcallIDRemove mocks base method.
+func (m *MockCacheHandler) ListenAIcallIDRemove(ctx context.Context, transcribeID, aicallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenAIcallIDRemove", ctx, transcribeID, aicallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenAIcallIDRemove indicates an expected call of ListenAIcallIDRemove.
+func (mr *MockCacheHandlerMockRecorder) ListenAIcallIDRemove(ctx, transcribeID, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenAIcallIDRemove", reflect.TypeOf((*MockCacheHandler)(nil).ListenAIcallIDRemove), ctx, transcribeID, aicallID)
+}
+
+// ListenAIcallIDsGet mocks base method.
+func (m *MockCacheHandler) ListenAIcallIDsGet(ctx context.Context, transcribeID uuid.UUID) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenAIcallIDsGet", ctx, transcribeID)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenAIcallIDsGet indicates an expected call of ListenAIcallIDsGet.
+func (mr *MockCacheHandlerMockRecorder) ListenAIcallIDsGet(ctx, transcribeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenAIcallIDsGet", reflect.TypeOf((*MockCacheHandler)(nil).ListenAIcallIDsGet), ctx, transcribeID)
+}
+
+// ListenPendingPopAll mocks base method.
+func (m *MockCacheHandler) ListenPendingPopAll(ctx context.Context, aicallID uuid.UUID) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenPendingPopAll", ctx, aicallID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenPendingPopAll indicates an expected call of ListenPendingPopAll.
+func (mr *MockCacheHandlerMockRecorder) ListenPendingPopAll(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenPendingPopAll", reflect.TypeOf((*MockCacheHandler)(nil).ListenPendingPopAll), ctx, aicallID)
+}
+
+// ListenPendingPush mocks base method.
+func (m *MockCacheHandler) ListenPendingPush(ctx context.Context, aicallID uuid.UUID, line string, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenPendingPush", ctx, aicallID, line, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenPendingPush indicates an expected call of ListenPendingPush.
+func (mr *MockCacheHandlerMockRecorder) ListenPendingPush(ctx, aicallID, line, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenPendingPush", reflect.TypeOf((*MockCacheHandler)(nil).ListenPendingPush), ctx, aicallID, line, ttl)
+}
+
+// ListenStartLockAcquire mocks base method.
+func (m *MockCacheHandler) ListenStartLockAcquire(ctx context.Context, aicallID uuid.UUID, token string, ttl time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenStartLockAcquire", ctx, aicallID, token, ttl)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenStartLockAcquire indicates an expected call of ListenStartLockAcquire.
+func (mr *MockCacheHandlerMockRecorder) ListenStartLockAcquire(ctx, aicallID, token, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenStartLockAcquire", reflect.TypeOf((*MockCacheHandler)(nil).ListenStartLockAcquire), ctx, aicallID, token, ttl)
+}
+
+// ListenStartLockRelease mocks base method.
+func (m *MockCacheHandler) ListenStartLockRelease(ctx context.Context, aicallID uuid.UUID, token string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenStartLockRelease", ctx, aicallID, token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenStartLockRelease indicates an expected call of ListenStartLockRelease.
+func (mr *MockCacheHandlerMockRecorder) ListenStartLockRelease(ctx, aicallID, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenStartLockRelease", reflect.TypeOf((*MockCacheHandler)(nil).ListenStartLockRelease), ctx, aicallID, token)
+}
+
+// ListenStateClear mocks base method.
+func (m *MockCacheHandler) ListenStateClear(ctx context.Context, aicallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenStateClear", ctx, aicallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenStateClear indicates an expected call of ListenStateClear.
+func (mr *MockCacheHandlerMockRecorder) ListenStateClear(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenStateClear", reflect.TypeOf((*MockCacheHandler)(nil).ListenStateClear), ctx, aicallID)
+}
+
+// ListenTurnCountIncr mocks base method.
+func (m *MockCacheHandler) ListenTurnCountIncr(ctx context.Context, aicallID uuid.UUID, ttl time.Duration) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenTurnCountIncr", ctx, aicallID, ttl)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenTurnCountIncr indicates an expected call of ListenTurnCountIncr.
+func (mr *MockCacheHandlerMockRecorder) ListenTurnCountIncr(ctx, aicallID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenTurnCountIncr", reflect.TypeOf((*MockCacheHandler)(nil).ListenTurnCountIncr), ctx, aicallID, ttl)
+}
+
+// ListenTurnPipecatcallIDAdd mocks base method.
+func (m *MockCacheHandler) ListenTurnPipecatcallIDAdd(ctx context.Context, aicallID, pipecatcallID uuid.UUID, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenTurnPipecatcallIDAdd", ctx, aicallID, pipecatcallID, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenTurnPipecatcallIDAdd indicates an expected call of ListenTurnPipecatcallIDAdd.
+func (mr *MockCacheHandlerMockRecorder) ListenTurnPipecatcallIDAdd(ctx, aicallID, pipecatcallID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenTurnPipecatcallIDAdd", reflect.TypeOf((*MockCacheHandler)(nil).ListenTurnPipecatcallIDAdd), ctx, aicallID, pipecatcallID, ttl)
+}
+
+// ListenTurnPipecatcallIDIsMember mocks base method.
+func (m *MockCacheHandler) ListenTurnPipecatcallIDIsMember(ctx context.Context, aicallID, pipecatcallID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenTurnPipecatcallIDIsMember", ctx, aicallID, pipecatcallID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenTurnPipecatcallIDIsMember indicates an expected call of ListenTurnPipecatcallIDIsMember.
+func (mr *MockCacheHandlerMockRecorder) ListenTurnPipecatcallIDIsMember(ctx, aicallID, pipecatcallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenTurnPipecatcallIDIsMember", reflect.TypeOf((*MockCacheHandler)(nil).ListenTurnPipecatcallIDIsMember), ctx, aicallID, pipecatcallID)
+}
+
+// ListenTurnTryLock mocks base method.
+func (m *MockCacheHandler) ListenTurnTryLock(ctx context.Context, aicallID uuid.UUID, ttl time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenTurnTryLock", ctx, aicallID, ttl)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenTurnTryLock indicates an expected call of ListenTurnTryLock.
+func (mr *MockCacheHandlerMockRecorder) ListenTurnTryLock(ctx, aicallID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenTurnTryLock", reflect.TypeOf((*MockCacheHandler)(nil).ListenTurnTryLock), ctx, aicallID, ttl)
+}
+
+// ListenWindowGet mocks base method.
+func (m *MockCacheHandler) ListenWindowGet(ctx context.Context, aicallID uuid.UUID) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenWindowGet", ctx, aicallID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenWindowGet indicates an expected call of ListenWindowGet.
+func (mr *MockCacheHandlerMockRecorder) ListenWindowGet(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenWindowGet", reflect.TypeOf((*MockCacheHandler)(nil).ListenWindowGet), ctx, aicallID)
+}
+
+// ListenWindowPush mocks base method.
+func (m *MockCacheHandler) ListenWindowPush(ctx context.Context, aicallID uuid.UUID, line string, windowSize int, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenWindowPush", ctx, aicallID, line, windowSize, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenWindowPush indicates an expected call of ListenWindowPush.
+func (mr *MockCacheHandlerMockRecorder) ListenWindowPush(ctx, aicallID, line, windowSize, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenWindowPush", reflect.TypeOf((*MockCacheHandler)(nil).ListenWindowPush), ctx, aicallID, line, windowSize, ttl)
 }
 
 // MessageGet mocks base method.

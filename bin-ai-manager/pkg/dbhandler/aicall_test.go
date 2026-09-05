@@ -686,3 +686,153 @@ func Test_AIcallList(t *testing.T) {
 		})
 	}
 }
+
+// Test_AIcallUpdateNoTouchTMUpdate pins that this variant leaves tm_update
+// alone, unlike AIcallUpdate which always bumps it.
+//
+// This is not a micro-optimisation. Send()'s cooldown reads tm_update to decide
+// whether to reject a message. Listening stops on call hangup -- exactly when an
+// agent is most likely to ask the Insight AI a follow-up question -- so a
+// tm_update bump from listen's own stop-time bookkeeping would reject a genuine
+// question the agent just typed, for no reason the agent could understand.
+func Test_AIcallUpdateNoTouchTMUpdate(t *testing.T) {
+
+	createTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+	updateTime := func() *time.Time { t := time.Date(2024, 6, 7, 11, 12, 13, 140000000, time.UTC); return &t }()
+
+	tests := []struct {
+		name string
+		ai   *aicall.AIcall
+
+		id     uuid.UUID
+		fields map[aicall.Field]any
+
+		expectListenCallID uuid.UUID
+	}{
+		{
+			name: "listen_call_id is written and tm_update is left untouched",
+			ai: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("6f9a6d10-8a12-11f0-9e3a-8f2b1c4d5e60"),
+				},
+				ReferenceID: uuid.FromStringOrNil("6f9a6d10-8a12-11f0-9e3a-8f2b1c4d5e60"),
+			},
+
+			id: uuid.FromStringOrNil("6f9a6d10-8a12-11f0-9e3a-8f2b1c4d5e60"),
+			fields: map[aicall.Field]any{
+				aicall.FieldListenCallID: uuid.FromStringOrNil("70f01b34-8a12-11f0-a4c2-b30d9e2f61a7"),
+			},
+
+			expectListenCallID: uuid.FromStringOrNil("70f01b34-8a12-11f0-a4c2-b30d9e2f61a7"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().TimeNow().Return(createTime)
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			if err := h.AIcallCreate(ctx, tt.ai); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			// Bump tm_update once through the ordinary path, so the assertion
+			// below distinguishes "never set" from "not touched by this call".
+			mockUtil.EXPECT().TimeNow().Return(updateTime)
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			if err := h.AIcallUpdate(ctx, tt.id, map[aicall.Field]any{
+				aicall.FieldStatus: aicall.StatusProgressing,
+			}); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			before, err := h.AIcallGet(ctx, tt.id)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			// NO mockUtil.EXPECT().TimeNow() here on purpose: gomock fails the
+			// test if AIcallUpdateNoTouchTMUpdate reaches for the clock at all,
+			// which is the most direct possible assertion that it does not set
+			// tm_update.
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			if err := h.AIcallUpdateNoTouchTMUpdate(ctx, tt.id, tt.fields); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			mockCache.EXPECT().AIcallGet(ctx, tt.id).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+			after, err := h.AIcallGet(ctx, tt.id)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if after.ListenCallID != tt.expectListenCallID {
+				t.Errorf("ListenCallID mismatch. expected: %s, got: %s", tt.expectListenCallID, after.ListenCallID)
+			}
+			if !reflect.DeepEqual(before.TMUpdate, after.TMUpdate) {
+				t.Errorf("tm_update must be untouched. before: %v, after: %v", before.TMUpdate, after.TMUpdate)
+			}
+		})
+	}
+}
+
+// Test_AIcallGetSkipCache pins that this variant never reads the cache, and
+// still refreshes it with what it read -- a caller reaching for this has just
+// established the cached copy was suspect, so leaving the stale copy in place
+// would make the next ordinary AIcallGet wrong again.
+func Test_AIcallGetSkipCache(t *testing.T) {
+
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
+	id := uuid.FromStringOrNil("9c4b3a58-8a13-11f0-8f52-cf3a4e5b6d71")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+
+	ctx := context.Background()
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+	if err := h.AIcallCreate(ctx, &aicall.AIcall{
+		Identity:    identity.Identity{ID: id},
+		ReferenceID: id,
+	}); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	// NO mockCache.EXPECT().AIcallGet here on purpose: gomock fails the test if
+	// the cache is consulted at all. Only the write-back is expected.
+	mockCache.EXPECT().AIcallSet(ctx, gomock.Any())
+	res, err := h.AIcallGetSkipCache(ctx, id)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.ID != id {
+		t.Errorf("id mismatch. expected: %s, got: %s", id, res.ID)
+	}
+}

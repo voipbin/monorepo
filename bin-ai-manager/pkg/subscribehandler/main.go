@@ -12,6 +12,7 @@ import (
 	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"monorepo/bin-common-handler/models/eventtopic"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -44,7 +45,9 @@ const (
 // StatusProgressing forever. This is `conference_deleted`, not `conference_updated`,
 // deliberately: `conference_updated` is never published with Status == StatusTerminated
 // in bin-conference-manager, so it would have been a permanent no-op against a
-// status-gated handler. `conference_deleted` isn't Status-gated either way though --
+// status-gated handler. The final pair, transcribe-manager's
+// `transcript.*.created`, was added by the Insight AI realtime-listen work.
+// `conference_deleted` isn't Status-gated either way though --
 // see summaryhandler.EventCMConferenceUpdated's doc comment for why the payload's
 // Status field is never trusted (bin-conference-manager has two conference_deleted
 // publish sites and they disagree on Status at publish time). Pinned by the binding
@@ -61,6 +64,14 @@ var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmpipecatcall.EventTypePipecatcallTerminated),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmmessage.EventTypeTeamMemberSwitched),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameConferenceManager), cfconference.EventTypeConferenceDeleted),
+
+	// Insight AI realtime call listening (docs/plans/
+	// 2026-09-03-insight-ai-realtime-listen-design.md §5.3.1). A static wildcard
+	// rather than a dynamic per-transcribe binding: the wildcard's cost is one
+	// AMQP delivery, one goroutine, one JSON unmarshal and one Redis SMEMBERS
+	// per final STT result platform-wide, with no DB query and no RPC, whereas a
+	// bind/unbind lifecycle's failure mode is a permanently leaked binding.
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameTranscribeManager), tmtranscript.EventTypeTranscriptCreated),
 }
 
 // SubscribeHandler intreface for subscribed event listen handler
@@ -213,6 +224,10 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmmessage.EventTypeTeamMemberSwitched):
 		err = h.processEventPMTeamMemberSwitched(ctx, m)
+
+	// transcribe-manager
+	case m.Publisher == publisherTranscribeManager && m.Type == tmtranscript.EventTypeTranscriptCreated:
+		err = h.processEventTMTranscriptCreated(ctx, m)
 
 	default:
 		// ignore the event.

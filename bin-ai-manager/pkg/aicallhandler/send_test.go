@@ -117,7 +117,8 @@ func Test_Send(t *testing.T) {
 				m.db.EXPECT().AIcallGet(ctx, id).Return(updated, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					updated.PipecatcallID,
@@ -242,7 +243,8 @@ func Test_Send(t *testing.T) {
 				m.db.EXPECT().AIcallGet(ctx, id).Return(updated, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					updated.PipecatcallID,
@@ -311,12 +313,12 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 		messageText string
 
 		responseUUIDPipecatcallID uuid.UUID
-		responseUpdatedAIcall    *aicall.AIcall
-		responseTeam             *team.Team
-		responseTeamErr          error
-		responseAI               *ai.AI
-		responseMessages         []*message.Message
-		responsePipecatcall      *pmpipecatcall.Pipecatcall
+		responseUpdatedAIcall     *aicall.AIcall
+		responseTeam              *team.Team
+		responseTeamErr           error
+		responseAI                *ai.AI
+		responseMessages          []*message.Message
+		responsePipecatcall       *pmpipecatcall.Pipecatcall
 		// for fallback case: UpdateCurrentMemberID response
 		responseFallbackAIcall *aicall.AIcall
 
@@ -325,11 +327,11 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 		// PipecatV1PipecatcallGet on the previous PipecatcallID. The Get response
 		// is responseInterruptPipecatcall (HostID drives ping/terminate).
 		// expectInterruptPing/Terminate gate the subsequent calls.
-		expectInterruptGet         bool
-		expectInterruptPing        bool
-		expectInterruptTerminate   bool
+		expectInterruptGet           bool
+		expectInterruptPing          bool
+		expectInterruptTerminate     bool
 		responseInterruptPipecatcall *pmpipecatcall.Pipecatcall
-		responseInterruptPingErr   error
+		responseInterruptPingErr     error
 
 		expectTeamGet              bool
 		expectAIGet                bool
@@ -731,9 +733,9 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 
 			// AIcallUpdate fails inside UpdatePipecatcallID — no AIcallGet,
 			// no team resolve, no startPipecatcall, no terminate-with-delay.
-			updatePipecatcallIDErr: fmt.Errorf("update failed"),
-			expectTeamGet:          false,
-			expectAIGet:            false,
+			updatePipecatcallIDErr:    fmt.Errorf("update failed"),
+			expectTeamGet:             false,
+			expectAIGet:               false,
 			expectUpdateCurrentMember: false,
 			// expectRes is the message returned by messageHandler.Create — that
 			// runs and succeeds; the test asserts the returned error wrap and
@@ -888,7 +890,8 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 				}
 
 				// 6. startPipecatcall: messageHandler.List for getPipecatcallMessages
-				mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+				mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.responseUpdatedAIcall.ID)).Return([]*message.Message{}, nil)
+				mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.responseUpdatedAIcall.ID)).Return(tt.responseMessages, nil)
 
 				// 7. PipecatV1PipecatcallStart with the expected LLM type
 				mockReq.EXPECT().PipecatV1PipecatcallStart(
@@ -952,11 +955,11 @@ func Test_SendReferenceTypeCall(t *testing.T) {
 
 		pingErr error
 
-		expectPingHostID    string
-		expectMessageSend   bool
-		expectErr           bool
-		expectErrSubstring  string
-		expectRes           *message.Message
+		expectPingHostID   string
+		expectMessageSend  bool
+		expectErr          bool
+		expectErrSubstring string
+		expectRes          *message.Message
 	}{
 		{
 			name: "alive pod sends message",

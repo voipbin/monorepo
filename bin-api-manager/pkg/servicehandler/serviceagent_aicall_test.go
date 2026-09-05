@@ -566,3 +566,96 @@ func Test_ServiceAgentAIcallCreate_TenantIsolation(t *testing.T) {
 		t.Errorf("Wrong match. expect: err, got: ok")
 	}
 }
+
+// Test_ServiceAgentAIcallListen covers the endpoint's authorization contract
+// (design §7 item 2).
+//
+// The permission row is the important one and is the direct regression test for
+// design review round 13's BLOCKING-1: this endpoint MUST gate on the AGENT
+// tier (amagent.PermissionAll), not the admin/manager bitmask the top-level
+// AIcallTerminate uses. At the admin tier an ordinary agent in square-talk
+// would get ErrPermissionDenied and listening would never start in the
+// feature's actual primary use case.
+func Test_ServiceAgentAIcallListen(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("2b7c1d90-8f3a-11f0-9c5e-3f1a2b3c4d5e")
+	customerID := uuid.FromStringOrNil("2b7c1d90-8f3a-11f0-9c5e-3f1a2b3c4d5f")
+
+	t.Run("non-agent identity is refused with zero RPC calls", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &serviceHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), gomock.Any()).Times(0)
+		mockReq.EXPECT().AIV1AIcallListen(gomock.Any(), gomock.Any()).Times(0)
+
+		// A nil-agent identity is not an agent.
+		_, err := h.ServiceAgentAIcallListen(ctx, &auth.AuthIdentity{}, aicallID)
+		if !errors.Is(err, serviceerrors.ErrAuthenticationRequired) {
+			t.Errorf("expected ErrAuthenticationRequired. got: %v", err)
+		}
+	})
+
+	t.Run("cross-customer aicall is rejected before AIV1AIcallListen is called", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockDB := dbhandler.NewMockDBHandler(mc)
+		h := &serviceHandler{reqHandler: mockReq, dbHandler: mockDB}
+		ctx := context.Background()
+
+		agent := auth.NewAgentIdentity(&amagent.Agent{
+			Identity:   commonidentity.Identity{ID: uuid.Must(uuid.NewV4()), CustomerID: customerID},
+			Permission: amagent.PermissionCustomerAgent,
+		})
+
+		// Fetched, but owned by somebody else.
+		mockReq.EXPECT().AIV1AIcallGet(ctx, aicallID).Return(&amaicall.AIcall{
+			Identity: commonidentity.Identity{
+				ID:         aicallID,
+				CustomerID: uuid.FromStringOrNil("2b7c1d90-8f3a-11f0-9c5e-3f1a2b3c4d60"),
+			},
+		}, nil)
+		mockReq.EXPECT().AIV1AIcallListen(gomock.Any(), gomock.Any()).Times(0)
+
+		_, err := h.ServiceAgentAIcallListen(ctx, agent, aicallID)
+		if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
+			t.Errorf("expected ErrPermissionDenied. got: %v", err)
+		}
+	})
+
+	t.Run("an ordinary agent on its own aicall reaches AIV1AIcallListen", func(t *testing.T) {
+		// PermissionCustomerAgent is the ordinary agent tier. If this method
+		// ever gated on the admin/manager bitmask instead, this row would fail
+		// with ErrPermissionDenied -- which is exactly BLOCKING-1.
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockDB := dbhandler.NewMockDBHandler(mc)
+		h := &serviceHandler{reqHandler: mockReq, dbHandler: mockDB}
+		ctx := context.Background()
+
+		agent := auth.NewAgentIdentity(&amagent.Agent{
+			Identity:   commonidentity.Identity{ID: uuid.Must(uuid.NewV4()), CustomerID: customerID},
+			Permission: amagent.PermissionCustomerAgent,
+		})
+
+		owned := &amaicall.AIcall{
+			Identity: commonidentity.Identity{ID: aicallID, CustomerID: customerID},
+		}
+		mockReq.EXPECT().AIV1AIcallGet(ctx, aicallID).Return(owned, nil)
+		mockReq.EXPECT().AIV1AIcallListen(ctx, aicallID).Return(owned, nil).Times(1)
+
+		res, err := h.ServiceAgentAIcallListen(ctx, agent, aicallID)
+		if err != nil {
+			t.Fatalf("unexpected error. err: %v", err)
+		}
+		if res == nil || res.ID != aicallID {
+			t.Errorf("expected the aicall webhook message back. got: %v", res)
+		}
+	})
+}

@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	cmcall "monorepo/bin-call-manager/models/call"
 	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -104,6 +105,42 @@ func Test_EventCMDTMFReceived(t *testing.T) {
 			h.EventCMDTMFReceived(ctx, tt.evt)
 		})
 	}
+}
+
+// Test_EventCMCallHangup_TerminateFailureIsLoggedNotFatal pins review round 2's
+// LOW-2 and the contract around it.
+//
+// The ProcessTerminate call on this path is deliberately NON-BLOCKING -- the
+// listening-AIcall sweep below it must run whether or not the terminate
+// succeeded, because the call is gone either way. What changed is only that the
+// error is no longer discarded silently; the sweep still runs, which is what
+// this test actually asserts (a log line is not observable from here, but a
+// swallowed-and-then-returned error would be).
+func Test_EventCMCallHangup_TerminateFailureIsLoggedNotFatal(t *testing.T) {
+	callID := uuid.FromStringOrNil("2b1a7f1c-0000-4000-8000-000000000001")
+	aicallID := uuid.FromStringOrNil("2b1a7f1c-0000-4000-8000-000000000002")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &aicallHandler{db: mockDB}
+	ctx := context.Background()
+
+	// The AIcall whose reference IS this call is found...
+	mockDB.EXPECT().AIcallGetByReferenceID(ctx, callID).Return(&aicall.AIcall{
+		Identity: commonidentity.Identity{ID: aicallID},
+		Status:   aicall.StatusProgressing,
+	}, nil)
+	// ...but ProcessTerminate's own read fails, so the terminate errors out.
+	mockDB.EXPECT().AIcallGet(ctx, aicallID).Return(nil, dbhandler.ErrNotFound)
+
+	// THE SWEEP STILL RUNS. This is the property the non-blocking discard was
+	// protecting and that adding the log must not change.
+	mockDB.EXPECT().AIcallList(ctx, uint64(listenStopPageSize), "", gomock.Any()).
+		Return([]*aicall.AIcall{}, nil).Times(1)
+
+	h.EventCMCallHangup(ctx, &cmcall.Call{Identity: commonidentity.Identity{ID: callID}})
 }
 
 func Test_EventPMPipecatcallInitialized(t *testing.T) {

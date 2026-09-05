@@ -82,7 +82,7 @@ func Test_ToolHandle_unknownToolNameRecordsFailureResult(t *testing.T) {
 		return &message.Message{}, nil
 	})
 
-	res, err := h.ToolHandle(ctx, aicallID, toolCallID, message.ToolTypeFunction, function)
+	res, err := h.ToolHandle(ctx, aicallID, toolCallID, message.ToolTypeFunction, function, uuid.Nil)
 
 	if err == nil {
 		t.Fatalf("expected an error for an unknown tool name, got nil")

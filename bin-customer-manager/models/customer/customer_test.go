@@ -109,3 +109,27 @@ func TestSpecialIDConstants(t *testing.T) {
 		})
 	}
 }
+
+// TestIDAIManagerListenIsDistinctAndWellFormed pins the two properties the
+// InsightAI realtime-listen design (docs/plans/
+// 2026-09-03-insight-ai-realtime-listen-design.md §5.2.1) depends on:
+//
+//  1. IDAIManagerListen parses to a real, non-nil UUID. Several older sentinels
+//     in this file (IDEmpty, IDCallManager, IDAIManager) have malformed literals
+//     -- their last group has 11 hex digits instead of 12 -- so FromStringOrNil
+//     silently yields uuid.Nil for them. A malformed IDAIManagerListen would
+//     collapse onto IDAIManager and break property 2.
+//  2. IDAIManagerListen != IDAIManager. bin-transcribe-manager's startLive
+//     duplicate guard is scoped by (customer_id, reference_id, language,
+//     status, deleted). Insight listening and AI summary must own SEPARATE
+//     transcribe sessions on the same call; equal owner ids would make them
+//     collide and share one session's lifecycle.
+func TestIDAIManagerListenIsDistinctAndWellFormed(t *testing.T) {
+	if IDAIManagerListen == uuid.Nil {
+		t.Errorf("IDAIManagerListen parsed to uuid.Nil -- the literal is malformed (a UUID's last group needs exactly 12 hex digits)")
+	}
+
+	if IDAIManagerListen == IDAIManager {
+		t.Errorf("IDAIManagerListen must differ from IDAIManager. got both: %s", IDAIManagerListen)
+	}
+}

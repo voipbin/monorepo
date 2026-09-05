@@ -352,3 +352,55 @@ func Test_GetQuerySelectField(t *testing.T) {
 		})
 	}
 }
+
+// Test_ApplyFields_NotEq pins the NotEq wrapper introduced by docs/plans/
+// 2026-09-03-insight-ai-realtime-listen-design.md §5.4.5 step 3. It renders a
+// "<>" comparison instead of ApplyFields' default "=", without needing a
+// hardcoded field-name special case the way "deleted" has.
+func Test_ApplyFields_NotEq(t *testing.T) {
+	tests := []struct {
+		name        string
+		fields      map[string]any
+		expectQuery string
+		expectArgs  []any
+	}{
+		{
+			name:        "string NotEq renders a not-equal clause",
+			fields:      map[string]any{"origin": NotEq{Value: "listen_internal"}},
+			expectQuery: "SELECT id FROM t WHERE origin <> ?",
+			expectArgs:  []any{"listen_internal"},
+		},
+		{
+			name:        "plain string still renders an equal clause",
+			fields:      map[string]any{"origin": "proactive"},
+			expectQuery: "SELECT id FROM t WHERE origin = ?",
+			expectArgs:  []any{"proactive"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder, err := ApplyFields(squirrel.Select("id").From("t"), tt.fields)
+			if err != nil {
+				t.Fatalf("ApplyFields returned an unexpected error. err: %v", err)
+			}
+
+			query, args, err := builder.ToSql()
+			if err != nil {
+				t.Fatalf("ToSql returned an unexpected error. err: %v", err)
+			}
+
+			if query != tt.expectQuery {
+				t.Errorf("query mismatch.\nexpected: %s\ngot:      %s", tt.expectQuery, query)
+			}
+			if len(args) != len(tt.expectArgs) {
+				t.Fatalf("args count mismatch. expected: %d, got: %d (%v)", len(tt.expectArgs), len(args), args)
+			}
+			for i := range args {
+				if args[i] != tt.expectArgs[i] {
+					t.Errorf("args[%d] mismatch. expected: %v, got: %v", i, tt.expectArgs[i], args[i])
+				}
+			}
+		})
+	}
+}

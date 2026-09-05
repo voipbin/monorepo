@@ -11,7 +11,9 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	kmkase "monorepo/bin-contact-manager/models/kase"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -20,6 +22,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
@@ -31,13 +34,16 @@ import (
 type AIcallHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	GetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
 	List(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error)
 
 	ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 	ProcessTerminate(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	ProcessListen(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	RunListenTurn(ctx context.Context, aicallID uuid.UUID)
 
-	ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall) (map[string]any, error)
+	ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error)
 
 	Start(
 		ctx context.Context,
@@ -65,6 +71,7 @@ type AIcallHandler interface {
 	EventCMConfbridgeLeaved(ctx context.Context, evt *cmconfbridge.EventConfbridgeLeaved)
 	EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
 	EventPMPipecatcallInitialized(ctx context.Context, evt *pmpipecatcall.Pipecatcall)
+	EventTMTranscriptCreated(ctx context.Context, evt *tmtranscript.Transcript)
 
 	UpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
 	UpdatePipecatcallIDAndActiveflowID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
@@ -100,7 +107,7 @@ var mapDefaultTTSVoiceIDByTTSType = map[ai.TTSType]string{
 	ai.TTSTypeDeepgram:   "aura-2-thalia-en",                     // Thalia (neutral, English). https://developers.deepgram.com/docs/tts-models#aura-2-all-available-spanish-voices
 	ai.TTSTypeElevenLabs: "EXAVITQu4vr4xnSDxMaL",                 // Rachel. https://api.elevenlabs.io/docs
 	ai.TTSTypeFish:       "",
-	ai.TTSTypeGoogle:     "en-US-Chirp3-HD-Charon",                 // Male, Chirp 3 HD (required for streaming synthesis). https://cloud.google.com/text-to-speech/docs/chirp3-hd
+	ai.TTSTypeGoogle:     "en-US-Chirp3-HD-Charon",                // Male, Chirp 3 HD (required for streaming synthesis). https://cloud.google.com/text-to-speech/docs/chirp3-hd
 	ai.TTSTypeGroq:       "llama-voice-en",                        // Placeholder (Groq doesn't expose standard TTS, assumed)
 	ai.TTSTypeHume:       "emotional-neutral-en",                  // Neutral English emotional TTS. https://dev.hume.ai/docs/tts
 	ai.TTSTypeInworld:    "English_Female_Generic",                // Generic female character. https://docs.inworld.ai/voices
@@ -123,10 +130,27 @@ type aicallHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
 
+	// cache backs the Insight AI's realtime call listening: the transcribe ->
+	// AIcall resolver set, the per-AIcall transcript buffers, the cross-replica
+	// debounce lock, the turn counter, and ToolHandle's listen-turn membership
+	// check. It is NOT a read-through cache for anything in this handler --
+	// entity snapshots still go through db (dbhandler owns that). See
+	// pkg/cachehandler/listen.go.
+	cache cachehandler.CacheHandler
+
 	aiHandler          aihandler.AIHandler
 	teamHandler        teamhandler.TeamHandler
 	messageHandler     messagehandler.MessageHandler
 	participantHandler participanthandler.ParticipantHandler
+
+	// runListenStartHook is the injected seam ProcessListen's detached
+	// goroutine goes through (design §7 item 2: "runListenStart is detached, so
+	// assert on a seam ... never on wall-clock timing").
+	//
+	// nil in production and in every handler NewAIcallHandler builds, in which
+	// case runListenStart itself runs. Only the tests that must observe the
+	// async stage deterministically set it.
+	runListenStartHook func(ctx context.Context, a *ai.AI, c *aicall.AIcall, kase *kmkase.Case, callID uuid.UUID, call *cmcall.Call)
 }
 
 var (
@@ -181,6 +205,7 @@ func NewAIcallHandler(
 	req requesthandler.RequestHandler,
 	notify notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
+	cache cachehandler.CacheHandler,
 	aiHandler aihandler.AIHandler,
 	teamHandler teamhandler.TeamHandler,
 	messageHandler messagehandler.MessageHandler,
@@ -191,6 +216,7 @@ func NewAIcallHandler(
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,
+		cache:         cache,
 
 		aiHandler:          aiHandler,
 		teamHandler:        teamHandler,
@@ -279,4 +305,26 @@ Response Rules:
 - Base every answer strictly on retrieved data — avoid hallucinations.
 - Be concise and factual. Cite specific interactions/conversations when relevant.
 - Never expose raw JSON or tool responses to the user.`
+
+	// ListenTurnSystemPrompt supplies the MECHANICS of a listen evaluation turn
+	// and nothing else. The business conditions -- what actually warrants
+	// speaking up -- come entirely from the customer's own init_prompt, which is
+	// message #2 of every listen turn. That split is deliberate and is the whole
+	// point of the feature: triggering is customer-configurable without a schema
+	// change and without a hardcoded rule set.
+	ListenTurnSystemPrompt = `You are silently monitoring a live phone call in progress. You are NOT talking to anyone right now.
+
+Below you will see a rolling window of what has been said so far, tagged by speaker. Lines after the "--- NEW SINCE YOUR LAST CHECK ---" marker are what you have not evaluated yet; everything before it you have already considered on a previous check.
+
+Your task on each check:
+1. Read the new lines in the context of the conversation so far.
+2. Decide whether the instructions in your configured prompt warrant alerting the human agent RIGHT NOW.
+3. If and only if they do, call the notify_agent tool with one or two sentences written for a busy human mid-call.
+
+CRITICAL RULES:
+- Saying nothing is the correct and expected outcome for most checks. Do not manufacture something to say.
+- notify_agent is the ONLY way to reach the agent. Any text you produce instead of a tool call is discarded and nobody will ever see it.
+- Never repeat a notification you already sent on this call. Check the conversation above before notifying.
+- Do not summarize the call, do not narrate what is happening, and do not greet anyone. You are not a participant.
+- Do not use other tools unless answering the alert genuinely requires information the transcript does not contain.`
 )

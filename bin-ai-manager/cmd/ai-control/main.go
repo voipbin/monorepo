@@ -50,6 +50,17 @@ func initCommand() *cobra.Command {
 			}
 
 			config.LoadGlobalConfig()
+
+			// Same fail-fast gate cmd/ai-manager applies (review round 2
+			// finding LOW-1). No ai-control subcommand reaches a listen code
+			// path today, so this changes nothing about how the CLI behaves on
+			// a good config -- the point is that the invariant belongs to the
+			// config package, enforced at every entrypoint, rather than being
+			// something one binary happens to remember to do.
+			if errValidate := config.Validate(); errValidate != nil {
+				return errors.Wrap(errValidate, "invalid configuration")
+			}
+
 			return nil
 		},
 	}
@@ -473,7 +484,7 @@ func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// For these operations, we don't need aiHandler, messageHandler, or participantHandler
-	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil, nil), nil
+	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil, nil, nil), nil
 }
 
 func cmdAIcallGet() *cobra.Command {
