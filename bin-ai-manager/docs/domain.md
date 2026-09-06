@@ -45,6 +45,7 @@ Listen metadata keys (present only while a `contact_case` AIcall is listening):
 |---|---|---|
 | `listen_transcribe_id` | string (UUID) | The transcribe session this AIcall reads while listening. Read by the listen-start idempotency check and by every stop path, always with the AIcall row already in hand — hence metadata rather than a column |
 | `listen_owns_transcribe` | bool | Whether THIS AIcall started that session, as opposed to reusing one another AIcall already had running on the same call. **Only the owner may stop it**; a non-owner must never touch a session another listener still depends on |
+| `listen_conversation_id` | string (UUID) | The conversation this AIcall is listening to (conversation Cases only). Metadata rather than a column: no event-driven sweep queries by it. An AIcall carries at most one of `listen_transcribe_id` / `listen_conversation_id` |
 
 #### PromptSnapshot
 

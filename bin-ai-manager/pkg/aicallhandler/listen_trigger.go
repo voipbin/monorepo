@@ -128,23 +128,9 @@ func (h *aicallHandler) checkListenEligible(ctx context.Context, c *aicall.AIcal
 		"aicall_id": c.ID,
 	})
 
-	// Step 1: feature gate.
-	//
-	// NOT METERED, and that is a gap this plan records rather than papers
-	// over (review round 1 finding LOW-8). Design §5.13 enumerates
-	// aicall_listen_start_total's `result` values as started / reused /
-	// skipped_not_listenable / skipped_confbridge_not_ready /
-	// skipped_confbridge_error / failed, and never says which one covers "the
-	// feature flag is off." Folding it into skipped_not_listenable is the
-	// plausible reading, but the design does not state it and inventing a
-	// seventh value here would be exactly the kind of unilateral decision this
-	// task flags elsewhere. Leaving it unmetered is also defensible on its own:
-	// during a flag-off rollout stage EVERY call takes this branch, so the
-	// counter would say nothing the flag's own value does not already say. If
-	// a reviewer wants it metered, decide the label in the design first.
-	if !config.Get().AIcallListenEnabled {
-		return nil, nil, uuid.Nil, nil, false, nil
-	}
+	// Step 1 (the feature gate) was removed on 2026-09-06: listening is always
+	// on. The remaining step numbers are kept so the design references and the
+	// tests that cite them stay readable.
 
 	// Step 2: AIcall gate -- type AND liveness, combined.
 	//
@@ -169,11 +155,11 @@ func (h *aicallHandler) checkListenEligible(ctx context.Context, c *aicall.AIcal
 	a, err := h.aiHandler.Get(ctx, h.resolveActiveAIIDFromAIcall(ctx, c))
 	if err != nil {
 		log.Errorf("Could not get the ai. err: %v", err)
-		promListenStartTotal.WithLabelValues("failed").Inc()
+		promListenStartTotal.WithLabelValues(listenKindLabelUnknown, "failed").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 	if a.Type != ai.TypeInsight || c.Status != aicall.StatusProgressing || c.TMDelete != nil {
-		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+		promListenStartTotal.WithLabelValues(listenKindLabelUnknown, "skipped_not_listenable").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 
@@ -214,7 +200,7 @@ func (h *aicallHandler) checkListenEligible(ctx context.Context, c *aicall.AIcal
 			// design's own stated common path (repeated panel opens) would
 			// never appear in aicall_listen_start_total at all (review round 1
 			// finding LOW-8).
-			promListenStartTotal.WithLabelValues("reused").Inc()
+			promListenStartTotal.WithLabelValues(string(listenKindCall), "reused").Inc()
 			return nil, nil, uuid.Nil, nil, false, nil
 		}
 	}
@@ -231,32 +217,41 @@ func (h *aicallHandler) checkListenEligible(ctx context.Context, c *aicall.AIcal
 	// tool_insight.go -- states this precondition explicitly rather than
 	// relying on that, and this one now matches them.
 	if c.ReferenceType != aicall.ReferenceTypeContactCase {
-		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+		promListenStartTotal.WithLabelValues(listenKindLabelUnknown, "skipped_not_listenable").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 
 	kase, err := h.reqHandler.ContactV1CaseGet(ctx, c.CustomerID, c.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get the case. err: %v", err)
-		promListenStartTotal.WithLabelValues("failed").Inc()
+		promListenStartTotal.WithLabelValues(listenKindLabelUnknown, "failed").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 	if kase.CustomerID != c.CustomerID || kase.CustomerID == uuid.Nil {
 		// Defensive: the tenant is already embedded in the RPC, but fail closed
 		// on any mismatch rather than trust a foreign response shape.
 		log.Warnf("Cross-customer case access blocked. case_customer_id: %s", kase.CustomerID)
-		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+		promListenStartTotal.WithLabelValues(listenKindLabelUnknown, "skipped_not_listenable").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 
-	// Step 5: reference typing.
-	if kase.ReferenceType != kmkase.ReferenceTypeCall {
-		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+	// Step 5: reference typing. The conversation branch runs its whole start
+	// inline and never proceeds to steps 6-8, which are call-only (design
+	// 2026-09-05 §5.1).
+	switch kase.ReferenceType {
+	case kmkase.ReferenceTypeCall:
+		// steps 6-8 below
+	case kmkase.ReferenceTypeConversationMessage:
+		h.checkListenEligibleConversation(ctx, c, kase)
+		return nil, nil, uuid.Nil, nil, false, nil
+	default:
+		promListenStartTotal.WithLabelValues(listenKindLabelUnknown, "skipped_not_listenable").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
+
 	callID := uuid.FromStringOrNil(kase.ReferenceID)
 	if callID == uuid.Nil {
-		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+		promListenStartTotal.WithLabelValues(string(listenKindCall), "skipped_not_listenable").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 
@@ -264,18 +259,18 @@ func (h *aicallHandler) checkListenEligible(ctx context.Context, c *aicall.AIcal
 	call, err := h.reqHandler.CallV1CallGet(ctx, callID)
 	if err != nil {
 		log.Errorf("Could not get the call. err: %v", err)
-		promListenStartTotal.WithLabelValues("failed").Inc()
+		promListenStartTotal.WithLabelValues(string(listenKindCall), "failed").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 	if call.CustomerID != c.CustomerID {
 		log.Warnf("Cross-customer call access blocked. call_customer_id: %s", call.CustomerID)
-		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+		promListenStartTotal.WithLabelValues(string(listenKindCall), "skipped_not_listenable").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 	if call.TMDelete != nil || !isListenableCallStatus(call.Status) {
 		// The call is over. The agent can still read its finished transcript
 		// with get_call_transcript, unchanged.
-		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+		promListenStartTotal.WithLabelValues(string(listenKindCall), "skipped_not_listenable").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 
@@ -330,21 +325,21 @@ func (h *aicallHandler) runListenStart(ctx context.Context, a *ai.AI, c *aicall.
 	case confbridgeReady:
 		// proceed to step 8
 	case confbridgeCallEnded:
-		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+		promListenStartTotal.WithLabelValues(string(listenKindCall), "skipped_not_listenable").Inc()
 		return
 	case confbridgeNotReady:
 		log.Warnf("The confbridge did not become ready within the wait budget. Listening does not start. last_party_count: %d", lastPartyCount)
-		promListenStartTotal.WithLabelValues("skipped_confbridge_not_ready").Inc()
+		promListenStartTotal.WithLabelValues(string(listenKindCall), "skipped_confbridge_not_ready").Inc()
 		return
 	case confbridgeError:
 		log.Warnf("Could not check the confbridge readiness. Listening does not start. last_party_count: %d", lastPartyCount)
-		promListenStartTotal.WithLabelValues("skipped_confbridge_error").Inc()
+		promListenStartTotal.WithLabelValues(string(listenKindCall), "skipped_confbridge_error").Inc()
 		return
 	}
 
 	// Step 8: the locked create-or-reuse sequence.
 	result, err := h.startListenTranscribe(ctx, c, call, callID)
-	promListenStartTotal.WithLabelValues(result).Inc()
+	promListenStartTotal.WithLabelValues(string(listenKindCall), result).Inc()
 	if err != nil {
 		log.Errorf("Could not start listening. result: %s, err: %v", result, err)
 		return

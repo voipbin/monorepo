@@ -60,7 +60,7 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 	//
 	// This is the AIcall-is-ending path reusing the same helper; it is not a
 	// call TO ProcessTerminate from stopListening, which would be a loop.
-	if tmp.ReferenceType == aicall.ReferenceTypeContactCase && tmp.ListenCallID != uuid.Nil {
+	if listenTerminateNeedsStop(tmp) {
 		h.stopListening(ctx, tmp)
 	}
 

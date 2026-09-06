@@ -65,6 +65,14 @@ func listenStartLockKey(aicallID uuid.UUID) string {
 	return fmt.Sprintf("ai:listen:startlock:%s", aicallID)
 }
 
+// listenConversationKey is the conversation -> listening AIcall ids resolver
+// (design 2026-09-05 §5.2.2). Same shape and TTL discipline as
+// listenTranscribeKey; keyed by conversation id because Message.CaseID is not
+// populated on every write path, while Message.ConversationID always is.
+func listenConversationKey(conversationID uuid.UUID) string {
+	return fmt.Sprintf("ai:listen:conversation:%s", conversationID)
+}
+
 // listenStartLockReleaseScript is the start lock's compare-and-delete.
 //
 // It MUST be one EVAL, not a GET followed by a DEL. A separate GET-then-DEL
@@ -176,6 +184,64 @@ func (h *handler) ListenAIcallIDAdd(ctx context.Context, transcribeID uuid.UUID,
 // Redis removes the key itself once the set empties.
 func (h *handler) ListenAIcallIDRemove(ctx context.Context, transcribeID uuid.UUID, aicallID uuid.UUID) error {
 	return h.Cache.SRem(ctx, listenTranscribeKey(transcribeID), aicallID.String()).Err()
+}
+
+// ListenConversationAIcallIDsGet returns every AIcall id currently listening
+// to the given conversation. A SET for the same reason as ListenAIcallIDsGet.
+func (h *handler) ListenConversationAIcallIDsGet(ctx context.Context, conversationID uuid.UUID) ([]uuid.UUID, error) {
+	tmp, err := h.Cache.SMembers(ctx, listenConversationKey(conversationID)).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	res := []uuid.UUID{}
+	for _, m := range tmp {
+		id := uuid.FromStringOrNil(m)
+		if id == uuid.Nil {
+			continue
+		}
+		res = append(res, id)
+	}
+
+	return res, nil
+}
+
+// ListenConversationAIcallIDAdd registers aicallID as a listener of the
+// conversation and (re)arms the key's TTL in one atomic EVAL.
+func (h *handler) ListenConversationAIcallIDAdd(ctx context.Context, conversationID uuid.UUID, aicallID uuid.UUID, ttl time.Duration) error {
+	return h.Cache.Eval(ctx, listenSetAddExpireScript,
+		[]string{listenConversationKey(conversationID)},
+		aicallID.String(), listenTTLSeconds(ttl),
+	).Err()
+}
+
+// ListenConversationAIcallIDRemove drops one listener from the conversation's
+// resolver set.
+func (h *handler) ListenConversationAIcallIDRemove(ctx context.Context, conversationID uuid.UUID, aicallID uuid.UUID) error {
+	return h.Cache.SRem(ctx, listenConversationKey(conversationID), aicallID.String()).Err()
+}
+
+// ListenConversationResolverTouch re-arms the resolver set's TTL without adding
+// members; EXPIRE on a missing key is a no-op, so a membership a concurrent
+// stop removed is never resurrected (design 2026-09-05 §5.2.2, code review
+// round 4).
+func (h *handler) ListenConversationResolverTouch(ctx context.Context, conversationID uuid.UUID, ttl time.Duration) error {
+	return h.Cache.Expire(ctx, listenConversationKey(conversationID), time.Duration(listenTTLSeconds(ttl))*time.Second).Err()
+}
+
+// ListenConversationAIcallIDIsMember reports whether aicallID is registered as
+// a listener of the conversation. Used by the conversation start's idempotency
+// check (design 2026-09-05 §5.1.1 step 0).
+func (h *handler) ListenConversationAIcallIDIsMember(ctx context.Context, conversationID uuid.UUID, aicallID uuid.UUID) (bool, error) {
+	return h.Cache.SIsMember(ctx, listenConversationKey(conversationID), aicallID.String()).Result()
+}
+
+// ListenPendingLen returns the number of buffered, not-yet-evaluated lines.
+// The conversation kind's RunListenTurn short-circuits on 0 BEFORE the Case RPC
+// and BEFORE the turn counter, so a deferred flush that finds nothing costs
+// neither (design 2026-09-05 §5.4).
+func (h *handler) ListenPendingLen(ctx context.Context, aicallID uuid.UUID) (int64, error) {
+	return h.Cache.LLen(ctx, listenPendingKey(aicallID)).Result()
 }
 
 // ListenPendingPush appends one transcript line to the not-yet-evaluated

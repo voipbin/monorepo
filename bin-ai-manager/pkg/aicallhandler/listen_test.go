@@ -312,12 +312,12 @@ func listeningAIcall() *aicall.AIcall {
 	}
 }
 
-// metricDelta reports how much a promListenTurnTotal label moved across fn.
-func metricDelta(t *testing.T, label string, fn func()) float64 {
+// metricDelta reports how much a promListenTurnTotal (kind, label) cell moved across fn.
+func metricDelta(t *testing.T, kind string, label string, fn func()) float64 {
 	t.Helper()
-	before := testutil.ToFloat64(promListenTurnTotal.WithLabelValues(label))
+	before := testutil.ToFloat64(promListenTurnTotal.WithLabelValues(kind, label))
 	fn()
-	return testutil.ToFloat64(promListenTurnTotal.WithLabelValues(label)) - before
+	return testutil.ToFloat64(promListenTurnTotal.WithLabelValues(kind, label)) - before
 }
 
 // Test_RunListenTurn covers every precondition and outcome.
@@ -331,10 +331,9 @@ func Test_RunListenTurn(t *testing.T) {
 	tests := []struct {
 		name string
 
-		flagEnabled bool
-		status      aicall.Status
-		refType     aicall.ReferenceType
-		metadata    map[string]any
+		status   aicall.Status
+		refType  aicall.ReferenceType
+		metadata map[string]any
 
 		expectCountIncr bool
 		turnCount       int64
@@ -348,21 +347,10 @@ func Test_RunListenTurn(t *testing.T) {
 		expectPipecatStart  bool
 		expectStopListening bool
 		expectResult        string
+		expectKind          string
 	}{
 		{
-			name: "flag off stops listening entirely",
-			// Not merely "clears bookkeeping": a bare state clear would leave a
-			// still-running owned STT session with its handle lost, so a
-			// rollback would strand a billed stream until the call ended.
-			flagEnabled:         false,
-			status:              aicall.StatusProgressing,
-			refType:             aicall.ReferenceTypeContactCase,
-			expectStopListening: true,
-			expectResult:        "skipped_disabled",
-		},
-		{
 			name:                "terminated aicall stops listening",
-			flagEnabled:         true,
 			status:              aicall.StatusTerminated,
 			refType:             aicall.ReferenceTypeContactCase,
 			expectStopListening: true,
@@ -370,7 +358,6 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:                "non contact_case reference type stops listening",
-			flagEnabled:         true,
 			status:              aicall.StatusProgressing,
 			refType:             aicall.ReferenceTypeCall,
 			expectStopListening: true,
@@ -378,16 +365,15 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:                "missing listen_transcribe_id metadata stops listening",
-			flagEnabled:         true,
 			status:              aicall.StatusProgressing,
 			refType:             aicall.ReferenceTypeContactCase,
 			metadata:            map[string]any{},
 			expectStopListening: true,
 			expectResult:        "skipped_invalid",
+			expectKind:          "unknown",
 		},
 		{
 			name:            "empty pending buffer skips without stopping",
-			flagEnabled:     true,
 			status:          aicall.StatusProgressing,
 			refType:         aicall.ReferenceTypeContactCase,
 			expectCountIncr: true,
@@ -398,7 +384,6 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:                "turn cap exceeded stops listening",
-			flagEnabled:         true,
 			status:              aicall.StatusProgressing,
 			refType:             aicall.ReferenceTypeContactCase,
 			expectCountIncr:     true,
@@ -412,7 +397,6 @@ func Test_RunListenTurn(t *testing.T) {
 			// resolve listenTurn=false: its rows get permanently tagged
 			// OriginNone and its notify_agent call gets rejected -- the exact
 			// failure the registration exists to prevent.
-			flagEnabled:        true,
 			status:             aicall.StatusProgressing,
 			refType:            aicall.ReferenceTypeContactCase,
 			expectCountIncr:    true,
@@ -426,7 +410,6 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:               "happy path runs one turn",
-			flagEnabled:        true,
 			status:             aicall.StatusProgressing,
 			refType:            aicall.ReferenceTypeContactCase,
 			expectCountIncr:    true,
@@ -442,7 +425,6 @@ func Test_RunListenTurn(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config.SetListenDefaultsForTest()
-			config.SetAIcallListenEnabledForTest(tt.flagEnabled)
 			defer config.SetListenDefaultsForTest()
 
 			mc := gomock.NewController(t)
@@ -512,7 +494,11 @@ func Test_RunListenTurn(t *testing.T) {
 				).Times(0)
 			}
 
-			delta := metricDelta(t, tt.expectResult, func() {
+			kind := tt.expectKind
+			if kind == "" {
+				kind = "call"
+			}
+			delta := metricDelta(t, kind, tt.expectResult, func() {
 				m.h.RunListenTurn(ctx, ltAIcallID)
 			})
 			if delta != 1 {
@@ -530,7 +516,6 @@ func Test_RunListenTurn(t *testing.T) {
 // anything the turn emits. All three at once, silently.
 func Test_RunListenTurn_DoesNotWritePipecatcallID(t *testing.T) {
 	config.SetListenDefaultsForTest()
-	config.SetAIcallListenEnabledForTest(true)
 	defer config.SetListenDefaultsForTest()
 
 	mc := gomock.NewController(t)
@@ -597,7 +582,6 @@ func Test_RunListenTurn_DoesNotWritePipecatcallID(t *testing.T) {
 // already drained -- would otherwise have no way in.
 func Test_runListenTurnWithLines_HangupPath(t *testing.T) {
 	config.SetListenDefaultsForTest()
-	config.SetAIcallListenEnabledForTest(true)
 	defer config.SetListenDefaultsForTest()
 
 	mc := gomock.NewController(t)
@@ -623,7 +607,7 @@ func Test_runListenTurnWithLines_HangupPath(t *testing.T) {
 	).Return(&pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: turnPCID}, HostID: "10.0.0.1"}, nil).Times(1)
 	m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	delta := metricDelta(t, "ran", func() {
+	delta := metricDelta(t, "call", "ran", func() {
 		m.h.runListenTurnWithLines(ctx, c, []string{"[AGENT] bye"})
 	})
 	if delta != 1 {
@@ -801,7 +785,7 @@ func Test_EventTMTranscriptCreated(t *testing.T) {
 			m.cache.EXPECT().ListenPendingPopAll(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 			bufferedDelta := testutil.ToFloat64(promListenSegmentTotal.WithLabelValues("buffered"))
-			lockedDelta := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("skipped_locked"))
+			lockedDelta := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("call", "skipped_locked"))
 
 			m.h.EventTMTranscriptCreated(ctx, tt.transcript)
 
@@ -809,7 +793,7 @@ func Test_EventTMTranscriptCreated(t *testing.T) {
 			if int(gotBuffered) != tt.expectBuffered {
 				t.Errorf("buffered count mismatch. expected: %d, got: %v", tt.expectBuffered, gotBuffered)
 			}
-			gotLocked := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("skipped_locked")) - lockedDelta
+			gotLocked := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("call", "skipped_locked")) - lockedDelta
 			if int(gotLocked) != tt.expectLocked {
 				t.Errorf("skipped_locked count mismatch. expected: %d, got: %v", tt.expectLocked, gotLocked)
 			}
@@ -1001,8 +985,10 @@ func Test_stopListenByCallID_FinalFlush(t *testing.T) {
 	m := newListenTurnHarness(mc)
 	ctx := context.Background()
 
+	// Keeps listeningAIcall's default listen_transcribe_id metadata: this row
+	// is a genuine call-kind listen session, and clearListenState below reads
+	// that same id to remove the AIcall's resolver membership.
 	row := listeningAIcall()
-	row.Metadata = map[string]any{}
 
 	m.db.EXPECT().AIcallList(ctx, uint64(10), "", gomock.Any()).Return([]*aicall.AIcall{row}, nil)
 
@@ -1021,11 +1007,14 @@ func Test_stopListenByCallID_FinalFlush(t *testing.T) {
 	).Return(&pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: turnPCID}, HostID: "10.0.0.1"}, nil)
 	m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	// Then the stop itself.
+	// Then the stop itself. listeningAIcall carries no listen_owns_transcribe
+	// key, so stopListening skips the transcribe stop and clearListenState
+	// only removes this AIcall's resolver membership.
+	m.cache.EXPECT().ListenAIcallIDRemove(ctx, listenTranscribeIDFromMetadata(row), ltAIcallID).Return(nil)
 	m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
 	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
 
-	delta := metricDelta(t, "ran", func() {
+	delta := metricDelta(t, "call", "ran", func() {
 		m.h.stopListenByCallID(ctx, ltCallID)
 	})
 	if delta != 1 {

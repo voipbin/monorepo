@@ -4,6 +4,8 @@ package aicallhandler
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
@@ -12,6 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	kmkase "monorepo/bin-contact-manager/models/kase"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -72,6 +75,7 @@ type AIcallHandler interface {
 	EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
 	EventPMPipecatcallInitialized(ctx context.Context, evt *pmpipecatcall.Pipecatcall)
 	EventTMTranscriptCreated(ctx context.Context, evt *tmtranscript.Transcript)
+	EventCVMessageCreated(ctx context.Context, evt *cvmessage.Message)
 
 	UpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
 	UpdatePipecatcallIDAndActiveflowID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
@@ -151,6 +155,19 @@ type aicallHandler struct {
 	// case runListenStart itself runs. Only the tests that must observe the
 	// async stage deterministically set it.
 	runListenStartHook func(ctx context.Context, a *ai.AI, c *aicall.AIcall, kase *kmkase.Case, callID uuid.UUID, call *cmcall.Call)
+
+	// afterFunc is the deferred-flush timer seam (design 2026-09-05 §5.4). nil
+	// means time.AfterFunc; tests inject a capturing stub.
+	afterFunc func(d time.Duration, fn func()) *time.Timer
+
+	// runListenTurnHook, when set, replaces the detached RunListenTurn goroutine
+	// spawned by the conversation intake and flush so tests can observe it.
+	runListenTurnHook func(ctx context.Context, aicallID uuid.UUID)
+
+	// flushScheduled marks AIcall ids with a deferred flush timer armed in THIS
+	// process. Advisory only -- the correctness bounds come from the Redis lock
+	// and pending list; this merely stops a burst from arming N timers.
+	flushScheduled sync.Map
 }
 
 var (
@@ -327,4 +344,24 @@ CRITICAL RULES:
 - Never repeat a notification you already sent on this call. Check the conversation above before notifying.
 - Do not summarize the call, do not narrate what is happening, and do not greet anyone. You are not a participant.
 - Do not use other tools unless answering the alert genuinely requires information the transcript does not contain.`
+
+	// ListenTurnConversationSystemPrompt is the conversation-kind counterpart of
+	// ListenTurnSystemPrompt (design 2026-09-05 §5.5.3): same mechanics, same
+	// rules, only the framing differs. Business conditions still come from the
+	// customer's own init_prompt.
+	ListenTurnConversationSystemPrompt = `You are silently monitoring a live messaging conversation between a human agent and a customer (SMS, chat, or similar). You are NOT talking to anyone right now.
+
+Below you will see a rolling window of the messages exchanged so far, tagged by sender. Lines after the "--- NEW SINCE YOUR LAST CHECK ---" marker are what you have not evaluated yet; everything before it you have already considered on a previous check. Lines tagged [AGENT] were written by the agent you are assisting (or an automated reply on their behalf); never alert the agent about their own messages.
+
+Your task on each check:
+1. Read the new lines in the context of the conversation so far.
+2. Decide whether the instructions in your configured prompt warrant alerting the human agent RIGHT NOW.
+3. If and only if they do, call the notify_agent tool with one or two sentences written for a busy human handling several conversations.
+
+CRITICAL RULES:
+- Saying nothing is the correct and expected outcome for most checks. Do not manufacture something to say.
+- notify_agent is the ONLY way to reach the agent. Any text you produce instead of a tool call is discarded and nobody will ever see it.
+- Never repeat a notification you already sent on this conversation. Check the conversation above before notifying.
+- Do not summarize the conversation, do not narrate what is happening, and do not greet anyone. You are not a participant.
+- Do not use other tools unless answering the alert genuinely requires information the messages do not contain.`
 )

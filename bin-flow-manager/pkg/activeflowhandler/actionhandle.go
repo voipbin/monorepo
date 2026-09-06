@@ -16,6 +16,8 @@ import (
 
 	conversationmedia "monorepo/bin-conversation-manager/models/media"
 
+	kmkase "monorepo/bin-contact-manager/models/kase"
+
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -1329,7 +1331,7 @@ func (h *activeflowHandler) actionHandleCaseCreate(ctx context.Context, af *acti
 			return nil
 		}
 		peer, self = deriveEndpointsForCase(string(c.Direction), c.Source, c.Destination)
-		referenceType = "call"
+		referenceType = kmkase.ReferenceTypeCall
 
 	case activeflow.ReferenceTypeConversation:
 		cv, errGet := h.reqHandler.ConversationV1ConversationGet(ctx, af.ReferenceID)
@@ -1338,7 +1340,7 @@ func (h *activeflowHandler) actionHandleCaseCreate(ctx context.Context, af *acti
 			return nil
 		}
 		peer, self = cv.Peer, cv.Self
-		referenceType = "conversation_message"
+		referenceType = kmkase.ReferenceTypeConversationMessage
 
 	default:
 		// Deliberate scope limit (design VOIP-1243 §2/§5.2): a Case's

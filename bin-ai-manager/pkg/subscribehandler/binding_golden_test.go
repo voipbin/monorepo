@@ -2,6 +2,12 @@ package subscribehandler
 
 import (
 	"testing"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
+
+	"github.com/gofrs/uuid"
 )
 
 // Test_topicPatterns_golden pins the EXACT bind set of ai-manager on the global topic
@@ -24,12 +30,13 @@ func Test_topicPatterns_golden(t *testing.T) {
 		"pipecat-manager.team.*.member_switched",
 		"conference-manager.conference.*.deleted",
 		"transcribe-manager.transcript.*.created",
+		"conversation-manager.conversation.*.message_created",
 	}
 
-	// design §5 + VOIP-1422 + NOJIRA Insight AI realtime listen: ai-manager
-	// binds exactly 12 patterns.
-	if len(topicPatterns) != 12 {
-		t.Fatalf("topicPatterns count mismatch. expected: 12, got: %d (%v)", len(topicPatterns), topicPatterns)
+	// design §5 + VOIP-1422 + NOJIRA Insight AI realtime listen + VOIP-1470:
+	// ai-manager binds exactly 13 patterns.
+	if len(topicPatterns) != 13 {
+		t.Fatalf("topicPatterns count mismatch. expected: 13, got: %d (%v)", len(topicPatterns), topicPatterns)
 	}
 	if len(topicPatterns) != len(expected) {
 		t.Fatalf("topicPatterns count mismatch. expected: %d, got: %d (%v)", len(expected), len(topicPatterns), topicPatterns)
@@ -39,5 +46,20 @@ func Test_topicPatterns_golden(t *testing.T) {
 		if topicPatterns[i] != pattern {
 			t.Errorf("topicPatterns[%d] mismatch. expected: %q, got: %q", i, pattern, topicPatterns[i])
 		}
+	}
+}
+
+// Test_conversationBindingMatchesProducer pins that the bound pattern is what
+// conversation-manager actually publishes for a message, so a renamed event
+// type fails here rather than in production.
+func Test_conversationBindingMatchesProducer(t *testing.T) {
+	want := eventtopic.PatternForEventType(string(commonoutline.ServiceNameConversationManager), cvmessage.EventTypeMessageCreated)
+	if want != "conversation-manager.conversation.*.message_created" {
+		t.Fatalf("pattern mismatch. got: %q", want)
+	}
+	msg := &cvmessage.Message{ConversationID: uuid.FromStringOrNil("66660000-0000-4000-8000-000000000001")}
+	key := eventtopic.RoutingKey(string(commonoutline.ServiceNameConversationManager), cvmessage.EventTypeMessageCreated, msg.EventSubscriptionID())
+	if key != "conversation-manager.conversation.66660000-0000-4000-8000-000000000001.message_created" {
+		t.Errorf("routing key mismatch. got: %q", key)
 	}
 }

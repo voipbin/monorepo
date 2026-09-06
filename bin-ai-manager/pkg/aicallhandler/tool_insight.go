@@ -1176,7 +1176,7 @@ func (h *aicallHandler) toolHandleNotifyAgent(ctx context.Context, c *aicall.AIc
 	}
 	log.WithField("message", tmp).Debugf("Created the proactive notification message. message_id: %s", tmp.ID)
 
-	promListenNotifyTotal.Inc()
+	promListenNotifyTotal.WithLabelValues(listenKindOf(c).label()).Inc()
 
 	fillSuccess(res, "message", tmp.ID.String(), "Notification delivered to the agent.")
 	return res

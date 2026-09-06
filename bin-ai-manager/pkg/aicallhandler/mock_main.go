@@ -17,6 +17,7 @@ import (
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	dtmf "monorepo/bin-call-manager/models/dtmf"
 	service "monorepo/bin-common-handler/models/service"
+	message0 "monorepo/bin-conversation-manager/models/message"
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	reflect "reflect"
@@ -110,6 +111,18 @@ func (m *MockAIcallHandler) EventCMDTMFReceived(ctx context.Context, evt *dtmf.D
 func (mr *MockAIcallHandlerMockRecorder) EventCMDTMFReceived(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCMDTMFReceived", reflect.TypeOf((*MockAIcallHandler)(nil).EventCMDTMFReceived), ctx, evt)
+}
+
+// EventCVMessageCreated mocks base method.
+func (m *MockAIcallHandler) EventCVMessageCreated(ctx context.Context, evt *message0.Message) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventCVMessageCreated", ctx, evt)
+}
+
+// EventCVMessageCreated indicates an expected call of EventCVMessageCreated.
+func (mr *MockAIcallHandlerMockRecorder) EventCVMessageCreated(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCVMessageCreated", reflect.TypeOf((*MockAIcallHandler)(nil).EventCVMessageCreated), ctx, evt)
 }
 
 // EventPMPipecatcallInitialized mocks base method.

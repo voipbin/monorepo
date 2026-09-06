@@ -492,6 +492,12 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 			if _, errEnd := h.UpdateStatus(ctx, existing.ID, aicall.StatusTerminated); errEnd != nil {
 				log.Warnf("Could not terminate idle AIcall: %v", errEnd)
 			}
+			// UpdateStatus never clears listen state (design 2026-09-05 §5.7);
+			// release the resolver membership and buffers of an idle-expired
+			// listener here so they do not linger until their TTLs.
+			if listenKindOf(existing) != listenKindNone {
+				h.stopListening(ctx, existing)
+			}
 			lastErr = err
 			continue
 		}

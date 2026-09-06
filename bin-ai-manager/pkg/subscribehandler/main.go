@@ -11,6 +11,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	cfconference "monorepo/bin-conference-manager/models/conference"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -34,6 +35,8 @@ const (
 	publisherCallManager       = string(commonoutline.ServiceNameCallManager)
 	publisherTranscribeManager = string(commonoutline.ServiceNameTranscribeManager)
 	publisherTTSManager        = string(commonoutline.ServiceNameTTSManager)
+
+	publisherConversationManager = string(commonoutline.ServiceNameConversationManager)
 )
 
 // topicPatterns is the ruled bind set on the global topic exchange `bin-manager.event`
@@ -72,6 +75,11 @@ var topicPatterns = []string{
 	// per final STT result platform-wide, with no DB query and no RPC, whereas a
 	// bind/unbind lifecycle's failure mode is a permanently leaked binding.
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameTranscribeManager), tmtranscript.EventTypeTranscriptCreated),
+
+	// Insight AI conversation listening (VOIP-1470, docs/plans/
+	// 2026-09-05-insight-ai-conversation-listen-design.md §5.3.1). Same static
+	// wildcard trade-off as the transcript pattern above.
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameConversationManager), cvmessage.EventTypeMessageCreated),
 }
 
 // SubscribeHandler intreface for subscribed event listen handler
@@ -228,6 +236,10 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	// transcribe-manager
 	case m.Publisher == publisherTranscribeManager && m.Type == tmtranscript.EventTypeTranscriptCreated:
 		err = h.processEventTMTranscriptCreated(ctx, m)
+
+	// conversation-manager
+	case m.Publisher == publisherConversationManager && m.Type == cvmessage.EventTypeMessageCreated:
+		err = h.processEventCVMessageCreated(ctx, m)
 
 	default:
 		// ignore the event.

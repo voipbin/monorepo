@@ -310,9 +310,6 @@
       "flag": "aicall_send_cooldown_seconds"
     },
     {
-      "flag": "aicall_listen_enabled"
-    },
-    {
       "flag": "aicall_listen_evaluate_interval_seconds"
     },
     {
@@ -347,6 +344,12 @@
     },
     {
       "flag": "aicall_listen_start_lock_release_timeout_seconds"
+    },
+    {
+      "flag": "aicall_listen_conversation_max_message_chars"
+    },
+    {
+      "flag": "aicall_listen_conversation_flush_jitter_ms"
     },
     {
       "flag": "analysis_default_model"
@@ -394,6 +397,12 @@
     },
     {
       "name": "aicall_interrupt_attempted_total"
+    },
+    {
+      "name": "aicall_listen_conversation_flush_total"
+    },
+    {
+      "name": "aicall_listen_conversation_segment_total"
     },
     {
       "name": "aicall_listen_membership_check_failed_total"
