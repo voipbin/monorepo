@@ -70,6 +70,8 @@ LLM providers supported (configured by bin-ai-manager at session start):
 STT providers: Deepgram, Whisper
 TTS providers: Cartesia, ElevenLabs, Google
 
+Audio mode is selected by the request-level `stt_type`/`tts_type` that bin-ai-manager sends: both empty means a text-only session (conversation, task, contact_case listen turn) and no STT/TTS or audio input is built; non-empty means a voice call. Both the single-AI and the team pipeline honour this. In team mode each member's TTS/STT is built from that member's own configuration, and only in voice mode (VOIP-1481).
+
 ## Tool Execution
 
 When the LLM emits a function call:
