@@ -68,7 +68,7 @@ Run the full suite: everything passes.
 
 ### Step 5. Mutation check (A8)
 
-Temporarily revert the two guards and the forwarding (git stash of `run.py` or manual), run tests 1-4: tests 1, 3, 4 fail; restore. Record the failing assertion names in the PR body.
+Temporarily revert the two guards and the forwarding (git stash of `run.py` or manual), run the new tests: tests 1, 3, 3b and 4 fail while test 2 passes; restore. Record the failing assertion names in the PR body.
 
 ### Step 6. Docs (A7)
 

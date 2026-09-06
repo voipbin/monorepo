@@ -559,6 +559,10 @@ async def test_init_team_pipeline_voice_mode_builds_member_tts_stt_from_member_c
                 "ai": {
                     "engine_model": "openai.gpt-4o",
                     "engine_key": "fake-key",
+                    # "whisper" is deliberately an unimplemented-but-distinct
+                    # vendor string: create_stt_service is mocked here, and the
+                    # test needs three mutually distinct STT values (member-1
+                    # "google", request-level "deepgram", member-2 this one).
                     "stt_type": "whisper",
                 },
                 "tools": [],
