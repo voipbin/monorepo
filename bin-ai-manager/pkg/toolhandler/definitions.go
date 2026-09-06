@@ -757,10 +757,10 @@ Optional name/detail/note describe the case for a human agent reviewing it later
 
 WHEN TO USE:
 - Answering "has this customer contacted us before" / "what's the interaction history".
-- Discovering candidate conversation message ids to pass into get_conversation_content.
+- Discovering the conversation_id of a past conversation to pass into get_conversation_content. Conversation rows carry a conversation_id field for exactly that.
 
 WHEN NOT TO USE:
-- You need the actual message text (use get_conversation_content with a reference_id from this tool's output).
+- You need the actual message text (use get_conversation_content with a conversation_id from this tool's output).
 
 Always scoped to the current Case; there is no argument to target a different Case or contact.
 
@@ -784,19 +784,21 @@ run_llm: Set true to reason about the returned interaction history.`,
 	{
 		Name:   tool.ToolNameGetConversationContent,
 		RunLLM: true,
-		Description: `Retrieves the message transcript of a conversation, given the reference_id of a conversation_message-type interaction returned by get_contact_interactions.
+		Description: `Returns the message thread of a conversation, oldest first.
+
+With no arguments it reads the conversation this Case was created from, which is the common case (e.g. "what did the customer just say?"). Pass conversation_id (from get_contact_interactions' conversation_id field) to read a different conversation.
 
 WHEN TO USE:
 - You need the actual text of what was said, not just that an interaction happened.
-- You already have a reference_id from get_contact_interactions for the conversation you want to read.
+- Answering anything about what was written in this Case's conversation.
 
 WHEN NOT TO USE:
-- You have not yet called get_contact_interactions -- call it first to discover candidate reference_id values.
+- You want a different conversation than this Case's and do not have its conversation_id yet -- call get_contact_interactions first.
 
 ARGUMENTS:
-- reference_id (required): the reference id of a conversation_message-type interaction (a message id), as returned by get_contact_interactions. This tool resolves the message's conversation and returns the surrounding thread.
+- conversation_id (optional): the id of the conversation to read, as returned in get_contact_interactions' conversation_id field. Omit it to read this Case's own conversation.
 
-You can only retrieve conversations owned by your own account; anything else returns "Resource not found."
+Only conversations owned by your account are visible; anything else returns "no messages found".
 
 run_llm: Set true to reason about the retrieved conversation content.`,
 		Parameters: map[string]any{
@@ -807,17 +809,16 @@ run_llm: Set true to reason about the retrieved conversation content.`,
 					"description": "Set true to reason about the retrieved conversation content.",
 					"default":     true,
 				},
-				"reference_id": map[string]any{
+				"conversation_id": map[string]any{
 					"type":        "string",
-					"description": "The reference id of a conversation_message-type interaction, as returned by get_contact_interactions. Call get_contact_interactions first to discover candidate ids.",
+					"description": "The id of the conversation to read, as returned in get_contact_interactions' conversation_id field. Omit it to read the conversation this Case was created from.",
 				},
 				"limit": map[string]any{
 					"type":        "integer",
-					"description": "Maximum number of messages to return from the resolved conversation (default 20, max 50).",
+					"description": "Maximum number of messages to return from the conversation (default 20, max 50).",
 					"default":     20,
 				},
 			},
-			"required": []string{"reference_id"},
 		},
 	},
 	{

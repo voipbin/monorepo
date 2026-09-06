@@ -175,10 +175,28 @@ func (h *aicallHandler) toolHandleGetContactInteractions(ctx context.Context, c 
 	lines := make([]string, 0, len(interactions))
 	for _, it := range interactions {
 		ts := it.Timestamp.UTC().Format(time.RFC3339)
-		lines = append(lines, fmt.Sprintf(
+		line := fmt.Sprintf(
 			"[%s] direction=%s peer=%s/%s reference_type=%s reference_id=%s",
 			ts, it.Direction, it.Peer.Type, it.Peer.Target, it.Publisher, it.ReferenceID,
-		))
+		)
+
+		// VOIP-1475: a conversation_message row's reference_id is a MESSAGE id,
+		// which get_conversation_content cannot resolve (conversation-manager
+		// has no single-message route). Surface the conversation id carried in
+		// the peer event's payload so the LLM has something it can actually
+		// pass to get_conversation_content. PeerEvent.Publisher reuses
+		// contact_interactions' reference_type vocabulary, so the Case-side
+		// constant is the right comparison value here.
+		if it.Publisher == kmkase.ReferenceTypeConversationMessage {
+			var wm cvmessage.WebhookMessage
+			if err := json.Unmarshal(it.Data, &wm); err != nil {
+				log.Debugf("Could not parse the conversation message payload. err: %v", err)
+			} else if wm.ConversationID != uuid.Nil {
+				line += fmt.Sprintf(" conversation_id=%s", wm.ConversationID)
+			}
+		}
+
+		lines = append(lines, line)
 	}
 
 	body := renderBodyLines("", lines, uint64(len(interactions)) >= limit, "interactions")
@@ -186,18 +204,29 @@ func (h *aicallHandler) toolHandleGetContactInteractions(ctx context.Context, c 
 	return res
 }
 
-// toolHandleGetConversationContent retrieves the message transcript of a
-// conversation, given the reference_id of a conversation_message-type
-// interaction the LLM discovered via get_contact_interactions (design
-// VOIP-1234 §5: explicit target selection, not an implicit
-// server-picks-the-most-recent-thread auto-resolution).
+// msgCaseNotFromConversation is returned by get_conversation_content when the
+// current Case has no conversation behind it (a call-type Case, or one created
+// with no reference at all). It is a successful, actionable answer -- not a
+// masked not-found -- so the LLM knows to go through get_contact_interactions
+// instead of retrying the same call.
+const msgCaseNotFromConversation = "This case did not originate from a conversation. Call get_contact_interactions and pass conversation_id to read a specific conversation."
+
+// toolHandleGetConversationContent returns the message thread of a
+// conversation, oldest first.
 //
-// Resolution is a FIXED 2 RPC calls regardless of message/thread count:
-//  1. ConversationV1MessageGet(reference_id) -- resolves the message AND is
-//     the ownership/IDOR check (reference_id is now LLM-suppliable, unlike
-//     the implicit Case scoping used elsewhere in this file).
-//  2. ConversationV1MessageList(filters={conversation_id}) -- one list call
-//     for the whole surrounding thread, capped at limit.
+// With no arguments it reads the conversation the current Insight Case was
+// created from -- the common case ("what did the customer just say?").
+// An explicit conversation_id, discovered from get_contact_interactions'
+// conversation_id field, reads a different thread.
+//
+// VOIP-1475: the previous implementation resolved a caller-supplied message id
+// through ConversationV1MessageGet first. conversation-manager exposes NO
+// single-message route (only GET/POST /v1/messages and /v1/messages/create),
+// so that RPC could only ever 404 and this tool never worked in production.
+// Resolution is now a SINGLE ConversationV1MessageList call filtered by
+// conversation_id + customer_id. customer_id is the tenant boundary: a foreign
+// or unknown conversation id simply yields zero rows and renders "no messages
+// found", which leaks no more than the old masked not-found did.
 func (h *aicallHandler) toolHandleGetConversationContent(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleGetConversationContent",
@@ -208,6 +237,14 @@ func (h *aicallHandler) toolHandleGetConversationContent(ctx context.Context, c 
 	res := newToolResult(tc.ID)
 
 	var args struct {
+		ConversationID string `json:"conversation_id"`
+		// ReferenceID is a deprecated alias for ConversationID, kept only so
+		// tool calls already in flight against the previous schema still get
+		// an answer. It is no longer advertised in the tool definition, and it
+		// is NOT a compatibility shim for the old semantics: the value is read
+		// as a conversation id, so a legacy MESSAGE id resolves nothing and
+		// falls through to "no messages found" (it never could be resolved --
+		// that is the bug this change fixes).
 		ReferenceID string `json:"reference_id"`
 		Limit       int    `json:"limit"`
 	}
@@ -215,40 +252,18 @@ func (h *aicallHandler) toolHandleGetConversationContent(ctx context.Context, c 
 		fillFailed(res, errors.Wrap(err, "invalid arguments"))
 		return res
 	}
-	if args.ReferenceID == "" {
-		fillFailed(res, fmt.Errorf("reference_id is required, call get_contact_interactions first to discover candidate ids"))
-		return res
-	}
-	refID, err := uuid.FromString(args.ReferenceID)
-	if err != nil || refID == uuid.Nil {
-		fillFailed(res, fmt.Errorf("invalid reference_id"))
-		return res
-	}
 	limit := resolveInsightListLimit(args.Limit)
 
-	// RPC 1/2: resolve the message + ownership check (single masking site,
-	// mirrors resolveResource's IDOR-safe contract in tool_resource.go).
-	msg, err := h.reqHandler.ConversationV1MessageGet(ctx, refID)
-	if err != nil {
-		if isNotFoundErr(err) {
-			fillSuccess(res, "conversation_content", args.ReferenceID, msgResourceNotFound)
-			return res
-		}
-		log.Errorf("Could not get the message. err: %v", err)
-		fillFailed(res, fmt.Errorf("resource lookup failed"))
-		return res
-	}
-	if msg == nil || msg.CustomerID != c.CustomerID || msg.CustomerID == uuid.Nil {
-		log.Warnf("Cross-customer message access blocked. reference_id: %s", refID)
-		fillSuccess(res, "conversation_content", args.ReferenceID, msgResourceNotFound)
+	conversationID, ok := h.resolveConversationIDForContent(ctx, c, args.ConversationID, args.ReferenceID, res)
+	if !ok {
+		// res already carries the terminal (failed or masked-success) response.
 		return res
 	}
 
-	// RPC 2/2: one list call filtered by conversation_id -- NOT a per-message
-	// fetch loop. This is the fixed-cost path decided in design VOIP-1234 §5
-	// after the original N+1 draft was rejected as wasteful.
 	filters := map[cvmessage.Field]any{
-		cvmessage.FieldConversationID: msg.ConversationID.String(),
+		cvmessage.FieldConversationID: conversationID,
+		cvmessage.FieldCustomerID:     c.CustomerID,
+		cvmessage.FieldDeleted:        false,
 	}
 	msgs, err := h.reqHandler.ConversationV1MessageList(ctx, "", limit, filters)
 	if err != nil {
@@ -258,22 +273,115 @@ func (h *aicallHandler) toolHandleGetConversationContent(ctx context.Context, c 
 	}
 
 	if len(msgs) == 0 {
-		fillSuccess(res, "conversation_content", args.ReferenceID, "no messages found")
+		fillSuccess(res, "conversation_content", conversationID.String(), "no messages found")
 		return res
 	}
 
+	// conversation-manager orders the list by tm_create DESC, so the fetched
+	// page is the NEWEST `limit` rows. The reversal below only affects display
+	// order (oldest first, how a thread reads); it does not widen the window.
+	// pagedOut therefore means "older messages exist before this page", which
+	// is exactly what renderBodyLines' "earlier messages omitted" marker says
+	// -- no extra header is needed.
+	pagedOut := uint64(len(msgs)) >= limit
+
 	lines := make([]string, 0, len(msgs))
-	for _, m := range msgs {
+	for i := len(msgs) - 1; i >= 0; i-- {
+		m := msgs[i]
+
 		ts := "unknown"
 		if m.TMCreate != nil {
 			ts = m.TMCreate.UTC().Format(time.RFC3339)
 		}
-		lines = append(lines, fmt.Sprintf("[%s %s] %s", ts, m.Direction, m.Text))
+
+		text := m.Text
+		if m.Subject != "" {
+			text = fmt.Sprintf("Subject: %s | %s", m.Subject, text)
+		}
+
+		lines = append(lines, fmt.Sprintf("[%s %s] %s", ts, m.Direction, text))
 	}
 
-	body := renderBodyLines("", lines, uint64(len(msgs)) >= limit, "messages")
-	fillSuccess(res, "conversation_content", args.ReferenceID, body)
+	body := renderBodyLines("", lines, pagedOut, "messages")
+	fillSuccess(res, "conversation_content", conversationID.String(), body)
 	return res
+}
+
+// resolveConversationIDForContent decides which conversation
+// get_conversation_content reads: the caller-supplied conversation_id (or its
+// deprecated reference_id alias) when present, otherwise the conversation the
+// current Case was created from.
+//
+// It returns ok=false after having filled res with the terminal response --
+// an honest failure for caller/config errors, a masked not-found for anything
+// the caller may not see.
+func (h *aicallHandler) resolveConversationIDForContent(ctx context.Context, c *aicall.AIcall, conversationID string, referenceID string, res *messageContent) (uuid.UUID, bool) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "resolveConversationIDForContent",
+		"aicall_id": c.ID,
+	})
+
+	given := conversationID
+	if given == "" && referenceID != "" {
+		log.Debugf("Resolving get_conversation_content through the deprecated reference_id alias.")
+		given = referenceID
+	}
+
+	if given != "" {
+		id, err := uuid.FromString(given)
+		if err != nil || id == uuid.Nil {
+			fillFailed(res, fmt.Errorf("invalid conversation_id"))
+			return uuid.Nil, false
+		}
+		return id, true
+	}
+
+	// No explicit target: default to the Case's own conversation. The rID of
+	// every terminal response below is the Case id (c.ReferenceID), never the
+	// fetched case's own id, so a masked path stays byte-identical to a
+	// not-found one.
+	if c.ReferenceType != aicall.ReferenceTypeContactCase {
+		fillFailed(res, fmt.Errorf("get_conversation_content without conversation_id is only supported for contact_case reference type"))
+		return uuid.Nil, false
+	}
+
+	kase, err := h.reqHandler.ContactV1CaseGet(ctx, c.CustomerID, c.ReferenceID)
+	if err != nil {
+		if isNotFoundErr(err) {
+			fillSuccess(res, "conversation_content", c.ReferenceID.String(), msgResourceNotFound)
+			return uuid.Nil, false
+		}
+		log.Errorf("Could not get the case. err: %v", err)
+		fillFailed(res, fmt.Errorf("resource lookup failed"))
+		return uuid.Nil, false
+	}
+	if kase == nil {
+		log.Warnf("Received an empty case.")
+		fillSuccess(res, "conversation_content", c.ReferenceID.String(), msgResourceNotFound)
+		return uuid.Nil, false
+	}
+	if kase.CustomerID != c.CustomerID || kase.CustomerID == uuid.Nil {
+		// Defensive: tenant is already embedded in the RPC, but fail closed
+		// on any mismatch rather than trust a foreign response shape.
+		log.Warnf("Cross-customer case access blocked. case_customer_id: %s", kase.CustomerID)
+		fillSuccess(res, "conversation_content", c.ReferenceID.String(), msgResourceNotFound)
+		return uuid.Nil, false
+	}
+
+	if kase.ReferenceType != kmkase.ReferenceTypeConversationMessage {
+		fillSuccess(res, "conversation_content", c.ReferenceID.String(), msgCaseNotFromConversation)
+		return uuid.Nil, false
+	}
+
+	// Call-type and reference-less Cases really do store "" here, so an
+	// unparsable value is a routine outcome, not a data corruption signal.
+	id, err := uuid.FromString(kase.ReferenceID)
+	if err != nil || id == uuid.Nil {
+		fillSuccess(res, "conversation_content", c.ReferenceID.String(), msgCaseNotFromConversation)
+		return uuid.Nil, false
+	}
+
+	return id, true
 }
 
 // toolHandleGetRelatedCases lists OTHER cases belonging to the same contact
@@ -812,9 +920,10 @@ func (h *aicallHandler) toolHandleGetCallTranscript(ctx context.Context, c *aica
 	}
 
 	// §3.1 argument: call_id is the ONLY tool in the Insight set besides
-	// get_conversation_content (reference_id) to take an LLM-suppliable
-	// identifier. Three-branch validation, mirroring
-	// get_conversation_content's handling exactly.
+	// get_conversation_content (conversation_id) to take an LLM-suppliable
+	// identifier. Unlike conversation_id, which is optional and falls back to
+	// the Case's own conversation, call_id is required: three-branch
+	// validation (missing, malformed, zero).
 	var args struct {
 		CallID string `json:"call_id"`
 	}

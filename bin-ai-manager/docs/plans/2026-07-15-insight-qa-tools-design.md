@@ -152,6 +152,12 @@ everything" mode — that keeps this tool aligned with the CRM Q&A use case
 bulk export.
 
 **Resolution path (fixed 2 RPCs, independent of message/thread count):**
+> **SUPERSEDED by VOIP-1475 (2026-09-06):** this 2-RPC flow never worked in
+> production, because conversation-manager exposes no single-message route for
+> `ConversationV1MessageGet` to call. It is replaced by a single
+> conversation-scoped `ConversationV1MessageList` (filtered by
+> `conversation_id` + `customer_id`), defaulting to the Case's own conversation.
+> The rest of this section is kept as historical record.
 1. `ConversationV1MessageGet(ctx, referenceID)` — resolve the message the
    LLM pointed at. **Ownership check here is load-bearing**: if the message
    is absent OR `msg.CustomerID != c.CustomerID`, mask to
@@ -206,6 +212,9 @@ either call -> honest `fillFailed`, never masked.
    (`ConversationV1MessageGet` -> `ConversationV1MessageList` filtered by
    `conversation_id`), not N+1 per-message fetches and not a silent
    "most-recent" auto-pick. ✅ Confirmed.
+   **SUPERSEDED by VOIP-1475 (2026-09-06):** the argument is now an optional
+   `conversation_id` (defaulting to the Case's own conversation) resolved by a
+   single conversation-scoped `ConversationV1MessageList`.
 3. **Prompt-injection framing on quoted message content**: **DEFERRED, not
    in scope for this subtask.** 대표님 decided (2026-07-15) to handle this as a
    separate, consolidated effort across all tools that surface
@@ -216,7 +225,9 @@ either call -> honest `fillFailed`, never masked.
 
 Single service (`bin-ai-manager`). No new RPC (both tools compose existing
 `ContactV1CaseGet`, `ContactV1InteractionList`, `ConversationV1MessageGet`,
-`ConversationV1MessageList`). No OpenAPI/REST change (tools are internal LLM
+`ConversationV1MessageList`). **SUPERSEDED by VOIP-1475 (2026-09-06):**
+`ConversationV1MessageGet` is no longer used by these tools; the composed set is
+`ContactV1CaseGet`, `ContactV1InteractionList`, `ConversationV1MessageList`. No OpenAPI/REST change (tools are internal LLM
 function-calling surface only, exposed via existing `GET /v1/tools`). No
 DB/migration change. Matches this skill's "single-file/single-service, not
 the full cross-service fan-out" scoping guidance
