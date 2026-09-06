@@ -1484,11 +1484,11 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <p><strong>When to use:</strong></p>
 <ul class="simple">
 <li><p>Answering “has this customer contacted us before” / “what’s the interaction history”</p></li>
-<li><p>Discovering candidate conversation message ids to pass into <code class="docutils literal notranslate"><span class="pre">get_conversation_content</span></code></p></li>
+<li><p>Discovering the <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> of a past conversation to pass into <code class="docutils literal notranslate"><span class="pre">get_conversation_content</span></code> (conversation rows carry a <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> field for exactly that)</p></li>
 </ul>
 <p><strong>When NOT to use:</strong></p>
 <ul class="simple">
-<li><p>The actual message text is needed (use <code class="docutils literal notranslate"><span class="pre">get_conversation_content</span></code> with a <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> from this tool’s output)</p></li>
+<li><p>The actual message text is needed (use <code class="docutils literal notranslate"><span class="pre">get_conversation_content</span></code> with a <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> from this tool’s output)</p></li>
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -1511,20 +1511,23 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </section>
 <section id="get-conversation-content">
 <span id="ai-struct-tool-get-conversation-content"></span><h3>get_conversation_content<a class="headerlink" href="#get-conversation-content" title="Link to this heading">¶</a></h3>
-<p>Retrieves the message transcript of a conversation, given the <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> of a <code class="docutils literal notranslate"><span class="pre">conversation_message</span></code>-type interaction returned by <a class="reference internal" href="#ai-struct-tool-get-contact-interactions"><span class="std std-ref">get_contact_interactions</span></a>.</p>
+<p>Returns the message thread of a conversation, oldest first.</p>
+<p>Called with no arguments it reads the conversation the current Case was created from, the common case (e.g. “what did the customer just say?”). Pass <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code>, taken from the <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> field of a conversation row returned by <a class="reference internal" href="#ai-struct-tool-get-contact-interactions"><span class="std std-ref">get_contact_interactions</span></a>, to read a different conversation.</p>
 <p><strong>When to use:</strong></p>
 <ul class="simple">
 <li><p>The actual text of what was said is needed, not just that an interaction happened</p></li>
-<li><p>A <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> from <code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code> is already available for the conversation to read</p></li>
+<li><p>Answering anything about what was written in the current Case’s conversation</p></li>
 </ul>
 <p><strong>When NOT to use:</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code> has not been called yet — call it first to discover candidate <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> values</p></li>
+<li><p>A conversation other than the current Case’s is needed and its <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> is not known yet. Call <code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code> first</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Only conversations owned by the caller’s own account can be retrieved; anything else returns “Resource not found.”</p>
+<p>Only conversations owned by the caller’s own account are visible; anything else returns “no messages found”.</p>
+<p>The returned page is the most recent <code class="docutils literal notranslate"><span class="pre">limit</span></code> messages of the thread, rendered oldest first. When the page is full, a marker states that earlier messages were omitted.</p>
+<p>When the current Case did not originate from a conversation (for example a call-type Case), the tool answers that explicitly and points at <code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code>. It is a successful answer, not a failure.</p>
 </div>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -1535,17 +1538,16 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
             <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to reason about the retrieved conversation content.&quot;</span><span class="p">,</span>
             <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;conversation_id&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The reference id of a conversation_message-type interaction, as returned by get_contact_interactions.&quot;</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The id of the conversation to read, as returned in get_contact_interactions&#39; conversation_id field. Omit it to read the conversation the current Case was created from.&quot;</span>
         <span class="p">},</span>
         <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum number of messages to return from the resolved conversation (default 20, max 50).&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum number of messages to return from the conversation (default 20, max 50).&quot;</span><span class="p">,</span>
             <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">20</span>
         <span class="p">}</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;reference_id&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>

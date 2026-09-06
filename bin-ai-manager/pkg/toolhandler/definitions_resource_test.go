@@ -158,3 +158,49 @@ func TestCreateCallActionsEnumMatchesTypeListAll(t *testing.T) {
 		}
 	}
 }
+
+// TestGetConversationContentSchema locks the get_conversation_content JSON
+// schema after VOIP-1475: the tool takes an OPTIONAL conversation_id (the old
+// required reference_id was a message id the backend has no route to resolve),
+// so no parameter may be required.
+func TestGetConversationContentSchema(t *testing.T) {
+	var def *tool.Tool
+	for i := range toolDefinitions {
+		if toolDefinitions[i].Name == tool.ToolNameGetConversationContent {
+			def = &toolDefinitions[i]
+			break
+		}
+	}
+	if def == nil {
+		t.Fatalf("get_conversation_content tool definition not found in definitions.go")
+	}
+
+	props, ok := def.Parameters["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_conversation_content parameters has no properties map")
+	}
+
+	for _, name := range []string{"conversation_id", "limit", "run_llm"} {
+		if _, ok := props[name].(map[string]any); !ok {
+			t.Errorf("get_conversation_content has no %s property", name)
+		}
+	}
+	if ct, _ := props["conversation_id"].(map[string]any); ct != nil {
+		if got, _ := ct["type"].(string); got != "string" {
+			t.Errorf("conversation_id type = %q, want \"string\"", got)
+		}
+	}
+	if _, exists := props["reference_id"]; exists {
+		t.Errorf("get_conversation_content must not advertise reference_id anymore (props: %v)", props)
+	}
+
+	if req, exists := def.Parameters["required"]; exists {
+		got, ok := req.([]string)
+		if !ok {
+			t.Fatalf("get_conversation_content required is not []string: %T", req)
+		}
+		if len(got) != 0 {
+			t.Errorf("required = %v, want absent or empty (conversation_id is optional)", got)
+		}
+	}
+}

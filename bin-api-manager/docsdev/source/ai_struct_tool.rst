@@ -860,11 +860,11 @@ Lists past interactions (calls, conversation messages) with the contact/peer of 
 **When to use:**
 
 * Answering "has this customer contacted us before" / "what's the interaction history"
-* Discovering candidate conversation message ids to pass into ``get_conversation_content``
+* Discovering the ``conversation_id`` of a past conversation to pass into ``get_conversation_content`` (conversation rows carry a ``conversation_id`` field for exactly that)
 
 **When NOT to use:**
 
-* The actual message text is needed (use ``get_conversation_content`` with a ``reference_id`` from this tool's output)
+* The actual message text is needed (use ``get_conversation_content`` with a ``conversation_id`` from this tool's output)
 
 **Parameters:**
 
@@ -891,20 +891,26 @@ Lists past interactions (calls, conversation messages) with the contact/peer of 
 get_conversation_content
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Retrieves the message transcript of a conversation, given the ``reference_id`` of a ``conversation_message``-type interaction returned by :ref:`get_contact_interactions <ai-struct-tool-get_contact_interactions>`.
+Returns the message thread of a conversation, oldest first.
+
+Called with no arguments it reads the conversation the current Case was created from, the common case (e.g. "what did the customer just say?"). Pass ``conversation_id``, taken from the ``conversation_id`` field of a conversation row returned by :ref:`get_contact_interactions <ai-struct-tool-get_contact_interactions>`, to read a different conversation.
 
 **When to use:**
 
 * The actual text of what was said is needed, not just that an interaction happened
-* A ``reference_id`` from ``get_contact_interactions`` is already available for the conversation to read
+* Answering anything about what was written in the current Case's conversation
 
 **When NOT to use:**
 
-* ``get_contact_interactions`` has not been called yet — call it first to discover candidate ``reference_id`` values
+* A conversation other than the current Case's is needed and its ``conversation_id`` is not known yet. Call ``get_contact_interactions`` first
 
 .. note:: **AI Implementation Hint**
 
-   Only conversations owned by the caller's own account can be retrieved; anything else returns "Resource not found."
+   Only conversations owned by the caller's own account are visible; anything else returns "no messages found".
+
+   The returned page is the most recent ``limit`` messages of the thread, rendered oldest first. When the page is full, a marker states that earlier messages were omitted.
+
+   When the current Case did not originate from a conversation (for example a call-type Case), the tool answers that explicitly and points at ``get_contact_interactions``. It is a successful answer, not a failure.
 
 **Parameters:**
 
@@ -918,17 +924,16 @@ Retrieves the message transcript of a conversation, given the ``reference_id`` o
                 "description": "Set true to reason about the retrieved conversation content.",
                 "default": true
             },
-            "reference_id": {
+            "conversation_id": {
                 "type": "string",
-                "description": "The reference id of a conversation_message-type interaction, as returned by get_contact_interactions."
+                "description": "The id of the conversation to read, as returned in get_contact_interactions' conversation_id field. Omit it to read the conversation the current Case was created from."
             },
             "limit": {
                 "type": "integer",
-                "description": "Maximum number of messages to return from the resolved conversation (default 20, max 50).",
+                "description": "Maximum number of messages to return from the conversation (default 20, max 50).",
                 "default": 20
             }
-        },
-        "required": ["reference_id"]
+        }
     }
 
 .. _ai-struct-tool-get_related_cases:
