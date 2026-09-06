@@ -1511,8 +1511,8 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </section>
 <section id="get-conversation-content">
 <span id="ai-struct-tool-get-conversation-content"></span><h3>get_conversation_content<a class="headerlink" href="#get-conversation-content" title="Link to this heading">¶</a></h3>
-<p>Returns the message thread of a conversation, oldest first.</p>
-<p>Called with no arguments it reads the conversation the current Case was created from, the common case (e.g. “what did the customer just say?”). Pass <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code>, taken from the <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> field of a conversation row returned by <a class="reference internal" href="#ai-struct-tool-get-contact-interactions"><span class="std std-ref">get_contact_interactions</span></a>, to read a different conversation.</p>
+<p>Returns the message thread of a conversation, oldest first. Called with no arguments it reads the conversation the current Case was created from, which is the default and the common case (e.g. “what did the customer just say?”).</p>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> only when a different, past conversation is asked about, taken from the <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> field of a conversation row returned by <a class="reference internal" href="#ai-struct-tool-get-contact-interactions"><span class="std std-ref">get_contact_interactions</span></a>. A message id is never a valid value.</p>
 <p><strong>When to use:</strong></p>
 <ul class="simple">
 <li><p>The actual text of what was said is needed, not just that an interaction happened</p></li>
@@ -1525,9 +1525,9 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Only conversations owned by the caller’s own account are visible; anything else returns “no messages found”.</p>
+<p>Only conversations owned by the caller’s own account are visible. If the <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> passed has no messages visible to that account and the AIcall belongs to a Case, the tool falls back to that Case’s own conversation and prefixes the result with a note saying so; an invalid <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> is ignored the same way. Outside a Case there is no fallback and the answer is “no messages found”.</p>
 <p>The returned page is the most recent <code class="docutils literal notranslate"><span class="pre">limit</span></code> messages of the thread, rendered oldest first. When the page is full, a marker states that earlier messages were omitted.</p>
-<p>When the current Case did not originate from a conversation (for example a call-type Case), the tool answers that explicitly and points at <code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code>. It is a successful answer, not a failure.</p>
+<p>For a no-argument call, when the current Case did not originate from a conversation (for example a call-type Case), the tool answers that explicitly and points at <code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code>. It is a successful answer, not a failure. With an explicit <code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> there is no such answer: a call-type Case simply leaves the fallback with nothing to show, so the tool returns “no messages found”.</p>
 </div>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>

@@ -784,9 +784,9 @@ run_llm: Set true to reason about the returned interaction history.`,
 	{
 		Name:   tool.ToolNameGetConversationContent,
 		RunLLM: true,
-		Description: `Returns the message thread of a conversation, oldest first.
+		Description: `Returns the message thread of a conversation, oldest first. Call it with NO arguments to read the conversation this Case was created from; that is the default and the common case.
 
-With no arguments it reads the conversation this Case was created from, which is the common case (e.g. "what did the customer just say?"). Pass conversation_id (from get_contact_interactions' conversation_id field) to read a different conversation.
+Pass conversation_id only when the agent asks about a different, past conversation, using the conversation_id field from get_contact_interactions. Never pass a message id. If the conversation_id you pass has no visible messages and this AIcall belongs to a Case, the tool falls back to that Case's own conversation and says so.
 
 WHEN TO USE:
 - You need the actual text of what was said, not just that an interaction happened.
@@ -798,7 +798,7 @@ WHEN NOT TO USE:
 ARGUMENTS:
 - conversation_id (optional): the id of the conversation to read, as returned in get_contact_interactions' conversation_id field. Omit it to read this Case's own conversation.
 
-Only conversations owned by your account are visible; anything else returns "no messages found".
+Only conversations owned by your account are visible. If the conversation_id you pass has no visible messages and this AIcall belongs to a Case, the tool falls back to that Case's own conversation and says so in the first line; an invalid conversation_id is ignored the same way. Outside a Case there is no fallback and the answer is "no messages found".
 
 run_llm: Set true to reason about the retrieved conversation content.`,
 		Parameters: map[string]any{

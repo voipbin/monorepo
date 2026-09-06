@@ -891,9 +891,9 @@ Lists past interactions (calls, conversation messages) with the contact/peer of 
 get_conversation_content
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Returns the message thread of a conversation, oldest first.
+Returns the message thread of a conversation, oldest first. Called with no arguments it reads the conversation the current Case was created from, which is the default and the common case (e.g. "what did the customer just say?").
 
-Called with no arguments it reads the conversation the current Case was created from, the common case (e.g. "what did the customer just say?"). Pass ``conversation_id``, taken from the ``conversation_id`` field of a conversation row returned by :ref:`get_contact_interactions <ai-struct-tool-get_contact_interactions>`, to read a different conversation.
+Pass ``conversation_id`` only when a different, past conversation is asked about, taken from the ``conversation_id`` field of a conversation row returned by :ref:`get_contact_interactions <ai-struct-tool-get_contact_interactions>`. A message id is never a valid value.
 
 **When to use:**
 
@@ -906,11 +906,11 @@ Called with no arguments it reads the conversation the current Case was created 
 
 .. note:: **AI Implementation Hint**
 
-   Only conversations owned by the caller's own account are visible; anything else returns "no messages found".
+   Only conversations owned by the caller's own account are visible. If the ``conversation_id`` passed has no messages visible to that account and the AIcall belongs to a Case, the tool falls back to that Case's own conversation and prefixes the result with a note saying so; an invalid ``conversation_id`` is ignored the same way. Outside a Case there is no fallback and the answer is "no messages found".
 
    The returned page is the most recent ``limit`` messages of the thread, rendered oldest first. When the page is full, a marker states that earlier messages were omitted.
 
-   When the current Case did not originate from a conversation (for example a call-type Case), the tool answers that explicitly and points at ``get_contact_interactions``. It is a successful answer, not a failure.
+   For a no-argument call, when the current Case did not originate from a conversation (for example a call-type Case), the tool answers that explicitly and points at ``get_contact_interactions``. It is a successful answer, not a failure. With an explicit ``conversation_id`` there is no such answer: a call-type Case simply leaves the fallback with nothing to show, so the tool returns "no messages found".
 
 **Parameters:**
 
