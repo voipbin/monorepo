@@ -45,7 +45,7 @@ func (h *server) GetServiceAgentsTranscripts(c *gin.Context, params openapi_serv
 
 	tmps, err := h.serviceHandler.ServiceAgentTranscriptList(c.Request.Context(), a, pageSize, pageToken, transcribeID)
 	if err != nil {
-		logrus.Errorf("Could not get transcripts info. err: %v", err)
+		log.Errorf("Could not get transcripts. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}

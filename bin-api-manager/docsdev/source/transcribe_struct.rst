@@ -163,8 +163,8 @@ Example
         "transcribe_id": "bbf08426-3979-41bc-a544-5fc92c237848",
         "direction": "in",
         "message": "Hi, good to see you. How are you today.",
-        "tm_transcript": "0001-01-01 00:05:04.441160",
-        "tm_create": "2024-04-01 07:22:07.229309"
+        "tm_transcript": "0001-01-01T00:05:04.44116Z",
+        "tm_create": "2024-04-01T07:22:07.229309Z"
     }
 
 .. _transcribe-struct-transcription-direction:

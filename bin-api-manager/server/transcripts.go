@@ -43,9 +43,9 @@ func (h *server) GetTranscripts(c *gin.Context, params openapi_server.GetTranscr
 	transcribeID := uuid.FromStringOrNil(params.TranscribeId)
 	log.Debugf("Received request detail. transcribe_id: %s, page_size: %d, page_token: %s", transcribeID, pageSize, pageToken)
 
-	tmps, err := h.serviceHandler.TranscriptList(c.Request.Context(), a, transcribeID)
+	tmps, err := h.serviceHandler.TranscriptList(c.Request.Context(), a, pageSize, pageToken, transcribeID)
 	if err != nil {
-		logrus.Errorf("Could not get transcribes info. err: %v", err)
+		log.Errorf("Could not get transcripts. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}
