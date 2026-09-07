@@ -21,11 +21,12 @@ Python environment variables (set in `.env` or exported):
 |-----|---------|
 | `OPENAI_API_KEY` | OpenAI LLM |
 | `XAI_API_KEY` | Grok (xAI) LLM |
-| `GOOGLE_API_KEY` | Gemini LLM + Google TTS |
-| `ANTHROPIC_API_KEY` | Anthropic Claude |
+| `GOOGLE_API_KEY` | Gemini LLM only (passed explicitly to `GoogleLLMService`) |
+| `ANTHROPIC_API_KEY` | Not used today. The runner's LLM dispatch (`run.py`) handles only OpenAI, Grok and Gemini, and no deployment provisions this key. |
 | `DEEPGRAM_API_KEY` | Deepgram STT |
 | `CARTESIA_API_KEY` | Cartesia TTS |
 | `ELEVENLABS_API_KEY` | ElevenLabs TTS |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Google Cloud TTS/STT. `GoogleTTSService`/`GoogleSTTService` take no api_key and fall back to Application Default Credentials, so they need a service account key file, not `GOOGLE_API_KEY`. On GKE this came implicitly from the node metadata server; on bare metal the Komodo stack mounts the shared `bin-manager` service account at `/run/secrets/google_service_account.json` (VOIP-1482). |
 
 ## Prometheus Metrics
 
@@ -87,7 +88,7 @@ cd scripts/pipecat && uvicorn main:app --host 0.0.0.0 --port 8000
 ## Deployment Notes
 
 - Both Go (port 8080) and Python (port 8000) components must be running in the same network namespace — the Go side drives the Python runner at `http://localhost:8000/run`.
-- The Dockerfile builds one image carrying both the Go binary and the Python pipeline (deps preinstalled); each deployment runs it twice — once as the Go service, once as the Python runner. On GKE these were two containers in one pod (`k8s/deployment.yml`); on Komodo/Compose they are the `pipecat-manager` and `pipecat-script-runner` services, the latter joined via `network_mode: "service:pipecat-manager"`.
+- The Dockerfile builds one image carrying both the Go binary and the Python pipeline (deps preinstalled); each deployment runs it twice — once as the Go service, once as the Python runner. On GKE these were two containers in one pod (`k8s/deployment.yml`); on Komodo/Compose they are the `pipecat-manager-1`/`-2` and `pipecat-script-runner-1`/`-2` services, each runner joined to its own manager via `network_mode: "service:pipecat-manager-N"`.
 - Per-pod queues are declared **volatile** — they auto-delete when the pod terminates, preventing dead-letter buildup.
 
 ## Deployment (Komodo)
@@ -95,7 +96,22 @@ cd scripts/pipecat && uvicorn main:app --host 0.0.0.0 --port 8000
 Komodo-managed (VOIP-1350), same mechanism as the other `bin-*-manager` services
 (see bin-call-manager for the original pattern). Deployed via
 `.circleci/scripts/render-image-tag.sh` + `.circleci/scripts/komodo-api-deploy.sh`
-from `komodo/docker-compose.yml`.
+from `komodo/docker-compose.yml`, with `komodo/environment.env` passed as the
+deploy script's optional third argument and PATCHed into the Stack's own
+`environment` field.
+
+That environment file carries `GCP_SA_JSON=[[BIN_MANAGER__GOOGLE_APPLICATION_CREDENTIALS_JSON]]`,
+the Komodo Variable holding the shared `bin-manager` Google service account key.
+Compose materializes it as the `gcp_sa_json` secret at
+`/run/secrets/google_service_account.json` in both runners (VOIP-1482).
+
+**If that Variable is missing, the deploy fails and takes the runners down.**
+Compose refuses to start a service whose secret has no source, so `docker compose up`
+exits non-zero and the deploy goes red, but the runner containers have already been
+recreated and are left in `Created`. `restart: always` never applies to a container
+that never reached Running, so both runners stay down and every `ai_talk` fails,
+which is worse than the Google-only breakage this change fixes. Treat a failed
+deploy here as a live outage: set the Variable and redeploy.
 
 Three deviations from the Tier 1/2 template, all intentional:
 - **Non-distroless runtime** (`python:3.12-slim`, needed to run the Python
@@ -115,8 +131,10 @@ Three deviations from the Tier 1/2 template, all intentional:
   NOJIRA-Fix-pipecat-runner-sidecar): the Python Pipecat pipeline runs as
   a second service from the same image (`python /app/scripts/pipecat/main.py`,
   uvicorn on 0.0.0.0:8000), sharing the Go container's network namespace
-  via `network_mode: "service:pipecat-manager"` so localhost:8000 works
+  via `network_mode: "service:pipecat-manager-N"` so localhost:8000 works
   exactly as it did in the GKE pod. It was dropped in the original Komodo
   cutover, which made every `ai_talk` action fail with connection-refused
-  on localhost:8000 and tear the call down. It receives the same six
-  STT/LLM/TTS API-key env vars the GKE runner container had.
+  on localhost:8000 and tear the call down. It receives the
+  STT/LLM/TTS API-key env vars the GKE runner container had, plus the
+  Google service account key GKE used to supply implicitly through the
+  node metadata server (mounted as a Compose secret, VOIP-1482).
