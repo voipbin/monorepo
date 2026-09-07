@@ -1,8 +1,11 @@
 # voip-kamailio-proxy — Subsystems
 
-This service is class **A**: a standalone Go service, deployed on its own and not co-located with any SIP daemon.
+This service is registered as class **A+sub**, but the `sub` is a naming heuristic: it is a standalone Go service, deployed on its own and not co-located with any SIP daemon. See `CLAUDE.md`.
 
-## Relationship to the Kamailio SIP daemon
+## Native Daemon Overview
+
+There is no native daemon in this service's deployment. The section below explains
+why the name suggests otherwise.
 
 Despite the name, this service does not start, stop, configure, or communicate
 with the Kamailio SIP daemon. It never did at runtime; it used to be deployed
@@ -18,6 +21,13 @@ whitelist and TLS transport are owned by a separate repository
 documented there. Sections describing them used to live in this file, which
 made this service look like it managed the daemon.
 
+## Configuration
+
+All configuration is environment variables, read in `cmd/kamailio-proxy/init.go`.
+The values used in production, and which defaults are deliberately left unset,
+are documented in [../komodo/README.md](../komodo/README.md); the full table with
+failure modes is in [operations.md](operations.md).
+
 ## Deployment Notes
 
 ### Container model
@@ -28,16 +38,13 @@ The Dockerfile (`voip-kamailio-proxy/Dockerfile`) builds only the Go binary. The
 
 On startup, the proxy reads the MAC address from `--interface_name` (default `eth0`) to derive a unique instance ID. This ID is used to name the volatile RabbitMQ queue `voip.kamailio.<mac>.request`, but the queue is declared and consumed without ever being addressed by any publisher; the queue that is actually addressed is the shared permanent queue `voip.kamailio.request`.
 
-Unlike `voip-asterisk-proxy`, `voip-kamailio-proxy` does **not** register its address in Redis or patch Kubernetes annotations. Identity is purely through RabbitMQ queue naming.
+Unlike `voip-asterisk-proxy`, `voip-kamailio-proxy` does **not** register its address anywhere. Identity is purely through RabbitMQ queue naming.
 
-### Network policy considerations
+### Egress
 
-Outbound UDP on port 5060 must be permitted from the proxy container to the SIP provider IPs. If network policies are restrictive, health checks will always time out, and every provider will be marked unhealthy.
-
-```yaml
-# Example: allow egress to SIP providers on UDP 5060
-egress:
-  - ports:
-      - port: 5060
-        protocol: UDP
-```
+Outbound UDP on port 5060 must reach the SIP provider IPs. The container sits on
+the `production` Docker bridge, which SNATs outbound traffic to the host's
+default egress address; there is no policy object to configure. If egress is
+blocked upstream, every health check times out and every provider is marked
+unhealthy, regardless of whether the providers are actually reachable from
+elsewhere.

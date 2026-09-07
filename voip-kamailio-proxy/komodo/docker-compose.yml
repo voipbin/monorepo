@@ -39,7 +39,9 @@ services:
     # to get them wrong. Both defaults are pinned by cmd/kamailio-proxy/main_test.go.
     # PROMETHEUS_LISTEN_ADDRESS is written out even though :2112 is the default,
     # matching all 33 bin-*-manager peers: the Ansible precedent used :9102,
-    # which a port-2112 dns_sd scrape job would never reach.
+    # which the planned port-2112 scrape job would not reach. Nothing scrapes
+    # this stack yet - the job is the monorepo-etc half of VOIP-1486. See
+    # komodo/README.md, Monitoring.
     environment:
       - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
       - SIP_TIMEOUT=5s

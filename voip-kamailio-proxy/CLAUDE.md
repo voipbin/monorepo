@@ -1,6 +1,8 @@
 # voip-kamailio-proxy
 
-Service class: **A** - standalone Go RPC service. Exposes SIP OPTIONS health check endpoints over RabbitMQ.
+Service class: **A+sub** - standalone Go RPC service. Exposes SIP OPTIONS health check endpoints over RabbitMQ.
+
+The `+sub` is a filesystem heuristic in `docs/reference/service-taxonomy-gen.sh` (a `voip-*` name with a `pkg/listenhandler/`), not a fact about this service: it has no embedded native daemon and is not deployed alongside one. The label is kept so this file agrees with the generated `docs/reference/service-taxonomy.md`; reconciling the two is VOIP-1488.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 

@@ -4,7 +4,7 @@
 
 ### RabbitMQ connection refused
 
-**Symptom:** Container keeps running, but logs repeat `Could not connect to rabbitmq. Will retry again after 1 sec` and no queue consumer is ever registered. The RabbitMQ handler retries the connection forever at 1s intervals (`bin-common-handler/pkg/rabbitmqhandler/main.go:244`); the service never exits over this.
+**Symptom:** Container keeps running, but logs repeat `Could not connect to rabbitmq. Will retry again after 1 sec` and no queue consumer is ever registered. The RabbitMQ handler retries the connection forever at 1s intervals (`bin-common-handler/pkg/rabbitmqhandler/main.go:250`); the service never exits over this.
 
 **Cause:** RabbitMQ is not reachable at `RABBITMQ_ADDRESS`.
 
@@ -35,7 +35,7 @@
 
 **Resolution:**
 1. Test manually: `nc -u <hostname> 5060` or `tcpdump -i eth0 udp port 5060`
-2. Increase timeout: `SIP_TIMEOUT=10s`
+2. Increase timeout, but keep it below the caller's RPC deadline: `SIP_TIMEOUT=8s`. bin-route-manager gives the RPC 10s (`bin-common-handler/pkg/requesthandler/main.go:152`), so a probe budget of 10s or more turns a slow provider into an RPC timeout at the caller instead of an unhealthy verdict.
 3. Verify DNS: `nslookup <hostname>` from within the container.
 
 ### Queue not being consumed

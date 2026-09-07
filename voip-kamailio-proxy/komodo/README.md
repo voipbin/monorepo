@@ -49,7 +49,7 @@ Set explicitly:
 | `RABBITMQ_ADDRESS` | Komodo variable | Broker address. |
 | `SIP_TIMEOUT` | `5s` | The per-probe budget. Visible next to route-manager's 10 second RPC timeout, so the relationship between the two is legible. |
 | `PROMETHEUS_ENDPOINT` | `/metrics` | Matches the bin-*-manager peers. |
-| `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | The default, written out on purpose: the Ansible precedent used `:9102`, which the Prometheus scrape job would never reach. |
+| `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | The default, written out on purpose: the Ansible precedent used `:9102`, which the planned scrape job will not reach. See Monitoring below. |
 
 Deliberately omitted, because their defaults are already the values needed and
 writing them out is the only way to get them wrong:
@@ -69,6 +69,21 @@ CircleCI workflow `voip-kamailio-proxy`: test, then build (behind the
 image tag into this compose file and pushes it to Komodo as the stack
 `voip-kamailio-proxy`. Approving `build-approval` deploys to production.
 
+## Monitoring
+
+The stack exposes metrics on `:2112`, but **nothing scrapes it yet.** Prometheus
+discovers the `bin-*-manager` fleet from a static list of service names, and
+`kamailio-proxy` is not on it. Until a scrape job is added in `monorepo-etc`
+(`infra-prometheus`, the second half of VOIP-1486):
+
+- there is no alert if this stack disappears or drops to one replica, and
+- the post-deploy check in `docs/workflows/manager-replica-scaling.md`,
+  `count(up{job="voipbin-managers", service="kamailio-proxy"}) == 2`, returns
+  empty rather than 2. That is the expected result right now, not a failed
+  deploy.
+
+Until then, verify by hand as below.
+
 ## Verification
 
 ```bash
@@ -81,8 +96,12 @@ After deploying, on the host:
 
 ```bash
 docker ps --filter name=kamailio-proxy          # expect 2 containers
-rabbitmqctl list_queues name consumers | grep voip.kamailio.request   # expect 2
+docker exec infra-rabbitmq rabbitmqctl list_queues name consumers \
+  | grep voip.kamailio.request                  # expect 2
 ```
+
+`rabbitmqctl` is not installed on the host; the broker runs in the
+`infra-rabbitmq` container.
 
 Provider health updating is the real signal: `health_checked_at` should advance
 every 30 seconds, and route-manager's log should stop reporting health-check

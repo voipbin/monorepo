@@ -1,6 +1,6 @@
 # voip-kamailio-proxy — Architecture
 
-Service class: **A** (standalone Go RPC service).
+Service class: **A+sub** by the generated taxonomy, though the `sub` is a naming heuristic: this is a standalone Go RPC service with no embedded daemon. See `CLAUDE.md`.
 
 ## Component Overview
 
@@ -24,7 +24,7 @@ Service class: **A** (standalone Go RPC service).
                                                                   (carrier)
 ```
 
-The SIP OPTIONS health check is performed by the Go service itself (not forwarded to Kamailio). Kamailio handles all actual SIP routing; the Go proxy only handles health checks and RabbitMQ routing.
+The SIP OPTIONS health check is performed by the Go service itself. It opens its own UDP socket to the carrier; no SIP proxy is involved on the way out.
 
 ## Layer Responsibilities
 

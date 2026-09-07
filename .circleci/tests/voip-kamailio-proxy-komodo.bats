@@ -10,11 +10,17 @@
 # shapes rather than bare substrings, because both files carry comments that
 # mention the very names some assertions require to be ABSENT.
 #
-# KNOWN TRIGGER GAP: this suite is armed by .circleci/tests/.* (config.yml:59-62),
-# not by voip-kamailio-proxy/.*, so editing the compose file alone does not
-# re-run it. Accepted: the highest-value property (the __IMAGE_TAG__
-# placeholder) is independently enforced at deploy time by
-# render-image-tag.sh, which exits 1 when the placeholder is missing.
+# KNOWN TRIGGER GAP: shell-tests is armed only by .circleci/scripts/.*,
+# .circleci/tests/.*, docs/reference/extractor.sh and docs/reference/tests/.*
+# (config.yml:59-62). Neither voip-kamailio-proxy/.* nor .circleci/config_work.yml
+# is on that list, so editing the compose file or the deploy wiring does not
+# re-run this suite; only editing a file under .circleci/tests/ does.
+#
+# Partial mitigation, and only for the compose file: the single highest-value
+# property, the __IMAGE_TAG__ placeholder, is independently enforced at deploy
+# time by render-image-tag.sh, which exits 1 when it is missing. The two
+# CI-wiring assertions at the end have no such backstop - they are a guard for
+# a reviewer to run, not a gate CI will apply on their behalf.
 
 load test_helper
 
@@ -24,6 +30,12 @@ CONFIG_WORK=".circleci/config_work.yml"
 
 setup() {
     cd "$REPO_ROOT"
+}
+
+# bats aborts a test body on the first failed assertion, so an inline
+# teardown_test_env would leak the mktemp -d whenever a test actually fails.
+teardown() {
+    teardown_test_env
 }
 
 @test "compose: file exists and declares exactly one service, kamailio-proxy" {
@@ -50,8 +62,6 @@ setup() {
     [ "$status" -eq 0 ]
     [ "$(grep -c '__IMAGE_TAG__' "$copy")" -eq 0 ]
     [ "$(grep -c ':deadbeefcafe1234' "$copy")" -eq 1 ]
-
-    teardown_test_env
 }
 
 @test "compose: restart always, two replicas, no container_name" {
@@ -64,6 +74,11 @@ setup() {
 }
 
 @test "compose: environment sets exactly the four intended variables" {
+    # Count first, so a fifth variable cannot slip in alongside the four
+    # asserted below.
+    run bash -c "awk '/^    environment:/{f=1;next} /^    [a-z]/{f=0} f' '$COMPOSE' | grep -cE '^      - [A-Z_]+='"
+    [ "$output" -eq 4 ]
+
     [ "$(grep -cE '^[[:space:]]*-[[:space:]]*RABBITMQ_ADDRESS=\[\[BIN_MANAGER__RABBITMQ_ADDRESS\]\]$' "$COMPOSE")" -eq 1 ]
     [ "$(grep -cE '^[[:space:]]*-[[:space:]]*PROMETHEUS_LISTEN_ADDRESS=:2112$' "$COMPOSE")" -eq 1 ]
     [ "$(grep -cE '^[[:space:]]*-[[:space:]]*PROMETHEUS_ENDPOINT=/metrics$' "$COMPOSE")" -eq 1 ]
