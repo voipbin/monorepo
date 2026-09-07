@@ -13,20 +13,32 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TranscriptGets sends a request to transcribe-manager
-// to getting a list of transcribes.
-// it returns list of transcribe info if it succeed.
-func (h *serviceHandler) TranscriptList(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error) {
+// TranscriptList sends a request to transcribe-manager to get a page of
+// transcript lines for one transcribe session (newest first, `size` rows
+// older than `token`).
+// The admin-surface counterpart of ServiceAgentTranscriptList: same shape,
+// admin/manager permission on the fetched transcribe's customer.
+func (h *serviceHandler) TranscriptList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "TranscribeGets",
+		"func":          "TranscriptList",
 		"customer_id":   a.CustomerID,
 		"username":      a.DisplayName(),
 		"transcribe_id": transcribeID,
+		"size":          size,
+		"token":         token,
 	})
+
+	// An empty token means "from now", as TranscribeList and
+	// ServiceAgentTranscriptList do. Set here (not left to
+	// transcribe-manager) so the token this handler sends is fully
+	// determined by its inputs (VOIP-1480).
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
 
 	t, err := h.transcribeGet(ctx, transcribeID)
 	if err != nil {
@@ -50,7 +62,7 @@ func (h *serviceHandler) TranscriptList(ctx context.Context, a *auth.AuthIdentit
 		return nil, err
 	}
 
-	tmps, err := h.reqHandler.TranscribeV1TranscriptList(ctx, "", 100, typedFilters)
+	tmps, err := h.reqHandler.TranscribeV1TranscriptList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get transcripts from the transcribe-manager. err: %v", err)
 		return nil, err

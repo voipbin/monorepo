@@ -1160,7 +1160,7 @@ type ServiceHandler interface {
 	SpeakingDelete(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error)
 
 	// transcript handlers
-	TranscriptList(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error)
+	TranscriptList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error)
 
 	// transfer handler
 	TransferStart(ctx context.Context, a *auth.AuthIdentity, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.WebhookMessage, error)

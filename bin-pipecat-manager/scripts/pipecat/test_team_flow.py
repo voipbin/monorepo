@@ -1,14 +1,17 @@
 """Tests for build_team_flow() conversation history injection."""
 
+import asyncio
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 # conftest.py mocks team_flow itself (for run.py tests). Remove it so we
 # can import the real module. conftest already stubs pipecat_flows, common,
 # aiohttp, etc., which team_flow.py needs.
 sys.modules.pop("team_flow", None)
 
-from team_flow import build_team_flow  # noqa: E402
+from team_flow import build_team_flow, _create_transition_handler  # noqa: E402
 
 
 def _make_team(members, start_member_id):
@@ -279,3 +282,42 @@ class TestBuildTeamFlowConversationHistory:
         assert start_node["task_messages"] == llm_messages
         assert start_node["task_messages"][0]["name"] == "Alice"
         assert start_node["task_messages"][0]["timestamp"] == 12345
+
+
+@pytest.mark.asyncio
+async def test_transition_handler_with_no_tts_stt_routers():
+    """VOIP-1481: a member transition works when both audio routers are None.
+
+    In a text-only team session there is no routing TTS/STT, so the transition
+    handler must switch only the LLM router, update the shared state and still
+    notify Go. This path becomes reachable in production with the audio-mode
+    gate and was previously untested.
+    """
+    routing_llm = MagicMock()
+    member_nodes = {"m2": {"name": "m2"}}
+    current_state = {"active_member_id": "m1"}
+    resolved_team = _make_team([_make_member("m1"), _make_member("m2")], "m1")
+
+    handler = _create_transition_handler(
+        next_member_id="m2",
+        member_nodes=member_nodes,
+        routing_llm=routing_llm,
+        routing_tts=None,
+        routing_stt=None,
+        current_state=current_state,
+        pipecatcall_id="pc-1",
+        resolved_team=resolved_team,
+        function_name="transfer_to_m2",
+    )
+
+    with patch("team_flow._notify_member_switched", new=AsyncMock()) as mock_notify:
+        result = await handler({}, MagicMock())
+        # Let the fire-and-forget notification task run before asserting.
+        await asyncio.sleep(0)
+
+    assert result == ({"status": "transferred"}, member_nodes["m2"])
+    routing_llm.set_active_member.assert_called_once_with("m2")
+    assert current_state["active_member_id"] == "m2"
+    mock_notify.assert_awaited_once_with(
+        "pc-1", "m1", "m2", "transfer_to_m2", resolved_team,
+    )

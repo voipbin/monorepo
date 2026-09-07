@@ -99,6 +99,8 @@ async def init_pipeline(
             id, resolved_team,
             stt_language=stt_language,
             tts_language=tts_language,
+            stt_type=stt_type,
+            tts_type=tts_type,
             llm_messages=llm_messages,
             vad_config=vad_config,
             smart_turn_enabled=smart_turn_enabled,
@@ -568,11 +570,23 @@ async def init_team_pipeline(
     resolved_team: dict,
     stt_language: str = None,
     tts_language: str = None,
+    stt_type: str = None,
+    tts_type: str = None,
     llm_messages: list = None,
     vad_config: dict = None,
     smart_turn_enabled: bool = False,
 ) -> dict:
-    """Initialize team pipeline. Returns context dict. Raises on failure."""
+    """Initialize team pipeline. Returns context dict. Raises on failure.
+
+    `stt_type`/`tts_type` are the request-level types from bin-ai-manager. Their
+    presence selects the session's audio mode: both `None` (the default) means a
+    text-only session (conversation, task, contact_case listen turn) and no
+    per-member TTS/STT or input transport is built; non-empty means a voice call
+    and each member's TTS/STT is built from that member's own config. The two
+    fields gate independently (`tts_type` gates member TTS, `stt_type` gates
+    member STT), mirroring init_single_ai_pipeline. The values themselves are
+    never used for members.
+    """
     total_start = time.monotonic()
     logger.info(f"[TEAM][INIT] Starting team pipeline. pipeline id={id}")
 
@@ -599,13 +613,13 @@ async def init_team_pipeline(
         llm_svc, _ = create_llm_service(ai["engine_model"], ai["engine_key"], [], [])
         llm_services[mid] = llm_svc
 
-        if ai.get("tts_type"):
+        if tts_type and ai.get("tts_type"):
             tts_services[mid] = create_tts_service(
                 ai["tts_type"],
                 voice_id=ai.get("tts_voice_id"), language=tts_language,
             )
 
-        if ai.get("stt_type"):
+        if stt_type and ai.get("stt_type"):
             stt_services[mid] = create_stt_service(
                 ai["stt_type"], language=stt_language,
             )
@@ -613,6 +627,8 @@ async def init_team_pipeline(
         logger.info(f"[TEAM][INIT] Member {mid} services created in {time.monotonic() - start:.3f}s")
 
     logger.info(f"[TEAM][INIT] Created {len(llm_services)} LLM, {len(tts_services)} TTS, {len(stt_services)} STT services. pipeline id={id}")
+    if not stt_type and not tts_type:
+        logger.info(f"[TEAM][INIT] Text-only session; skipping per-member TTS/STT. pipeline id={id}")
 
     # --- Step 2: Create routing services ---
     routing_llm = RoutingLLMService(llm_services)

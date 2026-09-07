@@ -134,7 +134,7 @@ After answering the call on Linphone, you receive transcription events via your 
 
 **Transcript event fields:**
 
-- ``data.transcribe_id`` (UUID): The transcription session ID, generated internally when the ``transcribe_start`` action executes. Query all transcripts for this session via ``GET /transcripts?transcribe_id=<transcribe_id>``.
+- ``data.transcribe_id`` (UUID): The transcription session ID, generated internally when the ``transcribe_start`` action executes. Query all transcripts for this session via ``GET /transcripts?transcribe_id=<transcribe_id>``. Transcripts are paginated; see the :ref:`Transcribe tutorial <transcribe-tutorial>`.
 - ``data.direction`` (enum String): ``"in"`` — speech from the caller to VoIPBIN. ``"out"`` — speech from VoIPBIN to the caller (TTS output).
 - ``data.message`` (String): The transcribed text.
 
