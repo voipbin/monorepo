@@ -3,6 +3,7 @@ package aicallhandler
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -217,6 +218,90 @@ func Test_buildListenTurnMessages(t *testing.T) {
 	// The turn must never write the AIcall's bound pipecatcall id.
 	if c.PipecatcallID != uuid.Nil {
 		t.Errorf("buildListenTurnMessages must not touch c.PipecatcallID")
+	}
+}
+
+// Test_buildListenTurnMessages_SessionBoundary pins the VOIP-1484 cut on the
+// listen turn's Q&A block.
+//
+// The cut runs BEFORE the budget walk on purpose: filtering afterwards would
+// let previous-session rows consume the AIcallListenQAContextSize slots the
+// current session's Q&A needs, so the model would end up with neither.
+func Test_buildListenTurnMessages_SessionBoundary(t *testing.T) {
+	config.SetListenDefaultsForTest()
+
+	tests := []struct {
+		name string
+
+		metadata map[string]any
+
+		expectContents []string
+	}{
+		{
+			name: "no boundary replays every row, exactly as before",
+
+			metadata: map[string]any{},
+
+			expectContents: []string{"PREVIOUS SESSION QUESTION", "CURRENT ANSWER"},
+		},
+		{
+			name: "a boundary drops the previous session's rows",
+
+			metadata: map[string]any{
+				aicall.MetaKeyInsightSessionStart: time.Date(2026, 9, 7, 12, 0, 0, 0, time.UTC).Format(time.RFC3339Nano),
+			},
+
+			expectContents: []string{"CURRENT ANSWER"},
+		},
+	}
+
+	boundary := time.Date(2026, 9, 7, 12, 0, 0, 0, time.UTC)
+	before := boundary.Add(-1 * time.Hour)
+	after := boundary.Add(1 * time.Minute)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			h := &aicallHandler{messageHandler: mockMessage}
+			ctx := context.Background()
+
+			aicallID := uuid.FromStringOrNil("d2000000-0001-11f0-7777-000000000001")
+			c := &aicall.AIcall{
+				Identity:       commonidentity.Identity{ID: aicallID},
+				AssistanceType: aicall.AssistanceTypeAI,
+				Metadata:       tt.metadata,
+			}
+
+			mockMessage.EXPECT().List(ctx, uint64(30), "", map[message.Field]any{
+				message.FieldAIcallID: aicallID,
+				message.FieldDeleted:  false,
+			}).Return([]*message.Message{
+				{Role: message.RoleAssistant, Content: "CURRENT ANSWER", TMCreate: &after},
+				{Role: message.RoleUser, Content: "PREVIOUS SESSION QUESTION", TMCreate: &before},
+			}, nil)
+
+			res, err := h.buildListenTurnMessages(ctx, c, []string{"[CUSTOMER] hi"}, []string{"[CUSTOMER] hi"})
+			if err != nil {
+				t.Fatalf("buildListenTurnMessages returned an unexpected error. err: %v", err)
+			}
+
+			// The Q&A rows sit between the system rows and the trailing
+			// transcript block. This fixture carries no prompt snapshot, so
+			// there are two system rows (InsightSystemPrompt and the listen
+			// turn prompt), not three.
+			qa := []string{}
+			for _, row := range res[2 : len(res)-1] {
+				content, _ := row["content"].(string)
+				qa = append(qa, content)
+			}
+
+			if !reflect.DeepEqual(qa, tt.expectContents) {
+				t.Errorf("wrong q&a block.\nexpect: %v\ngot: %v", tt.expectContents, qa)
+			}
+		})
 	}
 }
 

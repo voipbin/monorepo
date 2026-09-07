@@ -142,3 +142,71 @@ func TestCreate_withoutOpts_defaultsDelivered(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+
+// Test_ApplyCreateOptions pins the option probe other packages' tests match
+// Create's variadic argument with. Its defaults must stay identical to Create's
+// own, or a matcher built on it would assert against a row shape Create never
+// produces.
+func Test_ApplyCreateOptions(t *testing.T) {
+	aiID := uuid.FromStringOrNil("c1000000-0001-11f0-4444-000000000001")
+	pcID := uuid.FromStringOrNil("c1000000-0002-11f0-4444-000000000001")
+	replyID := uuid.FromStringOrNil("c1000000-0003-11f0-4444-000000000001")
+
+	tests := []struct {
+		name string
+
+		opts []CreateOption
+
+		expectRes CreateOptionView
+	}{
+		{
+			name: "no options resolves to create's own defaults",
+
+			opts: nil,
+
+			expectRes: CreateOptionView{
+				PipecatcallID:  uuid.Nil,
+				DeliveryStatus: message.DeliveryStatusDelivered,
+			},
+		},
+		{
+			name: "with active ai id",
+
+			opts: []CreateOption{WithActiveAIID(aiID)},
+
+			expectRes: CreateOptionView{
+				PipecatcallID:  uuid.Nil,
+				DeliveryStatus: message.DeliveryStatusDelivered,
+				ActiveAIID:     aiID,
+			},
+		},
+		{
+			name: "every option, applied in order",
+
+			opts: []CreateOption{
+				WithPipecatcallID(pcID),
+				WithDeliveryStatus(message.DeliveryStatusPending),
+				WithActiveAIID(aiID),
+				WithInReplyToMessageID(replyID),
+				WithOrigin(message.OriginListenInternal),
+			},
+
+			expectRes: CreateOptionView{
+				PipecatcallID:      pcID,
+				DeliveryStatus:     message.DeliveryStatusPending,
+				ActiveAIID:         aiID,
+				InReplyToMessageID: replyID,
+				Origin:             message.OriginListenInternal,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := ApplyCreateOptions(tt.opts...)
+			if res != tt.expectRes {
+				t.Errorf("wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

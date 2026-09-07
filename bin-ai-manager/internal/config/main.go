@@ -36,6 +36,8 @@ type Config struct {
 
 	AIcallContactCaseRecreateRateLimitMinutes int // Rate limit window (minutes) after a contact_case-typed AIcall terminates during which recreation for the same reference_id is blocked (VOIP-1234).
 
+	AIcallInsightSessionIdleMinutes int // Idle minutes after which reopening an Insight Case panel starts a NEW assistant session: the customer prompt is refreshed and only rows from the new session are replayed into the LLM (VOIP-1484). Zero or negative disables the refresh entirely.
+
 	AIcallSendCooldownSeconds int // Minimum seconds between two Send() calls on the same AIcall, to bound LLM spend from rapid repeated sends.
 
 	// Insight AI realtime call listening (docs/plans/
@@ -99,6 +101,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("google_api_key", "", "Google API key for Gemini audit evaluation")
 	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
 	f.Int("aicall_contact_case_recreate_rate_limit_minutes", 5, "Rate limit window (minutes) after a contact_case-typed AIcall terminates during which recreation for the same reference_id is blocked")
+	f.Int("aicall_insight_session_idle_minutes", 30, "Idle minutes after which reopening an Insight Case panel starts a new assistant session (prompt refresh + history boundary); 0 or less disables it")
 	f.Int("aicall_send_cooldown_seconds", 3, "Minimum seconds between two Send() calls on the same AIcall")
 	f.Int("aicall_listen_evaluate_interval_seconds", 20, "Debounce window (seconds) between Insight AI listen evaluation turns on one AIcall")
 	f.Int("aicall_listen_window_size", 40, "Rolling transcript lines kept in a listen turn's context")
@@ -134,6 +137,7 @@ func bindConfig(cmd *cobra.Command) error {
 
 		"aicall_conversation_idle_timeout_hours":          "AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS",
 		"aicall_contact_case_recreate_rate_limit_minutes": "AICALL_CONTACT_CASE_RECREATE_RATE_LIMIT_MINUTES",
+		"aicall_insight_session_idle_minutes":             "AICALL_INSIGHT_SESSION_IDLE_MINUTES",
 		"aicall_send_cooldown_seconds":                    "AICALL_SEND_COOLDOWN_SECONDS",
 
 		"aicall_listen_evaluate_interval_seconds":              "AICALL_LISTEN_EVALUATE_INTERVAL_SECONDS",
@@ -197,6 +201,8 @@ func LoadGlobalConfig() {
 
 			AIcallContactCaseRecreateRateLimitMinutes: viper.GetInt("aicall_contact_case_recreate_rate_limit_minutes"),
 
+			AIcallInsightSessionIdleMinutes: viper.GetInt("aicall_insight_session_idle_minutes"),
+
 			AIcallSendCooldownSeconds: viper.GetInt("aicall_send_cooldown_seconds"),
 
 			AIcallListenEvaluateIntervalSeconds:     viper.GetInt("aicall_listen_evaluate_interval_seconds"),
@@ -245,6 +251,14 @@ func SetAIcallConversationIdleTimeoutHoursForTest(hours int) {
 // USE ONLY FROM TESTS.
 func SetAIcallContactCaseRecreateRateLimitMinutesForTest(minutes int) {
 	globalConfig.AIcallContactCaseRecreateRateLimitMinutes = minutes
+}
+
+// SetAIcallInsightSessionIdleMinutesForTest overrides the Insight session idle
+// window in the global config without going through the
+// Bootstrap+LoadGlobalConfig path.
+// USE ONLY FROM TESTS.
+func SetAIcallInsightSessionIdleMinutesForTest(minutes int) {
+	globalConfig.AIcallInsightSessionIdleMinutes = minutes
 }
 
 // SetAIcallSendCooldownSecondsForTest overrides the send cooldown in tests.

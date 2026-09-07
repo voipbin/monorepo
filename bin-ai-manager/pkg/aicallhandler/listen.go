@@ -131,6 +131,13 @@ func (h *aicallHandler) buildListenTurnMessages(ctx context.Context, c *aicall.A
 		return nil, errors.Wrap(err, "could not get the qa messages")
 	}
 
+	// Rows from an earlier Insight session are dropped BEFORE the budget walk
+	// (VOIP-1484), so a stale session can neither reach the model nor consume
+	// the budget the current session's Q&A needs. Step 2 above stays consistent
+	// with this: the session refresh rewrites prompt_snapshots at the same
+	// boundary, so a listen turn and a Q&A turn see the same customer prompt.
+	qaRowsDesc = cutBeforeSessionStart(qaRowsDesc, c)
+
 	budget := config.Get().AIcallListenQAContextSize
 	qa := []map[string]any{}
 	// qaRowsDesc is newest-first; walk it that way, take the newest `budget`

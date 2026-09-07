@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/ai"
@@ -225,6 +226,54 @@ func Test_buildListenTurnMessages_ConversationKind(t *testing.T) {
 	last, _ := res[len(res)-1]["content"].(string)
 	if !strings.HasPrefix(last, "Conversation so far:\n") {
 		t.Errorf("conversation transcript block must start with the conversation header. got: %q", last)
+	}
+}
+
+// Test_buildListenTurnMessages_ConversationKind_SessionBoundary pins the
+// VOIP-1484 cut on the conversation-kind listen path too.
+//
+// The listen builder and the Q&A builder must agree on what "the current
+// session" is: if a listen turn still replayed the previous session's Q&A, a
+// proactive note would be reasoning from a thread the agent has already walked
+// away from, and it would do so with the refreshed customer prompt (which the
+// snapshot rewrite gave it), i.e. two different sessions mixed in one context.
+func Test_buildListenTurnMessages_ConversationKind_SessionBoundary(t *testing.T) {
+	config.SetListenDefaultsForTest()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	boundary := time.Date(2026, 9, 7, 12, 0, 0, 0, time.UTC)
+	before := boundary.Add(-1 * time.Hour)
+	after := boundary.Add(1 * time.Minute)
+
+	c := listeningConversationAIcall()
+	c.Metadata[aicall.MetaKeyInsightSessionStart] = boundary.Format(time.RFC3339Nano)
+
+	m.msg.EXPECT().List(ctx, uint64(30), "", gomock.Any()).Return([]*message.Message{
+		{Role: message.RoleAssistant, Content: "CURRENT ANSWER", TMCreate: &after},
+		{Role: message.RoleUser, Content: "PREVIOUS SESSION QUESTION", TMCreate: &before},
+	}, nil)
+
+	res, err := m.h.buildListenTurnMessages(ctx, c, []string{"[CUSTOMER] hi"}, []string{"[CUSTOMER] hi"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	sawCurrent := false
+	for _, row := range res {
+		content, _ := row["content"].(string)
+		if content == "PREVIOUS SESSION QUESTION" {
+			t.Errorf("a row from the previous insight session must not reach a listen turn. got: %v", res)
+		}
+		if content == "CURRENT ANSWER" {
+			sawCurrent = true
+		}
+	}
+	if !sawCurrent {
+		t.Errorf("the current session's Q&A row must survive the cut. got: %v", res)
 	}
 }
 

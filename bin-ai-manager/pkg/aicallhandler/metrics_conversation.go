@@ -18,6 +18,14 @@ var (
 		},
 		[]string{"result"},
 	)
+	promAIcallInsightSessionRefreshTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_insight_session_refresh_total",
+			Help:      "Insight Case panel reopens evaluated for a session refresh, by outcome (kept|refreshed|failed). kept is the denominator (VOIP-1484).",
+		},
+		[]string{"result"},
+	)
 	promAIcallContactCaseRecreateRateLimitedTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -28,7 +36,7 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(promAIcallIdleExpiredTotal, promAIcallInterruptAttemptedTotal, promAIcallContactCaseRecreateRateLimitedTotal)
+	prometheus.MustRegister(promAIcallIdleExpiredTotal, promAIcallInterruptAttemptedTotal, promAIcallContactCaseRecreateRateLimitedTotal, promAIcallInsightSessionRefreshTotal)
 }
 
 // Test parallelism note:
@@ -42,6 +50,11 @@ func init() {
 // Test_aicallHandler_interruptPreviousPipecatcall does not use t.Parallel,
 // so all sub-tests run sequentially — snapshots over the {gone|dead|alive|error}
 // labels are safe.
+//
+// Test_startReferenceTypeContactCase asserts deltas on
+// promAIcallIdleExpiredTotal, promAIcallContactCaseRecreateRateLimitedTotal and
+// promAIcallInsightSessionRefreshTotal: no t.Parallel at any level; snapshot/
+// delta assertions safe; do not add t.Parallel.
 //
 // Test_startReferenceTypeConversation does call t.Parallel() in sub-tests, but
 // the idle-expired counter is incremented by exactly one sub-case (idle-expired

@@ -117,7 +117,7 @@ func Test_Send(t *testing.T) {
 				m.db.EXPECT().AIcallGet(ctx, id).Return(updated, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -243,7 +243,7 @@ func Test_Send(t *testing.T) {
 				m.db.EXPECT().AIcallGet(ctx, id).Return(updated, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(updated.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -890,7 +890,7 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 				}
 
 				// 6. startPipecatcall: messageHandler.List for getPipecatcallMessages
-				mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.responseUpdatedAIcall.ID)).Return([]*message.Message{}, nil)
+				mockMessage.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(tt.responseUpdatedAIcall.ID)).Return([]*message.Message{}, nil)
 				mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.responseUpdatedAIcall.ID)).Return(tt.responseMessages, nil)
 
 				// 7. PipecatV1PipecatcallStart with the expected LLM type

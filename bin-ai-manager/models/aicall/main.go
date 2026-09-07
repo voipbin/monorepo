@@ -47,6 +47,16 @@ const MetaKeyListenOwnsTranscribe = "listen_owns_transcribe"
 // AIcall carries at most one of MetaKeyListenTranscribeID / this key.
 const MetaKeyListenConversationID = "listen_conversation_id"
 
+// MetaKeyInsightSessionStart is the Metadata map key (string, RFC3339Nano UTC)
+// marking the start of the CURRENT Insight assistant session on this AIcall
+// (VOIP-1484). Message rows created strictly before it belong to an earlier
+// session and are not replayed into the LLM's history; the boundary row itself
+// (the first system row written by the refresh) is kept.
+//
+// Absent means "no boundary", which is exactly the pre-VOIP-1484 behaviour and
+// what a freshly created AIcall wants: all of its rows are newer than it.
+const MetaKeyInsightSessionStart = "insight_session_start"
+
 // AIcall define
 type AIcall struct {
 	identity.Identity
