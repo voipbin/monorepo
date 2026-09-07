@@ -875,7 +875,7 @@ Lists past interactions (calls, conversation messages) with the contact/peer of 
         "properties": {
             "run_llm": {
                 "type": "boolean",
-                "description": "Set true to reason about the retrieved interaction history.",
+                "description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
                 "default": true
             },
             "limit": {
@@ -921,7 +921,7 @@ Pass ``conversation_id`` only when a different, past conversation is asked about
         "properties": {
             "run_llm": {
                 "type": "boolean",
-                "description": "Set true to reason about the retrieved conversation content.",
+                "description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
                 "default": true
             },
             "conversation_id": {
@@ -960,7 +960,7 @@ Lists other cases belonging to the same contact as the current Case (metadata on
         "properties": {
             "run_llm": {
                 "type": "boolean",
-                "description": "Set true to reason about the retrieved related-case history.",
+                "description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
                 "default": true
             }
         }
@@ -990,7 +990,7 @@ Returns the internal agent notes on the current Case, useful for picking up cont
         "properties": {
             "run_llm": {
                 "type": "boolean",
-                "description": "Set true to reason about the retrieved case notes.",
+                "description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
                 "default": true
             },
             "limit": {
@@ -1029,7 +1029,7 @@ Free-text contact notes, integration metadata (``source``/``external_id``), tags
         "properties": {
             "run_llm": {
                 "type": "boolean",
-                "description": "Set true to reason about the retrieved contact profile.",
+                "description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
                 "default": true
             }
         }
@@ -1064,7 +1064,7 @@ Returns the merged, chronological transcript of everything said on a call, given
         "properties": {
             "run_llm": {
                 "type": "boolean",
-                "description": "Set true to reason about the retrieved call transcript.",
+                "description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
                 "default": true
             },
             "call_id": {
@@ -1176,9 +1176,11 @@ The resulting message is delivered over the same webhook / WebSocket / poll path
 run_llm Parameter
 -----------------
 
-The ``run_llm`` parameter controls whether the LLM generates a spoken response after a tool executes.
-Each tool has a platform-set default (shown in the table below). This value is **not client-configurable**
-— it is defined by the platform based on each tool's intended behavior.
+The ``run_llm`` parameter controls whether the LLM runs again after a tool executes, producing a spoken reply
+on a call or the assistant's answer in a text session.
+Each tool has a platform-set default (shown in the table below). That default is **not client-configurable**:
+it is defined by the platform based on each tool's intended behavior. The model may still override it on an
+individual tool call by passing ``run_llm`` explicitly.
 
 ::
 
@@ -1189,8 +1191,12 @@ Each tool has a platform-set default (shown in the table below). This value is *
     +-------------------+--------------------------------------------------+
     | run_llm = false   | Tool executes silently.                          |
     |                   | LLM does NOT generate a response after execution.|
-    |                   | Useful for background actions or chaining tools. |
+    |                   | Useful for background actions only.              |
+    |                   | Chaining a second tool needs run_llm = true.     |
     +-------------------+--------------------------------------------------+
+
+For the Insight tools the model may lower ``run_llm`` on an individual call. Doing so ends that turn: no further
+tool call is made and no answer is produced, so an Insight assistant that is answering an agent keeps it ``true``.
 
 **Per-tool defaults:**
 
@@ -1212,20 +1218,21 @@ Tool Name                    run_llm   Why
 ``get_resource``             ``true``  Diagnostic tool — LLM reasons about the retrieved resource content.
 ``describe_action``          ``true``  LLM uses the returned schema to assemble a create_call action.
 ``case_create``              ``true``  LLM confirms the case was created for the caller.
-``get_contact_interactions`` ``true``  Insight tool — LLM reasons about the retrieved interaction history.
-``get_conversation_content`` ``true``  Insight tool — LLM reasons about the retrieved conversation content.
-``get_related_cases``        ``true``  Insight tool — LLM reasons about the retrieved related-case history.
-``get_case_notes``           ``true``  Insight tool — LLM reasons about the retrieved case notes.
-``get_contact_profile``      ``true``  Insight tool — LLM reasons about the retrieved contact profile.
-``get_call_transcript``      ``true``  Insight tool — LLM reasons about the retrieved call transcript.
-``emit_info_card``           ``true``  Insight tool — the card is the primary artifact; a follow-up must not restate the field values.
+``get_contact_interactions`` ``true``  Insight tool: continues after the result to answer the agent about the interaction history.
+``get_conversation_content`` ``true``  Insight tool: continues after the result to answer the agent about the conversation content.
+``get_related_cases``        ``true``  Insight tool: continues after the result to answer the agent about the related-case history.
+``get_case_notes``           ``true``  Insight tool: continues after the result to answer the agent about the case notes.
+``get_contact_profile``      ``true``  Insight tool: continues after the result to answer the agent about the contact profile.
+``get_call_transcript``      ``true``  Insight tool: continues after the result to answer the agent about the call transcript.
+``emit_info_card``           ``true``  Insight tool: the card is the primary artifact; a follow-up must not restate the field values.
+``notify_agent``             ``false`` Insight tool: the notification itself is the output, so no follow-up answer is generated.
 ============================ ========= ========================================================================================
 
 .. note:: **AI Implementation Hint**
 
-   ``search_knowledge`` is the only tool that defaults to ``run_llm = true`` because its entire purpose
-   is to retrieve information that the LLM should use to answer the caller. If ``run_llm`` were ``false``,
-   the knowledge base results would be silently discarded and the caller would never hear an answer.
+   Retrieval tools such as ``search_knowledge`` and the Insight tools default to ``run_llm = true`` because
+   their entire purpose is to retrieve information the LLM should use to answer. With ``run_llm = false`` the
+   retrieved results are silently discarded and the caller or agent never hears an answer.
 
 
 Tool Execution Flow
@@ -1305,10 +1312,10 @@ This ensures the correct tool (send_email vs send_message) is used.
 
 **4. Understand run_llm behavior**
 
-The ``run_llm`` default for each tool is set by the platform and cannot be changed by clients.
-It determines whether the LLM generates a response after tool execution:
+The ``run_llm`` default for each tool is set by the platform and is not client-configurable, though the model
+may override it on an individual tool call. It determines whether the LLM continues after tool execution:
 
 ::
 
-    run_llm = false  -> Tool executes silently (most tools)
-    run_llm = true   -> LLM generates a response based on the result (search_knowledge)
+    run_llm = false  -> Tool executes silently, the turn ends (action tools)
+    run_llm = true   -> LLM continues after the result (search_knowledge, Insight tools)

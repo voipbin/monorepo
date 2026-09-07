@@ -764,13 +764,13 @@ WHEN NOT TO USE:
 
 Always scoped to the current Case; there is no argument to target a different Case or contact.
 
-run_llm: Set true to reason about the returned interaction history.`,
+run_llm: When you are answering the agent, keep it true so you can answer or call another tool after the result; false ends the turn with no answer.`,
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
 				"run_llm": map[string]any{
 					"type":        "boolean",
-					"description": "Set true to reason about the retrieved interaction history.",
+					"description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
 					"default":     true,
 				},
 				"limit": map[string]any{
@@ -800,13 +800,13 @@ ARGUMENTS:
 
 Only conversations owned by your account are visible. If the conversation_id you pass has no visible messages and this AIcall belongs to a Case, the tool falls back to that Case's own conversation and says so in the first line; an invalid conversation_id is ignored the same way. Outside a Case there is no fallback and the answer is "no messages found".
 
-run_llm: Set true to reason about the retrieved conversation content.`,
+run_llm: When you are answering the agent, keep it true so you can answer or call another tool after the result; false ends the turn with no answer.`,
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
 				"run_llm": map[string]any{
 					"type":        "boolean",
-					"description": "Set true to reason about the retrieved conversation content.",
+					"description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
 					"default":     true,
 				},
 				"conversation_id": map[string]any{
@@ -834,13 +834,13 @@ WHEN NOT TO USE:
 
 Always scoped to the current Case's contact; there is no argument to target a different contact. The current case itself is never included in the results.
 
-run_llm: Set true to reason about the returned related-case history.`,
+run_llm: When you are answering the agent, keep it true so you can answer or call another tool after the result; false ends the turn with no answer.`,
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
 				"run_llm": map[string]any{
 					"type":        "boolean",
-					"description": "Set true to reason about the retrieved related-case history.",
+					"description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
 					"default":     true,
 				},
 			},
@@ -859,13 +859,13 @@ WHEN NOT TO USE:
 
 Always scoped to the current Case; there is no argument to target a different Case.
 
-run_llm: Set true to reason about the retrieved notes.`,
+run_llm: When you are answering the agent, keep it true so you can answer or call another tool after the result; false ends the turn with no answer.`,
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
 				"run_llm": map[string]any{
 					"type":        "boolean",
-					"description": "Set true to reason about the retrieved case notes.",
+					"description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
 					"default":     true,
 				},
 				"limit": map[string]any{
@@ -891,13 +891,13 @@ WHEN NOT TO USE:
 
 Always scoped to the current Case's contact; there is no argument to target a different Case or contact. If the Case has no linked contact, this returns "no contact profile found".
 
-run_llm: Set true to reason about the returned contact profile.`,
+run_llm: When you are answering the agent, keep it true so you can answer or call another tool after the result; false ends the turn with no answer.`,
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
 				"run_llm": map[string]any{
 					"type":        "boolean",
-					"description": "Set true to reason about the retrieved contact profile.",
+					"description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
 					"default":     true,
 				},
 			},
@@ -920,13 +920,13 @@ ARGUMENTS:
 
 Access is tenant-only: any call belonging to your own account is readable once its call_id is known, not only calls tied to the current Case's contact. Anything outside your account returns "Resource not found."
 
-run_llm: Set true to reason about the retrieved transcript.`,
+run_llm: When you are answering the agent, keep it true so you can answer or call another tool after the result; false ends the turn with no answer.`,
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
 				"run_llm": map[string]any{
 					"type":        "boolean",
-					"description": "Set true to reason about the retrieved call transcript.",
+					"description": "When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.",
 					"default":     true,
 				},
 				"call_id": map[string]any{

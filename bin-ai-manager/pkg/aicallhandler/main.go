@@ -317,6 +317,9 @@ Tool Usage:
   data you need before answering. Do not guess or fabricate data.
 - Only ask for clarification if required parameters are genuinely missing.
 - Never mention tool names, JSON, or backend logic to the user. Respond naturally with your findings.
+- Tools take a run_llm parameter. When the agent has asked you a question, keep it true: that is what lets you answer, or
+  call another tool, after the result arrives. Setting it false ends the turn silently, with no further tool call and no
+  answer, so use it only when you mean to stay silent. notify_agent takes no run_llm argument.
 
 Response Rules:
 - Base every answer strictly on retrieved data — avoid hallucinations.
