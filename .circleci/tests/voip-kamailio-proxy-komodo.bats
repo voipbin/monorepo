@@ -4,8 +4,9 @@
 # (VOIP-1486). See voip-kamailio-proxy/docs/plans/2026-09-07-kamailio-proxy-
 # komodo-stack-design.md.
 #
-# CONSTRAINT: the shell-tests job installs only bats and mawk
-# (config_work.yml:2176-2183), so there is no PyYAML and no yq here. Every
+# CONSTRAINT: the shell-tests job in config_work.yml installs only bats and
+# mawk, so there is no PyYAML and no yq here. (Cited by job name on purpose:
+# line numbers in that file move, including from this very change.) Every
 # assertion below is grep/awk over the raw text. Assertions anchor on YAML key
 # shapes rather than bare substrings, because both files carry comments that
 # mention the very names some assertions require to be ABSENT.
