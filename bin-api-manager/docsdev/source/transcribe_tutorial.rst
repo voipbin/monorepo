@@ -167,19 +167,30 @@ Retrieve transcription data after the transcription completes or during real-tim
                 "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
                 "direction": "in",
                 "message": "Hi, good to see you. How are you today?",
-                "tm_transcript": "0001-01-01 00:01:04.441160",
-                "tm_create": "2024-04-01 07:22:07.229309"
+                "tm_transcript": "0001-01-01T00:01:04.44116Z",
+                "tm_create": "2024-04-01T07:22:07.229309Z"
             },
             {
                 "id": "3c95ea10-a5b7-4a68-aebf-ed1903baf110",
                 "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
                 "direction": "out",
                 "message": "Welcome to the transcribe test. All your voice will be transcribed.",
-                "tm_transcript": "0001-01-01 00:00:43.116830",
-                "tm_create": "2024-04-01 07:17:27.208337"
+                "tm_transcript": "0001-01-01T00:00:43.11683Z",
+                "tm_create": "2024-04-01T07:17:27.208337Z"
             }
-        ]
+        ],
+        "next_page_token": "2024-04-01T07:17:27.208337Z"
     }
+
+Transcripts are returned newest first, up to ``page_size`` (default and maximum 100)
+lines per call. For longer transcripts, pass the ``next_page_token`` from the previous
+response as ``page_token`` to fetch the next (older) page. The final page returns an
+empty ``result``; stop when it is empty (``next_page_token`` is still set on the last
+non-empty page).
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/transcripts?token=<YOUR_AUTH_TOKEN>&transcribe_id=8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&page_size=100&page_token=2024-04-01T07:17:27.208337Z'
 
 **Find All Transcribes for a Call:**
 

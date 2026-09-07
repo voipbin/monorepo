@@ -785,19 +785,28 @@
             &quot;transcribe_id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
             &quot;direction&quot;: &quot;in&quot;,
             &quot;message&quot;: &quot;Hi, good to see you. How are you today?&quot;,
-            &quot;tm_transcript&quot;: &quot;0001-01-01 00:01:04.441160&quot;,
-            &quot;tm_create&quot;: &quot;2024-04-01 07:22:07.229309&quot;
+            &quot;tm_transcript&quot;: &quot;0001-01-01T00:01:04.44116Z&quot;,
+            &quot;tm_create&quot;: &quot;2024-04-01T07:22:07.229309Z&quot;
         },
         {
             &quot;id&quot;: &quot;3c95ea10-a5b7-4a68-aebf-ed1903baf110&quot;,
             &quot;transcribe_id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
             &quot;direction&quot;: &quot;out&quot;,
             &quot;message&quot;: &quot;Welcome to the transcribe test. All your voice will be transcribed.&quot;,
-            &quot;tm_transcript&quot;: &quot;0001-01-01 00:00:43.116830&quot;,
-            &quot;tm_create&quot;: &quot;2024-04-01 07:17:27.208337&quot;
+            &quot;tm_transcript&quot;: &quot;0001-01-01T00:00:43.11683Z&quot;,
+            &quot;tm_create&quot;: &quot;2024-04-01T07:17:27.208337Z&quot;
         }
-    ]
+    ],
+    &quot;next_page_token&quot;: &quot;2024-04-01T07:17:27.208337Z&quot;
 }
+</pre></div>
+</div>
+<p>Transcripts are returned newest first, up to <code class="docutils literal notranslate"><span class="pre">page_size</span></code> (default and maximum 100)
+lines per call. For longer transcripts, pass the <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> from the previous
+response as <code class="docutils literal notranslate"><span class="pre">page_token</span></code> to fetch the next (older) page. The final page returns an
+empty <code class="docutils literal notranslate"><span class="pre">result</span></code>; stop when it is empty (<code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> is still set on the last
+non-empty page).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/transcripts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;transcribe_id=8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&amp;page_size=100&amp;page_token=2024-04-01T07:17:27.208337Z&#39;
 </pre></div>
 </div>
 <p><strong>Find All Transcribes for a Call:</strong></p>

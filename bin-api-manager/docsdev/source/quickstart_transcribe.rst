@@ -365,22 +365,23 @@ After the call ends, you can retrieve the full transcript via the API. Use the `
     {
         "result": [
             {
-                "id": "3c95ea10-a5b7-4a68-aebf-ed1903baf110",
-                "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-                "direction": "out",
-                "message": "Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.",
-                "tm_transcript": "0001-01-01 00:00:08.991840",
-                "tm_create": "2026-02-18 10:02:05.233415"
-            },
-            {
                 "id": "06af78f0-b063-48c0-b22d-d31a5af0aa88",
                 "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
                 "direction": "in",
                 "message": "Hi, this is a test of the transcription feature.",
-                "tm_transcript": "0001-01-01 00:00:15.500000",
-                "tm_create": "2026-02-18 10:02:10.100000"
+                "tm_transcript": "0001-01-01T00:00:15.5Z",
+                "tm_create": "2026-02-18T10:02:10.1Z"
+            },
+            {
+                "id": "3c95ea10-a5b7-4a68-aebf-ed1903baf110",
+                "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
+                "direction": "out",
+                "message": "Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.",
+                "tm_transcript": "0001-01-01T00:00:08.99184Z",
+                "tm_create": "2026-02-18T10:02:05.233415Z"
             }
-        ]
+        ],
+        "next_page_token": "2026-02-18T10:02:05.233415Z"
     }
 
 The ``direction`` field distinguishes speakers: ``"out"`` is the TTS greeting played by VoIPBIN, ``"in"`` is the caller's speech.

@@ -6065,18 +6065,18 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeStop(ctx, a, transcribeID an
 }
 
 // TranscriptList mocks base method.
-func (m *MockServiceHandler) TranscriptList(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) ([]*transcript.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscriptList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, transcribeID uuid.UUID) ([]*transcript.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscriptList", ctx, a, transcribeID)
+	ret := m.ctrl.Call(m, "TranscriptList", ctx, a, size, token, transcribeID)
 	ret0, _ := ret[0].([]*transcript.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TranscriptList indicates an expected call of TranscriptList.
-func (mr *MockServiceHandlerMockRecorder) TranscriptList(ctx, a, transcribeID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) TranscriptList(ctx, a, size, token, transcribeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptList", reflect.TypeOf((*MockServiceHandler)(nil).TranscriptList), ctx, a, transcribeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscriptList", reflect.TypeOf((*MockServiceHandler)(nil).TranscriptList), ctx, a, size, token, transcribeID)
 }
 
 // TransferStart mocks base method.
