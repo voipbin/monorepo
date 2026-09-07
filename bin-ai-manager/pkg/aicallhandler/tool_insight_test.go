@@ -1,6 +1,7 @@
 package aicallhandler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/models/aicall"
@@ -534,26 +536,35 @@ func Test_toolHandleGetConversationContent(t *testing.T) {
 		}
 	})
 
-	t.Run("deprecated reference_id alias behaves like conversation_id", func(t *testing.T) {
+	t.Run("legacy reference_id is ignored -> Case default", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		h := &aicallHandler{reqHandler: mockReq}
 		ctx := context.Background()
 
+		// VOIP-1479: reference_id is gone from the args struct, so
+		// encoding/json drops it and the call behaves as a no-argument one.
+		// The id below is a MESSAGE id -- what the alias actually carried in
+		// production -- and must never reach a filter map.
+		messageID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000aa")
+
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
 		mockReq.EXPECT().ConversationV1MessageList(
 			ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
 		).Return([]cvmessage.Message{
 			{Identity: commonidentity.Identity{CustomerID: customerID}, Direction: "incoming", Text: "hello", TMCreate: timePtr(time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC))},
 		}, nil).Times(1)
-		// no ContactV1CaseGet expected.
 
-		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"reference_id":"`+conversationID.String()+`"}`))
+		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"reference_id":"`+messageID.String()+`"}`))
 		if res.Result != "success" {
 			t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
 		}
 		if res.ResourceID != conversationID.String() {
-			t.Errorf("ResourceID = %q, want %q", res.ResourceID, conversationID)
+			t.Errorf("ResourceID = %q, want the Case conversation id %q (never the given id %q)", res.ResourceID, conversationID, messageID)
+		}
+		if !strings.Contains(res.Message, "hello") {
+			t.Errorf("expected this Case's own thread to render, got: %s", res.Message)
 		}
 	})
 
@@ -566,13 +577,58 @@ func Test_toolHandleGetConversationContent(t *testing.T) {
 
 		foreignConversationID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000fe")
 		// The customer_id filter is the tenant boundary: a conversation of
-		// another account simply matches nothing.
+		// another account simply matches nothing. VOIP-1479 then falls back to
+		// this Case's OWN conversation, which the no-argument call already
+		// exposes, so the foreign id stays unconfirmed either way.
 		mockReq.EXPECT().ConversationV1MessageList(
 			ctx, "", uint64(insightDefaultListLimit), defaultFilters(foreignConversationID),
 		).Return([]cvmessage.Message{}, nil).Times(1)
-		// no ContactV1CaseGet expected.
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
+		).Return([]cvmessage.Message{
+			{Identity: commonidentity.Identity{CustomerID: customerID}, Direction: "outgoing", Text: "hi there", TMCreate: timePtr(time.Date(2026, 7, 1, 0, 1, 0, 0, time.UTC))},
+			{Identity: commonidentity.Identity{CustomerID: customerID}, Direction: "incoming", Text: "hello", TMCreate: timePtr(time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC))},
+		}, nil).Times(1)
 
 		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"`+foreignConversationID.String()+`"}`))
+		if res.Result != "success" {
+			t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+		}
+		wantHeader := "Conversation " + foreignConversationID.String() + " has no messages visible to this account; showing this Case's own conversation instead."
+		if !strings.Contains(res.Message, wantHeader) {
+			t.Errorf("expected the fallback header %q, got: %s", wantHeader, res.Message)
+		}
+		if !strings.Contains(res.Message, "hello") || !strings.Contains(res.Message, "hi there") {
+			t.Errorf("expected this Case's thread to render, got: %s", res.Message)
+		}
+		if res.ResourceID != conversationID.String() {
+			t.Errorf("ResourceID = %q, want the Case conversation id %q", res.ResourceID, conversationID)
+		}
+	})
+
+	t.Run("unknown conversation id on a non-contact_case aicall -> no rows, no fallback", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		// Deliberately NOT the shared fixture: only this sub-test needs a
+		// non-contact_case AIcall.
+		callAIcall := &aicall.AIcall{
+			Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-000000000009"), CustomerID: customerID},
+			ReferenceType: aicall.ReferenceTypeCall,
+			ReferenceID:   uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-00000000000a"),
+		}
+
+		foreignConversationID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000fe")
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(foreignConversationID),
+		).Return([]cvmessage.Message{}, nil).Times(1)
+		// no ContactV1CaseGet expected -- there is no Case to fall back to.
+
+		res := h.toolHandleGetConversationContent(ctx, callAIcall, newToolCall(`{"conversation_id":"`+foreignConversationID.String()+`"}`))
 		if res.Result != "success" || res.Message != "no messages found" {
 			t.Fatalf("expected empty-result success, got Result=%q Message=%q", res.Result, res.Message)
 		}
@@ -581,29 +637,255 @@ func Test_toolHandleGetConversationContent(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid conversation_id -> failed, no RPC calls", func(t *testing.T) {
+	t.Run("fallback when the Case is call-type -> no messages found, no Case answer leaked", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		h := &aicallHandler{reqHandler: mockReq}
 		ctx := context.Background()
 
-		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"not-a-uuid"}`))
-		if res.Result != "failed" {
-			t.Fatalf("Result = %q, want failed (message: %s)", res.Result, res.Message)
+		// Also covers the other notFromConversation producer (a
+		// conversation-type Case whose ReferenceID does not parse): same
+		// outcome enum, so one row is sufficient.
+		foreignConversationID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000fe")
+		callCase := &kmkase.Case{
+			ID:            fetchedCaseID,
+			CustomerID:    customerID,
+			ReferenceType: kmkase.ReferenceTypeCall,
+			ReferenceID:   "",
+		}
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(foreignConversationID),
+		).Return([]cvmessage.Message{}, nil).Times(1)
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(callCase, nil).Times(1)
+
+		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"`+foreignConversationID.String()+`"}`))
+		if res.Result != "success" || res.Message != "no messages found" {
+			t.Fatalf("expected the plain empty answer (never the Case's own terminal message), got Result=%q Message=%q", res.Result, res.Message)
+		}
+		if res.ResourceID != foreignConversationID.String() {
+			t.Errorf("ResourceID = %q, want the given id %q", res.ResourceID, foreignConversationID)
 		}
 	})
 
-	t.Run("zero conversation_id -> failed, no RPC calls", func(t *testing.T) {
+	t.Run("fallback when the Case lookup fails -> no messages found, never a leak or a failure", func(t *testing.T) {
+		foreignConversationID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000fe")
+		foreignCase := &kmkase.Case{
+			ID:            fetchedCaseID,
+			CustomerID:    uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000ff"),
+			ReferenceType: kmkase.ReferenceTypeConversationMessage,
+			ReferenceID:   conversationID.String(),
+		}
+
+		tests := []struct {
+			name string
+			kase *kmkase.Case
+			err  error
+		}{
+			{"not found", nil, requesthandler.ErrNotFound},
+			{"cross-customer", foreignCase, nil},
+			{"transient error", nil, errTest},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				mc := gomock.NewController(t)
+				defer mc.Finish()
+				mockReq := requesthandler.NewMockRequestHandler(mc)
+				h := &aicallHandler{reqHandler: mockReq}
+				ctx := context.Background()
+
+				mockReq.EXPECT().ConversationV1MessageList(
+					ctx, "", uint64(insightDefaultListLimit), defaultFilters(foreignConversationID),
+				).Return([]cvmessage.Message{}, nil).Times(1)
+				mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(tt.kase, tt.err).Times(1)
+
+				res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"`+foreignConversationID.String()+`"}`))
+				if res.Result != "success" || res.Message != "no messages found" {
+					t.Fatalf("expected the plain empty answer, got Result=%q Message=%q", res.Result, res.Message)
+				}
+				if res.ResourceID != foreignConversationID.String() {
+					t.Errorf("ResourceID = %q, want the given id %q", res.ResourceID, foreignConversationID)
+				}
+			})
+		}
+	})
+
+	t.Run("fallback second list returns nothing -> no messages found on the Case conversation", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		h := &aicallHandler{reqHandler: mockReq}
 		ctx := context.Background()
 
-		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"`+uuid.Nil.String()+`"}`))
-		if res.Result != "failed" {
-			t.Fatalf("Result = %q, want failed (message: %s)", res.Result, res.Message)
+		foreignConversationID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000fe")
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(foreignConversationID),
+		).Return([]cvmessage.Message{}, nil).Times(1)
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
+		).Return([]cvmessage.Message{}, nil).Times(1)
+
+		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"`+foreignConversationID.String()+`"}`))
+		if res.Result != "success" || res.Message != "no messages found" {
+			t.Fatalf("expected empty-result success, got Result=%q Message=%q", res.Result, res.Message)
+		}
+		if res.ResourceID != conversationID.String() {
+			t.Errorf("ResourceID = %q, want the Case conversation id %q", res.ResourceID, conversationID)
+		}
+	})
+
+	t.Run("fallback second list RPC error -> honest failure", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		// The second list IS the data path of the answer being rendered, so
+		// its transport error is honest -- unlike the swallowed Case lookup.
+		foreignConversationID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000fe")
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(foreignConversationID),
+		).Return([]cvmessage.Message{}, nil).Times(1)
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
+		).Return(nil, errTest).Times(1)
+
+		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"`+foreignConversationID.String()+`"}`))
+		if res.Result != "failed" || res.Message != "resource lookup failed" {
+			t.Fatalf("expected honest failure, got Result=%q Message=%q", res.Result, res.Message)
+		}
+	})
+
+	t.Run("braced conversation_id -> parsed id used in the filter and the header", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		// uuid.FromString also accepts the braced and urn forms, so every
+		// filter and every rendered id must be the canonical String().
+		foreignConversationID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000fe")
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(foreignConversationID),
+		).Return([]cvmessage.Message{}, nil).Times(1)
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
+		).Return([]cvmessage.Message{
+			{Identity: commonidentity.Identity{CustomerID: customerID}, Direction: "incoming", Text: "hello", TMCreate: timePtr(time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC))},
+		}, nil).Times(1)
+
+		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"{`+foreignConversationID.String()+`}"}`))
+		if res.Result != "success" {
+			t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+		}
+		wantHeader := "Conversation " + foreignConversationID.String() + " has no messages visible to this account; showing this Case's own conversation instead."
+		if !strings.Contains(res.Message, wantHeader) {
+			t.Errorf("expected the canonical id in the header %q, got: %s", wantHeader, res.Message)
+		}
+		if strings.Contains(res.Message, "{") {
+			t.Errorf("the raw braced argument must never be echoed, got: %s", res.Message)
+		}
+	})
+
+	t.Run("full fallback page -> header first, then the earlier-messages-omitted marker", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		foreignConversationID := uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-0000000000fe")
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(2), defaultFilters(foreignConversationID),
+		).Return([]cvmessage.Message{}, nil).Times(1)
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(2), defaultFilters(conversationID),
+		).Return([]cvmessage.Message{
+			{Identity: commonidentity.Identity{CustomerID: customerID}, Direction: "outgoing", Text: "second", TMCreate: timePtr(time.Date(2026, 7, 1, 0, 1, 0, 0, time.UTC))},
+			{Identity: commonidentity.Identity{CustomerID: customerID}, Direction: "incoming", Text: "first", TMCreate: timePtr(time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC))},
+		}, nil).Times(1)
+
+		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"`+foreignConversationID.String()+`","limit":2}`))
+		if res.Result != "success" {
+			t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+		}
+		// renderBodyLines charges the header against the same rune budget as
+		// the lines, so a full page with this header may keep one line fewer
+		// than a headerless one -- only the ORDER is asserted here.
+		iHeader := strings.Index(res.Message, "showing this Case's own conversation instead.")
+		iMarker := strings.Index(res.Message, "earlier messages omitted")
+		if iHeader < 0 || iMarker < 0 {
+			t.Fatalf("expected both the fallback header and the paged-out marker, got: %s", res.Message)
+		}
+		if iHeader > iMarker {
+			t.Errorf("expected the header before the omitted-messages marker, got: %s", res.Message)
+		}
+	})
+
+	t.Run("invalid or zero conversation_id on a contact_case aicall -> ignored, Case default", func(t *testing.T) {
+		// VOIP-1479: an unparsable id is noise from the LLM of the same class
+		// as the removed alias, so it is ignored (with a server-side Warn) and
+		// the call answers about this Case instead of dead-ending.
+		tests := []struct {
+			name string
+			args string
+		}{
+			{"unparsable", `{"conversation_id":"not-a-uuid"}`},
+			{"zero uuid", `{"conversation_id":"` + uuid.Nil.String() + `"}`},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				mc := gomock.NewController(t)
+				defer mc.Finish()
+				mockReq := requesthandler.NewMockRequestHandler(mc)
+				h := &aicallHandler{reqHandler: mockReq}
+				ctx := context.Background()
+
+				mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
+				mockReq.EXPECT().ConversationV1MessageList(
+					ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
+				).Return([]cvmessage.Message{
+					{Identity: commonidentity.Identity{CustomerID: customerID}, Direction: "incoming", Text: "hello", TMCreate: timePtr(time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC))},
+				}, nil).Times(1)
+
+				res := h.toolHandleGetConversationContent(ctx, c, newToolCall(tt.args))
+				if res.Result != "success" {
+					t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+				}
+				if res.ResourceID != conversationID.String() {
+					t.Errorf("ResourceID = %q, want the Case conversation id %q", res.ResourceID, conversationID)
+				}
+			})
+		}
+	})
+
+	t.Run("invalid conversation_id on a non-contact_case aicall -> failed, no RPC calls", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+		// Deliberately NOT the shared fixture: only this sub-test needs a
+		// non-contact_case AIcall.
+		callAIcall := &aicall.AIcall{
+			Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-000000000009"), CustomerID: customerID},
+			ReferenceType: aicall.ReferenceTypeCall,
+			ReferenceID:   uuid.FromStringOrNil("6b1f2c10-c001-11f0-9000-00000000000a"),
+		}
+
+		// The "only supported for contact_case" message would be a lie here:
+		// the caller DID pass an id, it was simply unusable.
+		res := h.toolHandleGetConversationContent(ctx, callAIcall, newToolCall(`{"conversation_id":"not-a-uuid"}`))
+		if res.Result != "failed" || res.Message != "invalid conversation_id" {
+			t.Fatalf("expected the honest invalid-id failure, got Result=%q Message=%q", res.Result, res.Message)
 		}
 	})
 
@@ -631,13 +913,61 @@ func Test_toolHandleGetConversationContent(t *testing.T) {
 		h := &aicallHandler{reqHandler: mockReq}
 		ctx := context.Background()
 
+		// The given id IS this Case's own conversation, so the VOIP-1479
+		// fallback resolves the Case (one CaseGet) and then stops: there is
+		// nothing else to show, and no second MessageList is issued.
 		mockReq.EXPECT().ConversationV1MessageList(
 			ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
 		).Return([]cvmessage.Message{}, nil).Times(1)
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
 
 		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{"conversation_id":"`+conversationID.String()+`"}`))
 		if res.Result != "success" || res.Message != "no messages found" {
 			t.Fatalf("expected empty-result success, got Result=%q Message=%q", res.Result, res.Message)
+		}
+		if res.ResourceID != conversationID.String() {
+			t.Errorf("ResourceID = %q, want the given id %q", res.ResourceID, conversationID)
+		}
+	})
+
+	t.Run("no args + Case conversation resolves but has no messages -> no messages found, no fallback", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		// Guards the Case-default path against re-entering the fallback: a
+		// second CaseGet or a second MessageList would fail these Times(1).
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
+		).Return([]cvmessage.Message{}, nil).Times(1)
+
+		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{}`))
+		if res.Result != "success" || res.Message != "no messages found" {
+			t.Fatalf("expected empty-result success, got Result=%q Message=%q", res.Result, res.Message)
+		}
+		if res.ResourceID != conversationID.String() {
+			t.Errorf("ResourceID = %q, want the Case conversation id %q", res.ResourceID, conversationID)
+		}
+	})
+
+	t.Run("no args + MessageList error -> honest failure", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(conversationCase, nil).Times(1)
+		mockReq.EXPECT().ConversationV1MessageList(
+			ctx, "", uint64(insightDefaultListLimit), defaultFilters(conversationID),
+		).Return(nil, errTest).Times(1)
+
+		res := h.toolHandleGetConversationContent(ctx, c, newToolCall(`{}`))
+		if res.Result != "failed" || res.Message != "resource lookup failed" {
+			t.Fatalf("expected honest failure, got Result=%q Message=%q", res.Result, res.Message)
 		}
 	})
 
@@ -701,6 +1031,59 @@ func Test_toolHandleGetConversationContent(t *testing.T) {
 
 func timePtr(t time.Time) *time.Time {
 	return &t
+}
+
+// Test_logLegacyReferenceIDArgument pins the ONLY signal operators have that a
+// caller still passes the reference_id argument removed in VOIP-1479:
+// encoding/json drops the unknown field silently, so without this Debug line
+// a legacy caller is invisible. The entry is built on a dedicated logger
+// writing to a local buffer, so no global logrus state is touched (nothing to
+// restore) and the sub-tests stay independent.
+func Test_logLegacyReferenceIDArgument(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    string
+		wantLog bool
+	}{
+		{"reference_id present", `{"reference_id":"6b1f2c10-c001-11f0-9000-0000000000aa"}`, true},
+		{"reference_id present alongside conversation_id", `{"conversation_id":"6b1f2c10-c001-11f0-9000-000000000020","reference_id":"x"}`, true},
+		{"reference_id explicitly null still counts as passed", `{"reference_id":null}`, true},
+		{"absent", `{"conversation_id":"6b1f2c10-c001-11f0-9000-000000000020"}`, false},
+		{"no arguments at all", `{}`, false},
+		{"malformed arguments", `{`, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			logger := logrus.New()
+			logger.SetOutput(&buf)
+			logger.SetLevel(logrus.DebugLevel)
+
+			logLegacyReferenceIDArgument(logrus.NewEntry(logger), tt.args)
+
+			logged := strings.Contains(buf.String(), "reference_id")
+			if logged != tt.wantLog {
+				t.Errorf("logged = %v, want %v (output: %q)", logged, tt.wantLog, buf.String())
+			}
+			if tt.wantLog && !strings.Contains(buf.String(), "level=debug") {
+				t.Errorf("expected the line at Debug level, got: %q", buf.String())
+			}
+		})
+	}
+
+	t.Run("stays silent below Debug level", func(t *testing.T) {
+		var buf bytes.Buffer
+		logger := logrus.New()
+		logger.SetOutput(&buf)
+		logger.SetLevel(logrus.InfoLevel)
+
+		logLegacyReferenceIDArgument(logrus.NewEntry(logger), `{"reference_id":"6b1f2c10-c001-11f0-9000-0000000000aa"}`)
+
+		if buf.Len() != 0 {
+			t.Errorf("expected no output at Info level, got: %q", buf.String())
+		}
+	})
 }
 
 // Test_toolHandleGetRelatedCases covers design docs/plans/

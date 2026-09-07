@@ -2,6 +2,7 @@ package toolhandler
 
 import (
 	"sort"
+	"strings"
 	"testing"
 
 	"monorepo/bin-ai-manager/models/tool"
@@ -162,7 +163,10 @@ func TestCreateCallActionsEnumMatchesTypeListAll(t *testing.T) {
 // TestGetConversationContentSchema locks the get_conversation_content JSON
 // schema after VOIP-1475: the tool takes an OPTIONAL conversation_id (the old
 // required reference_id was a message id the backend has no route to resolve),
-// so no parameter may be required.
+// so no parameter may be required. It also pins the two Description contracts
+// the LLM relies on after VOIP-1479: the no-argument call is the DEFAULT (the
+// production failure was an LLM that concluded the tool needed an id at all),
+// and an unusable conversation_id falls back rather than dead-ending.
 func TestGetConversationContentSchema(t *testing.T) {
 	var def *tool.Tool
 	for i := range toolDefinitions {
@@ -173,6 +177,14 @@ func TestGetConversationContentSchema(t *testing.T) {
 	}
 	if def == nil {
 		t.Fatalf("get_conversation_content tool definition not found in definitions.go")
+	}
+
+	const wantPrefix = "Returns the message thread of a conversation, oldest first. Call it with NO arguments to read the conversation this Case was created from; that is the default and the common case."
+	if !strings.HasPrefix(def.Description, wantPrefix) {
+		t.Errorf("get_conversation_content description must start with the no-argument sentence.\nwant prefix: %s\ngot: %s", wantPrefix, def.Description)
+	}
+	if !strings.Contains(def.Description, "falls back") {
+		t.Errorf("get_conversation_content description must state the fallback. got: %s", def.Description)
 	}
 
 	props, ok := def.Parameters["properties"].(map[string]any)
