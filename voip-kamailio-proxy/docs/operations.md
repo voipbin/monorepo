@@ -34,9 +34,15 @@
 - SIP_TIMEOUT too short; the provider responds slowly.
 
 **Resolution:**
-1. Test manually: `nc -u <hostname> 5060` or `tcpdump -i eth0 udp port 5060`
+1. Test manually from somewhere that has tooling. The service image is
+   `gcr.io/distroless/static-debian12` (`Dockerfile:12`): no shell, no `nc`, no
+   `nslookup`, so `docker exec` into it is not an option. Use a throwaway
+   container on the same network instead:
+   `docker run --rm --network production nicolaka/netshoot nc -u <hostname> 5060`
+   Or capture on the host: `tcpdump -i any udp port 5060`
 2. Increase timeout, but keep it below the caller's RPC deadline: `SIP_TIMEOUT=8s`. bin-route-manager gives the RPC 10s (`bin-common-handler/pkg/requesthandler/main.go:152`), so a probe budget of 10s or more turns a slow provider into an RPC timeout at the caller instead of an unhealthy verdict.
-3. Verify DNS: `nslookup <hostname>` from within the container.
+3. Verify DNS the same way:
+   `docker run --rm --network production nicolaka/netshoot nslookup <hostname>`
 
 ### Queue not being consumed
 
@@ -62,8 +68,12 @@ The service logs at DEBUG level by default (joonix/fluentd JSON format).
 ### Check which queues are active
 
 ```bash
-rabbitmqctl list_queues name messages consumers | grep kamailio
+docker exec infra-rabbitmq rabbitmqctl list_queues name messages consumers \
+  | grep kamailio
 ```
+
+`rabbitmqctl` is not installed on the host; the broker runs in the
+`infra-rabbitmq` container.
 
 Look for:
 - `voip.kamailio.request` — permanent queue

@@ -76,11 +76,18 @@ discovers the `bin-*-manager` fleet from a static list of service names, and
 `kamailio-proxy` is not on it. Until a scrape job is added in `monorepo-etc`
 (`infra-prometheus`, the second half of VOIP-1486):
 
-- there is no alert if this stack disappears or drops to one replica, and
-- the post-deploy check in `docs/workflows/manager-replica-scaling.md`,
-  `count(up{job="voipbin-managers", service="kamailio-proxy"}) == 2`, returns
-  empty rather than 2. That is the expected result right now, not a failed
-  deploy.
+there is no alert if this stack disappears or drops to one replica.
+
+Note that the post-deploy check in `docs/workflows/manager-replica-scaling.md`,
+`count(up{job="voipbin-managers", service="kamailio-proxy"}) == 2`, will return
+empty **permanently**, not just until the job lands. That check assumes
+membership in the `voipbin-managers` job, whose target list is a static
+enumeration of `bin-*-manager` names. This service gets its own job instead, so
+once the scrape job exists the query to use is:
+
+```
+count(up{job="kamailio-proxy"}) == 2
+```
 
 Until then, verify by hand as below.
 

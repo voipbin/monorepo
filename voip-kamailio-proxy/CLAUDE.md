@@ -13,6 +13,7 @@ The `+sub` is a filesystem heuristic in `docs/reference/service-taxonomy-gen.sh`
 - [docs/dependencies.md](docs/dependencies.md) — monorepo and external dependencies
 - [docs/operations.md](docs/operations.md) — failure modes, debugging guide, configuration, Prometheus metrics
 - [docs/subsystems.md](docs/subsystems.md) — relationship to the Kamailio daemon (none at runtime), deployment notes
+- [komodo/README.md](komodo/README.md) — how the service is deployed: stack definition, queue contract, environment variables, post-deploy verification
 
 ## Common commands
 
