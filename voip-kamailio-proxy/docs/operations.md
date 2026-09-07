@@ -4,13 +4,13 @@
 
 ### RabbitMQ connection refused
 
-**Symptom:** Service exits immediately after startup with a connection error.
+**Symptom:** Container keeps running, but logs repeat `Could not connect to rabbitmq. Will retry again after 1 sec` and no queue consumer is ever registered. The RabbitMQ handler retries the connection forever at 1s intervals (`bin-common-handler/pkg/rabbitmqhandler/main.go:244`); the service never exits over this.
 
 **Cause:** RabbitMQ is not reachable at `RABBITMQ_ADDRESS`.
 
 **Resolution:**
 1. Verify the address: `echo $RABBITMQ_ADDRESS`
-2. Confirm RabbitMQ is running and the AMQP port (5672) is reachable from the pod.
+2. Confirm RabbitMQ is running and the AMQP port (5672) is reachable from the container.
 3. Check for credential mismatch (default: `amqp://guest:guest@localhost:5672`).
 
 ### Interface not found / no MAC address
@@ -21,7 +21,7 @@
 
 **Resolution:**
 1. Check available interfaces: `ip link show`
-2. Confirm the pod's primary interface is `eth0` (or set `INTERFACE_NAME` appropriately).
+2. Confirm the container's primary interface is `eth0` (or set `INTERFACE_NAME` appropriately).
 3. In test environments, virtual interfaces (e.g., `lo`) have no MAC address — use a real interface.
 
 ### SIP health check always returns unhealthy
@@ -36,7 +36,7 @@
 **Resolution:**
 1. Test manually: `nc -u <hostname> 5060` or `tcpdump -i eth0 udp port 5060`
 2. Increase timeout: `SIP_TIMEOUT=10s`
-3. Verify DNS: `nslookup <hostname>` from within the pod.
+3. Verify DNS: `nslookup <hostname>` from within the container.
 
 ### Queue not being consumed
 
@@ -53,7 +53,8 @@
 ### View live logs
 
 ```bash
-kubectl logs -f <pod-name> -c kamailio-proxy
+docker ps --filter name=kamailio-proxy
+docker logs -f <container-name>
 ```
 
 The service logs at DEBUG level by default (joonix/fluentd JSON format).
@@ -83,7 +84,7 @@ Using `rabbitmqadmin` or any AMQP client, publish to `voip.kamailio.request`:
 ### Check Prometheus metrics
 
 ```bash
-curl http://<pod-ip>:2112/metrics
+curl http://<container-ip>:2112/metrics
 ```
 
 Default endpoint: `:2112/metrics`.

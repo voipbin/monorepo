@@ -1,6 +1,6 @@
 # voip-kamailio-proxy
 
-Service class: **A+sub** — Go RPC proxy co-located with a Kamailio SIP proxy daemon. Exposes SIP OPTIONS health check endpoints over RabbitMQ.
+Service class: **A** - standalone Go RPC service. Exposes SIP OPTIONS health check endpoints over RabbitMQ.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 
@@ -10,7 +10,7 @@ Service class: **A+sub** — Go RPC proxy co-located with a Kamailio SIP proxy d
 - [docs/domain.md](docs/domain.md) — domain entities, key business rules
 - [docs/dependencies.md](docs/dependencies.md) — monorepo and external dependencies
 - [docs/operations.md](docs/operations.md) — failure modes, debugging guide, configuration, Prometheus metrics
-- [docs/subsystems.md](docs/subsystems.md) — Kamailio daemon overview, configuration, deployment notes
+- [docs/subsystems.md](docs/subsystems.md) — relationship to the Kamailio daemon (none at runtime), deployment notes
 
 ## Common commands
 
@@ -28,7 +28,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 ## Key implementation facts
 
 - Entry point: `cmd/kamailio-proxy/main.go`; configuration in `cmd/kamailio-proxy/init.go`
-- Instance identity: MAC address of `--interface_name` (default `eth0`); used to name the volatile queue `voip.kamailio.<mac>.request`
+- Instance identity: MAC address of `--interface_name` (default `eth0`); names a volatile queue `voip.kamailio.<mac>.request` that is declared and consumed but never addressed. The real route is the shared permanent queue `voip.kamailio.request`
 - Single RPC endpoint: `POST /v1/providers/health` — sends raw UDP SIP OPTIONS to `hostname:5060`
 - SIP OPTIONS logic: `pkg/siphandler/health.go` — always returns a `HealthCheckResult`, never a Go error
 - Any SIP response (any code) = healthy; timeout/network error = unhealthy

@@ -16,8 +16,7 @@ A health check verifies that a named SIP provider is reachable and responding to
 
 Each proxy instance is uniquely identified by the MAC address of its network interface (`--interface_name`, default `eth0`). This identity drives:
 
-- The volatile RabbitMQ queue name: `voip.kamailio.<mac-address>.request`
-- Targeted routing from upstream services to a specific Kamailio pod
+- The volatile RabbitMQ queue name: `voip.kamailio.<mac-address>.request`, which is declared and consumed but never addressed by any publisher; the shared permanent queue `voip.kamailio.request` is the queue actually routed to
 
 ### SIP OPTIONS Message
 
