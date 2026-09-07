@@ -31,6 +31,7 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `engine_key_chatgpt` | `ENGINE_KEY_CHATGPT` | OpenAI API key | yes |
 | `google_api_key` | `GOOGLE_API_KEY` | Google API key for Gemini audit evaluation | yes |
 | `aicall_conversation_idle_timeout_hours` | `AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS` | Hours before idle AIcall expires | no |
+| `aicall_insight_session_idle_minutes` | `AICALL_INSIGHT_SESSION_IDLE_MINUTES` | Idle minutes after which reopening an Insight Case panel starts a NEW assistant session: the customer prompt is refreshed from the AI's current prompt and only rows from the new session are replayed to the model. `0` or less disables the refresh. Default `30` | no |
 | `aicall_listen_evaluate_interval_seconds` | `AICALL_LISTEN_EVALUATE_INTERVAL_SECONDS` | Debounce window: one listen evaluation turn per AIcall per this many seconds, regardless of how much was said. This is what decouples LLM cost from speech volume. Default `20` | no |
 | `aicall_listen_window_size` | `AICALL_LISTEN_WINDOW_SIZE` | Rolling transcript lines kept for continuity across turns. Default `40` | no |
 | `aicall_listen_qa_context_size` | `AICALL_LISTEN_QA_CONTEXT_SIZE` | Q&A message rows replayed into a listen turn's context. Default `10` | no |
@@ -77,6 +78,7 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `aicall_tool_execute_total` | Counter | `tool_name` | Tool executions |
 | `aicall_backstop_reply_total` | Counter | — | Backstop/fallback replies |
 | `aicall_idle_expired_total` | Counter | — | Sessions terminated due to idle timeout |
+| `aicall_insight_session_refresh_total` | Counter | `result` | Insight Case panel reopens evaluated for a session refresh, by outcome: `kept` (the denominator: still live, disabled, not an Insight AI, or not an AI assistance), `refreshed` (a new session started), `failed` (the previous session was kept because the prompt could not be resolved or the write failed) |
 | `aicall_interrupt_attempted_total` | Counter | — | Barge-in interruption attempts |
 | `aicall_stale_response_dropped_total` | Counter | — | Stale LLM responses discarded |
 | `aicall_listen_start_total` | Counter | `kind`, `result` | Listen-start attempts by kind and outcome. `kind` values: `call`, `conversation`, `unknown` (gates that run before the Case's reference type is known). `result` values: `started`, `reused`, `skipped_not_listenable`, `skipped_confbridge_not_ready`, `skipped_confbridge_error`, `skipped_start_locked`, `failed` |
@@ -137,6 +139,13 @@ Key signals to alert on:
 - `aicall_stale_response_dropped_total` — high rate may indicate LLM latency spikes
 - `aicall_interrupt_attempted_total` vs `aicall_duration_seconds` — barge-in health
 - `subscribe_event_process_time` p99 — event processing backlog
+- `aicall_insight_session_refresh_total{result}`: Insight Case panel reopens evaluated for a session refresh. `kept` is the denominator; a rising `failed` rate means panels are opening with a stale session (the prompt could not be resolved, or the rows/metadata could not be written), which never breaks the panel but does mean the boundary is not advancing
+
+### Insight AI session history
+
+`aicall_insight_session_idle_minutes` / `AICALL_INSIGHT_SESSION_IDLE_MINUTES`, default `30`. One AIcall lives per Case, so an agent reopening a Case days later lands in the same assistant thread. When the thread has been idle for longer than this window (measured from the newest agent question, the current session boundary, or the AIcall's creation, never from `tm_update`), reopening the panel starts a NEW session: the system rows are rewritten from the AI's current prompt, `insight_session_start` is stamped on the AIcall's metadata, and every later history rebuild replays only rows at or after that boundary. Set it to `0` or less to disable the refresh entirely and keep the previous "replay everything" behaviour.
+
+A refresh never fails a panel open: on any failure the AIcall is returned unchanged and the previous session stays intact (`result="failed"` on the metric above).
 
 ### Insight AI live call listening
 

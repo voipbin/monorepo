@@ -379,6 +379,37 @@ exist, and ``500`` on an internal error.
 Listening does **not** start automatically when an AI call is created. The two
 are separate actions on purpose, so either can be used without the other.
 
+.. _ai-overview-insight-session:
+
+Insight Assistant: session history
+----------------------------------
+
+Each Case has exactly one Insight Assistant thread, and reopening the Case
+returns the agent to it. What the model is shown, however, is scoped to the
+CURRENT session, and never includes anything from an earlier session.
+
+For a question the agent asks, the model sees at most the newest 100 messages of
+the current session. For a proactive check while the assistant is listening to a
+live call or conversation, it sees at most
+``AICALL_LISTEN_QA_CONTEXT_SIZE`` (default ``10``) recent question and answer
+rows from the current session, plus the transcript window.
+
+A new session starts when an agent reopens the Case panel after
+``AICALL_INSIGHT_SESSION_IDLE_MINUTES`` (default ``30``) has passed without an
+agent question. At that moment the assistant's instructions are refreshed from
+that assistant's current prompt, so a prompt you edited between the two visits
+takes effect on the next question rather than at some later point.
+
+Two consequences are worth planning around:
+
+* Proactive notes and earlier answers stay visible in the panel. They are part
+  of the Case record. They are simply no longer fed to the model once a new
+  session has started.
+* An instruction an agent gives the assistant in conversation, for example
+  *"from now on flag anything about refunds"*, lives until the next session
+  starts. Restate it in the new session, or put it in the AI's ``init_prompt``
+  where it belongs permanently.
+
 Configuring Tools
 -----------------
 Tools are configured per-AI using the ``tool_names`` field (Array of String):

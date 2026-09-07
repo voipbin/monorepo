@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/teamhandler"
 	"monorepo/bin-common-handler/models/identity"
@@ -364,6 +365,181 @@ func Test_aicallHandler_interruptPreviousPipecatcall(t *testing.T) {
 					if delta != 0 {
 						t.Errorf("expected label %q to NOT change, got delta=%f", l, delta)
 					}
+				}
+			}
+		})
+	}
+}
+
+// Test_insightSessionStart pins the boundary reader (VOIP-1484). Every failure
+// mode must read as ABSENT, never as a zero time: a zero boundary would compare
+// as older than every row and silently turn the cut into a no-op that looks
+// like it worked, while a panic here would break every history rebuild.
+func Test_insightSessionStart(t *testing.T) {
+	boundary := time.Date(2026, 9, 7, 12, 0, 0, 123456789, time.UTC)
+
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+
+		expectRes   time.Time
+		expectFound bool
+	}{
+		{
+			name: "nil aicall",
+
+			aicall: nil,
+		},
+		{
+			name: "nil metadata",
+
+			aicall: &aicall.AIcall{},
+		},
+		{
+			name: "absent key",
+
+			aicall: &aicall.AIcall{Metadata: map[string]any{"other": 1}},
+		},
+		{
+			name: "wrong type",
+
+			aicall: &aicall.AIcall{Metadata: map[string]any{aicall.MetaKeyInsightSessionStart: 42}},
+		},
+		{
+			name: "empty string",
+
+			aicall: &aicall.AIcall{Metadata: map[string]any{aicall.MetaKeyInsightSessionStart: ""}},
+		},
+		{
+			name: "unparsable string",
+
+			aicall: &aicall.AIcall{Metadata: map[string]any{aicall.MetaKeyInsightSessionStart: "yesterday"}},
+		},
+		{
+			name: "rfc3339 nano round-trips",
+
+			aicall: &aicall.AIcall{Metadata: map[string]any{aicall.MetaKeyInsightSessionStart: boundary.Format(time.RFC3339Nano)}},
+
+			expectRes:   boundary,
+			expectFound: true,
+		},
+		{
+			// Metadata round-trips through JSON and the writer stamps UTC, but a
+			// value carrying an offset must still compare correctly.
+			name: "a non-utc offset is normalised to utc",
+
+			aicall: &aicall.AIcall{Metadata: map[string]any{aicall.MetaKeyInsightSessionStart: boundary.In(time.FixedZone("KST", 9*3600)).Format(time.RFC3339Nano)}},
+
+			expectRes:   boundary,
+			expectFound: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, found := insightSessionStart(tt.aicall)
+			if found != tt.expectFound {
+				t.Fatalf("found mismatch. expect: %v, got: %v", tt.expectFound, found)
+			}
+			if !found {
+				return
+			}
+			if !res.Equal(tt.expectRes) {
+				t.Errorf("boundary mismatch. expect: %s, got: %s", tt.expectRes, res)
+			}
+			if res.Location() != time.UTC {
+				t.Errorf("the boundary must be returned in utc. got: %s", res.Location())
+			}
+		})
+	}
+}
+
+// Test_cutBeforeSessionStart pins the replay cut shared by both history
+// builders. The STRICT comparison is the load-bearing part: the boundary row IS
+// the current session's first system row, so a `!After` predicate here would
+// drop the Insight guardrails from every refreshed session.
+func Test_cutBeforeSessionStart(t *testing.T) {
+	boundary := time.Date(2026, 9, 7, 12, 0, 0, 0, time.UTC)
+	before := boundary.Add(-time.Second)
+	after := boundary.Add(time.Second)
+
+	withBoundary := &aicall.AIcall{
+		Metadata: map[string]any{aicall.MetaKeyInsightSessionStart: boundary.Format(time.RFC3339Nano)},
+	}
+
+	tests := []struct {
+		name string
+
+		rows   []*message.Message
+		aicall *aicall.AIcall
+
+		expectContents []string
+	}{
+		{
+			name: "no boundary keeps every row",
+
+			rows:   []*message.Message{{Content: "old", TMCreate: &before}, {Content: "new", TMCreate: &after}},
+			aicall: &aicall.AIcall{},
+
+			expectContents: []string{"old", "new"},
+		},
+		{
+			name: "rows strictly before the boundary are dropped",
+
+			rows:   []*message.Message{{Content: "old", TMCreate: &before}, {Content: "new", TMCreate: &after}},
+			aicall: withBoundary,
+
+			expectContents: []string{"new"},
+		},
+		{
+			name: "the boundary row itself is kept",
+
+			rows:   []*message.Message{{Content: "boundary", TMCreate: &boundary}},
+			aicall: withBoundary,
+
+			expectContents: []string{"boundary"},
+		},
+		{
+			name: "a nil tm_create is kept",
+
+			rows:   []*message.Message{{Content: "undated", TMCreate: nil}},
+			aicall: withBoundary,
+
+			expectContents: []string{"undated"},
+		},
+		{
+			name: "everything older leaves an empty slice, never nil-panics",
+
+			rows:   []*message.Message{{Content: "old", TMCreate: &before}},
+			aicall: withBoundary,
+
+			expectContents: []string{},
+		},
+		{
+			name: "an empty input stays empty",
+
+			rows:   []*message.Message{},
+			aicall: withBoundary,
+
+			expectContents: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := cutBeforeSessionStart(tt.rows, tt.aicall)
+
+			contents := []string{}
+			for _, m := range res {
+				contents = append(contents, m.Content)
+			}
+			if len(contents) != len(tt.expectContents) {
+				t.Fatalf("row count mismatch. expect: %v, got: %v", tt.expectContents, contents)
+			}
+			for i, want := range tt.expectContents {
+				if contents[i] != want {
+					t.Errorf("row %d mismatch. expect: %q, got: %q", i, want, contents[i])
 				}
 			}
 		})

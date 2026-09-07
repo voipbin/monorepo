@@ -518,7 +518,15 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 		}
 
 		log.WithField("aicall", existing).Debugf("Reusing existing active aicall for contact_case. aicall_id: %s", existing.ID)
-		return existing, nil
+
+		// A reused Insight thread that has been idle long enough starts a new
+		// session here (VOIP-1484): refreshed prompt, and a boundary after which
+		// only the new session's rows are replayed to the model. Never fatal --
+		// on any failure the AIcall is returned exactly as it was found.
+		reused, refreshResult := h.refreshInsightSessionIfIdle(ctx, existing)
+		log.Debugf("Evaluated the insight session refresh. aicall_id: %s, result: %s", existing.ID, refreshResult)
+
+		return reused, nil
 	}
 
 	return nil, errors.Wrapf(lastErr, "could not create aicall for contact_case after %d retries. reference_id: %s", maxContactCaseCreateRetries, referenceID)
@@ -646,14 +654,19 @@ func (h *aicallHandler) startReferenceTypeNone(
 //
 // See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.5 step 4.
 func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *aicall.AIcall) ([]map[string]any, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "getPipecatcallMessages",
+		"aicall_id": c.ID,
+	})
 
-	// (1) The system row(s), independent of the capped window below. In
-	// production there are never more than three (the type-specific system
-	// prompt, the substituted init prompt, and an optional parameter-JSON
-	// block), all written once by startInitMessages and never again -- so
-	// "newest 5" and "all of them" are the same fetch. 5 is headroom, not a
-	// truncation risk.
-	systemRowsDesc, err := h.messageHandler.List(ctx, 5, "", map[message.Field]any{
+	// (1) The system row(s), independent of the capped window below. There are
+	// up to three per session (the type-specific system prompt, the substituted
+	// init prompt, and an optional parameter-JSON block): written once by
+	// startInitMessages at creation, and once more by every Insight session
+	// refresh (VOIP-1484), so they ACCUMULATE one block per refresh. The
+	// boundary cut below keeps only the current session's block; the cap is 20
+	// so several stale blocks can never push the current one out of the fetch.
+	systemRowsDesc, err := h.messageHandler.List(ctx, 20, "", map[message.Field]any{
 		message.FieldAIcallID: c.ID,
 		message.FieldRole:     message.RoleSystem,
 	})
@@ -672,6 +685,26 @@ func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *aicall.AI
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not get messages")
 	}
+
+	// (3) The Insight session boundary (VOIP-1484). Rows written before the
+	// current session started belong to an assistant thread the agent has
+	// already walked away from, and replaying them is what let a stale tool
+	// output steer a brand-new question. No boundary means no cut, so every
+	// non-Insight AIcall (including the task AIcalls of startPipecatcallTask,
+	// which never carry one) keeps its previous behaviour exactly.
+	//
+	// Net effect on the second fetch: "newest 100 rows, or everything since the
+	// session started, whichever is smaller".
+	cutSystemRowsDesc := cutBeforeSessionStart(systemRowsDesc, c)
+	if len(cutSystemRowsDesc) == 0 && len(systemRowsDesc) > 0 {
+		// The boundary is newer than every fetched system row. Running with no
+		// system prompt at all is strictly worse than running with a stale one,
+		// so fall back to the full fetch and make the anomaly loud.
+		log.Warnf("The insight session boundary left no system rows, falling back to every fetched system row. system_rows: %d", len(systemRowsDesc))
+	} else {
+		systemRowsDesc = cutSystemRowsDesc
+	}
+	restDesc = cutBeforeSessionStart(restDesc, c)
 
 	reverseMessages(systemRowsDesc)
 	reverseMessages(restDesc)
@@ -905,16 +938,40 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	}
 	log.Debugf("Parsed parameter. aicall_id: %s", c.ID)
 
-	for _, msg := range messages {
-		tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "",
-			messagehandler.WithActiveAIID(a.ID))
-		if err != nil {
-			return errors.Wrapf(err, "could not create the init message to the ai. aicall_id: %s", c.ID)
-		}
-		log.WithField("message", tmp).Debugf("Created the init message to the ai. aicall_id: %s", c.ID)
+	if _, err := h.writeSystemRows(ctx, a, c, messages); err != nil {
+		return err
 	}
 
 	return nil
+}
+
+// writeSystemRows persists one role=system message row per prompt, in order,
+// and returns the created rows as the message handler read them back (so their
+// TMCreate is populated).
+//
+// Shared by startInitMessages and the Insight session refresh
+// (refreshInsightSessionIfIdle), which must write byte-identical rows: the
+// refresh's first row IS the new session boundary, and the replay cut keys on
+// its TMCreate. On a Create failure the rows written so far are returned
+// alongside the error so the caller can name them in its own log.
+func (h *aicallHandler) writeSystemRows(ctx context.Context, a *ai.AI, c *aicall.AIcall, prompts []string) ([]*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "writeSystemRows",
+		"aicall_id": c.ID,
+	})
+
+	res := make([]*message.Message, 0, len(prompts))
+	for _, msg := range prompts {
+		tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "",
+			messagehandler.WithActiveAIID(a.ID))
+		if err != nil {
+			return res, errors.Wrapf(err, "could not create the init message to the ai. aicall_id: %s", c.ID)
+		}
+		log.WithField("message", tmp).Debugf("Created the init message to the ai. aicall_id: %s", c.ID)
+		res = append(res, tmp)
+	}
+
+	return res, nil
 }
 
 // mergeParameters merges AI and team parameters, with team overriding AI on key collision.

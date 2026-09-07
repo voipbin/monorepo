@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/message"
 )
 
 // resolveActiveAIIDFromAIcall returns the active AI UUID for the given AIcall.
@@ -36,6 +37,64 @@ func (h *aicallHandler) resolveActiveAIIDFromAIcall(ctx context.Context, ac *aic
 		logrus.Warnf("resolveActiveAIIDFromAIcall: unknown AssistanceType. type: %s", ac.AssistanceType)
 		return uuid.Nil
 	}
+}
+
+// insightSessionStart returns the current Insight session boundary recorded on
+// the AIcall's Metadata (VOIP-1484), in UTC.
+//
+// Absent returns false, which every caller treats as "no boundary" -- the
+// pre-VOIP-1484 behaviour, and the correct reading for a freshly created AIcall
+// whose rows are all newer than it is. An unparsable value is a corrupted
+// write, never something to guess at: it is logged and treated as absent, so a
+// bad string degrades to full replay rather than dropping the entire history.
+func insightSessionStart(c *aicall.AIcall) (time.Time, bool) {
+	if c == nil || c.Metadata == nil {
+		return time.Time{}, false
+	}
+
+	raw, ok := c.Metadata[aicall.MetaKeyInsightSessionStart].(string)
+	if !ok || raw == "" {
+		return time.Time{}, false
+	}
+
+	parsed, err := time.Parse(time.RFC3339Nano, raw)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"func":      "insightSessionStart",
+			"aicall_id": c.ID,
+		}).Warnf("Could not parse the insight session start, treating it as absent. value: %s, err: %v", raw, err)
+		return time.Time{}, false
+	}
+
+	return parsed.UTC(), true
+}
+
+// cutBeforeSessionStart drops the message rows that belong to an EARLIER
+// Insight session, and is the one place that rule is defined for both history
+// builders (getPipecatcallMessages and buildListenTurnMessages).
+//
+// The cut is STRICT: a row is dropped only when its TMCreate is strictly before
+// the boundary. The boundary row itself -- the first system row the refresh
+// wrote, whose TMCreate IS the boundary -- must survive, otherwise the new
+// session opens without the platform's own Insight guardrails. A nil TMCreate
+// is kept for the same reason: it carries no evidence of being old.
+//
+// No boundary means no cut, so this is a no-op for every non-Insight AIcall.
+func cutBeforeSessionStart(rows []*message.Message, c *aicall.AIcall) []*message.Message {
+	boundary, ok := insightSessionStart(c)
+	if !ok {
+		return rows
+	}
+
+	res := make([]*message.Message, 0, len(rows))
+	for _, m := range rows {
+		if m.TMCreate != nil && m.TMCreate.UTC().Before(boundary) {
+			continue
+		}
+		res = append(res, m)
+	}
+
+	return res
 }
 
 // isAIcallIdleExpired returns true if the AIcall has been idle longer than

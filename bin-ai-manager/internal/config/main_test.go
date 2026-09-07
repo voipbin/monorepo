@@ -143,6 +143,15 @@ func TestBootstrap(t *testing.T) {
 				t.Errorf("Wrong aicall_conversation_idle_timeout_hours default. expect: 24, got: %s", flagAIcallIdle.DefValue)
 			}
 
+			// VOIP-1484: the Insight session idle window. A zero default would
+			// mean "disabled", so the shipped default is pinned here.
+			flagInsightSession := rootCmd.PersistentFlags().Lookup("aicall_insight_session_idle_minutes")
+			if flagInsightSession == nil {
+				t.Errorf("Expected aicall_insight_session_idle_minutes flag to be registered")
+			} else if flagInsightSession.DefValue != "30" {
+				t.Errorf("Wrong aicall_insight_session_idle_minutes default. expect: 30, got: %s", flagInsightSession.DefValue)
+			}
+
 			flagAnalysisModel := rootCmd.PersistentFlags().Lookup("analysis_default_model")
 			if flagAnalysisModel == nil {
 				t.Errorf("Expected analysis_default_model flag to be registered")
@@ -199,6 +208,38 @@ func TestSetAIcallConversationIdleTimeoutHoursForTest(t *testing.T) {
 			res := Get()
 			if res.AIcallConversationIdleTimeoutHours != tt.hours {
 				t.Errorf("Wrong AIcallConversationIdleTimeoutHours. expect: %d, got: %d", tt.hours, res.AIcallConversationIdleTimeoutHours)
+			}
+		})
+	}
+}
+
+func TestSetAIcallInsightSessionIdleMinutesForTest(t *testing.T) {
+	tests := []struct {
+		name string
+
+		minutes int
+	}{
+		{
+			name: "overrides_insight_session_idle_window",
+
+			minutes: 45,
+		},
+		{
+			name: "zero_disables_the_refresh",
+
+			minutes: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			globalConfig = Config{}
+
+			SetAIcallInsightSessionIdleMinutesForTest(tt.minutes)
+
+			res := Get()
+			if res.AIcallInsightSessionIdleMinutes != tt.minutes {
+				t.Errorf("Wrong AIcallInsightSessionIdleMinutes. expect: %d, got: %d", tt.minutes, res.AIcallInsightSessionIdleMinutes)
 			}
 		})
 	}

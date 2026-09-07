@@ -3,9 +3,13 @@ package aicallhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -251,6 +255,395 @@ func Test_getParameterValue(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.expectedResult, actual) {
 				t.Errorf("Wrong match.\nexpected: %#v\ngot: %#v", tt.expectedResult, actual)
+			}
+		})
+	}
+}
+
+// Test_substituteText pins the extracted substitution core (VOIP-1484): it is a
+// PLAIN wrapper over the RPC with no gating of its own, and it returns the
+// error instead of swallowing it. Its two existing callers keep their lenient
+// per-call fallbacks; the strict refresh path needs the error.
+func Test_substituteText(t *testing.T) {
+	tests := []struct {
+		name string
+
+		activeflowID uuid.UUID
+		text         string
+
+		responseText string
+		responseErr  error
+
+		expectRes string
+		expectErr bool
+	}{
+		{
+			name: "substituted",
+
+			activeflowID: uuid.FromStringOrNil("11110000-0001-11f0-6666-000000000001"),
+			text:         "Case ${voipbin.case.id}.",
+
+			responseText: "Case c-1.",
+
+			expectRes: "Case c-1.",
+		},
+		{
+			name: "the rpc error is propagated, not swallowed",
+
+			activeflowID: uuid.FromStringOrNil("11110000-0002-11f0-6666-000000000001"),
+			text:         "Case ${voipbin.case.id}.",
+
+			responseErr: fmt.Errorf("activeflow ended"),
+
+			expectErr: true,
+		},
+		{
+			// No "${" gate of its own: the caller decides. getParameterValue
+			// relies on exactly this, since it substitutes EVERY string leaf.
+			name: "a plain string still reaches the rpc",
+
+			activeflowID: uuid.FromStringOrNil("11110000-0003-11f0-6666-000000000001"),
+			text:         "plain",
+
+			responseText: "plain",
+
+			expectRes: "plain",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &aicallHandler{reqHandler: mockReq}
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.text).Return(tt.responseText, tt.responseErr)
+
+			res, err := h.substituteText(ctx, tt.activeflowID, tt.text)
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected an error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if res != tt.expectRes {
+				t.Errorf("wrong match. expect: %q, got: %q", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_getInitPrompt_SubstitutionErrorKeepsTheRawPrompt pins the LENIENT
+// wrapper's behaviour across the extraction: a failed substitution must still
+// produce the raw prompt for a live turn. Only the refresh path fails closed.
+func Test_getInitPrompt_SubstitutionErrorKeepsTheRawPrompt(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	activeflowID := uuid.FromStringOrNil("11110000-0004-11f0-6666-000000000001")
+	a := &ai.AI{InitPrompt: "Case ${voipbin.case.id}."}
+
+	mockReq.EXPECT().FlowV1VariableSubstitute(ctx, activeflowID, a.InitPrompt).Return("", fmt.Errorf("activeflow ended"))
+
+	if res := h.getInitPrompt(ctx, a, activeflowID); res != "Case ${voipbin.case.id}." {
+		t.Errorf("the raw init prompt must survive a substitution failure. got: %q", res)
+	}
+}
+
+// Test_getParameterValue_PerLeafFallback pins that the lenient walk is still
+// PER LEAF after the extraction: one failing leaf must not discard the leaves
+// that substituted successfully. That is exactly what separates it from
+// substituteValue, which discards everything on the first error.
+func Test_getParameterValue_PerLeafFallback(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	activeflowID := uuid.FromStringOrNil("11110000-0005-11f0-6666-000000000001")
+
+	mockReq.EXPECT().FlowV1VariableSubstitute(ctx, activeflowID, "${bad}").Return("", fmt.Errorf("nope"))
+	mockReq.EXPECT().FlowV1VariableSubstitute(ctx, activeflowID, "${good}").Return("resolved", nil)
+
+	res := h.getParameterValue(ctx, map[string]any{"a": "${bad}", "b": "${good}"}, activeflowID)
+
+	expect := map[string]any{"a": "${bad}", "b": "resolved"}
+	if !reflect.DeepEqual(res, expect) {
+		t.Errorf("wrong match.\nexpect: %v\ngot: %v", expect, res)
+	}
+}
+
+// Test_substituteValue pins the STRICT walker used only by the session refresh:
+// same recursive shape as getParameterValue, but the first error aborts and the
+// partial result is discarded.
+func Test_substituteValue(t *testing.T) {
+	activeflowID := uuid.FromStringOrNil("11110000-0006-11f0-6666-000000000001")
+
+	tests := []struct {
+		name string
+
+		input any
+
+		substitutes map[string]string
+		failOn      string
+
+		expectRes any
+		expectErr bool
+	}{
+		{
+			name: "nested map and slice leaves are all substituted",
+
+			input: map[string]any{
+				"outer": map[string]any{"inner": "${a}"},
+				"list":  []any{"${b}", 3, true},
+			},
+
+			substitutes: map[string]string{"${a}": "A", "${b}": "B"},
+
+			expectRes: map[string]any{
+				"outer": map[string]any{"inner": "A"},
+				"list":  []any{"B", int64(3), true},
+			},
+		},
+		{
+			name: "nil is passed through without an rpc",
+
+			input: nil,
+
+			expectRes: nil,
+		},
+		{
+			name: "the first leaf error discards the whole walk",
+
+			input: map[string]any{"a": "${a}"},
+
+			failOn: "${a}",
+
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &aicallHandler{reqHandler: mockReq}
+			ctx := context.Background()
+
+			for in, out := range tt.substitutes {
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, activeflowID, in).Return(out, nil)
+			}
+			if tt.failOn != "" {
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, activeflowID, tt.failOn).Return("", fmt.Errorf("nope"))
+			}
+
+			res, err := h.substituteValue(ctx, activeflowID, tt.input)
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected an error, got nil")
+				}
+				if res != nil {
+					t.Errorf("a failed strict walk must discard its partial result. got: %v", res)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("wrong match.\nexpect: %#v\ngot: %#v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_refreshPrompt pins the Insight session refresh's own prompt rules
+// (VOIP-1484):
+//
+//   - a prompt with no "${" never reaches the RPC, so a reused AIcall whose
+//     original activeflow is long dead still gets a refreshed session;
+//   - a prompt WITH "${" and no activeflow is an error, never a raw ${...}
+//     persisted into a system row;
+//   - an empty (or "{}") parameter block produces no row at all.
+func Test_refreshPrompt(t *testing.T) {
+	activeflowID := uuid.FromStringOrNil("11110000-0007-11f0-6666-000000000001")
+	aicallID := uuid.FromStringOrNil("11110000-0008-11f0-6666-000000000001")
+
+	tests := []struct {
+		name string
+
+		aicall *aicall.AIcall
+		ai     *ai.AI
+
+		substitutes map[string]string
+		failOn      string
+
+		expectInitPrompt string
+		expectParamJSON  string
+		expectErr        bool
+	}{
+		{
+			name: "no variables anywhere means no rpc at all",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: activeflowID,
+				Parameter:    map[string]any{"case_id": "c-1"},
+			},
+			ai: &ai.AI{InitPrompt: "You are the case assistant."},
+
+			expectInitPrompt: "You are the case assistant.",
+			expectParamJSON:  `{"case_id":"c-1"}`,
+		},
+		{
+			name: "a variable-free prompt refreshes even with no activeflow",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: uuid.Nil,
+			},
+			ai: &ai.AI{InitPrompt: "You are the case assistant."},
+
+			expectInitPrompt: "You are the case assistant.",
+		},
+		{
+			name: "an init prompt variable is substituted",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: activeflowID,
+			},
+			ai: &ai.AI{InitPrompt: "Case ${voipbin.case.id}."},
+
+			substitutes: map[string]string{"Case ${voipbin.case.id}.": "Case c-1."},
+
+			expectInitPrompt: "Case c-1.",
+		},
+		{
+			name: "an init prompt variable with no activeflow fails closed",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: uuid.Nil,
+			},
+			ai: &ai.AI{InitPrompt: "Case ${voipbin.case.id}."},
+
+			expectErr: true,
+		},
+		{
+			name: "an init prompt substitution failure fails closed",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: activeflowID,
+			},
+			ai: &ai.AI{InitPrompt: "Case ${voipbin.case.id}."},
+
+			failOn: "Case ${voipbin.case.id}.",
+
+			expectErr: true,
+		},
+		{
+			name: "nested parameter leaves are substituted",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: activeflowID,
+				Parameter: map[string]any{
+					"nested": map[string]any{"case_id": "${voipbin.case.id}"},
+					"list":   []any{"static"},
+				},
+			},
+			ai: &ai.AI{InitPrompt: "You are the case assistant."},
+
+			substitutes: map[string]string{
+				"${voipbin.case.id}": "c-1",
+				"static":             "static",
+			},
+
+			expectInitPrompt: "You are the case assistant.",
+			expectParamJSON:  `{"list":["static"],"nested":{"case_id":"c-1"}}`,
+		},
+		{
+			name: "a parameter variable with no activeflow fails closed",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: uuid.Nil,
+				Parameter:    map[string]any{"case_id": "${voipbin.case.id}"},
+			},
+			ai: &ai.AI{InitPrompt: "You are the case assistant."},
+
+			expectErr: true,
+		},
+		{
+			name: "an empty parameter map produces no parameter row",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: activeflowID,
+				Parameter:    map[string]any{},
+			},
+			ai: &ai.AI{InitPrompt: "You are the case assistant."},
+
+			expectInitPrompt: "You are the case assistant.",
+		},
+		{
+			name: "an empty init prompt stays empty and writes no row",
+
+			aicall: &aicall.AIcall{
+				Identity:     commonidentity.Identity{ID: aicallID},
+				ActiveflowID: activeflowID,
+			},
+			ai: &ai.AI{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &aicallHandler{reqHandler: mockReq}
+			ctx := context.Background()
+
+			for in, out := range tt.substitutes {
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, activeflowID, in).Return(out, nil)
+			}
+			if tt.failOn != "" {
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, activeflowID, tt.failOn).Return("", fmt.Errorf("nope"))
+			}
+
+			initPrompt, paramJSON, err := h.refreshPrompt(ctx, tt.aicall, tt.ai)
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected an error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if initPrompt != tt.expectInitPrompt {
+				t.Errorf("wrong init prompt. expect: %q, got: %q", tt.expectInitPrompt, initPrompt)
+			}
+			if paramJSON != tt.expectParamJSON {
+				t.Errorf("wrong parameter json. expect: %q, got: %q", tt.expectParamJSON, paramJSON)
 			}
 		})
 	}

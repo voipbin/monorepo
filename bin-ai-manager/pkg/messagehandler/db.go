@@ -36,16 +36,8 @@ func (h *messageHandler) Create(
 		tmpToolCalls = []message.ToolCall{}
 	}
 
-	// Apply defaults first, then override with caller-supplied options.
-	// DeliveryStatusDelivered matches the legacy semantics + DB column default,
-	// so existing callers that pass no opts continue to work unchanged.
-	p := createParams{
-		pipecatcallID:  uuid.Nil,
-		deliveryStatus: message.DeliveryStatusDelivered,
-	}
-	for _, opt := range opts {
-		opt(&p)
-	}
+	// Defaults first, then the caller-supplied options; see applyCreateOptions.
+	p := applyCreateOptions(opts...)
 
 	m := &message.Message{
 		Identity: identity.Identity{

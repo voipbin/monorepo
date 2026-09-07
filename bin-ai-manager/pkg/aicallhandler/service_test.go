@@ -218,7 +218,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 				).Return(&message.Message{}, nil)
 			}
 
-			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.expectAIcall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(tt.expectAIcall.ID)).Return([]*message.Message{}, nil)
 			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.expectAIcall.ID)).Return(tt.responseMessages, nil)
 
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
@@ -417,7 +417,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, tt.responseAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageText, nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.responseAIcall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(tt.responseAIcall.ID)).Return([]*message.Message{}, nil)
 			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.responseAIcall.ID)).Return(tt.responseMessages, nil)
 
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
@@ -608,7 +608,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				).Return(&message.Message{}, nil)
 			}
 
-			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.expectAIcall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(tt.expectAIcall.ID)).Return([]*message.Message{}, nil)
 			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.expectAIcall.ID)).Return(tt.responseMessages, nil)
 
 			// start pipecatcall

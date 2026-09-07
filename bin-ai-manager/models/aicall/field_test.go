@@ -152,3 +152,13 @@ func Test_ListenMetaKeys(t *testing.T) {
 		t.Errorf("MetaKeyListenOwnsTranscribe mismatch. expected: %q, got: %q", "listen_owns_transcribe", MetaKeyListenOwnsTranscribe)
 	}
 }
+
+// Test_InsightSessionMetaKey pins the Metadata map key carrying the Insight
+// session boundary (VOIP-1484). The value is written by the session refresh and
+// read on every LLM history rebuild; a rename silently reverts the replay rule
+// to "everything since the AIcall was created" without failing anything else.
+func Test_InsightSessionMetaKey(t *testing.T) {
+	if MetaKeyInsightSessionStart != "insight_session_start" {
+		t.Errorf("MetaKeyInsightSessionStart mismatch. expected: %q, got: %q", "insight_session_start", MetaKeyInsightSessionStart)
+	}
+}

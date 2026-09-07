@@ -337,7 +337,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.responseAIcall.ActiveflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil).Times(2)
 
 			// startPipecatcall
-			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.responseAIcall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(tt.responseAIcall.ID)).Return([]*message.Message{}, nil)
 			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.responseAIcall.ID)).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
@@ -566,7 +566,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "test user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -652,7 +652,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "another user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -749,7 +749,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "fresh user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -842,7 +842,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, createdAIcall.CustomerID, createdAIcall.ID, createdAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "fresh user message — update fails.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall — proceeds despite UpdateStatus failure
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(createdAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(createdAIcall.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(createdAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -948,7 +948,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "post-terminated user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -1060,7 +1060,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				// conversation message create
 				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "after-idle user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -1174,7 +1174,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "team user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -1351,7 +1351,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "post-terminating user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
@@ -1450,13 +1450,22 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 }
 
 func Test_getPipecatcallMessages(t *testing.T) {
+	// VOIP-1484 boundary fixtures. The cut is STRICT: the boundary row itself
+	// (TMCreate == boundary) is the first system row of the current session and
+	// must survive.
+	sessionBoundary := time.Date(2026, 9, 7, 12, 0, 0, 0, time.UTC)
+	beforeBoundary := sessionBoundary.Add(-1 * time.Hour)
+	olderBoundary := sessionBoundary.Add(-2 * time.Hour)
+	afterBoundary := sessionBoundary.Add(1 * time.Minute)
+
 	tests := []struct {
 		name string
 
 		aicall *aicall.AIcall
 
-		responseMessages []*message.Message
-		expectRes        []map[string]any
+		responseSystemMessages []*message.Message
+		responseMessages       []*message.Message
+		expectRes              []map[string]any
 	}{
 		{
 			name: "normal",
@@ -1700,6 +1709,114 @@ func Test_getPipecatcallMessages(t *testing.T) {
 				},
 			},
 		},
+		{
+			// VOIP-1484. Rows older than the session boundary are dropped from
+			// BOTH fetches, and the boundary row itself (TMCreate == boundary,
+			// the first system row the refresh wrote) is KEPT -- dropping it
+			// would open the new session with no Insight guardrails at all.
+			name: "insight session boundary cuts the previous session from both fetches",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1000000-0001-11f0-8888-000000000001"),
+				},
+				Metadata: map[string]any{
+					aicall.MetaKeyInsightSessionStart: sessionBoundary.Format(time.RFC3339Nano),
+				},
+			},
+
+			responseSystemMessages: []*message.Message{
+				{Role: message.RoleSystem, Content: "current system prompt", TMCreate: &sessionBoundary},
+				{Role: message.RoleSystem, Content: "previous system prompt", TMCreate: &beforeBoundary},
+			},
+			responseMessages: []*message.Message{
+				{Role: message.RoleAssistant, Content: "new answer", TMCreate: &afterBoundary},
+				{Role: message.RoleUser, Content: "new question", TMCreate: &afterBoundary},
+				{Role: message.RoleTool, Content: `{"result":"stale"}`, TMCreate: &beforeBoundary},
+				{Role: message.RoleUser, Content: "old question", TMCreate: &olderBoundary},
+			},
+			expectRes: []map[string]any{
+				{"role": "system", "content": "current system prompt"},
+				{"role": "user", "content": "new question"},
+				{"role": "assistant", "content": "new answer"},
+			},
+		},
+		{
+			// A boundary newer than every fetched system row would leave the
+			// turn with no system prompt at all. Running with a stale prompt is
+			// strictly better, so the cut falls back to the full system fetch.
+			name: "insight session boundary that leaves no system rows falls back to all of them",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1000000-0002-11f0-8888-000000000001"),
+				},
+				Metadata: map[string]any{
+					aicall.MetaKeyInsightSessionStart: sessionBoundary.Format(time.RFC3339Nano),
+				},
+			},
+
+			responseSystemMessages: []*message.Message{
+				{Role: message.RoleSystem, Content: "init prompt", TMCreate: &beforeBoundary},
+				{Role: message.RoleSystem, Content: "system prompt", TMCreate: &olderBoundary},
+			},
+			responseMessages: []*message.Message{},
+			expectRes: []map[string]any{
+				{"role": "system", "content": "system prompt"},
+				{"role": "system", "content": "init prompt"},
+			},
+		},
+		{
+			// An unparsable boundary is a corrupted write. It degrades to full
+			// replay (today's behaviour), never to a silently emptied history.
+			name: "an unparsable insight session boundary is treated as absent",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1000000-0003-11f0-8888-000000000001"),
+				},
+				Metadata: map[string]any{
+					aicall.MetaKeyInsightSessionStart: "not-a-timestamp",
+				},
+			},
+
+			responseSystemMessages: []*message.Message{
+				{Role: message.RoleSystem, Content: "system prompt", TMCreate: &olderBoundary},
+			},
+			responseMessages: []*message.Message{
+				{Role: message.RoleUser, Content: "old question", TMCreate: &olderBoundary},
+			},
+			expectRes: []map[string]any{
+				{"role": "system", "content": "system prompt"},
+				{"role": "user", "content": "old question"},
+			},
+		},
+		{
+			// A row with no create timestamp carries no evidence of being old,
+			// so it is kept.
+			name: "rows with a nil tm_create survive the insight session boundary",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1000000-0004-11f0-8888-000000000001"),
+				},
+				Metadata: map[string]any{
+					aicall.MetaKeyInsightSessionStart: sessionBoundary.Format(time.RFC3339Nano),
+				},
+			},
+
+			responseSystemMessages: []*message.Message{
+				{Role: message.RoleSystem, Content: "system prompt", TMCreate: nil},
+			},
+			responseMessages: []*message.Message{
+				{Role: message.RoleUser, Content: "undated question", TMCreate: nil},
+				{Role: message.RoleUser, Content: "old question", TMCreate: &beforeBoundary},
+			},
+			expectRes: []map[string]any{
+				{"role": "system", "content": "system prompt"},
+				{"role": "user", "content": "undated question"},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1726,7 +1843,7 @@ func Test_getPipecatcallMessages(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.aicall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(tt.aicall.ID)).Return(tt.responseSystemMessages, nil)
 			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.aicall.ID)).Return(tt.responseMessages, nil)
 
 			res, err := h.getPipecatcallMessages(ctx, tt.aicall)
@@ -1973,7 +2090,7 @@ func Test_startPipecatcall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.aicall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(tt.aicall.ID)).Return([]*message.Message{}, nil)
 			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.aicall.ID)).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
@@ -2759,6 +2876,11 @@ func Test_startInitMessages(t *testing.T) {
 		responseSubstitutes []string
 
 		expectMessageTexts []string
+
+		// expectActiveAIID, when non-Nil, pins the variadic
+		// messagehandler.WithActiveAIID option on every created row instead of
+		// waving it through with gomock.Any().
+		expectActiveAIID uuid.UUID
 	}{
 		{
 			name: "has all",
@@ -2870,6 +2992,44 @@ func Test_startInitMessages(t *testing.T) {
 			},
 		},
 		{
+			// VOIP-1484: the insight branch, pinned alongside the normal and
+			// task branches so the writeSystemRows extraction is proved to emit
+			// byte-identical rows for ALL THREE. This branch matters most: the
+			// session refresh writes the same three rows through the same
+			// helper, so a divergence here would give a refreshed session a
+			// different system block from a freshly created one.
+			name: "insight ai writes the insight system prompt, the init prompt and the parameter",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a7b8c9d0-e1f2-11f0-a7b8-c9d0e1f2a3b4"),
+				},
+				Type:       ai.TypeInsight,
+				InitPrompt: "You are the case assistant.",
+			},
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e5f6a7b8-c9d0-11f0-e5f6-a7b8c9d0e1f2"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("f6a7b8c9-d0e1-11f0-f6a7-b8c9d0e1f2a3"),
+				Parameter: map[string]any{
+					"case_id": "c-1",
+				},
+			},
+			isTask: false,
+
+			responseSubstitutes: []string{
+				"You are the case assistant.",
+				"c-1",
+			},
+			expectMessageTexts: []string{
+				InsightSystemPrompt,
+				"You are the case assistant.",
+				`{"case_id":"c-1"}`,
+			},
+			expectActiveAIID: uuid.FromStringOrNil("a7b8c9d0-e1f2-11f0-a7b8-c9d0e1f2a3b4"),
+		},
+		{
 			name: "empty map parameter is excluded from messages",
 
 			ai: &ai.AI{},
@@ -2918,7 +3078,11 @@ func Test_startInitMessages(t *testing.T) {
 			}
 
 			for _, m := range tt.expectMessageTexts {
-				mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.aicall.CustomerID, tt.aicall.ID, tt.aicall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "", gomock.Any()).Return(&message.Message{}, nil)
+				optMatcher := gomock.Any()
+				if tt.expectActiveAIID != uuid.Nil {
+					optMatcher = withActiveAIID(tt.expectActiveAIID)
+				}
+				mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.aicall.CustomerID, tt.aicall.ID, tt.aicall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "", optMatcher).Return(&message.Message{}, nil)
 			}
 
 			if err := h.startInitMessages(ctx, tt.ai, tt.aicall, tt.isTask); err != nil {
@@ -3041,7 +3205,7 @@ func Test_StartTask(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "", gomock.Any()).Return(&message.Message{}, nil)
 			}
 
-			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.expectAIcall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(tt.expectAIcall.ID)).Return([]*message.Message{}, nil)
 			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.expectAIcall.ID)).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
@@ -3787,6 +3951,79 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 		db      *dbhandler.MockDBHandler
 		message *messagehandler.MockMessageHandler
 		cache   *cachehandler.MockCacheHandler
+		ai      *aihandler.MockAIHandler
+	}
+
+	// VOIP-1484 Insight session refresh fixtures, shared by the reuse-branch
+	// rows below. A refresh is forced with OLD TIMESTAMPS, never with a zero
+	// threshold: zero means "disabled" and exercises a different gate.
+	insightSessionDisabled := 0
+	insightIdleTM := time.Now().Add(-2 * time.Hour)     // older than the 30-minute session window
+	insightRecentTM := time.Now().Add(-1 * time.Minute) // inside it
+	insightBoundaryTM := time.Date(2026, 9, 7, 12, 0, 0, 0, time.UTC)
+	insightBoundaryLaterTM := insightBoundaryTM.Add(time.Second) // the 2nd/3rd system rows: never the boundary
+	insightAIID := uuid.FromStringOrNil("b1000000-0001-11f0-9999-000000000001")
+	insightHistoryID := uuid.FromStringOrNil("b1000000-0002-11f0-9999-000000000001")
+	insightCustomerID := uuid.FromStringOrNil("b1000000-0003-11f0-9999-000000000001")
+	insightAIcallID := uuid.FromStringOrNil("b1000000-0004-11f0-9999-000000000001")
+	insightActiveflowID := uuid.FromStringOrNil("b1000000-0005-11f0-9999-000000000001")
+	insightReferenceID := uuid.FromStringOrNil("b1000000-0006-11f0-9999-000000000001")
+	insightRowID := uuid.FromStringOrNil("b1000000-0007-11f0-9999-000000000001")
+	insightListenConversationID := "b1000000-0008-11f0-9999-000000000001"
+
+	// insightExistingWith builds the reused, idle Insight AIcall the refresh
+	// rows share. Both the mock setup and expectRes call it, so a "kept" or
+	// "failed" row asserts the AIcall came back UNCHANGED.
+	insightExistingWith := func(mutate func(c *aicall.AIcall)) *aicall.AIcall {
+		tmCreate := insightIdleTM
+		res := &aicall.AIcall{
+			Identity: commonidentity.Identity{
+				ID:         insightAIcallID,
+				CustomerID: insightCustomerID,
+			},
+			AssistanceType: aicall.AssistanceTypeAI,
+			AssistanceID:   insightAIID,
+			ActiveflowID:   insightActiveflowID,
+			ReferenceType:  aicall.ReferenceTypeContactCase,
+			ReferenceID:    insightReferenceID,
+			Status:         aicall.StatusProgressing,
+			TMCreate:       &tmCreate,
+		}
+		if mutate != nil {
+			mutate(res)
+		}
+		return res
+	}
+
+	// insightReuseArrival replays the duplicate-key arrival that lands on the
+	// reuse branch, and is where every refresh row starts.
+	insightReuseArrival := func(ctx context.Context, m *mocks, existing *aicall.AIcall) {
+		m.util.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("b1000000-0009-11f0-9999-000000000001"))
+		m.util.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("b1000000-000a-11f0-9999-000000000001"))
+		m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+		m.db.EXPECT().AIcallGetByReferenceID(ctx, insightReferenceID).Return(existing, nil)
+	}
+
+	// insightAI is what aiHandler.Get returns to the REFRESH. The caller's own
+	// AI (the `ai:` field of each row) is deliberately prompt-free: the create
+	// attempt that precedes the duplicate-key conflict runs
+	// buildPromptSnapshots on it, and an init prompt there would fire an
+	// unrelated substitution RPC.
+	insightAI := &ai.AI{
+		Identity: commonidentity.Identity{
+			ID:         insightAIID,
+			CustomerID: insightCustomerID,
+		},
+		Type:                   ai.TypeInsight,
+		InitPrompt:             "You are the case assistant.",
+		CurrentPromptHistoryID: insightHistoryID,
+	}
+	insightCallerAI := &ai.AI{
+		Identity: commonidentity.Identity{
+			ID:         insightAIID,
+			CustomerID: insightCustomerID,
+		},
+		EngineModel: ai.EngineModelOpenaiGPT5,
 	}
 
 	tests := []struct {
@@ -3814,6 +4051,19 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 		// path) MUST increment by at least 1 across the call. When false,
 		// it is not asserted.
 		expectIdleExpiredInc bool
+
+		// insightIdleMinutes overrides config.AIcallInsightSessionIdleMinutes
+		// for this row (VOIP-1484). nil keeps the shipped 30-minute default;
+		// a row that wants a refresh forces it with old timestamps, NOT with a
+		// zero threshold, because zero means "disabled".
+		insightIdleMinutes *int
+
+		// expectRefreshResult, when non-empty: the Insight session refresh
+		// counter (promAIcallInsightSessionRefreshTotal) MUST increment by at
+		// least 1 on exactly this label (kept|refreshed|failed). Empty means
+		// "not asserted", which is the right setting for every row that never
+		// reaches the reuse branch.
+		expectRefreshResult string
 	}{
 		{
 			name: "create succeeds on first attempt",
@@ -3852,7 +4102,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("10000000-0007-11f0-aaaa-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -3972,7 +4222,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("30000000-0010-11f0-cccc-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -4175,7 +4425,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("70000000-0010-11f0-1111-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -4250,7 +4500,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("80000000-0010-11f0-2222-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -4309,7 +4559,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("pipecat host unavailable"))
 			},
@@ -4358,7 +4608,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("91000000-0007-11f0-4444-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -4406,11 +4656,22 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 						ID:         uuid.FromStringOrNil("92000000-0007-11f0-5555-000000000001"),
 						CustomerID: uuid.FromStringOrNil("92000000-0002-11f0-5555-000000000001"),
 					},
-					ActiveflowID:  uuid.FromStringOrNil("92000000-0003-11f0-5555-000000000001"),
-					ReferenceType: aicall.ReferenceTypeContactCase,
-					ReferenceID:   uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001"),
-					Status:        aicall.StatusInitiating,
+					AssistanceType: aicall.AssistanceTypeAI,
+					AssistanceID:   uuid.FromStringOrNil("92000000-0001-11f0-5555-000000000001"),
+					ActiveflowID:   uuid.FromStringOrNil("92000000-0003-11f0-5555-000000000001"),
+					ReferenceType:  aicall.ReferenceTypeContactCase,
+					ReferenceID:    uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001"),
+					Status:         aicall.StatusInitiating,
 				}
+
+				// VOIP-1484: the Initiating path RESUMES the stuck turn, it does
+				// not reuse the row, so the session refresh must never run here
+				// even though this fixture would otherwise qualify for one
+				// (AssistanceTypeAI, no user rows). A misplaced refresh would
+				// show up as the newest-user-row probe (List with size 1) or an
+				// aiHandler.Get, so both are pinned to zero calls.
+				m.message.EXPECT().List(gomock.Any(), uint64(1), gomock.Any(), gomock.Any()).Times(0)
+				m.ai.EXPECT().Get(gomock.Any(), gomock.Any()).Times(0)
 
 				// attempt 0: duplicate key, existing is stuck at Initiating -> retry
 				// the pipecatcall-start sequence on the existing row instead of
@@ -4420,7 +4681,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
 				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001")).Return(existingInitiating, nil)
 
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(existingInitiating.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(existingInitiating.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existingInitiating.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("92000000-0008-11f0-5555-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, existingInitiating.PipecatcallID, existingInitiating.CustomerID, existingInitiating.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, existingInitiating.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -4505,7 +4766,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("55000000-000a-11f0-eeee-000000000001")}, HostID: "host2"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -4597,7 +4858,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("56000000-000a-11f0-eeee-000000000001")}, HostID: "host2"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -4690,7 +4951,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
-				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("93000000-000a-11f0-6666-000000000001")}, HostID: "host3"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
@@ -4711,6 +4972,540 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 			expectRateLimitedInc: false, // idle-expiry path deliberately skips the recreate rate limit
 			expectIdleExpiredInc: true,
 		},
+
+		// ------------------------------------------------------------------
+		// VOIP-1484: the Insight session refresh on the reuse branch.
+		// ------------------------------------------------------------------
+		{
+			name: "reuse: a recent agent question keeps the current insight session",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				// The newest agent question is inside the window, so the thread
+				// is still live and no AI lookup may happen.
+				userTM := insightRecentTM
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{
+					{TMCreate: &userTM},
+				}, nil)
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "kept",
+		},
+		{
+			name: "reuse: an idle insight thread starts a new session",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(func(c *aicall.AIcall) {
+					c.Parameter = map[string]any{"case_id": "c-1"}
+					// A stale snapshot from the PREVIOUS session. It must not
+					// survive: the metadata write copies the RE-READ row, not
+					// this one.
+					c.Metadata = map[string]any{aicall.MetaKeyPromptSnapshots: []any{map[string]any{"prompt": "OLD PROMPT"}}}
+				})
+				insightReuseArrival(ctx, m, existing)
+
+				userTM := insightIdleTM
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{
+					{TMCreate: &userTM},
+				}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(insightAI, nil)
+
+				// No "${" anywhere, so the refresh must not call the flow
+				// substitution RPC at all (an unexpected call fails the test).
+				boundary := insightBoundaryTM
+				later := insightBoundaryLaterTM
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, InsightSystemPrompt, nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{Identity: commonidentity.Identity{ID: insightRowID}, TMCreate: &boundary}, nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, "You are the case assistant.", nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &later}, nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, `{"case_id":"c-1"}`, nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &later}, nil)
+
+				// The re-read row carries a listen pointer that `existing` does
+				// NOT have: it must survive the metadata write, which is the
+				// whole point of re-reading rather than copying `existing`.
+				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(&aicall.AIcall{
+					Identity: commonidentity.Identity{ID: existing.ID},
+					Metadata: map[string]any{aicall.MetaKeyListenConversationID: insightListenConversationID},
+				}, nil)
+
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, existing.ID, map[aicall.Field]any{
+					aicall.FieldMetadata: map[string]any{
+						aicall.MetaKeyListenConversationID: insightListenConversationID,
+						// The boundary is the FIRST created row's TMCreate,
+						// never the later ones.
+						aicall.MetaKeyInsightSessionStart: insightBoundaryTM.UTC().Format(time.RFC3339Nano),
+						aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+							{
+								AIID:            insightAIID,
+								PromptHistoryID: insightHistoryID,
+								Prompt:          "You are the case assistant.",
+							},
+						},
+					},
+				}).Return(nil)
+				// TMUpdate must NOT be bumped: a status-touching write here
+				// would make the next idle evaluation read this bookkeeping as
+				// agent activity.
+				m.db.EXPECT().AIcallUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(&aicall.AIcall{
+					Identity: commonidentity.Identity{ID: existing.ID},
+					Status:   aicall.StatusProgressing,
+					Metadata: map[string]any{aicall.MetaKeyInsightSessionStart: insightBoundaryTM.UTC().Format(time.RFC3339Nano)},
+				}, nil)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{ID: insightAIcallID},
+				Status:   aicall.StatusProgressing,
+				Metadata: map[string]any{aicall.MetaKeyInsightSessionStart: insightBoundaryTM.UTC().Format(time.RFC3339Nano)},
+			},
+			expectRefreshResult: "refreshed",
+		},
+		{
+			name: "reuse: nil metadata on the re-read row is handled",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(insightAI, nil)
+
+				boundary := insightBoundaryTM
+				later := insightBoundaryLaterTM
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, InsightSystemPrompt, nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &boundary}, nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, "You are the case assistant.", nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &later}, nil)
+
+				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(&aicall.AIcall{
+					Identity: commonidentity.Identity{ID: existing.ID},
+				}, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, existing.ID, map[aicall.Field]any{
+					aicall.FieldMetadata: map[string]any{
+						aicall.MetaKeyInsightSessionStart: insightBoundaryTM.UTC().Format(time.RFC3339Nano),
+						aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+							{
+								AIID:            insightAIID,
+								PromptHistoryID: insightHistoryID,
+								Prompt:          "You are the case assistant.",
+							},
+						},
+					},
+				}).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(&aicall.AIcall{
+					Identity: commonidentity.Identity{ID: existing.ID},
+					Status:   aicall.StatusProgressing,
+				}, nil)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{ID: insightAIcallID},
+				Status:   aicall.StatusProgressing,
+			},
+			expectRefreshResult: "refreshed",
+		},
+		{
+			name: "reuse: no user rows and a fresh aicall tm_create keeps the session",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(func(c *aicall.AIcall) {
+					tm := insightRecentTM
+					c.TMCreate = &tm
+				})
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+			},
+
+			expectRes: insightExistingWith(func(c *aicall.AIcall) {
+				tm := insightRecentTM
+				c.TMCreate = &tm
+			}),
+			expectRefreshResult: "kept",
+		},
+		{
+			name: "reuse: no timestamp at all keeps the session",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(func(c *aicall.AIcall) {
+					c.TMCreate = nil
+				})
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+			},
+
+			expectRes: insightExistingWith(func(c *aicall.AIcall) {
+				c.TMCreate = nil
+			}),
+			expectRefreshResult: "kept",
+		},
+		{
+			name: "reuse: a zero idle window disables the refresh entirely",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			insightIdleMinutes: &insightSessionDisabled,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				// Idle by every measure, but disabled: not even the newest-user-row
+				// read may happen.
+				insightReuseArrival(ctx, m, insightExistingWith(nil))
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "kept",
+		},
+		{
+			name: "reuse: team assistance is never refreshed",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				// Idle, but a team thread's prompt is one snapshot per member;
+				// the refresh must stop at the very first gate.
+				insightReuseArrival(ctx, m, insightExistingWith(func(c *aicall.AIcall) {
+					c.AssistanceType = aicall.AssistanceTypeTeam
+				}))
+			},
+
+			expectRes: insightExistingWith(func(c *aicall.AIcall) {
+				c.AssistanceType = aicall.AssistanceTypeTeam
+			}),
+			expectRefreshResult: "kept",
+		},
+		{
+			name: "reuse: a nil assistance id keeps the session",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(func(c *aicall.AIcall) {
+					c.AssistanceID = uuid.Nil
+				})
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+			},
+
+			expectRes: insightExistingWith(func(c *aicall.AIcall) {
+				c.AssistanceID = uuid.Nil
+			}),
+			expectRefreshResult: "kept",
+		},
+		{
+			name: "reuse: a non-insight ai keeps the session",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(&ai.AI{
+					Identity: commonidentity.Identity{ID: insightAIID},
+					Type:     ai.TypeNormal,
+				}, nil)
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "kept",
+		},
+		{
+			name: "reuse: an ai lookup failure fails the refresh without touching anything",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(nil, fmt.Errorf("no ai"))
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "failed",
+		},
+		{
+			name: "reuse: a newest-user-row read failure fails the refresh",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return(nil, fmt.Errorf("db down"))
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "failed",
+		},
+		{
+			name: "reuse: a substitution failure fails the refresh with no rows and no metadata write",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(&ai.AI{
+					Identity:   commonidentity.Identity{ID: insightAIID},
+					Type:       ai.TypeInsight,
+					InitPrompt: "Case ${voipbin.case.id}.",
+				}, nil)
+				m.req.EXPECT().FlowV1VariableSubstitute(ctx, insightActiveflowID, "Case ${voipbin.case.id}.").Return("", fmt.Errorf("activeflow ended"))
+				// Fail closed: no system row may be written and no metadata
+				// touched, or the session would carry a raw ${...} prompt.
+				m.message.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "failed",
+		},
+		{
+			name: "reuse: variables with no activeflow fail the refresh before any rpc",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(func(c *aicall.AIcall) {
+					c.ActiveflowID = uuid.Nil
+				})
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(&ai.AI{
+					Identity:   commonidentity.Identity{ID: insightAIID},
+					Type:       ai.TypeInsight,
+					InitPrompt: "Case ${voipbin.case.id}.",
+				}, nil)
+			},
+
+			expectRes: insightExistingWith(func(c *aicall.AIcall) {
+				c.ActiveflowID = uuid.Nil
+			}),
+			expectRefreshResult: "failed",
+		},
+		{
+			name: "reuse: a system row create failure fails the refresh with no metadata write",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(insightAI, nil)
+
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, InsightSystemPrompt, nil, "", withActiveAIID(insightAIID)).
+					Return(nil, fmt.Errorf("create failed"))
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "failed",
+		},
+		{
+			name: "reuse: a boundary row with no tm_create fails the refresh",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(insightAI, nil)
+
+				later := insightBoundaryLaterTM
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, InsightSystemPrompt, nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{}, nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, "You are the case assistant.", nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &later}, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "failed",
+		},
+		{
+			name: "reuse: a metadata write failure fails the refresh",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(insightAI, nil)
+
+				boundary := insightBoundaryTM
+				later := insightBoundaryLaterTM
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, InsightSystemPrompt, nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{Identity: commonidentity.Identity{ID: insightRowID}, TMCreate: &boundary}, nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, "You are the case assistant.", nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &later}, nil)
+
+				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(&aicall.AIcall{
+					Identity: commonidentity.Identity{ID: existing.ID},
+				}, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, existing.ID, gomock.Any()).Return(fmt.Errorf("write failed"))
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "failed",
+		},
+		{
+			name: "reuse: a re-read failure before the metadata write fails the refresh",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(insightAI, nil)
+
+				boundary := insightBoundaryTM
+				later := insightBoundaryLaterTM
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, InsightSystemPrompt, nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &boundary}, nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, "You are the case assistant.", nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &later}, nil)
+
+				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(nil, fmt.Errorf("db down"))
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "failed",
+		},
+		{
+			name: "reuse: a final re-read failure fails the refresh but still returns the aicall",
+
+			ai:             insightCallerAI,
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   insightAIID,
+			activeflowID:   insightActiveflowID,
+			referenceID:    insightReferenceID,
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existing := insightExistingWith(nil)
+				insightReuseArrival(ctx, m, existing)
+
+				m.message.EXPECT().List(ctx, uint64(1), "", insightSessionUserRowFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.ai.EXPECT().Get(ctx, insightAIID).Return(insightAI, nil)
+
+				boundary := insightBoundaryTM
+				later := insightBoundaryLaterTM
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, InsightSystemPrompt, nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &boundary}, nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, "You are the case assistant.", nil, "", withActiveAIID(insightAIID)).
+					Return(&message.Message{TMCreate: &later}, nil)
+
+				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(&aicall.AIcall{
+					Identity: commonidentity.Identity{ID: existing.ID},
+				}, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, existing.ID, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(nil, fmt.Errorf("db down"))
+			},
+
+			expectRes:           insightExistingWith(nil),
+			expectRefreshResult: "failed",
+		},
 	}
 
 	for _, tt := range tests {
@@ -4725,6 +5520,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				db:      dbhandler.NewMockDBHandler(mc),
 				message: messagehandler.NewMockMessageHandler(mc),
 				cache:   cachehandler.NewMockCacheHandler(mc),
+				ai:      aihandler.NewMockAIHandler(mc),
 			}
 
 			h := &aicallHandler{
@@ -4734,10 +5530,34 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				db:             m.db,
 				messageHandler: m.message,
 				cache:          m.cache,
+				aiHandler:      m.ai,
 			}
 			ctx := context.Background()
 
+			// VOIP-1484: the Insight session idle window. Rows that do not care
+			// run with the shipped 30-minute default and force their outcome
+			// with timestamps, never with a zero threshold (zero means
+			// DISABLED, which is a different code path).
+			insightIdleMinutes := 30
+			if tt.insightIdleMinutes != nil {
+				insightIdleMinutes = *tt.insightIdleMinutes
+			}
+			config.SetAIcallInsightSessionIdleMinutesForTest(insightIdleMinutes)
+
 			tt.mockSetup(ctx, m)
+
+			// VOIP-1484: snapshot ALL THREE labels, not just the expected one.
+			// Exactly one of them must move, by exactly one: a refresh that
+			// reported two outcomes, or that metered a different label than it
+			// returned, is a real defect the "expected label went up" shape
+			// cannot see.
+			refreshLabels := []string{insightSessionRefreshKept, insightSessionRefreshRefreshed, insightSessionRefreshFailed}
+			beforeRefresh := map[string]float64{}
+			if tt.expectRefreshResult != "" {
+				for _, label := range refreshLabels {
+					beforeRefresh[label] = testutil.ToFloat64(promAIcallInsightSessionRefreshTotal.WithLabelValues(label))
+				}
+			}
 
 			var beforeRateLimited float64
 			if tt.expectRateLimitedInc {
@@ -4759,6 +5579,19 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				afterIdleExpired := testutil.ToFloat64(promAIcallIdleExpiredTotal)
 				if afterIdleExpired-beforeIdleExpired < 1 {
 					t.Errorf("expected idle-expired counter to increment by at least 1, got delta=%f", afterIdleExpired-beforeIdleExpired)
+				}
+			}
+			if tt.expectRefreshResult != "" {
+				for _, label := range refreshLabels {
+					delta := testutil.ToFloat64(promAIcallInsightSessionRefreshTotal.WithLabelValues(label)) - beforeRefresh[label]
+
+					expectDelta := float64(0)
+					if label == tt.expectRefreshResult {
+						expectDelta = 1
+					}
+					if delta != expectDelta {
+						t.Errorf("wrong insight session refresh counter delta on label %q. expect: %v, got: %v", label, expectDelta, delta)
+					}
 				}
 			}
 			if tt.expectErr {
@@ -4815,10 +5648,11 @@ func Test_getPipecatcallMessages_TwoFetch(t *testing.T) {
 		},
 	}
 
-	// Fetch 1: the system rows, newest-first. In production there are at most
-	// three (the type-specific system prompt, the substituted init prompt, and
-	// an optional parameter-JSON block), all written at creation time.
-	mockMessage.EXPECT().List(ctx, uint64(5), "", map[message.Field]any{
+	// Fetch 1: the system rows, newest-first. There are up to three per session
+	// (the type-specific system prompt, the substituted init prompt, and an
+	// optional parameter-JSON block), and one such block accumulates per Insight
+	// session refresh (VOIP-1484), hence the cap of 20 rather than 5.
+	mockMessage.EXPECT().List(ctx, uint64(20), "", map[message.Field]any{
 		message.FieldAIcallID: c.ID,
 		message.FieldRole:     message.RoleSystem,
 	}).Return([]*message.Message{
@@ -4865,6 +5699,68 @@ func pipecatSystemMessageFilters(aicallID uuid.UUID) map[message.Field]any {
 	return map[message.Field]any{
 		message.FieldAIcallID: aicallID,
 		message.FieldRole:     message.RoleSystem,
+	}
+}
+
+// activeAIIDOptionMatcher matches messagehandler.Create's VARIADIC option
+// argument and asserts the row is stamped with the expected active AI id.
+//
+// gomock.Any() in that position waves away a real contract: every system row a
+// session writes must name the AI whose prompt it carries, and that is what the
+// panel and the audit path read back. The matcher applies the option to a probe
+// (messagehandler.ApplyCreateOptions) rather than comparing function values,
+// which are not comparable in Go.
+//
+// gomock offers the trailing matcher the single option first and, failing that,
+// the remaining args as a slice, so both shapes are handled.
+type activeAIIDOptionMatcher struct {
+	expect uuid.UUID
+}
+
+func withActiveAIID(id uuid.UUID) gomock.Matcher {
+	return activeAIIDOptionMatcher{expect: id}
+}
+
+func (m activeAIIDOptionMatcher) Matches(x any) bool {
+	switch v := x.(type) {
+	case messagehandler.CreateOption:
+		return messagehandler.ApplyCreateOptions(v).ActiveAIID == m.expect
+
+	case []messagehandler.CreateOption:
+		return messagehandler.ApplyCreateOptions(v...).ActiveAIID == m.expect
+
+	case []any:
+		opts := make([]messagehandler.CreateOption, 0, len(v))
+		for _, item := range v {
+			opt, ok := item.(messagehandler.CreateOption)
+			if !ok {
+				return false
+			}
+			opts = append(opts, opt)
+		}
+		return messagehandler.ApplyCreateOptions(opts...).ActiveAIID == m.expect
+
+	default:
+		return false
+	}
+}
+
+func (m activeAIIDOptionMatcher) String() string {
+	return fmt.Sprintf("is a create option stamping active_ai_id %s", m.expect)
+}
+
+// insightSessionUserRowFilters mirrors insightSessionLastActivity's
+// newest-agent-question fetch exactly (VOIP-1484).
+//
+// Pinned through a helper rather than gomock.Any() because the filter map IS
+// the idle rule: dropping FieldRole would age the thread off ANY row (including
+// the assistant's own proactive notes), and dropping FieldDeleted would let a
+// deleted question keep a dead session alive forever.
+func insightSessionUserRowFilters(aicallID uuid.UUID) map[message.Field]any {
+	return map[message.Field]any{
+		message.FieldAIcallID: aicallID,
+		message.FieldRole:     message.RoleUser,
+		message.FieldDeleted:  false,
 	}
 }
 

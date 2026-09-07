@@ -65,6 +65,56 @@ func WithOrigin(o message.Origin) CreateOption {
 	return func(p *createParams) { p.origin = o }
 }
 
+// applyCreateOptions resolves opts against Create's defaults. It is the ONE
+// place those defaults live: Create, ResolveOriginForTest and
+// ApplyCreateOptions all go through it, so a probe can never drift from the row
+// Create would actually have built.
+//
+// DeliveryStatusDelivered matches the legacy semantics and the DB column
+// default, so a caller that passes no opts keeps working unchanged.
+func applyCreateOptions(opts ...CreateOption) createParams {
+	p := createParams{
+		pipecatcallID:  uuid.Nil,
+		deliveryStatus: message.DeliveryStatusDelivered,
+	}
+	for _, opt := range opts {
+		opt(&p)
+	}
+
+	return p
+}
+
+// CreateOptionView is the resolved, READ-ONLY result of applying a set of
+// CreateOptions. createParams itself is unexported (it is an implementation
+// detail of Create), but other packages' tests legitimately need to assert
+// WHICH option a caller passed: "the row is stamped with the right active AI
+// id" is a real behavioural contract, and matching the variadic argument with
+// gomock.Any() waves exactly that away.
+// USE ONLY FROM TESTS.
+type CreateOptionView struct {
+	PipecatcallID      uuid.UUID
+	DeliveryStatus     message.DeliveryStatus
+	ActiveAIID         uuid.UUID
+	InReplyToMessageID uuid.UUID
+	Origin             message.Origin
+}
+
+// ApplyCreateOptions applies opts through applyCreateOptions and returns what
+// they resolved to, so a view is directly comparable with the row Create would
+// have built.
+// USE ONLY FROM TESTS.
+func ApplyCreateOptions(opts ...CreateOption) CreateOptionView {
+	p := applyCreateOptions(opts...)
+
+	return CreateOptionView{
+		PipecatcallID:      p.pipecatcallID,
+		DeliveryStatus:     p.deliveryStatus,
+		ActiveAIID:         p.activeAIID,
+		InReplyToMessageID: p.inReplyToMessageID,
+		Origin:             p.origin,
+	}
+}
+
 type MessageHandler interface {
 	Create(
 		ctx context.Context,
@@ -147,11 +197,7 @@ func NewMessageHandler(
 // otherwise observe what an option actually set.
 // USE ONLY FROM TESTS.
 func ResolveOriginForTest(opts ...CreateOption) message.Origin {
-	p := createParams{}
-	for _, opt := range opts {
-		opt(&p)
-	}
-	return p.origin
+	return applyCreateOptions(opts...).origin
 }
 
 // isForeignPipecatcall reports whether an inbound pipecat message event came
