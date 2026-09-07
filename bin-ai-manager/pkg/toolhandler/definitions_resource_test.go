@@ -216,3 +216,128 @@ func TestGetConversationContentSchema(t *testing.T) {
 		}
 	}
 }
+
+// TestInsightReadToolsRunLLMDescription pins the run_llm wording of the six
+// Insight read tools after VOIP-1485. The production failure was an LLM that
+// set run_llm=false on the first tool of a two-step chain because the old
+// description only described the true branch ("reason about the retrieved X"),
+// which reads as optional reasoning; the runner honoured false and the turn
+// ended with no second tool call and no answer. Both texts must therefore keep
+// stating what false costs. notify_agent and emit_info_card are deliberately
+// out of scope and are asserted unchanged here so a future bulk edit cannot
+// sweep them in.
+//
+// Coverage is derived from tool.AllInsightToolNames rather than hardcoded: the
+// three groups below must partition that list exactly, so an Insight tool added
+// there without a decision about which run_llm contract it carries fails this
+// test instead of shipping with un-pinned wording.
+func TestInsightReadToolsRunLLMDescription(t *testing.T) {
+	const (
+		wantDescriptionSubstring = "false ends the turn with no answer"
+		wantParameterSubstring   = "False ends the turn with no further tool call and no answer"
+	)
+
+	insightReadTools := []tool.ToolName{
+		tool.ToolNameGetContactInteractions,
+		tool.ToolNameGetConversationContent,
+		tool.ToolNameGetRelatedCases,
+		tool.ToolNameGetCaseNotes,
+		tool.ToolNameGetContactProfile,
+		tool.ToolNameGetCallTranscript,
+	}
+
+	t.Run("covers_all_insight_tools", func(t *testing.T) {
+		asserted := make(map[tool.ToolName]bool, len(insightReadTools)+2)
+		for _, name := range insightReadTools {
+			asserted[name] = true
+		}
+		asserted[tool.ToolNameEmitInfoCard] = true
+		asserted[tool.ToolNameNotifyAgent] = true
+
+		declared := make(map[tool.ToolName]bool, len(tool.AllInsightToolNames))
+		for _, name := range tool.AllInsightToolNames {
+			declared[name] = true
+			if !asserted[name] {
+				t.Errorf("%s is in tool.AllInsightToolNames but no group in this test pins its run_llm contract; add it to a group", name)
+			}
+		}
+		for name := range asserted {
+			if !declared[name] {
+				t.Errorf("%s is asserted here but is not in tool.AllInsightToolNames; the groups have drifted from the source list", name)
+			}
+		}
+	})
+
+	for _, name := range insightReadTools {
+		t.Run(string(name), func(t *testing.T) {
+			def := findToolDefinition(t, name)
+
+			if !def.RunLLM {
+				t.Errorf("%s RunLLM = false, want true (the platform default must keep the turn alive)", name)
+			}
+			if !strings.Contains(def.Description, wantDescriptionSubstring) {
+				t.Errorf("%s description must state what run_llm=false costs.\nwant substring: %s\ngot: %s", name, wantDescriptionSubstring, def.Description)
+			}
+
+			props, ok := def.Parameters["properties"].(map[string]any)
+			if !ok {
+				t.Fatalf("%s parameters has no properties map", name)
+			}
+			runLLM, ok := props["run_llm"].(map[string]any)
+			if !ok {
+				t.Fatalf("%s has no run_llm property", name)
+			}
+			got, _ := runLLM["description"].(string)
+			if !strings.Contains(got, wantParameterSubstring) {
+				t.Errorf("%s run_llm parameter description must state what false costs.\nwant substring: %s\ngot: %s", name, wantParameterSubstring, got)
+			}
+			if dflt, ok := runLLM["default"].(bool); !ok || !dflt {
+				t.Errorf("%s run_llm schema default = %v, want true", name, runLLM["default"])
+			}
+		})
+	}
+
+	t.Run(string(tool.ToolNameNotifyAgent), func(t *testing.T) {
+		def := findToolDefinition(t, tool.ToolNameNotifyAgent)
+
+		if def.RunLLM {
+			t.Errorf("notify_agent RunLLM = true, want false (the notification IS the output)")
+		}
+		if strings.Contains(def.Description, "ends the turn") {
+			t.Errorf("notify_agent description must not carry the Insight run_llm wording. got: %s", def.Description)
+		}
+		props, ok := def.Parameters["properties"].(map[string]any)
+		if !ok {
+			t.Fatalf("notify_agent parameters has no properties map")
+		}
+		if _, exists := props["run_llm"]; exists {
+			t.Errorf("notify_agent must not declare a run_llm parameter (props: %v)", props)
+		}
+	})
+
+	t.Run(string(tool.ToolNameEmitInfoCard), func(t *testing.T) {
+		def := findToolDefinition(t, tool.ToolNameEmitInfoCard)
+
+		if !def.RunLLM {
+			t.Errorf("emit_info_card RunLLM = false, want true")
+		}
+		if !strings.Contains(strings.ToLower(def.Description), "must not restate") {
+			t.Errorf("emit_info_card description must keep its do-not-restate contract. got: %s", def.Description)
+		}
+	})
+}
+
+// findToolDefinition returns the definition registered in definitions.go for
+// name, failing the test when it is absent.
+func findToolDefinition(t *testing.T, name tool.ToolName) *tool.Tool {
+	t.Helper()
+
+	for i := range toolDefinitions {
+		if toolDefinitions[i].Name == name {
+			return &toolDefinitions[i]
+		}
+	}
+
+	t.Fatalf("%s tool definition not found in definitions.go", name)
+	return nil
+}
