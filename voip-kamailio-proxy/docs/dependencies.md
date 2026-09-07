@@ -55,6 +55,5 @@ The large transitive replace list is inherited from `bin-common-handler`'s own m
 | Dependency | Purpose |
 |-----------|---------|
 | RabbitMQ | Message bus for RPC request/response |
-| Kamailio daemon | Co-located SIP proxy (not communicated with by Go; shares the pod) |
 
 The service does not depend on MySQL, Redis, or any other storage system. All state is transient.

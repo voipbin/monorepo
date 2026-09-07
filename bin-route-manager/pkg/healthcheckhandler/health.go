@@ -146,7 +146,9 @@ func (h *healthCheckHandler) acquireLock(ctx context.Context, log *logrus.Entry)
 	return nil, false, false
 }
 
-// checkProvider sends a SIP OPTIONS probe and updates the provider's health status.
+// checkProvider asks voip-kamailio-proxy to probe the provider over RPC and
+// updates the provider's health status with the verdict. The SIP OPTIONS packet
+// itself is sent by voip-kamailio-proxy, not here.
 func (h *healthCheckHandler) checkProvider(ctx context.Context, p *provider.Provider) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "checkProvider",

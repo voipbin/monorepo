@@ -61,3 +61,38 @@ func Test_getKamailioID(t *testing.T) {
 		})
 	}
 }
+
+// Test_defaults pins the three configuration defaults that the Komodo stack
+// definition (komodo/docker-compose.yml, VOIP-1486) relies on rather than
+// setting explicitly.
+//
+//   - defaultRabbitMQQueueListen must stay voip.kamailio.request, the only
+//     queue bin-route-manager publishes health-check RPCs to. The compose file
+//     omits RABBITMQ_QUEUE_LISTEN entirely, so a change here would silently
+//     move the service off the queue it serves.
+//   - defaultInterfaceName must stay eth0, the interface a container on the
+//     Docker production bridge actually has. The compose file omits
+//     INTERFACE_NAME; getKamailioID fails on a wrong name and main() then
+//     returns with exit code 0, leaving a container that is up but deaf.
+//   - defaultPrometheusListenAddress must stay :2112, which the Prometheus
+//     dns_sd job scrapes by port number. The earlier Ansible deployment used
+//     :9102; that value would never be scraped.
+func Test_defaults(t *testing.T) {
+	tests := []struct {
+		name string
+		got  string
+		want string
+	}{
+		{"rabbitmq queue listen", defaultRabbitMQQueueListen, "voip.kamailio.request"},
+		{"interface name", defaultInterfaceName, "eth0"},
+		{"prometheus listen address", defaultPrometheusListenAddress, ":2112"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.got != tt.want {
+				t.Errorf("default = %q, want %q", tt.got, tt.want)
+			}
+		})
+	}
+}

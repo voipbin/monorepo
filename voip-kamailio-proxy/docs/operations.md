@@ -4,13 +4,13 @@
 
 ### RabbitMQ connection refused
 
-**Symptom:** Service exits immediately after startup with a connection error.
+**Symptom:** Container keeps running, but logs repeat `Could not connect to rabbitmq. Will retry again after 1 sec` and no queue consumer is ever registered. The RabbitMQ handler retries the connection forever at 1s intervals (`bin-common-handler/pkg/rabbitmqhandler/main.go:250`); the service never exits over this.
 
 **Cause:** RabbitMQ is not reachable at `RABBITMQ_ADDRESS`.
 
 **Resolution:**
 1. Verify the address: `echo $RABBITMQ_ADDRESS`
-2. Confirm RabbitMQ is running and the AMQP port (5672) is reachable from the pod.
+2. Confirm RabbitMQ is running and the AMQP port (5672) is reachable from the container.
 3. Check for credential mismatch (default: `amqp://guest:guest@localhost:5672`).
 
 ### Interface not found / no MAC address
@@ -21,7 +21,7 @@
 
 **Resolution:**
 1. Check available interfaces: `ip link show`
-2. Confirm the pod's primary interface is `eth0` (or set `INTERFACE_NAME` appropriately).
+2. Confirm the container's primary interface is `eth0` (or set `INTERFACE_NAME` appropriately).
 3. In test environments, virtual interfaces (e.g., `lo`) have no MAC address — use a real interface.
 
 ### SIP health check always returns unhealthy
@@ -34,9 +34,15 @@
 - SIP_TIMEOUT too short; the provider responds slowly.
 
 **Resolution:**
-1. Test manually: `nc -u <hostname> 5060` or `tcpdump -i eth0 udp port 5060`
-2. Increase timeout: `SIP_TIMEOUT=10s`
-3. Verify DNS: `nslookup <hostname>` from within the pod.
+1. Test manually from somewhere that has tooling. The service image is
+   `gcr.io/distroless/static-debian12` (`Dockerfile:12`): no shell, no `nc`, no
+   `nslookup`, so `docker exec` into it is not an option. Use a throwaway
+   container on the same network instead:
+   `docker run --rm --network production nicolaka/netshoot nc -u <hostname> 5060`
+   Or capture on the host: `tcpdump -i any udp port 5060`
+2. Increase timeout, but keep it below the caller's RPC deadline: `SIP_TIMEOUT=8s`. bin-route-manager gives the RPC 10s (`bin-common-handler/pkg/requesthandler/main.go:152`), so a probe budget of 10s or more turns a slow provider into an RPC timeout at the caller instead of an unhealthy verdict.
+3. Verify DNS the same way:
+   `docker run --rm --network production nicolaka/netshoot nslookup <hostname>`
 
 ### Queue not being consumed
 
@@ -53,7 +59,8 @@
 ### View live logs
 
 ```bash
-kubectl logs -f <pod-name> -c kamailio-proxy
+docker ps --filter name=kamailio-proxy
+docker logs -f <container-name>
 ```
 
 The service logs at DEBUG level by default (joonix/fluentd JSON format).
@@ -61,8 +68,12 @@ The service logs at DEBUG level by default (joonix/fluentd JSON format).
 ### Check which queues are active
 
 ```bash
-rabbitmqctl list_queues name messages consumers | grep kamailio
+docker exec infra-rabbitmq rabbitmqctl list_queues name messages consumers \
+  | grep kamailio
 ```
+
+`rabbitmqctl` is not installed on the host; the broker runs in the
+`infra-rabbitmq` container.
 
 Look for:
 - `voip.kamailio.request` — permanent queue
@@ -83,7 +94,7 @@ Using `rabbitmqadmin` or any AMQP client, publish to `voip.kamailio.request`:
 ### Check Prometheus metrics
 
 ```bash
-curl http://<pod-ip>:2112/metrics
+curl http://<container-ip>:2112/metrics
 ```
 
 Default endpoint: `:2112/metrics`.
