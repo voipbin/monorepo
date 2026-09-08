@@ -669,7 +669,7 @@ if a.IsDirect() {
 - `validateTopics`: `webchat_widget` direct 토큰이 `aicall` 타입 구독을 여전히 거부하는지.
 - `validateTopics`: `DirectScope`가 nil일 때 패닉하지 않고 거부하는지.
 - `validateTopic`(단수) 제거 후 11개 케이스가 `Test_validateTopics`로 이관되어 통과하는지.
-- `buildJWTIdentity`: `ScopeVersion < 2` 토큰이 401인지. 1·2단계 토큰이 3단계에서 전부 무효화되는지(9.2).
+- `buildJWTIdentity`: `ScopeVersion < DirectScopeVersionCurrent` 토큰이 401인지(9.2).
 - 갱신이 `ScopeVersion`을 올리지 않고 복사하는지. 갱신으로 무효화를 우회할 수 없는지.
 - `AIV1AIcallStart`/`Start`의 **기존 호출자 4곳**(serviceagent_aicall.go:284, service.go:54, service.go:96, StartTask)이 `uuid.Nil`을 넘겨 서버 생성 경로를 그대로 타는지.
 

@@ -167,10 +167,14 @@ rev10은 발급과 강제를 함께 배포하면 "최대 4시간 동안 모든 �
       `DirectID = d.ID`
       `HashFingerprint = directHashFingerprint(d.Hash)`
       `BootExpire = h.utilHandler.TimeGetCurTimeAdd(BootSessionMaxLifetime)`
-      `ScopeVersion = DirectScopeVersionIssued`
-- [x] 상수: `BootSessionMaxLifetime = time.Hour * 24`, `DirectScopeVersionIssued = 1`, `DirectScopeVersionEnforced = 2`
-      **1단계에서 `AuthBoot`은 `DirectScopeVersionIssued`를 참조한다.** 3단계에서 참조를 바꾼다(상수 값을 바꾸지 않는다)
-- [x] `directHashFingerprint(hash string) string`: `sha256.Sum256([]byte(hash))`의 hex 전체. 절단·솔트 금지(설계 §3.6).
+      `ScopeVersion = DirectScopeVersionCurrent`
+- [x] 상수: `BootSessionMaxLifetime = time.Hour * 24`, `DirectScopeVersionCurrent = 2`
+      **처음부터 2를 발급한다.** 3단계 구성의 1→2 승격 절차는 병합 착륙에서 폐기됐다.
+      1로 "고치지" 말 것. 근거는 설계 §9.1과 상수 선언 옆 주석에 있다
+- [x] `directHashFingerprint(hash string) string`: **`HMAC(jwtKey, 도메인 접두사 || 해시)`의 hex 전체, 절단 없음**(설계 §3.6).
+      초판은 키 없는 SHA-256을 지정했으나 그것으로 되돌리면 안 된다. 원본 해시가 48비트뿐이고
+      토큰이 WebSocket 경로에서 통째로 로깅되므로, 키 없는 다이제스트는 로그에서 역산된다.
+      `Test_directHashFingerprint_isKeyed`와 `_goldenVector`가 유도식을 고정한다.
       **`boot.go`에 둔다.** §2.3의 `boot_refresh.go`도 같은 패키지에서 호출한다. 중복 정의하지 말 것
 - [x] `BootResponse`(`:27-46`)에 **두 필드** 추가하고 응답에 채운다
       `AllowedResourceID uuid.UUID \`json:"allowed_resource_id"\``
@@ -178,10 +182,9 @@ rev10은 발급과 강제를 함께 배포하면 "최대 4시간 동안 모든 �
       **두 값은 반드시 `scope.AllowedResourceID` / `scope.ScopeVersion`에서 읽는다.**
       상수나 지역 변수에서 따로 채우면 안 된다. 현재 `res := &BootResponse{...}`(`boot.go:139-146`)는
       전부 `d.*`(direct 레코드)에서 채우고 있어, 자연스럽게 따라 하면 `scope`와 분리된다.
-      분리되면 3단계에서 클레임만 2로 바뀌고 응답은 1로 남아
-      **계기 6이 정확히 필요한 롤아웃 창에서 잠든 채로 있게 된다**(라운드 2 CRITICAL의 거울상).
+      분리되면 클레임과 응답이 어긋나 **계기 6이 정확히 필요한 롤아웃 창에서 잠든 채로 있게 된다**(라운드 2 CRITICAL의 거울상).
       `AllowedResourceID`를 응답용으로 다시 `UUIDCreate()`하면 더 나쁘다. 모든 대화가 불일치가 된다
-      **`ScopeVersion`을 여기에 노출하는 것이 라운드 2 CRITICAL의 해결책이다.** 클라이언트가 "강제가 켜졌는지"를 알 유일한 수단이며, JWT 클레임 안에만 있으면 읽을 수 없다. **1단계에 반드시 들어가야 한다**(2단계가 이것을 읽는다)
+      **`ScopeVersion`을 여기에 노출하는 것이 라운드 2 CRITICAL의 해결책이다.** 클라이언트가 "강제가 켜졌는지"를 알 유일한 수단이며, JWT 클레임 안에만 있으면 읽을 수 없다. **서버 PR에 반드시 들어가야 한다**(B 단계 클라이언트가 이것을 읽는다)
 
 ### 2.3 갱신 엔드포인트
 
@@ -279,9 +282,9 @@ rev10은 발급과 강제를 함께 배포하면 "최대 4시간 동안 모든 �
 - [x] `validateTopic`(단수, `etc.go:87-150`) 제거하고 11개 케이스를 `Test_validateTopics`로 이관
 - [x] RST: direct 토큰 접근 범위(`GET /aicalls` 차단 포함). 클린 빌드 + `git add -f build/`
 - [x] **롤아웃 관측 수단.** `ScopeVersion < 2` 401과 미들웨어 403에 각각 카운터 또는 구조화 로그를 붙인다.
-      **3단계 배포 중 go/no-go와 롤백 판단의 입력이다.**
-      G3 평가에는 쓸 수 없다. 이 코드가 3단계에서야 배포되므로 그 시점에는 구조적으로 0이며,
-      0을 "구형 토큰 없음, 진행 안전"으로 오독하면 안 된다. G3는 §1.3대로 시간 기반 보수적 소킹이다
+      **A 단계 배포 중 go/no-go와 롤백 판단의 입력이다.**
+      병합 착륙에서는 강제 코드가 A와 함께 나가므로 배포 순간부터 값이 올라간다.
+      구형 토큰이 소진되면 자연히 0으로 수렴하며, 그 수렴이 롤아웃 완료의 신호다
 - [x] `bin-api-manager/docs/architecture.md`·`auth.md`: 미들웨어와 강제 규칙
 
 
@@ -323,7 +326,7 @@ rev10은 발급과 강제를 함께 배포하면 "최대 4시간 동안 모든 �
 
 ### 2.9 발급·배관 테스트
 
-**설계 §7 중 1단계에 해당하는 항목 전부.** 명시적으로:
+**설계 §7 중 발급·배관에 해당하는 항목 전부.** 명시적으로:
 
 - [x] `AuthBoot`이 5필드를 채우는지. `AllowedResourceID`가 매 부팅마다 다른지. `BootExpire`가 부팅+24h인지. `ScopeVersion == 1`인지
 - [x] `BootResponse`에 `allowed_resource_id`와 **`scope_version`**이 실려 나가는지
@@ -358,7 +361,7 @@ rev10은 발급과 강제를 함께 배포하면 "최대 4시간 동안 모든 �
 
 ### 2.10 강제 테스트
 
-**설계 §7의 서버 항목 중 3단계에 해당하는 전부.** 명시적으로:
+**설계 §7의 서버 항목 중 강제에 해당하는 전부.** 명시적으로:
 
 - [x] 미들웨어 0단계: `auth_identity` 없음·타입 불일치 시 401 abort
 - [x] 미들웨어 1단계: **direct가 아닌 신원(agent/accesskey/delegate)은 그대로 통과**
@@ -741,6 +744,10 @@ Vitest 요약은 `Tests  N passed (N)`처럼 콜론이 없어 `grep "Tests:"`가
 - **§4 프로덕션 E2E**: 배포 후
 - **§5 티켓**: 후속 10건 등록은 머지 후
 
-**리뷰에서 배운 것.** 코드 리뷰 4라운드에서 나온 블로킹 4건이 **전부 테스트 품질**이었고 기능 결함은 0건이었다. 그중 3건은 같은 유형이다. 테스트가 통과하지만 아무것도 검증하지 않는 상태였고, 매번 리뷰어의 변이 테스트로만 드러났다. 그중 하나는 검증한다는 주석까지 달려 있어 커버된 것처럼 읽혔다.
+**리뷰에서 배운 것.** 코드 리뷰 5라운드에서 기능 결함은 0건이었고, 블로킹은 두 갈래였다.
+
+첫째는 **테스트 품질**이다. 라운드 1~3의 블로킹 3건이 여기 속하고 셋 다 같은 유형이다. 테스트가 통과하지만 아무것도 검증하지 않는 상태였고, 매번 리뷰어의 변이 테스트로만 드러났다. 그중 하나는 검증한다는 주석까지 달려 있어 커버된 것처럼 읽혔다.
 
 교훈은 두 가지다. **통과했다는 사실 자체는 근거가 아니다** (해당 줄을 지워 보고 실패하는지 확인해야 한다). 그리고 **필터링한 출력으로 통과를 판단하면 안 된다** (이 작업에서 `grep` 패턴 때문에 빌드 실패를 통과로, `-run` 대소문자 때문에 미실행을 통과로 읽은 적이 각각 있다).
+
+둘째는 **문서 드리프트**다. 라운드 4~5의 블로킹이 여기 속한다. 코드를 고치면서 그 근거를 담은 문서를 같이 안 고쳤고, 그래서 문서가 **코드와 반대되는 지시**를 담게 됐다. 지문 유도식이 그랬다. 설계 문서를 고친 뒤에도 같은 서술이 계획서에 남아 있어 한 라운드가 더 걸렸다. 교훈은 **결정을 뒤집으면 그 결정을 담은 문서를 전부 찾아야 한다**는 것이다. 한 곳만 고치면 나머지가 되돌리라고 말한다.

@@ -330,8 +330,8 @@ A direct token is bound to exactly one resource: the ``allowed_resource_id`` abo
    Boot tokens are scoped: they only grant access to the resource types listed in the token (e.g. ``aicall`` for an ``ai``/``ai_team`` direct hash, ``webchat_session`` for a ``webchat_widget`` direct hash). For WebSocket subscriptions, boot tokens may only subscribe to 4-part topics (``customer_id:<uuid>:<resource_type>:<resource_id>``); broader topics are rejected.
 
 
-Boot refresh (Direct Token) - ``POST /auth/boot/refresh``
------------------------------------------------------------
+Boot refresh (Direct Token) — ``POST /auth/boot/refresh``
+---------------------------------------------------------------
 Reissues a direct token while keeping the same ``allowed_resource_id``, so a conversation in progress survives the 4-hour token expiry. Call it before the token expires; the widget SDKs do this automatically.
 
 Unlike ``POST /auth/boot`` this endpoint is authenticated: present the current direct token as ``Bearer <token>``. The assignment is copied from that token and is never read from the request body, so a caller cannot name a resource it does not already hold.
@@ -340,7 +340,7 @@ Unlike ``POST /auth/boot`` this endpoint is authenticated: present the current d
 
 None.
 
-**Response - 200 OK**
+**Response — 200 OK**
 
 Same shape as ``POST /auth/boot``, except ``resource_data`` is omitted (the client already holds it from the original boot). ``allowed_resource_id`` and ``scope_version`` are unchanged; only ``expire`` moves.
 
@@ -348,6 +348,7 @@ Same shape as ``POST /auth/boot``, except ``resource_data`` is omitted (the clie
 
 Each boot fixes an absolute ceiling and every reissued token inherits it unchanged, so refreshing cannot walk it forward. A refresh is also refused, with ``401``, when any of the following became true since the original boot:
 
+* the boot session's absolute lifetime has elapsed,
 * the direct link was deleted, or its hash was regenerated (this is how you revoke a leaked public link),
 * the owning customer is no longer active,
 * the token predates resource binding and carries no assignment.

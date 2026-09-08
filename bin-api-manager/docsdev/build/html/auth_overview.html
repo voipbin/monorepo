@@ -1072,16 +1072,17 @@
 </div>
 </section>
 <section id="boot-refresh-direct-token-post-auth-boot-refresh">
-<h2>Boot refresh (Direct Token) - <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot/refresh</span></code><a class="headerlink" href="#boot-refresh-direct-token-post-auth-boot-refresh" title="Link to this heading">¶</a></h2>
+<h2>Boot refresh (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot/refresh</span></code><a class="headerlink" href="#boot-refresh-direct-token-post-auth-boot-refresh" title="Link to this heading">¶</a></h2>
 <p>Reissues a direct token while keeping the same <code class="docutils literal notranslate"><span class="pre">allowed_resource_id</span></code>, so a conversation in progress survives the 4-hour token expiry. Call it before the token expires; the widget SDKs do this automatically.</p>
 <p>Unlike <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code> this endpoint is authenticated: present the current direct token as <code class="docutils literal notranslate"><span class="pre">Bearer</span> <span class="pre">&lt;token&gt;</span></code>. The assignment is copied from that token and is never read from the request body, so a caller cannot name a resource it does not already hold.</p>
 <p><strong>Request body</strong></p>
 <p>None.</p>
-<p><strong>Response - 200 OK</strong></p>
+<p><strong>Response — 200 OK</strong></p>
 <p>Same shape as <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code>, except <code class="docutils literal notranslate"><span class="pre">resource_data</span></code> is omitted (the client already holds it from the original boot). <code class="docutils literal notranslate"><span class="pre">allowed_resource_id</span></code> and <code class="docutils literal notranslate"><span class="pre">scope_version</span></code> are unchanged; only <code class="docutils literal notranslate"><span class="pre">expire</span></code> moves.</p>
 <p><strong>Refreshing does not extend a session indefinitely</strong></p>
 <p>Each boot fixes an absolute ceiling and every reissued token inherits it unchanged, so refreshing cannot walk it forward. A refresh is also refused, with <code class="docutils literal notranslate"><span class="pre">401</span></code>, when any of the following became true since the original boot:</p>
 <ul class="simple">
+<li><p>the boot session’s absolute lifetime has elapsed,</p></li>
 <li><p>the direct link was deleted, or its hash was regenerated (this is how you revoke a leaked public link),</p></li>
 <li><p>the owning customer is no longer active,</p></li>
 <li><p>the token predates resource binding and carries no assignment.</p></li>
@@ -1491,7 +1492,7 @@
 <li><a class="reference internal" href="#email-verify-post-get-auth-email-verify">Email Verify — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/auth/email-verify</span></code></a></li>
 <li><a class="reference internal" href="#login-token-post-auth-login">Login (Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code></a></li>
 <li><a class="reference internal" href="#boot-direct-token-post-auth-boot">Boot (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code></a></li>
-<li><a class="reference internal" href="#boot-refresh-direct-token-post-auth-boot-refresh">Boot refresh (Direct Token) - <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot/refresh</span></code></a></li>
+<li><a class="reference internal" href="#boot-refresh-direct-token-post-auth-boot-refresh">Boot refresh (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot/refresh</span></code></a></li>
 <li><a class="reference internal" href="#password-forgot-post-auth-password-forgot">Password Forgot — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-forgot</span></code></a></li>
 <li><a class="reference internal" href="#password-reset-get-post-auth-password-reset">Password Reset — <code class="docutils literal notranslate"><span class="pre">GET</span></code> / <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-reset</span></code></a></li>
 <li><a class="reference internal" href="#unregister-self-service-deletion-post-delete-auth-unregister">Unregister (Self-Service Deletion) — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/auth/unregister</span></code></a></li>
