@@ -391,9 +391,27 @@ func TestGetCustomerEmailVerify_HTMLContent(t *testing.T) {
 		t.Errorf("Expected btn.disabled = false at most once (in catch block only), found %d", count)
 	}
 
-	// Verify "Verification Failed" text appears for error case
-	if !strings.Contains(body, "Verification Failed") {
-		t.Error("Expected 'Verification Failed' button text in error handler")
+	// The failure branch must offer the resend form instead of leaving the user
+	// on a dead end.
+	if !strings.Contains(body, `id="resend-box"`) {
+		t.Error("Expected the resend box markup on the verification page")
+	}
+	if !strings.Contains(body, `id="resend-email"`) {
+		t.Error("Expected the resend email input on the verification page")
+	}
+	if !strings.Contains(body, "document.getElementById('resend-box').style.display = 'block'") {
+		t.Error("Expected the failure branch to reveal the resend box")
+	}
+	if !strings.Contains(body, "fetch('/auth/email-verify-resend'") {
+		t.Error("Expected the resend action to call POST /auth/email-verify-resend")
+	}
+
+	// The resend result copy must be identical for every outcome. The API returns
+	// 200 for unknown addresses on purpose; branching the copy here would let the
+	// page enumerate registered addresses.
+	const resendCopy = "If an account exists for that address, a new verification link is on its way."
+	if got := strings.Count(body, resendCopy); got != 2 {
+		t.Errorf("Expected the identical resend copy in both the then and catch branches, found %d occurrences", got)
 	}
 }
 
