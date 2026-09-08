@@ -177,6 +177,7 @@ type ServiceHandler interface {
 	AuthPasswordForgot(ctx context.Context, username string) error
 	AuthPasswordReset(ctx context.Context, token string, password string) error
 	AuthBoot(ctx context.Context, directHash string) (*BootResponse, error)
+	AuthBootRefresh(ctx context.Context, a *auth.AuthIdentity) (*BootResponse, error)
 	AuthDelegate(ctx context.Context, a *auth.AuthIdentity, targetCustomerID uuid.UUID, reason string) (*DelegateResponse, error)
 
 	// available numbers

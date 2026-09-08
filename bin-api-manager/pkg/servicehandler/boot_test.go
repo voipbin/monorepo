@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -13,12 +14,45 @@ import (
 
 	wcwidget "monorepo/bin-webchat-manager/models/widget"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/mock/gomock"
 )
+
+// Fixtures for the resource binding claims. Values are arbitrary; what the
+// tests pin is that the same value reaches both the response and the claims.
+var (
+	testAllowedResourceID = uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-00000000beef")
+	testBootExpire        = "2026-09-09T00:00:00.000000Z"
+)
+
+// parseDirectScope pulls the direct scope back out of a signed token so a test
+// can compare the claims against the response body.
+func parseDirectScope(t *testing.T, token string, key []byte) auth.DirectScope {
+	t.Helper()
+
+	parsed, err := jwt.Parse(token, func(*jwt.Token) (interface{}, error) { return key, nil })
+	if err != nil {
+		t.Fatalf("Could not parse token. err: %v", err)
+	}
+	claims, ok := parsed.Claims.(jwt.MapClaims)
+	if !ok {
+		t.Fatalf("Unexpected claims type")
+	}
+
+	raw, err := json.Marshal(claims["direct"])
+	if err != nil {
+		t.Fatalf("Could not marshal direct claim. err: %v", err)
+	}
+	var scope auth.DirectScope
+	if errUnmarshal := json.Unmarshal(raw, &scope); errUnmarshal != nil {
+		t.Fatalf("Could not unmarshal direct claim. err: %v", errUnmarshal)
+	}
+	return scope
+}
 
 func Test_AuthBoot(t *testing.T) {
 
@@ -36,9 +70,9 @@ func Test_AuthBoot(t *testing.T) {
 		// webchat_widget-only: controls resourceDisplayConfigFetchers'
 		// WebchatV1WidgetGet mock, when responseDirect.ResourceType ==
 		// webchat_widget.
-		expectWidgetFetch  bool
-		responseWidget     *wcwidget.Widget
-		responseWidgetErr  error
+		expectWidgetFetch bool
+		responseWidget    *wcwidget.Widget
+		responseWidgetErr error
 
 		expectErr                  bool
 		expectAllowedResourceTypes []string
@@ -321,6 +355,8 @@ func Test_AuthBoot(t *testing.T) {
 			}
 
 			if !tt.expectErr {
+				mockUtil.EXPECT().UUIDCreate().Return(testAllowedResourceID)
+				mockUtil.EXPECT().TimeGetCurTimeAdd(BootSessionMaxLifetime).Return(testBootExpire)
 				mockUtil.EXPECT().TimeGetCurTimeAdd(BootExpiration).Return(tt.responseCurTime)
 			}
 
@@ -339,6 +375,34 @@ func Test_AuthBoot(t *testing.T) {
 			if err != nil {
 				t.Errorf("Expected no error, got: %v", err)
 				return
+			}
+
+			// The boot response and the JWT claims must report the same
+			// binding. If the response is filled from anything other than the
+			// scope struct, enforcement can turn on while the client still
+			// sees the old values -- and the client gates its mismatch reboot
+			// on scope_version, so it would stay asleep exactly when needed.
+			if res.AllowedResourceID != testAllowedResourceID {
+				t.Errorf("Expected allowed resource id %v, got: %v", testAllowedResourceID, res.AllowedResourceID)
+			}
+			if res.ScopeVersion != DirectScopeVersionCurrent {
+				t.Errorf("Expected scope version %d, got: %d", DirectScopeVersionCurrent, res.ScopeVersion)
+			}
+			claimScope := parseDirectScope(t, res.Token, h.jwtKey)
+			if claimScope.AllowedResourceID != res.AllowedResourceID {
+				t.Errorf("Response and claim disagree on allowed resource id. response: %v, claim: %v", res.AllowedResourceID, claimScope.AllowedResourceID)
+			}
+			if claimScope.ScopeVersion != res.ScopeVersion {
+				t.Errorf("Response and claim disagree on scope version. response: %d, claim: %d", res.ScopeVersion, claimScope.ScopeVersion)
+			}
+			if claimScope.DirectID != tt.responseDirect.ID {
+				t.Errorf("Expected direct id %v, got: %v", tt.responseDirect.ID, claimScope.DirectID)
+			}
+			if claimScope.HashFingerprint != directHashFingerprint(tt.responseDirect.Hash) {
+				t.Errorf("Unexpected hash fingerprint: %v", claimScope.HashFingerprint)
+			}
+			if claimScope.BootExpire != testBootExpire {
+				t.Errorf("Expected boot expire %v, got: %v", testBootExpire, claimScope.BootExpire)
 			}
 
 			if res.Type != "direct" {

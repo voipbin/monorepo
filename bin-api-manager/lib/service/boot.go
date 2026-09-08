@@ -1,7 +1,12 @@
 package service
 
 import (
+	stderrors "errors"
+	"net/http"
+
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/models/common"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	"github.com/gin-gonic/gin"
@@ -47,4 +52,47 @@ func PostBoot(c *gin.Context) {
 
 	log.Debug("Boot successful.")
 	c.JSON(200, res)
+}
+
+// PostBootRefresh handles POST /auth/boot/refresh request.
+// It reissues a direct token that keeps the same allowed resource, so a live
+// conversation survives the boot token's expiry.
+//
+// Unlike PostBoot this does not collapse every failure into 400. The client
+// distinguishes them: 403 means "wrong identity type, stop", 401 means "this
+// token can no longer be refreshed, boot again". Collapsing them would leave
+// the widget with no way to tell a permanent failure from a recoverable one.
+func PostBootRefresh(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostBootRefresh",
+		"request_address": c.ClientIP(),
+	})
+
+	// Identity extraction mirrors auth_delegate.go: never c.MustGet, which
+	// would turn a missing or mistyped identity into a panic.
+	tmp, exists := c.Get("auth_identity")
+	if !exists {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	identity, ok := tmp.(*auth.AuthIdentity)
+	if !ok || identity == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	res, err := serviceHandler.AuthBootRefresh(c.Request.Context(), identity)
+	if err != nil {
+		log.Infof("Boot refresh failed. err: %v", err)
+		if stderrors.Is(err, serviceerrors.ErrPermissionDenied) {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	log.Debug("Boot refresh successful.")
+	c.JSON(http.StatusOK, res)
 }

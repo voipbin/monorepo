@@ -310,6 +310,11 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 	authProtected.POST("/unregister", service.PostAuthUnregister)
 	authProtected.DELETE("/unregister", service.DeleteAuthUnregister)
 	authProtected.POST("/delegate", service.PostDelegate)
+	// Direct token refresh. Deliberately on authProtected, not the public auth
+	// group: it copies the resource assignment out of the presented token, so
+	// it must have one. DirectResourceScope is registered on v1.0 only and does
+	// not apply here, which is intended -- this route has no path parameter.
+	authProtected.POST("/boot/refresh", service.PostBootRefresh)
 
 	appServer := server.NewServer(serviceHandler)
 
