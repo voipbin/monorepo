@@ -16,9 +16,9 @@ func Test_aicallHandler_pingPipecatHost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		hostID    string
-		mockErr   error
-		expectRes bool
+		hostID     string
+		mockErr    error
+		expectRes  bool
 		expectPing bool
 	}{
 		{

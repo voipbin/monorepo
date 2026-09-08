@@ -2,6 +2,9 @@ package servicehandler
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
@@ -23,6 +26,41 @@ var directResourceMapping = map[string][]string{
 	dmdirect.ResourceTypeWebchatWidget: {"webchat_session"},
 }
 
+// directHashFingerprintDomain separates this MAC's key usage from JWT signing.
+const directHashFingerprintDomain = "voipbin/direct-hash-fingerprint/v1\x00"
+
+// directHashFingerprint derives the value stored in DirectScope.HashFingerprint
+// and re-checked by AuthBootRefresh.
+//
+// Keyed with the signing key rather than a bare digest, because this value
+// reaches logs. Both the WebSocket paths and a good many REST handlers log the
+// whole *auth.AuthIdentity (bin-api-manager/pkg/websockhandler/subscription.go:35,
+// bin-api-manager/server/providers.go:29,
+// bin-api-manager/server/billing_account.go:25, and others), and initLog
+// (bin-api-manager/internal/config/main.go:242) installs joonix.NewFormatter --
+// a JSON formatter, so encoding/json follows the nested *DirectScope pointer and
+// serializes every tagged field, this one included.
+//
+// That is safe only because the derivation is keyed. The underlying direct hash
+// is 48 bits (bin-direct-manager generateHash uses 6 random bytes) in a known
+// format, so a bare SHA-256 of it is brute-forceable offline in hours, and the
+// recovered hash would outlive both the token's expiry and the boot session
+// ceiling.
+//
+// HMAC keeps every property the check needs: deterministic, stable across
+// replicas and restarts, and full width (no truncation).
+//
+// The constant prefix domain-separates this from JWT signing, which uses the
+// same key. Nothing here is exploitable without it (HMAC has no length
+// extension, and no direct hash can collide with a JWT signing input), but the
+// prefix removes the need to make that argument at all.
+func (h *serviceHandler) directHashFingerprint(hash string) string {
+	mac := hmac.New(sha256.New, h.jwtKey)
+	mac.Write([]byte(directHashFingerprintDomain))
+	mac.Write([]byte(hash))
+	return hex.EncodeToString(mac.Sum(nil))
+}
+
 // BootResponse is the typed response for POST /auth/boot.
 type BootResponse struct {
 	Token        string    `json:"token"`
@@ -31,6 +69,14 @@ type BootResponse struct {
 	ResourceID   uuid.UUID `json:"resource_id"`
 	CustomerID   uuid.UUID `json:"customer_id"`
 	Expire       string    `json:"expire"`
+
+	// AllowedResourceID and ScopeVersion mirror the identically named
+	// DirectScope claims. Both MUST be read from the scope struct rather than
+	// recomputed, or the client's view and the token's view can diverge -- the
+	// client gates its id-mismatch reboot on ScopeVersion, so a response that
+	// under-reports it leaves that check asleep exactly when it is needed.
+	AllowedResourceID uuid.UUID `json:"allowed_resource_id"`
+	ScopeVersion      int       `json:"scope_version"`
 
 	// ResourceData is a resource-type-scoped envelope for additional,
 	// publicly-safe data about the boot-scoped resource. Each entry is a
@@ -123,6 +169,12 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 		ResourceType:         d.ResourceType,
 		ResourceID:           d.ResourceID,
 		AllowedResourceTypes: allowedTypes,
+
+		AllowedResourceID: h.utilHandler.UUIDCreate(),
+		DirectID:          d.ID,
+		HashFingerprint:   h.directHashFingerprint(d.Hash),
+		BootExpire:        h.utilHandler.TimeGetCurTimeAdd(BootSessionMaxLifetime),
+		ScopeVersion:      DirectScopeVersionCurrent,
 	}
 
 	// generate JWT with boot expiration
@@ -143,6 +195,10 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 		ResourceID:   d.ResourceID,
 		CustomerID:   d.CustomerID,
 		Expire:       expire,
+
+		// Read from scope, never recomputed. See the BootResponse doc comment.
+		AllowedResourceID: scope.AllowedResourceID,
+		ScopeVersion:      scope.ScopeVersion,
 	}
 
 	if fetcher, ok := resourceDisplayConfigFetchers[d.ResourceType]; ok {

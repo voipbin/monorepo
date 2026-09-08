@@ -4664,6 +4664,37 @@
         }
       }
     },
+    "/auth/boot/refresh": {
+      "post": {
+        "summary": "Reissue a direct token without changing which resource it is bound to.",
+        "description": "Extends a boot session past the 4 hour token expiry while keeping the same\n`allowed_resource_id`, so a conversation in progress is not interrupted.\n\nUnlike `POST /auth/boot` this endpoint is authenticated: present the current\ndirect token as `Bearer <token>`. The resource assignment is copied from that\ntoken and never read from the request body, so a caller cannot name a\nresource it does not already hold.\n\nRefreshing does not extend a session indefinitely. Each token carries an\nabsolute ceiling fixed at the original boot, and the reissued token inherits\nit unchanged. Revoking the direct link (regenerating its hash), deleting the\ndirect record, or deactivating the customer all take effect on the next\nrefresh.\n",
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "postAuthBootRefresh",
+        "responses": {
+          "200": {
+            "description": "Token reissued. `allowed_resource_id` and `scope_version` are unchanged;\nonly `expire` moves. `resource_data` is always omitted here (the client\nalready holds it from the original boot), so the response is the boot\nresponse minus that field.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthBootResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The token can no longer be refreshed. Boot again. Possible causes:\n- The token predates resource binding and carries no assignment.\n- The boot session's absolute lifetime has elapsed.\n- The direct link was deleted or its hash was regenerated.\n- The owning customer is no longer active.\n"
+          },
+          "403": {
+            "description": "The presented token is not a direct token."
+          },
+          "500": {
+            "description": "The server could not issue a token. Retrying the refresh may succeed; booting again will not help."
+          }
+        }
+      }
+    },
     "/auth/signup": {
       "post": {
         "summary": "Create a new customer account (self-service signup).",
@@ -33349,6 +33380,17 @@
             "x-go-type": "string",
             "description": "Token expiry timestamp in ISO 8601 format.",
             "example": "2026-04-07T12:00:00Z"
+          },
+          "allowed_resource_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The single resource this token may act on, assigned at boot before the resource exists. The resource created with this token takes this id, so two visitors of the same public link cannot reach each other's conversation. Clients do not need to send it anywhere; the server takes the target from the token.\n",
+            "example": "770e8400-e29b-41d4-a716-446655440002"
+          },
+          "scope_version": {
+            "type": "integer",
+            "description": "Version of the token's scope contract. Bumping it invalidates every outstanding token in one step; clients treat the resulting 401 as a signal to boot again.\n",
+            "example": 2
           },
           "resource_data": {
             "type": "object",

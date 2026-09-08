@@ -19,8 +19,15 @@ Public endpoints — no authentication required.
 | POST | `/auth/password-forgot` | bin-customer-manager | Send password reset email |
 | GET | `/auth/password-reset` | bin-customer-manager | Render reset form |
 | POST | `/auth/password-reset` | bin-customer-manager | Submit new password |
+
+Authenticated endpoints on the same prefix. These are registered on the `authProtected` group, **not** the public `auth` group.
+
+| HTTP Method | Path | Backend Service | Notes |
+|------------|------|----------------|-------|
+| POST | `/auth/boot/refresh` | bin-direct-manager, bin-customer-manager | Reissue a direct token keeping its resource binding. **Requires the current direct token as `Bearer`.** The assignment is copied from that token and never read from the request body — that is the entire reason a caller cannot name a resource it does not hold. Do not move this to the public group. |
 | DELETE | `/auth/unregister` | bin-customer-manager | Delete account (also allowed while frozen) |
 | POST | `/auth/unregister` | bin-customer-manager | Unregister request |
+| POST | `/auth/delegate` | bin-customer-manager | Superadmin delegate token |
 
 ---
 

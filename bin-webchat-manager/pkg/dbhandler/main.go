@@ -6,6 +6,7 @@ import (
 	context "context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -51,6 +52,26 @@ type handler struct {
 var (
 	ErrNotFound = errors.New("record not found")
 )
+
+// IsErrDuplicate reports whether err represents a duplicate-key/unique-constraint
+// violation. MySQL reports this as error 1062 ("Duplicate entry"); the test
+// suite's SQLite driver reports "UNIQUE constraint failed".
+//
+// Mirrors bin-ai-manager/pkg/dbhandler.IsErrDuplicate. It matches on the driver
+// string, which works because the create paths wrap with %v and keep it. Do not
+// replace the wrap with a bare sentinel at the db layer -- that is how the
+// equivalent helper's consumers in bin-ai-manager would silently stop matching.
+//
+// Deliberately not implemented as a SessionGet pre-check: that would leak
+// whether an id exists in another tenant.
+func IsErrDuplicate(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	errStr := err.Error()
+	return strings.Contains(errStr, "Duplicate entry") || strings.Contains(errStr, "UNIQUE constraint failed")
+}
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {

@@ -312,18 +312,18 @@ func (mr *MockAIcallHandlerMockRecorder) ServiceStartTypeTask(ctx, assistanceTyp
 }
 
 // Start mocks base method.
-func (m *MockAIcallHandler) Start(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID) (*aicall.AIcall, error) {
+func (m *MockAIcallHandler) Start(ctx context.Context, id uuid.UUID, assistanceType aicall.AssistanceType, assistanceID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID)
+	ret := m.ctrl.Call(m, "Start", ctx, id, assistanceType, assistanceID, activeflowID, referenceType, referenceID)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockAIcallHandlerMockRecorder) Start(ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) Start(ctx, id, assistanceType, assistanceID, activeflowID, referenceType, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAIcallHandler)(nil).Start), ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockAIcallHandler)(nil).Start), ctx, id, assistanceType, assistanceID, activeflowID, referenceType, referenceID)
 }
 
 // ToolHandle mocks base method.

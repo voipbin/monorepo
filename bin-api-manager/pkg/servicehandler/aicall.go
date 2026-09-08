@@ -58,6 +58,9 @@ func (h *serviceHandler) AIcallCreate(
 		return nil, fmt.Errorf("%w: unsupported assistance type: %s", serviceerrors.ErrInvalidArgument, assistanceType)
 	}
 
+	// uuid.Nil lets ai-manager generate the id. Only the direct path pins it.
+	aicallID := uuid.Nil
+
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -70,6 +73,29 @@ func (h *serviceHandler) AIcallCreate(
 		if a.DirectScope.ResourceID != assistanceID {
 			return nil, fmt.Errorf("%w: resource not in token scope", serviceerrors.ErrPermissionDenied)
 		}
+		if a.DirectScope.AllowedResourceID == uuid.Nil {
+			return nil, fmt.Errorf("%w: token is not resource bound", serviceerrors.ErrPermissionDenied)
+		}
+
+		// The new aicall must land on the id the token is bound to, or nothing
+		// downstream can tell this visitor's resource from any other's.
+		aicallID = a.DirectScope.AllowedResourceID
+
+		// Force both reference fields. reference_type=none routes to
+		// startReferenceTypeNone, the one start path that never calls
+		// AIcallGetByReferenceID -- which has no customer filter and would
+		// otherwise hand back another tenant's aicall (VOIP-1502).
+		// reference_id=Nil is separately load-bearing: the generated column
+		// active_reference_key keys off reference_id being non-zero, not off
+		// the type, so forcing only the type would leave the unique-index
+		// collision surface live. Neither forcing is redundant.
+		//
+		// Not a behavior change for the widgets: neither sends reference_type
+		// or reference_id at all (verified in square-main useChatState.js and
+		// square-admin's webchat runtime), and ReferenceTypeNone is the empty
+		// string, so an omitted field already lands on exactly these values.
+		referenceType = amaicall.ReferenceTypeNone
+		referenceID = uuid.Nil
 	}
 
 	// create activeflow for the aicall
@@ -92,6 +118,7 @@ func (h *serviceHandler) AIcallCreate(
 
 	tmp, err := h.reqHandler.AIV1AIcallStart(
 		ctx,
+		aicallID,
 		assistanceType,
 		assistanceID,
 		af.ID,
@@ -135,9 +162,13 @@ func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *auth.Aut
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 	case a.IsDirect():
-		if !a.HasAllowedResourceType("aicall") {
-			return nil, fmt.Errorf("%w: direct token does not allow this resource type", serviceerrors.ErrPermissionDenied)
-		}
+		// Listing has no target id to compare and nothing to overwrite, and it
+		// is the only way a visitor could learn another visitor's resource id.
+		// Refuse outright. Neither widget lists.
+		//
+		// GET /webchat_sessions already refuses direct; this asymmetry is what
+		// left the aicall side enumerable.
+		return nil, fmt.Errorf("%w: listing is not available for direct tokens", serviceerrors.ErrPermissionDenied)
 	}
 
 	// filters

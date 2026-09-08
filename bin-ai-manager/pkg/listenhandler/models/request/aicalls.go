@@ -11,6 +11,13 @@ import (
 // v1 data type request struct for
 // /v1/aicalls POST
 type V1DataAIcallsPost struct {
+	// ID pins the aicall's primary key. Zero means "generate one", which is
+	// how every non-direct caller behaves. omitempty has no effect on a
+	// uuid.UUID ([16]byte is never empty to encoding/json), so this always
+	// serializes as the zero UUID -- harmless, and matching the
+	// bin-transcribe-manager precedent. Do not "fix" the tag.
+	ID uuid.UUID `json:"id,omitempty"`
+
 	AssistanceType aicall.AssistanceType `json:"assistance_type,omitempty"`
 	AssistanceID   uuid.UUID             `json:"assistance_id,omitempty"`
 
@@ -18,7 +25,6 @@ type V1DataAIcallsPost struct {
 
 	ReferenceType aicall.ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID            `json:"reference_id,omitempty"`
-
 }
 
 // V1DataAIcallsIDMessagesPost is

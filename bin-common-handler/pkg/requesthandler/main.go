@@ -280,7 +280,7 @@ type RequestHandler interface {
 	AIV1ToolList(ctx context.Context) ([]amtool.Tool, error)
 
 	// ai-manager aicall
-	AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID) (*amaicall.AIcall, error)
+	AIV1AIcallStart(ctx context.Context, id uuid.UUID, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaicall.Field]any) ([]amaicall.AIcall, error)
 	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallGetSkipCache(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
@@ -1565,7 +1565,7 @@ type RequestHandler interface {
 	WebchatV1WidgetDirectHashRegenerate(ctx context.Context, id uuid.UUID) (*wcwidget.Widget, error)
 
 	// webchat-manager sessions
-	WebchatV1SessionCreate(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string, referrer string) (*wcsession.Session, error)
+	WebchatV1SessionCreate(ctx context.Context, id uuid.UUID, customerID uuid.UUID, widgetID uuid.UUID, pageURL string, referrer string) (*wcsession.Session, error)
 	WebchatV1SessionGet(ctx context.Context, id uuid.UUID) (*wcsession.Session, error)
 	WebchatV1SessionList(ctx context.Context, pageToken string, pageSize uint64, filters map[wcsession.Field]any) ([]*wcsession.Session, error)
 	WebchatV1SessionDelete(ctx context.Context, id uuid.UUID) (*wcsession.Session, error)

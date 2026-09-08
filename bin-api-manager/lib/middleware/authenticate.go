@@ -206,6 +206,42 @@ func buildJWTIdentity(log *logrus.Entry, authData map[string]interface{}) (*auth
 			return nil, fmt.Errorf("invalid direct scope")
 		}
 
+		// Both predicates are on the *value*, not on key presence. DirectScope
+		// carries no omitempty, so a token minted before resource binding
+		// deserializes with zero values rather than absent keys -- and a token
+		// that went through refresh would carry the key explicitly set to zero.
+		// Testing presence would let both through.
+		//
+		// Rejecting here rather than in DirectResourceScope is deliberate: this
+		// is the single choke point for every direct-token entry path (the
+		// v1.0 group, the authProtected group and the WebSocket upgrade). A
+		// middleware-only check would let an unbound token reach a handler that
+		// has no path parameter, where the overwrite would then persist
+		// uuid.Nil as a real resource id.
+		// reject_reason is a shared field across every direct-scope rejection
+		// (here and in DirectResourceScope) so the deploy window can be watched
+		// by aggregating on one key rather than grepping message text. Bumping
+		// DirectScopeVersionCurrent 401s every live token at once, and this is
+		// the only signal for how many.
+		if scope.AllowedResourceID == uuid.Nil {
+			// customer_id matters most on this branch: it is the one that
+			// fires for every pre-feature token, so it carries the rollout
+			// window's volume and is when tenant attribution is wanted.
+			log.WithFields(logrus.Fields{
+				"reject_reason": "direct_unbound",
+				"customer_id":   scope.CustomerID,
+			}).Info("Direct token carries no resource binding. Rejecting.")
+			return nil, fmt.Errorf("direct token is not resource bound")
+		}
+		if scope.ScopeVersion < servicehandler.DirectScopeVersionCurrent {
+			log.WithFields(logrus.Fields{
+				"reject_reason": "direct_scope_version",
+				"scope_version": scope.ScopeVersion,
+				"customer_id":   scope.CustomerID,
+			}).Info("Direct token scope version is outdated. Rejecting.")
+			return nil, fmt.Errorf("direct token scope version is outdated")
+		}
+
 		return auth.NewDirectIdentity(&scope), nil
 
 	case string(auth.TypeDelegate):
@@ -462,6 +498,15 @@ func getAccesskey(c *gin.Context) string {
 // bin-api-manager/lib/apierror.
 func abortUnauthenticated(c *gin.Context, reason, message string) {
 	e := cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, reason, message)
+	c.AbortWithStatusJSON(
+		cerrors.HTTPStatusFor(e.Status),
+		apierror.EnvelopeFor(e, RequestIDFromContext(c)),
+	)
+}
+
+// abortPermissionDenied writes the standard PERMISSION_DENIED envelope.
+func abortPermissionDenied(c *gin.Context, reason, message string) {
+	e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, reason, message)
 	c.AbortWithStatusJSON(
 		cerrors.HTTPStatusFor(e.Status),
 		apierror.EnvelopeFor(e, RequestIDFromContext(c)),

@@ -43,7 +43,11 @@ func Test_AIcallCreate(t *testing.T) {
 
 		// expectAssistanceType is the type passed to AIV1AIcallStart after normalization
 		expectAssistanceType amaicall.AssistanceType
-		expectRes            *amaicall.WebhookMessage
+		// expectAIcallID is the id passed to AIV1AIcallStart. uuid.Nil for agent
+		// and accesskey identities (ai-manager generates one); the token's
+		// AllowedResourceID for direct identities.
+		expectAIcallID uuid.UUID
+		expectRes      *amaicall.WebhookMessage
 	}
 
 	tests := []test{
@@ -80,6 +84,7 @@ func Test_AIcallCreate(t *testing.T) {
 			},
 
 			expectAssistanceType: amaicall.AssistanceTypeAI,
+			expectAIcallID:       uuid.Nil,
 			expectRes: &amaicall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("407e793c-efaa-11ef-b0f4-4bdbcd626589"),
@@ -119,6 +124,7 @@ func Test_AIcallCreate(t *testing.T) {
 			},
 
 			expectAssistanceType: amaicall.AssistanceTypeTeam,
+			expectAIcallID:       uuid.Nil,
 			expectRes: &amaicall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c2d3e4f5-0000-0000-0000-000000000001"),
@@ -160,12 +166,13 @@ func Test_AIcallCreate(t *testing.T) {
 				uuid.Nil,
 				uuid.Nil,
 				gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
 			).Return(tt.responseActiveflow, nil)
 
 			mockReq.EXPECT().AIV1AIcallStart(
 				ctx,
+				tt.expectAIcallID,
 				tt.expectAssistanceType,
 				tt.assistanceID,
 				tt.responseActiveflow.ID,

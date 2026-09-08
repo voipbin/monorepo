@@ -698,31 +698,36 @@
 <td><p>Exchange a direct hash for a 4-hour resource-scoped JWT.</p></td>
 </tr>
 <tr class="row-even"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/boot/refresh</span></code></p></td>
+<td><p>Direct token</p></td>
+<td><p>Reissue a direct token without changing which resource it is bound to.</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-forgot</span></code></p></td>
 <td><p>None</p></td>
 <td><p>Request a password reset email.</p></td>
 </tr>
-<tr class="row-odd"><td><p>GET</p></td>
+<tr class="row-even"><td><p>GET</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-reset</span></code></p></td>
 <td><p>None</p></td>
 <td><p>Serves the HTML password reset form (link target from the reset email).</p></td>
 </tr>
-<tr class="row-even"><td><p>POST</p></td>
+<tr class="row-odd"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-reset</span></code></p></td>
 <td><p>None (reset token)</p></td>
 <td><p>Complete the password reset using the emailed token.</p></td>
 </tr>
-<tr class="row-odd"><td><p>POST</p></td>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code></p></td>
 <td><p>Token or Accesskey</p></td>
 <td><p>Freeze the caller’s own account and schedule (or immediately execute) deletion.</p></td>
 </tr>
-<tr class="row-even"><td><p>DELETE</p></td>
+<tr class="row-odd"><td><p>DELETE</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code></p></td>
 <td><p>Token or Accesskey</p></td>
 <td><p>Cancel a scheduled deletion and restore the account to <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p>POST</p></td>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code></p></td>
 <td><p>Token (ProjectSuperAdmin)</p></td>
 <td><p>Issue a short-lived support/investigation token scoped to another customer. See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>.</p></td>
@@ -1090,6 +1095,14 @@
 <td><p>String (ISO 8601)</p></td>
 <td><p>Token expiry. Valid for 4 hours from issuance.</p></td>
 </tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">allowed_resource_id</span></code></p></td>
+<td><p>UUID</p></td>
+<td><p>The single resource this token may act on, assigned at boot before the resource exists. The resource you create with this token takes this ID. You do not need to send it anywhere: the server takes the target from the token, so two visitors of the same public link cannot reach each other’s conversation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">scope_version</span></code></p></td>
+<td><p>Integer</p></td>
+<td><p>Version of the token’s scope contract. If it is raised, every outstanding token becomes invalid at once and clients must boot again.</p></td>
+</tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">resource_data</span></code></p></td>
 <td><p>Object, Optional</p></td>
 <td><p>Present only for resource types with a registered public-display fetcher (currently <code class="docutils literal notranslate"><span class="pre">webchat_widget</span></code>). Contains a <code class="docutils literal notranslate"><span class="pre">public_display_config</span></code> key with anonymous-visitor-safe display settings (e.g. theme). Omitted entirely when there is nothing to report; a fetch failure never fails the boot request itself.</p></td>
@@ -1097,6 +1110,15 @@
 </tbody>
 </table>
 </div>
+<p><strong>What a direct token can and cannot do</strong></p>
+<p>A direct token is bound to exactly one resource: the <code class="docutils literal notranslate"><span class="pre">allowed_resource_id</span></code> above.</p>
+<ul class="simple">
+<li><p>Creating a resource (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/aicalls</span></code>, <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_sessions</span></code>) produces a resource with that ID. A second creation attempt with the same token returns <code class="docutils literal notranslate"><span class="pre">409</span></code>; boot again for a new assignment.</p></li>
+<li><p>Requests that name a resource in the path (e.g. <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/aicalls/{id}</span></code>) are refused with <code class="docutils literal notranslate"><span class="pre">403</span></code> unless the ID matches the assignment.</p></li>
+<li><p>Requests that name a resource in the body or query (e.g. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/aimessages</span></code>) ignore the value you send and use the assignment instead.</p></li>
+<li><p>Listing (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/aicalls</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/webchat_sessions</span></code>) is not available to direct tokens.</p></li>
+<li><p>WebSocket topics of the form <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;customer_id&gt;:&lt;resource_type&gt;:&lt;resource_id&gt;</span></code> are accepted only when <code class="docutils literal notranslate"><span class="pre">&lt;resource_id&gt;</span></code> is exactly the assignment, written as a canonical lower-case UUID. A trailing colon or a partial ID is refused.</p></li>
+</ul>
 <p><strong>Errors</strong></p>
 <div class="table-wrapper colwidths-given docutils container">
 <table class="docutils align-default">
@@ -1120,6 +1142,48 @@
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>Boot tokens are scoped: they only grant access to the resource types listed in the token (e.g. <code class="docutils literal notranslate"><span class="pre">aicall</span></code> for an <code class="docutils literal notranslate"><span class="pre">ai</span></code>/<code class="docutils literal notranslate"><span class="pre">ai_team</span></code> direct hash, <code class="docutils literal notranslate"><span class="pre">webchat_session</span></code> for a <code class="docutils literal notranslate"><span class="pre">webchat_widget</span></code> direct hash). For WebSocket subscriptions, boot tokens may only subscribe to 4-part topics (<code class="docutils literal notranslate"><span class="pre">customer_id:&lt;uuid&gt;:&lt;resource_type&gt;:&lt;resource_id&gt;</span></code>); broader topics are rejected.</p>
+</div>
+</section>
+<section id="boot-refresh-direct-token-post-auth-boot-refresh">
+<h2>Boot refresh (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot/refresh</span></code><a class="headerlink" href="#boot-refresh-direct-token-post-auth-boot-refresh" title="Link to this heading">¶</a></h2>
+<p>Reissues a direct token while keeping the same <code class="docutils literal notranslate"><span class="pre">allowed_resource_id</span></code>, so a conversation in progress survives the 4-hour token expiry. Call it before the token expires; the widget SDKs do this automatically.</p>
+<p>Unlike <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code> this endpoint is authenticated: present the current direct token as <code class="docutils literal notranslate"><span class="pre">Bearer</span> <span class="pre">&lt;token&gt;</span></code>. The assignment is copied from that token and is never read from the request body, so a caller cannot name a resource it does not already hold.</p>
+<p><strong>Request body</strong></p>
+<p>None.</p>
+<p><strong>Response — 200 OK</strong></p>
+<p>Same shape as <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code>, except <code class="docutils literal notranslate"><span class="pre">resource_data</span></code> is omitted (the client already holds it from the original boot). <code class="docutils literal notranslate"><span class="pre">allowed_resource_id</span></code> and <code class="docutils literal notranslate"><span class="pre">scope_version</span></code> are unchanged; only <code class="docutils literal notranslate"><span class="pre">expire</span></code> moves.</p>
+<p><strong>Refreshing does not extend a session indefinitely</strong></p>
+<p>Each boot fixes an absolute ceiling and every reissued token inherits it unchanged, so refreshing cannot walk it forward. A refresh is also refused, with <code class="docutils literal notranslate"><span class="pre">401</span></code>, when any of the following became true since the original boot:</p>
+<ul class="simple">
+<li><p>the boot session’s absolute lifetime has elapsed,</p></li>
+<li><p>the direct link was deleted, or its hash was regenerated (this is how you revoke a leaked public link),</p></li>
+<li><p>the owning customer is no longer active,</p></li>
+<li><p>the token predates resource binding and carries no assignment.</p></li>
+</ul>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">401</span></code></p></td>
+<td><p>The token can no longer be refreshed. Boot again.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">403</span></code></p></td>
+<td><p>The presented token is not a direct token.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">500</span></code></p></td>
+<td><p>The server could not issue a token. Retrying the refresh may succeed; booting again will not help.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </section>
 <section id="password-forgot-post-auth-password-forgot">
@@ -1514,6 +1578,7 @@
 <li><a class="reference internal" href="#email-verify-resend-post-auth-email-verify-resend">Email Verify Resend — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code></a></li>
 <li><a class="reference internal" href="#login-token-post-auth-login">Login (Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code></a></li>
 <li><a class="reference internal" href="#boot-direct-token-post-auth-boot">Boot (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code></a></li>
+<li><a class="reference internal" href="#boot-refresh-direct-token-post-auth-boot-refresh">Boot refresh (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot/refresh</span></code></a></li>
 <li><a class="reference internal" href="#password-forgot-post-auth-password-forgot">Password Forgot — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-forgot</span></code></a></li>
 <li><a class="reference internal" href="#password-reset-get-post-auth-password-reset">Password Reset — <code class="docutils literal notranslate"><span class="pre">GET</span></code> / <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-reset</span></code></a></li>
 <li><a class="reference internal" href="#unregister-self-service-deletion-post-delete-auth-unregister">Unregister (Self-Service Deletion) — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/auth/unregister</span></code></a></li>

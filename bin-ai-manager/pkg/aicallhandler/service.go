@@ -51,7 +51,7 @@ func (h *aicallHandler) serviceStartReferenceTypeCall(
 		"reference_id":    referenceID,
 	})
 
-	cc, err := h.Start(ctx, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID)
+	cc, err := h.Start(ctx, uuid.Nil, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)
@@ -93,7 +93,7 @@ func (h *aicallHandler) serviceStartReferenceTypeConversation(
 		"reference_id":    referenceID,
 	})
 
-	cc, err := h.Start(ctx, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID)
+	cc, err := h.Start(ctx, uuid.Nil, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID)
 	if err != nil {
 		log.Errorf("Could not start aicall. err: %v", err)
 		return nil, fmt.Errorf("could not start aicall. err: %v", err)

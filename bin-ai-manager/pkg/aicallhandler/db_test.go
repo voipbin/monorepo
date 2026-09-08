@@ -63,9 +63,9 @@ func Test_Create(t *testing.T) {
 			assistanceID:   uuid.FromStringOrNil("81b311ee-a707-11ed-b499-f3284ac97a08"),
 			activeflowID:   uuid.FromStringOrNil("fef51c0a-fba4-11ed-b222-673487fcf35b"),
 			referenceType:  aicall.ReferenceTypeCall,
-			referenceID:   uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
-			confbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
-			pipecatcallID: uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
+			referenceID:    uuid.FromStringOrNil("81deff70-a707-11ed-9bf5-6b5e777ccc90"),
+			confbridgeID:   uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
+			pipecatcallID:  uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
 
 			parameter: map[string]any{
 				"key1": "value1",
@@ -98,8 +98,8 @@ func Test_Create(t *testing.T) {
 				ConfbridgeID:  uuid.FromStringOrNil("df491e7a-c10d-4d9e-a17b-e6ffb2a752e9"),
 				PipecatcallID: uuid.FromStringOrNil("b063584e-b462-11f0-82f0-9b410ef3ab1e"),
 
-				STTLanguage:   "en-US",
-				Status:        aicall.StatusInitiating,
+				STTLanguage: "en-US",
+				Status:      aicall.StatusInitiating,
 			},
 		},
 		{
@@ -124,7 +124,7 @@ func Test_Create(t *testing.T) {
 			confbridgeID:   uuid.FromStringOrNil("e5f6a7b8-c9d0-11ed-e5f6-a7b8c9d0e1f2"),
 			pipecatcallID:  uuid.FromStringOrNil("f6a7b8c9-d0e1-11ed-f6a7-b8c9d0e1f2a3"),
 
-			parameter:      nil,
+			parameter: nil,
 
 			responseUUIDID: uuid.FromStringOrNil("a7b8c9d0-e1f2-11ed-a7b8-c9d0e1f2a3b4"),
 			responseAIcall: &aicall.AIcall{
@@ -150,8 +150,8 @@ func Test_Create(t *testing.T) {
 				ConfbridgeID:   uuid.FromStringOrNil("e5f6a7b8-c9d0-11ed-e5f6-a7b8c9d0e1f2"),
 				PipecatcallID:  uuid.FromStringOrNil("f6a7b8c9-d0e1-11ed-f6a7-b8c9d0e1f2a3"),
 
-				STTLanguage:    "ja-JP",
-				Status:         aicall.StatusInitiating,
+				STTLanguage: "ja-JP",
+				Status:      aicall.StatusInitiating,
 			},
 		},
 		{
@@ -177,7 +177,7 @@ func Test_Create(t *testing.T) {
 			pipecatcallID:   uuid.FromStringOrNil("b6c7d8e9-f0a1-11ed-b6c7-d8e9f0a1b2c3"),
 			currentMemberID: uuid.FromStringOrNil("c7d8e9f0-a1b2-11ed-c7d8-e9f0a1b2c3d4"),
 
-			parameter:       nil,
+			parameter: nil,
 
 			responseUUIDID: uuid.FromStringOrNil("d8e9f0a1-b2c3-11ed-d8e9-f0a1b2c3d4e5"),
 			responseAIcall: &aicall.AIcall{
@@ -204,8 +204,8 @@ func Test_Create(t *testing.T) {
 				PipecatcallID:   uuid.FromStringOrNil("b6c7d8e9-f0a1-11ed-b6c7-d8e9f0a1b2c3"),
 				CurrentMemberID: uuid.FromStringOrNil("c7d8e9f0-a1b2-11ed-c7d8-e9f0a1b2c3d4"),
 
-				STTLanguage:     "ko-KR",
-				Status:          aicall.StatusInitiating,
+				STTLanguage: "ko-KR",
+				Status:      aicall.StatusInitiating,
 			},
 		},
 	}
@@ -235,7 +235,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseUUIDID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusInitializing, tt.responseAIcall)
 
-			res, err := h.Create(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.currentMemberID, tt.parameter, nil)
+			res, err := h.Create(ctx, uuid.Nil, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.pipecatcallID, tt.currentMemberID, tt.parameter, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -721,10 +721,10 @@ func Test_UpdatePipecatcallIDAndActiveflowID(t *testing.T) {
 		responseAIcall       *aicall.AIcall
 		responseGetErr       error
 
-		expectFields  map[aicall.Field]any
-		expectRes     *aicall.AIcall
-		expectErr     bool
-		expectErrIs   error
+		expectFields map[aicall.Field]any
+		expectRes    *aicall.AIcall
+		expectErr    bool
+		expectErrIs  error
 	}{
 		{
 			name: "normal",

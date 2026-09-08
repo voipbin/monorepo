@@ -114,6 +114,25 @@ const (
 	TokenExpiration    = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
 	BootExpiration     = time.Hour * 4      // direct boot token expiration time. 4 hours
 	DelegateExpiration = time.Hour * 8      // delegate token expiration. 8 hours
+
+	// BootSessionMaxLifetime caps how long a single boot session may be kept
+	// alive by POST /auth/boot/refresh. Refresh copies DirectScope.BootExpire
+	// verbatim, so the ceiling cannot be walked forward. Without it, a token
+	// whose direct hash was later regenerated could in principle be renewed
+	// indefinitely if any of the refresh revocation checks were removed.
+	BootSessionMaxLifetime = time.Hour * 24
+
+	// DirectScopeVersionCurrent is stamped into every direct token and checked
+	// in buildJWTIdentity. Bumping it invalidates every outstanding direct
+	// token in one step; clients treat the resulting 401 as a reboot signal.
+	//
+	// It starts at 2, not 1, because an earlier three-stage rollout plan would
+	// have issued 1 first. That plan was dropped and no token was ever minted
+	// with 1. Do NOT "correct" this to 1: every live token carries 2, so
+	// 2 >= 1 still passes and the change looks harmless -- but it destroys the
+	// lever, because the next real bump to 2 would then no-op against every
+	// already-minted token. See the design doc's section 9.1.
+	DirectScopeVersionCurrent = 2
 )
 
 // ServiceHandler is interface for service handle
@@ -165,6 +184,7 @@ type ServiceHandler interface {
 	AuthPasswordForgot(ctx context.Context, username string) error
 	AuthPasswordReset(ctx context.Context, token string, password string) error
 	AuthBoot(ctx context.Context, directHash string) (*BootResponse, error)
+	AuthBootRefresh(ctx context.Context, a *auth.AuthIdentity) (*BootResponse, error)
 	AuthDelegate(ctx context.Context, a *auth.AuthIdentity, targetCustomerID uuid.UUID, reason string) (*DelegateResponse, error)
 
 	// available numbers

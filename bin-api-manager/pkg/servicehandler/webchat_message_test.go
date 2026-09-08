@@ -182,6 +182,9 @@ func Test_WebchatMessageList_Direct(t *testing.T) {
 		ResourceType:         "webchat_widget",
 		ResourceID:           widgetID,
 		AllowedResourceTypes: []string{"webchat_session"},
+		// The token is bound to the session under test. The handler takes the
+		// session id from here, not from the caller's argument.
+		AllowedResourceID: sessionID,
 	})
 
 	responseSession := &wcsession.Session{
@@ -203,7 +206,16 @@ func Test_WebchatMessageList_Direct(t *testing.T) {
 		wcmessage.FieldSessionID:  sessionID,
 	}).Return(responseMessages, nil)
 
-	res, err := h.WebchatMessageList(ctx, a, 10, "", sessionID)
+	// Deliberately ask for a DIFFERENT session than the token is bound to.
+	// Every mock expectation above is keyed on the bound sessionID, so if the
+	// handler ever stopped overwriting and used this argument instead, they
+	// would go unmet and this test would fail. Passing the same id in both
+	// places, as an earlier revision did, cannot tell the two apart -- and
+	// that line is the sole enforcement for this route, since session_id is a
+	// query parameter and so bypasses the path-parameter middleware.
+	otherSessionID := uuid.FromStringOrNil("bb111111-6cc4-4713-9dec-53a42840e74c")
+
+	res, err := h.WebchatMessageList(ctx, a, 10, "", otherSessionID)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -214,10 +226,15 @@ func Test_WebchatMessageList_Direct(t *testing.T) {
 	}
 }
 
-// Test_WebchatMessageList_Direct_NoSessionID verifies a direct-scope
-// caller omitting session_id is rejected -- there is no "list all my
-// messages across sessions" concept for a visitor.
-func Test_WebchatMessageList_Direct_NoSessionID(t *testing.T) {
+// Test_WebchatMessageList_Direct_Unbound verifies a direct token with no
+// resource binding is rejected.
+//
+// This replaces an earlier test that asserted a caller omitting session_id is
+// rejected. That premise is gone: the caller's session_id is no longer read at
+// all, so omitting it proves nothing. The binding on the token is now the only
+// thing that decides which session is listed, and a token without one must not
+// reach the query -- otherwise the Nil id would be used as a real session id.
+func Test_WebchatMessageList_Direct_Unbound(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -232,9 +249,12 @@ func Test_WebchatMessageList_Direct_NoSessionID(t *testing.T) {
 		ResourceType:         "webchat_widget",
 		ResourceID:           widgetID,
 		AllowedResourceTypes: []string{"webchat_session"},
+		// deliberately unbound
 	})
 
-	if _, err := h.WebchatMessageList(ctx, a, 10, "", uuid.Nil); err == nil {
+	// A real session id from the caller must not rescue an unbound token.
+	requested := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	if _, err := h.WebchatMessageList(ctx, a, 10, "", requested); err == nil {
 		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }
@@ -264,6 +284,9 @@ func Test_WebchatMessageList_Direct_WrongWidget(t *testing.T) {
 		ResourceType:         "webchat_widget",
 		ResourceID:           callerWidgetID,
 		AllowedResourceTypes: []string{"webchat_session"},
+		// The token is bound to the session under test. The handler takes the
+		// session id from here, not from the caller's argument.
+		AllowedResourceID: sessionID,
 	})
 
 	otherWidgetSession := &wcsession.Session{
@@ -303,6 +326,9 @@ func Test_WebchatMessageList_Direct_DeletedWidget(t *testing.T) {
 		ResourceType:         "webchat_widget",
 		ResourceID:           widgetID,
 		AllowedResourceTypes: []string{"webchat_session"},
+		// The token is bound to the session under test. The handler takes the
+		// session id from here, not from the caller's argument.
+		AllowedResourceID: sessionID,
 	})
 
 	responseSession := &wcsession.Session{

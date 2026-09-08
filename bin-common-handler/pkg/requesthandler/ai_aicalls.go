@@ -15,10 +15,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (r *requestHandler) AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID) (*amaicall.AIcall, error) {
+// AIV1AIcallStart asks ai-manager to start an aicall.
+//
+// id lets the caller pin the new aicall's primary key. Pass uuid.Nil to let
+// ai-manager generate one, which is what every caller except the direct-token
+// path does. The direct path pins it so the resource the token is bound to and
+// the resource that gets created are the same row.
+func (r *requestHandler) AIV1AIcallStart(ctx context.Context, id uuid.UUID, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID) (*amaicall.AIcall, error) {
 	uri := "/v1/aicalls"
 
 	data := &cbrequest.V1DataAIcallsPost{
+		ID: id,
+
 		AssistanceType: assistanceType,
 		AssistanceID:   assistanceID,
 

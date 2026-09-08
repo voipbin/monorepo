@@ -985,6 +985,21 @@ func (mr *MockServiceHandlerMockRecorder) AuthBoot(ctx, directHash any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthBoot", reflect.TypeOf((*MockServiceHandler)(nil).AuthBoot), ctx, directHash)
 }
 
+// AuthBootRefresh mocks base method.
+func (m *MockServiceHandler) AuthBootRefresh(ctx context.Context, a *auth.AuthIdentity) (*BootResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthBootRefresh", ctx, a)
+	ret0, _ := ret[0].(*BootResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthBootRefresh indicates an expected call of AuthBootRefresh.
+func (mr *MockServiceHandlerMockRecorder) AuthBootRefresh(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthBootRefresh", reflect.TypeOf((*MockServiceHandler)(nil).AuthBootRefresh), ctx, a)
+}
+
 // AuthDelegate mocks base method.
 func (m *MockServiceHandler) AuthDelegate(ctx context.Context, a *auth.AuthIdentity, targetCustomerID uuid.UUID, reason string) (*DelegateResponse, error) {
 	m.ctrl.T.Helper()

@@ -21,6 +21,7 @@ import (
 // it increases corresponded counter
 func (h *aicallHandler) Create(
 	ctx context.Context,
+	id uuid.UUID,
 	c *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
@@ -38,7 +39,12 @@ func (h *aicallHandler) Create(
 		"ai":   c,
 	})
 
-	id := h.utilHandler.UUIDCreate()
+	// A caller-specified id means the row must land on exactly that key; the
+	// duplicate that results from reusing one is classified in Start.
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+	}
+
 	tmp := &aicall.AIcall{
 		Identity: identity.Identity{
 			ID:         id,
@@ -96,6 +102,7 @@ func (h *aicallHandler) Create(
 // It only sets AIEngineModel from the AI config and does not set TTS/STT/VAD fields.
 func (h *aicallHandler) CreateByMessaging(
 	ctx context.Context,
+	id uuid.UUID,
 	c *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
@@ -112,7 +119,12 @@ func (h *aicallHandler) CreateByMessaging(
 		"ai":   c,
 	})
 
-	id := h.utilHandler.UUIDCreate()
+	// A caller-specified id means the row must land on exactly that key; the
+	// duplicate that results from reusing one is classified in Start.
+	if id == uuid.Nil {
+		id = h.utilHandler.UUIDCreate()
+	}
+
 	tmp := &aicall.AIcall{
 		Identity: identity.Identity{
 			ID:         id,

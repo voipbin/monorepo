@@ -8199,6 +8199,23 @@ components:
           x-go-type: string
           description: "Token expiry timestamp in ISO 8601 format."
           example: "2026-04-07T12:00:00Z"
+        allowed_resource_id:
+          type: string
+          format: uuid
+          description: >
+            The single resource this token may act on, assigned at boot before the
+            resource exists. The resource created with this token takes this id, so
+            two visitors of the same public link cannot reach each other's
+            conversation. Clients do not need to send it anywhere; the server takes
+            the target from the token.
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        scope_version:
+          type: integer
+          description: >
+            Version of the token's scope contract. Bumping it invalidates every
+            outstanding token in one step; clients treat the resulting 401 as a
+            signal to boot again.
+          example: 2
         resource_data:
           type: object
           nullable: true
@@ -8427,6 +8444,8 @@ paths:
 
   /auth/boot:
     $ref: './paths/auth/boot.yaml'
+  /auth/boot/refresh:
+    $ref: './paths/auth/boot-refresh.yaml'
   /auth/signup:
     $ref: './paths/auth/signup.yaml'
   /auth/email-verify:

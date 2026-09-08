@@ -4221,6 +4221,9 @@ type ApiManagerExtensionProvisioningToken struct {
 
 // AuthBootResponse Result of a successful boot request. Contains a resource-scoped JWT and metadata about the scoped resource.
 type AuthBootResponse struct {
+	// AllowedResourceId The single resource this token may act on, assigned at boot before the resource exists. The resource created with this token takes this id, so two visitors of the same public link cannot reach each other's conversation. Clients do not need to send it anywhere; the server takes the target from the token.
+	AllowedResourceId *openapi_types.UUID `json:"allowed_resource_id,omitempty"`
+
 	// CustomerId The UUID of the customer that owns the resource. Returned from the `POST /auth/signup` response.
 	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
 
@@ -4237,6 +4240,9 @@ type AuthBootResponse struct {
 
 	// ResourceType The type of resource this token is scoped to (e.g., "ai").
 	ResourceType *string `json:"resource_type,omitempty"`
+
+	// ScopeVersion Version of the token's scope contract. Bumping it invalidates every outstanding token in one step; clients treat the resulting 401 as a signal to boot again.
+	ScopeVersion *int `json:"scope_version,omitempty"`
 
 	// Token JWT token string for API authentication. Pass as `Bearer <token>` in the Authorization header.
 	Token *string `json:"token,omitempty"`
@@ -11121,6 +11127,9 @@ type ServerInterface interface {
 	// Generate a resource-scoped JWT from a direct hash.
 	// (POST /auth/boot)
 	PostAuthBoot(c *gin.Context)
+	// Reissue a direct token without changing which resource it is bound to.
+	// (POST /auth/boot/refresh)
+	PostAuthBootRefresh(c *gin.Context)
 	// Verify customer email address.
 	// (POST /auth/email-verify)
 	PostAuthEmailVerify(c *gin.Context)
@@ -13744,6 +13753,19 @@ func (siw *ServerInterfaceWrapper) PostAuthBoot(c *gin.Context) {
 	}
 
 	siw.Handler.PostAuthBoot(c)
+}
+
+// PostAuthBootRefresh operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthBootRefresh(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthBootRefresh(c)
 }
 
 // PostAuthEmailVerify operation middleware
@@ -23207,6 +23229,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
 	router.POST(options.BaseURL+"/auth/boot", wrapper.PostAuthBoot)
+	router.POST(options.BaseURL+"/auth/boot/refresh", wrapper.PostAuthBootRefresh)
 	router.POST(options.BaseURL+"/auth/email-verify", wrapper.PostAuthEmailVerify)
 	router.POST(options.BaseURL+"/auth/email-verify-resend", wrapper.PostAuthEmailVerifyResend)
 	router.POST(options.BaseURL+"/auth/password-forgot", wrapper.PostAuthPasswordForgot)
@@ -28295,6 +28318,51 @@ type PostAuthBoot400Response struct {
 
 func (response PostAuthBoot400Response) VisitPostAuthBootResponse(w http.ResponseWriter) error {
 	w.WriteHeader(400)
+	return nil
+}
+
+type PostAuthBootRefreshRequestObject struct {
+}
+
+type PostAuthBootRefreshResponseObject interface {
+	VisitPostAuthBootRefreshResponse(w http.ResponseWriter) error
+}
+
+type PostAuthBootRefresh200JSONResponse AuthBootResponse
+
+func (response PostAuthBootRefresh200JSONResponse) VisitPostAuthBootRefreshResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAuthBootRefresh401Response struct {
+}
+
+func (response PostAuthBootRefresh401Response) VisitPostAuthBootRefreshResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostAuthBootRefresh403Response struct {
+}
+
+func (response PostAuthBootRefresh403Response) VisitPostAuthBootRefreshResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type PostAuthBootRefresh500Response struct {
+}
+
+func (response PostAuthBootRefresh500Response) VisitPostAuthBootRefreshResponse(w http.ResponseWriter) error {
+	w.WriteHeader(500)
 	return nil
 }
 
@@ -57793,6 +57861,9 @@ type StrictServerInterface interface {
 	// Generate a resource-scoped JWT from a direct hash.
 	// (POST /auth/boot)
 	PostAuthBoot(ctx context.Context, request PostAuthBootRequestObject) (PostAuthBootResponseObject, error)
+	// Reissue a direct token without changing which resource it is bound to.
+	// (POST /auth/boot/refresh)
+	PostAuthBootRefresh(ctx context.Context, request PostAuthBootRefreshRequestObject) (PostAuthBootRefreshResponseObject, error)
 	// Verify customer email address.
 	// (POST /auth/email-verify)
 	PostAuthEmailVerify(ctx context.Context, request PostAuthEmailVerifyRequestObject) (PostAuthEmailVerifyResponseObject, error)
@@ -60508,6 +60579,30 @@ func (sh *strictHandler) PostAuthBoot(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PostAuthBootResponseObject); ok {
 		if err := validResponse.VisitPostAuthBootResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthBootRefresh operation middleware
+func (sh *strictHandler) PostAuthBootRefresh(ctx *gin.Context) {
+	var request PostAuthBootRefreshRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthBootRefresh(ctx, request.(PostAuthBootRefreshRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthBootRefresh")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostAuthBootRefreshResponseObject); ok {
+		if err := validResponse.VisitPostAuthBootRefreshResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

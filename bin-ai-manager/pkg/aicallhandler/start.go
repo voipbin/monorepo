@@ -12,6 +12,8 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
@@ -169,6 +171,11 @@ func (h *aicallHandler) buildPromptSnapshots(ctx context.Context, a *ai.AI, assi
 
 func (h *aicallHandler) Start(
 	ctx context.Context,
+	// id pins the new aicall's primary key. uuid.Nil means "generate one",
+	// which is what every caller except the direct-token path passes. The
+	// direct path pins it so the row that gets created is the one the token is
+	// already bound to.
+	id uuid.UUID,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
 	activeflowID uuid.UUID,
@@ -182,27 +189,64 @@ func (h *aicallHandler) Start(
 		return nil, errors.Wrap(err, "could not resolve ai config")
 	}
 
+	// The branches assign rather than return directly so the duplicate
+	// classification below can inspect the result. Returning from each arm
+	// would leave nowhere to hook it.
+	var res *aicall.AIcall
 	switch referenceType {
 	case aicall.ReferenceTypeCall:
-		return h.startReferenceTypeCall(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
+		res, err = h.startReferenceTypeCall(ctx, id, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
 
 	case aicall.ReferenceTypeConversation:
-		return h.startReferenceTypeConversation(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
+		res, err = h.startReferenceTypeConversation(ctx, id, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
 
 	case aicall.ReferenceTypeContactCase:
-		return h.startReferenceTypeContactCase(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
+		res, err = h.startReferenceTypeContactCase(ctx, id, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
 
 	case aicall.ReferenceTypeNone:
-		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, activeflowID, teamParameter, currentMemberID)
+		res, err = h.startReferenceTypeNone(ctx, id, c, assistanceType, assistanceID, activeflowID, teamParameter, currentMemberID)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type")
 	}
+
+	if err != nil {
+		// A duplicate on a caller-specified id means the token's assignment is
+		// already spent. The reference-type condition is what makes this a
+		// safe discriminator rather than a guess: with ReferenceTypeNone the
+		// reference_id is uuid.Nil, which NULLs the generated
+		// active_reference_key, so the primary key is the only constraint on
+		// ai_aicalls that can collide. Without it, a future caller that pinned
+		// an id on a contact_case would get a uq_aicall_active_reference_key
+		// violation misreported as an id collision.
+		//
+		// Note this classifies any duplicate from the whole start path, not
+		// just the aicall insert. Later inserts on that path (init messages)
+		// use freshly minted ids against tables with no unique index beyond
+		// their own primary key, so a duplicate from them is unreachable in
+		// practice rather than merely unlikely.
+		//
+		// The sentinel does not wrap err: wrapping would preserve the
+		// "Duplicate entry" text and IsErrDuplicate would match it again in
+		// startReferenceTypeContactCase's retry loop, which is exactly where it
+		// must not be swallowed.
+		if id != uuid.Nil && referenceType == aicall.ReferenceTypeNone && dbhandler.IsErrDuplicate(err) {
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameAIManager,
+				"AICALL_ID_ALREADY_EXISTS",
+				"The requested aicall id is already in use.",
+			)
+		}
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // startReferenceTypeCall starts a new aicall with reference type call
 func (h *aicallHandler) startReferenceTypeCall(
 	ctx context.Context,
+	id uuid.UUID,
 	a *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
@@ -225,7 +269,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 	}
 
 	// start ai call
-	res, err := h.startAIcallByRealtime(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, false, teamParameter, currentMemberID)
+	res, err := h.startAIcallByRealtime(ctx, id, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeCall, referenceID, cb.ID, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 	}
@@ -244,6 +288,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 // startReferenceTypeConversation starts a new aicall with reference type conversation
 func (h *aicallHandler) startReferenceTypeConversation(
 	ctx context.Context,
+	id uuid.UUID,
 	a *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
@@ -283,7 +328,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 				log.Warnf("Could not terminate idle AIcall: %v", errEnd)
 			}
 		}
-		res, err = h.startAIcallByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, false, teamParameter, currentMemberID)
+		res, err = h.startAIcallByMessaging(ctx, id, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, false, teamParameter, currentMemberID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
@@ -404,6 +449,7 @@ const maxContactCaseCreateRetries = 3
 // the guard fails open and the retry proceeds.
 func (h *aicallHandler) startReferenceTypeContactCase(
 	ctx context.Context,
+	id uuid.UUID,
 	a *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
@@ -421,7 +467,16 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 
 	var lastErr error
 	for attempt := 0; attempt < maxContactCaseCreateRetries; attempt++ {
-		res, err := h.startAIcallByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeContactCase, referenceID, false, teamParameter, currentMemberID)
+		// A caller-specified id must never reach this loop. The retry below
+		// re-inserts on a duplicate, which is correct when the id is minted
+		// fresh each attempt but is an infinite no-op when it is pinned --
+		// the same key collides every time. No caller pins an id here today:
+		// AIcallCreate forces ReferenceTypeNone for direct tokens, which is
+		// the only path that pins, and Start's classification refuses to
+		// treat a duplicate as an id collision for any other reference type.
+		// If a future caller pins an id on contact_case, this loop needs to
+		// bail rather than retry.
+		res, err := h.startAIcallByMessaging(ctx, id, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeContactCase, referenceID, false, teamParameter, currentMemberID)
 		if err == nil {
 			log.WithField("aicall", res).Debugf("Created aicall for contact_case. aicall_id: %s", res.ID)
 
@@ -605,6 +660,7 @@ func (h *aicallHandler) checkContactCaseRecreateRateLimit(referenceID uuid.UUID,
 // startReferenceTypeNone starts a new aicall with no reference
 func (h *aicallHandler) startReferenceTypeNone(
 	ctx context.Context,
+	id uuid.UUID,
 	c *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
@@ -619,7 +675,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 	})
 
 	// start ai call
-	tmp, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeNone, uuid.Nil, false, teamParameter, currentMemberID)
+	tmp, err := h.startAIcallByMessaging(ctx, id, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeNone, uuid.Nil, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall with no reference")
 	}
@@ -992,6 +1048,7 @@ func mergeParameters(aiParam, teamParam map[string]any) map[string]any {
 
 func (h *aicallHandler) startAIcallByRealtime(
 	ctx context.Context,
+	id uuid.UUID,
 	a *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
@@ -1018,7 +1075,7 @@ func (h *aicallHandler) startAIcallByRealtime(
 		aicall.MetaKeyPromptSnapshots:  snapshots,
 		aicall.MetaKeyAutoAuditEnabled: autoAudit,
 	}
-	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
+	res, err := h.Create(ctx, id, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
 		confbridgeID, pipecatcallID, currentMemberID, parameter, metadata)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
@@ -1049,6 +1106,7 @@ func (h *aicallHandler) startAIcallByRealtime(
 
 func (h *aicallHandler) startAIcallByMessaging(
 	ctx context.Context,
+	id uuid.UUID,
 	a *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
@@ -1074,7 +1132,7 @@ func (h *aicallHandler) startAIcallByMessaging(
 		aicall.MetaKeyPromptSnapshots:  snapshots,
 		aicall.MetaKeyAutoAuditEnabled: autoAudit,
 	}
-	res, err := h.CreateByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
+	res, err := h.CreateByMessaging(ctx, id, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
 		pipecatcallID, currentMemberID, parameter, metadata)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
@@ -1118,7 +1176,7 @@ func (h *aicallHandler) StartTask(ctx context.Context, assistanceType aicall.Ass
 		return nil, errors.Wrap(err, "could not resolve ai config")
 	}
 
-	res, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, true, teamParameter, currentMemberID)
+	res, err := h.startAIcallByMessaging(ctx, uuid.Nil, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeTask, uuid.Nil, true, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not start AIcall")
 	}

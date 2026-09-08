@@ -24,17 +24,17 @@ func Test_ContactCreate(t *testing.T) {
 	type test struct {
 		name string
 
-		agent        *auth.AuthIdentity
-		firstName    string
-		lastName     string
-		displayName  string
-		company      string
-		jobTitle     string
-		source       string
-		externalID   string
-		notes        string
-		addresses    []cmrequest.AddressCreate
-		tagIDs       []uuid.UUID
+		agent       *auth.AuthIdentity
+		firstName   string
+		lastName    string
+		displayName string
+		company     string
+		jobTitle    string
+		source      string
+		externalID  string
+		notes       string
+		addresses   []cmrequest.AddressCreate
+		tagIDs      []uuid.UUID
 
 		responseContact *cmcontact.Contact
 		expectRes       *cmcontact.WebhookMessage
@@ -51,16 +51,16 @@ func Test_ContactCreate(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
-			firstName:    "John",
-			lastName:     "Doe",
-			displayName:  "John Doe",
-			company:      "Acme",
-			jobTitle:     "Engineer",
-			source:       "api",
-			externalID:   "ext-123",
-			notes:        "test note",
-			addresses: []cmrequest.AddressCreate{},
-			tagIDs:       []uuid.UUID{},
+			firstName:   "John",
+			lastName:    "Doe",
+			displayName: "John Doe",
+			company:     "Acme",
+			jobTitle:    "Engineer",
+			source:      "api",
+			externalID:  "ext-123",
+			notes:       "test note",
+			addresses:   []cmrequest.AddressCreate{},
+			tagIDs:      []uuid.UUID{},
 
 			responseContact: &cmcontact.Contact{
 				Identity: commonidentity.Identity{
@@ -836,12 +836,6 @@ func Test_ContactAddressDelete(t *testing.T) {
 		})
 	}
 }
-
-
-
-
-
-
 
 func Test_ContactTagAdd(t *testing.T) {
 

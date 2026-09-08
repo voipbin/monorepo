@@ -14,10 +14,15 @@ import (
 )
 
 // WebchatV1SessionCreate sends a request to webchat-manager to create a session.
-func (r *requestHandler) WebchatV1SessionCreate(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string, referrer string) (*wcsession.Session, error) {
+//
+// id pins the new session's primary key; uuid.Nil lets webchat-manager generate
+// one. Only the direct-token path pins it, so the session matches the resource
+// the token is bound to.
+func (r *requestHandler) WebchatV1SessionCreate(ctx context.Context, id uuid.UUID, customerID uuid.UUID, widgetID uuid.UUID, pageURL string, referrer string) (*wcsession.Session, error) {
 	uri := "/v1/sessions"
 
 	data := &wcrequest.V1DataSessionsPost{
+		ID:         id,
 		CustomerID: customerID,
 		WidgetID:   widgetID,
 		PageURL:    pageURL,

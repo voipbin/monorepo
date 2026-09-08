@@ -50,6 +50,7 @@ type AIcallHandler interface {
 
 	Start(
 		ctx context.Context,
+		id uuid.UUID,
 		assistanceType aicall.AssistanceType,
 		assistanceID uuid.UUID,
 		activeflowID uuid.UUID,
