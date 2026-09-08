@@ -118,6 +118,16 @@ simocosta317과 동일 패턴이며 3개월 먼저 발생했고 **아무도 신�
 
 ## 7. 자격증명 노출: VOIP-1491로 다 닫히지 않는다
 
+> **2026-09-09 정정.** 이 절과 9절 item 3의 "login/password-forgot/unregister/direct token/fail-open을
+> 전부 VOIP-1491 범위에 넣어야 한다"는 권고는 **부분적으로 틀렸다.**
+> 검증 결과 `Authenticate()`는 서비스 전체에 두 곳뿐이고 양쪽 모두 바로 뒤에 `EnforceAccountStatus()`가
+> 붙어 있어, **인증을 받고 게이트를 건너뛰는 경로는 없다.** direct token은 `AuthBoot`이 이미
+> `StatusActive`를 요구해 발급 자체가 막혀 있고, `/auth/unregister`는 `Freeze()`/`Recover()`의
+> `status` CAS 때문에 이미 죽은 분기다.
+> 다만 **login은 다른 이유로 범위에 남는다**: 상태 검사가 없어 7일짜리 JWT를 무제한 재발급할 수 있고,
+> 이것이 fail-open과 조합되면 증폭 경로가 된다.
+> 상세와 최종 범위는 `docs/plans/2026-09-09-block-expired-account-gate-design.md` §2-4, §2-5 참조.
+
 **accesskey 97개** — 최단 만료 2026-12-31, 최장 2027-09-06. **90일 내 자연 만료 0건**
 (180일 내 2건). 아무것도 하지 않으면 4~12개월 더 살아있다.
 
@@ -200,7 +210,9 @@ simocosta317과 동일 패턴이며 3개월 먼저 발생했고 **아무도 신�
    실사용 고객이 3개월째 갇혀 있다. VOIP-1490 배포 이후라 재발송 자가 복구도 가능하나
    (agent가 살아있으므로 대상에 해당), 3개월 방치는 우리 책임이므로 능동 조치가 맞다.
 
-3. **accesskey 97개 처리 방식 결정**
+3. **accesskey 97개 처리 방식 결정** (2026-09-09 정정: 아래 (a)/(b) 중 **(a)로 결정**됐고,
+   VOIP-1491의 실제 범위는 게이트 + `AuthLogin` 상태 검사 + fail-open 관측 3가지로 축소됐다.
+   `docs/plans/2026-09-09-block-expired-account-gate-design.md` 참조)
    - (a) VOIP-1491 우선 배포 — 데이터 무변경, 되돌리기 쉬움. **단 7절대로 자격증명 자체는 남는다**
    - (b) accesskey 즉시 폐기 — 즉효이나 되돌리기 어렵고, 복구된 고객은 재발급 필요
    VOIP-1491을 곧 낼 수 있다면 (a)로 시작하되, **login/password-forgot 경로와 fail-open까지
