@@ -331,7 +331,7 @@ A direct token is bound to exactly one resource: the ``allowed_resource_id`` abo
 
 
 Boot refresh (Direct Token) — ``POST /auth/boot/refresh``
----------------------------------------------------------------
+---------------------------------------------------------
 Reissues a direct token while keeping the same ``allowed_resource_id``, so a conversation in progress survives the 4-hour token expiry. Call it before the token expires; the widget SDKs do this automatically.
 
 Unlike ``POST /auth/boot`` this endpoint is authenticated: present the current direct token as ``Bearer <token>``. The assignment is copied from that token and is never read from the request body, so a caller cannot name a resource it does not already hold.

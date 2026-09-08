@@ -467,6 +467,15 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 
 	var lastErr error
 	for attempt := 0; attempt < maxContactCaseCreateRetries; attempt++ {
+		// A caller-specified id must never reach this loop. The retry below
+		// re-inserts on a duplicate, which is correct when the id is minted
+		// fresh each attempt but is an infinite no-op when it is pinned --
+		// the same key collides every time. No caller pins an id here today:
+		// AIcallCreate forces ReferenceTypeNone for direct tokens, which is
+		// the only path that pins, and Start's classification refuses to
+		// treat a duplicate as an id collision for any other reference type.
+		// If a future caller pins an id on contact_case, this loop needs to
+		// bail rather than retry.
 		res, err := h.startAIcallByMessaging(ctx, id, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeContactCase, referenceID, false, teamParameter, currentMemberID)
 		if err == nil {
 			log.WithField("aicall", res).Debugf("Created aicall for contact_case. aicall_id: %s", res.ID)

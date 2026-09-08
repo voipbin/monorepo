@@ -328,7 +328,7 @@ rev10은 발급과 강제를 함께 배포하면 "최대 4시간 동안 모든 �
 
 **설계 §7 중 발급·배관에 해당하는 항목 전부.** 명시적으로:
 
-- [x] `AuthBoot`이 5필드를 채우는지. `AllowedResourceID`가 매 부팅마다 다른지. `BootExpire`가 부팅+24h인지. `ScopeVersion == 1`인지
+- [x] `AuthBoot`이 5필드를 채우는지. `AllowedResourceID`가 매 부팅마다 다른지. `BootExpire`가 부팅+24h인지. `ScopeVersion == DirectScopeVersionCurrent`인지
 - [x] `BootResponse`에 `allowed_resource_id`와 **`scope_version`**이 실려 나가는지
 - [x] **부팅 응답의 `allowed_resource_id`·`scope_version`이 발급된 JWT의 `direct` 클레임 값과 동일한지.**
       단일 출처 규칙(§2.2)의 회귀 고정
