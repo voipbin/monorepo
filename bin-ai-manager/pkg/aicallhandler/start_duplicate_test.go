@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	fmvariable "monorepo/bin-flow-manager/models/variable"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -240,10 +241,22 @@ func Test_Start_callerSpecifiedID_nonNoneReferenceIsNotRemapped(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("99990000-0000-0000-0000-000000000009")).AnyTimes()
 	mockUtil.EXPECT().TimeGetCurTime().Return("2026-09-09T00:00:00.000000Z").AnyTimes()
 	mockDB.EXPECT().AIcallGetByReferenceID(gomock.Any(), referenceID).Return(nil, dbhandler.ErrNotFound).AnyTimes()
-	mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("no variables")).AnyTimes()
+
+	// The conversation path has two gates before the insert. Both must be
+	// satisfied or the test passes for the wrong reason: an earlier revision
+	// returned an error here, so Start bailed before the classification ran
+	// and the assertion held against a plain wrapped error rather than a
+	// duplicate.
+	mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), gomock.Any()).Return(&fmvariable.Variable{
+		Variables: map[string]string{"voipbin.conversation_message.text": "hi"},
+	}, nil).AnyTimes()
+
+	// Counted, not AnyTimes: if the path ever short-circuits before the insert
+	// again, gomock's missing-call check fails the test instead of letting it
+	// go quietly vacuous.
 	mockDB.EXPECT().AIcallCreate(gomock.Any(), gomock.Any()).Return(
 		fmt.Errorf("could not execute. err: Error 1062 (23000): Duplicate entry"),
-	).AnyTimes()
+	)
 
 	_, err := h.Start(t.Context(), pinnedID, aicall.AssistanceTypeAI, a.ID, uuid.Nil,
 		aicall.ReferenceTypeConversation, referenceID)

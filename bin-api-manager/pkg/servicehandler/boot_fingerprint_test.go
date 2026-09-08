@@ -49,3 +49,27 @@ func Test_directHashFingerprint_isKeyed(t *testing.T) {
 		t.Errorf("Wrong fingerprint length. expect: %d, got: %d", sha256.Size*2, len(got1))
 	}
 }
+
+// Test_directHashFingerprint_goldenVector pins the exact derivation, including
+// the domain-separation prefix.
+//
+// The prefix is otherwise only ever compared against itself, so removing it
+// would leave every other test green -- and it is baked into live token claims.
+// A silent change to it would 401 every in-flight refresh at deploy, because
+// the stored fingerprint would no longer match the recomputed one.
+//
+// If this test fails after an intentional derivation change, that change is a
+// breaking one: it invalidates outstanding tokens and needs a scope version
+// bump alongside it.
+func Test_directHashFingerprint_goldenVector(t *testing.T) {
+	h := serviceHandler{jwtKey: []byte("golden-key")}
+
+	const (
+		hash = "direct.a1b2c3d4e5f6"
+		want = "e6db509129fa40d00c82c270fc915a34af1cad3c5b4e65a033fb9d99787c5566"
+	)
+
+	if got := h.directHashFingerprint(hash); got != want {
+		t.Errorf("Fingerprint derivation changed.\nexpect: %s\ngot:    %s", want, got)
+	}
+}

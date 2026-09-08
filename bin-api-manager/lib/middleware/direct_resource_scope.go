@@ -59,6 +59,11 @@ func DirectResourceScope() gin.HandlerFunc {
 			log.WithFields(logrus.Fields{
 				"reject_reason": reason,
 				"customer_id":   a.CustomerID,
+				// The raw path parameter, so "which resource did this visitor
+				// ask for" stays answerable. c.FullPath() above is the
+				// registered pattern, not the request URL, so this is the only
+				// place that value appears.
+				"requested_id": c.Param("id"),
 			}).Info(msg)
 			abortPermissionDenied(c, "DIRECT_SCOPE_VIOLATION", "This endpoint is not available for this token.")
 		}
