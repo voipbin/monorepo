@@ -132,16 +132,33 @@ const (
 	// rejects the duplicate email.
 ```
 
-- [ ] **Step 5: 검증 워크플로를 돌린다**
+- [ ] **Step 5: 상수를 단언하는 기존 테스트를 고친다**
+
+`pkg/customerhandler/cleanup_test.go:18-22`의 `TestCleanupConstants`는 상수 값을 직접 단언하므로 Step 2 직후 **반드시 깨진다.** 아래로 바꾸고, 지금까지 테스트가 없던 `emailVerifyTokenTTL`도 함께 고정한다.
+
+```go
+func TestCleanupConstants(t *testing.T) {
+	if unverifiedMaxAge != 72*time.Hour {
+		t.Errorf("unverifiedMaxAge = %v, expected %v", unverifiedMaxAge, 72*time.Hour)
+	}
+	// The window must stay strictly longer than the link TTL, otherwise a user
+	// whose link expired has no interval in which to ask for a new one.
+	if emailVerifyTokenTTL >= unverifiedMaxAge {
+		t.Errorf("emailVerifyTokenTTL = %v, expected less than unverifiedMaxAge %v", emailVerifyTokenTTL, unverifiedMaxAge)
+	}
+}
+```
+
+- [ ] **Step 6: 검증 워크플로를 돌린다**
 
 ```bash
 cd bin-customer-manager
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-기대: 전부 통과. `cleanup_test.go`는 아직 옛 동작을 단언하지만 이 시점에는 동작이 그대로이므로 통과해야 정상이다.
+기대: 전부 통과. 통과하지 않으면 Step 5를 빠뜨린 것이다.
 
-- [ ] **Step 6: 커밋**
+- [ ] **Step 7: 커밋**
 
 커밋 메시지(요약 한 줄 + 서비스 접두사 불릿):
 
@@ -152,6 +169,7 @@ Extend email verification window and fix stale copy
 - bin-customer-manager: Extend unverifiedMaxAge from 1h to 72h
 - bin-customer-manager: Correct verification email body to say 24 hours
 - bin-customer-manager: Replace the signup comment that claimed re-signup resends the email
+- bin-customer-manager: Update TestCleanupConstants and pin the TTL-below-window invariant
 ```
 
 ---
@@ -255,11 +273,18 @@ go test ./pkg/customerhandler/ -run Test_CleanupUnverified_DoesNotSetTMDelete -v
 	}
 ```
 
-`h.utilHandler.TimeNow()` 호출이 사라지므로, 그 변수(`now`)와 미사용 import를 정리한다.
+`h.utilHandler.TimeNow()` 호출이 사라지므로 그 변수(`now`)를 지운다. `time`은 `unverifiedMaxAge`와 `cutoff`가 계속 쓰므로 import는 그대로 둔다.
 
 - [ ] **Step 4: 기존 테스트를 새 기대값에 맞춘다**
 
-`cleanup_test.go`에서 `FieldTMDelete`를 단언하던 기존 케이스의 기대 필드를 `{FieldStatus: expired}`만 남기도록 고치고, `CustomerList` 기대 필터에도 `FieldStatus: initial`을 추가한다.
+세 군데를 모두 손봐야 한다. gomock은 충족되지 않은 `EXPECT()`를 `mc.Finish()`에서 "missing call(s)"로 실패시키므로, `TimeNow()` 기대를 남겨두면 전부 깨진다.
+
+1. `cleanup_test.go:93` — `mockUtil.EXPECT().TimeNow().Return(&now)` 삭제
+2. `cleanup_test.go:153`, `:158` (`Test_CleanupUnverified_updateError`) — `TimeNow()` 기대 두 개 삭제
+3. 위 두 테스트에서 `mockUtil` 변수와 `utilhandler` import, `customerHandler` 리터럴의 `utilHandler:` 필드가 더 이상 안 쓰이면 함께 제거
+4. `cleanup_test.go:99-102`의 `DoAndReturn` 안에서 `tm_delete`를 단언하는 부분을 제거하고 `{FieldStatus: expired}`만 남긴다
+
+**주의:** 기존 세 테스트는 `CustomerList` 기대에 `gomock.Any()`를 쓰고 있으므로(`:87`, `:148`, `:179`) 필터 기대값은 손댈 필요가 없다.
 
 - [ ] **Step 5: 테스트를 돌린다**
 
@@ -317,7 +342,8 @@ func Test_EmailVerify_ClearsTMDelete(t *testing.T) {
 	ctx := context.Background()
 	token := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
-	tmDelete := "2026-09-06 19:00:03.569129"
+	// customer.Customer.TMDelete is *time.Time, not *string
+	tmDelete := time.Date(2026, 9, 6, 19, 0, 3, 0, time.UTC)
 
 	// a legacy row: expired AND soft-deleted by the old cleanup behavior
 	expiredCustomer := &customer.Customer{
@@ -401,11 +427,46 @@ func Test_EmailVerify_RejectsDeletedAndFrozen(t *testing.T) {
 }
 ```
 
+또한 이미 인증된 `active` 고객이 낡은 토큰을 클릭하는 경우가 그대로 성공 처리되는지 고정한다. 기존 `Test_EmailVerify_alreadyVerified`(signup_test.go:306)는 `Status`를 빈 문자열로 두고 있어, 누군가 가드를 허용목록으로 바꿔도 통과해버린다.
+
+```go
+func Test_EmailVerify_ActiveVerifiedTokenStillSucceeds(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{cache: mockCache, db: mockDB}
+
+	ctx := context.Background()
+	token := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	customerID := uuid.FromStringOrNil("22222222-3333-4444-5555-666666666666")
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, token).Return(customerID, nil)
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		Status:        customer.StatusActive,
+		EmailVerified: true,
+	}, nil)
+	// the stale token must still be consumed
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, token).Return(nil)
+
+	// An allow-list of {initial, expired} would reject this and break the
+	// idempotent path the design's deny-list decision exists to protect.
+	if _, err := h.EmailVerify(ctx, token); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+```
+
 - [ ] **Step 2: 실패를 확인한다**
 
 ```bash
 cd bin-customer-manager
-go test ./pkg/customerhandler/ -run 'Test_EmailVerify_(ClearsTMDelete|RejectsDeletedAndFrozen)' -v
+go test ./pkg/customerhandler/ -run 'Test_EmailVerify_(ClearsTMDelete|RejectsDeletedAndFrozen|ActiveVerifiedTokenStillSucceeds)' -v
 ```
 
 기대: FAIL. 현재 구현은 `tm_delete`를 갱신 필드에 넣지 않고 상태 가드도 없다.
@@ -464,7 +525,7 @@ Clear tm_delete and guard status on email verification
 
 - bin-customer-manager: Clear tm_delete in EmailVerify so legacy expired rows recover fully
 - bin-customer-manager: Reject deleted and frozen customers before the already-verified early return
-- bin-customer-manager: Add tests for legacy row recovery and the status deny-list
+- bin-customer-manager: Add tests for legacy row recovery, the status deny-list, and stale-token idempotency
 ```
 
 ---
@@ -552,7 +613,122 @@ func (h *handler) ResendCountIncr(ctx context.Context, customerID uuid.UUID, ttl
 }
 ```
 
-- [ ] **Step 4: mock을 재생성한다**
+- [ ] **Step 4: 테스트를 쓴다**
+
+TTL 복구는 설계가 "반드시 포함한다"고 못박은 부분이므로 반드시 테스트한다. 이게 없으면 남용 방지 장치가 이 티켓이 만드는 복구 경로 자체를 영구히 막아버릴 수 있다.
+
+`bin-customer-manager`에는 아직 `miniredis`가 없다. 추가한다. 형제 서비스 4곳(`bin-ai-manager`, `bin-webhook-manager`, `bin-contact-manager`, `bin-sentinel-manager`)이 이미 `v2.36.1`을 쓰고 있으므로 같은 버전으로 맞춘다.
+
+```bash
+cd bin-customer-manager
+go get github.com/alicebob/miniredis/v2@v2.36.1
+```
+
+`pkg/cachehandler/handler_test.go`를 새로 만든다.
+
+```go
+package cachehandler
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/alicebob/miniredis/v2"
+	"github.com/go-redis/redis/v8"
+	"github.com/gofrs/uuid"
+)
+
+func newTestHandler(t *testing.T) (*handler, *miniredis.Miniredis) {
+	t.Helper()
+
+	s := miniredis.RunT(t)
+	return &handler{
+		Cache: redis.NewClient(&redis.Options{Addr: s.Addr()}),
+	}, s
+}
+
+func Test_ResendCooldownAcquire(t *testing.T) {
+	h, _ := newTestHandler(t)
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+
+	ok, err := h.ResendCooldownAcquire(ctx, customerID, time.Minute)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !ok {
+		t.Errorf("Wrong match. expect: true, got: false")
+	}
+
+	ok, err = h.ResendCooldownAcquire(ctx, customerID, time.Minute)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if ok {
+		t.Errorf("Wrong match. expect: false, got: true")
+	}
+}
+
+func Test_ResendCountIncr_ArmsTTL(t *testing.T) {
+	h, s := newTestHandler(t)
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+
+	n, err := h.ResendCountIncr(ctx, customerID, time.Hour)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if n != 1 {
+		t.Errorf("Wrong match. expect: 1, got: %d", n)
+	}
+
+	key := resendCountKeyPrefix + customerID.String()
+	if s.TTL(key) <= 0 {
+		t.Errorf("Wrong match. expect: positive ttl, got: %v", s.TTL(key))
+	}
+}
+
+func Test_ResendCountIncr_RepairsMissingTTL(t *testing.T) {
+	h, s := newTestHandler(t)
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	key := resendCountKeyPrefix + customerID.String()
+
+	// simulate the crash window: the counter exists with no expiry, which would
+	// otherwise bar this customer from resending forever
+	if err := s.Set(key, "3"); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if s.TTL(key) != 0 {
+		t.Fatalf("Wrong match. expect: no ttl, got: %v", s.TTL(key))
+	}
+
+	n, err := h.ResendCountIncr(ctx, customerID, time.Hour)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if n != 4 {
+		t.Errorf("Wrong match. expect: 4, got: %d", n)
+	}
+	if s.TTL(key) <= 0 {
+		t.Errorf("Wrong match. expect: repaired ttl, got: %v", s.TTL(key))
+	}
+}
+```
+
+`miniredis.TTL`은 만료가 없으면 `0`을 반환한다. `handler` 구조체의 실제 필드명(`Cache`)과 생성 방식은 `pkg/cachehandler/main.go`의 `NewHandler`를 보고 맞춘다.
+
+- [ ] **Step 5: 테스트를 돌린다**
+
+```bash
+cd bin-customer-manager
+go test ./pkg/cachehandler/ -v
+```
+
+기대: 3개 전부 PASS.
+
+- [ ] **Step 6: mock을 재생성한다**
 
 ```bash
 cd bin-customer-manager
@@ -562,20 +738,21 @@ git status --short pkg/cachehandler/
 
 기대: `pkg/cachehandler/mock_main.go`가 수정됨.
 
-- [ ] **Step 5: 검증 워크플로**
+- [ ] **Step 7: 검증 워크플로**
 
 ```bash
 cd bin-customer-manager
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-- [ ] **Step 6: 커밋**
+- [ ] **Step 8: 커밋**
 
 ```
 Add resend cooldown and daily counter cache primitives
 
 - bin-customer-manager: Add ResendCooldownAcquire keyed on customer_id
 - bin-customer-manager: Add ResendCountIncr with TTL repair to avoid permanent lockout
+- bin-customer-manager: Add miniredis-backed cachehandler tests covering TTL repair
 - bin-customer-manager: Regenerate cachehandler mock
 ```
 
@@ -755,6 +932,44 @@ func Test_EmailVerifyResend_RespectsCooldownAndCap(t *testing.T) {
 }
 ```
 
+복수 행 선택도 고정한다. 이 케이스가 없으면 `c := tmps[0]`으로 구현해도 위 테스트가 전부 통과해버린다.
+
+```go
+func Test_EmailVerifyResend_SkipsDeletedRowAndPicksOlderRecoverable(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &customerHandler{db: mockDB, cache: mockCache, reqHandler: mockReq}
+
+	ctx := context.Background()
+	newerDeletedID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001")
+	olderExpiredID := uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-000000000002")
+	email := "shared@test.com"
+
+	// CustomerList returns tm_create DESC, so the deleted row comes first.
+	mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return([]*customer.Customer{
+		{ID: newerDeletedID, Email: email, EmailVerified: false, Status: customer.StatusDeleted},
+		{ID: olderExpiredID, Email: email, EmailVerified: false, Status: customer.StatusExpired},
+	}, nil)
+
+	mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return([]amagent.Agent{{}}, nil)
+
+	// the older recoverable row must be the one acted on
+	mockCache.EXPECT().ResendCooldownAcquire(ctx, olderExpiredID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().ResendCountIncr(ctx, olderExpiredID, gomock.Any()).Return(int64(1), nil)
+	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), olderExpiredID, gomock.Any()).Return(nil)
+	mockReq.EXPECT().EmailV1EmailSend(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+
+	if err := h.EmailVerifyResend(ctx, email); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+```
+
 `AgentV1AgentList`의 실제 시그니처와 반환 타입(`[]amagent.Agent` vs `[]*amagent.Agent`)은 `bin-common-handler/pkg/requesthandler/main.go`에서 확인하고 테스트를 맞춘다. `validateCreate`(customerhandler/customer.go:78-95)가 이미 같은 호출을 하므로 그 사용법을 그대로 따른다.
 
 - [ ] **Step 4: 실패를 확인한다**
@@ -768,7 +983,7 @@ go test ./pkg/customerhandler/ -run Test_EmailVerifyResend -v
 
 - [ ] **Step 5: 구현한다**
 
-`pkg/customerhandler/signup.go`에 추가한다.
+`pkg/customerhandler/signup.go`에 추가한다. 이 파일은 아직 `amagent "monorepo/bin-agent-manager/models/agent"`를 import하지 않으므로 추가한다(`customer.go`가 같은 별칭으로 쓰고 있으니 그대로 맞춘다).
 
 ```go
 // EmailVerifyResend re-issues and re-sends the signup verification email for the
@@ -986,20 +1201,33 @@ func (h *listenHandler) processV1CustomersEmailVerifyResendPost(ctx context.Cont
 }
 ```
 
-- [ ] **Step 5: 검증 워크플로**
+- [ ] **Step 5: 서비스 문서의 라우팅 표를 갱신한다**
+
+루트 `CLAUDE.md`의 "CRITICAL: Service docs sync"가 `pkg/listenhandler/main.go` 변경 시 `docs/architecture.md`의 라우팅 표를 같은 커밋에서 갱신하도록 요구한다. `scripts/check-service-docs.sh`가 불일치를 경고한다.
+
+`bin-customer-manager/docs/architecture.md:48`의 `POST /v1/customers/email_verify` 행 바로 아래에 추가한다.
+
+```
+| POST | `/v1/customers/email_verify_resend` | Re-issue and re-send the signup verification email |
+```
+
+실제 표의 열 구성은 파일을 열어 확인하고 그대로 맞춘다.
+
+- [ ] **Step 6: 검증 워크플로**
 
 ```bash
 cd bin-customer-manager
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-- [ ] **Step 6: 커밋**
+- [ ] **Step 7: 커밋**
 
 ```
 Add email_verify_resend RPC route to customer-manager
 
 - bin-customer-manager: Add V1DataCustomersEmailVerifyResendPost request struct
 - bin-customer-manager: Route POST /v1/customers/email_verify_resend to EmailVerifyResend
+- bin-customer-manager: Add the new route to the architecture doc routing table
 ```
 
 ---
@@ -1118,7 +1346,7 @@ func (h *serviceHandler) CustomerEmailVerifyResend(ctx context.Context, email st
 
 - [ ] **Step 3: 실패하는 HTTP 핸들러 테스트를 쓴다**
 
-`lib/service/signup_test.go`에 추가한다. 기존 signup 테스트의 gin 테스트 컨텍스트 구성 방식을 그대로 따를 것.
+`lib/service/signup_test.go`에 추가한다. 아래 스니펫은 `gin.CreateTestContext` + 핸들러 직접 호출 방식이다. 기존 파일이 `r.Use(...)` + `r.ServeHTTP` 방식을 쓰고 있으면 **둘 중 하나로 통일**한다(섞지 말 것). 스니펫은 `fmt`와 `gin.SetMode(gin.TestMode)`가 필요하다. 기존 import에 `fmt`가 없으면 추가한다.
 
 ```go
 func Test_PostCustomerEmailVerifyResend_AlwaysReturns200(t *testing.T) {
@@ -1157,6 +1385,11 @@ func Test_PostCustomerEmailVerifyResend_AlwaysReturns200(t *testing.T) {
 			// downstream error must never surface either.
 			if w.Code != 200 {
 				t.Errorf("Wrong match. expect: 200, got: %d", w.Code)
+			}
+			// httptest.NewRecorder() starts at Code 200, so the status alone would
+			// also pass for a handler that writes nothing. Assert the body too.
+			if w.Body.String() != "{}" {
+				t.Errorf("Wrong match. expect: {}, got: %s", w.Body.String())
 			}
 		})
 	}
@@ -1351,6 +1584,9 @@ Offer verification resend on the failed verification page
 - Create: `bin-openapi-manager/openapi/paths/auth/email-verify-resend.yaml`
 - Modify: `bin-openapi-manager/openapi/openapi.yaml` (paths 항목 + `components/schemas` :8064 부근)
 - Modify: `bin-api-manager/docsdev/source/auth_overview.rst` (표 L25-68, rate limit 설명 L72, 수명주기 다이어그램 L84-92, 엔드포인트 절 L175)
+- Modify: `bin-api-manager/docsdev/source/customer_overview.rst` (수명주기 다이어그램 :215-222, expired 상태 설명 :240-241)
+- Modify: `bin-api-manager/docsdev/source/quickstart_signup.rst` (:12, :59 인증 흐름 설명)
+- Modify: `bin-api-manager/docsdev/build/` (Sphinx 재빌드 결과, git 추적됨)
 
 - [ ] **Step 1: path 파일을 만든다**
 
@@ -1440,6 +1676,26 @@ cd bin-api-manager && go build ./...
 3. 수명주기 다이어그램(L84-92) — 현재 만료를 종착 상태로 그리고 있다. 만료에서 재발송을 거쳐 활성으로 돌아오는 경로를 추가한다
 4. 엔드포인트 절(L175) — 신규 엔드포인트 설명 추가
 
+`customer_overview.rst`도 함께 고친다. 두 곳이 만료를 종착 상태로 서술하고 있어 이 변경 이후 사실과 어긋난다.
+
+5. 수명주기 다이어그램(:215-222) — 만료에서 활성으로 돌아오는 경로 추가
+6. `expired` 상태 설명(:240-241) — 현재 "Unverified signup expired. Account was never activated."로 끝난다. 재발송으로 복구 가능하다는 문장 추가
+
+`quickstart_signup.rst`(:12, :59)의 인증 흐름 설명에도 링크가 만료되면 재발송을 요청할 수 있다는 한 문장을 추가한다.
+
+- [ ] **Step 5-1: Sphinx를 클린 재빌드하고 결과를 강제 추가한다**
+
+루트 `CLAUDE.md`의 "CRITICAL: RST docs sync"가 요구하는 필수 단계다. `docsdev/build/`는 루트 `.gitignore`에 걸려 있지만 **실제로는 git이 추적한다**(현재 824개 파일). RST만 고치고 빌드를 갱신하지 않으면 소스와 배포 HTML이 어긋난 채로 PR이 나간다.
+
+```bash
+cd bin-api-manager/docsdev
+rm -rf build && python3 -m sphinx -M html source build
+cd ../..
+git add -f bin-api-manager/docsdev/build/
+```
+
+**증분 빌드를 쓰지 말 것.** 반드시 `rm -rf build`로 시작한다. 증분 빌드는 페이지 간 상호 참조를 놓친다.
+
 - [ ] **Step 6: 검증 워크플로 (두 서비스 모두)**
 
 ```bash
@@ -1457,6 +1713,9 @@ Document the email verification resend endpoint
 - bin-openapi-manager: Add the /auth/email-verify-resend path and request schema
 - bin-openapi-manager: Regenerate model types
 - bin-api-manager: Add the endpoint to the auth overview table, rate limit note, and lifecycle diagram
+- bin-api-manager: Update the customer lifecycle diagram and expired status description
+- bin-api-manager: Mention the resend path in the signup quickstart
+- bin-api-manager: Rebuild the docsdev HTML
 ```
 
 ---
@@ -1479,6 +1738,7 @@ git status --short
 ```
 
 `vendor/`는 `.gitignore`에 걸려 나오면 안 된다. 나오면 `git add -f`를 쓰지 말고 왜 추적되는지 확인한다.
+반대로 `bin-api-manager/docsdev/build/`는 추적 대상이므로 Task 10에서 `git add -f`로 반드시 포함시킨다.
 
 - [ ] **main과의 충돌을 확인한다**
 
@@ -1509,6 +1769,7 @@ verification window no longer leaves an account permanently unrecoverable.
 - bin-api-manager: Add POST /auth/email-verify-resend on the public auth group
 - bin-api-manager: Offer resend on the failed verification page
 - bin-openapi-manager: Document the new endpoint and regenerate model types
+- bin-api-manager: Update the auth, customer, and signup quickstart docs and rebuild the HTML
 ```
 
 ## 배포 후 확인 (참고)

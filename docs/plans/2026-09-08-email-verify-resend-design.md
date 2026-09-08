@@ -192,9 +192,10 @@ Response: 항상 200 {}
 `RateLimit("auth_public")`을 제공한다. 인증이 필요한 `authProtected` 그룹(:306-312)에 넣으면
 안 된다. 복구 대상 사용자는 인증을 통과하지 못할 수 있기 때문이다.
 
-응답을 항상 200으로 고정하는 것은 `POST /auth/signup`의 기존 enumeration 방지 정책과 동일하다
-(lib/service/signup.go:70-73은 실패 시에도 200과 빈 바디를 반환한다). 형식이 잘못된 이메일도
-200을 반환한다. api-manager 바인딩은 `binding:"required"`만 하고 형식 검증은
+응답을 항상 200으로 고정하는 것은 `POST /auth/signup`이 처리 실패 시 200과 빈 바디를 반환하는
+정책(lib/service/signup.go:70-73)을 따른 것이다. 다만 **signup보다 엄격하다.** signup은 바디가
+깨졌을 때 `c.BindJSON`으로 400을 반환하지만(:38-42), 이 엔드포인트는 그 경우에도 200을 반환한다.
+형식이 잘못된 이메일도 마찬가지다. api-manager 바인딩은 `binding:"required"`만 하고 형식 검증은
 `utilHandler.EmailIsValid`로 customer-manager에서 이뤄지므로, 400을 내려면 별도 검증기를
 추가해야 하는데 그 이득이 없다.
 
@@ -269,8 +270,9 @@ customer-manager 계층에 두어야 한다.
 해당 고객이 **영구히 재발송 불가**가 된다. 남용 방지 장치가 이 티켓이 만들려는 복구 경로 자체를
 차단하는 형태가 되므로 반드시 포함한다.
 
-`cachehandler`에 `Incr`, `Expire`, `TTL` 프리미티브가 없으므로 추가한다
-(현재 `main.go:25-40` 인터페이스에 없음).
+이 순서는 `cachehandler`의 `ResendCountIncr` 안에 캡슐화한다. `customerhandler`는 Redis 명령을
+알 필요가 없다(기존 `VerifyLockAcquire`와 같은 방식). 현재 `main.go:25-40` 인터페이스에는
+해당 메서드가 없으므로 추가한다.
 
 어느 제한에 걸려도 **발송만 건너뛰고 응답은 200을 유지한다.**
 
@@ -335,7 +337,7 @@ expired 계정의 `/auth/unregister`는 (b) 전후 모두 **HTTP 400**을 반환
 | `bin-common-handler/pkg/requesthandler` | `CustomerV1CustomerEmailVerifyResend` |
 | `bin-customer-manager/pkg/listenhandler` | `/v1/customers/email_verify_resend` 라우팅 |
 | `bin-customer-manager/pkg/customerhandler` | 고객 조회/선택, 상태 분기, 쿨다운/상한, 토큰 발급, 발송 |
-| `bin-customer-manager/pkg/cachehandler` | 쿨다운/상한 키. 쿨다운용 신규 메서드(기존 `VerifyLockAcquire`는 잠금 전용이라 재사용 불가)와 상한용 `Incr`/`Expire`/`TTL` 프리미티브 추가 |
+| `bin-customer-manager/pkg/cachehandler` | 쿨다운/상한 키. `ResendCooldownAcquire`, `ResendCountIncr` 두 메서드를 추가한다. Redis 명령(`SetNX`, `Incr`, `Expire`, `TTL`)은 이 계층 안에 캡슐화하고 밖으로 노출하지 않는다. 기존 `VerifyLockAcquire`가 같은 방식이다 |
 | `bin-openapi-manager` | `openapi/paths/auth/email-verify-resend.yaml` 추가 |
 | `bin-api-manager/docsdev` | `auth_overview.rst` 갱신 |
 
@@ -393,7 +395,7 @@ best-effort 액션이며, 실패를 노출하면 enumeration 통로가 된다.
 | `EmailVerify` | 이미 `active` + 인증된 고객의 낡은 토큰은 기존대로 성공 처리하고 토큰을 삭제(멱등성) |
 | `EmailVerifyResend` | initial / expired / verified / frozen / 미존재 / **agent 없음** 6개 분기가 전부 200 |
 | `EmailVerifyResend` | agent 없는 expired 행에는 메일을 보내지 않음(3-4-1) |
-| `EmailVerifyResend` | 동일 이메일의 대소문자 변형이 같은 카운터를 사용(customer_id 키잉) |
+| `EmailVerifyResend` | 쿨다운/상한 키가 이메일이 아니라 `customer_id`로 만들어짐 (대소문자 변형 우회 방지의 실제 담보. collation 기반 대소문자 동일성 자체는 MariaDB 동작이라 단위 테스트로 재현 불가) |
 | `EmailVerifyResend` | 복수 행 매칭 시 `deleted` 제외 후 최신 `tm_create` 선택 |
 | 쿨다운 | 60초 내 2회차는 발송 생략, 응답은 200 |
 | 일일 상한 | 5회 초과 시 발송 생략. 카운터에 항상 TTL이 설정됨(영구 잠금 없음) |
