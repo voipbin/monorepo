@@ -13,6 +13,7 @@ Public endpoints — no authentication required.
 | HTTP Method | Path | Backend Service | Notes |
 |------------|------|----------------|-------|
 | POST | `/auth/boot` | bin-customer-manager | Initial bootstrap / login |
+| POST | `/auth/boot/refresh` | bin-direct-manager, bin-customer-manager | Reissue a direct token keeping its resource binding |
 | POST | `/auth/signup` | bin-customer-manager | New account registration |
 | POST | `/auth/email-verify` | bin-customer-manager | Email verification |
 | POST | `/auth/password-forgot` | bin-customer-manager | Send password reset email |

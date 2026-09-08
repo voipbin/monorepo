@@ -69,7 +69,9 @@ Requests pass through the following middleware layers before reaching a handler:
 
 7. **Customer frozen check** (`lib/middleware/authenticate.go`, `EnforceAccountStatus()`) — After authentication (and, for the `v1` group, after per-customer rate limiting), if the customer account status is `frozen`, all requests except `DELETE /auth/unregister` are rejected with `403 ACCOUNT_FROZEN`. `authProtected` chains `Authenticate() → EnforceAccountStatus()` directly (unchanged order); `v1` chains `Authenticate() → CustomerRateLimit() → EnforceAccountStatus()`.
 
-8. **Handler dispatch** — Routes to the concrete `server/` handler, which calls `pkg/servicehandler/`.
+8. **Direct token resource scope** (`lib/middleware/direct_resource_scope.go`, `DirectResourceScope()`) — **`v1` route group only.** For direct tokens, compares the `:id` path parameter against the token's `AllowedResourceID` and rejects a mismatch with `403`. Non-direct identities pass through untouched; routes with no path parameter pass through to the handler-side overwrite. Fail-closed on any route that has parameters but no `:id`. Must be registered before `RegisterHandlersWithOptions`, since gin snapshots a group's handler chain at route-registration time. See [auth.md](auth.md#direct-token-auth).
+
+9. **Handler dispatch** — Routes to the concrete `server/` handler, which calls `pkg/servicehandler/`.
 
 Public endpoints (no authentication required):
 - `POST /auth/signup`

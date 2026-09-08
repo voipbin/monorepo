@@ -43,6 +43,10 @@ Endpoint Summary
      - None (direct hash)
      - Exchange a direct hash for a 4-hour resource-scoped JWT.
    * - POST
+     - ``/auth/boot/refresh``
+     - Direct token
+     - Reissue a direct token without changing which resource it is bound to.
+   * - POST
      - ``/auth/password-forgot``
      - None
      - Request a password reset email.
@@ -289,9 +293,61 @@ Resolves a direct hash into a short-lived, resource-scoped JWT, for use cases wh
    * - ``expire``
      - String (ISO 8601)
      - Token expiry. Valid for 4 hours from issuance.
+   * - ``allowed_resource_id``
+     - UUID
+     - The single resource this token may act on, assigned at boot before the resource exists. The resource you create with this token takes this ID. You do not need to send it anywhere: the server takes the target from the token, so two visitors of the same public link cannot reach each other's conversation.
+   * - ``scope_version``
+     - Integer
+     - Version of the token's scope contract. If it is raised, every outstanding token becomes invalid at once and clients must boot again.
    * - ``resource_data``
      - Object, Optional
      - Present only for resource types with a registered public-display fetcher (currently ``webchat_widget``). Contains a ``public_display_config`` key with anonymous-visitor-safe display settings (e.g. theme). Omitted entirely when there is nothing to report; a fetch failure never fails the boot request itself.
+
+**What a direct token can and cannot do**
+
+A direct token is bound to exactly one resource: the ``allowed_resource_id`` above.
+
+* Creating a resource (``POST /aicalls``, ``POST /webchat_sessions``) produces a resource with that ID. A second creation attempt with the same token returns ``409``; boot again for a new assignment.
+* Requests that name a resource in the path (e.g. ``DELETE /aicalls/{id}``) are refused with ``403`` unless the ID matches the assignment.
+* Requests that name a resource in the body or query (e.g. ``POST /aimessages``) ignore the value you send and use the assignment instead.
+* Listing (``GET /aicalls``, ``GET /webchat_sessions``) is not available to direct tokens.
+* WebSocket topics of the form ``customer_id:<customer_id>:<resource_type>:<resource_id>`` are accepted only when ``<resource_id>`` is exactly the assignment, written as a canonical lower-case UUID. A trailing colon or a partial ID is refused.
+
+
+Boot refresh (Direct Token) - ``POST /auth/boot/refresh``
+-----------------------------------------------------------
+Reissues a direct token while keeping the same ``allowed_resource_id``, so a conversation in progress survives the 4-hour token expiry. Call it before the token expires; the widget SDKs do this automatically.
+
+Unlike ``POST /auth/boot`` this endpoint is authenticated: present the current direct token as ``Bearer <token>``. The assignment is copied from that token and is never read from the request body, so a caller cannot name a resource it does not already hold.
+
+**Request body**
+
+None.
+
+**Response - 200 OK**
+
+Same shape as ``POST /auth/boot``, except ``resource_data`` is omitted (the client already holds it from the original boot). ``allowed_resource_id`` and ``scope_version`` are unchanged; only ``expire`` moves.
+
+**Refreshing does not extend a session indefinitely**
+
+Each boot fixes an absolute ceiling and every reissued token inherits it unchanged, so refreshing cannot walk it forward. A refresh is also refused, with ``401``, when any of the following became true since the original boot:
+
+* the direct link was deleted, or its hash was regenerated (this is how you revoke a leaked public link),
+* the owning customer is no longer active,
+* the token predates resource binding and carries no assignment.
+
+**Errors**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 85
+
+   * - Status
+     - Meaning
+   * - ``401``
+     - The token can no longer be refreshed. Boot again.
+   * - ``403``
+     - The presented token is not a direct token.
 
 **Errors**
 

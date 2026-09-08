@@ -125,7 +125,28 @@ This means agents can only access resources belonging to their own customer, unl
 
 ### Direct Token Auth
 
-Direct tokens (`type == "direct"`) carry a `DirectScope` that specifies which resources the token may access. This is used for machine-to-machine integrations where a narrow-scoped credential is preferred over a full agent token.
+Direct tokens (`type == "direct"`) carry a `DirectScope` that specifies which resources the token may access. They are issued by `POST /auth/boot`, which is unauthenticated by design: the direct hash is embedded in a public page, so anyone who loads that page can obtain one.
+
+Because every visitor of the same public link gets the same `ResourceType`/`ResourceID` (the parent AI or widget), those fields cannot separate one anonymous visitor from another. `AllowedResourceID` does: it is a fresh UUID minted at boot, before the resource exists, and the resource created with that token is forced to take it.
+
+`DirectScope` fields:
+
+| Field | Purpose |
+|---|---|
+| `CustomerID`, `ResourceType`, `ResourceID` | The parent resource the link points at. Shared by every visitor. |
+| `AllowedResourceTypes` | Which kinds of resource this token may create or touch. |
+| `AllowedResourceID` | The one resource instance this token may act on. Per visitor. |
+| `DirectID`, `HashFingerprint` | Let `POST /auth/boot/refresh` re-check the direct record. Hash regeneration is how a leaked link is revoked, and it rotates only the hash, so a lookup keyed on customer or resource would not detect it. |
+| `BootExpire` | Absolute ceiling on the boot session, copied verbatim across refreshes so refreshing cannot walk it forward. |
+| `ScopeVersion` | Raising `servicehandler.DirectScopeVersionCurrent` invalidates every outstanding direct token at once. |
+
+Enforcement is in three places:
+
+1. `buildJWTIdentity` (`lib/middleware/authenticate.go`) rejects tokens with no binding or an outdated scope version. It is the single choke point for every direct entry path: the `v1.0` group, the `authProtected` group and the WebSocket upgrade.
+2. `DirectResourceScope` (`lib/middleware/direct_resource_scope.go`) compares the `:id` path parameter against the binding, and is fail-closed on any route shape it does not recognise. It must be registered on the `v1.0` group **before** `RegisterHandlersWithOptions`, because gin snapshots the handler chain at route-registration time.
+3. Handlers whose target is in the body or query overwrite the client's value with the binding rather than comparing it, so there is no check to forget and no per-route registry of which field is the target.
+
+`DirectScope` deliberately carries no `omitempty`: the predicates above are on the value, not on key presence, so a token minted before resource binding is rejected rather than read as absent.
 
 ### External Response Policy
 
