@@ -286,7 +286,7 @@ go test ./pkg/customerhandler/ -run Test_CleanupUnverified_DoesNotSetTMDelete -v
 
 **참고:** `mockUtil`을 만드는 테스트는 셋(`:81`, `:126`, `:177`)이지만 `TimeNow()` 기대를 거는 것은 앞의 둘뿐이다. `Test_CleanupUnverified_listError`(:177)는 기대를 걸지 않아 깨지지 않으므로, `utilhandler` import는 계속 쓰인다. 지우려 하지 말 것.
 
-**주의:** 기존 세 테스트는 `CustomerList` 기대에 `gomock.Any()`를 쓰고 있으므로(`:87`, `:148`, `:179`) 필터 기대값은 손댈 필요가 없다.
+**주의:** 기존 세 테스트는 `CustomerList` 기대에 `gomock.Any()`를 쓰고 있으므로(`:89`, `:149`, `:185`) 필터 기대값은 손댈 필요가 없다.
 
 - [ ] **Step 5: 테스트를 돌린다**
 
@@ -1318,7 +1318,7 @@ api-manager는 얇게 둔다. 상태 판단은 전혀 하지 않고, 바인딩 �
 - Modify: `bin-api-manager/cmd/api-manager/main.go` (:290-299 공개 `/auth` 그룹)
 - Modify: `bin-api-manager/docs/architecture.md:74-79` (공개 엔드포인트 목록)
 - Modify: `bin-api-manager/docs/routing.md:14-22` (Auth 라우트 표)
-- Modify: `bin-api-manager/docs/operations.md:142` (`auth_public` 티어 설명)
+- Modify: `bin-api-manager/docs/operations.md:143` (`auth_public` 티어 행)
 - Test: `bin-api-manager/lib/service/signup_test.go`
 
 - [ ] **Step 1: ServiceHandler 인터페이스에 추가한다**
@@ -1353,7 +1353,7 @@ func (h *serviceHandler) CustomerEmailVerifyResend(ctx context.Context, email st
 
 - [ ] **Step 3: 실패하는 HTTP 핸들러 테스트를 쓴다**
 
-`lib/service/signup_test.go`에 추가한다. **기존 파일(`signup_test.go:102-118`, `:133-146`, `:158-170`)은 전부 `r.Use(...)` + `r.ServeHTTP` 방식이다.** 아래 스니펫은 설명을 위해 `gin.CreateTestContext`로 썼으므로, 실제 작성 시에는 기존 방식으로 옮겨 쓴다(섞지 말 것). `gin.SetMode(gin.TestMode)`와 `fmt` import도 기존 파일 관례를 따른다.
+`lib/service/signup_test.go`에 추가한다. **기존 파일(`signup_test.go:101-121`, `:132-149`, `:158-175`)은 전부 `r.Use(...)` + `r.ServeHTTP` 방식이다.** 아래 스니펫은 설명을 위해 `gin.CreateTestContext`로 썼으므로, 실제 작성 시에는 기존 방식으로 옮겨 쓴다(섞지 말 것). `gin.SetMode(gin.TestMode)`와 `fmt` import도 기존 파일 관례를 따른다.
 
 ```go
 func Test_PostCustomerEmailVerifyResend_AlwaysReturns200(t *testing.T) {
@@ -1463,7 +1463,7 @@ func PostCustomerEmailVerifyResend(c *gin.Context) {
 - [ ] **Step 7: api-manager 서비스 문서를 갱신한다**
 
 Task 6과 같은 이유다. 루트 `CLAUDE.md`의 "CRITICAL: Service docs sync"가 요구하고,
-`scripts/check-service-docs.sh:47-49`가 `cmd/api-manager/main.go` 변경 시
+`scripts/check-service-docs.sh:52-54`의 `cmd/*/main.go` 규칙이 `cmd/api-manager/main.go` 변경 시
 `bin-api-manager/docs/architecture.md`가 같은 커밋에 스테이징되지 않으면 경고를 낸다.
 세 파일을 **라우트 등록과 같은 커밋에** 함께 넣는다.
 
@@ -1475,9 +1475,13 @@ Task 6과 같은 이유다. 루트 `CLAUDE.md`의 "CRITICAL: Service docs sync"�
    ```
    | POST | `/auth/email-verify-resend` | bin-customer-manager | Resend the signup verification email |
    ```
-3. `docs/operations.md:142`의 `auth_public` 행 괄호 목록에 `email-verify-resend`를 추가하고, 이
+3. `docs/operations.md:143`의 `auth_public` 행 괄호 목록에 `email-verify-resend`를 추가하고, 이
    엔드포인트만은 IP 기준 티어 외에 customer-manager에서 계정별 쿨다운과 일일 상한이 추가로
    적용된다는 점을 한 문장 덧붙인다.
+
+선택 사항: `docsdev/source/architecture_security.rst:632-634`에도 같은 `auth_public` 라우트
+목록이 예시로 들어 있다. 고정폭 ASCII 표 안의 `.. code::` 블록이고 이미 부정확한 목록이므로
+(공개 그룹에 없는 `login`이 적혀 있다) 필수는 아니다. 손대려면 표 정렬이 깨지지 않는지 확인한다.
 
 - [ ] **Step 8: 테스트를 돌린다**
 
@@ -1524,7 +1528,7 @@ grep -n '%%' lib/service/signup.go | head
 grep -n 'fmt.Sprintf(emailVerifyHTML' lib/service/signup.go
 ```
 
-`emailVerifyHTML`은 `%s` **하나**만 갖는 `fmt.Sprintf` 템플릿이고, CSS의 퍼센트는 전부 `%%`로 이스케이프되어 있다. 마크업을 추가할 때 이 규칙을 반드시 유지한다. 새로 넣는 CSS에 `%`가 있으면 `%%`로 쓴다. 새 `%s`를 추가하면 안 된다.
+`emailVerifyHTML`은 백틱으로 둘러싼 raw string literal(signup.go:124-183)이면서 `%s` **하나**만 갖는 `fmt.Sprintf` 템플릿이고, CSS의 퍼센트는 전부 `%%`로 이스케이프되어 있다. 추가하는 마크업에 백틱을 넣으면 리터럴이 끊기므로 쓰지 않는다. 마크업을 추가할 때 이 규칙을 반드시 유지한다. 새로 넣는 CSS에 `%`가 있으면 `%%`로 쓴다. 새 `%s`를 추가하면 안 된다.
 
 - [ ] **Step 2: 실패 분기에 재발송 UI를 추가한다**
 
