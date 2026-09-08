@@ -283,7 +283,26 @@ Exchanges an agent's ``username``/``password`` for a JWT valid for 7 days. Fully
      - String, Required
      - The agent's password.
 
-Response: ``{"username": "...", "token": "eyJ..."}``. The token is also set as an ``HttpOnly``, ``Secure``, ``SameSite=Strict`` cookie named ``token`` on the response. Errors: ``400`` on missing fields, malformed JSON, or invalid credentials (login failures are not distinguished from bad requests — both return a bare ``400``).
+Response: ``{"username": "...", "token": "eyJ..."}``. The token is also set as an ``HttpOnly``, ``Secure``, ``SameSite=Strict`` cookie named ``token`` on the response.
+
+**Errors**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 85
+
+   * - Status
+     - Cause
+   * - 400
+     - Missing fields, malformed JSON, or invalid credentials. Credential failures return a **bare 400 with no response body** — a wrong password is deliberately not distinguished from an unknown username, to avoid a username-enumeration oracle. A failure to look up the account's status (see below) also returns this same bare ``400``.
+   * - 403
+     - The credentials were correct, but the account's status forbids issuing a token: ``ACCOUNT_EXPIRED`` (email address was never verified, so the account was expired by the cleanup job) or ``ACCOUNT_DELETED``. Unlike the ``400`` above, these carry a full error envelope, and ``ACCOUNT_EXPIRED`` carries ``details[0].recovery_endpoint`` — byte-identical to what the ``/v1.0/*`` gate returns for the same account.
+
+.. note:: **AI Implementation Hint — login can now fail on account status**
+
+   ``POST /auth/login`` verifies the password **first** and only then checks the customer's account status, so the status check never becomes an enumeration oracle. The status check is a **deny-list**: only ``expired`` and ``deleted`` are refused. ``initial`` (a normal user inside the 72-hour post-signup verification window) and ``frozen`` both still log in successfully — ``frozen`` in particular **must** keep working, because the frozen self-recovery endpoint ``DELETE /auth/unregister`` requires authentication, so blocking a frozen login would remove the only route to recovery.
+
+   The account-status lookup fails **closed**: if the customer lookup itself fails, no token is issued (returned as the same opaque ``400``, since it is not a determination about the account). This is deliberately the opposite of the ``/v1.0/*`` gate, which fails open — an outage must not become a window in which credentials can be minted freely.
 
 
 Boot (Direct Token) — ``POST /auth/boot``
@@ -501,6 +520,10 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
    Once a customer account is ``frozen``, every other authenticated ``/v1.0/*`` request from that customer (except from a ``PermissionProjectSuperAdmin``, and except direct/boot tokens, which skip the check entirely) is rejected with ``403 ACCOUNT_FROZEN`` by the shared authentication middleware — not just calls to resource endpoints that would otherwise mutate data. The error's ``details[0]`` carries ``deletion_scheduled_at``, ``deletion_effective_at`` (30 days after scheduling), and ``recovery_endpoint: "DELETE /auth/unregister"`` so client UIs (admin/talk consoles) can render a consistent "account frozen, recover here" screen. ``POST`` and ``DELETE /auth/unregister`` themselves are explicitly exempted from this block so a frozen customer can still self-recover.
 
    The same middleware also rejects any authenticated request from a ``deleted`` customer with ``403 ACCOUNT_DELETED``. In the steady state this is unreachable — a deleted customer's agents/access keys should already have been soft-deleted by the ``customer_deleted`` cascade and fail earlier at authentication — but this is a deliberate second layer in case that cascade misses a resource, so credentials belonging to a deleted account can never keep working indefinitely. Unlike ``frozen``, ``deleted`` is not recoverable via ``/auth/unregister``.
+
+   An ``expired`` customer — signup completed but the email address was never verified, so the unverified-account cleanup job moved the account out of ``initial`` — is rejected the same way, with ``403 ACCOUNT_EXPIRED``. Its ``details[0]`` carries ``recovery_endpoint: "POST /auth/email-verify-resend"``, so a client can point the user at a new verification email without string-matching the message. ``initial`` is **not** blocked: it is the normal state during the 72-hour verification window. Note that requesting a resend requires the account to still have a live agent for the address; if it does not, direct the user to ``support@voipbin.net`` rather than telling them to sign up again, because an account expired under the current cleanup behaviour keeps its customer row live and will fail the signup duplicate-email check.
+
+   The gate's customer lookup fails **open**: if the customer record cannot be fetched, the request is allowed through rather than blocked, because api-manager holds no customer cache and failing closed would take every ``/v1.0/*`` route down whenever customer-manager is unreachable. Occurrences are counted by the ``api_manager_account_status_lookup_failed_total`` metric, labelled by ``identity_type`` and ``error_class``. ``POST /auth/login`` deliberately does the opposite and fails closed — see the login section above.
 
 
 Delegate (Superadmin Support Access) — ``POST /auth/delegate``
