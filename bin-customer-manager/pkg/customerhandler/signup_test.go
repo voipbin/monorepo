@@ -729,3 +729,135 @@ func Test_EmailVerify_customerGetAfterUpdateError(t *testing.T) {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }
+
+func Test_EmailVerify_ClearsTMDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &customerHandler{
+		cache:      mockCache,
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	ctx := context.Background()
+	token := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	// customer.Customer.TMDelete is *time.Time, not *string
+	tmDelete := time.Date(2026, 9, 6, 19, 0, 3, 0, time.UTC)
+
+	// a legacy row: expired AND soft-deleted by the old cleanup behavior
+	expiredCustomer := &customer.Customer{
+		ID:            customerID,
+		Email:         "legacy@test.com",
+		EmailVerified: false,
+		Status:        customer.StatusExpired,
+		TMDelete:      &tmDelete,
+	}
+	recovered := &customer.Customer{
+		ID:            customerID,
+		Email:         "legacy@test.com",
+		EmailVerified: true,
+		Status:        customer.StatusActive,
+	}
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, token).Return(customerID, nil)
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(expiredCustomer, nil)
+
+	// tm_delete must be cleared, otherwise the row stays half-recovered: active but
+	// still invisible to every deleted:false filter and still blocking re-signup.
+	mockDB.EXPECT().CustomerUpdate(ctx, customerID, map[customer.Field]any{
+		customer.FieldEmailVerified: true,
+		customer.FieldStatus:        string(customer.StatusActive),
+		customer.FieldTMDelete:      nil,
+	}).Return(nil)
+
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, token).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(recovered, nil)
+	mockReq.EXPECT().AgentV1PasswordForgot(ctx, gomock.Any(), "legacy@test.com").Return(nil)
+
+	res, err := h.EmailVerify(ctx, token)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.Customer.Status != customer.StatusActive {
+		t.Errorf("Wrong match. expect: active, got: %v", res.Customer.Status)
+	}
+}
+
+func Test_EmailVerify_RejectsDeletedAndFrozen(t *testing.T) {
+	tests := []struct {
+		name   string
+		status customer.Status
+	}{
+		{"deleted", customer.StatusDeleted},
+		{"frozen", customer.StatusFrozen},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &customerHandler{cache: mockCache, db: mockDB}
+
+			ctx := context.Background()
+			token := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+			customerID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+
+			mockCache.EXPECT().EmailVerifyTokenGet(ctx, token).Return(customerID, nil)
+			mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+			mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+			mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+				ID:     customerID,
+				Status: tt.status,
+			}, nil)
+
+			// no CustomerUpdate expected: a deleted (PII-anonymized) or frozen row
+			// must never be revived by a stale token.
+			if _, err := h.EmailVerify(ctx, token); err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_EmailVerify_ActiveVerifiedTokenStillSucceeds(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{cache: mockCache, db: mockDB}
+
+	ctx := context.Background()
+	token := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	customerID := uuid.FromStringOrNil("22222222-3333-4444-5555-666666666666")
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, token).Return(customerID, nil)
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		Status:        customer.StatusActive,
+		EmailVerified: true,
+	}, nil)
+	// the stale token must still be consumed
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, token).Return(nil)
+
+	// An allow-list of {initial, expired} would reject this and break the
+	// idempotent path the design's deny-list decision exists to protect.
+	if _, err := h.EmailVerify(ctx, token); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}

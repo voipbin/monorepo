@@ -165,6 +165,17 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	}
 	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
+	// Deny-list, and it must come before the EmailVerified early return.
+	// Placing it after would let a stale token hand back a deleted (PII-anonymized)
+	// row. It is a deny-list rather than an allow-list on purpose: an allow-list of
+	// {initial, expired} would reject an already-active customer clicking an older
+	// link, which the early return below is there to handle idempotently.
+	if c.Status == customer.StatusDeleted || c.Status == customer.StatusFrozen {
+		log.Infof("Customer is not eligible for verification. customer_id: %s, status: %s", c.ID, c.Status)
+		metricshandler.EmailVerificationTotal.WithLabelValues("ineligible").Inc()
+		return nil, fmt.Errorf("customer is not eligible for verification")
+	}
+
 	if c.EmailVerified {
 		log.Infof("Customer already verified. customer_id: %s", c.ID)
 		metricshandler.EmailVerificationTotal.WithLabelValues("already_verified").Inc()
@@ -173,10 +184,14 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 		return &customer.EmailVerifyResult{Customer: c}, nil
 	}
 
-	// mark as verified and activate
+	// mark as verified and activate.
+	// tm_delete is cleared so a row expired by the pre-VOIP-1490 cleanup (which set
+	// it) comes back fully, not half-recovered. processMapValues preserves nil, so
+	// this emits SET tm_delete = NULL.
 	fields := map[customer.Field]any{
 		customer.FieldEmailVerified: true,
 		customer.FieldStatus:        string(customer.StatusActive),
+		customer.FieldTMDelete:      nil,
 	}
 	if err := h.db.CustomerUpdate(ctx, customerID, fields); err != nil {
 		log.Errorf("Could not update customer. err: %v", err)
