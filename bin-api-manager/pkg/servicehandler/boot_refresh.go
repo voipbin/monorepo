@@ -3,7 +3,6 @@ package servicehandler
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -58,7 +57,14 @@ func (h *serviceHandler) AuthBootRefresh(ctx context.Context, a *auth.AuthIdenti
 		log.Infof("Could not parse boot expire. Rejecting refresh. err: %v", err)
 		return nil, fmt.Errorf("%w: malformed boot expire", serviceerrors.ErrAuthenticationRequired)
 	}
-	remaining := time.Until(bootExpire)
+	// Read "now" through the util handler like every other time access in this
+	// package, so the near-ceiling case stays drivable from a test.
+	now, err := h.utilHandler.TimeParseWithError(h.utilHandler.TimeGetCurTime())
+	if err != nil {
+		log.Errorf("Could not parse the current time. err: %v", err)
+		return nil, fmt.Errorf("%w: clock unavailable", serviceerrors.ErrInternal)
+	}
+	remaining := bootExpire.Sub(now)
 	if remaining <= 0 {
 		log.Info("Boot session lifetime exhausted. Rejecting refresh.")
 		return nil, fmt.Errorf("%w: boot session expired", serviceerrors.ErrAuthenticationRequired)

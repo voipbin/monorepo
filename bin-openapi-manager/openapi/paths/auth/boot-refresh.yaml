@@ -23,7 +23,11 @@ post:
   # resolve.
   responses:
     '200':
-      description: Token reissued. `allowed_resource_id` is unchanged; only `expire` moves.
+      description: |
+        Token reissued. `allowed_resource_id` and `scope_version` are unchanged;
+        only `expire` moves. `resource_data` is always omitted here (the client
+        already holds it from the original boot), so the response is the boot
+        response minus that field.
       content:
         application/json:
           schema:

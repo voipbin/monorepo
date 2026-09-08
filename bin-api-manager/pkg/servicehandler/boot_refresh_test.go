@@ -20,6 +20,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+var (
+	nowStr  = "2026-09-09T00:00:00.000000Z"
+	nowTime = time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC)
+)
+
 const (
 	refreshHash       = "direct.abcdefabcdef"
 	refreshBootExpire = "2999-01-01T00:00:00.000000Z"
@@ -92,7 +97,9 @@ func Test_AuthBootRefresh_carriesAssignmentForward(t *testing.T) {
 	ctx := context.Background()
 	scope := refreshScope()
 
-	mockUtil.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Now().Add(time.Hour*10), nil)
+	mockUtil.EXPECT().TimeGetCurTime().Return(nowStr)
+	mockUtil.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil)
+	mockUtil.EXPECT().TimeParseWithError(refreshBootExpire).Return(nowTime.Add(time.Hour*10), nil)
 	mockReq.EXPECT().DirectV1DirectGet(ctx, refreshDirectID).Return(refreshDirect(), nil)
 	mockReq.EXPECT().CustomerV1CustomerGet(ctx, refreshCustomerID).Return(&cscustomer.Customer{Status: cscustomer.StatusActive}, nil)
 	mockUtil.EXPECT().TimeGetCurTimeAdd(BootExpiration).Return("2026-09-08T04:00:00.000000Z")
@@ -177,6 +184,8 @@ func Test_AuthBootRefresh_rejects(t *testing.T) {
 			name:     "boot expire unparseable",
 			identity: refreshIdentity(refreshScope()),
 			setup: func(_ *requesthandler.MockRequestHandler, u *utilhandler.MockUtilHandler) {
+				u.EXPECT().TimeGetCurTime().Return(nowStr).AnyTimes()
+				u.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil).AnyTimes()
 				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Time{}, fmt.Errorf("bad"))
 			},
 			expectErr: serviceerrors.ErrAuthenticationRequired,
@@ -185,7 +194,9 @@ func Test_AuthBootRefresh_rejects(t *testing.T) {
 			name:     "absolute ceiling reached",
 			identity: refreshIdentity(refreshScope()),
 			setup: func(_ *requesthandler.MockRequestHandler, u *utilhandler.MockUtilHandler) {
-				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Now().Add(-time.Minute), nil)
+				u.EXPECT().TimeGetCurTime().Return(nowStr).AnyTimes()
+				u.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil).AnyTimes()
+				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(nowTime.Add(-time.Minute), nil)
 			},
 			expectErr: serviceerrors.ErrAuthenticationRequired,
 		},
@@ -193,7 +204,9 @@ func Test_AuthBootRefresh_rejects(t *testing.T) {
 			name:     "direct record deleted",
 			identity: refreshIdentity(refreshScope()),
 			setup: func(r *requesthandler.MockRequestHandler, u *utilhandler.MockUtilHandler) {
-				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Now().Add(time.Hour), nil)
+				u.EXPECT().TimeGetCurTime().Return(nowStr).AnyTimes()
+				u.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil).AnyTimes()
+				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(nowTime.Add(time.Hour), nil)
 				r.EXPECT().DirectV1DirectGet(gomock.Any(), refreshDirectID).Return(nil, fmt.Errorf("not found"))
 			},
 			expectErr: serviceerrors.ErrAuthenticationRequired,
@@ -204,7 +217,9 @@ func Test_AuthBootRefresh_rejects(t *testing.T) {
 			name:     "hash was regenerated",
 			identity: refreshIdentity(refreshScope()),
 			setup: func(r *requesthandler.MockRequestHandler, u *utilhandler.MockUtilHandler) {
-				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Now().Add(time.Hour), nil)
+				u.EXPECT().TimeGetCurTime().Return(nowStr).AnyTimes()
+				u.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil).AnyTimes()
+				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(nowTime.Add(time.Hour), nil)
 				rotated := refreshDirect()
 				rotated.Hash = "direct.rotatedrotated"
 				r.EXPECT().DirectV1DirectGet(gomock.Any(), refreshDirectID).Return(rotated, nil)
@@ -215,7 +230,9 @@ func Test_AuthBootRefresh_rejects(t *testing.T) {
 			name:     "customer lookup fails, must fail closed",
 			identity: refreshIdentity(refreshScope()),
 			setup: func(r *requesthandler.MockRequestHandler, u *utilhandler.MockUtilHandler) {
-				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Now().Add(time.Hour), nil)
+				u.EXPECT().TimeGetCurTime().Return(nowStr).AnyTimes()
+				u.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil).AnyTimes()
+				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(nowTime.Add(time.Hour), nil)
 				r.EXPECT().DirectV1DirectGet(gomock.Any(), refreshDirectID).Return(refreshDirect(), nil)
 				r.EXPECT().CustomerV1CustomerGet(gomock.Any(), refreshCustomerID).Return(nil, fmt.Errorf("rpc down"))
 			},
@@ -225,7 +242,9 @@ func Test_AuthBootRefresh_rejects(t *testing.T) {
 			name:     "customer not active",
 			identity: refreshIdentity(refreshScope()),
 			setup: func(r *requesthandler.MockRequestHandler, u *utilhandler.MockUtilHandler) {
-				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Now().Add(time.Hour), nil)
+				u.EXPECT().TimeGetCurTime().Return(nowStr).AnyTimes()
+				u.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil).AnyTimes()
+				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(nowTime.Add(time.Hour), nil)
 				r.EXPECT().DirectV1DirectGet(gomock.Any(), refreshDirectID).Return(refreshDirect(), nil)
 				r.EXPECT().CustomerV1CustomerGet(gomock.Any(), refreshCustomerID).Return(&cscustomer.Customer{Status: cscustomer.StatusDeleted}, nil)
 			},
@@ -237,7 +256,9 @@ func Test_AuthBootRefresh_rejects(t *testing.T) {
 				return refreshIdentity(refreshScope())
 			}(),
 			setup: func(r *requesthandler.MockRequestHandler, u *utilhandler.MockUtilHandler) {
-				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Now().Add(time.Hour), nil)
+				u.EXPECT().TimeGetCurTime().Return(nowStr).AnyTimes()
+				u.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil).AnyTimes()
+				u.EXPECT().TimeParseWithError(refreshBootExpire).Return(nowTime.Add(time.Hour), nil)
 				unmapped := refreshDirect()
 				unmapped.ResourceType = "something_else"
 				r.EXPECT().DirectV1DirectGet(gomock.Any(), refreshDirectID).Return(unmapped, nil)
@@ -278,7 +299,9 @@ func Test_AuthBootRefresh_clampsToCeiling(t *testing.T) {
 	ctx := context.Background()
 
 	// 10 minutes left, far less than the 4 hour default.
-	mockUtil.EXPECT().TimeParseWithError(refreshBootExpire).Return(time.Now().Add(time.Minute*10), nil)
+	mockUtil.EXPECT().TimeGetCurTime().Return(nowStr)
+	mockUtil.EXPECT().TimeParseWithError(nowStr).Return(nowTime, nil)
+	mockUtil.EXPECT().TimeParseWithError(refreshBootExpire).Return(nowTime.Add(time.Minute*10), nil)
 	mockReq.EXPECT().DirectV1DirectGet(ctx, refreshDirectID).Return(refreshDirect(), nil)
 	mockReq.EXPECT().CustomerV1CustomerGet(ctx, refreshCustomerID).Return(&cscustomer.Customer{Status: cscustomer.StatusActive}, nil)
 	mockUtil.EXPECT().TimeGetCurTimeAdd(gomock.Cond(func(d time.Duration) bool {

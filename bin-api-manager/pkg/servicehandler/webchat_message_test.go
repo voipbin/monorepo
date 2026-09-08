@@ -182,8 +182,8 @@ func Test_WebchatMessageList_Direct(t *testing.T) {
 		ResourceType:         "webchat_widget",
 		ResourceID:           widgetID,
 		AllowedResourceTypes: []string{"webchat_session"},
-		// The token is bound to the session under test; the handler now takes
-		// the session id from here rather than from the caller.
+		// The token is bound to the session under test. The handler takes the
+		// session id from here, not from the caller's argument.
 		AllowedResourceID: sessionID,
 	})
 
@@ -206,7 +206,16 @@ func Test_WebchatMessageList_Direct(t *testing.T) {
 		wcmessage.FieldSessionID:  sessionID,
 	}).Return(responseMessages, nil)
 
-	res, err := h.WebchatMessageList(ctx, a, 10, "", sessionID)
+	// Deliberately ask for a DIFFERENT session than the token is bound to.
+	// Every mock expectation above is keyed on the bound sessionID, so if the
+	// handler ever stopped overwriting and used this argument instead, they
+	// would go unmet and this test would fail. Passing the same id in both
+	// places, as an earlier revision did, cannot tell the two apart -- and
+	// that line is the sole enforcement for this route, since session_id is a
+	// query parameter and so bypasses the path-parameter middleware.
+	otherSessionID := uuid.FromStringOrNil("bb111111-6cc4-4713-9dec-53a42840e74c")
+
+	res, err := h.WebchatMessageList(ctx, a, 10, "", otherSessionID)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -275,8 +284,8 @@ func Test_WebchatMessageList_Direct_WrongWidget(t *testing.T) {
 		ResourceType:         "webchat_widget",
 		ResourceID:           callerWidgetID,
 		AllowedResourceTypes: []string{"webchat_session"},
-		// The token is bound to the session under test; the handler now takes
-		// the session id from here rather than from the caller.
+		// The token is bound to the session under test. The handler takes the
+		// session id from here, not from the caller's argument.
 		AllowedResourceID: sessionID,
 	})
 
@@ -317,8 +326,8 @@ func Test_WebchatMessageList_Direct_DeletedWidget(t *testing.T) {
 		ResourceType:         "webchat_widget",
 		ResourceID:           widgetID,
 		AllowedResourceTypes: []string{"webchat_session"},
-		// The token is bound to the session under test; the handler now takes
-		// the session id from here rather than from the caller.
+		// The token is bound to the session under test. The handler takes the
+		// session id from here, not from the caller's argument.
 		AllowedResourceID: sessionID,
 	})
 

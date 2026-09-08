@@ -26,6 +26,9 @@ var directResourceMapping = map[string][]string{
 	dmdirect.ResourceTypeWebchatWidget: {"webchat_session"},
 }
 
+// directHashFingerprintDomain separates this MAC's key usage from JWT signing.
+const directHashFingerprintDomain = "voipbin/direct-hash-fingerprint/v1\x00"
+
 // directHashFingerprint derives the value stored in DirectScope.HashFingerprint
 // and re-checked by AuthBootRefresh.
 //
@@ -39,8 +42,14 @@ var directResourceMapping = map[string][]string{
 //
 // HMAC keeps every property the check needs: deterministic, stable across
 // replicas and restarts, and full width (no truncation).
+//
+// The constant prefix domain-separates this from JWT signing, which uses the
+// same key. Nothing here is exploitable without it (HMAC has no length
+// extension, and no direct hash can collide with a JWT signing input), but the
+// prefix removes the need to make that argument at all.
 func (h *serviceHandler) directHashFingerprint(hash string) string {
 	mac := hmac.New(sha256.New, h.jwtKey)
+	mac.Write([]byte(directHashFingerprintDomain))
 	mac.Write([]byte(hash))
 	return hex.EncodeToString(mac.Sum(nil))
 }

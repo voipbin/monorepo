@@ -153,12 +153,22 @@ func buildJWTIdentity(log *logrus.Entry, authData map[string]interface{}) (*auth
 		// middleware-only check would let an unbound token reach a handler that
 		// has no path parameter, where the overwrite would then persist
 		// uuid.Nil as a real resource id.
+		// reject_reason is a shared field across every direct-scope rejection
+		// (here and in DirectResourceScope) so the deploy window can be watched
+		// by aggregating on one key rather than grepping message text. Bumping
+		// DirectScopeVersionCurrent 401s every live token at once, and this is
+		// the only signal for how many.
 		if scope.AllowedResourceID == uuid.Nil {
-			log.Info("Direct token carries no resource binding. Rejecting.")
+			log.WithField("reject_reason", "direct_unbound").
+				Info("Direct token carries no resource binding. Rejecting.")
 			return nil, fmt.Errorf("direct token is not resource bound")
 		}
 		if scope.ScopeVersion < servicehandler.DirectScopeVersionCurrent {
-			log.Infof("Direct token scope version is outdated. version: %d", scope.ScopeVersion)
+			log.WithFields(logrus.Fields{
+				"reject_reason": "direct_scope_version",
+				"scope_version": scope.ScopeVersion,
+				"customer_id":   scope.CustomerID,
+			}).Info("Direct token scope version is outdated. Rejecting.")
 			return nil, fmt.Errorf("direct token scope version is outdated")
 		}
 

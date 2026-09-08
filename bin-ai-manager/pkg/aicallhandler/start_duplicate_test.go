@@ -22,13 +22,19 @@ import (
 // startDuplicateFixture wires just enough of the handler to drive Start down to
 // the aicall insert, which is where a pinned-id collision surfaces.
 func startDuplicateFixture(mc *gomock.Controller) (*aicallHandler, *dbhandler.MockDBHandler, *utilhandler.MockUtilHandler, *ai.AI) {
+	h, mockDB, mockUtil, _, a := startDuplicateFixtureWithReq(mc)
+	return h, mockDB, mockUtil, a
+}
+
+func startDuplicateFixtureWithReq(mc *gomock.Controller) (*aicallHandler, *dbhandler.MockDBHandler, *utilhandler.MockUtilHandler, *requesthandler.MockRequestHandler, *ai.AI) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockAI := aihandler.NewMockAIHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
 
 	h := &aicallHandler{
 		utilHandler:   mockUtil,
-		reqHandler:    requesthandler.NewMockRequestHandler(mc),
+		reqHandler:    mockReq,
 		db:            mockDB,
 		notifyHandler: notifyhandler.NewMockNotifyHandler(mc),
 		aiHandler:     mockAI,
@@ -41,7 +47,7 @@ func startDuplicateFixture(mc *gomock.Controller) (*aicallHandler, *dbhandler.Mo
 		},
 	}
 	mockAI.EXPECT().Get(gomock.Any(), a.ID).Return(a, nil)
-	return h, mockDB, mockUtil, a
+	return h, mockDB, mockUtil, mockReq, a
 }
 
 // Test_Start_callerSpecifiedID_duplicate pins the 409 contract for aicalls.
@@ -208,5 +214,45 @@ func Test_CreateByMessaging_callerSpecifiedID(t *testing.T) {
 	}
 	if res.ID != pinnedID {
 		t.Errorf("Wrong aicall id. expect: %v, got: %v", pinnedID, res.ID)
+	}
+}
+
+// Test_Start_callerSpecifiedID_nonNoneReferenceIsNotRemapped pins the
+// reference-type half of the discriminator.
+//
+// The classification is only sound when reference_id is uuid.Nil, because that
+// is what NULLs the generated active_reference_key and leaves the primary key
+// as the sole constraint on ai_aicalls that can collide. With any other
+// reference type a duplicate could be a uq_aicall_active_reference_key
+// violation, which is a different condition and must not be reported to the
+// caller as a spent id assignment.
+//
+// Unreachable today: the only caller that pins an id also forces
+// ReferenceTypeNone. This keeps that from being an unwritten assumption.
+func Test_Start_callerSpecifiedID_nonNoneReferenceIsNotRemapped(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h, mockDB, mockUtil, mockReq, a := startDuplicateFixtureWithReq(mc)
+	pinnedID := uuid.FromStringOrNil("beefbeef-0000-0000-0000-00000000000c")
+	referenceID := uuid.FromStringOrNil("77770000-0000-0000-0000-000000000007")
+
+	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("99990000-0000-0000-0000-000000000009")).AnyTimes()
+	mockUtil.EXPECT().TimeGetCurTime().Return("2026-09-09T00:00:00.000000Z").AnyTimes()
+	mockDB.EXPECT().AIcallGetByReferenceID(gomock.Any(), referenceID).Return(nil, dbhandler.ErrNotFound).AnyTimes()
+	mockReq.EXPECT().FlowV1VariableGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("no variables")).AnyTimes()
+	mockDB.EXPECT().AIcallCreate(gomock.Any(), gomock.Any()).Return(
+		fmt.Errorf("could not execute. err: Error 1062 (23000): Duplicate entry"),
+	).AnyTimes()
+
+	_, err := h.Start(t.Context(), pinnedID, aicall.AssistanceTypeAI, a.ID, uuid.Nil,
+		aicall.ReferenceTypeConversation, referenceID)
+	if err == nil {
+		t.Fatal("Wrong match. expect: error, got: ok")
+	}
+
+	var ve *cerrors.VoipbinError
+	if stderrors.As(err, &ve) && ve.Status == cerrors.StatusAlreadyExists {
+		t.Error("A duplicate on a non-none reference type must not be reported as an id collision")
 	}
 }

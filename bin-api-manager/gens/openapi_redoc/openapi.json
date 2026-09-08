@@ -4674,7 +4674,7 @@
         "operationId": "postAuthBootRefresh",
         "responses": {
           "200": {
-            "description": "Token reissued. `allowed_resource_id` is unchanged; only `expire` moves.",
+            "description": "Token reissued. `allowed_resource_id` and `scope_version` are unchanged;\nonly `expire` moves. `resource_data` is always omitted here (the client\nalready holds it from the original boot), so the response is the boot\nresponse minus that field.\n",
             "content": {
               "application/json": {
                 "schema": {

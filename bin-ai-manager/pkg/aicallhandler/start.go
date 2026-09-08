@@ -215,10 +215,16 @@ func (h *aicallHandler) Start(
 		// already spent. The reference-type condition is what makes this a
 		// safe discriminator rather than a guess: with ReferenceTypeNone the
 		// reference_id is uuid.Nil, which NULLs the generated
-		// active_reference_key, so the primary key is the only constraint left
-		// that can collide. Without it, a future caller that pinned an id on a
-		// contact_case would get a uq_aicall_active_reference_key violation
-		// misreported as an id collision.
+		// active_reference_key, so the primary key is the only constraint on
+		// ai_aicalls that can collide. Without it, a future caller that pinned
+		// an id on a contact_case would get a uq_aicall_active_reference_key
+		// violation misreported as an id collision.
+		//
+		// Note this classifies any duplicate from the whole start path, not
+		// just the aicall insert. Later inserts on that path (init messages)
+		// use freshly minted ids against tables with no unique index beyond
+		// their own primary key, so a duplicate from them is unreachable in
+		// practice rather than merely unlikely.
 		//
 		// The sentinel does not wrap err: wrapping would preserve the
 		// "Duplicate entry" text and IsErrDuplicate would match it again in

@@ -90,8 +90,10 @@ func (h *serviceHandler) AIcallCreate(
 		// the type, so forcing only the type would leave the unique-index
 		// collision surface live. Neither forcing is redundant.
 		//
-		// Both widgets already send exactly these values, so this is not a
-		// behavior change for them.
+		// Not a behavior change for the widgets: neither sends reference_type
+		// or reference_id at all (verified in square-main useChatState.js and
+		// square-admin's webchat runtime), and ReferenceTypeNone is the empty
+		// string, so an omitted field already lands on exactly these values.
 		referenceType = amaicall.ReferenceTypeNone
 		referenceID = uuid.Nil
 	}

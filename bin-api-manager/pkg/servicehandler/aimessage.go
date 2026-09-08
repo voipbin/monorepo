@@ -133,6 +133,12 @@ func (h *serviceHandler) convertAImessageFilters(filters map[string]string) (map
 
 // AImessageGet gets the ai message of the given id.
 // It returns ai message if it succeed.
+// Note on the direct branch below: GET|DELETE /aimessages/{id} carries a
+// *message* id, which can never equal a token's AllowedResourceID, so
+// DirectResourceScope rejects those requests with 403 before this runs. The
+// branch is kept as defense in depth for any future non-HTTP caller; do not
+// read it as a live authorization path, and do not delete it as dead code
+// without re-checking that no route reaches it.
 func (h *serviceHandler) AImessageGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammessage.WebhookMessage, error) {
 	tmp, err := h.aimessageGet(ctx, id)
 	if err != nil {

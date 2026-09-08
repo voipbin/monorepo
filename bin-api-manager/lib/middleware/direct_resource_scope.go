@@ -52,6 +52,17 @@ func DirectResourceScope() gin.HandlerFunc {
 			return
 		}
 
+		// reject shares its reason key with buildJWTIdentity's, so the whole
+		// direct-scope rejection rate during a deploy is one aggregation rather
+		// than free-text grepping across two files.
+		reject := func(reason, msg string) {
+			log.WithFields(logrus.Fields{
+				"reject_reason": reason,
+				"customer_id":   a.CustomerID,
+			}).Info(msg)
+			abortPermissionDenied(c, "DIRECT_SCOPE_VIOLATION", "This endpoint is not available for this token.")
+		}
+
 		// 2. No path parameters at all: a create or send route. Those are
 		// covered by the handler-side overwrite.
 		if len(c.Params) == 0 {
@@ -65,8 +76,7 @@ func DirectResourceScope() gin.HandlerFunc {
 		// like /aicalls/:aicall_id/foo later would silently bypass the check.
 		raw := c.Param("id")
 		if raw == "" {
-			log.Info("Direct request to a route with no id parameter. Rejecting.")
-			abortPermissionDenied(c, "DIRECT_SCOPE_VIOLATION", "This endpoint is not available for this token.")
+			reject("direct_route_unrecognized", "Direct request to a route with no id parameter. Rejecting.")
 			return
 		}
 
@@ -74,8 +84,7 @@ func DirectResourceScope() gin.HandlerFunc {
 		// collapsing to uuid.Nil, so this does not depend on step 5 to be safe.
 		parsed, err := uuid.FromString(raw)
 		if err != nil {
-			log.Infof("Direct request with an unparseable id. Rejecting. id: %s", raw)
-			abortPermissionDenied(c, "DIRECT_SCOPE_VIOLATION", "This endpoint is not available for this token.")
+			reject("direct_id_unparseable", "Direct request with an unparseable id. Rejecting.")
 			return
 		}
 
@@ -86,8 +95,7 @@ func DirectResourceScope() gin.HandlerFunc {
 		// path id of all zeros would compare *equal* to a Nil assignment at
 		// step 6.
 		if a.DirectScope == nil || a.DirectScope.AllowedResourceID == uuid.Nil {
-			log.Info("Direct identity carries no usable scope. Rejecting.")
-			abortPermissionDenied(c, "DIRECT_SCOPE_VIOLATION", "This endpoint is not available for this token.")
+			reject("direct_unbound", "Direct identity carries no usable scope. Rejecting.")
 			return
 		}
 
@@ -96,8 +104,7 @@ func DirectResourceScope() gin.HandlerFunc {
 		// comparison would make the middleware and the handler disagree about
 		// what "the same id" means.
 		if parsed != a.DirectScope.AllowedResourceID {
-			log.Infof("Direct request for a resource outside the token scope. Rejecting. id: %s", parsed)
-			abortPermissionDenied(c, "DIRECT_SCOPE_VIOLATION", "This endpoint is not available for this token.")
+			reject("direct_id_mismatch", "Direct request for a resource outside the token scope. Rejecting.")
 			return
 		}
 
