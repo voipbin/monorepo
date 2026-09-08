@@ -111,12 +111,12 @@ func abortLoginFailure(c *gin.Context, err error) {
 
 	switch {
 	case errors.Is(err, serviceerrors.ErrAccountExpired):
-		e = cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, middleware.ReasonAccountExpired, middleware.MessageAccountExpired)
-		e.Details = middleware.AccountExpiredDetails()
+		e = cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, apierror.ReasonAccountExpired, apierror.MessageAccountExpired)
+		e.Details = apierror.AccountExpiredDetails()
 
 	case errors.Is(err, serviceerrors.ErrAccountDeleted):
 		// No details: unlike expired there is no recovery endpoint to point at.
-		e = cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, middleware.ReasonAccountDeleted, middleware.MessageAccountDeleted)
+		e = cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, apierror.ReasonAccountDeleted, apierror.MessageAccountDeleted)
 
 	default:
 		c.AbortWithStatus(http.StatusBadRequest)

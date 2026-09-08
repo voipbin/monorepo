@@ -33,39 +33,11 @@ const (
 
 	delegateAudience = "voipbin-api"
 
-	// ReasonAccountExpired / MessageAccountExpired / RecoveryEndpointAccountExpired
-	// are the canonical wire strings for a status='expired' refusal (VOIP-1491).
-	// They are exported because POST /auth/login refuses the same accounts
-	// (lib/service/auth.go) and the two responses must be byte-identical —
-	// a client that branches on the login refusal must be able to reuse the
-	// same handling for the v1 gate refusal.
-	//
-	// The message deliberately does NOT promise that re-signing-up works.
-	// For accounts expired after VOIP-1490 the customer row keeps tm_delete
-	// NULL, so validateCreate's (deleted=false, email) duplicate check rejects
-	// a re-signup; promising it would be a lie to that cohort (design §4-3).
-	ReasonAccountExpired  = "ACCOUNT_EXPIRED"
-	MessageAccountExpired = "This account has expired because its email address was never verified. " +
-		"Request a new verification email, and contact support@voipbin.net if that does not resolve it."
-	RecoveryEndpointAccountExpired = "POST /auth/email-verify-resend"
-
-	// ReasonAccountDeleted / MessageAccountDeleted are the canonical wire
-	// strings for a status='deleted' refusal. There is no recovery endpoint
-	// to advertise, so unlike expired these carry no details payload.
-	ReasonAccountDeleted  = "ACCOUNT_DELETED"
-	MessageAccountDeleted = "This account has been deleted."
+	// The account-status refusal wire strings (ACCOUNT_EXPIRED /
+	// ACCOUNT_DELETED and the expired recovery endpoint) live in lib/apierror,
+	// because POST /auth/login refuses the same accounts and the two responses
+	// must be byte-identical. See lib/apierror/account_status.go.
 )
-
-// AccountExpiredDetails returns the details payload carried by every
-// ACCOUNT_EXPIRED refusal. A fresh slice is built per call so a caller that
-// mutates the returned value cannot corrupt later responses.
-func AccountExpiredDetails() []map[string]any {
-	return []map[string]any{
-		{
-			"recovery_endpoint": RecoveryEndpointAccountExpired,
-		},
-	}
-}
 
 var (
 	// promAccountStatusLookupFailedTotal counts how often the account-status
@@ -397,8 +369,8 @@ func isBlockedAccountStatus(c *gin.Context, a *auth.AuthIdentity) bool {
 		// details carries the recovery endpoint for the same reason the frozen
 		// branch carries one: without it a client would have to string-match
 		// the message to know where to send the user.
-		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, ReasonAccountExpired, MessageAccountExpired)
-		e.Details = AccountExpiredDetails()
+		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, apierror.ReasonAccountExpired, apierror.MessageAccountExpired)
+		e.Details = apierror.AccountExpiredDetails()
 		c.AbortWithStatusJSON(
 			cerrors.HTTPStatusFor(e.Status),
 			apierror.EnvelopeFor(e, RequestIDFromContext(c)),
@@ -411,7 +383,7 @@ func isBlockedAccountStatus(c *gin.Context, a *auth.AuthIdentity) bool {
 		// by the customer_deleted cascade and fail earlier in Authenticate() —
 		// but the cascade is known to miss some customers (VOIP-1395), so this
 		// is a deliberate second layer, not redundant defense.
-		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, ReasonAccountDeleted, MessageAccountDeleted)
+		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, apierror.ReasonAccountDeleted, apierror.MessageAccountDeleted)
 		c.AbortWithStatusJSON(
 			cerrors.HTTPStatusFor(e.Status),
 			apierror.EnvelopeFor(e, RequestIDFromContext(c)),

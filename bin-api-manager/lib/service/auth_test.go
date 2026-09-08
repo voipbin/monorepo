@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/lib/apierror"
 	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -287,8 +287,8 @@ func TestPostLogin_AccountStatusEnvelope(t *testing.T) {
 			}
 			// The whole point of details is that a client does not have to
 			// string-match the message to find the recovery path.
-			if got, _ := entry["recovery_endpoint"].(string); got != middleware.RecoveryEndpointAccountExpired {
-				t.Errorf("Wrong recovery_endpoint. expect: %s, got: %s", middleware.RecoveryEndpointAccountExpired, got)
+			if got, _ := entry["recovery_endpoint"].(string); got != apierror.RecoveryEndpointAccountExpired {
+				t.Errorf("Wrong recovery_endpoint. expect: %s, got: %s", apierror.RecoveryEndpointAccountExpired, got)
 			}
 		})
 	}
