@@ -2,8 +2,8 @@
 
 - 설계: `docs/plans/2026-09-08-direct-token-resource-binding-design.md` (rev11, 디자인 리뷰 완료)
 - 작성일: 2026-09-08
-- 개정: rev10 (계획 리뷰 라운드 9 반영. 양측 Approve. 라운드 8·9 연속 승인으로 계획 리뷰 루프 완료)
-- 상태: 계획 리뷰 완료. 대표님 최종 검토 및 PR 분할 승인 대기
+- 개정: rev11 (대표님 결정으로 3단계를 2단계로 병합. 서버는 한 PR로 착륙)
+- 상태: 병합 착륙 위험 분석 재검토 중. 구현 착수
 
 ## 0. 수용 기준
 
@@ -32,41 +32,62 @@
 
 ### 1.2 착륙 단계
 
-설계 §9.2. **순서를 바꾸면 최대 4시간 위젯 장애가 발생한다.**
+**2026-09-08 대표님 결정: 서버는 한 PR로 간다.** rev10까지의 3단계 구성을 병합했다.
 
 | 단계 | 저장소 | 성격 |
 |---|---|---|
-| 1 | monorepo | 필드 발급 + 갱신 엔드포인트 + id 배관 + 409 경로. **인가 동작 무변경** |
-| 2 | monorepo-javascript | 클라이언트 재부팅 계약 |
-| 3 | monorepo | 강제 활성화 |
+| A | monorepo | 발급 + 배관 + 409 경로 + **강제**. 한 PR |
+| B | monorepo-javascript | 클라이언트 재부팅 계약 |
 
-**1단계에 id 배관을 포함하는 이유.** 배관은 호출자가 `uuid.Nil`을 넘기는 동안 완전한 no-op이다. 기계적이고 파일 수가 많으므로, 강제 로직과 섞지 않고 미리 착륙시켜 3단계 diff를 인가 로직만 남긴다.
+#### 병합이 가능한 이유 (rev10까지의 위험 서술을 정정한다)
+
+rev10은 발급과 강제를 함께 배포하면 "최대 4시간 동안 모든 위젯이 죽는다"고 서술했다. **과장이었다.**
+
+병합 배포에서는 **새로 부팅하는 방문자가 구버전 프론트로도 정상 동작한다.**
+
+- 부팅이 `AllowedResourceID`를 발급한다
+- `AIcallCreate`가 그 번호를 지정해 aicall을 만든다. 즉 `aicall.id == AllowedResourceID`
+- 구버전 프론트는 `aicall.id`를 그대로 쓰므로(`useChatState.js:134`), 토픽도 경로 파라미터도 전부 일치한다
+- `POST /aimessages`의 덮어쓰기도 같은 값이라 무해하다
+
+프론트 수정이 필수였던 이유는 **발급과 강제가 떨어져 있을 때** 그 사이에 발급된 토큰이 강제 시점에 401을 받기 때문이었다. 병합하면 그 집단 자체가 생기지 않는다.
+
+#### 병합 배포에서 실제로 깨지는 것 (B 단계가 닫는다)
+
+| # | 깨지는 것 | 범위 | 복구 |
+|---|---|---|---|
+| 1 | 배포 순간 열려 있던 대화 | 그 시점 접속자. 구토큰에 `AllowedResourceID`가 없어 401 | 새로고침 |
+| 2 | 3시간 55분 넘긴 대화 | `scheduleRefresh`가 `/auth/boot`을 다시 불러 **새 번호**를 받는데 대화 번호는 그대로다(`auth.js:57`) | 새로고침 |
+| 3 | 대화 종료 후 재시작 | 같은 토큰으로 두 번째 생성 → 409 → 구버전 프론트는 일반 에러 | 새로고침 |
+| 4 | 롤링 배포 창에 부팅한 일부 | 신버전 부팅 + 구버전 생성 → 번호 불일치 → 토픽 거부로 소켓 절단, `aimessages` 404. 그 창의 약 22% | 새로고침 |
+
+전부 새로고침으로 복구되며 대부분은 일반적인 배포 끊김과 같은 수준이다.
+**4번만 조용히 깨진다**(에러 표시 없이 동작만 멈춤). 창이 수 분이고 새로고침으로 복구되므로 수용한다.
+
+**B 단계가 1·2·3·4를 전부 없앤다.** 그러므로 B는 A 직후에 착륙시킨다.
 
 ### 1.3 배포 게이트 (강제)
 
-각 게이트의 통과 여부와 확인 시각을 §6에 기록한다.
+통과 여부와 확인 시각을 §6에 기록한다.
 
-- [ ] **G1. 2단계 머지 전:** 1단계가 프로덕션 양쪽 replica에 배포되고 `/auth/boot/refresh`가 응답하는지 확인.
-      미충족 시 클라이언트 갱신이 **404**를 받는다(계기 3으로 강등되어 재부팅하므로 치명적이진 않으나 불필요한 대화 단절).
-- [ ] **G2. 3단계 배포 전:** 1단계의 `bin-ai-manager`·`bin-webchat-manager`가 프로덕션에 살아 있는지 확인.
-      **미충족 시 100% 장애.** 3단계 `bin-api-manager`가 지정 id를 보내도 구버전 매니저가 무시해 모든 대화가 불일치로 생성된다.
-- [ ] **G3. 3단계 배포 전:** 2단계 번들 배포 후 소킹.
-      **근거를 정정한다.** rev2는 "= `BootExpire`(24시간)"라고 썼으나 `BootExpire`는 **토큰**의 갱신 가능 기간이지 **번들**의 잔존 기간이 아니다. 실제로는 이렇다.
-      - HTTP 캐시 꼬리: 5분 (`square-admin/nginx.conf` `max-age=300`)
-      - 열려 있는 탭: **무기한.** 24시간을 기다려도 사라지지 않는다. 그 방문자는 설계 §8.1의 "401 처리 없음" 경로를 타며, 이는 설계가 명시적으로 수용한 손실이다
-      따라서 24시간은 유도된 경계가 아니라 **다수 세션을 흘려보내기 위한 보수적 소킹**이다. 나중에 "경계가 아니니 없애자"가 되지 않도록 이 문장을 유지한다.
+- [ ] **G1. A 배포 전:** `bin-ai-manager`·`bin-webchat-manager`·`bin-api-manager`가 **같은 배포 단위**로 나가는지 확인.
+      api-manager만 먼저 나가면 지정 id를 보내도 구버전 매니저가 무시해 **모든 대화가 불일치**로 생성된다.
+      즉 §1.2 표의 4번이 롤아웃 창이 아니라 **전면**으로 커진다. 병합 착륙에서 가장 중요한 게이트다.
+- [ ] **G2. A 배포 직후:** 신규 부팅이 정상 동작하는지 프로덕션에서 확인(§5의 첫 두 항목).
+      실패하면 즉시 롤백한다.
+- [ ] **G3. B는 A 직후에 착륙시킨다.** §1.2의 1~4번이 열려 있는 기간을 짧게 유지한다.
+      A와 B 사이에 소킹 기간을 두는 것은 rev10의 3단계 구성에서만 의미가 있었다. 병합에서는 반대로 **짧을수록 좋다.**
 
 ### 1.4 롤백
 
 | 단계 | 롤백 | 근거 |
 |---|---|---|
-| 1 | 안전. 되돌리면 필드가 사라질 뿐 | 단 3단계가 이미 배포됐다면 **먼저 3단계를 되돌려야 한다** |
-| 2 | **3단계 배포 후에는 되돌리면 안 된다.** 4시간 장애가 재현된다 | 이 계획에서 유일하게 비가역인 순서 제약 |
-| 3 | 안전 | 되돌리면 `scope_version`이 1로 돌아가고, **계기 6이 함께 잠든다**(§3.3). rev2는 계기 6을 무조건 발동으로 두어 이 롤백이 전면 장애가 됐다. `scope_version` 게이팅이 그것을 고친다. 롤백 시점에 살아 있는 `scope_version: 2` 토큰은 계기 6으로 **1회씩** 재부팅한 뒤 새 토큰(=1)을 받아 잠든다. 롤백 배포 자체도 replica가 섞이므로 §9.2의 거울상이며, §3.2와 동일한 계산으로 **약 22%(2/9)**다. 유계이며 수렴한다 |
+| A | 안전 | 강제가 사라지고 필드도 사라진다. 되돌린 뒤 부팅한 방문자는 병합 이전 동작으로 돌아간다. 롤백 배포 중에는 §1.2 표의 4번과 같은 혼재 창이 생기며, 같은 약 22%·같은 복구 수단(새로고침)이다 |
+| B | 안전 | 클라이언트가 재부팅 계약을 잃을 뿐 서버는 그대로다. §1.2 표의 1~4번이 다시 열린다 |
 
----
+**A를 되돌릴 때 B가 이미 배포돼 있어도 안전하다.** B의 계기 6은 `scope_version >= 2`에서만 발동하는데, 되돌린 서버는 그 필드를 발급하지 않으므로 함께 잠든다.
 
-## 2. 1단계 (monorepo): 발급·배관·409 경로
+## 2. A 단계 (monorepo, 한 PR): 발급·배관·409·강제
 
 브랜치: `VOIP-1501-Bind-direct-token-to-allowed-resource` (현재 워크트리)
 
@@ -176,7 +197,33 @@
       `errorResponse`의 `stderrors.As(&ve)` 분기가 409로 매핑한다
 - [ ] `webchat_sessions`는 기본키 외 유니크 인덱스가 없으므로(`sessions.sql:20`) 분류가 aicall보다 단순하다
 
-### 2.7 1단계 문서 (외부 노출 표면이 여기서 생긴다)
+### 2.7 강제 (rev10까지의 3단계를 병합)
+
+(이 절은 §2의 일부다. 별도 브랜치를 만들지 않는다)
+
+- [ ] `AuthBoot`의 `ScopeVersion` 참조를 `DirectScopeVersionEnforced`(=2)로 변경. **`scope`와 `BootResponse` 양쪽에 동일하게 반영된다**(§2.2의 단일 출처 규칙 덕분에 자동)
+- [ ] `bin-api-manager/lib/middleware/authenticate.go` `buildJWTIdentity`(`:122-144`) direct 분기에 거부 2조건
+      `scope.AllowedResourceID == uuid.Nil` → 401, `scope.ScopeVersion < 2` → 401
+- [ ] `bin-api-manager/lib/middleware/direct_resource_scope.go` 신설. 설계 §4.3의 8단계
+- [ ] **미들웨어에 주석으로 2차 파라미터 공백을 남긴다**(설계 §4.3 요구).
+      `/aicalls/:id/<child>/:child_id` 형태가 추가되면 `:child_id`를 아무도 검사하지 않는다
+- [ ] `cmd/api-manager/main.go`: `RegisterHandlersWithOptions`(`:336`) **이전에** `v1.Use(middleware.DirectResourceScope())`
+- [ ] 핸들러 6곳 덮어쓰기(설계 §4.4 표). 전부 덮어쓰기 직전 `AllowedResourceID == uuid.Nil` 가드.
+      `WebchatMessageList`의 기존 `sessionID == uuid.Nil` 가드(`webchat_message.go:108-113`)는 **제거하지 않는다**
+- [ ] `AIcallCreate` direct 분기(`aicall.go:66-72`)에 `referenceType = ReferenceTypeNone`, `referenceID = uuid.Nil` 강제
+- [ ] `AIcallGetsByCustomerID`(`aicall.go:137`) direct 분기를 전면 거부로
+- [ ] `pkg/websockhandler/etc.go` `validateTopics`: nil 가드 + 정규 UUID 검사 + 배정 대조(설계 §4.6)
+- [ ] `etc.go:39-42` 주석 고쳐쓰기. **현재 주석이 "리소스 id를 검증하지 않는다"고 명시해 변경 후 거짓이 된다**
+- [ ] `validateTopic`(단수, `etc.go:87-150`) 제거하고 11개 케이스를 `Test_validateTopics`로 이관
+- [ ] RST: direct 토큰 접근 범위(`GET /aicalls` 차단 포함). 클린 빌드 + `git add -f build/`
+- [ ] **롤아웃 관측 수단.** `ScopeVersion < 2` 401과 미들웨어 403에 각각 카운터 또는 구조화 로그를 붙인다.
+      **3단계 배포 중 go/no-go와 롤백 판단의 입력이다.**
+      G3 평가에는 쓸 수 없다. 이 코드가 3단계에서야 배포되므로 그 시점에는 구조적으로 0이며,
+      0을 "구형 토큰 없음, 진행 안전"으로 오독하면 안 된다. G3는 §1.3대로 시간 기반 보수적 소킹이다
+- [ ] `bin-api-manager/docs/architecture.md`·`auth.md`: 미들웨어와 강제 규칙
+
+
+### 2.8 A 단계 문서 (외부 노출 표면이 여기서 생긴다)
 
 **OpenAPI (§1.1 정정 반영):**
 
@@ -212,7 +259,7 @@
       (**`bin-webchat-manager/docs/`에는 `plans/`뿐이라 대상 파일이 없다.** 새로 만들지 않는다)
 - [ ] 라우팅 자체는 두 매니저 모두 변경 없음(기존 DTO에 필드만 추가). "라우팅 변경"으로 서술하지 말 것
 
-### 2.8 1단계 테스트
+### 2.9 발급·배관 테스트
 
 **설계 §7 중 1단계에 해당하는 항목 전부.** 명시적으로:
 
@@ -247,7 +294,36 @@
       `AuthBoot`이 `UUIDCreate()` 호출 1건과 `TimeGetCurTimeAdd(BootSessionMaxLifetime)` 호출 1건을 추가로 하는데,
       현재 기대는 `TimeGetCurTimeAdd(BootExpiration)` 하나뿐이다(`:324`). gomock이 예상 밖 호출로 실패한다
 
-### 2.9 1단계 검증
+### 2.10 강제 테스트
+
+**설계 §7의 서버 항목 중 3단계에 해당하는 전부.** 명시적으로:
+
+- [ ] 미들웨어 0단계: `auth_identity` 없음·타입 불일치 시 401 abort
+- [ ] 미들웨어 1단계: **direct가 아닌 신원(agent/accesskey/delegate)은 그대로 통과**
+- [ ] 미들웨어 2단계: **경로 파라미터가 없으면 통과**(생성·전송 계열)
+- [ ] 미들웨어: **경로 파라미터 일치 시 통과, 불일치 시 403** (기본 케이스)
+- [ ] 미들웨어 3단계: 파라미터는 있는데 `id`가 아닌 경우 403 (fail-closed)
+- [ ] 미들웨어 4단계: 파싱 불가 문자열 403
+- [ ] 미들웨어 5단계: `DirectScope` nil 403, `AllowedResourceID` Nil + 경로 id 전부 0 → 403
+- [ ] 미들웨어 6단계: 대소문자·중괄호 UUID가 핸들러와 동일 판정
+- [ ] 미들웨어: **`GET /aimessages/{message_id}`가 자동 거부**되는지(종류 불일치)
+- [ ] 미들웨어 등록 위치 회귀(`RegisterHandlersWithOptions` 이전)
+- [ ] 6개 핸들러: 남의 id를 보내도 자기 리소스에 기록되는지
+- [ ] 6개 핸들러: 덮어쓰기 직전 `AllowedResourceID == uuid.Nil` 가드가 동작하는지
+- [ ] `WebchatMessageList`의 기존 `sessionID == uuid.Nil` 가드가 **제거되지 않았는지**
+- [ ] `AIcallCreate`: `reference_type: contact_case`가 `none`으로 강제되는지
+- [ ] `AIcallCreate`: 임의 `reference_id`가 `uuid.Nil`로 강제되는지 (**별도 케이스**)
+- [ ] `AIcallGetsByCustomerID`가 direct를 거부하는지
+- [ ] `buildJWTIdentity`: `AllowedResourceID` Nil 토큰, `ScopeVersion < 2` 토큰 각각 401.
+      v1.0·authProtected·WS 업그레이드 세 경로 모두
+- [ ] `validateTopics`: 빈 문자열·부분 문자열·비정규 표기 거부, 배정 id 통과, 타 id 거부
+- [ ] `validateTopics`: **관리자·매니저의 4조각 trailing colon 구독이 여전히 통과**
+- [ ] `validateTopics`: **`webchat_widget` direct 토큰이 `aicall` 타입 구독을 여전히 거부**
+- [ ] `validateTopics`: `DirectScope` nil 시 패닉 없이 거부
+- [ ] `validateTopic`(단수) 제거 후 11개 케이스가 이관되어 통과하는지
+- [ ] **`AuthBoot` 응답의 `scope_version`이 2인지.** 클레임만 2로 바뀌고 응답이 1로 남는 회귀를 잡는다
+
+### 2.11 A 단계 검증
 
 **빌드 순서를 지킨다.** local `replace` 지시자 때문에 `bin-common-handler`의 인터페이스와 mock이 먼저 착륙해야 나머지가 컴파일된다.
 
@@ -271,10 +347,10 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 ---
 
-## 3. 2단계 (monorepo-javascript): 클라이언트 재부팅 계약
+## 3. B 단계 (monorepo-javascript): 클라이언트 재부팅 계약
 
 브랜치: `VOIP-1501-Bind-direct-token-to-allowed-resource`
-**선행: 게이트 G1**
+**선행: 게이트 G2. A 직후에 착륙시킨다(G3)**
 
 ### 3.1 선행 리팩터링: 상태 코드 보존
 
@@ -386,7 +462,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
       계기 1 복구가 살아 있고, `scope_version >= 2`에서는 불일치 생성이 리셋하지 않으므로
       라운드 2의 무한 루프도 닫힌 채로 남는다.
 
-      **3단계 롤아웃의 소진 확률은 약 22%(2/9)다.** rev6이 적은 1/8은 과소평가였다.
+      **A 단계 롤링 배포 창의 소진 확률은 약 22%(2/9)다.** rev6이 적은 1/8은 과소평가였다.
 
       한 주기의 결과가 셋이다. replica 2개 기준으로 (부팅, 생성) 조합이 넷인데,
       - **종단 성공 1/4** (신-신): id 일치, 이후 어느 replica에 가도 동작한다. 흡수 상태
@@ -471,12 +547,12 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
       **불일치로 생성된 리소스는 지우지 않고 남긴다.** 지우는 행위가 §3.2 누출의 원인이었고,
       남겨 두는 것은 설계 §3.4와 일관된다(고아 리소스는 만료로 정리된다).
 
-      **게이팅이 필수인 이유(라운드 2 CRITICAL).** 무조건 대조하면 1단계가 inert인 동안
+      **게이팅이 필수인 이유(라운드 2 CRITICAL).** 무조건 대조하면 서버가 아직 배정 번호를 쓰지 않는 동안
       서버가 항상 자기 id를 생성하므로(`aicallhandler/db.go:41`, `sessionhandler/create.go:37`)
       **모든 대화가 매번 불일치**가 된다. G3가 요구하는 24시간 내내 두 위젯이 전면 장애가 나며,
       §3.2의 리셋 때문에 상한에도 걸리지 않아 무한 부팅 루프가 된다.
 
-      **계기 6이 여전히 필요한 이유.** 3단계 롤아웃 창에서 신버전이 발급한 토큰(`scope_version: 2`)의
+      **계기 6이 여전히 필요한 이유.** A 단계 롤링 배포 창에서 신버전이 발급한 토큰(`scope_version: 2`)의
       생성 요청을 구버전 인스턴스가 처리하면 서버 생성 id로 대화가 만들어지는데,
       그때 계기 1~5 중 **어느 것도 걸리지 않는다.** WS는 소켓이 끊기고 같은 토픽으로 재연결만 반복하며,
       `POST /aimessages`는 401/403/409가 아니라 **404**다. 403은 언마운트 시점에야 나온다.
@@ -495,7 +571,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
         다시 잡을 필요가 없다. `expire`만 갱신한다
       - **갱신 시 WebSocket을 재연결하지 않는다**(§1.1 근거)
 
-### 3.4 2단계 테스트
+### 3.4 B 단계 테스트
 
 - [ ] 계기별 재부팅 호출 검증 (1·2·3·5·6)
 - [ ] 계기 5: 실패 요청을 재생하지 않고 재초기화하는지
@@ -527,7 +603,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 - [ ] 계기 1: 상태 객체가 말풍선으로 렌더링되지 않는지
 - [ ] 429에서 즉시 재시도하지 않는지
 
-### 3.5 2단계 검증
+### 3.5 B 단계 검증
 
 `monorepo-javascript/CLAUDE.md`의 PR 전 게이트를 앱마다 수행한다. 예외 없다.
 **두 앱의 테스트 러너가 다르므로 명령이 다르다.** 같은 명령을 쓰면 한쪽 검증이 무력화된다.
@@ -556,67 +632,7 @@ Vitest 요약은 `Tests  N passed (N)`처럼 콜론이 없어 `grep "Tests:"`가
 
 ---
 
-## 4. 3단계 (monorepo): 강제
-
-브랜치: 신규. **선행: 게이트 G2, G3**
-
-- [ ] `AuthBoot`의 `ScopeVersion` 참조를 `DirectScopeVersionEnforced`(=2)로 변경. **`scope`와 `BootResponse` 양쪽에 동일하게 반영된다**(§2.2의 단일 출처 규칙 덕분에 자동)
-- [ ] `bin-api-manager/lib/middleware/authenticate.go` `buildJWTIdentity`(`:122-144`) direct 분기에 거부 2조건
-      `scope.AllowedResourceID == uuid.Nil` → 401, `scope.ScopeVersion < 2` → 401
-- [ ] `bin-api-manager/lib/middleware/direct_resource_scope.go` 신설. 설계 §4.3의 8단계
-- [ ] **미들웨어에 주석으로 2차 파라미터 공백을 남긴다**(설계 §4.3 요구).
-      `/aicalls/:id/<child>/:child_id` 형태가 추가되면 `:child_id`를 아무도 검사하지 않는다
-- [ ] `cmd/api-manager/main.go`: `RegisterHandlersWithOptions`(`:336`) **이전에** `v1.Use(middleware.DirectResourceScope())`
-- [ ] 핸들러 6곳 덮어쓰기(설계 §4.4 표). 전부 덮어쓰기 직전 `AllowedResourceID == uuid.Nil` 가드.
-      `WebchatMessageList`의 기존 `sessionID == uuid.Nil` 가드(`webchat_message.go:108-113`)는 **제거하지 않는다**
-- [ ] `AIcallCreate` direct 분기(`aicall.go:66-72`)에 `referenceType = ReferenceTypeNone`, `referenceID = uuid.Nil` 강제
-- [ ] `AIcallGetsByCustomerID`(`aicall.go:137`) direct 분기를 전면 거부로
-- [ ] `pkg/websockhandler/etc.go` `validateTopics`: nil 가드 + 정규 UUID 검사 + 배정 대조(설계 §4.6)
-- [ ] `etc.go:39-42` 주석 고쳐쓰기. **현재 주석이 "리소스 id를 검증하지 않는다"고 명시해 변경 후 거짓이 된다**
-- [ ] `validateTopic`(단수, `etc.go:87-150`) 제거하고 11개 케이스를 `Test_validateTopics`로 이관
-- [ ] RST: direct 토큰 접근 범위(`GET /aicalls` 차단 포함). 클린 빌드 + `git add -f build/`
-- [ ] **롤아웃 관측 수단.** `ScopeVersion < 2` 401과 미들웨어 403에 각각 카운터 또는 구조화 로그를 붙인다.
-      **3단계 배포 중 go/no-go와 롤백 판단의 입력이다.**
-      G3 평가에는 쓸 수 없다. 이 코드가 3단계에서야 배포되므로 그 시점에는 구조적으로 0이며,
-      0을 "구형 토큰 없음, 진행 안전"으로 오독하면 안 된다. G3는 §1.3대로 시간 기반 보수적 소킹이다
-- [ ] `bin-api-manager/docs/architecture.md`·`auth.md`: 미들웨어와 강제 규칙
-
-### 4.1 3단계 테스트
-
-**설계 §7의 서버 항목 중 3단계에 해당하는 전부.** 명시적으로:
-
-- [ ] 미들웨어 0단계: `auth_identity` 없음·타입 불일치 시 401 abort
-- [ ] 미들웨어 1단계: **direct가 아닌 신원(agent/accesskey/delegate)은 그대로 통과**
-- [ ] 미들웨어 2단계: **경로 파라미터가 없으면 통과**(생성·전송 계열)
-- [ ] 미들웨어: **경로 파라미터 일치 시 통과, 불일치 시 403** (기본 케이스)
-- [ ] 미들웨어 3단계: 파라미터는 있는데 `id`가 아닌 경우 403 (fail-closed)
-- [ ] 미들웨어 4단계: 파싱 불가 문자열 403
-- [ ] 미들웨어 5단계: `DirectScope` nil 403, `AllowedResourceID` Nil + 경로 id 전부 0 → 403
-- [ ] 미들웨어 6단계: 대소문자·중괄호 UUID가 핸들러와 동일 판정
-- [ ] 미들웨어: **`GET /aimessages/{message_id}`가 자동 거부**되는지(종류 불일치)
-- [ ] 미들웨어 등록 위치 회귀(`RegisterHandlersWithOptions` 이전)
-- [ ] 6개 핸들러: 남의 id를 보내도 자기 리소스에 기록되는지
-- [ ] 6개 핸들러: 덮어쓰기 직전 `AllowedResourceID == uuid.Nil` 가드가 동작하는지
-- [ ] `WebchatMessageList`의 기존 `sessionID == uuid.Nil` 가드가 **제거되지 않았는지**
-- [ ] `AIcallCreate`: `reference_type: contact_case`가 `none`으로 강제되는지
-- [ ] `AIcallCreate`: 임의 `reference_id`가 `uuid.Nil`로 강제되는지 (**별도 케이스**)
-- [ ] `AIcallGetsByCustomerID`가 direct를 거부하는지
-- [ ] `buildJWTIdentity`: `AllowedResourceID` Nil 토큰, `ScopeVersion < 2` 토큰 각각 401.
-      v1.0·authProtected·WS 업그레이드 세 경로 모두
-- [ ] `validateTopics`: 빈 문자열·부분 문자열·비정규 표기 거부, 배정 id 통과, 타 id 거부
-- [ ] `validateTopics`: **관리자·매니저의 4조각 trailing colon 구독이 여전히 통과**
-- [ ] `validateTopics`: **`webchat_widget` direct 토큰이 `aicall` 타입 구독을 여전히 거부**
-- [ ] `validateTopics`: `DirectScope` nil 시 패닉 없이 거부
-- [ ] `validateTopic`(단수) 제거 후 11개 케이스가 이관되어 통과하는지
-- [ ] **`AuthBoot` 응답의 `scope_version`이 2인지.** 클레임만 2로 바뀌고 응답이 1로 남는 회귀를 잡는다
-
-### 4.2 3단계 검증
-
-- [ ] `bin-api-manager` 5단계 워크플로우 통과
-
----
-
-## 5. 프로덕션 E2E (3단계 배포 후)
+## 5. 프로덕션 E2E
 
 - [ ] 브라우저 2개로 같은 위젯을 열고 교차 접근이 불가한지
 - [ ] 세션 종료 후 재부팅으로 새 대화가 시작되는지
