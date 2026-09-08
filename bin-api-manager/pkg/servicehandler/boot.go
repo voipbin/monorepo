@@ -32,22 +32,20 @@ const directHashFingerprintDomain = "voipbin/direct-hash-fingerprint/v1\x00"
 // directHashFingerprint derives the value stored in DirectScope.HashFingerprint
 // and re-checked by AuthBootRefresh.
 //
-// Keyed with the signing key rather than a bare digest. The underlying direct
-// hash is only 48 bits (bin-direct-manager generateHash uses 6 random bytes) in
-// a known format, so an unkeyed SHA-256 of it is brute-forceable offline in
-// hours, and that recovery would outlive both the token's expiry and the boot
-// session ceiling.
+// Keyed with the signing key rather than a bare digest, because this value
+// reaches logs. Both the WebSocket paths and a good many REST handlers log the
+// whole *auth.AuthIdentity (bin-api-manager/pkg/websockhandler/subscription.go:35,
+// bin-api-manager/server/providers.go:29,
+// bin-api-manager/server/billing_account.go:25, and others), and initLog
+// (bin-api-manager/internal/config/main.go:242) installs joonix.NewFormatter --
+// a JSON formatter, so encoding/json follows the nested *DirectScope pointer and
+// serializes every tagged field, this one included.
 //
-// The exposure it guards against is the identity reaching a log, which it does
-// today. The WebSocket paths and a good many REST handlers log the whole
-// *auth.AuthIdentity (websockhandler/subscription.go:35, server/providers.go:29,
-// server/billing_account.go:25, and others), and initLog
-// (internal/config/main.go:242) installs joonix.NewFormatter -- a JSON formatter,
-// so encoding/json follows the nested *DirectScope pointer and serializes every
-// tagged field, this one included. Keying is what makes the logged value inert:
-// an unkeyed digest would let anyone with log access recover the 48-bit direct
-// hash offline, and that recovery outlives both the token's expiry and the boot
-// session ceiling.
+// That is safe only because the derivation is keyed. The underlying direct hash
+// is 48 bits (bin-direct-manager generateHash uses 6 random bytes) in a known
+// format, so a bare SHA-256 of it is brute-forceable offline in hours, and the
+// recovered hash would outlive both the token's expiry and the boot session
+// ceiling.
 //
 // HMAC keeps every property the check needs: deterministic, stable across
 // replicas and restarts, and full width (no truncation).
