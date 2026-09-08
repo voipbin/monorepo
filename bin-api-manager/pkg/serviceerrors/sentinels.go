@@ -23,6 +23,23 @@ var (
 	ErrServiceUnavailable           = stderrors.New("service unavailable")
 	ErrInsufficientBalance          = stderrors.New("insufficient balance")
 
+	// ErrAccountExpired is returned when an operation is refused because the
+	// caller's customer account is status='expired' (VOIP-1491). The unverified
+	// -account cleanup job (bin-customer-manager cleanup.go) moves an account
+	// here 72h after signup when the email was never verified. It is a
+	// permission-denied-class refusal, not a credential failure: the caller
+	// proved who they are and is being turned away on account state. Recovery
+	// is POST /auth/email-verify-resend.
+	ErrAccountExpired = stderrors.New("account expired")
+
+	// ErrAccountDeleted is returned when an operation is refused because the
+	// caller's customer account is status='deleted' (VOIP-1491). Normally the
+	// customer_deleted cascade soft-deletes the agent so authentication fails
+	// earlier, but that cascade is known to miss customers (VOIP-1395), so this
+	// is a deliberate second layer. Unlike ErrAccountExpired there is no
+	// recovery path to advertise.
+	ErrAccountDeleted = stderrors.New("account deleted")
+
 	// ErrCaseClosed is returned whenever an operation requires the target
 	// case to be status='open' and it is not -- originally Case-message-send
 	// validation (design §4.5 step 1), now also reused by
