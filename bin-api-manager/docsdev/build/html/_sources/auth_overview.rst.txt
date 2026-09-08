@@ -35,6 +35,10 @@ Endpoint Summary
      - None
      - Serves an HTML page that auto-submits the verification token (link target from the verification email).
    * - POST
+     - ``/auth/email-verify-resend``
+     - None
+     - Send a fresh verification link to an address whose original link expired or was lost.
+   * - POST
      - ``/auth/login``
      - Username/password
      - Exchange agent credentials for a 7-day JWT. See :ref:`Authentication quickstart <quickstart-authentication>`.
@@ -73,7 +77,9 @@ Endpoint Summary
 
 .. note:: **AI Implementation Hint**
 
-   All unauthenticated ``/auth/*`` endpoints (``login``, ``signup``, ``email-verify``, ``boot``, ``password-forgot``, ``password-reset``) share a single IP-based rate limiter: **up to approximately 10 requests/second per client IP, burst 20**. ``/auth/unregister`` and ``/auth/delegate`` require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (**10 requests/second, burst 20**). Exceeding either limiter returns ``429`` with reason ``RATE_LIMIT_EXCEEDED`` (see :ref:`Error Reason Codes <error-reason-catalog>`).
+   All unauthenticated ``/auth/*`` endpoints (``login``, ``signup``, ``email-verify``, ``email-verify-resend``, ``boot``, ``password-forgot``, ``password-reset``) share a single IP-based rate limiter: **up to approximately 10 requests/second per client IP, burst 20**. ``/auth/unregister`` and ``/auth/delegate`` require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (**10 requests/second, burst 20**). Exceeding either limiter returns ``429`` with reason ``RATE_LIMIT_EXCEEDED`` (see :ref:`Error Reason Codes <error-reason-catalog>`).
+
+   ``/auth/email-verify-resend`` carries an **additional per-account limit** on top of that shared IP tier: a **60-second cooldown** between sends and a cap of **5 sends per 24 hours**, both tracked per customer account rather than per IP. The IP tier alone cannot stop a distributed mailbomb aimed at one address. Requests that exceed the per-account limits still return ``200`` with an empty body — no email is sent, and nothing in the response distinguishes that outcome.
 
 .. note:: **AI Implementation Hint — response body shape differs by endpoint**
 
@@ -89,12 +95,13 @@ Auth & Account Lifecycle
     +----------+   +--------------+    +----------------+    +--------------+
     | initial  |-->|   active     |--->|    active      |--->|  JWT / key   |
     +----------+   +--------------+    +----------------+    +--------------+
-         |                                    |
-         | (no verification                   | POST /auth/unregister
-         |  within timeout)                   v
-         v                              +----------------+
-    +----------+                        |    frozen      |
-    | expired  |                        | (30-day grace) |
+         |          ^                         |
+         | no       | POST /auth/email-       | POST /auth/unregister
+         | verify   | verify-resend           |
+         | within   | then email-verify       v
+         v          |                   +----------------+
+    +----------+    |                   |    frozen      |
+    | expired  |----+                   | (30-day grace) |
     +----------+                        +----------------+
                                           |             |
                             DELETE /auth/unregister      (grace expires,
@@ -227,6 +234,40 @@ Serves a static HTML confirmation page (the link target embedded in the verifica
      - Query, Required
      - 64-character lowercase hex string. An invalid/missing token returns ``400`` before the page is rendered.
 
+If the token has expired or was already used, the page reports that the link is no longer valid and offers a form to request a new one, which submits to ``POST /auth/email-verify-resend``.
+
+
+Email Verify Resend — ``POST /auth/email-verify-resend``
+----------------------------------------------------------
+Issues a new verification token for an account whose original link expired or was never received, and emails it to the registered address. This is the recovery path out of the ``expired`` status: an account that missed the 72-hour verification window is not permanently lost.
+
+**Request body**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 12 68
+
+   * - Field
+     - Type
+     - Description
+   * - ``email``
+     - String, Required
+     - The email address the account was registered with.
+
+**Response — 200 OK (always)**
+
+.. code::
+
+    {}
+
+.. note:: **AI Implementation Hint**
+
+   This endpoint **always** returns ``200`` with an empty body — for a registered address, an unknown address, an already-verified account, a rate-limited request, and even a malformed JSON body. That uniformity is deliberate: any differentiated response would turn an unauthenticated endpoint into an email-existence oracle. Do not treat ``200`` as confirmation that an email was sent, and do not build retry logic that assumes otherwise. Note that the uniformity covers the response *content*, not its timing: the work is synchronous, so an unknown address returns after a single database lookup while a recoverable one also performs an agent lookup, two cache writes and an email send, leaving a measurable latency difference. This residual is not specific to this endpoint: ``/auth/signup`` and ``/auth/password-forgot`` are synchronous and always-200 in the same way, and carry the same timing residual.
+
+   A resend is only performed when the account is unverified, is not ``frozen`` or ``deleted``, and still has a live agent for the address. Sends are limited to one per **60 seconds** and **5 per 24 hours** per account, on top of the shared per-IP ``/auth/*`` limiter.
+
+   The new token is valid for **24 hours**, the same as a token issued at signup. Resending does not invalidate an earlier token — any previously issued token stays usable until its own expiry, so a user who later finds the original email can still follow it.
+
 
 Login (Token) — ``POST /auth/login``
 --------------------------------------
@@ -246,7 +287,26 @@ Exchanges an agent's ``username``/``password`` for a JWT valid for 7 days. Fully
      - String, Required
      - The agent's password.
 
-Response: ``{"username": "...", "token": "eyJ..."}``. The token is also set as an ``HttpOnly``, ``Secure``, ``SameSite=Strict`` cookie named ``token`` on the response. Errors: ``400`` on missing fields, malformed JSON, or invalid credentials (login failures are not distinguished from bad requests — both return a bare ``400``).
+Response: ``{"username": "...", "token": "eyJ..."}``. The token is also set as an ``HttpOnly``, ``Secure``, ``SameSite=Strict`` cookie named ``token`` on the response.
+
+**Errors**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 85
+
+   * - Status
+     - Cause
+   * - 400
+     - Missing fields, malformed JSON, or invalid credentials. Credential failures return a **bare 400 with no response body** — a wrong password is deliberately not distinguished from an unknown username, to avoid a username-enumeration oracle. A failure to look up the account's status (see below) also returns this same bare ``400``.
+   * - 403
+     - The credentials were correct, but the account's status forbids issuing a token: ``ACCOUNT_EXPIRED`` (email address was never verified, so the account was expired by the cleanup job) or ``ACCOUNT_DELETED``. Unlike the ``400`` above, these carry a full error envelope, and ``ACCOUNT_EXPIRED`` carries ``details[0].recovery_endpoint`` — byte-identical to what the ``/v1.0/*`` gate returns for the same account.
+
+.. note:: **AI Implementation Hint — login can now fail on account status**
+
+   ``POST /auth/login`` verifies the password **first** and only then checks the customer's account status, so the status check never becomes an enumeration oracle. The status check is a **deny-list**: only ``expired`` and ``deleted`` are refused. ``initial`` (a normal user inside the 72-hour post-signup verification window) and ``frozen`` both still log in successfully — ``frozen`` in particular **must** keep working, because the frozen self-recovery endpoint ``DELETE /auth/unregister`` requires authentication, so blocking a frozen login would remove the only route to recovery.
+
+   The account-status lookup fails **closed**: if the customer lookup itself fails, no token is issued (returned as the same opaque ``400``, since it is not a determination about the account). This is deliberately the opposite of the ``/v1.0/*`` gate, which fails open — an outage must not become a window in which credentials can be minted freely.
 
 
 Boot (Direct Token) — ``POST /auth/boot``
@@ -496,6 +556,14 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
      - Neither or both of ``password``/``confirmation_phrase`` supplied; password re-authentication failed; ``confirmation_phrase`` is not exactly ``"DELETE"``; malformed JSON body; caller lacks ``PermissionCustomerAdmin``; caller is authenticated via a direct (boot) token (``DIRECT_ACCESS_NOT_SUPPORTED``); or the downstream freeze/delete call failed. The handler returns a bare ``400`` for all of these cases — it does not distinguish permission/direct-access failures with a ``403``, unlike ``POST /auth/delegate``.
    * - 401
      - Missing/invalid/expired token or access key (returned by the shared ``Authenticate()`` middleware, as a structured error envelope — see the response-shape note above).
+   * - 403
+     - The account's customer status is ``expired`` or ``deleted``. Password re-authentication runs the same login path that refuses those two statuses (VOIP-1491), so the refusal surfaces here instead of failing a step later. Both were already dead ends on this endpoint — the freeze transition requires ``active`` — so this only makes the refusal earlier and honest.
+   * - 500
+     - The customer lookup performed during password re-authentication failed for any other reason (RPC timeout, or the customer-manager circuit breaker being open). That lookup fails **closed**, unlike the ``/v1.0/*`` gate's, so an unreachable customer-manager blocks the request rather than letting it through.
+
+.. note::
+
+   ``403`` and ``500`` are reachable only through the ``password`` branch, which re-authenticates by calling ``AuthLogin``; before VOIP-1491 that branch could only ever produce a ``400``. The ``confirmation_phrase`` branch does not re-authenticate and is unaffected.
 
 **DELETE /auth/unregister** — cancels a scheduled deletion and restores ``active`` status. No request body. Only works while the account is ``frozen`` within the 30-day grace period.
 
@@ -519,6 +587,10 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
    Once a customer account is ``frozen``, every other authenticated ``/v1.0/*`` request from that customer (except from a ``PermissionProjectSuperAdmin``, and except direct/boot tokens, which skip the check entirely) is rejected with ``403 ACCOUNT_FROZEN`` by the shared authentication middleware — not just calls to resource endpoints that would otherwise mutate data. The error's ``details[0]`` carries ``deletion_scheduled_at``, ``deletion_effective_at`` (30 days after scheduling), and ``recovery_endpoint: "DELETE /auth/unregister"`` so client UIs (admin/talk consoles) can render a consistent "account frozen, recover here" screen. ``POST`` and ``DELETE /auth/unregister`` themselves are explicitly exempted from this block so a frozen customer can still self-recover.
 
    The same middleware also rejects any authenticated request from a ``deleted`` customer with ``403 ACCOUNT_DELETED``. In the steady state this is unreachable — a deleted customer's agents/access keys should already have been soft-deleted by the ``customer_deleted`` cascade and fail earlier at authentication — but this is a deliberate second layer in case that cascade misses a resource, so credentials belonging to a deleted account can never keep working indefinitely. Unlike ``frozen``, ``deleted`` is not recoverable via ``/auth/unregister``.
+
+   An ``expired`` customer — signup completed but the email address was never verified, so the unverified-account cleanup job moved the account out of ``initial`` — is rejected the same way, with ``403 ACCOUNT_EXPIRED``. Its ``details[0]`` carries ``recovery_endpoint: "POST /auth/email-verify-resend"``, so a client can point the user at a new verification email without string-matching the message. ``initial`` is **not** blocked: it is the normal state during the 72-hour verification window. Note that requesting a resend requires the account to still have a live agent for the address; if it does not, direct the user to ``support@voipbin.net`` rather than telling them to sign up again, because an account expired under the current cleanup behaviour keeps its customer row live and will fail the signup duplicate-email check.
+
+   The gate's customer lookup fails **open**: if the customer record cannot be fetched, the request is allowed through rather than blocked, because api-manager holds no customer cache and failing closed would take every ``/v1.0/*`` route down whenever customer-manager is unreachable. Occurrences are counted by the ``api_manager_account_status_lookup_failed_total`` metric, labelled by ``identity_type`` and ``error_class``. ``POST /auth/login`` deliberately does the opposite and fails closed — see the login section above.
 
 
 Delegate (Superadmin Support Access) — ``POST /auth/delegate``

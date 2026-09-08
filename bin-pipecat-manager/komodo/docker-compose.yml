@@ -18,7 +18,8 @@
 # "connection refused" on localhost:8000 and the flow tore the call
 # down (2026-08-22 incident, NOJIRA-Fix-pipecat-runner-sidecar). Same
 # image (all Python deps are baked in), network_mode
-# "service:pipecat-manager" reproduces the GKE pod's shared localhost.
+# "service:pipecat-manager" reproduces the GKE pod's shared localhost
+# (now "service:pipecat-manager-N" after the 2-replica split below).
 #
 # P15+16 (NOJIRA-Scale-pipecat-manager-to-two-replicas): the single-pod
 # reproduction above is scaled to 2 replicas by hand-duplicating the
@@ -54,6 +55,30 @@
 # `docker rm -f` them if present. The same check applies when rolling
 # back this PR (reverting to the 2-service form leaves the new 4-service
 # names as orphans instead).
+#
+# VOIP-1482: the Google service account for Cloud TTS/STT. GKE handed the
+# runner Application Default Credentials from the NODE's service account,
+# so k8s/deployment.yml mounted no key and the Komodo migration carried
+# none - every Google TTS/STT call has failed since the bare-metal cutover.
+# This injects the shared bin-manager service account instead, the same one
+# storage/rag/transcribe/tts already use. Note it is a DIFFERENT principal
+# than the GKE node account, so verify one Google TTS and one Google STT
+# call after the first deploy.
+#
+# DEPLOY PRECONDITION: GCP_SA_JSON comes from komodo/environment.env, which
+# komodo-api-deploy.sh PATCHes into the Stack's `environment` field. If that
+# variable is unset at deploy time, Compose refuses to start the secret's
+# consumers and they stay in Created forever (restart: always never applies
+# to a container that never reached Running - see the sidecar note below).
+# That would take BOTH runners down and fail every ai_talk, which is worse
+# than today's Google-only breakage. The deploy itself goes red (compose up
+# exits non-zero), but only AFTER the runners have been recreated - so a
+# failed deploy here is a live outage, not a safe no-op. Set the Variable
+# and redeploy.
+secrets:
+  gcp_sa_json:
+    environment: "GCP_SA_JSON"
+
 services:
   pipecat-manager-1:
     image: voipbin/bin-pipecat-manager:__IMAGE_TAG__
@@ -112,9 +137,18 @@ services:
     depends_on:
       pipecat-manager-1:
         condition: service_healthy
-    # Same env set the GKE pipecat-script-runner container received
+    # The env the GKE pipecat-script-runner container received
     # (k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
-    # directly.
+    # directly - PLUS the Google service account GKE supplied implicitly.
+    #
+    # VOIP-1482: GOOGLE_API_KEY is the Gemini LLM key and is read only by
+    # GoogleLLMService (run.py passes it explicitly). Cloud TTS/STT take no
+    # api_key: GoogleTTSService/GoogleSTTService fall back to Application
+    # Default Credentials, which on GKE came from the node metadata server
+    # and on bare metal must come from this mounted service account key.
+    secrets:
+      - source: gcp_sa_json
+        target: google_service_account.json
     environment:
       - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
       - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
@@ -122,6 +156,7 @@ services:
       - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
       - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
       - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
     command: ["python", "/app/scripts/pipecat/main.py"]
 
   pipecat-manager-2:
@@ -175,9 +210,18 @@ services:
     depends_on:
       pipecat-manager-2:
         condition: service_healthy
-    # Same env set the GKE pipecat-script-runner container received
+    # The env the GKE pipecat-script-runner container received
     # (k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
-    # directly.
+    # directly - PLUS the Google service account GKE supplied implicitly.
+    #
+    # VOIP-1482: GOOGLE_API_KEY is the Gemini LLM key and is read only by
+    # GoogleLLMService (run.py passes it explicitly). Cloud TTS/STT take no
+    # api_key: GoogleTTSService/GoogleSTTService fall back to Application
+    # Default Credentials, which on GKE came from the node metadata server
+    # and on bare metal must come from this mounted service account key.
+    secrets:
+      - source: gcp_sa_json
+        target: google_service_account.json
     environment:
       - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
       - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
@@ -185,6 +229,7 @@ services:
       - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
       - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
       - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
     command: ["python", "/app/scripts/pipecat/main.py"]
 networks:
   default:

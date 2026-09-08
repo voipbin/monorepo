@@ -8562,6 +8562,14 @@ type RequestBodyAuthEmailVerifyPOST struct {
 	Token string `json:"token"`
 }
 
+// RequestBodyAuthEmailVerifyResendPOST Request body for POST /auth/email-verify-resend (verification email resend).
+type RequestBodyAuthEmailVerifyResendPOST struct {
+	// Email The email address the account was registered with.
+	//
+	// Example: simone.costa@example.com
+	Email openapi_types.Email `json:"email"`
+}
+
 // RequestBodyAuthPasswordForgotPOST Request body for POST /auth/password-forgot (initiate password reset).
 type RequestBodyAuthPasswordForgotPOST struct {
 	// Username The agent's username (email address). A reset link will be sent to this address if an account exists.
@@ -13121,6 +13129,9 @@ type PostAuthBootJSONRequestBody = RequestBodyAuthBootPOST
 
 // PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
 type PostAuthEmailVerifyJSONRequestBody = RequestBodyAuthEmailVerifyPOST
+
+// PostAuthEmailVerifyResendJSONRequestBody defines body for PostAuthEmailVerifyResend for application/json ContentType.
+type PostAuthEmailVerifyResendJSONRequestBody = RequestBodyAuthEmailVerifyResendPOST
 
 // PostAuthPasswordForgotJSONRequestBody defines body for PostAuthPasswordForgot for application/json ContentType.
 type PostAuthPasswordForgotJSONRequestBody = RequestBodyAuthPasswordForgotPOST

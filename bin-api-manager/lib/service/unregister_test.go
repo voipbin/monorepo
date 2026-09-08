@@ -61,6 +61,20 @@ func Test_abortWithMappedStatus(t *testing.T) {
 			expectStatus: http.StatusForbidden,
 		},
 		{
+			// VOIP-1491. AuthLogin is also PostAuthUnregister's password
+			// re-authentication step, so its new account-status refusals reach
+			// this mapper. They must land in the 403 group; the default arm
+			// would turn today's 400 dead end into a bogus 500.
+			name:         "serviceerrors.ErrAccountExpired maps to 403",
+			err:          fmt.Errorf("%w: customer_id: some-id", serviceerrors.ErrAccountExpired),
+			expectStatus: http.StatusForbidden,
+		},
+		{
+			name:         "serviceerrors.ErrAccountDeleted maps to 403",
+			err:          fmt.Errorf("%w: customer_id: some-id", serviceerrors.ErrAccountDeleted),
+			expectStatus: http.StatusForbidden,
+		},
+		{
 			name:         "serviceerrors.ErrNotFound maps to 404",
 			err:          fmt.Errorf("%w: customer not found", serviceerrors.ErrNotFound),
 			expectStatus: http.StatusNotFound,

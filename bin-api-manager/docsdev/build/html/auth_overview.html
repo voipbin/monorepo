@@ -683,46 +683,51 @@
 <td><p>Serves an HTML page that auto-submits the verification token (link target from the verification email).</p></td>
 </tr>
 <tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/email-verify-resend</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Send a fresh verification link to an address whose original link expired or was lost.</p></td>
+</tr>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/login</span></code></p></td>
 <td><p>Username/password</p></td>
 <td><p>Exchange agent credentials for a 7-day JWT. See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p>POST</p></td>
+<tr class="row-odd"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/boot</span></code></p></td>
 <td><p>None (direct hash)</p></td>
 <td><p>Exchange a direct hash for a 4-hour resource-scoped JWT.</p></td>
 </tr>
-<tr class="row-odd"><td><p>POST</p></td>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/boot/refresh</span></code></p></td>
 <td><p>Direct token</p></td>
 <td><p>Reissue a direct token without changing which resource it is bound to.</p></td>
 </tr>
-<tr class="row-even"><td><p>POST</p></td>
+<tr class="row-odd"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-forgot</span></code></p></td>
 <td><p>None</p></td>
 <td><p>Request a password reset email.</p></td>
 </tr>
-<tr class="row-odd"><td><p>GET</p></td>
+<tr class="row-even"><td><p>GET</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-reset</span></code></p></td>
 <td><p>None</p></td>
 <td><p>Serves the HTML password reset form (link target from the reset email).</p></td>
 </tr>
-<tr class="row-even"><td><p>POST</p></td>
+<tr class="row-odd"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-reset</span></code></p></td>
 <td><p>None (reset token)</p></td>
 <td><p>Complete the password reset using the emailed token.</p></td>
 </tr>
-<tr class="row-odd"><td><p>POST</p></td>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code></p></td>
 <td><p>Token or Accesskey</p></td>
 <td><p>Freeze the caller’s own account and schedule (or immediately execute) deletion.</p></td>
 </tr>
-<tr class="row-even"><td><p>DELETE</p></td>
+<tr class="row-odd"><td><p>DELETE</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code></p></td>
 <td><p>Token or Accesskey</p></td>
 <td><p>Cancel a scheduled deletion and restore the account to <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p>POST</p></td>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code></p></td>
 <td><p>Token (ProjectSuperAdmin)</p></td>
 <td><p>Issue a short-lived support/investigation token scoped to another customer. See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>.</p></td>
@@ -733,7 +738,8 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>All unauthenticated <code class="docutils literal notranslate"><span class="pre">/auth/*</span></code> endpoints (<code class="docutils literal notranslate"><span class="pre">login</span></code>, <code class="docutils literal notranslate"><span class="pre">signup</span></code>, <code class="docutils literal notranslate"><span class="pre">email-verify</span></code>, <code class="docutils literal notranslate"><span class="pre">boot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-forgot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-reset</span></code>) share a single IP-based rate limiter: <strong>up to approximately 10 requests/second per client IP, burst 20</strong>. <code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code> and <code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code> require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (<strong>10 requests/second, burst 20</strong>). Exceeding either limiter returns <code class="docutils literal notranslate"><span class="pre">429</span></code> with reason <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code> (see <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a>).</p>
+<p>All unauthenticated <code class="docutils literal notranslate"><span class="pre">/auth/*</span></code> endpoints (<code class="docutils literal notranslate"><span class="pre">login</span></code>, <code class="docutils literal notranslate"><span class="pre">signup</span></code>, <code class="docutils literal notranslate"><span class="pre">email-verify</span></code>, <code class="docutils literal notranslate"><span class="pre">email-verify-resend</span></code>, <code class="docutils literal notranslate"><span class="pre">boot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-forgot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-reset</span></code>) share a single IP-based rate limiter: <strong>up to approximately 10 requests/second per client IP, burst 20</strong>. <code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code> and <code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code> require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (<strong>10 requests/second, burst 20</strong>). Exceeding either limiter returns <code class="docutils literal notranslate"><span class="pre">429</span></code> with reason <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code> (see <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">/auth/email-verify-resend</span></code> carries an <strong>additional per-account limit</strong> on top of that shared IP tier: a <strong>60-second cooldown</strong> between sends and a cap of <strong>5 sends per 24 hours</strong>, both tracked per customer account rather than per IP. The IP tier alone cannot stop a distributed mailbomb aimed at one address. Requests that exceed the per-account limits still return <code class="docutils literal notranslate"><span class="pre">200</span></code> with an empty body — no email is sent, and nothing in the response distinguishes that outcome.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -747,12 +753,13 @@
 <span class="o">+----------+</span>   <span class="o">+--------------+</span>    <span class="o">+----------------+</span>    <span class="o">+--------------+</span>
 <span class="o">|</span> <span class="n">initial</span>  <span class="o">|--&gt;|</span>   <span class="n">active</span>     <span class="o">|---&gt;|</span>    <span class="n">active</span>      <span class="o">|---&gt;|</span>  <span class="n">JWT</span> <span class="o">/</span> <span class="n">key</span>   <span class="o">|</span>
 <span class="o">+----------+</span>   <span class="o">+--------------+</span>    <span class="o">+----------------+</span>    <span class="o">+--------------+</span>
-     <span class="o">|</span>                                    <span class="o">|</span>
-     <span class="o">|</span> <span class="p">(</span><span class="n">no</span> <span class="n">verification</span>                   <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">unregister</span>
-     <span class="o">|</span>  <span class="n">within</span> <span class="n">timeout</span><span class="p">)</span>                   <span class="n">v</span>
-     <span class="n">v</span>                              <span class="o">+----------------+</span>
-<span class="o">+----------+</span>                        <span class="o">|</span>    <span class="n">frozen</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">expired</span>  <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="mi">30</span><span class="o">-</span><span class="n">day</span> <span class="n">grace</span><span class="p">)</span> <span class="o">|</span>
+     <span class="o">|</span>          <span class="o">^</span>                         <span class="o">|</span>
+     <span class="o">|</span> <span class="n">no</span>       <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">email</span><span class="o">-</span>       <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">unregister</span>
+     <span class="o">|</span> <span class="n">verify</span>   <span class="o">|</span> <span class="n">verify</span><span class="o">-</span><span class="n">resend</span>           <span class="o">|</span>
+     <span class="o">|</span> <span class="n">within</span>   <span class="o">|</span> <span class="n">then</span> <span class="n">email</span><span class="o">-</span><span class="n">verify</span>       <span class="n">v</span>
+     <span class="n">v</span>          <span class="o">|</span>                   <span class="o">+----------------+</span>
+<span class="o">+----------+</span>    <span class="o">|</span>                   <span class="o">|</span>    <span class="n">frozen</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">expired</span>  <span class="o">|----+</span>                   <span class="o">|</span> <span class="p">(</span><span class="mi">30</span><span class="o">-</span><span class="n">day</span> <span class="n">grace</span><span class="p">)</span> <span class="o">|</span>
 <span class="o">+----------+</span>                        <span class="o">+----------------+</span>
                                       <span class="o">|</span>             <span class="o">|</span>
                         <span class="n">DELETE</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">unregister</span>      <span class="p">(</span><span class="n">grace</span> <span class="n">expires</span><span class="p">,</span>
@@ -927,6 +934,44 @@
 </tbody>
 </table>
 </div>
+<p>If the token has expired or was already used, the page reports that the link is no longer valid and offers a form to request a new one, which submits to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code>.</p>
+</section>
+<section id="email-verify-resend-post-auth-email-verify-resend">
+<h2>Email Verify Resend — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code><a class="headerlink" href="#email-verify-resend-post-auth-email-verify-resend" title="Link to this heading">¶</a></h2>
+<p>Issues a new verification token for an account whose original link expired or was never received, and emails it to the registered address. This is the recovery path out of the <code class="docutils literal notranslate"><span class="pre">expired</span></code> status: an account that missed the 72-hour verification window is not permanently lost.</p>
+<p><strong>Request body</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">email</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>The email address the account was registered with.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK (always)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint <strong>always</strong> returns <code class="docutils literal notranslate"><span class="pre">200</span></code> with an empty body — for a registered address, an unknown address, an already-verified account, a rate-limited request, and even a malformed JSON body. That uniformity is deliberate: any differentiated response would turn an unauthenticated endpoint into an email-existence oracle. Do not treat <code class="docutils literal notranslate"><span class="pre">200</span></code> as confirmation that an email was sent, and do not build retry logic that assumes otherwise. Note that the uniformity covers the response <em>content</em>, not its timing: the work is synchronous, so an unknown address returns after a single database lookup while a recoverable one also performs an agent lookup, two cache writes and an email send, leaving a measurable latency difference. This residual is not specific to this endpoint: <code class="docutils literal notranslate"><span class="pre">/auth/signup</span></code> and <code class="docutils literal notranslate"><span class="pre">/auth/password-forgot</span></code> are synchronous and always-200 in the same way, and carry the same timing residual.</p>
+<p>A resend is only performed when the account is unverified, is not <code class="docutils literal notranslate"><span class="pre">frozen</span></code> or <code class="docutils literal notranslate"><span class="pre">deleted</span></code>, and still has a live agent for the address. Sends are limited to one per <strong>60 seconds</strong> and <strong>5 per 24 hours</strong> per account, on top of the shared per-IP <code class="docutils literal notranslate"><span class="pre">/auth/*</span></code> limiter.</p>
+<p>The new token is valid for <strong>24 hours</strong>, the same as a token issued at signup. Resending does not invalidate an earlier token — any previously issued token stays usable until its own expiry, so a user who later finds the original email can still follow it.</p>
+</div>
 </section>
 <section id="login-token-post-auth-login">
 <h2>Login (Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code><a class="headerlink" href="#login-token-post-auth-login" title="Link to this heading">¶</a></h2>
@@ -956,7 +1001,35 @@
 </tbody>
 </table>
 </div>
-<p>Response: <code class="docutils literal notranslate"><span class="pre">{&quot;username&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;token&quot;:</span> <span class="pre">&quot;eyJ...&quot;}</span></code>. The token is also set as an <code class="docutils literal notranslate"><span class="pre">HttpOnly</span></code>, <code class="docutils literal notranslate"><span class="pre">Secure</span></code>, <code class="docutils literal notranslate"><span class="pre">SameSite=Strict</span></code> cookie named <code class="docutils literal notranslate"><span class="pre">token</span></code> on the response. Errors: <code class="docutils literal notranslate"><span class="pre">400</span></code> on missing fields, malformed JSON, or invalid credentials (login failures are not distinguished from bad requests — both return a bare <code class="docutils literal notranslate"><span class="pre">400</span></code>).</p>
+<p>Response: <code class="docutils literal notranslate"><span class="pre">{&quot;username&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;token&quot;:</span> <span class="pre">&quot;eyJ...&quot;}</span></code>. The token is also set as an <code class="docutils literal notranslate"><span class="pre">HttpOnly</span></code>, <code class="docutils literal notranslate"><span class="pre">Secure</span></code>, <code class="docutils literal notranslate"><span class="pre">SameSite=Strict</span></code> cookie named <code class="docutils literal notranslate"><span class="pre">token</span></code> on the response.</p>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p>Missing fields, malformed JSON, or invalid credentials. Credential failures return a <strong>bare 400 with no response body</strong> — a wrong password is deliberately not distinguished from an unknown username, to avoid a username-enumeration oracle. A failure to look up the account’s status (see below) also returns this same bare <code class="docutils literal notranslate"><span class="pre">400</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>403</p></td>
+<td><p>The credentials were correct, but the account’s status forbids issuing a token: <code class="docutils literal notranslate"><span class="pre">ACCOUNT_EXPIRED</span></code> (email address was never verified, so the account was expired by the cleanup job) or <code class="docutils literal notranslate"><span class="pre">ACCOUNT_DELETED</span></code>. Unlike the <code class="docutils literal notranslate"><span class="pre">400</span></code> above, these carry a full error envelope, and <code class="docutils literal notranslate"><span class="pre">ACCOUNT_EXPIRED</span></code> carries <code class="docutils literal notranslate"><span class="pre">details[0].recovery_endpoint</span></code> — byte-identical to what the <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> gate returns for the same account.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint — login can now fail on account status</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> verifies the password <strong>first</strong> and only then checks the customer’s account status, so the status check never becomes an enumeration oracle. The status check is a <strong>deny-list</strong>: only <code class="docutils literal notranslate"><span class="pre">expired</span></code> and <code class="docutils literal notranslate"><span class="pre">deleted</span></code> are refused. <code class="docutils literal notranslate"><span class="pre">initial</span></code> (a normal user inside the 72-hour post-signup verification window) and <code class="docutils literal notranslate"><span class="pre">frozen</span></code> both still log in successfully — <code class="docutils literal notranslate"><span class="pre">frozen</span></code> in particular <strong>must</strong> keep working, because the frozen self-recovery endpoint <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/auth/unregister</span></code> requires authentication, so blocking a frozen login would remove the only route to recovery.</p>
+<p>The account-status lookup fails <strong>closed</strong>: if the customer lookup itself fails, no token is issued (returned as the same opaque <code class="docutils literal notranslate"><span class="pre">400</span></code>, since it is not a determination about the account). This is deliberately the opposite of the <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> gate, which fails open — an outage must not become a window in which credentials can be minted freely.</p>
+</div>
 </section>
 <section id="boot-direct-token-post-auth-boot">
 <h2>Boot (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code><a class="headerlink" href="#boot-direct-token-post-auth-boot" title="Link to this heading">¶</a></h2>
@@ -1306,8 +1379,18 @@
 <tr class="row-odd"><td><p>401</p></td>
 <td><p>Missing/invalid/expired token or access key (returned by the shared <code class="docutils literal notranslate"><span class="pre">Authenticate()</span></code> middleware, as a structured error envelope — see the response-shape note above).</p></td>
 </tr>
+<tr class="row-even"><td><p>403</p></td>
+<td><p>The account’s customer status is <code class="docutils literal notranslate"><span class="pre">expired</span></code> or <code class="docutils literal notranslate"><span class="pre">deleted</span></code>. Password re-authentication runs the same login path that refuses those two statuses (VOIP-1491), so the refusal surfaces here instead of failing a step later. Both were already dead ends on this endpoint — the freeze transition requires <code class="docutils literal notranslate"><span class="pre">active</span></code> — so this only makes the refusal earlier and honest.</p></td>
+</tr>
+<tr class="row-odd"><td><p>500</p></td>
+<td><p>The customer lookup performed during password re-authentication failed for any other reason (RPC timeout, or the customer-manager circuit breaker being open). That lookup fails <strong>closed</strong>, unlike the <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> gate’s, so an unreachable customer-manager blocks the request rather than letting it through.</p></td>
+</tr>
 </tbody>
 </table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">403</span></code> and <code class="docutils literal notranslate"><span class="pre">500</span></code> are reachable only through the <code class="docutils literal notranslate"><span class="pre">password</span></code> branch, which re-authenticates by calling <code class="docutils literal notranslate"><span class="pre">AuthLogin</span></code>; before VOIP-1491 that branch could only ever produce a <code class="docutils literal notranslate"><span class="pre">400</span></code>. The <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> branch does not re-authenticate and is unaffected.</p>
 </div>
 <p><strong>DELETE /auth/unregister</strong> — cancels a scheduled deletion and restores <code class="docutils literal notranslate"><span class="pre">active</span></code> status. No request body. Only works while the account is <code class="docutils literal notranslate"><span class="pre">frozen</span></code> within the 30-day grace period.</p>
 <p><strong>Response — 200 OK</strong>: the restored <code class="docutils literal notranslate"><span class="pre">Customer</span></code> object.</p>
@@ -1338,6 +1421,8 @@
 <p><strong>AI Implementation Hint — frozen and deleted accounts are also enforced globally</strong></p>
 <p>Once a customer account is <code class="docutils literal notranslate"><span class="pre">frozen</span></code>, every other authenticated <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> request from that customer (except from a <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code>, and except direct/boot tokens, which skip the check entirely) is rejected with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">ACCOUNT_FROZEN</span></code> by the shared authentication middleware — not just calls to resource endpoints that would otherwise mutate data. The error’s <code class="docutils literal notranslate"><span class="pre">details[0]</span></code> carries <code class="docutils literal notranslate"><span class="pre">deletion_scheduled_at</span></code>, <code class="docutils literal notranslate"><span class="pre">deletion_effective_at</span></code> (30 days after scheduling), and <code class="docutils literal notranslate"><span class="pre">recovery_endpoint:</span> <span class="pre">&quot;DELETE</span> <span class="pre">/auth/unregister&quot;</span></code> so client UIs (admin/talk consoles) can render a consistent “account frozen, recover here” screen. <code class="docutils literal notranslate"><span class="pre">POST</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/auth/unregister</span></code> themselves are explicitly exempted from this block so a frozen customer can still self-recover.</p>
 <p>The same middleware also rejects any authenticated request from a <code class="docutils literal notranslate"><span class="pre">deleted</span></code> customer with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">ACCOUNT_DELETED</span></code>. In the steady state this is unreachable — a deleted customer’s agents/access keys should already have been soft-deleted by the <code class="docutils literal notranslate"><span class="pre">customer_deleted</span></code> cascade and fail earlier at authentication — but this is a deliberate second layer in case that cascade misses a resource, so credentials belonging to a deleted account can never keep working indefinitely. Unlike <code class="docutils literal notranslate"><span class="pre">frozen</span></code>, <code class="docutils literal notranslate"><span class="pre">deleted</span></code> is not recoverable via <code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code>.</p>
+<p>An <code class="docutils literal notranslate"><span class="pre">expired</span></code> customer — signup completed but the email address was never verified, so the unverified-account cleanup job moved the account out of <code class="docutils literal notranslate"><span class="pre">initial</span></code> — is rejected the same way, with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">ACCOUNT_EXPIRED</span></code>. Its <code class="docutils literal notranslate"><span class="pre">details[0]</span></code> carries <code class="docutils literal notranslate"><span class="pre">recovery_endpoint:</span> <span class="pre">&quot;POST</span> <span class="pre">/auth/email-verify-resend&quot;</span></code>, so a client can point the user at a new verification email without string-matching the message. <code class="docutils literal notranslate"><span class="pre">initial</span></code> is <strong>not</strong> blocked: it is the normal state during the 72-hour verification window. Note that requesting a resend requires the account to still have a live agent for the address; if it does not, direct the user to <code class="docutils literal notranslate"><span class="pre">support&#64;voipbin.net</span></code> rather than telling them to sign up again, because an account expired under the current cleanup behaviour keeps its customer row live and will fail the signup duplicate-email check.</p>
+<p>The gate’s customer lookup fails <strong>open</strong>: if the customer record cannot be fetched, the request is allowed through rather than blocked, because api-manager holds no customer cache and failing closed would take every <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> route down whenever customer-manager is unreachable. Occurrences are counted by the <code class="docutils literal notranslate"><span class="pre">api_manager_account_status_lookup_failed_total</span></code> metric, labelled by <code class="docutils literal notranslate"><span class="pre">identity_type</span></code> and <code class="docutils literal notranslate"><span class="pre">error_class</span></code>. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> deliberately does the opposite and fails closed — see the login section above.</p>
 </div>
 </section>
 <section id="delegate-superadmin-support-access-post-auth-delegate">
@@ -1490,6 +1575,7 @@
 <li><a class="reference internal" href="#auth-account-lifecycle">Auth &amp; Account Lifecycle</a></li>
 <li><a class="reference internal" href="#signup-post-auth-signup">Signup — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code></a></li>
 <li><a class="reference internal" href="#email-verify-post-get-auth-email-verify">Email Verify — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/auth/email-verify</span></code></a></li>
+<li><a class="reference internal" href="#email-verify-resend-post-auth-email-verify-resend">Email Verify Resend — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code></a></li>
 <li><a class="reference internal" href="#login-token-post-auth-login">Login (Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code></a></li>
 <li><a class="reference internal" href="#boot-direct-token-post-auth-boot">Boot (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code></a></li>
 <li><a class="reference internal" href="#boot-refresh-direct-token-post-auth-boot-refresh">Boot refresh (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot/refresh</span></code></a></li>

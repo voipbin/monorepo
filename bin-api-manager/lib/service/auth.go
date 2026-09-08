@@ -1,12 +1,18 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
 
+	"monorepo/bin-api-manager/lib/apierror"
+	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/common"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -56,7 +62,7 @@ func PostLogin(c *gin.Context) {
 	token, err := serviceHandler.AuthLogin(c.Request.Context(), req.Username, req.Password)
 	if err != nil {
 		log.Debugf("Login failed. err: %v", err)
-		c.AbortWithStatus(400)
+		abortLoginFailure(c, err)
 		return
 	}
 	log.Debugf("Created token string. token: %v", token)
@@ -77,6 +83,50 @@ func PostLogin(c *gin.Context) {
 	log.Debug("User successfully logged in.")
 
 	c.JSON(200, res)
+}
+
+// abortLoginFailure writes the response for a failed POST /auth/login.
+//
+// Account-status refusals (expired / deleted) get a real 403 PERMISSION_DENIED
+// envelope; everything else keeps the historical bare 400.
+//
+// The split is required, not cosmetic. PostLogin used to collapse every
+// AuthLogin error into a body-less 400, so once AuthLogin started refusing
+// expired accounts (VOIP-1491) those users would have lost login and been told
+// nothing at all -- and they cannot reach the v1 gate's ACCOUNT_EXPIRED
+// guidance either, precisely because login is now shut. The gate's recovery
+// hint has to be reachable from the only door still open to them.
+//
+// Credential failures deliberately stay an opaque 400 with no body: telling a
+// caller "wrong password" apart from "no such user" is a username-enumeration
+// oracle. A customer-lookup RPC failure inside AuthLogin also lands here, in
+// the default branch -- it is not an expiry determination and must not be
+// dressed up as one.
+//
+// abortWithMappedStatus (unregister.go) is not reusable here: it emits a bare
+// status code with no envelope, so it cannot carry the reason or the recovery
+// endpoint.
+func abortLoginFailure(c *gin.Context, err error) {
+	var e *cerrors.VoipbinError
+
+	switch {
+	case errors.Is(err, serviceerrors.ErrAccountExpired):
+		e = cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, apierror.ReasonAccountExpired, apierror.MessageAccountExpired)
+		e.Details = apierror.AccountExpiredDetails()
+
+	case errors.Is(err, serviceerrors.ErrAccountDeleted):
+		// No details: unlike expired there is no recovery endpoint to point at.
+		e = cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, apierror.ReasonAccountDeleted, apierror.MessageAccountDeleted)
+
+	default:
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	c.AbortWithStatusJSON(
+		cerrors.HTTPStatusFor(e.Status),
+		apierror.EnvelopeFor(e, middleware.RequestIDFromContext(c)),
+	)
 }
 
 // RequestBodyPasswordForgotPOST is request body for POST /auth/password-forgot

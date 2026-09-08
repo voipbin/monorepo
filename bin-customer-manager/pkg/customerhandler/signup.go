@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-customer-manager/internal/config"
 	"monorepo/bin-customer-manager/models/customer"
@@ -17,9 +18,13 @@ import (
 )
 
 const (
-	emailVerifyTokenTTL    = time.Hour
+	emailVerifyTokenTTL    = 24 * time.Hour
 	emailVerifyTokenLen    = 32                   // 32 bytes = 64 hex chars
 	defaultAccesskeyExpire = 365 * 24 * time.Hour // 1 year
+
+	resendCooldownTTL = 60 * time.Second
+	resendCountTTL    = 24 * time.Hour
+	resendCountMax    = 5
 )
 
 // Signup creates an unverified customer and sends a verification email.
@@ -114,7 +119,9 @@ func (h *customerHandler) Signup(
 	// Best-effort verification email: generate token, store in Redis, and send email.
 	// Failures here are non-fatal because the customer and access key are already committed
 	// and cannot be rolled back. The client needs the SignupResult to authenticate.
-	// If the verification email fails, the customer can re-request signup to trigger a new email.
+	// If the verification email fails or expires, the customer requests a new one via
+	// POST /auth/email-verify-resend. Re-running signup does NOT work: validateCreate
+	// rejects the duplicate email.
 	if err := h.sendSignupVerification(ctx, id, email); err != nil {
 		log.Errorf("Could not complete verification email flow. err: %v", err)
 	}
@@ -163,6 +170,17 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 	}
 	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
+	// Deny-list, and it must come before the EmailVerified early return.
+	// Placing it after would let a stale token hand back a deleted (PII-anonymized)
+	// row. It is a deny-list rather than an allow-list on purpose: an allow-list of
+	// {initial, expired} would reject an already-active customer clicking an older
+	// link, which the early return below is there to handle idempotently.
+	if c.Status == customer.StatusDeleted || c.Status == customer.StatusFrozen {
+		log.Infof("Customer is not eligible for verification. customer_id: %s, status: %s", c.ID, c.Status)
+		metricshandler.EmailVerificationTotal.WithLabelValues("ineligible").Inc()
+		return nil, fmt.Errorf("customer is not eligible for verification")
+	}
+
 	if c.EmailVerified {
 		log.Infof("Customer already verified. customer_id: %s", c.ID)
 		metricshandler.EmailVerificationTotal.WithLabelValues("already_verified").Inc()
@@ -171,10 +189,14 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 		return &customer.EmailVerifyResult{Customer: c}, nil
 	}
 
-	// mark as verified and activate
+	// mark as verified and activate.
+	// tm_delete is cleared so a row expired by the pre-VOIP-1490 cleanup (which set
+	// it) comes back fully, not half-recovered. processMapValues preserves nil, so
+	// this emits SET tm_delete = NULL.
 	fields := map[customer.Field]any{
 		customer.FieldEmailVerified: true,
 		customer.FieldStatus:        string(customer.StatusActive),
+		customer.FieldTMDelete:      nil,
 	}
 	if err := h.db.CustomerUpdate(ctx, customerID, fields); err != nil {
 		log.Errorf("Could not update customer. err: %v", err)
@@ -250,8 +272,9 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 	subject := "VoIPBin - Verify Your Email"
 	content := fmt.Sprintf(
 		"Welcome to VoIPBin!\n\n"+
-			"Click the link below to verify your email address (expires in 1 hour):\n\n"+
+			"Click the link below to verify your email address (expires in 24 hours):\n\n"+
 			"%s\n\n"+
+			"If the link has expired, you can request a new one from the verification page.\n\n"+
 			"If you did not create this account, you can safely ignore this email.",
 		verifyLink,
 	)
@@ -287,4 +310,146 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 
 	log.Debugf("Sent verification email. email: %s", email)
 	return nil
+}
+
+// EmailVerifyResend re-issues and re-sends the signup verification email for the
+// given address.
+//
+// It returns nil in every case that is not an internal fault, including "no such
+// customer". Reporting anything else would turn this public, unauthenticated
+// endpoint into an email-existence oracle.
+func (h *customerHandler) EmailVerifyResend(ctx context.Context, email string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EmailVerifyResend",
+		"email": email,
+	})
+	log.Debug("Processing email verification resend.")
+
+	// "lookup_error" covers every internal dependency failure that happens before
+	// the send is attempted (customer lookup and both cache operations). Keeping
+	// those out of "cooldown"/"cap" leaves those two labels as a clean signal of
+	// genuine abuse pressure rather than a mix of rejections and outages.
+	c, err := h.resendTarget(ctx, email)
+	if err != nil {
+		log.Errorf("Could not resolve the resend target. err: %v", err)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("lookup_error").Inc()
+		return nil
+	}
+	if c == nil {
+		log.Debug("No eligible customer for the given email. Skipping.")
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("no_target").Inc()
+		return nil
+	}
+
+	ok, err := h.cache.ResendCooldownAcquire(ctx, c.ID, resendCooldownTTL)
+	if err != nil {
+		log.Errorf("Could not acquire the resend cooldown. err: %v", err)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("lookup_error").Inc()
+		return nil
+	}
+	if !ok {
+		log.Infof("Resend is still within the cooldown window. customer_id: %s", c.ID)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("cooldown").Inc()
+		return nil
+	}
+
+	// Note: ResendCountIncr returns (n, err) with a usable n when only the TTL
+	// repair failed, so the counter was already consumed in that case. We still
+	// fail closed here: a counter whose expiry is unknown must not authorize a
+	// send, and the next call re-arms the TTL.
+	n, err := h.cache.ResendCountIncr(ctx, c.ID, resendCountTTL)
+	if err != nil {
+		log.Errorf("Could not increase the resend counter. err: %v", err)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("lookup_error").Inc()
+		return nil
+	}
+	if n > resendCountMax {
+		log.Infof("Resend daily cap reached. customer_id: %s, count: %d", c.ID, n)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("cap").Inc()
+		return nil
+	}
+
+	if errSend := h.sendSignupVerification(ctx, c.ID, c.Email); errSend != nil {
+		log.Errorf("Could not send the verification email. customer_id: %s, err: %v", c.ID, errSend)
+
+		// Refund the increment. Without this an email-manager outage lets a customer
+		// burn all of the daily budget without receiving a single mail, locking them
+		// out for 24 hours once the service recovers, which is exactly the population
+		// this endpoint exists to unblock. This opens no bypass: an attacker cannot
+		// force a send failure, and the cooldown still serializes attempts.
+		if errRefund := h.cache.ResendCountDecr(ctx, c.ID); errRefund != nil {
+			log.Errorf("Could not refund the resend counter. customer_id: %s, err: %v", c.ID, errRefund)
+		}
+
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("send_error").Inc()
+		return nil
+	}
+
+	metricshandler.EmailVerifyResendTotal.WithLabelValues("success").Inc()
+	log.Infof("Resent the verification email. customer_id: %s", c.ID)
+	return nil
+}
+
+// resendTarget picks the customer a resend should act on, or nil when there is
+// none. Returning (nil, nil) is the normal "nothing to do" outcome; a non-nil
+// error means the lookup itself failed.
+func (h *customerHandler) resendTarget(ctx context.Context, email string) (*customer.Customer, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "resendTarget",
+		"email": email,
+	})
+
+	// No deleted filter on purpose: rows expired before VOIP-1490 still carry
+	// tm_delete, and those are exactly the ones that need recovering. CustomerList
+	// orders by tm_create DESC, so the newest match comes first.
+	filters := map[customer.Field]any{
+		customer.FieldEmail: email,
+	}
+	tmps, err := h.db.CustomerList(ctx, 100, "", filters)
+	if err != nil {
+		return nil, err
+	}
+
+	var c *customer.Customer
+	for _, tmp := range tmps {
+		if tmp.Status == customer.StatusDeleted {
+			continue
+		}
+		c = tmp
+		break
+	}
+	if c == nil {
+		return nil, nil
+	}
+
+	if c.EmailVerified {
+		return nil, nil
+	}
+	// Deleted rows were already skipped by the selection loop above, so only the
+	// frozen check is reachable here.
+	if c.Status == customer.StatusFrozen {
+		return nil, nil
+	}
+
+	// Refuse when the customer has no live agent. Verification ends by calling
+	// AgentV1PasswordForgot, which looks the agent up by username; without one the
+	// customer would be activated with no way to set a password and no way to log
+	// in. Worse, clearing tm_delete would also close the re-signup path those rows
+	// still have today. See design 3-4-1.
+	filterAgent := map[amagent.Field]any{
+		amagent.FieldDeleted:  false,
+		amagent.FieldUsername: c.Email,
+	}
+	agents, err := h.reqHandler.AgentV1AgentList(ctx, "", 1, filterAgent)
+	if err != nil {
+		// fail closed, matching validateCreate's handling of the same call
+		log.Errorf("Could not get the agent info. err: %v", err)
+		return nil, err
+	}
+	if len(agents) == 0 {
+		log.Infof("Customer has no live agent. Skipping resend. customer_id: %s", c.ID)
+		return nil, nil
+	}
+
+	return c, nil
 }

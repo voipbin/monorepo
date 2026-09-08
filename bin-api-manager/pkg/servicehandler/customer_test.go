@@ -1200,3 +1200,66 @@ func Test_CustomerSelfFreezeAndDelete_PermissionDenied(t *testing.T) {
 		t.Errorf("Expected permission denied error, got nil")
 	}
 }
+
+// Test_CustomerEmailVerifyResend pins the public resend edge. The service handler
+// is a thin pass-through, so the two things worth holding still are that the email
+// reaches the RPC unmodified and that a transport failure is propagated rather than
+// swallowed into a success.
+func Test_CustomerEmailVerifyResend(t *testing.T) {
+	tests := []struct {
+		name string
+
+		email string
+
+		responseError error
+		expectErr     bool
+	}{
+		{
+			name: "normal",
+
+			email: "resend@voipbin.net",
+
+			responseError: nil,
+			expectErr:     false,
+		},
+		{
+			name: "request error",
+
+			email: "resend@voipbin.net",
+
+			responseError: fmt.Errorf("rpc failed"),
+			expectErr:     true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerEmailVerifyResend(ctx, tt.email).Return(tt.responseError)
+
+			err := h.CustomerEmailVerifyResend(ctx, tt.email)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: err, got: ok")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

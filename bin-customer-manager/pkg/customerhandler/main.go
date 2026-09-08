@@ -62,6 +62,9 @@ type CustomerHandler interface {
 		clientIP string,
 	) (*customer.SignupResult, error)
 	EmailVerify(ctx context.Context, token string) (*customer.EmailVerifyResult, error)
+	// EmailVerifyResend always returns nil by contract: it is served by a public,
+	// unauthenticated endpoint, and a differentiated response would be an email-existence oracle.
+	EmailVerifyResend(ctx context.Context, email string) error
 
 	CleanupUnverified(ctx context.Context) (int, error)
 	CleanupFrozenExpired(ctx context.Context) (int, error)

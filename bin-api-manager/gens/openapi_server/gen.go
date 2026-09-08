@@ -6834,6 +6834,12 @@ type RequestBodyAuthEmailVerifyPOST struct {
 	Token string `json:"token"`
 }
 
+// RequestBodyAuthEmailVerifyResendPOST Request body for POST /auth/email-verify-resend (verification email resend).
+type RequestBodyAuthEmailVerifyResendPOST struct {
+	// Email The email address the account was registered with.
+	Email openapi_types.Email `json:"email"`
+}
+
 // RequestBodyAuthPasswordForgotPOST Request body for POST /auth/password-forgot (initiate password reset).
 type RequestBodyAuthPasswordForgotPOST struct {
 	// Username The agent's username (email address). A reset link will be sent to this address if an account exists.
@@ -10525,6 +10531,9 @@ type PostAuthBootJSONRequestBody = RequestBodyAuthBootPOST
 // PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
 type PostAuthEmailVerifyJSONRequestBody = RequestBodyAuthEmailVerifyPOST
 
+// PostAuthEmailVerifyResendJSONRequestBody defines body for PostAuthEmailVerifyResend for application/json ContentType.
+type PostAuthEmailVerifyResendJSONRequestBody = RequestBodyAuthEmailVerifyResendPOST
+
 // PostAuthPasswordForgotJSONRequestBody defines body for PostAuthPasswordForgot for application/json ContentType.
 type PostAuthPasswordForgotJSONRequestBody = RequestBodyAuthPasswordForgotPOST
 
@@ -11124,6 +11133,9 @@ type ServerInterface interface {
 	// Verify customer email address.
 	// (POST /auth/email-verify)
 	PostAuthEmailVerify(c *gin.Context)
+	// Resend the customer email verification link.
+	// (POST /auth/email-verify-resend)
+	PostAuthEmailVerifyResend(c *gin.Context)
 	// Request a password reset email.
 	// (POST /auth/password-forgot)
 	PostAuthPasswordForgot(c *gin.Context)
@@ -13767,6 +13779,19 @@ func (siw *ServerInterfaceWrapper) PostAuthEmailVerify(c *gin.Context) {
 	}
 
 	siw.Handler.PostAuthEmailVerify(c)
+}
+
+// PostAuthEmailVerifyResend operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthEmailVerifyResend(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthEmailVerifyResend(c)
 }
 
 // PostAuthPasswordForgot operation middleware
@@ -23206,6 +23231,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/auth/boot", wrapper.PostAuthBoot)
 	router.POST(options.BaseURL+"/auth/boot/refresh", wrapper.PostAuthBootRefresh)
 	router.POST(options.BaseURL+"/auth/email-verify", wrapper.PostAuthEmailVerify)
+	router.POST(options.BaseURL+"/auth/email-verify-resend", wrapper.PostAuthEmailVerifyResend)
 	router.POST(options.BaseURL+"/auth/password-forgot", wrapper.PostAuthPasswordForgot)
 	router.GET(options.BaseURL+"/auth/password-reset", wrapper.GetAuthPasswordReset)
 	router.POST(options.BaseURL+"/auth/password-reset", wrapper.PostAuthPasswordReset)
@@ -28368,6 +28394,28 @@ type PostAuthEmailVerify400Response struct {
 func (response PostAuthEmailVerify400Response) VisitPostAuthEmailVerifyResponse(w http.ResponseWriter) error {
 	w.WriteHeader(400)
 	return nil
+}
+
+type PostAuthEmailVerifyResendRequestObject struct {
+	Body *PostAuthEmailVerifyResendJSONRequestBody
+}
+
+type PostAuthEmailVerifyResendResponseObject interface {
+	VisitPostAuthEmailVerifyResendResponse(w http.ResponseWriter) error
+}
+
+type PostAuthEmailVerifyResend200JSONResponse map[string]interface{}
+
+func (response PostAuthEmailVerifyResend200JSONResponse) VisitPostAuthEmailVerifyResendResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
 }
 
 type PostAuthPasswordForgotRequestObject struct {
@@ -57819,6 +57867,9 @@ type StrictServerInterface interface {
 	// Verify customer email address.
 	// (POST /auth/email-verify)
 	PostAuthEmailVerify(ctx context.Context, request PostAuthEmailVerifyRequestObject) (PostAuthEmailVerifyResponseObject, error)
+	// Resend the customer email verification link.
+	// (POST /auth/email-verify-resend)
+	PostAuthEmailVerifyResend(ctx context.Context, request PostAuthEmailVerifyResendRequestObject) (PostAuthEmailVerifyResendResponseObject, error)
 	// Request a password reset email.
 	// (POST /auth/password-forgot)
 	PostAuthPasswordForgot(ctx context.Context, request PostAuthPasswordForgotRequestObject) (PostAuthPasswordForgotResponseObject, error)
@@ -60583,6 +60634,37 @@ func (sh *strictHandler) PostAuthEmailVerify(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PostAuthEmailVerifyResponseObject); ok {
 		if err := validResponse.VisitPostAuthEmailVerifyResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthEmailVerifyResend operation middleware
+func (sh *strictHandler) PostAuthEmailVerifyResend(ctx *gin.Context) {
+	var request PostAuthEmailVerifyResendRequestObject
+
+	var body PostAuthEmailVerifyResendJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthEmailVerifyResend(ctx, request.(PostAuthEmailVerifyResendRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthEmailVerifyResend")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostAuthEmailVerifyResendResponseObject); ok {
+		if err := validResponse.VisitPostAuthEmailVerifyResendResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

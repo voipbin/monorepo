@@ -25,6 +25,7 @@ func TestAuthStubs_ReturnRouteNotFound(t *testing.T) {
 		{"auth_boot_refresh", http.MethodPost, "/v1.0/auth/boot/refresh", func(h *server, c *gin.Context) { h.PostAuthBootRefresh(c) }},
 		{"auth_signup", http.MethodPost, "/v1.0/auth/signup", func(h *server, c *gin.Context) { h.PostAuthSignup(c) }},
 		{"auth_email_verify", http.MethodPost, "/v1.0/auth/email-verify", func(h *server, c *gin.Context) { h.PostAuthEmailVerify(c) }},
+		{"auth_email_verify_resend", http.MethodPost, "/v1.0/auth/email-verify-resend", func(h *server, c *gin.Context) { h.PostAuthEmailVerifyResend(c) }},
 		{"auth_unregister_post", http.MethodPost, "/v1.0/auth/unregister", func(h *server, c *gin.Context) { h.PostAuthUnregister(c, openapi_server.PostAuthUnregisterParams{}) }},
 		{"auth_unregister_delete", http.MethodDelete, "/v1.0/auth/unregister", func(h *server, c *gin.Context) {
 			h.DeleteAuthUnregister(c, openapi_server.DeleteAuthUnregisterParams{})

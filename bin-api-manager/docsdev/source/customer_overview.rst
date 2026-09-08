@@ -214,12 +214,13 @@ Customer accounts follow a defined status lifecycle that governs account creatio
     +----------+       +----------+           +----------+       +----------+
     | initial  | ----> |  active  | --------> |  frozen  | ----> | deleted  |
     +----------+       +----------+           +----------+       +----------+
-         |                                         |
-         | (no verification                        | (cancel unregister)
-         |  within timeout)                        |
-         v                                         v
-    +----------+                              +----------+
-    | expired  |                              |  active  |
+         |                  ^                      |
+         | no verify        | POST /auth/email-    |
+         | within 72h       | verify-resend,       | (cancel unregister)
+         |                  | then email-verify    |
+         v                  |                      v
+    +----------+            |                 +----------+
+    | expired  |------------+                 |  active  |
     +----------+                              +----------+
 
 **Status Values**
@@ -238,7 +239,7 @@ Customer accounts follow a defined status lifecycle that governs account creatio
    * - deleted
      - Permanently deleted. All PII anonymized, all resources removed.
    * - expired
-     - Unverified signup expired. Account was never activated.
+     - Unverified signup expired. The account was never activated, but it is **not** a terminal state: requesting a new verification link via ``POST /auth/email-verify-resend`` and following it returns the account to ``active``. See :ref:`Auth — Email Verify Resend <auth-overview>`.
 
 
 **Self-Service Unregistration**

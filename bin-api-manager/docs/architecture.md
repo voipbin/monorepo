@@ -77,6 +77,7 @@ Public endpoints (no authentication required):
 - `POST /auth/signup`
 - `POST /auth/boot`
 - `POST /auth/email-verify`
+- `POST /auth/email-verify-resend`
 - `POST /auth/password-forgot`
 - `GET/POST /auth/password-reset`
 - `GET /provisioning/extension` — SIP softphone (Linphone) remote-provisioning XML, redeemed by a

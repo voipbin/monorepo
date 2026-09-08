@@ -90,6 +90,15 @@ var (
 		[]string{"status"},
 	)
 
+	// EmailVerifyResendTotal counts email verification resend attempts by outcome.
+	EmailVerifyResendTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "email_verify_resend_total",
+			Help:      "Total number of email verification resend attempts",
+		},
+		[]string{"status"},
+	)
 )
 
 func init() {
@@ -102,5 +111,6 @@ func init() {
 		RPCCallTotal,
 		SignupTotal,
 		EmailVerificationTotal,
+		EmailVerifyResendTotal,
 	)
 }

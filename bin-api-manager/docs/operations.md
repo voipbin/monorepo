@@ -140,10 +140,16 @@ Could not resolve the audiosocket advertise address. err: the resolved audiosock
 
 | Tier | Routes | Default | Runs before |
 |------|--------|---------|-------------|
-| `auth_public` | Unauthenticated `/auth/*` (login, signup, password reset, email-verify, boot) | 10 req/s, burst 20 | (no auth) |
+| `auth_public` | Unauthenticated `/auth/*` (login, signup, password reset, email-verify, email-verify-resend, boot) | 10 req/s, burst 20 | (no auth) |
 | `auth_protected` | `/auth/unregister`, `/auth/delegate` | 10 req/s, burst 20 | `Authenticate()` |
 | `v1` | Entire authenticated `v1.0` API surface (~346 routes) | 200 req/s, burst 400 | `Authenticate()` |
 | `provisioning_public` | Unauthenticated `/provisioning/*` (extension QR provisioning) | 5 req/s, burst 10 | (no auth) |
+
+`POST /auth/email-verify-resend` additionally carries a per-account 60s cooldown and a 5-per-day cap enforced in bin-customer-manager (keyed on `customer_id`), because the per-IP tier alone cannot stop a distributed mailbomb against one address.
+
+Both per-account limits live in Redis under `email_verify_resend_cd:<customer_id>` (the 60s cooldown) and `email_verify_resend_n:<customer_id>` (the 24h counter), defined in `bin-customer-manager/pkg/cachehandler/handler.go`. Deleting those two keys immediately unblocks an account — that is the manual lever when a user legitimately cannot get a verification email through. Note that the cap is keyed on the account, not on the requester, so it is externally exhaustible: anyone who knows an address can burn that account's 24h resend budget with five unauthenticated requests. That is the deliberate tradeoff which stops a distributed mailbomb, and this key deletion is the documented recovery for the victim.
+
+Resend outcomes are observable via `customer_manager_email_verify_resend_total{status=...}` with statuses `no_target`, `lookup_error`, `cooldown`, `cap`, `send_error` and `success`. A rising `cooldown`/`cap` ratio against a flat `success` is the signature of an address being hammered.
 
 Each tier is independently tunable via the `RATE_LIMIT_*` environment variables in the Configuration section above; setting a tier's RPS or burst to `<=0` disables it (unlimited pass-through) — this is the safe rollback lever if a limit turns out to be too aggressive, and does **not** require a redeploy.
 

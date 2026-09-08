@@ -850,12 +850,13 @@
 <span class="o">+----------+</span>       <span class="o">+----------+</span>           <span class="o">+----------+</span>       <span class="o">+----------+</span>
 <span class="o">|</span> <span class="n">initial</span>  <span class="o">|</span> <span class="o">----&gt;</span> <span class="o">|</span>  <span class="n">active</span>  <span class="o">|</span> <span class="o">--------&gt;</span> <span class="o">|</span>  <span class="n">frozen</span>  <span class="o">|</span> <span class="o">----&gt;</span> <span class="o">|</span> <span class="n">deleted</span>  <span class="o">|</span>
 <span class="o">+----------+</span>       <span class="o">+----------+</span>           <span class="o">+----------+</span>       <span class="o">+----------+</span>
-     <span class="o">|</span>                                         <span class="o">|</span>
-     <span class="o">|</span> <span class="p">(</span><span class="n">no</span> <span class="n">verification</span>                        <span class="o">|</span> <span class="p">(</span><span class="n">cancel</span> <span class="n">unregister</span><span class="p">)</span>
-     <span class="o">|</span>  <span class="n">within</span> <span class="n">timeout</span><span class="p">)</span>                        <span class="o">|</span>
-     <span class="n">v</span>                                         <span class="n">v</span>
-<span class="o">+----------+</span>                              <span class="o">+----------+</span>
-<span class="o">|</span> <span class="n">expired</span>  <span class="o">|</span>                              <span class="o">|</span>  <span class="n">active</span>  <span class="o">|</span>
+     <span class="o">|</span>                  <span class="o">^</span>                      <span class="o">|</span>
+     <span class="o">|</span> <span class="n">no</span> <span class="n">verify</span>        <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">email</span><span class="o">-</span>    <span class="o">|</span>
+     <span class="o">|</span> <span class="n">within</span> <span class="mi">72</span><span class="n">h</span>       <span class="o">|</span> <span class="n">verify</span><span class="o">-</span><span class="n">resend</span><span class="p">,</span>       <span class="o">|</span> <span class="p">(</span><span class="n">cancel</span> <span class="n">unregister</span><span class="p">)</span>
+     <span class="o">|</span>                  <span class="o">|</span> <span class="n">then</span> <span class="n">email</span><span class="o">-</span><span class="n">verify</span>    <span class="o">|</span>
+     <span class="n">v</span>                  <span class="o">|</span>                      <span class="n">v</span>
+<span class="o">+----------+</span>            <span class="o">|</span>                 <span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">expired</span>  <span class="o">|------------+</span>                 <span class="o">|</span>  <span class="n">active</span>  <span class="o">|</span>
 <span class="o">+----------+</span>                              <span class="o">+----------+</span>
 </pre></div>
 </div>
@@ -881,7 +882,7 @@
 <td><p>Permanently deleted. All PII anonymized, all resources removed.</p></td>
 </tr>
 <tr class="row-even"><td><p>expired</p></td>
-<td><p>Unverified signup expired. Account was never activated.</p></td>
+<td><p>Unverified signup expired. The account was never activated, but it is <strong>not</strong> a terminal state: requesting a new verification link via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> and following it returns the account to <code class="docutils literal notranslate"><span class="pre">active</span></code>. See <a class="reference internal" href="auth_overview.html#auth-overview"><span class="std std-ref">Auth — Email Verify Resend</span></a>.</p></td>
 </tr>
 </tbody>
 </table>
