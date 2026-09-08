@@ -28332,6 +28332,14 @@ func (response PostAuthBootRefresh403Response) VisitPostAuthBootRefreshResponse(
 	return nil
 }
 
+type PostAuthBootRefresh500Response struct {
+}
+
+func (response PostAuthBootRefresh500Response) VisitPostAuthBootRefreshResponse(w http.ResponseWriter) error {
+	w.WriteHeader(500)
+	return nil
+}
+
 type PostAuthEmailVerifyRequestObject struct {
 	Body *PostAuthEmailVerifyJSONRequestBody
 }

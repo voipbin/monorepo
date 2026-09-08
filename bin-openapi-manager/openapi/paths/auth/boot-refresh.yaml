@@ -41,3 +41,5 @@ post:
         - The owning customer is no longer active.
     '403':
       description: The presented token is not a direct token.
+    '500':
+      description: The server could not issue a token. Retrying the refresh may succeed; booting again will not help.

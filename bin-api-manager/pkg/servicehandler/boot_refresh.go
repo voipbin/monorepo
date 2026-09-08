@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"crypto/hmac"
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
@@ -82,7 +83,10 @@ func (h *serviceHandler) AuthBootRefresh(ctx context.Context, a *auth.AuthIdenti
 	// 5. the hash must not have been regenerated. Regeneration is how an
 	// operator revokes a leaked public link, and it rotates only the hash --
 	// a lookup keyed on customer or resource would not notice.
-	if h.directHashFingerprint(d.Hash) != scope.HashFingerprint {
+	// Constant-time compare. Not exploitable here (the claimed value arrives
+	// inside an HMAC-verified JWT, so an attacker cannot iterate candidates),
+	// but the comparison costs nothing and this is a MAC check.
+	if !hmac.Equal([]byte(h.directHashFingerprint(d.Hash)), []byte(scope.HashFingerprint)) {
 		log.Info("Direct hash was regenerated. Rejecting refresh.")
 		return nil, fmt.Errorf("%w: direct hash rotated", serviceerrors.ErrAuthenticationRequired)
 	}
