@@ -793,11 +793,16 @@ func Test_EmailVerify_ClearsTMDelete(t *testing.T) {
 
 func Test_EmailVerify_RejectsDeletedAndFrozen(t *testing.T) {
 	tests := []struct {
-		name   string
-		status customer.Status
+		name          string
+		status        customer.Status
+		emailVerified bool
 	}{
-		{"deleted", customer.StatusDeleted},
-		{"frozen", customer.StatusFrozen},
+		{"deleted", customer.StatusDeleted, false},
+		{"frozen", customer.StatusFrozen, false},
+		// Pins the guard ORDERING, not just its existence: with email_verified true
+		// the already-verified early return would happily hand back this deleted
+		// (PII-anonymized) row if the deny-list were moved below it.
+		{"deleted and already verified", customer.StatusDeleted, true},
 	}
 
 	for _, tt := range tests {
@@ -818,12 +823,15 @@ func Test_EmailVerify_RejectsDeletedAndFrozen(t *testing.T) {
 			mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
 			mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
-				ID:     customerID,
-				Status: tt.status,
+				ID:            customerID,
+				Status:        tt.status,
+				EmailVerified: tt.emailVerified,
 			}, nil)
 
 			// no CustomerUpdate expected: a deleted (PII-anonymized) or frozen row
-			// must never be revived by a stale token.
+			// must never be revived by a stale token. No EmailVerifyTokenDelete
+			// either: reaching the already-verified early return is itself the
+			// failure this case guards against.
 			if _, err := h.EmailVerify(ctx, token); err == nil {
 				t.Errorf("Wrong match. expect: error, got: nil")
 			}

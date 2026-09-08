@@ -19,6 +19,12 @@ func TestCleanupConstants(t *testing.T) {
 	if unverifiedMaxAge != 72*time.Hour {
 		t.Errorf("unverifiedMaxAge = %v, expected %v", unverifiedMaxAge, 72*time.Hour)
 	}
+	// Pinned exactly, not only relative to the window: the verification email
+	// copy promises "expires in 24 hours", so reverting the TTL to 1h would keep
+	// the relational assertion below green while making that copy a lie.
+	if emailVerifyTokenTTL != 24*time.Hour {
+		t.Errorf("emailVerifyTokenTTL = %v, expected %v", emailVerifyTokenTTL, 24*time.Hour)
+	}
 	// The window must stay strictly longer than the link TTL, otherwise a user
 	// whose link expired has no interval in which to ask for a new one.
 	if emailVerifyTokenTTL >= unverifiedMaxAge {
