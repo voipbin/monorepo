@@ -12,8 +12,8 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	cmcall "monorepo/bin-call-manager/models/call"
-	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	kmkase "monorepo/bin-contact-manager/models/kase"
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
 
 	"github.com/gofrs/uuid"
@@ -208,9 +208,9 @@ func Test_toolHandleCaseCreate(t *testing.T) {
 		aicall *aicall.AIcall
 		tool   *message.ToolCall
 
-		responseCall     *cmcall.Call
-		responseVariable *fmvariable.Variable
-		responseCase     *kmkase.Case
+		responseCall      *cmcall.Call
+		responseVariable  *fmvariable.Variable
+		responseCase      *kmkase.Case
 		responseCreateErr error
 
 		expectContactV1CaseCreate bool

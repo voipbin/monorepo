@@ -4,13 +4,16 @@ import (
 	"context"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-webchat-manager/models/session"
+	"monorepo/bin-webchat-manager/pkg/dbhandler"
 )
 
 // Create creates a new session. If the owning Widget has a
@@ -26,7 +29,9 @@ import (
 // SessionFlowID-trigger failure, must NOT fail Session creation
 // itself -- both are best-effort (the Session row is already
 // committed by the time either is attempted).
-func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string, referrer string) (*session.Session, error) {
+// id pins the session's primary key. uuid.Nil means "generate one", which is
+// what every caller except the direct-token path passes.
+func (h *sessionHandler) Create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, widgetID uuid.UUID, pageURL string, referrer string) (*session.Session, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
 		"customer_id": customerID,
@@ -34,7 +39,10 @@ func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widge
 	})
 	log.Debug("Creating a new session.")
 
-	id := h.utilHandler.UUIDCreate()
+	callerSpecifiedID := id != uuid.Nil
+	if !callerSpecifiedID {
+		id = h.utilHandler.UUIDCreate()
+	}
 	log = log.WithField("session_id", id)
 
 	s := &session.Session{
@@ -52,6 +60,23 @@ func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widge
 	}
 
 	if err := h.db.SessionCreate(ctx, s); err != nil {
+		// A duplicate on a caller-specified id means the token's assignment
+		// has already been used. Surface it as AlreadyExists so it crosses the
+		// RPC boundary as 409 and the client can treat it as "reboot", rather
+		// than falling through to listenhandler's untyped 500.
+		//
+		// webchat_sessions has no unique index besides the primary key, so a
+		// duplicate here can only be the id. The sentinel deliberately does not
+		// wrap the driver error: wrapping would keep the "Duplicate entry"
+		// text and make IsErrDuplicate match it again downstream.
+		if callerSpecifiedID && dbhandler.IsErrDuplicate(err) {
+			log.Infof("Caller specified session id is already in use. session_id: %s", id)
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameWebchatManager,
+				"SESSION_ID_ALREADY_EXISTS",
+				"The requested session id is already in use.",
+			)
+		}
 		log.Errorf("Could not create a new session. err: %v", err)
 		return nil, err
 	}

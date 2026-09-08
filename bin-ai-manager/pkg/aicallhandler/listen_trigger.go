@@ -543,14 +543,14 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 
 	_, err = h.reqHandler.TranscribeV1TranscribeStart(
 		ctx,
-		newTranscribeID,              // id -- caller-specified, not uuid.Nil; this
-		                              //   ordering fix is the one and only reason
-		                              //   this design uses that capability
+		newTranscribeID, // id -- caller-specified, not uuid.Nil; this
+		//   ordering fix is the one and only reason
+		//   this design uses that capability
 		cmcustomer.IDAIManagerListen, // customerID: the platform sentinel, never the tenant
 		call.ActiveflowID,            // the CALL's activeflow, not the AIcall's -- a
-		                              //   panel-started contact_case AIcall has
-		                              //   ActiveflowID == uuid.Nil
-		uuid.Nil,                     // onEndFlowID: no on-end flow for listening
+		//   panel-started contact_case AIcall has
+		//   ActiveflowID == uuid.Nil
+		uuid.Nil, // onEndFlowID: no on-end flow for listening
 		tmtranscribe.ReferenceTypeCall,
 		callID,
 		language,

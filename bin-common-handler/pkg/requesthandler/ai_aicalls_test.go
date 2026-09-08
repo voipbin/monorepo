@@ -56,7 +56,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 				URI:      "/v1/aicalls",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"assistance_type":"ai","assistance_id":"e8604e8a-ef52-11ef-88be-43d681e412f7","activeflow_id":"eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4","reference_type":"call","reference_id":"e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9"}`),
+				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","assistance_type":"ai","assistance_id":"e8604e8a-ef52-11ef-88be-43d681e412f7","activeflow_id":"eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4","reference_type":"call","reference_id":"e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9"}`),
 			},
 			expectRes: &amaicall.AIcall{
 				Identity: identity.Identity{
@@ -79,7 +79,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AIcallStart(ctx, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID)
+			cf, err := reqHandler.AIV1AIcallStart(ctx, uuid.Nil, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

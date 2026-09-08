@@ -65,7 +65,7 @@ func Test_Create_NoSessionFlowConfigured(t *testing.T) {
 	// SessionUpdate expected -- their absence from the mock is
 	// enforced by gomock failing on any unexpected call.
 
-	res, err := h.Create(ctx, customerID, widgetID, "", "")
+	res, err := h.Create(ctx, uuid.Nil, customerID, widgetID, "", "")
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -149,7 +149,7 @@ func Test_Create_SessionFlowConfigured_TriggersFlow(t *testing.T) {
 		session.FieldActiveflowID: cv.ID,
 	}).Return(nil)
 
-	res, err := h.Create(ctx, customerID, widgetID, "", "")
+	res, err := h.Create(ctx, uuid.Nil, customerID, widgetID, "", "")
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -205,7 +205,7 @@ func Test_Create_ReferrerPeerLocal(t *testing.T) {
 	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
 	mockWidget.EXPECT().Get(ctx, widgetID).Return(nil, dbhandler.ErrNotFound)
 
-	res, err := h.Create(ctx, customerID, widgetID, "", referrer)
+	res, err := h.Create(ctx, uuid.Nil, customerID, widgetID, "", referrer)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -246,7 +246,7 @@ func Test_Create_WidgetFetchFails_SessionStillSucceeds(t *testing.T) {
 	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
 	mockWidget.EXPECT().Get(ctx, widgetID).Return(nil, dbhandler.ErrNotFound)
 
-	res, err := h.Create(ctx, customerID, widgetID, "", "")
+	res, err := h.Create(ctx, uuid.Nil, customerID, widgetID, "", "")
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -100,9 +100,9 @@ func Test_ProcessTerminate(t *testing.T) {
 
 		id uuid.UUID
 
-		responseAicall         *aicall.AIcall
-		responsePipecatcall    *pmpipecatcall.Pipecatcall
-		pipecatcallGetErr      error // non-nil to simulate stale/missing pipecatcall
+		responseAicall      *aicall.AIcall
+		responsePipecatcall *pmpipecatcall.Pipecatcall
+		pipecatcallGetErr   error // non-nil to simulate stale/missing pipecatcall
 	}{
 		{
 			// Already-terminated: idempotency guard returns early without any further RPCs.

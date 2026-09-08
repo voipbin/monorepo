@@ -503,7 +503,7 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 			).Return(tt.responseActiveflow, nil)
 
 			mockReq.EXPECT().AIV1AIcallStart(
-				ctx, tt.assistanceType, resolvedAssistanceID, tt.responseActiveflow.ID, tt.referenceType, tt.referenceID,
+				ctx, uuid.Nil, tt.assistanceType, resolvedAssistanceID, tt.responseActiveflow.ID, tt.referenceType, tt.referenceID,
 			).Return(tt.responseAIcall, nil)
 
 			if tt.expectReused {

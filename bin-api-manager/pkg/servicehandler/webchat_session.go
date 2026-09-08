@@ -172,6 +172,9 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 	// a.CustomerID) in aicall.go.
 	var ownerCustomerID uuid.UUID
 
+	// uuid.Nil lets webchat-manager generate the id. Only the direct path pins it.
+	sessionID := uuid.Nil
+
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		// Resolve the target widget first and check permission against
@@ -210,11 +213,18 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 			return nil, err
 		}
 		ownerCustomerID = w.CustomerID
+
+		if a.DirectScope.AllowedResourceID == uuid.Nil {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		// The new session must land on the id the token is bound to, so that
+		// two visitors of the same widget cannot reach each other's session.
+		sessionID = a.DirectScope.AllowedResourceID
 	default:
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, ownerCustomerID, widgetID, pageURL, referrer)
+	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, sessionID, ownerCustomerID, widgetID, pageURL, referrer)
 	if err != nil {
 		log.Errorf("Could not create the session. err: %v", err)
 		return nil, err

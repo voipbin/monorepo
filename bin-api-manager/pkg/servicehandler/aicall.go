@@ -58,6 +58,9 @@ func (h *serviceHandler) AIcallCreate(
 		return nil, fmt.Errorf("%w: unsupported assistance type: %s", serviceerrors.ErrInvalidArgument, assistanceType)
 	}
 
+	// uuid.Nil lets ai-manager generate the id. Only the direct path pins it.
+	aicallID := uuid.Nil
+
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -70,6 +73,27 @@ func (h *serviceHandler) AIcallCreate(
 		if a.DirectScope.ResourceID != assistanceID {
 			return nil, fmt.Errorf("%w: resource not in token scope", serviceerrors.ErrPermissionDenied)
 		}
+		if a.DirectScope.AllowedResourceID == uuid.Nil {
+			return nil, fmt.Errorf("%w: token is not resource bound", serviceerrors.ErrPermissionDenied)
+		}
+
+		// The new aicall must land on the id the token is bound to, or nothing
+		// downstream can tell this visitor's resource from any other's.
+		aicallID = a.DirectScope.AllowedResourceID
+
+		// Force both reference fields. reference_type=none routes to
+		// startReferenceTypeNone, the one start path that never calls
+		// AIcallGetByReferenceID -- which has no customer filter and would
+		// otherwise hand back another tenant's aicall (VOIP-1502).
+		// reference_id=Nil is separately load-bearing: the generated column
+		// active_reference_key keys off reference_id being non-zero, not off
+		// the type, so forcing only the type would leave the unique-index
+		// collision surface live. Neither forcing is redundant.
+		//
+		// Both widgets already send exactly these values, so this is not a
+		// behavior change for them.
+		referenceType = amaicall.ReferenceTypeNone
+		referenceID = uuid.Nil
 	}
 
 	// create activeflow for the aicall
@@ -92,6 +116,7 @@ func (h *serviceHandler) AIcallCreate(
 
 	tmp, err := h.reqHandler.AIV1AIcallStart(
 		ctx,
+		aicallID,
 		assistanceType,
 		assistanceID,
 		af.ID,

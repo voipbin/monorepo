@@ -355,7 +355,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				tt.expectTTSVoiceID,
 			).Return(tt.responsePipecatcall, nil)
 
-			res, err := h.startReferenceTypeCall(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
+			res, err := h.startReferenceTypeCall(ctx, uuid.Nil, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -447,7 +447,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, uuid.Nil, nil, uuid.Nil)
+			res, err := h.startReferenceTypeNone(ctx, uuid.Nil, tt.ai, tt.assistanceType, tt.assistanceID, uuid.Nil, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1417,7 +1417,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				beforeIdleExpired = testutil.ToFloat64(promAIcallIdleExpiredTotal)
 			}
 
-			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
+			res, err := h.startReferenceTypeConversation(ctx, uuid.Nil, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
 			if tt.expectErr {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
@@ -2442,7 +2442,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "", gomock.Any()).Return(&message.Message{}, nil)
 			}
 
-			res, err := h.startAIcallByRealtime(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.isTask, tt.teamParameter, tt.currentMemberID)
+			res, err := h.startAIcallByRealtime(ctx, uuid.Nil, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.confbridgeID, tt.isTask, tt.teamParameter, tt.currentMemberID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -2796,7 +2796,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				h.participantHandler = mockParticipant
 			}
 
-			res, err := h.startAIcallByMessaging(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.isTask, tt.teamParameter, tt.currentMemberID)
+			res, err := h.startAIcallByMessaging(ctx, uuid.Nil, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.isTask, tt.teamParameter, tt.currentMemberID)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -5568,7 +5568,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				beforeIdleExpired = testutil.ToFloat64(promAIcallIdleExpiredTotal)
 			}
 
-			res, err := h.startReferenceTypeContactCase(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
+			res, err := h.startReferenceTypeContactCase(ctx, uuid.Nil, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
 			if tt.expectRateLimitedInc {
 				afterRateLimited := testutil.ToFloat64(promAIcallContactCaseRecreateRateLimitedTotal)
 				if afterRateLimited-beforeRateLimited < 1 {

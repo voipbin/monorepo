@@ -283,6 +283,7 @@ func (h *serviceHandler) ServiceAgentAIcallCreate(
 
 	tmp, err := h.reqHandler.AIV1AIcallStart(
 		ctx,
+		uuid.Nil, // agent-initiated: let ai-manager generate the id
 		assistanceType,
 		assistanceID,
 		af.ID,

@@ -541,18 +541,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallParticipantList(ctx, aicallI
 }
 
 // AIV1AIcallStart mocks base method.
-func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, assistanceType aicall.AssistanceType, assistanceID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID) (*aicall.AIcall, error) {
+func (m *MockRequestHandler) AIV1AIcallStart(ctx context.Context, id uuid.UUID, assistanceType aicall.AssistanceType, assistanceID, activeflowID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIcallStart", ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID)
+	ret := m.ctrl.Call(m, "AIV1AIcallStart", ctx, id, assistanceType, assistanceID, activeflowID, referenceType, referenceID)
 	ret0, _ := ret[0].(*aicall.AIcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIcallStart indicates an expected call of AIV1AIcallStart.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIcallStart(ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallStart(ctx, id, assistanceType, assistanceID, activeflowID, referenceType, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallStart), ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallStart), ctx, id, assistanceType, assistanceID, activeflowID, referenceType, referenceID)
 }
 
 // AIV1AIcallTerminate mocks base method.
@@ -7734,18 +7734,18 @@ func (mr *MockRequestHandlerMockRecorder) WebchatV1MessageList(ctx, pageToken, p
 }
 
 // WebchatV1SessionCreate mocks base method.
-func (m *MockRequestHandler) WebchatV1SessionCreate(ctx context.Context, customerID, widgetID uuid.UUID, pageURL, referrer string) (*session.Session, error) {
+func (m *MockRequestHandler) WebchatV1SessionCreate(ctx context.Context, id, customerID, widgetID uuid.UUID, pageURL, referrer string) (*session.Session, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WebchatV1SessionCreate", ctx, customerID, widgetID, pageURL, referrer)
+	ret := m.ctrl.Call(m, "WebchatV1SessionCreate", ctx, id, customerID, widgetID, pageURL, referrer)
 	ret0, _ := ret[0].(*session.Session)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WebchatV1SessionCreate indicates an expected call of WebchatV1SessionCreate.
-func (mr *MockRequestHandlerMockRecorder) WebchatV1SessionCreate(ctx, customerID, widgetID, pageURL, referrer any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) WebchatV1SessionCreate(ctx, id, customerID, widgetID, pageURL, referrer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatV1SessionCreate", reflect.TypeOf((*MockRequestHandler)(nil).WebchatV1SessionCreate), ctx, customerID, widgetID, pageURL, referrer)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatV1SessionCreate", reflect.TypeOf((*MockRequestHandler)(nil).WebchatV1SessionCreate), ctx, id, customerID, widgetID, pageURL, referrer)
 }
 
 // WebchatV1SessionDelete mocks base method.
