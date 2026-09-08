@@ -38,12 +38,16 @@ const directHashFingerprintDomain = "voipbin/direct-hash-fingerprint/v1\x00"
 // hours, and that recovery would outlive both the token's expiry and the boot
 // session ceiling.
 //
-// The exposure it guards against is the identity reaching a log. The WebSocket
-// paths do log the whole *auth.AuthIdentity, though under the current default
-// TextFormatter the nested *DirectScope prints as a pointer address and the
-// fingerprint does not actually appear. Keying is what keeps that safe if the
-// service ever moves to a JSONFormatter, where every tagged field serializes in
-// full. Do not read the current formatter's behavior as a reason to drop it.
+// The exposure it guards against is the identity reaching a log, which it does
+// today. The WebSocket paths and a good many REST handlers log the whole
+// *auth.AuthIdentity (websockhandler/subscription.go:35, server/providers.go:29,
+// server/billing_account.go:25, and others), and initLog
+// (internal/config/main.go:242) installs joonix.NewFormatter -- a JSON formatter,
+// so encoding/json follows the nested *DirectScope pointer and serializes every
+// tagged field, this one included. Keying is what makes the logged value inert:
+// an unkeyed digest would let anyone with log access recover the 48-bit direct
+// hash offline, and that recovery outlives both the token's expiry and the boot
+// session ceiling.
 //
 // HMAC keeps every property the check needs: deterministic, stable across
 // replicas and restarts, and full width (no truncation).
