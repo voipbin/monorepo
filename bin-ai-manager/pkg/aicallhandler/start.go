@@ -212,16 +212,19 @@ func (h *aicallHandler) Start(
 
 	if err != nil {
 		// A duplicate on a caller-specified id means the token's assignment is
-		// already spent. Only the direct-token path specifies an id, and 4.4.1
-		// forces its reference_id to uuid.Nil, which NULLs the generated
-		// active_reference_key -- so the primary key is the only constraint
-		// that can collide here. That is what makes this discriminator sound.
+		// already spent. The reference-type condition is what makes this a
+		// safe discriminator rather than a guess: with ReferenceTypeNone the
+		// reference_id is uuid.Nil, which NULLs the generated
+		// active_reference_key, so the primary key is the only constraint left
+		// that can collide. Without it, a future caller that pinned an id on a
+		// contact_case would get a uq_aicall_active_reference_key violation
+		// misreported as an id collision.
 		//
 		// The sentinel does not wrap err: wrapping would preserve the
 		// "Duplicate entry" text and IsErrDuplicate would match it again in
 		// startReferenceTypeContactCase's retry loop, which is exactly where it
 		// must not be swallowed.
-		if id != uuid.Nil && dbhandler.IsErrDuplicate(err) {
+		if id != uuid.Nil && referenceType == aicall.ReferenceTypeNone && dbhandler.IsErrDuplicate(err) {
 			return nil, cerrors.AlreadyExists(
 				commonoutline.ServiceNameAIManager,
 				"AICALL_ID_ALREADY_EXISTS",

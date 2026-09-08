@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -28,18 +29,20 @@ var directResourceMapping = map[string][]string{
 // directHashFingerprint derives the value stored in DirectScope.HashFingerprint
 // and re-checked by AuthBootRefresh.
 //
-// Full-width SHA-256 hex, no truncation and no salt. Not truncated because the
-// underlying hash carries only 48 bits of entropy (bin-direct-manager
-// generateHash uses 6 random bytes), and not salted because the check has to
-// hold across replicas and restarts.
+// Keyed with the signing key rather than a bare digest. The underlying direct
+// hash is only 48 bits (bin-direct-manager generateHash uses 6 random bytes) in
+// a known format, so an unkeyed SHA-256 of it is brute-forceable offline in
+// hours. That matters because the token travels further than the hash does: the
+// WebSocket paths log the whole *auth.AuthIdentity, so an unkeyed fingerprint
+// would let anyone with log access recover the direct hash, and that recovery
+// outlives both the token's expiry and the boot session ceiling.
 //
-// Putting a fingerprint of the hash in the JWT is acceptable only because the
-// direct hashes that can be booted (ai, ai_team, webchat_widget) are published
-// in page JavaScript by design. Do not copy this pattern for a secret
-// credential.
-func directHashFingerprint(hash string) string {
-	sum := sha256.Sum256([]byte(hash))
-	return hex.EncodeToString(sum[:])
+// HMAC keeps every property the check needs: deterministic, stable across
+// replicas and restarts, and full width (no truncation).
+func (h *serviceHandler) directHashFingerprint(hash string) string {
+	mac := hmac.New(sha256.New, h.jwtKey)
+	mac.Write([]byte(hash))
+	return hex.EncodeToString(mac.Sum(nil))
 }
 
 // BootResponse is the typed response for POST /auth/boot.
@@ -153,7 +156,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 
 		AllowedResourceID: h.utilHandler.UUIDCreate(),
 		DirectID:          d.ID,
-		HashFingerprint:   directHashFingerprint(d.Hash),
+		HashFingerprint:   h.directHashFingerprint(d.Hash),
 		BootExpire:        h.utilHandler.TimeGetCurTimeAdd(BootSessionMaxLifetime),
 		ScopeVersion:      DirectScopeVersionCurrent,
 	}

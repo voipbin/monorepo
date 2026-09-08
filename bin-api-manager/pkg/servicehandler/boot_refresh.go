@@ -76,7 +76,7 @@ func (h *serviceHandler) AuthBootRefresh(ctx context.Context, a *auth.AuthIdenti
 	// 5. the hash must not have been regenerated. Regeneration is how an
 	// operator revokes a leaked public link, and it rotates only the hash --
 	// a lookup keyed on customer or resource would not notice.
-	if directHashFingerprint(d.Hash) != scope.HashFingerprint {
+	if h.directHashFingerprint(d.Hash) != scope.HashFingerprint {
 		log.Info("Direct hash was regenerated. Rejecting refresh.")
 		return nil, fmt.Errorf("%w: direct hash rotated", serviceerrors.ErrAuthenticationRequired)
 	}

@@ -398,7 +398,7 @@ func Test_AuthBoot(t *testing.T) {
 			if claimScope.DirectID != tt.responseDirect.ID {
 				t.Errorf("Expected direct id %v, got: %v", tt.responseDirect.ID, claimScope.DirectID)
 			}
-			if claimScope.HashFingerprint != directHashFingerprint(tt.responseDirect.Hash) {
+			if claimScope.HashFingerprint != h.directHashFingerprint(tt.responseDirect.Hash) {
 				t.Errorf("Unexpected hash fingerprint: %v", claimScope.HashFingerprint)
 			}
 			if claimScope.BootExpire != testBootExpire {

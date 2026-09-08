@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 

@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amai "monorepo/bin-ai-manager/models/ai"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"

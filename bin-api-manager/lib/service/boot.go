@@ -85,11 +85,16 @@ func PostBootRefresh(c *gin.Context) {
 	res, err := serviceHandler.AuthBootRefresh(c.Request.Context(), identity)
 	if err != nil {
 		log.Infof("Boot refresh failed. err: %v", err)
-		if stderrors.Is(err, serviceerrors.ErrPermissionDenied) {
+		switch {
+		case stderrors.Is(err, serviceerrors.ErrPermissionDenied):
 			c.AbortWithStatus(http.StatusForbidden)
-			return
+		case stderrors.Is(err, serviceerrors.ErrInternal):
+			// A signing fault is ours, not the token's. Reporting it as 401
+			// would tell the widget to boot again, which cannot help.
+			c.AbortWithStatus(http.StatusInternalServerError)
+		default:
+			c.AbortWithStatus(http.StatusUnauthorized)
 		}
-		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 

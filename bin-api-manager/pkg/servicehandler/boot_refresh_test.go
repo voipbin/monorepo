@@ -32,6 +32,13 @@ var (
 	refreshAllowedID  = uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004")
 )
 
+// refreshFingerprint mirrors what AuthBoot would have stored, using the same
+// signing key the test handler is built with.
+func refreshFingerprint() string {
+	h := serviceHandler{jwtKey: []byte("testkey")}
+	return h.directHashFingerprint(refreshHash)
+}
+
 func refreshScope() *auth.DirectScope {
 	return &auth.DirectScope{
 		CustomerID:           refreshCustomerID,
@@ -40,7 +47,7 @@ func refreshScope() *auth.DirectScope {
 		AllowedResourceTypes: []string{"aicall"},
 		AllowedResourceID:    refreshAllowedID,
 		DirectID:             refreshDirectID,
-		HashFingerprint:      directHashFingerprint(refreshHash),
+		HashFingerprint:      refreshFingerprint(),
 		BootExpire:           refreshBootExpire,
 		ScopeVersion:         DirectScopeVersionCurrent,
 	}

@@ -11,8 +11,8 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	cmkase "monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	cmkase "monorepo/bin-contact-manager/models/kase"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
