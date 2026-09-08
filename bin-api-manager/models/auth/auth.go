@@ -32,11 +32,40 @@ type AuthIdentity struct {
 }
 
 // DirectScope represents a resource-scoped JWT claim set.
+//
+// None of these fields carry omitempty: the authorization predicates in
+// lib/middleware/authenticate.go are value-based (AllowedResourceID == uuid.Nil,
+// ScopeVersion < DirectScopeVersionCurrent), not key-presence based. A token
+// minted before this feature deserializes with zero values, which is exactly
+// what those predicates reject. See
+// docs/plans/2026-09-08-direct-token-resource-binding-design.md §8.1.
 type DirectScope struct {
 	CustomerID           uuid.UUID `json:"customer_id"`
 	ResourceType         string    `json:"resource_type"`
 	ResourceID           uuid.UUID `json:"resource_id"`
 	AllowedResourceTypes []string  `json:"allowed_resource_types"`
+
+	// AllowedResourceID is the single resource this token may touch. It is
+	// minted at boot before the resource exists, and the creating handler
+	// forces the new resource to take this id.
+	AllowedResourceID uuid.UUID `json:"allowed_resource_id"`
+
+	// DirectID and HashFingerprint let POST /auth/boot/refresh re-check the
+	// direct record without trusting the rest of the claim set. Hash
+	// regeneration is the revocation mechanism for a leaked public link, and
+	// it rotates only the hash -- so a lookup keyed on customer/resource
+	// would not detect it. See design §3.6.
+	DirectID        uuid.UUID `json:"direct_id"`
+	HashFingerprint string    `json:"hash_fingerprint"`
+
+	// BootExpire is an absolute ceiling, carried verbatim across refreshes so
+	// refreshing cannot walk it forward. ISO-8601 UTC, fixed-width
+	// microseconds, so string comparison is chronological comparison.
+	BootExpire string `json:"boot_expire"`
+
+	// ScopeVersion lets a future scope change invalidate every outstanding
+	// direct token in one step, via the buildJWTIdentity predicate.
+	ScopeVersion int `json:"scope_version"`
 }
 
 // DelegateScope represents a superadmin-issued delegate JWT claim set.

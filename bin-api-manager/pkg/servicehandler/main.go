@@ -114,6 +114,18 @@ const (
 	TokenExpiration    = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
 	BootExpiration     = time.Hour * 4      // direct boot token expiration time. 4 hours
 	DelegateExpiration = time.Hour * 8      // delegate token expiration. 8 hours
+
+	// BootSessionMaxLifetime caps how long a single boot session may be kept
+	// alive by POST /auth/boot/refresh. Refresh copies DirectScope.BootExpire
+	// verbatim, so the ceiling cannot be walked forward. Without it, a token
+	// whose direct hash was later regenerated could in principle be renewed
+	// indefinitely if any of the refresh revocation checks were removed.
+	BootSessionMaxLifetime = time.Hour * 24
+
+	// DirectScopeVersionCurrent is stamped into every direct token and checked
+	// in buildJWTIdentity. Bumping it invalidates every outstanding direct
+	// token in one step; clients treat the resulting 401 as a reboot signal.
+	DirectScopeVersionCurrent = 2
 )
 
 // ServiceHandler is interface for service handle

@@ -2,6 +2,8 @@ package servicehandler
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
@@ -23,6 +25,23 @@ var directResourceMapping = map[string][]string{
 	dmdirect.ResourceTypeWebchatWidget: {"webchat_session"},
 }
 
+// directHashFingerprint derives the value stored in DirectScope.HashFingerprint
+// and re-checked by AuthBootRefresh.
+//
+// Full-width SHA-256 hex, no truncation and no salt. Not truncated because the
+// underlying hash carries only 48 bits of entropy (bin-direct-manager
+// generateHash uses 6 random bytes), and not salted because the check has to
+// hold across replicas and restarts.
+//
+// Putting a fingerprint of the hash in the JWT is acceptable only because the
+// direct hashes that can be booted (ai, ai_team, webchat_widget) are published
+// in page JavaScript by design. Do not copy this pattern for a secret
+// credential.
+func directHashFingerprint(hash string) string {
+	sum := sha256.Sum256([]byte(hash))
+	return hex.EncodeToString(sum[:])
+}
+
 // BootResponse is the typed response for POST /auth/boot.
 type BootResponse struct {
 	Token        string    `json:"token"`
@@ -31,6 +50,14 @@ type BootResponse struct {
 	ResourceID   uuid.UUID `json:"resource_id"`
 	CustomerID   uuid.UUID `json:"customer_id"`
 	Expire       string    `json:"expire"`
+
+	// AllowedResourceID and ScopeVersion mirror the identically named
+	// DirectScope claims. Both MUST be read from the scope struct rather than
+	// recomputed, or the client's view and the token's view can diverge -- the
+	// client gates its id-mismatch reboot on ScopeVersion, so a response that
+	// under-reports it leaves that check asleep exactly when it is needed.
+	AllowedResourceID uuid.UUID `json:"allowed_resource_id"`
+	ScopeVersion      int       `json:"scope_version"`
 
 	// ResourceData is a resource-type-scoped envelope for additional,
 	// publicly-safe data about the boot-scoped resource. Each entry is a
@@ -123,6 +150,12 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 		ResourceType:         d.ResourceType,
 		ResourceID:           d.ResourceID,
 		AllowedResourceTypes: allowedTypes,
+
+		AllowedResourceID: h.utilHandler.UUIDCreate(),
+		DirectID:          d.ID,
+		HashFingerprint:   directHashFingerprint(d.Hash),
+		BootExpire:        h.utilHandler.TimeGetCurTimeAdd(BootSessionMaxLifetime),
+		ScopeVersion:      DirectScopeVersionCurrent,
 	}
 
 	// generate JWT with boot expiration
@@ -143,6 +176,10 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 		ResourceID:   d.ResourceID,
 		CustomerID:   d.CustomerID,
 		Expire:       expire,
+
+		// Read from scope, never recomputed. See the BootResponse doc comment.
+		AllowedResourceID: scope.AllowedResourceID,
+		ScopeVersion:      scope.ScopeVersion,
 	}
 
 	if fetcher, ok := resourceDisplayConfigFetchers[d.ResourceType]; ok {
