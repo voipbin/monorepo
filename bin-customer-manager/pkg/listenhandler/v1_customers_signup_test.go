@@ -295,3 +295,133 @@ func Test_processV1CustomersEmailVerifyPost_verifyError(t *testing.T) {
 		t.Errorf("Wrong match. expect: 400, got: %d", res.StatusCode)
 	}
 }
+
+func Test_processV1CustomersEmailVerifyResendPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		expectEmail string
+		expectRes   *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/customers/email_verify_resend",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"email":"resend@voipbin.net"}`),
+			},
+
+			expectEmail: "resend@voipbin.net",
+			// The handler answers with a bare 200 and no body on purpose: a payload
+			// would let the caller tell "that address exists" from "it does not".
+			expectRes: &sock.Response{
+				StatusCode: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:     mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
+
+			mockCustomer.EXPECT().EmailVerifyResend(
+				gomock.Any(),
+				tt.expectEmail,
+			).Return(nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1CustomersEmailVerifyResendPost_badRequest(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:     mockSock,
+		reqHandler:      mockReq,
+		customerHandler: mockCustomer,
+	}
+
+	req := &sock.Request{
+		URI:      "/v1/customers/email_verify_resend",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`invalid json`),
+	}
+
+	// No EmailVerifyResend expectation on purpose: a malformed body must be
+	// rejected before the handler is reached, and gomock fails the test if it is
+	// called anyway.
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != 400 {
+		t.Errorf("Wrong match. expect: 400, got: %d", res.StatusCode)
+	}
+}
+
+func Test_processV1CustomersEmailVerifyResendPost_resendError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:     mockSock,
+		reqHandler:      mockReq,
+		customerHandler: mockCustomer,
+	}
+
+	req := &sock.Request{
+		URI:      "/v1/customers/email_verify_resend",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`{"email":"resend@voipbin.net"}`),
+	}
+
+	// EmailVerifyResend swallows every non-fault outcome today, so this branch is
+	// currently unreachable in production. It is pinned anyway: the branch exists,
+	// and a future contributor reintroducing a differentiated failure must not
+	// silently turn it into a 200.
+	mockCustomer.EXPECT().EmailVerifyResend(gomock.Any(), "resend@voipbin.net").Return(fmt.Errorf("resend failed"))
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != 500 {
+		t.Errorf("Wrong match. expect: 500, got: %d", res.StatusCode)
+	}
+}
