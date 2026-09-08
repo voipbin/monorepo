@@ -974,9 +974,15 @@ func Test_EmailVerifyResend_RespectsCooldownAndCap(t *testing.T) {
 		cooldownOK    bool
 		count         int64
 		expectCounter bool
+		expectSend    bool
 	}{
-		{name: "inside cooldown", cooldownOK: false, expectCounter: false},
-		{name: "over daily cap", cooldownOK: true, count: 6, expectCounter: true},
+		{name: "inside cooldown", cooldownOK: false, expectCounter: false, expectSend: false},
+		// The two rows below straddle the cap boundary. resendCountMax is 5 and the
+		// counter is post-increment, so the 5th send must still go out and the 6th
+		// must not. Asserting only the rejecting side would let "n > resendCountMax"
+		// silently become "n >= resendCountMax" (an effective cap of 4).
+		{name: "at daily cap - still sends", cooldownOK: true, count: 5, expectCounter: true, expectSend: true},
+		{name: "over daily cap", cooldownOK: true, count: 6, expectCounter: true, expectSend: false},
 	}
 
 	for _, tt := range tests {
@@ -999,12 +1005,35 @@ func Test_EmailVerifyResend_RespectsCooldownAndCap(t *testing.T) {
 			if tt.expectCounter {
 				mockCache.EXPECT().ResendCountIncr(ctx, customerID, gomock.Any()).Return(tt.count, nil)
 			}
+			// When expectSend is false, EmailVerifyTokenSet / EmailV1EmailSend are left
+			// unexpected on purpose: gomock fails the test if they are called anyway.
+			if tt.expectSend {
+				mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), customerID, gomock.Any()).Return(nil)
+				mockReq.EXPECT().EmailV1EmailSend(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+			}
 
-			// EmailVerifyTokenSet / EmailV1EmailSend must NOT be called
 			if err := h.EmailVerifyResend(ctx, email); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
+	}
+}
+
+func TestResendConstants(t *testing.T) {
+	// Pinned exactly, not only relative to each other. Both values are published as
+	// fact in bin-api-manager/docs/operations.md, docsdev/source/auth_overview.rst and
+	// docsdev/source/quickstart_signup.rst; every other test passes gomock.Any() for
+	// the TTL, so without these assertions a change here would silently make the
+	// user-facing documentation wrong.
+	if resendCooldownTTL != 60*time.Second {
+		t.Errorf("resendCooldownTTL = %v, expected %v", resendCooldownTTL, 60*time.Second)
+	}
+	if resendCountMax != 5 {
+		t.Errorf("resendCountMax = %v, expected %v", resendCountMax, 5)
+	}
+	// The counter window is what makes the cap a *daily* cap.
+	if resendCountTTL != 24*time.Hour {
+		t.Errorf("resendCountTTL = %v, expected %v", resendCountTTL, 24*time.Hour)
 	}
 }
 

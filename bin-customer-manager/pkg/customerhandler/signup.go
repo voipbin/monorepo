@@ -325,41 +325,53 @@ func (h *customerHandler) EmailVerifyResend(ctx context.Context, email string) e
 	})
 	log.Debug("Processing email verification resend.")
 
+	// "lookup_error" covers every internal dependency failure that happens before
+	// the send is attempted (customer lookup and both cache operations). Keeping
+	// those out of "cooldown"/"cap" leaves those two labels as a clean signal of
+	// genuine abuse pressure rather than a mix of rejections and outages.
 	c, err := h.resendTarget(ctx, email)
 	if err != nil {
 		log.Errorf("Could not resolve the resend target. err: %v", err)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("lookup_error").Inc()
 		return nil
 	}
 	if c == nil {
 		log.Debug("No eligible customer for the given email. Skipping.")
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("no_target").Inc()
 		return nil
 	}
 
 	ok, err := h.cache.ResendCooldownAcquire(ctx, c.ID, resendCooldownTTL)
 	if err != nil {
 		log.Errorf("Could not acquire the resend cooldown. err: %v", err)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("lookup_error").Inc()
 		return nil
 	}
 	if !ok {
 		log.Infof("Resend is still within the cooldown window. customer_id: %s", c.ID)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("cooldown").Inc()
 		return nil
 	}
 
 	n, err := h.cache.ResendCountIncr(ctx, c.ID, resendCountTTL)
 	if err != nil {
 		log.Errorf("Could not increase the resend counter. err: %v", err)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("lookup_error").Inc()
 		return nil
 	}
 	if n > resendCountMax {
 		log.Infof("Resend daily cap reached. customer_id: %s, count: %d", c.ID, n)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("cap").Inc()
 		return nil
 	}
 
 	if errSend := h.sendSignupVerification(ctx, c.ID, c.Email); errSend != nil {
 		log.Errorf("Could not send the verification email. customer_id: %s, err: %v", c.ID, errSend)
+		metricshandler.EmailVerifyResendTotal.WithLabelValues("send_error").Inc()
 		return nil
 	}
 
+	metricshandler.EmailVerifyResendTotal.WithLabelValues("success").Inc()
 	log.Infof("Resent the verification email. customer_id: %s", c.ID)
 	return nil
 }
