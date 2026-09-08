@@ -32,15 +32,15 @@ These reasons are not tied to a specific resource and may be returned by any end
    * - ``INVALID_CREDENTIALS``
      - 401
      - The supplied token or access key is invalid or expired. Refresh the token via ``POST https://api.voipbin.net/v1.0/auth/login`` and retry.
-   * - ``ACCOUNT_FROZEN``
-     - 403
-     - The customer account is frozen (typically because unregister was scheduled). Inspect ``error.details[0].recovery_endpoint`` and call it to restore the account, or wait past ``deletion_effective_at``.
-   * - ``ACCOUNT_EXPIRED``
-     - 403
-     - The customer account expired because its email address was never verified. Call ``error.details[0].recovery_endpoint`` (``POST /auth/email-verify-resend``) to request a new verification email; if that is refused, contact support. Also returned by ``POST /auth/login`` for the same account, so a client can handle both identically.
    * - ``ACCOUNT_DELETED``
      - 403
      - The customer account has already been deleted. This is unrecoverable; the credentials used to authenticate can no longer be used. Contact support if this is unexpected. Also returned by ``POST /auth/login``.
+   * - ``ACCOUNT_EXPIRED``
+     - 403
+     - The customer account expired because its email address was never verified. Call ``error.details[0].recovery_endpoint`` (``POST /auth/email-verify-resend``) to request a new verification email; if that is refused, contact support. Also returned by ``POST /auth/login`` for the same account, so a client can handle both identically.
+   * - ``ACCOUNT_FROZEN``
+     - 403
+     - The customer account is frozen (typically because unregister was scheduled). Inspect ``error.details[0].recovery_endpoint`` and call it to restore the account, or wait past ``deletion_effective_at``.
    * - ``PERMISSION_DENIED``
      - 403
      - The authenticated user does not have permission for this resource.

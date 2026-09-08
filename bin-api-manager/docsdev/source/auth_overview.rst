@@ -497,6 +497,16 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
      - Neither or both of ``password``/``confirmation_phrase`` supplied; password re-authentication failed; ``confirmation_phrase`` is not exactly ``"DELETE"``; malformed JSON body; caller lacks ``PermissionCustomerAdmin``; caller is authenticated via a direct (boot) token (``DIRECT_ACCESS_NOT_SUPPORTED``); or the downstream freeze/delete call failed. The handler returns a bare ``400`` for all of these cases — it does not distinguish permission/direct-access failures with a ``403``, unlike ``POST /auth/delegate``.
    * - 401
      - Missing/invalid/expired token or access key (returned by the shared ``Authenticate()`` middleware, as a structured error envelope — see the response-shape note above).
+   * - 403
+     - The account's customer status is ``expired`` or ``deleted``. Password re-authentication runs the same login path that refuses those two statuses (VOIP-1491), so the refusal surfaces here instead of failing a step later. Both were already dead ends on this endpoint — the freeze transition requires ``active`` — so this only makes the refusal earlier and honest.
+   * - 404
+     - The customer record backing the authenticated account could not be found during password re-authentication.
+   * - 500
+     - The customer lookup performed during password re-authentication failed for any other reason (RPC timeout, or the customer-manager circuit breaker being open). That lookup fails **closed**, unlike the ``/v1.0/*`` gate's, so an unreachable customer-manager blocks the request rather than letting it through.
+
+.. note::
+
+   ``403``, ``404`` and ``500`` are reachable only through the ``password`` branch, which re-authenticates by calling ``AuthLogin``; before VOIP-1491 that branch could only ever produce a ``400``. The ``confirmation_phrase`` branch does not re-authenticate and is unaffected.
 
 **DELETE /auth/unregister** — cancels a scheduled deletion and restores ``active`` status. No request body. Only works while the account is ``frozen`` within the 30-day grace period.
 

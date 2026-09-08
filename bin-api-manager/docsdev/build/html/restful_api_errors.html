@@ -675,17 +675,17 @@
 <td><p>401</p></td>
 <td><p>The supplied token or access key is invalid or expired. Refresh the token via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/auth/login</span></code> and retry.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ACCOUNT_FROZEN</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ACCOUNT_DELETED</span></code></p></td>
 <td><p>403</p></td>
-<td><p>The customer account is frozen (typically because unregister was scheduled). Inspect <code class="docutils literal notranslate"><span class="pre">error.details[0].recovery_endpoint</span></code> and call it to restore the account, or wait past <code class="docutils literal notranslate"><span class="pre">deletion_effective_at</span></code>.</p></td>
+<td><p>The customer account has already been deleted. This is unrecoverable; the credentials used to authenticate can no longer be used. Contact support if this is unexpected. Also returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ACCOUNT_EXPIRED</span></code></p></td>
 <td><p>403</p></td>
 <td><p>The customer account expired because its email address was never verified. Call <code class="docutils literal notranslate"><span class="pre">error.details[0].recovery_endpoint</span></code> (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code>) to request a new verification email; if that is refused, contact support. Also returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> for the same account, so a client can handle both identically.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ACCOUNT_DELETED</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ACCOUNT_FROZEN</span></code></p></td>
 <td><p>403</p></td>
-<td><p>The customer account has already been deleted. This is unrecoverable; the credentials used to authenticate can no longer be used. Contact support if this is unexpected. Also returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>.</p></td>
+<td><p>The customer account is frozen (typically because unregister was scheduled). Inspect <code class="docutils literal notranslate"><span class="pre">error.details[0].recovery_endpoint</span></code> and call it to restore the account, or wait past <code class="docutils literal notranslate"><span class="pre">deletion_effective_at</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PERMISSION_DENIED</span></code></p></td>
 <td><p>403</p></td>
