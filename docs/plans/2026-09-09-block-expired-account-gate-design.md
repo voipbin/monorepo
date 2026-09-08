@@ -76,8 +76,24 @@ fail-open까지 범위에 넣었다. **검증 결과 그 근거는 성립하지 
 **그 트래픽 클래스가 바로 만료 계정이 무제한으로 생산할 수 있는 것이다.** 드물고 유계인 창이 아니라,
 보유자가 앉아서 기다리면 되는 구조다.
 
-따라서 **`AuthLogin`에 고객 상태 검사를 추가한다.** 이미 `AuthBoot`이 같은 패턴을 쓰고 있고
-(`pkg/servicehandler/boot.go:108`), 호출 지점이 하나뿐인 저빈도 경로라 fail-closed의 대가가 작다.
+따라서 **`AuthLogin`에 고객 상태 검사를 추가한다.** 이미 `AuthBoot`이 같은 패턴을 쓰고 있다(`pkg/servicehandler/boot.go:108`).
+
+**정정(2026-09-09, 구현 중 발견):** 초안은 `AuthLogin`을 "호출 지점이 하나뿐인 저빈도 경로"라고
+서술했으나 **틀렸다. 호출 지점은 둘이다.**
+
+| 호출자 | 위치 | 용도 |
+|---|---|---|
+| `PostLogin` | `lib/service/auth.go:62` | 로그인 |
+| `PostAuthUnregister` | `lib/service/unregister.go:133` | **비밀번호 재인증** |
+
+두 번째 호출자는 오류를 `abortWithMappedStatus`로 넘기는데 그 `default`가 **500**이다.
+따라서 (b)만 넣으면 만료/삭제 계정의 `POST /auth/unregister`가 현재의 400에서 **엉뚱한 500**으로
+바뀌고, 그것도 `password` 분기에서만 그렇게 되어 `confirmation_phrase` 분기와 응답이 갈린다.
+
+이를 막기 위해 `ErrAccountExpired` / `ErrAccountDeleted`를 `abortWithMappedStatus`의 기존 403
+그룹에 추가한다. 해당 엔드포인트의 순 변화는 **400 -> 403**이다. 2-2와 5절 2항이 이미 이 경로가
+어느 쪽이든 막다른 길임을 확인했으므로, 거부를 더 정직하고 더 이르게 만드는 것뿐이다.
+`frozen`은 거부목록에 없으므로 영향받지 않고, 배포된 자가 복구 흐름도 그대로다.
 이것으로 증폭 경로가 사라지고, `password-forgot`/`password-reset`도 자동으로 무력해진다.
 
 **이것은 범위 확대가 아니라 축소 과정에서 생긴 구멍을 메우는 것이다.** 대표님이 우려하신
