@@ -1586,7 +1586,7 @@ jobs:
           name: Deploy bin-pipecat-manager via Komodo API
           command: |
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
-              .circleci/scripts/komodo-api-deploy.sh bin-pipecat-manager bin-pipecat-manager/komodo/docker-compose.yml
+              .circleci/scripts/komodo-api-deploy.sh bin-pipecat-manager bin-pipecat-manager/komodo/docker-compose.yml bin-pipecat-manager/komodo/environment.env
 
   # bin-queue-manager
   bin-queue-manager-test:
