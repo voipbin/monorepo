@@ -83,29 +83,23 @@ func Test_CleanupUnverified(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 			h := &customerHandler{
-				db:          mockDB,
-				utilHandler: mockUtil,
+				db: mockDB,
 			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().CustomerList(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseCustomers, nil)
 
 			for i := 0; i < tt.expectUpdateCount; i++ {
-				now := time.Date(2026, 2, 23, 12, 0, 0, 0, time.UTC)
-				mockUtil.EXPECT().TimeNow().Return(&now)
-
 				mockDB.EXPECT().CustomerUpdate(ctx, tt.responseCustomers[i].ID, gomock.Any()).DoAndReturn(
 					func(_ context.Context, _ uuid.UUID, fields map[customer.Field]any) error {
 						status, ok := fields[customer.FieldStatus]
 						if !ok || status != string(customer.StatusExpired) {
 							t.Errorf("Expected status=expired, got: %v", status)
 						}
-						tmDelete, ok := fields[customer.FieldTMDelete]
-						if !ok || tmDelete == nil {
-							t.Errorf("Expected tm_delete to be set")
+						if _, ok := fields[customer.FieldTMDelete]; ok {
+							t.Errorf("Expected tm_delete to not be part of the update")
 						}
 						return nil
 					},
@@ -128,11 +122,9 @@ func Test_CleanupUnverified_updateError(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 	h := &customerHandler{
-		db:          mockDB,
-		utilHandler: mockUtil,
+		db: mockDB,
 	}
 	ctx := context.Background()
 
@@ -154,13 +146,9 @@ func Test_CleanupUnverified_updateError(t *testing.T) {
 	mockDB.EXPECT().CustomerList(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(customers, nil)
 
 	// first customer update fails
-	now1 := time.Date(2026, 2, 23, 12, 0, 0, 0, time.UTC)
-	mockUtil.EXPECT().TimeNow().Return(&now1)
 	mockDB.EXPECT().CustomerUpdate(ctx, customers[0].ID, gomock.Any()).Return(fmt.Errorf("db update error"))
 
 	// second customer update succeeds (continues despite first failure)
-	now2 := time.Date(2026, 2, 23, 12, 0, 0, 0, time.UTC)
-	mockUtil.EXPECT().TimeNow().Return(&now2)
 	mockDB.EXPECT().CustomerUpdate(ctx, customers[1].ID, gomock.Any()).Return(nil)
 
 	// should not panic, should process both customers, and the failed row
@@ -196,5 +184,40 @@ func Test_CleanupUnverified_listError(t *testing.T) {
 	}
 	if expired != 0 {
 		t.Errorf("Wrong match. expect: 0, got: %d", expired)
+	}
+}
+
+func Test_CleanupUnverified_DoesNotSetTMDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{
+		db: mockDB,
+	}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("8f2b7f2c-1c4a-4a3b-9d61-0f2b8a1c7e11")
+
+	mockDB.EXPECT().CustomerList(ctx, uint64(100), gomock.Any(), map[customer.Field]any{
+		customer.FieldEmailVerified: false,
+		customer.FieldDeleted:       false,
+		customer.FieldStatus:        string(customer.StatusInitial),
+	}).Return([]*customer.Customer{{ID: customerID, Email: "a@test.com"}}, nil)
+
+	// tm_delete must NOT be part of the update. Leaving it unset is what keeps the
+	// customer_deleted cascade reachable and restores the documented invariant
+	// "tm_delete set <=> status=deleted" from migration dafeedbccfa5.
+	mockDB.EXPECT().CustomerUpdate(ctx, customerID, map[customer.Field]any{
+		customer.FieldStatus: string(customer.StatusExpired),
+	}).Return(nil)
+
+	got, err := h.CleanupUnverified(ctx)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if got != 1 {
+		t.Errorf("Wrong match. expect: 1, got: %d", got)
 	}
 }
