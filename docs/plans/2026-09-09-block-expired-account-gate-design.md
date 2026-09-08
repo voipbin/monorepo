@@ -16,7 +16,7 @@
 `StatusExpired`는 `default: return false`로 통과시킨다.
 
 `cscustomer.StatusExpired`는 api-manager / agent-manager / registrar-manager 어디에도
-(vendor·test 제외) 등장하지 않는다. 즉 **요청 경로에서 `expired`를 해석하는 지점은 이 switch 하나뿐이다.**
+(vendor·test·`gens/` 생성 코드 제외) 등장하지 않는다. 즉 **요청 경로에서 `expired`를 해석하는 지점은 이 switch 하나뿐이다.**
 
 단 요청 경로 밖에도 미처리 지점이 있다. billing top-up cron이 만료 계정에 매달 지급하는 문제
 (VOIP-1506)는 `customer_expired` 이벤트 부재가 원인이며 이 게이트로 막히지 않는다.
@@ -122,13 +122,13 @@ fail-open 전환(전면 장애 위험)과는 성격이 다르다. 로그인 경�
 
 ## 4. 설계
 
-### 4-1. 변경 지점 2개
+### 4-1. 변경 지점 4개
 
 | # | 위치 | 변경 |
 |---|---|---|
 | a | `authenticate.go`의 `isBlockedAccountStatus` switch | `case cscustomer.StatusExpired:` 추가. 403 + `ACCOUNT_EXPIRED` |
-| b | `pkg/servicehandler/auth.go`의 `AuthLogin` | 고객 상태 검사 추가. **거부목록**: `StatusExpired`만 거부 |
-| c | `lib/service/auth.go`의 `PostLogin` | 만료 거부를 403 `ACCOUNT_EXPIRED` 엔벨로프로 매핑. 나머지 실패는 기존 400 유지 |
+| b | `pkg/servicehandler/auth.go`의 `AuthLogin` | 고객 상태 검사 추가. **거부목록**: `StatusExpired`와 `StatusDeleted`를 거부하고 `active`/`initial`/`frozen`은 통과 (4-1-1) |
+| c | `lib/service/auth.go`의 `PostLogin` | 상태 거부를 403 엔벨로프로 매핑. expired -> `ACCOUNT_EXPIRED`(+`details`), deleted -> `ACCOUNT_DELETED`(`details` 없음). 자격증명 오류는 기존 400 유지 |
 | d | `authenticate.go`의 고객 조회 실패 분기 | 로그 + Prometheus 카운터 추가. **동작 변경 없음**. 사양은 4-1-3 |
 
 ### 4-1-1. (b)의 판정식은 거부목록이어야 한다. `AuthBoot`을 그대로 베끼면 안 된다
@@ -192,7 +192,11 @@ if err != nil {
 
 따라서 `PostLogin`에서 만료 거부만 403 `cerrors.PermissionDenied` 엔벨로프로 분리해
 `ACCOUNT_EXPIRED`와 동일한 `details`를 싣는다. 자격증명 오류는 기존대로 불투명한 400을 유지한다.
-센티널은 `pkg/serviceerrors/sentinels.go`에 `ErrAccountExpired`(및 `ErrAccountDeleted`)로 추가한다.
+`StatusDeleted` 거부도 403 엔벨로프로 매핑하되 코드는 `ACCOUNT_DELETED`, `details`는 싣지 않는다.
+게이트가 이미 같은 상태를 `ACCOUNT_DELETED` 403으로 내고 있으므로(`authenticate.go:291`) 일관되고,
+expired와 달리 안내할 복구 경로가 없으므로 `details`가 비어 있는 것이 맞다.
+
+센티널은 `pkg/serviceerrors/sentinels.go`에 `ErrAccountExpired`와 `ErrAccountDeleted`로 추가한다.
 `abortWithMappedStatus`(`lib/service/unregister.go:55-74`)는 재사용할 수 없다. 그것은 엔벨로프 없이
 상태 코드만 낸다.
 
@@ -266,7 +270,7 @@ details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 - **VOIP-1490 이후** 만료 행은 의도적으로 `tm_delete`를 설정하지 않는다(`cleanup.go:52-57`).
   `deleted=false, status=expired`이므로 중복 검사에 **걸린다** -> 재가입 불가
 
-여기에 agent까지 없으면 재발송도 거부되고(`signup.go:449-450`), 이 설계가 로그인까지 막는다.
+여기에 agent까지 없으면 재발송도 거부되고(`customerhandler/signup.go:449-450`), 이 설계가 로그인까지 막는다.
 **세 문이 전부 닫힌다.**
 
 현재 모수는 0이다(agent 없는 101건은 전부 VOIP-1490 이전 행이다). 그러나 앞으로 만료되는 계정 중
@@ -276,15 +280,13 @@ agent 생성이 실패한 건이 나오면 그때부터 발생한다. VOIP-1490 
 따라서 4-2의 안내 문구에서 **재가입을 무조건 약속하지 않는다.** 재발송을 우선 안내하고,
 그것이 통하지 않으면 문의처로 보낸다. 이 막다른 길 자체는 5절에 후속으로 기록한다.
 
-에러 메시지가 재발송만 안내하면 101건에게는 막다른 길이 된다.
-
 **초안은 "게이트가 agent 유무를 모른다"고 썼는데 부정확하다.** `a.Type == TypeAgent`이면
 그 identity 자체가 해당 고객의 agent이므로 추가 RPC 없이 알 수 있다. 반대로 agent가 없는 101건은 실무상 accesskey만 제시하게 된다
 (엄밀히는 agent JWT가 클레임으로 구성되고 생존 조회를 하지 않으므로 soft-delete된 agent의 토큰도
 `TypeAgent`로 제시될 수 있으나, 이 집단은 애초에 토큰을 받은 적이 없다).
 즉 게이트는 사실상 무료로 두 집단을 구분할 수 있다.
 
-(92라는 수치는 `resendTarget`이 `FieldUsername: c.Email`로 매칭하므로(`signup.go:439-442`)
+(92라는 수치는 `resendTarget`이 `FieldUsername: c.Email`로 매칭하므로(`customerhandler/signup.go:439-442`)
 customer_id 조인으로 구한 값이라면 상한이다. 아래 결론은 어느 쪽이든 바뀌지 않는다.)
 
 **그럼에도 분기하지 않기로 한다.** 이유는 불가능해서가 아니라 메시지 복잡도에 비해 이득이 작기
@@ -312,6 +314,7 @@ customer_id 조인으로 구한 값이라면 상한이다. 아래 결론은 어�
 | **`AuthLogin`** + deleted | 거부 + `ACCOUNT_DELETED`. 캐스케이드 누락 고객은 agent가 살아있어 로그인이 되므로 여기서 닫는다 (4-1-1) |
 | **`AuthLogin`** + 고객 조회 RPC 실패 | **거부**(fail-closed). `PostLogin`은 만료 판정이 아니므로 403 엔벨로프가 아니라 기존 불투명 400을 반환한다 (4-1-1) |
 | **`PostLogin`** + expired | 403 + `ACCOUNT_EXPIRED` 엔벨로프 + `details` (4-1c) |
+| **`PostLogin`** + deleted | 403 + `ACCOUNT_DELETED` 엔벨로프, `details` 없음 (4-1-2) |
 | **`PostLogin`** + 잘못된 비밀번호 | 기존대로 본문 없는 400 (enumeration 방지 회귀) |
 | **fail-open 분기** | 동작은 그대로 통과하되 카운터가 증가하는지 검증 (4-1c). 기존 `authenticate_test.go`의 "CustomerRawSelfGet error - fail open" 케이스를 확장한다. 변경 (d) / 4-1-3 |
 
