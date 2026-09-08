@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-customer-manager/internal/config"
 	"monorepo/bin-customer-manager/models/customer"
@@ -20,6 +21,10 @@ const (
 	emailVerifyTokenTTL    = 24 * time.Hour
 	emailVerifyTokenLen    = 32                   // 32 bytes = 64 hex chars
 	defaultAccesskeyExpire = 365 * 24 * time.Hour // 1 year
+
+	resendCooldownTTL = 60 * time.Second
+	resendCountTTL    = 24 * time.Hour
+	resendCountMax    = 5
 )
 
 // Signup creates an unverified customer and sends a verification email.
@@ -305,4 +310,118 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 
 	log.Debugf("Sent verification email. email: %s", email)
 	return nil
+}
+
+// EmailVerifyResend re-issues and re-sends the signup verification email for the
+// given address.
+//
+// It returns nil in every case that is not an internal fault, including "no such
+// customer". Reporting anything else would turn this public, unauthenticated
+// endpoint into an email-existence oracle.
+func (h *customerHandler) EmailVerifyResend(ctx context.Context, email string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "EmailVerifyResend",
+		"email": email,
+	})
+	log.Debug("Processing email verification resend.")
+
+	c, err := h.resendTarget(ctx, email)
+	if err != nil {
+		log.Errorf("Could not resolve the resend target. err: %v", err)
+		return nil
+	}
+	if c == nil {
+		log.Debug("No eligible customer for the given email. Skipping.")
+		return nil
+	}
+
+	ok, err := h.cache.ResendCooldownAcquire(ctx, c.ID, resendCooldownTTL)
+	if err != nil {
+		log.Errorf("Could not acquire the resend cooldown. err: %v", err)
+		return nil
+	}
+	if !ok {
+		log.Infof("Resend is still within the cooldown window. customer_id: %s", c.ID)
+		return nil
+	}
+
+	n, err := h.cache.ResendCountIncr(ctx, c.ID, resendCountTTL)
+	if err != nil {
+		log.Errorf("Could not increase the resend counter. err: %v", err)
+		return nil
+	}
+	if n > resendCountMax {
+		log.Infof("Resend daily cap reached. customer_id: %s, count: %d", c.ID, n)
+		return nil
+	}
+
+	if errSend := h.sendSignupVerification(ctx, c.ID, c.Email); errSend != nil {
+		log.Errorf("Could not send the verification email. customer_id: %s, err: %v", c.ID, errSend)
+		return nil
+	}
+
+	log.Infof("Resent the verification email. customer_id: %s", c.ID)
+	return nil
+}
+
+// resendTarget picks the customer a resend should act on, or nil when there is
+// none. Returning (nil, nil) is the normal "nothing to do" outcome; a non-nil
+// error means the lookup itself failed.
+func (h *customerHandler) resendTarget(ctx context.Context, email string) (*customer.Customer, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "resendTarget",
+		"email": email,
+	})
+
+	// No deleted filter on purpose: rows expired before VOIP-1490 still carry
+	// tm_delete, and those are exactly the ones that need recovering. CustomerList
+	// orders by tm_create DESC, so the newest match comes first.
+	filters := map[customer.Field]any{
+		customer.FieldEmail: email,
+	}
+	tmps, err := h.db.CustomerList(ctx, 100, "", filters)
+	if err != nil {
+		return nil, err
+	}
+
+	var c *customer.Customer
+	for _, tmp := range tmps {
+		if tmp.Status == customer.StatusDeleted {
+			continue
+		}
+		c = tmp
+		break
+	}
+	if c == nil {
+		return nil, nil
+	}
+
+	if c.EmailVerified {
+		return nil, nil
+	}
+	if c.Status == customer.StatusFrozen || c.Status == customer.StatusDeleted {
+		return nil, nil
+	}
+
+	// Refuse when the customer has no live agent. Verification ends by calling
+	// AgentV1PasswordForgot, which looks the agent up by username; without one the
+	// customer would be activated with no way to set a password and no way to log
+	// in. Worse, clearing tm_delete would also close the re-signup path those rows
+	// still have today. See design 3-4-1.
+	filterAgent := map[amagent.Field]any{
+		amagent.FieldDeleted:  false,
+		amagent.FieldUsername: c.Email,
+	}
+	agents, err := h.reqHandler.AgentV1AgentList(ctx, "", 1, filterAgent)
+	if err != nil {
+		// fail closed, matching validateCreate's handling of the same call
+		log.Errorf("Could not get the agent info. err: %v", err)
+		return nil, err
+	}
+	if len(agents) == 0 {
+		log.Infof("Customer has no live agent. Skipping resend. customer_id: %s", c.ID)
+		return nil, nil
+	}
+
+	return c, nil
 }

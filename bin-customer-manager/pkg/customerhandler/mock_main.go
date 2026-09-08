@@ -117,6 +117,20 @@ func (mr *MockCustomerHandlerMockRecorder) EmailVerify(ctx, token any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailVerify", reflect.TypeOf((*MockCustomerHandler)(nil).EmailVerify), ctx, token)
 }
 
+// EmailVerifyResend mocks base method.
+func (m *MockCustomerHandler) EmailVerifyResend(ctx context.Context, email string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailVerifyResend", ctx, email)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailVerifyResend indicates an expected call of EmailVerifyResend.
+func (mr *MockCustomerHandlerMockRecorder) EmailVerifyResend(ctx, email any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailVerifyResend", reflect.TypeOf((*MockCustomerHandler)(nil).EmailVerifyResend), ctx, email)
+}
+
 // Freeze mocks base method.
 func (m *MockCustomerHandler) Freeze(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

@@ -62,6 +62,7 @@ type CustomerHandler interface {
 		clientIP string,
 	) (*customer.SignupResult, error)
 	EmailVerify(ctx context.Context, token string) (*customer.EmailVerifyResult, error)
+	EmailVerifyResend(ctx context.Context, email string) error
 
 	CleanupUnverified(ctx context.Context) (int, error)
 	CleanupFrozenExpired(ctx context.Context) (int, error)
