@@ -425,7 +425,9 @@ func (h *customerHandler) resendTarget(ctx context.Context, email string) (*cust
 	if c.EmailVerified {
 		return nil, nil
 	}
-	if c.Status == customer.StatusFrozen || c.Status == customer.StatusDeleted {
+	// Deleted rows were already skipped by the selection loop above, so only the
+	// frozen check is reachable here.
+	if c.Status == customer.StatusFrozen {
 		return nil, nil
 	}
 
