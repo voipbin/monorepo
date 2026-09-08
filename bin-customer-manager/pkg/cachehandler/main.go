@@ -37,6 +37,9 @@ type CacheHandler interface {
 
 	VerifyLockAcquire(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (bool, error)
 	VerifyLockRelease(ctx context.Context, customerID uuid.UUID) error
+
+	ResendCooldownAcquire(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (bool, error)
+	ResendCountIncr(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (int64, error)
 }
 
 // NewHandler creates DBHandler
