@@ -142,14 +142,34 @@ fail-open 전환(전면 장애 위험)과는 성격이 다르다. 로그인 경�
 2. **`frozen`이 막히고, 그 결과 frozen 자가 복구 UX가 끊긴다.** frozen 분기가 `details`로 안내하는
    복구 엔드포인트는 `DELETE /auth/unregister`이고(`authenticate.go:273`), 그 경로는
    `authProtected` 그룹(`cmd/api-manager/main.go:312`)이라 **인증이 필요하다.**
-   `DeleteAuthUnregister`는 `auth_identity`가 없으면 401로 중단한다(`lib/service/unregister.go:165-175`).
-   즉 frozen 사용자가 그 경로에 도달하는 유일한 방법이 `/auth/login`이다.
+   `DeleteAuthUnregister`는 `auth_identity`가 없으면 401로 중단한다(`lib/service/unregister.go:164-175`).
+   즉 **배포된 브라우저 UX가 그 경로에 도달하는 유일한 방법이 `/auth/login`이다.**
+(엄밀히는 accesskey로도 인증할 수 있고 `PermissionCustomerAdmin`을 만족하지만
+(`models/auth/auth.go:80-81`), frozen 복구 UX는 accesskey를 쓰지 않는다.)
    여기를 막으면 **이미 배포된 frozen 복구 경로가 통째로 사라진다.** 고치려는 버그보다 나쁜 회귀다.
 
 따라서 판정식은 `isBlockedAccountStatus`와 같은 **거부목록**으로 한다.
-**`StatusExpired`만 거부하고 `active` / `initial` / `frozen`은 통과시킨다.**
+**`StatusExpired`와 `StatusDeleted`를 거부하고 `active` / `initial` / `frozen`은 통과시킨다.**
+
+`StatusDeleted`를 포함하는 이유는 `Authenticate()`가 걸러줄 것이라 기대할 수 없기 때문이다.
+로그인 경로의 실제 필터는 `AgentGetByUsername`의 `FieldDeleted: false`
+(`bin-agent-manager/pkg/dbhandler/agent.go:427-429`)인데, 이는 캐스케이드가 agent를 실제로
+soft-delete했을 때만 작동한다. **그런데 `authenticate.go`의 `StatusDeleted` 케이스가 존재하는
+이유 자체가 "캐스케이드가 일부 고객을 놓친다"(VOIP-1395)는 것이다.** 놓친 고객은 agent가 살아있어
+로그인이 되고, 2-4가 닫으려는 것과 동일한 증폭 구조가 남는다. 케이스 하나를 더 추가하는 비용은
+`ACCOUNT_DELETED` 매핑뿐이므로 함께 닫는다.
 `AuthBoot`에서 가져오는 것은 *메커니즘*(`a.CustomerID`로 고객을 조회해 상태를 본다)이지
 그 판정식이 아니다.
+
+**고객 조회 실패 시에는 fail-closed로 거부한다.** 근거는 빈도가 아니다.
+3절이 게이트의 fail-open을 유지하기로 한 이유는 장애 중 기존 트래픽을 살리기 위해서인데,
+로그인까지 fail-open으로 두면 **장애 창이 곧 자격증명 발급 창**이 되어 2-4가 닫으려는 증폭이
+정확히 그 순간 되살아난다. 게이트를 열어두는 대가를 치르는 이상 발급구는 닫아야 한다.
+
+**대가는 명시해 둔다.** customer-manager나 RabbitMQ가 흔들리면 **아무도 새 세션을 얻지 못한다.**
+활성 고객 132명 전원과 admin.voipbin.net / talk.voipbin.net이 해당된다.
+3절의 비대칭 논거가 "장애 중 살아남는 것은 기존 JWT 트래픽뿐"이었는데, 이 변경은 그것을
+**유일한** 생존 경로로 만든다. 수용하되 알고 수용한다.
 
 ### 4-1-2. (c)가 없으면 (a)와 (b)가 서로를 상쇄한다
 
@@ -172,6 +192,9 @@ if err != nil {
 
 따라서 `PostLogin`에서 만료 거부만 403 `cerrors.PermissionDenied` 엔벨로프로 분리해
 `ACCOUNT_EXPIRED`와 동일한 `details`를 싣는다. 자격증명 오류는 기존대로 불투명한 400을 유지한다.
+센티널은 `pkg/serviceerrors/sentinels.go`에 `ErrAccountExpired`(및 `ErrAccountDeleted`)로 추가한다.
+`abortWithMappedStatus`(`lib/service/unregister.go:55-74`)는 재사용할 수 없다. 그것은 엔벨로프 없이
+상태 코드만 낸다.
 
 **중요: 상태 검사는 `AgentV1Login`이 성공한 *뒤에* 수행한다**(`auth.go:22`).
 비밀번호 검증 전에 상태를 보면 존재하지 않는 계정과 만료 계정을 구분할 수 있게 되어
@@ -186,10 +209,15 @@ username enumeration oracle이 생긴다. `AuthPasswordForgot`이 정확히 그 
 - 위치와 스타일: `lib/middleware/` 패키지 로컬 `prometheus.NewCounterVec` + `MustRegister`.
   같은 패키지의 `ratelimit.go:22-31`이 이미 쓰는 방식을 따른다
   (`pkg/servicehandler/auth_delegate.go:19`의 `promauto` 스타일이 아니다)
-- 라벨: **`identity_type`**(agent / accesskey / delegate)과 **에러 클래스**(timeout / not_found / other)
+- 라벨: **`identity_type`**(agent / accesskey / delegate)과 **에러 클래스**(timeout / not_found / other).
+  에러 클래스 판정은 `errors.Is(err, context.DeadlineExceeded)` -> timeout,
+  `errors.Is(err, commonrequesthandler.ErrNotFound)` -> not_found, 그 외 other로 한다.
+  구현자가 임의로 정하지 않도록 여기서 못박는다
 
 `identity_type`이 핵심이다. fail-closed 전환이 안전한지는 **어떤 identity가 이 분기를 타느냐**에 달려 있다.
-accesskey는 애초에 여기 도달하지 않는다(`AccesskeyRawGetByToken`이 먼저 fail-closed로 401을 낸다).
+accesskey가 이 분기를 타는 일은 드물다. `AccesskeyRawGetByToken`도 같은 customer-manager를 호출하므로
+(`accesskeys.go:116`) 전면 장애에서는 그 전에 401로 걸린다. 다만 부분 장애에서는
+`identity_type="accesskey"` 행이 나올 수 있으므로 "불가능"이 아니라 "드물다"로 본다.
 위협은 장애 순간의 만료 agent JWT다. 라벨 없이 총량만 세면 그 구분이 불가능하다.
 
 ### 4-2. 응답 형태
@@ -218,6 +246,7 @@ details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 | 구분 | 건수 | 복구 경로 |
 |---|---|---|
 | 살아있는 agent 보유 | 92 | `POST /auth/email-verify-resend` 로 자가 복구 |
+
 | agent 없음 | 101 | 재발송 불가(`resendTarget`이 nil 반환). **재가입만 가능** |
 
 에러 메시지가 재발송만 안내하면 101건에게는 막다른 길이 된다.
@@ -227,6 +256,9 @@ details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 (엄밀히는 agent JWT가 클레임으로 구성되고 생존 조회를 하지 않으므로 soft-delete된 agent의 토큰도
 `TypeAgent`로 제시될 수 있으나, 이 집단은 애초에 토큰을 받은 적이 없다).
 즉 게이트는 사실상 무료로 두 집단을 구분할 수 있다.
+
+(92라는 수치는 `resendTarget`이 `FieldUsername: c.Email`로 매칭하므로(`signup.go:439-442`)
+customer_id 조인으로 구한 값이라면 상한이다. 아래 결론은 어느 쪽이든 바뀌지 않는다.)
 
 **그럼에도 분기하지 않기로 한다.** 이유는 불가능해서가 아니라 메시지 복잡도에 비해 이득이 작기
 때문이다. 두 경로를 모두 언급하는 문구 하나로 충분하다
@@ -249,10 +281,11 @@ details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 | **`AuthLogin`** + expired | 거부 (4-1b) |
 | **`AuthLogin`** + active / initial | 통과 (회귀) |
 | **`AuthLogin`** + **frozen** | **통과 (필수 회귀 가드).** 막으면 `DELETE /auth/unregister` 복구 경로가 끊긴다. 4-1-1 참조 |
-| **`AuthLogin`** + deleted | 통과. `Authenticate()` 단계에서 agent가 이미 soft-delete되어 걸러지므로 여기서 중복 차단하지 않는다 |
+| **`AuthLogin`** + deleted | 거부 + `ACCOUNT_DELETED`. 캐스케이드 누락 고객은 agent가 살아있어 로그인이 되므로 여기서 닫는다 (4-1-1) |
+| **`AuthLogin`** + 고객 조회 RPC 실패 | **거부**(fail-closed). `PostLogin`은 만료 판정이 아니므로 403 엔벨로프가 아니라 기존 불투명 400을 반환한다 (4-1-1) |
 | **`PostLogin`** + expired | 403 + `ACCOUNT_EXPIRED` 엔벨로프 + `details` (4-1c) |
 | **`PostLogin`** + 잘못된 비밀번호 | 기존대로 본문 없는 400 (enumeration 방지 회귀) |
-| **fail-open 분기** | 동작은 그대로 통과하되 카운터가 증가하는지 검증 (4-1c). 기존 `authenticate_test.go`의 "CustomerRawSelfGet error - fail open" 케이스를 확장한다 |
+| **fail-open 분기** | 동작은 그대로 통과하되 카운터가 증가하는지 검증 (4-1c). 기존 `authenticate_test.go`의 "CustomerRawSelfGet error - fail open" 케이스를 확장한다. 변경 (d) / 4-1-3 |
 
 **구현 주의:** `authenticate_test.go`의 단언 헬퍼가 `tt.customerStatus == StatusDeleted`인지로
 2분기해 기대 에러코드를 정하고 기본값이 `ACCOUNT_FROZEN`이다. expired 행을 "기존 구조 그대로"
