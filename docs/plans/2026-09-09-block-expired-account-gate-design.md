@@ -66,7 +66,7 @@ fail-open까지 범위에 넣었다. **검증 결과 그 근거는 성립하지 
 
 초안은 login을 "게이트가 어차피 막으므로 불필요"로 철회했다. **각각을 따로 논증하고 조합을 보지 않은 오류다.**
 
-- `AuthLogin`(`bin-api-manager/pkg/servicehandler/auth.go:14-41`)은 고객 상태를 확인하지 않는다
+- `AuthLogin`(`bin-api-manager/pkg/servicehandler/auth.go:14-40`)은 고객 상태를 확인하지 않는다
 - 발급되는 JWT의 수명은 **7일**(`pkg/servicehandler/main.go:114`, `TokenExpiration`)
 - 3절의 결론대로 fail-open은 유지한다
 - 따라서 만료 계정 보유자는 **7일짜리 JWT를 언제든 새로 찍어두고**, customer-manager나
@@ -190,7 +190,7 @@ if err != nil {
 `details.recovery_endpoint`는 v1 게이트에서만 나오는데, 로그인이 막혀 거기 도달할 수 없다.
 **설계의 두 절반이 서로를 무효화한다.**
 
-따라서 `PostLogin`에서 만료 거부만 403 `cerrors.PermissionDenied` 엔벨로프로 분리해
+따라서 `PostLogin`에서 상태 거부(expired / deleted)만 403 `cerrors.PermissionDenied` 엔벨로프로 분리해
 `ACCOUNT_EXPIRED`와 동일한 `details`를 싣는다. 자격증명 오류는 기존대로 불투명한 400을 유지한다.
 `StatusDeleted` 거부도 403 엔벨로프로 매핑하되 코드는 `ACCOUNT_DELETED`, `details`는 싣지 않는다.
 게이트가 이미 같은 상태를 `ACCOUNT_DELETED` 403으로 내고 있으므로(`authenticate.go:291`) 일관되고,
@@ -253,7 +253,7 @@ details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 엔벨로프로 나가므로 사용자는 로그인 화면에서 복구 안내를 받게 되며, 대시보드에 들어와 모든 호출이
 403나는 상황은 발생하지 않는다. 프론트가 이 `details`를 실제로 쓰게 하는 작업은 별도 티켓으로 남긴다.
 
-### 4-3. 복구 경로 안내 시 주의: 193건은 두 갈래다
+### 4-3. 복구 경로 안내 시 주의: 193건은 세 갈래다
 
 | 구분 | 건수 | 복구 경로 |
 |---|---|---|
@@ -316,7 +316,7 @@ customer_id 조인으로 구한 값이라면 상한이다. 아래 결론은 어�
 | **`PostLogin`** + expired | 403 + `ACCOUNT_EXPIRED` 엔벨로프 + `details` (4-1c) |
 | **`PostLogin`** + deleted | 403 + `ACCOUNT_DELETED` 엔벨로프, `details` 없음 (4-1-2) |
 | **`PostLogin`** + 잘못된 비밀번호 | 기존대로 본문 없는 400 (enumeration 방지 회귀) |
-| **fail-open 분기** | 동작은 그대로 통과하되 카운터가 증가하는지 검증 (4-1c). 기존 `authenticate_test.go`의 "CustomerRawSelfGet error - fail open" 케이스를 확장한다. 변경 (d) / 4-1-3 |
+| **fail-open 분기** | 동작은 그대로 통과하되 카운터가 증가하는지 검증 (4-1d). 기존 `authenticate_test.go`의 "CustomerRawSelfGet error - fail open" 케이스를 확장한다. 변경 (d) / 4-1-3 |
 
 **구현 주의:** `authenticate_test.go`의 단언 헬퍼가 `tt.customerStatus == StatusDeleted`인지로
 2분기해 기대 에러코드를 정하고 기본값이 `ACCOUNT_FROZEN`이다. expired 행을 "기존 구조 그대로"
