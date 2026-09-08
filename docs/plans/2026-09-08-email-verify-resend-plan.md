@@ -282,7 +282,9 @@ go test ./pkg/customerhandler/ -run Test_CleanupUnverified_DoesNotSetTMDelete -v
 1. `cleanup_test.go:93` — `mockUtil.EXPECT().TimeNow().Return(&now)` 삭제
 2. `cleanup_test.go:153`, `:158` (`Test_CleanupUnverified_updateError`) — `TimeNow()` 기대 두 개 삭제
 3. 위 두 테스트에서 `mockUtil` 변수와 `utilhandler` import, `customerHandler` 리터럴의 `utilHandler:` 필드가 더 이상 안 쓰이면 함께 제거
-4. `cleanup_test.go:99-102`의 `DoAndReturn` 안에서 `tm_delete`를 단언하는 부분을 제거하고 `{FieldStatus: expired}`만 남긴다
+4. `cleanup_test.go:101-104`(`DoAndReturn` 블록은 :95-107) 안에서 `tm_delete`를 단언하는 부분을 제거하고 `{FieldStatus: expired}`만 남긴다
+
+**참고:** `mockUtil`을 만드는 테스트는 셋(`:81`, `:126`, `:177`)이지만 `TimeNow()` 기대를 거는 것은 앞의 둘뿐이다. `Test_CleanupUnverified_listError`(:177)는 기대를 걸지 않아 깨지지 않으므로, `utilhandler` import는 계속 쓰인다. 지우려 하지 말 것.
 
 **주의:** 기존 세 테스트는 `CustomerList` 기대에 `gomock.Any()`를 쓰고 있으므로(`:87`, `:148`, `:179`) 필터 기대값은 손댈 필요가 없다.
 
@@ -716,6 +718,8 @@ func Test_ResendCountIncr_RepairsMissingTTL(t *testing.T) {
 	}
 }
 ```
+
+`Test_ResendCooldownAcquire`의 "두 번째 획득은 false" 단언이 설계 §4의 "2 replica 동시 요청이 쿨다운 하나를 공유" 항목에 대응한다. 같은 `SETNX` 성질을 검증하는 것이며, 별도의 동시성 테스트를 추가하지 않는다.
 
 `miniredis.TTL`은 만료가 없으면 `0`을 반환한다. `handler` 구조체의 실제 필드명(`Cache`)과 생성 방식은 `pkg/cachehandler/main.go`의 `NewHandler`를 보고 맞춘다.
 
@@ -1312,6 +1316,9 @@ api-manager는 얇게 둔다. 상태 판단은 전혀 하지 않고, 바인딩 �
 - Modify: `bin-api-manager/pkg/servicehandler/customer.go`
 - Modify: `bin-api-manager/lib/service/signup.go`
 - Modify: `bin-api-manager/cmd/api-manager/main.go` (:290-299 공개 `/auth` 그룹)
+- Modify: `bin-api-manager/docs/architecture.md:74-79` (공개 엔드포인트 목록)
+- Modify: `bin-api-manager/docs/routing.md:14-22` (Auth 라우트 표)
+- Modify: `bin-api-manager/docs/operations.md:142` (`auth_public` 티어 설명)
 - Test: `bin-api-manager/lib/service/signup_test.go`
 
 - [ ] **Step 1: ServiceHandler 인터페이스에 추가한다**
@@ -1346,7 +1353,7 @@ func (h *serviceHandler) CustomerEmailVerifyResend(ctx context.Context, email st
 
 - [ ] **Step 3: 실패하는 HTTP 핸들러 테스트를 쓴다**
 
-`lib/service/signup_test.go`에 추가한다. 아래 스니펫은 `gin.CreateTestContext` + 핸들러 직접 호출 방식이다. 기존 파일이 `r.Use(...)` + `r.ServeHTTP` 방식을 쓰고 있으면 **둘 중 하나로 통일**한다(섞지 말 것). 스니펫은 `fmt`와 `gin.SetMode(gin.TestMode)`가 필요하다. 기존 import에 `fmt`가 없으면 추가한다.
+`lib/service/signup_test.go`에 추가한다. **기존 파일(`signup_test.go:102-118`, `:133-146`, `:158-170`)은 전부 `r.Use(...)` + `r.ServeHTTP` 방식이다.** 아래 스니펫은 설명을 위해 `gin.CreateTestContext`로 썼으므로, 실제 작성 시에는 기존 방식으로 옮겨 쓴다(섞지 말 것). `gin.SetMode(gin.TestMode)`와 `fmt` import도 기존 파일 관례를 따른다.
 
 ```go
 func Test_PostCustomerEmailVerifyResend_AlwaysReturns200(t *testing.T) {
@@ -1453,7 +1460,26 @@ func PostCustomerEmailVerifyResend(c *gin.Context) {
 
 **주의:** `authProtected` 그룹(:306-312)에 넣으면 안 된다. 복구 대상 사용자는 인증을 통과하지 못할 수 있다. 공개 그룹이어야 `RateLimit("auth_public")`도 함께 적용된다.
 
-- [ ] **Step 7: 테스트를 돌린다**
+- [ ] **Step 7: api-manager 서비스 문서를 갱신한다**
+
+Task 6과 같은 이유다. 루트 `CLAUDE.md`의 "CRITICAL: Service docs sync"가 요구하고,
+`scripts/check-service-docs.sh:47-49`가 `cmd/api-manager/main.go` 변경 시
+`bin-api-manager/docs/architecture.md`가 같은 커밋에 스테이징되지 않으면 경고를 낸다.
+세 파일을 **라우트 등록과 같은 커밋에** 함께 넣는다.
+
+1. `docs/architecture.md:77`(`- \`POST /auth/email-verify\``) 바로 아래에 추가:
+   ```
+   - `POST /auth/email-verify-resend`
+   ```
+2. `docs/routing.md:17`(`| POST | \`/auth/email-verify\` | ... |`) 바로 아래에 추가:
+   ```
+   | POST | `/auth/email-verify-resend` | bin-customer-manager | Resend the signup verification email |
+   ```
+3. `docs/operations.md:142`의 `auth_public` 행 괄호 목록에 `email-verify-resend`를 추가하고, 이
+   엔드포인트만은 IP 기준 티어 외에 customer-manager에서 계정별 쿨다운과 일일 상한이 추가로
+   적용된다는 점을 한 문장 덧붙인다.
+
+- [ ] **Step 8: 테스트를 돌린다**
 
 ```bash
 cd bin-api-manager
@@ -1462,14 +1488,14 @@ go test ./lib/service/ -run Test_PostCustomerEmailVerifyResend -v
 
 기대: PASS.
 
-- [ ] **Step 8: 검증 워크플로**
+- [ ] **Step 9: 검증 워크플로**
 
 ```bash
 cd bin-api-manager
 go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-- [ ] **Step 9: 커밋**
+- [ ] **Step 10: 커밋**
 
 ```
 Add POST /auth/email-verify-resend endpoint
@@ -1477,6 +1503,7 @@ Add POST /auth/email-verify-resend endpoint
 - bin-api-manager: Add CustomerEmailVerifyResend service handler
 - bin-api-manager: Add PostCustomerEmailVerifyResend that always returns 200
 - bin-api-manager: Register the route on the public auth group so auth_public rate limiting applies
+- bin-api-manager: Add the endpoint to the architecture, routing, and operations docs
 - bin-api-manager: Regenerate servicehandler mock
 ```
 
@@ -1699,7 +1726,7 @@ git add -f bin-api-manager/docsdev/build/
 - [ ] **Step 6: 검증 워크플로 (두 서비스 모두)**
 
 ```bash
-cd bin-openapi-manager && go generate ./... && go build ./...
+cd bin-openapi-manager && go generate ./... && go build ./... && golangci-lint run -v --timeout 5m
 cd ../bin-api-manager && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
