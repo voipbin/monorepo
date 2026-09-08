@@ -683,41 +683,46 @@
 <td><p>Serves an HTML page that auto-submits the verification token (link target from the verification email).</p></td>
 </tr>
 <tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/email-verify-resend</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Send a fresh verification link to an address whose original link expired or was lost.</p></td>
+</tr>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/login</span></code></p></td>
 <td><p>Username/password</p></td>
 <td><p>Exchange agent credentials for a 7-day JWT. See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p>POST</p></td>
+<tr class="row-odd"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/boot</span></code></p></td>
 <td><p>None (direct hash)</p></td>
 <td><p>Exchange a direct hash for a 4-hour resource-scoped JWT.</p></td>
 </tr>
-<tr class="row-odd"><td><p>POST</p></td>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-forgot</span></code></p></td>
 <td><p>None</p></td>
 <td><p>Request a password reset email.</p></td>
 </tr>
-<tr class="row-even"><td><p>GET</p></td>
+<tr class="row-odd"><td><p>GET</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-reset</span></code></p></td>
 <td><p>None</p></td>
 <td><p>Serves the HTML password reset form (link target from the reset email).</p></td>
 </tr>
-<tr class="row-odd"><td><p>POST</p></td>
+<tr class="row-even"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-reset</span></code></p></td>
 <td><p>None (reset token)</p></td>
 <td><p>Complete the password reset using the emailed token.</p></td>
 </tr>
-<tr class="row-even"><td><p>POST</p></td>
+<tr class="row-odd"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code></p></td>
 <td><p>Token or Accesskey</p></td>
 <td><p>Freeze the caller’s own account and schedule (or immediately execute) deletion.</p></td>
 </tr>
-<tr class="row-odd"><td><p>DELETE</p></td>
+<tr class="row-even"><td><p>DELETE</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code></p></td>
 <td><p>Token or Accesskey</p></td>
 <td><p>Cancel a scheduled deletion and restore the account to <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p>POST</p></td>
+<tr class="row-odd"><td><p>POST</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code></p></td>
 <td><p>Token (ProjectSuperAdmin)</p></td>
 <td><p>Issue a short-lived support/investigation token scoped to another customer. See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>.</p></td>
@@ -728,7 +733,8 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>All unauthenticated <code class="docutils literal notranslate"><span class="pre">/auth/*</span></code> endpoints (<code class="docutils literal notranslate"><span class="pre">login</span></code>, <code class="docutils literal notranslate"><span class="pre">signup</span></code>, <code class="docutils literal notranslate"><span class="pre">email-verify</span></code>, <code class="docutils literal notranslate"><span class="pre">boot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-forgot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-reset</span></code>) share a single IP-based rate limiter: <strong>up to approximately 10 requests/second per client IP, burst 20</strong>. <code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code> and <code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code> require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (<strong>10 requests/second, burst 20</strong>). Exceeding either limiter returns <code class="docutils literal notranslate"><span class="pre">429</span></code> with reason <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code> (see <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a>).</p>
+<p>All unauthenticated <code class="docutils literal notranslate"><span class="pre">/auth/*</span></code> endpoints (<code class="docutils literal notranslate"><span class="pre">login</span></code>, <code class="docutils literal notranslate"><span class="pre">signup</span></code>, <code class="docutils literal notranslate"><span class="pre">email-verify</span></code>, <code class="docutils literal notranslate"><span class="pre">email-verify-resend</span></code>, <code class="docutils literal notranslate"><span class="pre">boot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-forgot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-reset</span></code>) share a single IP-based rate limiter: <strong>up to approximately 10 requests/second per client IP, burst 20</strong>. <code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code> and <code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code> require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (<strong>10 requests/second, burst 20</strong>). Exceeding either limiter returns <code class="docutils literal notranslate"><span class="pre">429</span></code> with reason <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code> (see <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">/auth/email-verify-resend</span></code> carries an <strong>additional per-account limit</strong> on top of that shared IP tier: a <strong>60-second cooldown</strong> between sends and a cap of <strong>5 sends per 24 hours</strong>, both tracked per customer account rather than per IP. The IP tier alone cannot stop a distributed mailbomb aimed at one address. Requests that exceed the per-account limits still return <code class="docutils literal notranslate"><span class="pre">200</span></code> with an empty body — no email is sent, and nothing in the response distinguishes that outcome.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -742,12 +748,13 @@
 <span class="o">+----------+</span>   <span class="o">+--------------+</span>    <span class="o">+----------------+</span>    <span class="o">+--------------+</span>
 <span class="o">|</span> <span class="n">initial</span>  <span class="o">|--&gt;|</span>   <span class="n">active</span>     <span class="o">|---&gt;|</span>    <span class="n">active</span>      <span class="o">|---&gt;|</span>  <span class="n">JWT</span> <span class="o">/</span> <span class="n">key</span>   <span class="o">|</span>
 <span class="o">+----------+</span>   <span class="o">+--------------+</span>    <span class="o">+----------------+</span>    <span class="o">+--------------+</span>
-     <span class="o">|</span>                                    <span class="o">|</span>
-     <span class="o">|</span> <span class="p">(</span><span class="n">no</span> <span class="n">verification</span>                   <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">unregister</span>
-     <span class="o">|</span>  <span class="n">within</span> <span class="n">timeout</span><span class="p">)</span>                   <span class="n">v</span>
-     <span class="n">v</span>                              <span class="o">+----------------+</span>
-<span class="o">+----------+</span>                        <span class="o">|</span>    <span class="n">frozen</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">expired</span>  <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="mi">30</span><span class="o">-</span><span class="n">day</span> <span class="n">grace</span><span class="p">)</span> <span class="o">|</span>
+     <span class="o">|</span>          <span class="o">^</span>                         <span class="o">|</span>
+     <span class="o">|</span> <span class="n">no</span>       <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">email</span><span class="o">-</span>       <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">unregister</span>
+     <span class="o">|</span> <span class="n">verify</span>   <span class="o">|</span> <span class="n">verify</span><span class="o">-</span><span class="n">resend</span>           <span class="o">|</span>
+     <span class="o">|</span> <span class="n">within</span>   <span class="o">|</span> <span class="n">then</span> <span class="n">email</span><span class="o">-</span><span class="n">verify</span>       <span class="n">v</span>
+     <span class="n">v</span>          <span class="o">|</span>                   <span class="o">+----------------+</span>
+<span class="o">+----------+</span>    <span class="o">|</span>                   <span class="o">|</span>    <span class="n">frozen</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">expired</span>  <span class="o">|----+</span>                   <span class="o">|</span> <span class="p">(</span><span class="mi">30</span><span class="o">-</span><span class="n">day</span> <span class="n">grace</span><span class="p">)</span> <span class="o">|</span>
 <span class="o">+----------+</span>                        <span class="o">+----------------+</span>
                                       <span class="o">|</span>             <span class="o">|</span>
                         <span class="n">DELETE</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">unregister</span>      <span class="p">(</span><span class="n">grace</span> <span class="n">expires</span><span class="p">,</span>
@@ -921,6 +928,44 @@
 </tr>
 </tbody>
 </table>
+</div>
+<p>If the token has expired or was already used, the page reports that the link is no longer valid and offers a form to request a new one, which submits to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code>.</p>
+</section>
+<section id="email-verify-resend-post-auth-email-verify-resend">
+<h2>Email Verify Resend — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code><a class="headerlink" href="#email-verify-resend-post-auth-email-verify-resend" title="Link to this heading">¶</a></h2>
+<p>Issues a new verification token for an account whose original link expired or was never received, and emails it to the registered address. This is the recovery path out of the <code class="docutils literal notranslate"><span class="pre">expired</span></code> status: an account that missed the 72-hour verification window is not permanently lost.</p>
+<p><strong>Request body</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">email</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>The email address the account was registered with.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK (always)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint <strong>always</strong> returns <code class="docutils literal notranslate"><span class="pre">200</span></code> with an empty body — for a registered address, an unknown address, an already-verified account, a rate-limited request, and even a malformed JSON body. That uniformity is deliberate: any differentiated response would turn an unauthenticated endpoint into an email-existence oracle. Do not treat <code class="docutils literal notranslate"><span class="pre">200</span></code> as confirmation that an email was sent, and do not build retry logic that assumes otherwise.</p>
+<p>A resend is only performed when the account is unverified, is not <code class="docutils literal notranslate"><span class="pre">frozen</span></code> or <code class="docutils literal notranslate"><span class="pre">deleted</span></code>, and still has a live agent for the address. Sends are limited to one per <strong>60 seconds</strong> and <strong>5 per 24 hours</strong> per account, on top of the shared per-IP <code class="docutils literal notranslate"><span class="pre">/auth/*</span></code> limiter.</p>
+<p>The new token is valid for <strong>24 hours</strong>, the same as a token issued at signup. Resending does not invalidate an earlier token — any previously issued token stays usable until its own expiry, so a user who later finds the original email can still follow it.</p>
 </div>
 </section>
 <section id="login-token-post-auth-login">
@@ -1426,6 +1471,7 @@
 <li><a class="reference internal" href="#auth-account-lifecycle">Auth &amp; Account Lifecycle</a></li>
 <li><a class="reference internal" href="#signup-post-auth-signup">Signup — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code></a></li>
 <li><a class="reference internal" href="#email-verify-post-get-auth-email-verify">Email Verify — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/auth/email-verify</span></code></a></li>
+<li><a class="reference internal" href="#email-verify-resend-post-auth-email-verify-resend">Email Verify Resend — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code></a></li>
 <li><a class="reference internal" href="#login-token-post-auth-login">Login (Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code></a></li>
 <li><a class="reference internal" href="#boot-direct-token-post-auth-boot">Boot (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code></a></li>
 <li><a class="reference internal" href="#password-forgot-post-auth-password-forgot">Password Forgot — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-forgot</span></code></a></li>

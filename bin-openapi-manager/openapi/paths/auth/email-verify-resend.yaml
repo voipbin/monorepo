@@ -1,0 +1,29 @@
+post:
+  summary: Resend the customer email verification link.
+  description: |
+    Issues a new email verification token and sends it to the given address.
+
+    This endpoint always responds `200` with an empty body, whether or not an
+    account exists for the address. That is deliberate: a differentiated response
+    would let an unauthenticated caller test which addresses are registered.
+
+    Sending is rate limited per account (a short cooldown between sends and a
+    daily cap). Requests that exceed either limit still return `200` without
+    sending.
+  tags:
+    - Auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RequestBodyAuthEmailVerifyResendPOST'
+  responses:
+    '200':
+      description: |
+        Request accepted. The body is always an empty object. This response does
+        not indicate whether an account exists or whether an email was sent.
+      content:
+        application/json:
+          schema:
+            type: object
