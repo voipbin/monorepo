@@ -813,6 +813,7 @@ type RequestHandler interface {
 		clientIP string,
 	) (*cscustomer.SignupResult, error)
 	CustomerV1CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResult, error)
+	CustomerV1CustomerEmailVerifyResend(ctx context.Context, email string) error
 	// conference-manager conference
 	ConferenceV1ConferenceGet(ctx context.Context, conferenceID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceList(ctx context.Context, pageToken string, pageSize uint64, filters map[cfconference.Field]any) ([]cfconference.Conference, error)
