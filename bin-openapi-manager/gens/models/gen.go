@@ -4543,6 +4543,12 @@ type ApiManagerExtensionProvisioningToken struct {
 
 // AuthBootResponse Result of a successful boot request. Contains a resource-scoped JWT and metadata about the scoped resource.
 type AuthBootResponse struct {
+	// AllowedResourceId The single resource this token may act on, assigned at boot before the resource exists. The resource created with this token takes this id, so two visitors of the same public link cannot reach each other's conversation. Clients do not need to send it anywhere; the server takes the target from the token.
+	//
+	//
+	// Example: 770e8400-e29b-41d4-a716-446655440002
+	AllowedResourceId *openapi_types.UUID `json:"allowed_resource_id,omitempty"`
+
 	// CustomerId The UUID of the customer that owns the resource. Returned from the `POST /auth/signup` response.
 	//
 	// Example: 660e8400-e29b-41d4-a716-446655440001
@@ -4567,6 +4573,12 @@ type AuthBootResponse struct {
 	//
 	// Example: ai
 	ResourceType *string `json:"resource_type,omitempty"`
+
+	// ScopeVersion Version of the token's scope contract. Bumping it invalidates every outstanding token in one step; clients treat the resulting 401 as a signal to boot again.
+	//
+	//
+	// Example: 2
+	ScopeVersion *int `json:"scope_version,omitempty"`
 
 	// Token JWT token string for API authentication. Pass as `Bearer <token>` in the Authorization header.
 	//
