@@ -314,6 +314,22 @@ A direct token is bound to exactly one resource: the ``allowed_resource_id`` abo
 * WebSocket topics of the form ``customer_id:<customer_id>:<resource_type>:<resource_id>`` are accepted only when ``<resource_id>`` is exactly the assignment, written as a canonical lower-case UUID. A trailing colon or a partial ID is refused.
 
 
+**Errors**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 85
+
+   * - Status
+     - Cause
+   * - 400
+     - ``direct_hash`` missing/empty, does not start with ``direct.``, does not resolve to any resource, resolves to an unsupported resource type, or the owning customer is not ``active``.
+
+.. note:: **AI Implementation Hint**
+
+   Boot tokens are scoped: they only grant access to the resource types listed in the token (e.g. ``aicall`` for an ``ai``/``ai_team`` direct hash, ``webchat_session`` for a ``webchat_widget`` direct hash). For WebSocket subscriptions, boot tokens may only subscribe to 4-part topics (``customer_id:<uuid>:<resource_type>:<resource_id>``); broader topics are rejected.
+
+
 Boot refresh (Direct Token) - ``POST /auth/boot/refresh``
 -----------------------------------------------------------
 Reissues a direct token while keeping the same ``allowed_resource_id``, so a conversation in progress survives the 4-hour token expiry. Call it before the token expires; the widget SDKs do this automatically.
@@ -348,22 +364,8 @@ Each boot fixes an absolute ceiling and every reissued token inherits it unchang
      - The token can no longer be refreshed. Boot again.
    * - ``403``
      - The presented token is not a direct token.
-
-**Errors**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 15 85
-
-   * - Status
-     - Cause
-   * - 400
-     - ``direct_hash`` missing/empty, does not start with ``direct.``, does not resolve to any resource, resolves to an unsupported resource type, or the owning customer is not ``active``.
-
-.. note:: **AI Implementation Hint**
-
-   Boot tokens are scoped: they only grant access to the resource types listed in the token (e.g. ``aicall`` for an ``ai``/``ai_team`` direct hash, ``webchat_session`` for a ``webchat_widget`` direct hash). For WebSocket subscriptions, boot tokens may only subscribe to 4-part topics (``customer_id:<uuid>:<resource_type>:<resource_id>``); broader topics are rejected.
-
+   * - ``500``
+     - The server could not issue a token. Retrying the refresh may succeed; booting again will not help.
 
 Password Forgot — ``POST /auth/password-forgot``
 ----------------------------------------------------

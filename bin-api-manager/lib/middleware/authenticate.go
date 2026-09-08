@@ -159,8 +159,13 @@ func buildJWTIdentity(log *logrus.Entry, authData map[string]interface{}) (*auth
 		// DirectScopeVersionCurrent 401s every live token at once, and this is
 		// the only signal for how many.
 		if scope.AllowedResourceID == uuid.Nil {
-			log.WithField("reject_reason", "direct_unbound").
-				Info("Direct token carries no resource binding. Rejecting.")
+			// customer_id matters most on this branch: it is the one that
+			// fires for every pre-feature token, so it carries the rollout
+			// window's volume and is when tenant attribution is wanted.
+			log.WithFields(logrus.Fields{
+				"reject_reason": "direct_unbound",
+				"customer_id":   scope.CustomerID,
+			}).Info("Direct token carries no resource binding. Rejecting.")
 			return nil, fmt.Errorf("direct token is not resource bound")
 		}
 		if scope.ScopeVersion < servicehandler.DirectScopeVersionCurrent {

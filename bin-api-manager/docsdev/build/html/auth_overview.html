@@ -1046,6 +1046,30 @@
 <li><p>Listing (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/aicalls</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/webchat_sessions</span></code>) is not available to direct tokens.</p></li>
 <li><p>WebSocket topics of the form <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;customer_id&gt;:&lt;resource_type&gt;:&lt;resource_id&gt;</span></code> are accepted only when <code class="docutils literal notranslate"><span class="pre">&lt;resource_id&gt;</span></code> is exactly the assignment, written as a canonical lower-case UUID. A trailing colon or a partial ID is refused.</p></li>
 </ul>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> missing/empty, does not start with <code class="docutils literal notranslate"><span class="pre">direct.</span></code>, does not resolve to any resource, resolves to an unsupported resource type, or the owning customer is not <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Boot tokens are scoped: they only grant access to the resource types listed in the token (e.g. <code class="docutils literal notranslate"><span class="pre">aicall</span></code> for an <code class="docutils literal notranslate"><span class="pre">ai</span></code>/<code class="docutils literal notranslate"><span class="pre">ai_team</span></code> direct hash, <code class="docutils literal notranslate"><span class="pre">webchat_session</span></code> for a <code class="docutils literal notranslate"><span class="pre">webchat_widget</span></code> direct hash). For WebSocket subscriptions, boot tokens may only subscribe to 4-part topics (<code class="docutils literal notranslate"><span class="pre">customer_id:&lt;uuid&gt;:&lt;resource_type&gt;:&lt;resource_id&gt;</span></code>); broader topics are rejected.</p>
+</div>
 </section>
 <section id="boot-refresh-direct-token-post-auth-boot-refresh">
 <h2>Boot refresh (Direct Token) - <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot/refresh</span></code><a class="headerlink" href="#boot-refresh-direct-token-post-auth-boot-refresh" title="Link to this heading">¶</a></h2>
@@ -1081,32 +1105,11 @@
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">403</span></code></p></td>
 <td><p>The presented token is not a direct token.</p></td>
 </tr>
-</tbody>
-</table>
-</div>
-<p><strong>Errors</strong></p>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 15.0%" />
-<col style="width: 85.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Status</p></th>
-<th class="head"><p>Cause</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>400</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> missing/empty, does not start with <code class="docutils literal notranslate"><span class="pre">direct.</span></code>, does not resolve to any resource, resolves to an unsupported resource type, or the owning customer is not <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">500</span></code></p></td>
+<td><p>The server could not issue a token. Retrying the refresh may succeed; booting again will not help.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>Boot tokens are scoped: they only grant access to the resource types listed in the token (e.g. <code class="docutils literal notranslate"><span class="pre">aicall</span></code> for an <code class="docutils literal notranslate"><span class="pre">ai</span></code>/<code class="docutils literal notranslate"><span class="pre">ai_team</span></code> direct hash, <code class="docutils literal notranslate"><span class="pre">webchat_session</span></code> for a <code class="docutils literal notranslate"><span class="pre">webchat_widget</span></code> direct hash). For WebSocket subscriptions, boot tokens may only subscribe to 4-part topics (<code class="docutils literal notranslate"><span class="pre">customer_id:&lt;uuid&gt;:&lt;resource_type&gt;:&lt;resource_id&gt;</span></code>); broader topics are rejected.</p>
 </div>
 </section>
 <section id="password-forgot-post-auth-password-forgot">
