@@ -258,7 +258,7 @@ Issues a new verification token for an account whose original link expired or wa
 
 .. note:: **AI Implementation Hint**
 
-   This endpoint **always** returns ``200`` with an empty body — for a registered address, an unknown address, an already-verified account, a rate-limited request, and even a malformed JSON body. That uniformity is deliberate: any differentiated response would turn an unauthenticated endpoint into an email-existence oracle. Do not treat ``200`` as confirmation that an email was sent, and do not build retry logic that assumes otherwise.
+   This endpoint **always** returns ``200`` with an empty body — for a registered address, an unknown address, an already-verified account, a rate-limited request, and even a malformed JSON body. That uniformity is deliberate: any differentiated response would turn an unauthenticated endpoint into an email-existence oracle. Do not treat ``200`` as confirmation that an email was sent, and do not build retry logic that assumes otherwise. Note that the uniformity covers the response *content*, not its timing: the work is synchronous, so an unknown address returns after a single database lookup while a recoverable one also performs an agent lookup, two cache writes and an email send, leaving a measurable latency difference. This residual is not specific to this endpoint: ``/auth/signup`` and ``/auth/password-forgot`` are synchronous and always-200 in the same way, and carry the same timing residual.
 
    A resend is only performed when the account is unverified, is not ``frozen`` or ``deleted``, and still has a live agent for the address. Sends are limited to one per **60 seconds** and **5 per 24 hours** per account, on top of the shared per-IP ``/auth/*`` limiter.
 

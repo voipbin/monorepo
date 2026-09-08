@@ -231,13 +231,16 @@ const emailVerifyHTML = `<!DOCTYPE html>
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: emailEl.value })
     }).then(function() {
-      // Always the same copy. The API deliberately returns 200 for unknown
-      // addresses, and branching the message here would undo that.
+      // Always the same copy, and always re-enabled. The API deliberately returns
+      // 200 for unknown addresses, and branching the message or the button state
+      // here would undo that.
       outEl.textContent = 'If an account exists for that address, a new verification link is on its way.';
       outEl.className = 'message success';
+      rbtn.disabled = false;
     }).catch(function() {
       outEl.textContent = 'If an account exists for that address, a new verification link is on its way.';
       outEl.className = 'message success';
+      rbtn.disabled = false;
     });
   }
 </script>

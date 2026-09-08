@@ -386,9 +386,17 @@ func TestGetCustomerEmailVerify_HTMLContent(t *testing.T) {
 
 	// Verify error case disables button permanently (not re-enabled).
 	// Only the catch (network error) case should re-enable.
-	count := strings.Count(body, "btn.disabled = false")
+	// The resend button is a different element ("rbtn"), so it is subtracted out
+	// here; a bare substring count would match it too.
+	count := strings.Count(body, "btn.disabled = false") - strings.Count(body, "rbtn.disabled = false")
 	if count > 1 {
 		t.Errorf("Expected btn.disabled = false at most once (in catch block only), found %d", count)
+	}
+
+	// The resend button, unlike the verify button, must be re-enabled in BOTH
+	// branches: a network failure otherwise strands the user until page reload.
+	if got := strings.Count(body, "rbtn.disabled = false"); got != 2 {
+		t.Errorf("Expected the resend button re-enabled in both the then and catch branches, found %d occurrences", got)
 	}
 
 	// The failure branch must offer the resend form instead of leaving the user
