@@ -105,10 +105,18 @@ func (h *serviceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIde
 		if !a.HasAllowedResourceType("webchat_session") {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// The client's session_id is not consulted: a direct token may only
+		// talk about its own session. Overwriting rather than comparing keeps
+		// the rule in one place.
+		if a.DirectScope == nil || a.DirectScope.AllowedResourceID == uuid.Nil {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		sessionID = a.DirectScope.AllowedResourceID
+
 		if sessionID == uuid.Nil {
-			// A visitor must always scope to their own session; there is
-			// no "list all my messages across sessions" concept for a
-			// direct-scoped caller.
+			// Unreachable now that the id comes from the token, and kept on
+			// purpose: it is the last catch if the binding is ever weakened
+			// upstream. A Nil session id must never reach the query.
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 		s, err := h.sessionGet(ctx, sessionID)
@@ -259,6 +267,12 @@ func (h *serviceHandler) WebchatMessageCreate(
 		if !a.HasAllowedResourceType("webchat_session") {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// The client's session_id is not consulted; a direct token may only
+		// post into its own session.
+		if a.DirectScope == nil || a.DirectScope.AllowedResourceID == uuid.Nil {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		sessionID = a.DirectScope.AllowedResourceID
 		// The visitor's direct-scope JWT is bound to a single widget_id
 		// (DirectScope.ResourceID). Resolve the target session and verify
 		// it actually belongs to that widget before allowing message

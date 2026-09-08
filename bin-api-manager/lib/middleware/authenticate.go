@@ -141,6 +141,27 @@ func buildJWTIdentity(log *logrus.Entry, authData map[string]interface{}) (*auth
 			return nil, fmt.Errorf("invalid direct scope")
 		}
 
+		// Both predicates are on the *value*, not on key presence. DirectScope
+		// carries no omitempty, so a token minted before resource binding
+		// deserializes with zero values rather than absent keys -- and a token
+		// that went through refresh would carry the key explicitly set to zero.
+		// Testing presence would let both through.
+		//
+		// Rejecting here rather than in DirectResourceScope is deliberate: this
+		// is the single choke point for every direct-token entry path (the
+		// v1.0 group, the authProtected group and the WebSocket upgrade). A
+		// middleware-only check would let an unbound token reach a handler that
+		// has no path parameter, where the overwrite would then persist
+		// uuid.Nil as a real resource id.
+		if scope.AllowedResourceID == uuid.Nil {
+			log.Info("Direct token carries no resource binding. Rejecting.")
+			return nil, fmt.Errorf("direct token is not resource bound")
+		}
+		if scope.ScopeVersion < servicehandler.DirectScopeVersionCurrent {
+			log.Infof("Direct token scope version is outdated. version: %d", scope.ScopeVersion)
+			return nil, fmt.Errorf("direct token scope version is outdated")
+		}
+
 		return auth.NewDirectIdentity(&scope), nil
 
 	case string(auth.TypeDelegate):
@@ -367,6 +388,15 @@ func getAccesskey(c *gin.Context) string {
 // bin-api-manager/lib/apierror.
 func abortUnauthenticated(c *gin.Context, reason, message string) {
 	e := cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, reason, message)
+	c.AbortWithStatusJSON(
+		cerrors.HTTPStatusFor(e.Status),
+		apierror.EnvelopeFor(e, RequestIDFromContext(c)),
+	)
+}
+
+// abortPermissionDenied writes the standard PERMISSION_DENIED envelope.
+func abortPermissionDenied(c *gin.Context, reason, message string) {
+	e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, reason, message)
 	c.AbortWithStatusJSON(
 		cerrors.HTTPStatusFor(e.Status),
 		apierror.EnvelopeFor(e, RequestIDFromContext(c)),

@@ -243,10 +243,62 @@ func Test_buildJWTIdentity(t *testing.T) {
 					"resource_type":          "aicall",
 					"resource_id":            "a1b2c3d4-0000-0000-0000-000000000000",
 					"allowed_resource_types": []string{"aicall"},
+					"allowed_resource_id":    "a1b2c3d4-0000-0000-0000-00000000beef",
+					"scope_version":          servicehandler.DirectScopeVersionCurrent,
 				},
 			},
 			expectErr: false,
 			expectTyp: auth.TypeDirect,
+		},
+		{
+			// A token minted before resource binding. Its claims deserialize to
+			// zero values rather than absent keys, which is why the predicate
+			// has to be on the value.
+			name: "Direct JWT without a resource binding is rejected",
+			authData: map[string]interface{}{
+				"type": "direct",
+				"direct": map[string]interface{}{
+					"customer_id":            "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+					"resource_type":          "aicall",
+					"resource_id":            "a1b2c3d4-0000-0000-0000-000000000000",
+					"allowed_resource_types": []string{"aicall"},
+				},
+			},
+			expectErr: true,
+		},
+		{
+			// Explicitly zero rather than absent: this is the shape a stale
+			// token would take after passing through a reissue.
+			name: "Direct JWT with an explicitly zero binding is rejected",
+			authData: map[string]interface{}{
+				"type": "direct",
+				"direct": map[string]interface{}{
+					"customer_id":            "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+					"resource_type":          "aicall",
+					"resource_id":            "a1b2c3d4-0000-0000-0000-000000000000",
+					"allowed_resource_types": []string{"aicall"},
+					"allowed_resource_id":    "00000000-0000-0000-0000-000000000000",
+					"scope_version":          servicehandler.DirectScopeVersionCurrent,
+				},
+			},
+			expectErr: true,
+		},
+		{
+			// Bumping the current version is how every outstanding direct
+			// token gets invalidated in one step.
+			name: "Direct JWT with an outdated scope version is rejected",
+			authData: map[string]interface{}{
+				"type": "direct",
+				"direct": map[string]interface{}{
+					"customer_id":            "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+					"resource_type":          "aicall",
+					"resource_id":            "a1b2c3d4-0000-0000-0000-000000000000",
+					"allowed_resource_types": []string{"aicall"},
+					"allowed_resource_id":    "a1b2c3d4-0000-0000-0000-00000000beef",
+					"scope_version":          servicehandler.DirectScopeVersionCurrent - 1,
+				},
+			},
+			expectErr: true,
 		},
 		{
 			name: "Invalid agent data",

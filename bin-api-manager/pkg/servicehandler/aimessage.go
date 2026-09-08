@@ -30,7 +30,18 @@ func (h *serviceHandler) AImessageCreate(
 	role ammessage.Role,
 	content string,
 ) (*ammessage.WebhookMessage, error) {
-	// AIcallGet already handles direct token authorization (resource type + scope checks)
+	// A direct token may only ever talk about its own resource, so the id the
+	// client sent is not consulted. Overwriting rather than comparing means
+	// there is no check to forget, and no per-route knowledge of which field
+	// carries the target.
+	if a.IsDirect() {
+		if a.DirectScope == nil || a.DirectScope.AllowedResourceID == uuid.Nil {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		aicallID = a.DirectScope.AllowedResourceID
+	}
+
+	// AIcallGet still runs: it keeps the resource type and customer checks.
 	_, err := h.AIcallGet(ctx, a, aicallID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the aicall info. aicall_id: %v", aicallID)
@@ -54,6 +65,17 @@ func (h *serviceHandler) AImessageGetsByAIcallID(ctx context.Context, a *auth.Au
 
 	if size == 0 {
 		size = 100
+	}
+
+	// A direct token may only ever talk about its own resource, so the id the
+	// client sent is not consulted. Overwriting rather than comparing means
+	// there is no check to forget, and no per-route knowledge of which field
+	// carries the target.
+	if a.IsDirect() {
+		if a.DirectScope == nil || a.DirectScope.AllowedResourceID == uuid.Nil {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		aicallID = a.DirectScope.AllowedResourceID
 	}
 
 	_, err := h.AIcallGet(ctx, a, aicallID)

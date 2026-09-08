@@ -160,9 +160,13 @@ func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *auth.Aut
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 	case a.IsDirect():
-		if !a.HasAllowedResourceType("aicall") {
-			return nil, fmt.Errorf("%w: direct token does not allow this resource type", serviceerrors.ErrPermissionDenied)
-		}
+		// Listing has no target id to compare and nothing to overwrite, and it
+		// is the only way a visitor could learn another visitor's resource id.
+		// Refuse outright. Neither widget lists.
+		//
+		// GET /webchat_sessions already refuses direct; this asymmetry is what
+		// left the aicall side enumerable.
+		return nil, fmt.Errorf("%w: listing is not available for direct tokens", serviceerrors.ErrPermissionDenied)
 	}
 
 	// filters

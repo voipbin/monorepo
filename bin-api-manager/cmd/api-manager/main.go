@@ -338,6 +338,10 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 	v1.Use(middleware.Authenticate())
 	v1.Use(middleware.CustomerRateLimit(rateLimiter, customerRateLimitConfig))
 	v1.Use(middleware.EnforceAccountStatus())
+	// Must be registered BEFORE RegisterHandlersWithOptions below: gin
+	// snapshots the group's handler chain at route-registration time, so a
+	// Use() after it applies to nothing and fails silently.
+	v1.Use(middleware.DirectResourceScope())
 	openapi_server.RegisterHandlersWithOptions(v1, appServer, openapi_server.GinServerOptions{
 		ErrorHandler: server.BindingErrorHandler,
 	})
