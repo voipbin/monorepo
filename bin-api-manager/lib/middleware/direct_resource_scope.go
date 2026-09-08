@@ -115,10 +115,18 @@ func DirectResourceScope() gin.HandlerFunc {
 
 		// 7. In scope.
 		//
-		// Known gap, recorded rather than fixed: a future route shaped
-		// /aicalls/:id/<child>/:child_id would match on :id and leave
-		// :child_id unchecked. No such route exists today. If one is added,
-		// this middleware needs to learn about the second parameter.
+		// Known gap, recorded rather than fixed: a route shaped
+		// /<resource>/:id/<child>/:child_id matches on :id and leaves
+		// :child_id unchecked.
+		//
+		// Such routes do exist (/contacts/:id/tags/:tag_id,
+		// /rags/:id/sources/:source_id and others). They are safe today for a
+		// different reason: a direct token's AllowedResourceID names an aicall
+		// or a webchat session, so it can never equal those routes' :id and
+		// step 6 rejects before the child id matters. The gap opens only if a
+		// child route is ever added under a resource kind a direct token can
+		// be bound to. If one is, this middleware needs to learn about the
+		// second parameter.
 		c.Next()
 	}
 }

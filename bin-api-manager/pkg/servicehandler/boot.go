@@ -35,10 +35,15 @@ const directHashFingerprintDomain = "voipbin/direct-hash-fingerprint/v1\x00"
 // Keyed with the signing key rather than a bare digest. The underlying direct
 // hash is only 48 bits (bin-direct-manager generateHash uses 6 random bytes) in
 // a known format, so an unkeyed SHA-256 of it is brute-forceable offline in
-// hours. That matters because the token travels further than the hash does: the
-// WebSocket paths log the whole *auth.AuthIdentity, so an unkeyed fingerprint
-// would let anyone with log access recover the direct hash, and that recovery
-// outlives both the token's expiry and the boot session ceiling.
+// hours, and that recovery would outlive both the token's expiry and the boot
+// session ceiling.
+//
+// The exposure it guards against is the identity reaching a log. The WebSocket
+// paths do log the whole *auth.AuthIdentity, though under the current default
+// TextFormatter the nested *DirectScope prints as a pointer address and the
+// fingerprint does not actually appear. Keying is what keeps that safe if the
+// service ever moves to a JSONFormatter, where every tagged field serializes in
+// full. Do not read the current formatter's behavior as a reason to drop it.
 //
 // HMAC keeps every property the check needs: deterministic, stable across
 // replicas and restarts, and full width (no truncation).
