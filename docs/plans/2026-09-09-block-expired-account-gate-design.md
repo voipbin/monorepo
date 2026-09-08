@@ -41,7 +41,7 @@ fail-open까지 범위에 넣었다. **검증 결과 그 근거는 성립하지 
 세 번째 등록 지점은 없다.
 
 **한 가지 예외적 캐비앳**: 게이트는 HTTP 업그레이드 시점에만 동작한다. 이미 수립된 websocket
-구독(`pkg/servicehandler/websock.go`의 `RunSubscription`)은 배포 후에도 계속 스트리밍된다.
+구독(`pkg/websockhandler/run.go:18`의 `RunSubscription`, 호출은 `pkg/servicehandler/websock.go:26`)은 배포 후에도 계속 스트리밍된다.
 휴면 집단이라 실질 영향은 미미하나 "실질 접근은 0"이 절대적 서술은 아니다.
 
 ### 2-2. 개별 근거 반박
@@ -51,7 +51,16 @@ fail-open까지 범위에 넣었다. **검증 결과 그 근거는 성립하지 
 | `/auth/login`이 JWT를 발급한다 | **철회하지 않는다. 아래 2-4 참조.** 게이트만 놓고 보면 JWT가 갈 곳이 없는 것은 맞으나, fail-open과 조합하면 증폭 경로가 된다 |
 | `password-forgot` -> `password-reset`로 로그인 가능 | 메커니즘이 login과 다르다. agent의 `password_hash`는 가입 시 부여된 랜덤값이라 사용자가 모르므로(`bin-agent-manager/pkg/agenthandler/event.go:145-151`), reset은 **없던 자격증명을 새로 만들어낸다.** 다만 2-4의 조치로 로그인 자체가 막히면 비밀번호를 설정해도 쓸 곳이 없으므로 **범위 외로 유지한다** |
 | direct token이 검사를 건너뛴다 | **`AuthBoot`이 이미 `StatusActive`를 요구한다**(`pkg/servicehandler/boot.go:108`). 만료 계정은 발급 자체가 불가. 토큰 수명 4시간이라 193건은 전부 소멸 |
-| `/auth/unregister` 예외 | 만료 계정에서는 **이미 죽은 분기**. POST(`CustomerSelfFreeze`)는 `dbhandler/customer.go:301`의 `WHERE status='active'` CAS 때문에 0행 갱신 -> `ErrNotFound` -> 400. DELETE(`CustomerSelfRecover`)도 `dbhandler/customer.go:353`이 `status='frozen'`으로 CAS하므로 동일하게 `ErrNotFound`. `immediate: true`의 `FreezeAndDelete`도 내부에서 `Freeze()`를 먼저 호출한다(`freeze.go:80`). **세 경로 전부 막힌다.** 이 예외로 스스로 `active`로 되돌릴 수 없음을 확인했다 |
+| `/auth/unregister` 예외 | 만료 계정에서는 **이미 죽은 분기**. POST(`CustomerSelfFreeze`)는 `dbhandler/customer.go:301`의 `WHERE status='active'` CAS 때문에 0행 갱신 -> `ErrNotFound` -> 400. DELETE(`CustomerSelfRecover`)도 `dbhandler/customer.go:354`가 `status='frozen'`으로 CAS하므로 동일하게 `ErrNotFound`. `immediate: true`의 `FreezeAndDelete`도 내부에서 `Freeze()`를 먼저 호출한다(`freeze.go:80`). **세 경로 전부 막힌다.** 이 예외로 스스로 `active`로 되돌릴 수 없음을 확인했다 |
+
+### 2-3. `/provisioning/extension`도 별도 조치가 불필요하다
+
+`GET /provisioning/extension`은 인증 없이 SIP 자격증명 XML을 반환하며 고객 상태를 보지 않는다
+(`pkg/servicehandler/extension.go`의 `ExtensionProvisioningXMLGet`은 `e.TMDelete`만 확인).
+
+그러나 **토큰 공급이 `v1.0` 경로**(`POST /v1.0/extensions/:id/provisioning-token`)이고
+`ProvisioningTokenTTL = 10 * time.Minute`(`pkg/servicehandler/extension.go:23`)이다.
+게이트를 막으면 신규 발급이 끊기고 기존 토큰은 10분 내 소멸한다.
 
 ### 2-4. `/auth/login`은 철회하지 않는다: fail-open과 조합되면 증폭된다
 
@@ -90,15 +99,6 @@ fail-open 전환(전면 장애 위험)과는 성격이 다르다. 로그인 경�
 
 09-08 분석서의 해당 절에 이 문서를 가리키는 정정 주석을 함께 추가한다.
 
-### 2-3. `/provisioning/extension`도 별도 조치가 불필요하다
-
-`GET /provisioning/extension`은 인증 없이 SIP 자격증명 XML을 반환하며 고객 상태를 보지 않는다
-(`pkg/servicehandler/extension.go`의 `ExtensionProvisioningXMLGet`은 `e.TMDelete`만 확인).
-
-그러나 **토큰 공급이 `v1.0` 경로**(`POST /v1.0/extensions/:id/provisioning-token`)이고
-`ProvisioningTokenTTL = 10 * time.Minute`(`pkg/servicehandler/extension.go:22`)이다.
-게이트를 막으면 신규 발급이 끊기고 기존 토큰은 10분 내 소멸한다.
-
 ## 3. fail-open은 이번 범위에서 제외한다
 
 `authenticate.go`의 고객 조회 RPC 실패 시 fail-open을 fail-closed로 바꾸는 것은
@@ -127,8 +127,70 @@ fail-open 전환(전면 장애 위험)과는 성격이 다르다. 로그인 경�
 | # | 위치 | 변경 |
 |---|---|---|
 | a | `authenticate.go`의 `isBlockedAccountStatus` switch | `case cscustomer.StatusExpired:` 추가. 403 + `ACCOUNT_EXPIRED` |
-| b | `pkg/servicehandler/auth.go`의 `AuthLogin` | 고객 상태 검사 추가. `AuthBoot`(boot.go:108) 패턴을 따른다. 2-4 참조 |
-| c | `authenticate.go`의 고객 조회 실패 분기 | 로그 + Prometheus 카운터 추가. **동작 변경 없음** |
+| b | `pkg/servicehandler/auth.go`의 `AuthLogin` | 고객 상태 검사 추가. **거부목록**: `StatusExpired`만 거부 |
+| c | `lib/service/auth.go`의 `PostLogin` | 만료 거부를 403 `ACCOUNT_EXPIRED` 엔벨로프로 매핑. 나머지 실패는 기존 400 유지 |
+| d | `authenticate.go`의 고객 조회 실패 분기 | 로그 + Prometheus 카운터 추가. **동작 변경 없음**. 사양은 4-1-3 |
+
+### 4-1-1. (b)의 판정식은 거부목록이어야 한다. `AuthBoot`을 그대로 베끼면 안 된다
+
+`AuthBoot`은 `if cu.Status != cscustomer.StatusActive { reject }`, 즉 `active`만 허용하는
+**허용목록**이다(`boot.go:108`). **이것을 그대로 가져오면 두 가지가 깨진다.**
+
+1. **`initial`이 막힌다.** 가입 후 72시간 유예 중인 정상 사용자가 `initial`이며
+   (`cleanup.go:39`가 이 상태를 `expired`로 바꾼다), 이들을 막으면 VOIP-1490이 만든 온보딩 창이
+   무의미해진다.
+2. **`frozen`이 막히고, 그 결과 frozen 자가 복구 UX가 끊긴다.** frozen 분기가 `details`로 안내하는
+   복구 엔드포인트는 `DELETE /auth/unregister`이고(`authenticate.go:273`), 그 경로는
+   `authProtected` 그룹(`cmd/api-manager/main.go:312`)이라 **인증이 필요하다.**
+   `DeleteAuthUnregister`는 `auth_identity`가 없으면 401로 중단한다(`lib/service/unregister.go:165-175`).
+   즉 frozen 사용자가 그 경로에 도달하는 유일한 방법이 `/auth/login`이다.
+   여기를 막으면 **이미 배포된 frozen 복구 경로가 통째로 사라진다.** 고치려는 버그보다 나쁜 회귀다.
+
+따라서 판정식은 `isBlockedAccountStatus`와 같은 **거부목록**으로 한다.
+**`StatusExpired`만 거부하고 `active` / `initial` / `frozen`은 통과시킨다.**
+`AuthBoot`에서 가져오는 것은 *메커니즘*(`a.CustomerID`로 고객을 조회해 상태를 본다)이지
+그 판정식이 아니다.
+
+### 4-1-2. (c)가 없으면 (a)와 (b)가 서로를 상쇄한다
+
+`PostLogin`은 `AuthLogin`의 **모든** 에러를 본문 없는 400으로 뭉갠다.
+
+```go
+token, err := serviceHandler.AuthLogin(...)
+if err != nil {
+    log.Debugf("Login failed. err: %v", err)
+    c.AbortWithStatus(400)
+    return
+}
+```
+(`bin-api-manager/lib/service/auth.go:56-61`)
+
+엔벨로프도, 사유도, `details`도 없고 403도 아니다. 그러면 (a)+(b)만 적용했을 때
+**만료 계정 193건은 로그인을 잃고 아무 안내도 받지 못한다.** 4-2에서 공들여 설계한
+`details.recovery_endpoint`는 v1 게이트에서만 나오는데, 로그인이 막혀 거기 도달할 수 없다.
+**설계의 두 절반이 서로를 무효화한다.**
+
+따라서 `PostLogin`에서 만료 거부만 403 `cerrors.PermissionDenied` 엔벨로프로 분리해
+`ACCOUNT_EXPIRED`와 동일한 `details`를 싣는다. 자격증명 오류는 기존대로 불투명한 400을 유지한다.
+
+**중요: 상태 검사는 `AgentV1Login`이 성공한 *뒤에* 수행한다**(`auth.go:22`).
+비밀번호 검증 전에 상태를 보면 존재하지 않는 계정과 만료 계정을 구분할 수 있게 되어
+username enumeration oracle이 생긴다. `AuthPasswordForgot`이 정확히 그 이유로 모든 오류를
+삼키고 있다(`auth.go:79-80`).
+
+### 4-1-3. (d) 관측 사양
+
+3절이 fail-open 전환 판단을 이 카운터에 위임했으므로, 판단에 필요한 차원을 갖춰야 한다.
+단순 카운터로는 3절이 던진 질문에 답할 수 없다.
+
+- 위치와 스타일: `lib/middleware/` 패키지 로컬 `prometheus.NewCounterVec` + `MustRegister`.
+  같은 패키지의 `ratelimit.go:22-31`이 이미 쓰는 방식을 따른다
+  (`pkg/servicehandler/auth_delegate.go:19`의 `promauto` 스타일이 아니다)
+- 라벨: **`identity_type`**(agent / accesskey / delegate)과 **에러 클래스**(timeout / not_found / other)
+
+`identity_type`이 핵심이다. fail-closed 전환이 안전한지는 **어떤 identity가 이 분기를 타느냐**에 달려 있다.
+accesskey는 애초에 여기 도달하지 않는다(`AccesskeyRawGetByToken`이 먼저 fail-closed로 401을 낸다).
+위협은 장애 순간의 만료 agent JWT다. 라벨 없이 총량만 세면 그 구분이 불가능하다.
 
 ### 4-2. 응답 형태
 
@@ -147,9 +209,9 @@ VOIP-1490이 `POST /auth/email-verify-resend`를 만들어 두었으므로 그�
 details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 ```
 
-**단, 프론트엔드 렌더링은 이 티켓 범위가 아니다.** 2-4의 조치로 로그인 자체가 막히므로
-사용자는 로그인 화면에서 403을 받게 되며, 대시보드에 들어와 모든 호출이 403나는 상황은
-발생하지 않는다. 프론트가 이 `details`를 실제로 쓰게 하는 작업은 별도 티켓으로 남긴다.
+**단, 프론트엔드 렌더링은 이 티켓 범위가 아니다.** 4-1(c)로 로그인 실패가 403 `ACCOUNT_EXPIRED`
+엔벨로프로 나가므로 사용자는 로그인 화면에서 복구 안내를 받게 되며, 대시보드에 들어와 모든 호출이
+403나는 상황은 발생하지 않는다. 프론트가 이 `details`를 실제로 쓰게 하는 작업은 별도 티켓으로 남긴다.
 
 ### 4-3. 복구 경로 안내 시 주의: 193건은 두 갈래다
 
@@ -161,8 +223,10 @@ details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 에러 메시지가 재발송만 안내하면 101건에게는 막다른 길이 된다.
 
 **초안은 "게이트가 agent 유무를 모른다"고 썼는데 부정확하다.** `a.Type == TypeAgent`이면
-그 identity 자체가 해당 고객의 agent이므로 추가 RPC 없이 알 수 있다. 반대로 agent가 없는 101건은
-agent JWT를 가질 수 없고 accesskey만 제시할 수 있다. 즉 게이트는 이미 무료로 두 집단을 구분할 수 있다.
+그 identity 자체가 해당 고객의 agent이므로 추가 RPC 없이 알 수 있다. 반대로 agent가 없는 101건은 실무상 accesskey만 제시하게 된다
+(엄밀히는 agent JWT가 클레임으로 구성되고 생존 조회를 하지 않으므로 soft-delete된 agent의 토큰도
+`TypeAgent`로 제시될 수 있으나, 이 집단은 애초에 토큰을 받은 적이 없다).
+즉 게이트는 사실상 무료로 두 집단을 구분할 수 있다.
 
 **그럼에도 분기하지 않기로 한다.** 이유는 불가능해서가 아니라 메시지 복잡도에 비해 이득이 작기
 때문이다. 두 경로를 모두 언급하는 문구 하나로 충분하다
@@ -184,6 +248,10 @@ agent JWT를 가질 수 없고 accesskey만 제시할 수 있다. 즉 게이트�
 | frozen / deleted | 기존 동작 유지 (회귀) |
 | **`AuthLogin`** + expired | 거부 (4-1b) |
 | **`AuthLogin`** + active / initial | 통과 (회귀) |
+| **`AuthLogin`** + **frozen** | **통과 (필수 회귀 가드).** 막으면 `DELETE /auth/unregister` 복구 경로가 끊긴다. 4-1-1 참조 |
+| **`AuthLogin`** + deleted | 통과. `Authenticate()` 단계에서 agent가 이미 soft-delete되어 걸러지므로 여기서 중복 차단하지 않는다 |
+| **`PostLogin`** + expired | 403 + `ACCOUNT_EXPIRED` 엔벨로프 + `details` (4-1c) |
+| **`PostLogin`** + 잘못된 비밀번호 | 기존대로 본문 없는 400 (enumeration 방지 회귀) |
 | **fail-open 분기** | 동작은 그대로 통과하되 카운터가 증가하는지 검증 (4-1c). 기존 `authenticate_test.go`의 "CustomerRawSelfGet error - fail open" 케이스를 확장한다 |
 
 **구현 주의:** `authenticate_test.go`의 단언 헬퍼가 `tt.customerStatus == StatusDeleted`인지로
@@ -205,4 +273,11 @@ agent JWT를 가질 수 없고 accesskey만 제시할 수 있다. 즉 게이트�
    다음 독자를 오도하는 것은 그 주석이므로 후속 티켓은 주석을 가리켜야 한다.
 3. `bin-customer-manager/pkg/listenhandler/v1_customers_freeze.go`가 모든 오류를 400으로 뭉갠다.
 4. fail-open -> fail-closed 전환 판단. 이번에 추가하는 카운터에 데이터가 쌓인 뒤.
-5. registrar/kamailio 경로에는 `StatusExpired` 처리가 없다. SIP 등록은 api-manager를 거치지 않는다.
+5. **registrar/kamailio 경로의 `StatusExpired` 미처리 (티켓 미등록).**
+   SIP 등록은 api-manager를 거치지 않으므로 이 게이트로는 닫히지 않는다. 193건의 SIP 자격증명은
+   그대로 살아있다. 남은 표면 중 가장 크다.
+   **그럼에도 이번에 다루지 않는 이유**: (i) 별개 서비스 경로라 이 티켓의 변경과 공유하는 코드가 없고,
+   (ii) VOIP-1489~1496에서 보았듯 SIP 경로에 상태 게이트를 넣는 변경은 자체 blast radius가 크며
+   (계정 상태 거부가 SIP 500으로 표면화된 것이 VOIP-1490의 발단이었다),
+   (iii) `/provisioning/extension`과 달리 공급을 끊는 방식으로 우회할 수 없어 실제 설계가 필요하다.
+   별도 티켓으로 등록할 것.
