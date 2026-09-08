@@ -12,7 +12,6 @@ import (
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/lib/apierror"
 	"monorepo/bin-api-manager/models/auth"
 	modelscommon "monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -1353,8 +1352,14 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 					if !ok {
 						t.Fatalf("details[0] is not an object: %+v", details[0])
 					}
-					if got, _ := entry["recovery_endpoint"].(string); got != apierror.RecoveryEndpointAccountExpired {
-						t.Errorf("Wrong recovery_endpoint. expect: %s, got: %s", apierror.RecoveryEndpointAccountExpired, got)
+					// Pinned as a literal, not as
+					// apierror.RecoveryEndpointAccountExpired: the constant
+					// exists so this string is byte-identical across the
+					// handler and middleware layers, so asserting it against
+					// itself would let a value change through silently. Same
+					// style as the frozen envelope's assertion above.
+					if got, want := entry["recovery_endpoint"], "POST /auth/email-verify-resend"; got != want {
+						t.Errorf("Wrong recovery_endpoint. expect: %q, got: %v", want, got)
 					}
 				}
 			}

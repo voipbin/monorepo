@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"monorepo/bin-api-manager/lib/apierror"
 	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -179,6 +178,7 @@ func TestPostLogin_AccountStatusEnvelope(t *testing.T) {
 
 		expectStatus  int
 		expectReason  string
+		expectMessage string
 		expectDetails bool
 	}{
 		{
@@ -186,8 +186,14 @@ func TestPostLogin_AccountStatusEnvelope(t *testing.T) {
 
 			loginErr: fmt.Errorf("%w: customer_id: some-id", serviceerrors.ErrAccountExpired),
 
-			expectStatus:  http.StatusForbidden,
-			expectReason:  "ACCOUNT_EXPIRED",
+			expectStatus: http.StatusForbidden,
+			expectReason: "ACCOUNT_EXPIRED",
+			// Pinned as a literal, not as apierror.MessageAccountExpired:
+			// the constant exists so this string is byte-identical across the
+			// handler and middleware layers, so asserting it against itself
+			// would let a reword through silently.
+			expectMessage: "This account has expired because its email address was never verified. " +
+				"Request a new verification email, and contact support@voipbin.net if that does not resolve it.",
 			expectDetails: true,
 		},
 		{
@@ -195,8 +201,9 @@ func TestPostLogin_AccountStatusEnvelope(t *testing.T) {
 
 			loginErr: fmt.Errorf("%w: customer_id: some-id", serviceerrors.ErrAccountDeleted),
 
-			expectStatus: http.StatusForbidden,
-			expectReason: "ACCOUNT_DELETED",
+			expectStatus:  http.StatusForbidden,
+			expectReason:  "ACCOUNT_DELETED",
+			expectMessage: "This account has been deleted.",
 			// No recovery path exists for a deleted account, so there is
 			// nothing honest to put in details.
 			expectDetails: false,
@@ -266,6 +273,11 @@ func TestPostLogin_AccountStatusEnvelope(t *testing.T) {
 			if got, _ := errObj["status"].(string); got != "PERMISSION_DENIED" {
 				t.Errorf("Wrong status. expect: PERMISSION_DENIED, got: %s", got)
 			}
+			// The message is user-visible wire contract too -- clients that
+			// predate the details payload still surface it verbatim.
+			if got, _ := errObj["message"].(string); got != tt.expectMessage {
+				t.Errorf("Wrong message. expect: %q, got: %q", tt.expectMessage, got)
+			}
 			// The internal Domain field must never cross the API boundary.
 			if _, hasDomain := errObj["domain"]; hasDomain {
 				t.Errorf("domain key MUST be absent from the external response; body=%s", w.Body.String())
@@ -287,8 +299,11 @@ func TestPostLogin_AccountStatusEnvelope(t *testing.T) {
 			}
 			// The whole point of details is that a client does not have to
 			// string-match the message to find the recovery path.
-			if got, _ := entry["recovery_endpoint"].(string); got != apierror.RecoveryEndpointAccountExpired {
-				t.Errorf("Wrong recovery_endpoint. expect: %s, got: %s", apierror.RecoveryEndpointAccountExpired, got)
+			// Pinned as a literal for the same reason as expectMessage above,
+			// and to match the frozen envelope's assertion style
+			// (authenticate_test.go's "DELETE /auth/unregister").
+			if got, want := entry["recovery_endpoint"], "POST /auth/email-verify-resend"; got != want {
+				t.Errorf("Wrong recovery_endpoint. expect: %q, got: %v", want, got)
 			}
 		})
 	}

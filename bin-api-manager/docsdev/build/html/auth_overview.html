@@ -1318,10 +1318,7 @@
 <tr class="row-even"><td><p>403</p></td>
 <td><p>The account’s customer status is <code class="docutils literal notranslate"><span class="pre">expired</span></code> or <code class="docutils literal notranslate"><span class="pre">deleted</span></code>. Password re-authentication runs the same login path that refuses those two statuses (VOIP-1491), so the refusal surfaces here instead of failing a step later. Both were already dead ends on this endpoint — the freeze transition requires <code class="docutils literal notranslate"><span class="pre">active</span></code> — so this only makes the refusal earlier and honest.</p></td>
 </tr>
-<tr class="row-odd"><td><p>404</p></td>
-<td><p>The customer record backing the authenticated account could not be found during password re-authentication.</p></td>
-</tr>
-<tr class="row-even"><td><p>500</p></td>
+<tr class="row-odd"><td><p>500</p></td>
 <td><p>The customer lookup performed during password re-authentication failed for any other reason (RPC timeout, or the customer-manager circuit breaker being open). That lookup fails <strong>closed</strong>, unlike the <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> gate’s, so an unreachable customer-manager blocks the request rather than letting it through.</p></td>
 </tr>
 </tbody>
@@ -1329,7 +1326,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">403</span></code>, <code class="docutils literal notranslate"><span class="pre">404</span></code> and <code class="docutils literal notranslate"><span class="pre">500</span></code> are reachable only through the <code class="docutils literal notranslate"><span class="pre">password</span></code> branch, which re-authenticates by calling <code class="docutils literal notranslate"><span class="pre">AuthLogin</span></code>; before VOIP-1491 that branch could only ever produce a <code class="docutils literal notranslate"><span class="pre">400</span></code>. The <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> branch does not re-authenticate and is unaffected.</p>
+<p><code class="docutils literal notranslate"><span class="pre">403</span></code> and <code class="docutils literal notranslate"><span class="pre">500</span></code> are reachable only through the <code class="docutils literal notranslate"><span class="pre">password</span></code> branch, which re-authenticates by calling <code class="docutils literal notranslate"><span class="pre">AuthLogin</span></code>; before VOIP-1491 that branch could only ever produce a <code class="docutils literal notranslate"><span class="pre">400</span></code>. The <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> branch does not re-authenticate and is unaffected.</p>
 </div>
 <p><strong>DELETE /auth/unregister</strong> — cancels a scheduled deletion and restores <code class="docutils literal notranslate"><span class="pre">active</span></code> status. No request body. Only works while the account is <code class="docutils literal notranslate"><span class="pre">frozen</span></code> within the 30-day grace period.</p>
 <p><strong>Response — 200 OK</strong>: the restored <code class="docutils literal notranslate"><span class="pre">Customer</span></code> object.</p>
