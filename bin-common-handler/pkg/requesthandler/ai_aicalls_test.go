@@ -43,7 +43,7 @@ func Test_AIV1AIcallStart(t *testing.T) {
 			assistanceID:   uuid.FromStringOrNil("e8604e8a-ef52-11ef-88be-43d681e412f7"),
 			activeflowID:   uuid.FromStringOrNil("eb23a6b0-0cc3-11f0-8150-0f33dc4cfdc4"),
 			referenceType:  amaicall.ReferenceTypeCall,
-			referenceID:   uuid.FromStringOrNil("e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9"),
+			referenceID:    uuid.FromStringOrNil("e8c3a34a-ef52-11ef-b4d1-93c7d17c08e9"),
 
 			response: &sock.Response{
 				StatusCode: 200,
