@@ -59,7 +59,21 @@ func abortWithMappedStatus(c *gin.Context, err error) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 	case errors.Is(err, serviceerrors.ErrPermissionDenied),
 		errors.Is(err, serviceerrors.ErrDirectAccessNotSupported),
+		errors.Is(err, serviceerrors.ErrAccountExpired),
+		errors.Is(err, serviceerrors.ErrAccountDeleted),
 		errors.Is(err, commonrequesthandler.ErrForbidden):
+		// ErrAccountExpired / ErrAccountDeleted reach here through
+		// PostAuthUnregister's password re-authentication, which validates the
+		// password by calling AuthLogin -- the same AuthLogin that started
+		// refusing those two statuses in VOIP-1491. They are account-status
+		// refusals, so they belong in the 403 group; leaving them to the
+		// default arm would turn today's 400 dead end into a bogus 500.
+		//
+		// Both statuses were already dead ends on this endpoint before
+		// VOIP-1491: CustomerSelfFreeze's CAS requires status='active', so the
+		// request failed a step later with a 400. This only makes the refusal
+		// honest and earlier. 'frozen' is unaffected -- AuthLogin's deny-list
+		// passes it, which is what keeps the frozen self-recovery flow alive.
 		c.AbortWithStatus(http.StatusForbidden)
 	case errors.Is(err, serviceerrors.ErrNotFound),
 		errors.Is(err, commonrequesthandler.ErrNotFound):

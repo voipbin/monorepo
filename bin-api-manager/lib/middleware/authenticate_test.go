@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -14,11 +16,14 @@ import (
 	modelscommon "monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/circuitbreakerhandler"
+	commonrequesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 )
@@ -1150,6 +1155,121 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 			expectStatus: 200,
 		},
 		{
+			// VOIP-1491. Before this case existed, status='expired' fell
+			// through the default branch and every credential of the 193
+			// expired customers kept working against all 414 v1 routes.
+			name: "Expired account - blocked",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusExpired,
+				}, nil)
+			},
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusExpired,
+		},
+		{
+			name: "Expired account - accesskey identity blocked",
+			agent: auth.NewAccesskeyIdentity(&csaccesskey.Accesskey{
+				ID:         uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000003"),
+				CustomerID: testCustomerID,
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusExpired,
+				}, nil)
+			},
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusExpired,
+		},
+		{
+			// Matches the delegate coverage frozen/deleted already carry as
+			// VOIP-1292 regression proof: the gate must key off the customer
+			// status, not off the identity type.
+			name: "Expired account - delegate identity blocked",
+			agent: auth.NewDelegateIdentity(&auth.DelegateScope{
+				CustomerID: testCustomerID,
+				IssuedBy:   uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				JTI:        "some-jti",
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusExpired,
+				}, nil)
+			},
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusExpired,
+		},
+		{
+			name: "Expired account - DELETE /auth/unregister allowed",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			method:       http.MethodDelete,
+			path:         "/auth/unregister",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			name: "Project super admin - not blocked even if expired",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			}),
+			method:       http.MethodGet,
+			path:         "/v1.0/agents",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			name: "Direct token - skip expired check",
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           testCustomerID,
+				ResourceType:         "aicall",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			method:       http.MethodGet,
+			path:         "/v1.0/aicalls",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			// Regression guard for design 4-1-1: 'initial' is a normal user
+			// inside the 72h post-signup verification window (VOIP-1490).
+			// Blocking it here would make that onboarding window pointless.
+			name: "Initial account - not blocked",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusInitial,
+				}, nil)
+			},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
 			name: "CustomerRawSelfGet error - fail open (not blocked)",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
@@ -1201,13 +1321,46 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 					t.Errorf("domain key MUST be absent from external response; body=%s", w.Body.String())
 				}
 
-				wantCode := "ACCOUNT_FROZEN"
-				if tt.customerStatus == cscustomer.StatusDeleted {
-					wantCode = "ACCOUNT_DELETED"
+				// Explicit status -> reason mapping. This used to be a
+				// two-branch "deleted ? ACCOUNT_DELETED : ACCOUNT_FROZEN"
+				// with ACCOUNT_FROZEN as the default, which silently
+				// mis-asserted any newly added status. Keep it exhaustive:
+				// an unmapped status must fail loudly, not default to frozen.
+				wantCodeByStatus := map[cscustomer.Status]string{
+					cscustomer.StatusFrozen:  "ACCOUNT_FROZEN",
+					cscustomer.StatusExpired: "ACCOUNT_EXPIRED",
+					cscustomer.StatusDeleted: "ACCOUNT_DELETED",
+				}
+				wantCode, ok := wantCodeByStatus[tt.customerStatus]
+				if !ok {
+					t.Fatalf("Test case blocks but its customerStatus %q has no expected reason code. Add it to wantCodeByStatus.", tt.customerStatus)
 				}
 				gotCode, _ := errObj["reason"].(string)
 				if gotCode != wantCode {
 					t.Errorf("Wrong error code. expect: %s, got: %s; body=%s", wantCode, gotCode, w.Body.String())
+				}
+
+				// An ACCOUNT_EXPIRED refusal must carry the recovery endpoint
+				// in details, so a client never has to string-match the
+				// message to find out where to send the user.
+				if tt.customerStatus == cscustomer.StatusExpired {
+					details, ok := errObj["details"].([]any)
+					if !ok || len(details) != 1 {
+						t.Fatalf("Expected exactly one details entry. got: %v; body=%s", errObj["details"], w.Body.String())
+					}
+					entry, ok := details[0].(map[string]any)
+					if !ok {
+						t.Fatalf("details[0] is not an object: %+v", details[0])
+					}
+					// Pinned as a literal, not as
+					// apierror.RecoveryEndpointAccountExpired: the constant
+					// exists so this string is byte-identical across the
+					// handler and middleware layers, so asserting it against
+					// itself would let a value change through silently. Same
+					// style as the frozen envelope's assertion above.
+					if got, want := entry["recovery_endpoint"], "POST /auth/email-verify-resend"; got != want {
+						t.Errorf("Wrong recovery_endpoint. expect: %q, got: %v", want, got)
+					}
 				}
 			}
 		})
@@ -1416,4 +1569,170 @@ func TestAuthenticateThenEnforceAccountStatus_DelegateBlockedWhenFrozen(t *testi
 		t.Fatalf("POST /auth/delegate on a frozen account: expected 403, got %d", w.Code)
 	}
 	assertAuthErrorEnvelope(t, w.Body.Bytes(), "PERMISSION_DENIED", "ACCOUNT_FROZEN")
+}
+
+// Test_isBlockedAccountStatus_failOpenObservability covers design 4-1d /
+// 4-1-3. The customer-lookup failure branch keeps its fail-open BEHAVIOR
+// unchanged -- api-manager has no customer cache, so failing closed there
+// would take all 414 v1 routes down with customer-manager -- but it now emits
+// a labelled counter so the fail-open-vs-fail-closed question can eventually
+// be settled with data instead of speculation.
+//
+// Both labels are asserted. identity_type is the load-bearing one: whether
+// failing closed is safe depends on WHICH identities actually take this
+// branch. error_class must keep circuit_open separate from other, because the
+// request path always has a circuit breaker on it and in exactly the outage
+// this counter exists to measure the breaker trips and returns ErrCircuitOpen
+// for every subsequent call -- folding that into "other" would blind the
+// counter during the only window that matters.
+func Test_isBlockedAccountStatus_failOpenObservability(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	testCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+
+	tests := []struct {
+		name string
+
+		identity  *auth.AuthIdentity
+		lookupErr error
+
+		expectIdentityType string
+		expectErrorClass   string
+	}{
+		{
+			name: "agent identity, circuit breaker open",
+
+			identity: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			lookupErr: fmt.Errorf("could not send the request: %w", circuitbreakerhandler.ErrCircuitOpen),
+
+			expectIdentityType: "agent",
+			expectErrorClass:   "circuit_open",
+		},
+		{
+			name: "agent identity, request timed out",
+
+			identity: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			lookupErr: fmt.Errorf("rpc failed: %w", context.DeadlineExceeded),
+
+			expectIdentityType: "agent",
+			expectErrorClass:   "timeout",
+		},
+		{
+			name: "accesskey identity, customer not found",
+
+			identity: auth.NewAccesskeyIdentity(&csaccesskey.Accesskey{
+				ID:         uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000004"),
+				CustomerID: testCustomerID,
+			}),
+			lookupErr: fmt.Errorf("lookup failed: %w", commonrequesthandler.ErrNotFound),
+
+			expectIdentityType: "accesskey",
+			expectErrorClass:   "not_found",
+		},
+		{
+			// Connection/channel failures are formatted with %v upstream, so
+			// they do not unwrap and legitimately land in "other".
+			name: "delegate identity, unclassified failure",
+
+			identity: auth.NewDelegateIdentity(&auth.DelegateScope{
+				CustomerID: testCustomerID,
+				IssuedBy:   uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				JTI:        "some-jti",
+			}),
+			lookupErr: errors.New("channel closed"),
+
+			expectIdentityType: "delegate",
+			expectErrorClass:   "other",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSH := servicehandler.NewMockServiceHandler(mc)
+			mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(nil, tt.lookupErr)
+
+			counter := promAccountStatusLookupFailedTotal.WithLabelValues(tt.expectIdentityType, tt.expectErrorClass)
+			before := testutil.ToFloat64(counter)
+
+			req := httptest.NewRequest(http.MethodGet, "/v1.0/agents", nil)
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+			c.Set(modelscommon.OBJServiceHandler, mockSH)
+
+			// Behavior is unchanged: still fail open.
+			if blocked := isBlockedAccountStatus(c, tt.identity); blocked {
+				t.Errorf("The lookup-failure branch must stay fail-open. expect: false, got: true")
+			}
+
+			if after := testutil.ToFloat64(counter); after != before+1 {
+				t.Errorf("Wrong counter value for {identity_type=%q, error_class=%q}. expect: %v, got: %v",
+					tt.expectIdentityType, tt.expectErrorClass, before+1, after)
+			}
+		})
+	}
+}
+
+// Test_accountStatusLookupErrorClass_precedence pins the classifier's
+// precedence. A circuit-open error can also be wrapped alongside other
+// context, so circuit_open must win over every later arm -- see 4-1-3.
+func Test_accountStatusLookupErrorClass_precedence(t *testing.T) {
+	tests := []struct {
+		name string
+
+		err error
+
+		expectRes string
+	}{
+		{
+			name:      "circuit open",
+			err:       fmt.Errorf("wrapped: %w", circuitbreakerhandler.ErrCircuitOpen),
+			expectRes: "circuit_open",
+		},
+		{
+			name:      "deadline exceeded",
+			err:       fmt.Errorf("wrapped: %w", context.DeadlineExceeded),
+			expectRes: "timeout",
+		},
+		{
+			name:      "not found",
+			err:       fmt.Errorf("wrapped: %w", commonrequesthandler.ErrNotFound),
+			expectRes: "not_found",
+		},
+		{
+			name:      "unclassified",
+			err:       errors.New("connection reset by peer"),
+			expectRes: "other",
+		},
+		{
+			// A single error can satisfy more than one arm. circuit_open must
+			// win, otherwise the outage this counter exists to observe gets
+			// misfiled under timeout.
+			name:      "circuit open wins over timeout",
+			err:       fmt.Errorf("%w: %w", circuitbreakerhandler.ErrCircuitOpen, context.DeadlineExceeded),
+			expectRes: "circuit_open",
+		},
+		{
+			name:      "timeout wins over not found",
+			err:       fmt.Errorf("%w: %w", context.DeadlineExceeded, commonrequesthandler.ErrNotFound),
+			expectRes: "timeout",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if res := accountStatusLookupErrorClass(tt.err); res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, res)
+			}
+		})
+	}
 }

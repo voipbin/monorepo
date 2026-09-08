@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,10 +16,13 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/circuitbreakerhandler"
+	commonrequesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,7 +32,67 @@ const (
 	authTypeAccesskey = "accesskey"
 
 	delegateAudience = "voipbin-api"
+
+	// The account-status refusal wire strings (ACCOUNT_EXPIRED /
+	// ACCOUNT_DELETED and the expired recovery endpoint) live in lib/apierror,
+	// because POST /auth/login refuses the same accounts and the two responses
+	// must be byte-identical. See lib/apierror/account_status.go.
 )
+
+var (
+	// promAccountStatusLookupFailedTotal counts how often the account-status
+	// gate could not fetch the customer and therefore failed OPEN (design §3,
+	// §4-1-3). The branch is deliberately left fail-open for now: api-manager
+	// has no customer cache, so failing closed there would take down all 414
+	// v1 routes whenever customer-manager or RabbitMQ wobbles. This counter
+	// exists so the fail-open/fail-closed decision can later be made on data
+	// rather than on speculation.
+	//
+	// identity_type is the load-bearing label: whether failing closed is safe
+	// depends entirely on WHICH identities take this branch. accesskey callers
+	// should rarely appear (AccesskeyRawGetByToken hits the same
+	// customer-manager and 401s earlier in a total outage), so a meaningful
+	// accesskey count means a partial outage. The threat being measured is an
+	// expired-customer agent JWT sliding through during an outage window.
+	//
+	// Registered with the package-local NewCounterVec + MustRegister style
+	// already used by ratelimit.go, not promauto.
+	promAccountStatusLookupFailedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "account_status_lookup_failed_total",
+			Help:      "Total number of account-status gate checks that failed to fetch the customer and fell through fail-open, by identity type and error class",
+		},
+		[]string{"identity_type", "error_class"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(promAccountStatusLookupFailedTotal)
+}
+
+// accountStatusLookupErrorClass buckets a customer-lookup failure for the
+// promAccountStatusLookupFailedTotal error_class label.
+//
+// The precedence is fixed and must not be reordered. circuit_open is checked
+// FIRST and kept distinct from other: a circuit breaker is always installed on
+// the request path, so in exactly the outage this counter is meant to measure
+// the breaker trips and every subsequent call returns ErrCircuitOpen. Folding
+// that into "other" would blind the counter during the only window that
+// matters. Connection/channel failures are formatted with %v rather than %w
+// upstream, so they do not unwrap and legitimately land in "other".
+func accountStatusLookupErrorClass(err error) string {
+	switch {
+	case errors.Is(err, circuitbreakerhandler.ErrCircuitOpen):
+		return "circuit_open"
+	case errors.Is(err, context.DeadlineExceeded):
+		return "timeout"
+	case errors.Is(err, commonrequesthandler.ErrNotFound):
+		return "not_found"
+	default:
+		return "other"
+	}
+}
 
 // Authenticate parses the request's credentials (JWT or accesskey) and
 // stores the resulting *auth.AuthIdentity in the gin context under
@@ -212,8 +277,8 @@ func authenticateAccesskey(c *gin.Context, log *logrus.Entry, sh servicehandler.
 	return auth.NewAccesskeyIdentity(ak), nil
 }
 
-// isBlockedAccountStatus checks if a customer's account is frozen or deleted
-// and blocks non-allowed requests with a 403 response.
+// isBlockedAccountStatus checks if a customer's account is frozen, expired or
+// deleted and blocks non-allowed requests with a 403 response.
 //
 // This is a defense-in-depth gate: the customer_deleted event cascade is
 // expected to soft-delete every downstream resource (agents, flows, ...) for
@@ -248,7 +313,20 @@ func isBlockedAccountStatus(c *gin.Context, a *auth.AuthIdentity) bool {
 	serviceHandler := c.MustGet(modelscommon.OBJServiceHandler).(servicehandler.ServiceHandler)
 	cu, err := serviceHandler.CustomerRawSelfGet(c.Request.Context(), a)
 	if err != nil {
-		// If we can't fetch the customer, don't block (fail open)
+		// If we can't fetch the customer, don't block (fail open).
+		//
+		// This is observed but NOT changed (design §3): with no cache in
+		// api-manager, failing closed here would take every v1 route down
+		// with customer-manager. The log line and counter exist so the
+		// fail-open-vs-fail-closed question can later be settled with data.
+		errClass := accountStatusLookupErrorClass(err)
+		promAccountStatusLookupFailedTotal.WithLabelValues(string(a.Type), errClass).Inc()
+		logrus.WithFields(logrus.Fields{
+			"func":          "isBlockedAccountStatus",
+			"identity_type": string(a.Type),
+			"customer_id":   a.CustomerID,
+			"error_class":   errClass,
+		}).Warnf("Could not get the customer for the account status gate. Failing open. err: %v", err)
 		return false
 	}
 
@@ -282,13 +360,30 @@ func isBlockedAccountStatus(c *gin.Context, a *auth.AuthIdentity) bool {
 		)
 		return true
 
+	case cscustomer.StatusExpired:
+		// Account expired: signup completed but the email address was never
+		// verified, so the unverified-account cleanup job moved the customer
+		// to status='expired' (VOIP-1490). Before VOIP-1491 this status fell
+		// through the default branch and every credential kept working.
+		//
+		// details carries the recovery endpoint for the same reason the frozen
+		// branch carries one: without it a client would have to string-match
+		// the message to know where to send the user.
+		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, apierror.ReasonAccountExpired, apierror.MessageAccountExpired)
+		e.Details = apierror.AccountExpiredDetails()
+		c.AbortWithStatusJSON(
+			cerrors.HTTPStatusFor(e.Status),
+			apierror.EnvelopeFor(e, RequestIDFromContext(c)),
+		)
+		return true
+
 	case cscustomer.StatusDeleted:
 		// Account is deleted. This should be unreachable in the steady state —
 		// a deleted customer's agents/accesskeys should already be soft-deleted
 		// by the customer_deleted cascade and fail earlier in Authenticate() —
 		// but the cascade is known to miss some customers (VOIP-1395), so this
 		// is a deliberate second layer, not redundant defense.
-		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "ACCOUNT_DELETED", "This account has been deleted.")
+		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, apierror.ReasonAccountDeleted, apierror.MessageAccountDeleted)
 		c.AbortWithStatusJSON(
 			cerrors.HTTPStatusFor(e.Status),
 			apierror.EnvelopeFor(e, RequestIDFromContext(c)),
