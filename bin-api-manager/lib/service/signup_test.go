@@ -396,3 +396,74 @@ func TestGetCustomerEmailVerify_HTMLContent(t *testing.T) {
 		t.Error("Expected 'Verification Failed' button text in error handler")
 	}
 }
+
+func TestPostCustomerEmailVerifyResend_AlwaysReturns200(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name       string
+		body       string
+		rpcErr     error
+		expectCall bool
+	}{
+		{
+			name:       "normal",
+			body:       `{"email":"a@test.com"}`,
+			expectCall: true,
+		},
+		{
+			name:       "downstream error",
+			body:       `{"email":"a@test.com"}`,
+			rpcErr:     errors.New("boom"),
+			expectCall: true,
+		},
+		{
+			name:       "malformed json",
+			body:       `{`,
+			expectCall: false,
+		},
+		{
+			name:       "missing email",
+			body:       `{}`,
+			expectCall: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+			})
+			r.POST("/auth/email-verify-resend", PostCustomerEmailVerifyResend)
+
+			if tt.expectCall {
+				mockSvc.EXPECT().CustomerEmailVerifyResend(gomock.Any(), "a@test.com").Return(tt.rpcErr)
+			}
+
+			req, _ := http.NewRequest("POST", "/auth/email-verify-resend", bytes.NewBufferString(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+
+			// Every branch must look identical from the outside. A 400 on a malformed
+			// body would still be a signal an attacker can differentiate on, and the
+			// downstream error must never surface either.
+			if w.Code != 200 {
+				t.Errorf("Expected status 200, got: %d", w.Code)
+			}
+			// httptest.NewRecorder() starts at Code 200, so the status alone would
+			// also pass for a handler that writes nothing. Assert the body too.
+			if w.Body.String() != "{}" {
+				t.Errorf("Expected body {}, got: %s", w.Body.String())
+			}
+		})
+	}
+}

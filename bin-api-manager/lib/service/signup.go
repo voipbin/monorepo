@@ -108,6 +108,38 @@ func PostCustomerEmailVerify(c *gin.Context) {
 	c.JSON(200, res)
 }
 
+// RequestBodyEmailVerifyResendPOST is request body for POST /auth/email-verify-resend
+type RequestBodyEmailVerifyResendPOST struct {
+	Email string `json:"email" binding:"required"`
+}
+
+// PostCustomerEmailVerifyResend handles POST /auth/email-verify-resend request.
+// It always returns 200, including on a malformed body, so that no response
+// distinguishes a known address from an unknown one.
+func PostCustomerEmailVerifyResend(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostCustomerEmailVerifyResend",
+		"request_address": c.ClientIP(),
+	})
+	log.Debug("Processing email verification resend.")
+
+	// ShouldBindJSON, not BindJSON: BindJSON writes a 400 itself on failure, which
+	// would leak the difference between a malformed request and an accepted one.
+	var req RequestBodyEmailVerifyResendPOST
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Warnf("Could not bind the request body. err: %v", err)
+		c.JSON(200, gin.H{})
+		return
+	}
+
+	sh := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := sh.CustomerEmailVerifyResend(c.Request.Context(), req.Email); err != nil {
+		log.Debugf("Email verification resend failed. err: %v", err)
+	}
+
+	c.JSON(200, gin.H{})
+}
+
 // GetCustomerEmailVerify handles GET /auth/email-verify request.
 // It serves a simple HTML page that auto-submits the verification token.
 func GetCustomerEmailVerify(c *gin.Context) {

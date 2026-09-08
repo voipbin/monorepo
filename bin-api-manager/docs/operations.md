@@ -140,10 +140,12 @@ Could not resolve the audiosocket advertise address. err: the resolved audiosock
 
 | Tier | Routes | Default | Runs before |
 |------|--------|---------|-------------|
-| `auth_public` | Unauthenticated `/auth/*` (login, signup, password reset, email-verify, boot) | 10 req/s, burst 20 | (no auth) |
+| `auth_public` | Unauthenticated `/auth/*` (login, signup, password reset, email-verify, email-verify-resend, boot) | 10 req/s, burst 20 | (no auth) |
 | `auth_protected` | `/auth/unregister`, `/auth/delegate` | 10 req/s, burst 20 | `Authenticate()` |
 | `v1` | Entire authenticated `v1.0` API surface (~346 routes) | 200 req/s, burst 400 | `Authenticate()` |
 | `provisioning_public` | Unauthenticated `/provisioning/*` (extension QR provisioning) | 5 req/s, burst 10 | (no auth) |
+
+`POST /auth/email-verify-resend` additionally carries a per-account 60s cooldown and a 5-per-day cap enforced in bin-customer-manager (keyed on `customer_id`), because the per-IP tier alone cannot stop a distributed mailbomb against one address.
 
 Each tier is independently tunable via the `RATE_LIMIT_*` environment variables in the Configuration section above; setting a tier's RPS or burst to `<=0` disables it (unlimited pass-through) — this is the safe rollback lever if a limit turns out to be too aggressive, and does **not** require a redeploy.
 
