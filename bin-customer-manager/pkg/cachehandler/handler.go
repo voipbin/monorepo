@@ -194,3 +194,15 @@ func (h *handler) ResendCountIncr(ctx context.Context, customerID uuid.UUID, ttl
 
 	return n, nil
 }
+
+// ResendCountDecr gives back one unit of this customer's rolling resend budget.
+//
+// It exists so an email-manager outage does not burn the daily cap without a
+// single delivered mail, which would lock the customer out of the exact recovery
+// path this endpoint provides. A single atomic DECR is enough: the key already
+// carries the TTL armed by ResendCountIncr, and DECR does not clear it.
+func (h *handler) ResendCountDecr(ctx context.Context, customerID uuid.UUID) error {
+	key := resendCountKeyPrefix + customerID.String()
+
+	return h.Cache.Decr(ctx, key).Err()
+}

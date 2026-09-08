@@ -388,6 +388,12 @@ func TestGetCustomerEmailVerify_HTMLContent(t *testing.T) {
 	// Only the catch (network error) case should re-enable.
 	// The resend button is a different element ("rbtn"), so it is subtracted out
 	// here; a bare substring count would match it too.
+	//
+	// COUPLING: this arithmetic only works because "rbtn" ends with "btn", so every
+	// "rbtn.disabled = false" is also counted by the "btn.disabled = false" term.
+	// Renaming the resend button variable to anything that does not end in "btn"
+	// (say "resendBtn") makes the subtraction return 0 and this assertion stops
+	// checking anything. Rename the variable here and in the handler together.
 	count := strings.Count(body, "btn.disabled = false") - strings.Count(body, "rbtn.disabled = false")
 	if count > 1 {
 		t.Errorf("Expected btn.disabled = false at most once (in catch block only), found %d", count)

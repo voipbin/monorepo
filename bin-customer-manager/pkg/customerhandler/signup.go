@@ -353,6 +353,10 @@ func (h *customerHandler) EmailVerifyResend(ctx context.Context, email string) e
 		return nil
 	}
 
+	// Note: ResendCountIncr returns (n, err) with a usable n when only the TTL
+	// repair failed, so the counter was already consumed in that case. We still
+	// fail closed here: a counter whose expiry is unknown must not authorize a
+	// send, and the next call re-arms the TTL.
 	n, err := h.cache.ResendCountIncr(ctx, c.ID, resendCountTTL)
 	if err != nil {
 		log.Errorf("Could not increase the resend counter. err: %v", err)
@@ -367,6 +371,16 @@ func (h *customerHandler) EmailVerifyResend(ctx context.Context, email string) e
 
 	if errSend := h.sendSignupVerification(ctx, c.ID, c.Email); errSend != nil {
 		log.Errorf("Could not send the verification email. customer_id: %s, err: %v", c.ID, errSend)
+
+		// Refund the increment. Without this an email-manager outage lets a customer
+		// burn all of the daily budget without receiving a single mail, locking them
+		// out for 24 hours once the service recovers, which is exactly the population
+		// this endpoint exists to unblock. This opens no bypass: an attacker cannot
+		// force a send failure, and the cooldown still serializes attempts.
+		if errRefund := h.cache.ResendCountDecr(ctx, c.ID); errRefund != nil {
+			log.Errorf("Could not refund the resend counter. customer_id: %s, err: %v", c.ID, errRefund)
+		}
+
 		metricshandler.EmailVerifyResendTotal.WithLabelValues("send_error").Inc()
 		return nil
 	}

@@ -86,3 +86,50 @@ func Test_ResendCountIncr_RepairsMissingTTL(t *testing.T) {
 		t.Errorf("Wrong match. expect: repaired ttl, got: %v", s.TTL(key))
 	}
 }
+
+func Test_ResendCountDecr(t *testing.T) {
+	h, s := newTestHandler(t)
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	key := resendCountKeyPrefix + customerID.String()
+
+	if _, err := h.ResendCountIncr(ctx, customerID, time.Hour); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if _, err := h.ResendCountIncr(ctx, customerID, time.Hour); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	ttlBefore := s.TTL(key)
+	if ttlBefore <= 0 {
+		t.Fatalf("Wrong match. expect: positive ttl, got: %v", ttlBefore)
+	}
+
+	if err := h.ResendCountDecr(ctx, customerID); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	got, err := s.Get(key)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if got != "1" {
+		t.Errorf("Wrong match. expect: 1, got: %s", got)
+	}
+
+	// The refund must not disturb the daily window: DECR leaves the expiry alone,
+	// so the counter still resets on schedule.
+	if s.TTL(key) != ttlBefore {
+		t.Errorf("Wrong match. expect: %v, got: %v", ttlBefore, s.TTL(key))
+	}
+
+	// The next increment must see the refunded value, i.e. the budget really came
+	// back rather than only the stored string changing.
+	n, err := h.ResendCountIncr(ctx, customerID, time.Hour)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if n != 2 {
+		t.Errorf("Wrong match. expect: 2, got: %d", n)
+	}
+}

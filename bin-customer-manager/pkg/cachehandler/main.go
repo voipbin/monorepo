@@ -40,6 +40,7 @@ type CacheHandler interface {
 
 	ResendCooldownAcquire(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (bool, error)
 	ResendCountIncr(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (int64, error)
+	ResendCountDecr(ctx context.Context, customerID uuid.UUID) error
 }
 
 // NewHandler creates DBHandler

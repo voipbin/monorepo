@@ -174,6 +174,20 @@ func (mr *MockCacheHandlerMockRecorder) ResendCooldownAcquire(ctx, customerID, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResendCooldownAcquire", reflect.TypeOf((*MockCacheHandler)(nil).ResendCooldownAcquire), ctx, customerID, ttl)
 }
 
+// ResendCountDecr mocks base method.
+func (m *MockCacheHandler) ResendCountDecr(ctx context.Context, customerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResendCountDecr", ctx, customerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResendCountDecr indicates an expected call of ResendCountDecr.
+func (mr *MockCacheHandlerMockRecorder) ResendCountDecr(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResendCountDecr", reflect.TypeOf((*MockCacheHandler)(nil).ResendCountDecr), ctx, customerID)
+}
+
 // ResendCountIncr mocks base method.
 func (m *MockCacheHandler) ResendCountIncr(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (int64, error) {
 	m.ctrl.T.Helper()
