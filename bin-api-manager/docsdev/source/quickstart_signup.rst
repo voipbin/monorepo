@@ -13,6 +13,8 @@ Sign up via Admin Console
 5. Click the verification link in the email to verify your address.
 6. You will receive a welcome email with instructions to set your password.
 
+If the link has expired (verification links are valid for 24 hours, and an unverified signup is left open for 72 hours), the page it opens will offer to send you a new one. Enter your email address there and follow the fresh link.
+
 Once your password is set, you can log in to the `admin console <https://admin.voipbin.net>`_ and start making API requests.
 
 Sign up via API
@@ -58,6 +60,8 @@ The ``accesskey.token`` (String) is your API key. Use it immediately for authent
 
 A verification email is also sent to the email address you provided. Click the link in the email to verify your address and activate your account. After verification, you will receive a welcome email with instructions to set your password.
 
+If that email is lost or the link expires, request a new one with ``POST /auth/email-verify-resend`` (body: ``{"email": "your-email@example.com"}``). Like signup, it always returns HTTP 200 with an empty body, so the response does not tell you whether an email was sent. Sends are limited to one per 60 seconds and 5 per 24 hours per account. See :ref:`Auth Overview <auth-overview>` for details.
+
 Troubleshooting
 ~~~~~~~~~~~~~~~
 
@@ -68,3 +72,7 @@ Troubleshooting
 * **400 Bad Request:**
     * **Cause:** Missing required fields (``email`` or ``accepted_tos``) or ``accepted_tos`` is ``false``.
     * **Fix:** Ensure the request body includes ``"email"`` and ``"accepted_tos": true``.
+
+* **Verification link expired / verification email never arrived:**
+    * **Cause:** Verification tokens are valid for 24 hours, and the email may have been filtered or lost.
+    * **Fix:** Call ``POST /auth/email-verify-resend`` with the registered email address, or use the resend form on the page the expired link opens. An account that already expired for want of verification can still be recovered this way.

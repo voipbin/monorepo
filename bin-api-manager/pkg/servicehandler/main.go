@@ -659,6 +659,7 @@ type ServiceHandler interface {
 		clientIP string,
 	) (*cscustomer.SignupResultWebhookMessage, error)
 	CustomerEmailVerify(ctx context.Context, token string) (*cscustomer.EmailVerifyResultWebhookMessage, error)
+	CustomerEmailVerifyResend(ctx context.Context, email string) error
 
 	// extension handlers
 	ExtensionCreate(ctx context.Context, a *auth.AuthIdentity, ext string, password string, name string, detail string) (*rmextension.WebhookMessage, error)

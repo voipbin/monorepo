@@ -68,4 +68,7 @@ type V1DataCustomersEmailVerifyPost struct {
 	Token string `json:"token"`
 }
 
-
+// V1DataCustomersEmailVerifyResendPost is request struct for POST /v1/customers/email_verify_resend
+type V1DataCustomersEmailVerifyResendPost struct {
+	Email string `json:"email"`
+}

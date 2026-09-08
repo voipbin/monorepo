@@ -752,6 +752,22 @@ func (h *serviceHandler) CustomerEmailVerify(ctx context.Context, token string) 
 	return res.ConvertWebhookMessage(), nil
 }
 
+// CustomerEmailVerifyResend re-sends the signup verification email.
+// This is a public endpoint — no authentication required.
+func (h *serviceHandler) CustomerEmailVerifyResend(ctx context.Context, email string) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "CustomerEmailVerifyResend",
+	})
+	log.Debug("Processing customer email verification resend.")
+
+	if err := h.reqHandler.CustomerV1CustomerEmailVerifyResend(ctx, email); err != nil {
+		log.Errorf("Could not resend the customer verification email. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // convertCustomerFilters converts map[string]string to map[cscustomer.Field]any
 func (h *serviceHandler) convertCustomerFilters(filters map[string]string) (map[cscustomer.Field]any, error) {
 	// Convert to map[string]any first

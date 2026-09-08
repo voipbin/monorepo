@@ -35,6 +35,10 @@ Endpoint Summary
      - None
      - Serves an HTML page that auto-submits the verification token (link target from the verification email).
    * - POST
+     - ``/auth/email-verify-resend``
+     - None
+     - Send a fresh verification link to an address whose original link expired or was lost.
+   * - POST
      - ``/auth/login``
      - Username/password
      - Exchange agent credentials for a 7-day JWT. See :ref:`Authentication quickstart <quickstart-authentication>`.
@@ -69,7 +73,9 @@ Endpoint Summary
 
 .. note:: **AI Implementation Hint**
 
-   All unauthenticated ``/auth/*`` endpoints (``login``, ``signup``, ``email-verify``, ``boot``, ``password-forgot``, ``password-reset``) share a single IP-based rate limiter: **up to approximately 10 requests/second per client IP, burst 20**. ``/auth/unregister`` and ``/auth/delegate`` require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (**10 requests/second, burst 20**). Exceeding either limiter returns ``429`` with reason ``RATE_LIMIT_EXCEEDED`` (see :ref:`Error Reason Codes <error-reason-catalog>`).
+   All unauthenticated ``/auth/*`` endpoints (``login``, ``signup``, ``email-verify``, ``email-verify-resend``, ``boot``, ``password-forgot``, ``password-reset``) share a single IP-based rate limiter: **up to approximately 10 requests/second per client IP, burst 20**. ``/auth/unregister`` and ``/auth/delegate`` require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (**10 requests/second, burst 20**). Exceeding either limiter returns ``429`` with reason ``RATE_LIMIT_EXCEEDED`` (see :ref:`Error Reason Codes <error-reason-catalog>`).
+
+   ``/auth/email-verify-resend`` carries an **additional per-account limit** on top of that shared IP tier: a **60-second cooldown** between sends and a cap of **5 sends per 24 hours**, both tracked per customer account rather than per IP. The IP tier alone cannot stop a distributed mailbomb aimed at one address. Requests that exceed the per-account limits still return ``200`` with an empty body — no email is sent, and nothing in the response distinguishes that outcome.
 
 .. note:: **AI Implementation Hint — response body shape differs by endpoint**
 
@@ -85,12 +91,13 @@ Auth & Account Lifecycle
     +----------+   +--------------+    +----------------+    +--------------+
     | initial  |-->|   active     |--->|    active      |--->|  JWT / key   |
     +----------+   +--------------+    +----------------+    +--------------+
-         |                                    |
-         | (no verification                   | POST /auth/unregister
-         |  within timeout)                   v
-         v                              +----------------+
-    +----------+                        |    frozen      |
-    | expired  |                        | (30-day grace) |
+         |          ^                         |
+         | no       | POST /auth/email-       | POST /auth/unregister
+         | verify   | verify-resend           |
+         | within   | then email-verify       v
+         v          |                   +----------------+
+    +----------+    |                   |    frozen      |
+    | expired  |----+                   | (30-day grace) |
     +----------+                        +----------------+
                                           |             |
                             DELETE /auth/unregister      (grace expires,
@@ -222,6 +229,40 @@ Serves a static HTML confirmation page (the link target embedded in the verifica
    * - ``token``
      - Query, Required
      - 64-character lowercase hex string. An invalid/missing token returns ``400`` before the page is rendered.
+
+If the token has expired or was already used, the page reports that the link is no longer valid and offers a form to request a new one, which submits to ``POST /auth/email-verify-resend``.
+
+
+Email Verify Resend — ``POST /auth/email-verify-resend``
+----------------------------------------------------------
+Issues a new verification token for an account whose original link expired or was never received, and emails it to the registered address. This is the recovery path out of the ``expired`` status: an account that missed the 72-hour verification window is not permanently lost.
+
+**Request body**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 12 68
+
+   * - Field
+     - Type
+     - Description
+   * - ``email``
+     - String, Required
+     - The email address the account was registered with.
+
+**Response — 200 OK (always)**
+
+.. code::
+
+    {}
+
+.. note:: **AI Implementation Hint**
+
+   This endpoint **always** returns ``200`` with an empty body — for a registered address, an unknown address, an already-verified account, a rate-limited request, and even a malformed JSON body. That uniformity is deliberate: any differentiated response would turn an unauthenticated endpoint into an email-existence oracle. Do not treat ``200`` as confirmation that an email was sent, and do not build retry logic that assumes otherwise. Note that the uniformity covers the response *content*, not its timing: the work is synchronous, so an unknown address returns after a single database lookup while a recoverable one also performs an agent lookup, two cache writes and an email send, leaving a measurable latency difference. This residual is not specific to this endpoint: ``/auth/signup`` and ``/auth/password-forgot`` are synchronous and always-200 in the same way, and carry the same timing residual.
+
+   A resend is only performed when the account is unverified, is not ``frozen`` or ``deleted``, and still has a live agent for the address. Sends are limited to one per **60 seconds** and **5 per 24 hours** per account, on top of the shared per-IP ``/auth/*`` limiter.
+
+   The new token is valid for **24 hours**, the same as a token issued at signup. Resending does not invalidate an earlier token — any previously issued token stays usable until its own expiry, so a user who later finds the original email can still follow it.
 
 
 Login (Token) — ``POST /auth/login``

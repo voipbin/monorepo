@@ -296,6 +296,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 	auth.POST("/signup", service.PostCustomerSignup)
 	auth.GET("/email-verify", service.GetCustomerEmailVerify)
 	auth.POST("/email-verify", service.PostCustomerEmailVerify)
+	auth.POST("/email-verify-resend", service.PostCustomerEmailVerifyResend)
 	auth.POST("/boot", service.PostBoot)
 	// Authenticated auth routes (require middleware). This group's order
 	// (Authenticate -> EnforceAccountStatus) is unchanged by VOIP-1302 and

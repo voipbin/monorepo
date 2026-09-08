@@ -386,13 +386,116 @@ func TestGetCustomerEmailVerify_HTMLContent(t *testing.T) {
 
 	// Verify error case disables button permanently (not re-enabled).
 	// Only the catch (network error) case should re-enable.
-	count := strings.Count(body, "btn.disabled = false")
+	// The resend button is a different element ("rbtn"), so it is subtracted out
+	// here; a bare substring count would match it too.
+	//
+	// COUPLING: this arithmetic only works because "rbtn" ends with "btn", so every
+	// "rbtn.disabled = false" is also counted by the "btn.disabled = false" term.
+	// Renaming the resend button variable to anything that does not end in "btn"
+	// (say "resendBtn") makes the subtraction return 0 and this assertion stops
+	// checking anything. Rename the variable here and in the handler together.
+	count := strings.Count(body, "btn.disabled = false") - strings.Count(body, "rbtn.disabled = false")
 	if count > 1 {
 		t.Errorf("Expected btn.disabled = false at most once (in catch block only), found %d", count)
 	}
 
-	// Verify "Verification Failed" text appears for error case
-	if !strings.Contains(body, "Verification Failed") {
-		t.Error("Expected 'Verification Failed' button text in error handler")
+	// The resend button, unlike the verify button, must be re-enabled in BOTH
+	// branches: a network failure otherwise strands the user until page reload.
+	if got := strings.Count(body, "rbtn.disabled = false"); got != 2 {
+		t.Errorf("Expected the resend button re-enabled in both the then and catch branches, found %d occurrences", got)
+	}
+
+	// The failure branch must offer the resend form instead of leaving the user
+	// on a dead end.
+	if !strings.Contains(body, `id="resend-box"`) {
+		t.Error("Expected the resend box markup on the verification page")
+	}
+	if !strings.Contains(body, `id="resend-email"`) {
+		t.Error("Expected the resend email input on the verification page")
+	}
+	if !strings.Contains(body, "document.getElementById('resend-box').style.display = 'block'") {
+		t.Error("Expected the failure branch to reveal the resend box")
+	}
+	if !strings.Contains(body, "fetch('/auth/email-verify-resend'") {
+		t.Error("Expected the resend action to call POST /auth/email-verify-resend")
+	}
+
+	// The resend result copy must be identical for every outcome. The API returns
+	// 200 for unknown addresses on purpose; branching the copy here would let the
+	// page enumerate registered addresses.
+	const resendCopy = "If an account exists for that address, a new verification link is on its way."
+	if got := strings.Count(body, resendCopy); got != 2 {
+		t.Errorf("Expected the identical resend copy in both the then and catch branches, found %d occurrences", got)
+	}
+}
+
+func TestPostCustomerEmailVerifyResend_AlwaysReturns200(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name       string
+		body       string
+		rpcErr     error
+		expectCall bool
+	}{
+		{
+			name:       "normal",
+			body:       `{"email":"a@test.com"}`,
+			expectCall: true,
+		},
+		{
+			name:       "downstream error",
+			body:       `{"email":"a@test.com"}`,
+			rpcErr:     errors.New("boom"),
+			expectCall: true,
+		},
+		{
+			name:       "malformed json",
+			body:       `{`,
+			expectCall: false,
+		},
+		{
+			name:       "missing email",
+			body:       `{}`,
+			expectCall: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+			})
+			r.POST("/auth/email-verify-resend", PostCustomerEmailVerifyResend)
+
+			if tt.expectCall {
+				mockSvc.EXPECT().CustomerEmailVerifyResend(gomock.Any(), "a@test.com").Return(tt.rpcErr)
+			}
+
+			req, _ := http.NewRequest("POST", "/auth/email-verify-resend", bytes.NewBufferString(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+
+			// Every branch must look identical from the outside. A 400 on a malformed
+			// body would still be a signal an attacker can differentiate on, and the
+			// downstream error must never surface either.
+			if w.Code != 200 {
+				t.Errorf("Expected status 200, got: %d", w.Code)
+			}
+			// httptest.NewRecorder() starts at Code 200, so the status alone would
+			// also pass for a handler that writes nothing. Assert the body too.
+			if w.Body.String() != "{}" {
+				t.Errorf("Expected body {}, got: %s", w.Body.String())
+			}
+		})
 	}
 }

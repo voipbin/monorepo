@@ -15,6 +15,7 @@ Public endpoints — no authentication required.
 | POST | `/auth/boot` | bin-customer-manager | Initial bootstrap / login |
 | POST | `/auth/signup` | bin-customer-manager | New account registration |
 | POST | `/auth/email-verify` | bin-customer-manager | Email verification |
+| POST | `/auth/email-verify-resend` | bin-customer-manager | Resend the signup verification email |
 | POST | `/auth/password-forgot` | bin-customer-manager | Send password reset email |
 | GET | `/auth/password-reset` | bin-customer-manager | Render reset form |
 | POST | `/auth/password-reset` | bin-customer-manager | Submit new password |

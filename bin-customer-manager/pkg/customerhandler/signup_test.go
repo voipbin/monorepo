@@ -729,3 +729,506 @@ func Test_EmailVerify_customerGetAfterUpdateError(t *testing.T) {
 		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }
+
+func Test_EmailVerify_ClearsTMDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &customerHandler{
+		cache:      mockCache,
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	ctx := context.Background()
+	token := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	// customer.Customer.TMDelete is *time.Time, not *string
+	tmDelete := time.Date(2026, 9, 6, 19, 0, 3, 0, time.UTC)
+
+	// a legacy row: expired AND soft-deleted by the old cleanup behavior
+	expiredCustomer := &customer.Customer{
+		ID:            customerID,
+		Email:         "legacy@test.com",
+		EmailVerified: false,
+		Status:        customer.StatusExpired,
+		TMDelete:      &tmDelete,
+	}
+	recovered := &customer.Customer{
+		ID:            customerID,
+		Email:         "legacy@test.com",
+		EmailVerified: true,
+		Status:        customer.StatusActive,
+	}
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, token).Return(customerID, nil)
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(expiredCustomer, nil)
+
+	// tm_delete must be cleared, otherwise the row stays half-recovered: active but
+	// still invisible to every deleted:false filter and still blocking re-signup.
+	mockDB.EXPECT().CustomerUpdate(ctx, customerID, map[customer.Field]any{
+		customer.FieldEmailVerified: true,
+		customer.FieldStatus:        string(customer.StatusActive),
+		customer.FieldTMDelete:      nil,
+	}).Return(nil)
+
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, token).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(recovered, nil)
+	mockReq.EXPECT().AgentV1PasswordForgot(ctx, gomock.Any(), "legacy@test.com").Return(nil)
+
+	res, err := h.EmailVerify(ctx, token)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.Customer.Status != customer.StatusActive {
+		t.Errorf("Wrong match. expect: active, got: %v", res.Customer.Status)
+	}
+}
+
+func Test_EmailVerify_RejectsDeletedAndFrozen(t *testing.T) {
+	tests := []struct {
+		name          string
+		status        customer.Status
+		emailVerified bool
+	}{
+		{"deleted", customer.StatusDeleted, false},
+		{"frozen", customer.StatusFrozen, false},
+		// Pins the guard ORDERING, not just its existence: with email_verified true
+		// the already-verified early return would happily hand back this deleted
+		// (PII-anonymized) row if the deny-list were moved below it.
+		{"deleted and already verified", customer.StatusDeleted, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &customerHandler{cache: mockCache, db: mockDB}
+
+			ctx := context.Background()
+			token := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+			customerID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+
+			mockCache.EXPECT().EmailVerifyTokenGet(ctx, token).Return(customerID, nil)
+			mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+			mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+			mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+				ID:            customerID,
+				Status:        tt.status,
+				EmailVerified: tt.emailVerified,
+			}, nil)
+
+			// no CustomerUpdate expected: a deleted (PII-anonymized) or frozen row
+			// must never be revived by a stale token. No EmailVerifyTokenDelete
+			// either: reaching the already-verified early return is itself the
+			// failure this case guards against.
+			if _, err := h.EmailVerify(ctx, token); err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+		})
+	}
+}
+
+func Test_EmailVerify_ActiveVerifiedTokenStillSucceeds(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{cache: mockCache, db: mockDB}
+
+	ctx := context.Background()
+	token := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	customerID := uuid.FromStringOrNil("22222222-3333-4444-5555-666666666666")
+
+	mockCache.EXPECT().EmailVerifyTokenGet(ctx, token).Return(customerID, nil)
+	mockCache.EXPECT().VerifyLockAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().VerifyLockRelease(ctx, customerID).Return(nil)
+	mockDB.EXPECT().CustomerGet(ctx, customerID).Return(&customer.Customer{
+		ID:            customerID,
+		Status:        customer.StatusActive,
+		EmailVerified: true,
+	}, nil)
+	// the stale token must still be consumed
+	mockCache.EXPECT().EmailVerifyTokenDelete(ctx, token).Return(nil)
+
+	// An allow-list of {initial, expired} would reject this and break the
+	// idempotent path the design's deny-list decision exists to protect.
+	if _, err := h.EmailVerify(ctx, token); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_EmailVerifyResend_SendsForExpiredCustomerWithAgent(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &customerHandler{db: mockDB, cache: mockCache, reqHandler: mockReq}
+
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	email := "legacy@test.com"
+
+	// no deleted filter: legacy expired rows still carry tm_delete
+	mockDB.EXPECT().CustomerList(ctx, uint64(100), "", map[customer.Field]any{
+		customer.FieldEmail: email,
+	}).Return([]*customer.Customer{
+		{ID: customerID, Email: email, EmailVerified: false, Status: customer.StatusExpired},
+	}, nil)
+
+	mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), map[amagent.Field]any{
+		amagent.FieldDeleted:  false,
+		amagent.FieldUsername: email,
+	}).Return([]amagent.Agent{{}}, nil)
+
+	mockCache.EXPECT().ResendCooldownAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().ResendCountIncr(ctx, customerID, gomock.Any()).Return(int64(1), nil)
+	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), customerID, gomock.Any()).Return(nil)
+	mockReq.EXPECT().EmailV1EmailSend(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+
+	if err := h.EmailVerifyResend(ctx, email); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_EmailVerifyResend_SkipsWithoutSending(t *testing.T) {
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	email := "x@test.com"
+
+	tests := []struct {
+		name              string
+		customers         []*customer.Customer
+		agents            []amagent.Agent
+		expectAgentLookup bool
+	}{
+		{
+			name:      "no customer",
+			customers: []*customer.Customer{},
+		},
+		{
+			name:      "already verified",
+			customers: []*customer.Customer{{ID: customerID, Email: email, EmailVerified: true, Status: customer.StatusActive}},
+		},
+		{
+			name:      "frozen",
+			customers: []*customer.Customer{{ID: customerID, Email: email, EmailVerified: false, Status: customer.StatusFrozen}},
+		},
+		{
+			name:      "deleted",
+			customers: []*customer.Customer{{ID: customerID, Email: email, EmailVerified: false, Status: customer.StatusDeleted}},
+		},
+		{
+			name:              "no live agent",
+			customers:         []*customer.Customer{{ID: customerID, Email: email, EmailVerified: false, Status: customer.StatusExpired}},
+			agents:            []amagent.Agent{},
+			expectAgentLookup: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &customerHandler{db: mockDB, cache: mockCache, reqHandler: mockReq}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return(tt.customers, nil)
+			if tt.expectAgentLookup {
+				mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return(tt.agents, nil)
+			}
+
+			// no cooldown, no token, no email in any of these branches
+			if err := h.EmailVerifyResend(ctx, email); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EmailVerifyResend_RespectsCooldownAndCap(t *testing.T) {
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	email := "x@test.com"
+
+	tests := []struct {
+		name          string
+		cooldownOK    bool
+		count         int64
+		expectCounter bool
+		expectSend    bool
+	}{
+		{name: "inside cooldown", cooldownOK: false, expectCounter: false, expectSend: false},
+		// The two rows below straddle the cap boundary. resendCountMax is 5 and the
+		// counter is post-increment, so the 5th send must still go out and the 6th
+		// must not. Asserting only the rejecting side would let "n > resendCountMax"
+		// silently become "n >= resendCountMax" (an effective cap of 4).
+		{name: "at daily cap - still sends", cooldownOK: true, count: 5, expectCounter: true, expectSend: true},
+		{name: "over daily cap", cooldownOK: true, count: 6, expectCounter: true, expectSend: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &customerHandler{db: mockDB, cache: mockCache, reqHandler: mockReq}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return([]*customer.Customer{
+				{ID: customerID, Email: email, EmailVerified: false, Status: customer.StatusInitial},
+			}, nil)
+			mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return([]amagent.Agent{{}}, nil)
+			mockCache.EXPECT().ResendCooldownAcquire(ctx, customerID, gomock.Any()).Return(tt.cooldownOK, nil)
+			if tt.expectCounter {
+				mockCache.EXPECT().ResendCountIncr(ctx, customerID, gomock.Any()).Return(tt.count, nil)
+			}
+			// When expectSend is false, EmailVerifyTokenSet / EmailV1EmailSend are left
+			// unexpected on purpose: gomock fails the test if they are called anyway.
+			if tt.expectSend {
+				mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), customerID, gomock.Any()).Return(nil)
+				mockReq.EXPECT().EmailV1EmailSend(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+			}
+
+			if err := h.EmailVerifyResend(ctx, email); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestResendConstants(t *testing.T) {
+	// Pinned exactly, not only relative to each other. Both values are published as
+	// fact in bin-api-manager/docs/operations.md, docsdev/source/auth_overview.rst and
+	// docsdev/source/quickstart_signup.rst; every other test passes gomock.Any() for
+	// the TTL, so without these assertions a change here would silently make the
+	// user-facing documentation wrong.
+	if resendCooldownTTL != 60*time.Second {
+		t.Errorf("resendCooldownTTL = %v, expected %v", resendCooldownTTL, 60*time.Second)
+	}
+	if resendCountMax != 5 {
+		t.Errorf("resendCountMax = %v, expected %v", resendCountMax, 5)
+	}
+	// The counter window is what makes the cap a *daily* cap.
+	if resendCountTTL != 24*time.Hour {
+		t.Errorf("resendCountTTL = %v, expected %v", resendCountTTL, 24*time.Hour)
+	}
+}
+
+func Test_EmailVerifyResend_SkipsDeletedRowAndPicksOlderRecoverable(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &customerHandler{db: mockDB, cache: mockCache, reqHandler: mockReq}
+
+	ctx := context.Background()
+	newerDeletedID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001")
+	olderExpiredID := uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-000000000002")
+	email := "shared@test.com"
+
+	// CustomerList returns tm_create DESC, so the deleted row comes first.
+	mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return([]*customer.Customer{
+		{ID: newerDeletedID, Email: email, EmailVerified: false, Status: customer.StatusDeleted},
+		{ID: olderExpiredID, Email: email, EmailVerified: false, Status: customer.StatusExpired},
+	}, nil)
+
+	mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return([]amagent.Agent{{}}, nil)
+
+	// the older recoverable row must be the one acted on
+	mockCache.EXPECT().ResendCooldownAcquire(ctx, olderExpiredID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().ResendCountIncr(ctx, olderExpiredID, gomock.Any()).Return(int64(1), nil)
+	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), olderExpiredID, gomock.Any()).Return(nil)
+	mockReq.EXPECT().EmailV1EmailSend(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+
+	if err := h.EmailVerifyResend(ctx, email); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+// Test_EmailVerifyResend_FailsClosedOnDependencyErrors pins the fail-closed
+// contract of every error branch on the resend path.
+//
+// This is a public, unauthenticated endpoint that sends mail, and the cooldown
+// plus the daily cap are the only per-account mailbomb defense it has. A
+// plausible-looking future change ("do not let Redis flakiness block account
+// recovery") could turn any of these branches into log-and-continue and silently
+// remove that defense during a Redis degradation. Each case therefore asserts
+// that no email leaves the process when a dependency fails, using the same
+// leave-the-mock-unexpected pattern as the cooldown/cap table: gomock fails the
+// test if an unexpected call happens.
+func Test_EmailVerifyResend_FailsClosedOnDependencyErrors(t *testing.T) {
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	email := "x@test.com"
+	errBoom := fmt.Errorf("boom")
+
+	target := []*customer.Customer{
+		{ID: customerID, Email: email, EmailVerified: false, Status: customer.StatusInitial},
+	}
+
+	tests := []struct {
+		name  string
+		setup func(ctx context.Context, mockDB *dbhandler.MockDBHandler, mockCache *cachehandler.MockCacheHandler, mockReq *requesthandler.MockRequestHandler)
+	}{
+		{
+			name: "customer list error",
+			setup: func(ctx context.Context, mockDB *dbhandler.MockDBHandler, mockCache *cachehandler.MockCacheHandler, mockReq *requesthandler.MockRequestHandler) {
+				mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return(nil, errBoom)
+				// AgentV1AgentList, ResendCooldownAcquire, ResendCountIncr,
+				// EmailVerifyTokenSet and EmailV1EmailSend stay unexpected on purpose.
+			},
+		},
+		{
+			name: "agent list error",
+			setup: func(ctx context.Context, mockDB *dbhandler.MockDBHandler, mockCache *cachehandler.MockCacheHandler, mockReq *requesthandler.MockRequestHandler) {
+				mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return(target, nil)
+				mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return(nil, errBoom)
+			},
+		},
+		{
+			name: "cooldown acquire error",
+			setup: func(ctx context.Context, mockDB *dbhandler.MockDBHandler, mockCache *cachehandler.MockCacheHandler, mockReq *requesthandler.MockRequestHandler) {
+				mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return(target, nil)
+				mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return([]amagent.Agent{{}}, nil)
+				mockCache.EXPECT().ResendCooldownAcquire(ctx, customerID, gomock.Any()).Return(false, errBoom)
+			},
+		},
+		{
+			name: "count increment error",
+			setup: func(ctx context.Context, mockDB *dbhandler.MockDBHandler, mockCache *cachehandler.MockCacheHandler, mockReq *requesthandler.MockRequestHandler) {
+				mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return(target, nil)
+				mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return([]amagent.Agent{{}}, nil)
+				mockCache.EXPECT().ResendCooldownAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+				mockCache.EXPECT().ResendCountIncr(ctx, customerID, gomock.Any()).Return(int64(0), errBoom)
+				// No refund here: the increment itself failed, so there is nothing to
+				// give back. ResendCountDecr stays unexpected.
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &customerHandler{db: mockDB, cache: mockCache, reqHandler: mockReq}
+			ctx := context.Background()
+
+			tt.setup(ctx, mockDB, mockCache, mockReq)
+
+			// Always nil: the endpoint must never turn an internal fault into a
+			// distinguishable response, or it becomes an email-existence oracle.
+			if err := h.EmailVerifyResend(ctx, email); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+// Test_EmailVerifyResend_RefundsCountOnSendError pins that a failed send does not
+// burn the customer's daily budget. Without the refund an email-manager outage
+// would exhaust all resendCountMax attempts with zero delivered mail and lock the
+// customer out for a full day once the service recovers.
+func Test_EmailVerifyResend_RefundsCountOnSendError(t *testing.T) {
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	email := "x@test.com"
+
+	tests := []struct {
+		name      string
+		refundErr error
+	}{
+		{name: "refund succeeds", refundErr: nil},
+		// A failing refund must stay non-fatal: the caller still gets nil.
+		{name: "refund itself fails", refundErr: fmt.Errorf("refund boom")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &customerHandler{db: mockDB, cache: mockCache, reqHandler: mockReq}
+			ctx := context.Background()
+
+			mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return([]*customer.Customer{
+				{ID: customerID, Email: email, EmailVerified: false, Status: customer.StatusInitial},
+			}, nil)
+			mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return([]amagent.Agent{{}}, nil)
+			mockCache.EXPECT().ResendCooldownAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+			mockCache.EXPECT().ResendCountIncr(ctx, customerID, gomock.Any()).Return(int64(1), nil)
+			mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), customerID, gomock.Any()).Return(nil)
+			mockReq.EXPECT().EmailV1EmailSend(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("send boom"))
+
+			// The refund is the assertion: gomock fails if it is not called.
+			mockCache.EXPECT().ResendCountDecr(ctx, customerID).Return(tt.refundErr)
+
+			if err := h.EmailVerifyResend(ctx, email); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+// Test_EmailVerifyResend_NoRefundOnSuccess pins the other half of the refund
+// contract: a delivered mail must consume the budget it took.
+func Test_EmailVerifyResend_NoRefundOnSuccess(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &customerHandler{db: mockDB, cache: mockCache, reqHandler: mockReq}
+	ctx := context.Background()
+	customerID := uuid.FromStringOrNil("7e6245d5-21b3-4ca7-97ca-069729c87974")
+	email := "x@test.com"
+
+	mockDB.EXPECT().CustomerList(ctx, uint64(100), "", gomock.Any()).Return([]*customer.Customer{
+		{ID: customerID, Email: email, EmailVerified: false, Status: customer.StatusInitial},
+	}, nil)
+	mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), gomock.Any()).Return([]amagent.Agent{{}}, nil)
+	mockCache.EXPECT().ResendCooldownAcquire(ctx, customerID, gomock.Any()).Return(true, nil)
+	mockCache.EXPECT().ResendCountIncr(ctx, customerID, gomock.Any()).Return(int64(1), nil)
+	mockCache.EXPECT().EmailVerifyTokenSet(ctx, gomock.Any(), customerID, gomock.Any()).Return(nil)
+	mockReq.EXPECT().EmailV1EmailSend(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+
+	// ResendCountDecr is left unexpected: refunding a successful send would hand
+	// back the cap and defeat it.
+	if err := h.EmailVerifyResend(ctx, email); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}

@@ -4349,6 +4349,20 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerEmailVerify(ctx, tok
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerEmailVerify", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerEmailVerify), ctx, token)
 }
 
+// CustomerV1CustomerEmailVerifyResend mocks base method.
+func (m *MockRequestHandler) CustomerV1CustomerEmailVerifyResend(ctx context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerV1CustomerEmailVerifyResend", ctx, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerV1CustomerEmailVerifyResend indicates an expected call of CustomerV1CustomerEmailVerifyResend.
+func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerEmailVerifyResend(ctx, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerV1CustomerEmailVerifyResend", reflect.TypeOf((*MockRequestHandler)(nil).CustomerV1CustomerEmailVerifyResend), ctx, arg1)
+}
+
 // CustomerV1CustomerFreeze mocks base method.
 func (m *MockRequestHandler) CustomerV1CustomerFreeze(ctx context.Context, customerID uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

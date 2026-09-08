@@ -4732,6 +4732,37 @@
         }
       }
     },
+    "/auth/email-verify-resend": {
+      "post": {
+        "summary": "Resend the customer email verification link.",
+        "description": "Issues a new email verification token and sends it to the given address.\n\nThis endpoint always responds `200` with an empty body, whether or not an\naccount exists for the address. That is deliberate: a differentiated response\nwould let an unauthenticated caller test which addresses are registered.\n\nSending is rate limited per account (a short cooldown between sends and a\ndaily cap). Requests that exceed either limit still return `200` without\nsending.\n",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBodyAuthEmailVerifyResendPOST"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request accepted. The body is always an empty object. This response does\nnot indicate whether an account exists or whether an email was sent.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/unregister": {
       "post": {
         "summary": "Schedule or immediately execute account deletion (self-service).",
@@ -33161,6 +33192,21 @@
             "type": "string",
             "description": "64-character lowercase hexadecimal verification token. Sent to the customer's email after `POST /auth/signup`.",
             "example": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6abcd"
+          }
+        }
+      },
+      "RequestBodyAuthEmailVerifyResendPOST": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "description": "Request body for POST /auth/email-verify-resend (verification email resend).",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The email address the account was registered with.",
+            "example": "simone.costa@example.com"
           }
         }
       },

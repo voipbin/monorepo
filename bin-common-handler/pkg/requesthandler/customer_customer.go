@@ -232,6 +232,32 @@ func (r *requestHandler) CustomerV1CustomerEmailVerify(ctx context.Context, toke
 	return &res, nil
 }
 
+// CustomerV1CustomerEmailVerifyResend asks customer-manager to re-send the signup
+// verification email for the given address.
+func (r *requestHandler) CustomerV1CustomerEmailVerifyResend(ctx context.Context, email string) error {
+	uri := "/v1/customers/email_verify_resend"
+
+	reqData := csrequest.V1DataCustomersEmailVerifyResendPost{
+		Email: email,
+	}
+
+	m, err := json.Marshal(reqData)
+	if err != nil {
+		return err
+	}
+
+	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPost, "customer/customers/email_verify_resend", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return err
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
+	return nil
+}
+
 // CustomerV1CustomerUpdateBillingAccountID sends a request to customer-manager
 // to update the customer's billing account id.
 func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error) {

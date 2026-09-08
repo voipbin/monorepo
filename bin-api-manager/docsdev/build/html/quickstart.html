@@ -655,6 +655,7 @@
 <li><p>Click the verification link in the email to verify your address.</p></li>
 <li><p>You will receive a welcome email with instructions to set your password.</p></li>
 </ol>
+<p>If the link has expired (verification links are valid for 24 hours, and an unverified signup is left open for 72 hours), the page it opens will offer to send you a new one. Enter your email address there and follow the fresh link.</p>
 <p>Once your password is set, you can log in to the <a class="reference external" href="https://admin.voipbin.net">admin console</a> and start making API requests.</p>
 </section>
 <section id="sign-up-via-api">
@@ -693,6 +694,7 @@
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> (String) is your API key. Use it immediately for authentication — see <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
 <p>A verification email is also sent to the email address you provided. Click the link in the email to verify your address and activate your account. After verification, you will receive a welcome email with instructions to set your password.</p>
+<p>If that email is lost or the link expires, request a new one with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> (body: <code class="docutils literal notranslate"><span class="pre">{&quot;email&quot;:</span> <span class="pre">&quot;your-email&#64;example.com&quot;}</span></code>). Like signup, it always returns HTTP 200 with an empty body, so the response does not tell you whether an email was sent. Sends are limited to one per 60 seconds and 5 per 24 hours per account. See <a class="reference internal" href="auth_overview.html#auth-overview"><span class="std std-ref">Auth Overview</span></a> for details.</p>
 </section>
 <section id="troubleshooting">
 <h4>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h4>
@@ -709,6 +711,14 @@
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Missing required fields (<code class="docutils literal notranslate"><span class="pre">email</span></code> or <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code>) or <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code> is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
 <li><p><strong>Fix:</strong> Ensure the request body includes <code class="docutils literal notranslate"><span class="pre">&quot;email&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;accepted_tos&quot;:</span> <span class="pre">true</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Verification link expired / verification email never arrived:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Verification tokens are valid for 24 hours, and the email may have been filtered or lost.</p></li>
+<li><p><strong>Fix:</strong> Call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> with the registered email address, or use the resend form on the page the expired link opens. An account that already expired for want of verification can still be recovered this way.</p></li>
 </ul>
 </dd>
 </dl>

@@ -10,7 +10,11 @@ import (
 )
 
 const (
-	unverifiedMaxAge = time.Hour
+	// unverifiedMaxAge is how long an unverified signup is left usable before it
+	// is moved to StatusExpired. It is deliberately longer than
+	// emailVerifyTokenTTL so a user whose link expired can still ask for a new
+	// one (POST /auth/email-verify-resend) before the account is expired.
+	unverifiedMaxAge = 72 * time.Hour
 )
 
 // CleanupUnverified removes unverified customers older than unverifiedMaxAge.
@@ -25,9 +29,14 @@ func (h *customerHandler) CleanupUnverified(ctx context.Context) (int, error) {
 	cutoff := time.Now().Add(-unverifiedMaxAge)
 	cutoffStr := cutoff.Format("2006-01-02 15:04:05.000000")
 
+	// status=initial is required, not cosmetic: this filter is the only thing that
+	// stops an already-expired row from being re-selected on every run now that
+	// tm_delete is no longer set. Expressed as an allowlist rather than an
+	// exclusion so a future status is not silently swept in.
 	filters := map[customer.Field]any{
 		customer.FieldEmailVerified: false,
 		customer.FieldDeleted:       false,
+		customer.FieldStatus:        string(customer.StatusInitial),
 	}
 
 	customers, err := h.db.CustomerList(ctx, 100, cutoffStr, filters)
@@ -40,10 +49,11 @@ func (h *customerHandler) CleanupUnverified(ctx context.Context) (int, error) {
 	for _, c := range customers {
 		log.Infof("Expiring unverified customer. customer_id: %s, email: %s", c.ID, c.Email)
 
-		now := h.utilHandler.TimeNow()
+		// tm_delete is deliberately NOT set. Setting it (the behavior introduced by
+		// f1aeb4a59) makes Delete() and Freeze() permanently unreachable for this
+		// row and blocks the customer_deleted cascade forever.
 		fields := map[customer.Field]any{
-			customer.FieldStatus:   string(customer.StatusExpired),
-			customer.FieldTMDelete: now,
+			customer.FieldStatus: string(customer.StatusExpired),
 		}
 		if err := h.db.CustomerUpdate(ctx, c.ID, fields); err != nil {
 			log.Errorf("Could not expire customer. customer_id: %s, err: %v", c.ID, err)

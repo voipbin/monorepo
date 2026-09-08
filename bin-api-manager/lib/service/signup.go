@@ -108,6 +108,38 @@ func PostCustomerEmailVerify(c *gin.Context) {
 	c.JSON(200, res)
 }
 
+// RequestBodyEmailVerifyResendPOST is request body for POST /auth/email-verify-resend
+type RequestBodyEmailVerifyResendPOST struct {
+	Email string `json:"email" binding:"required"`
+}
+
+// PostCustomerEmailVerifyResend handles POST /auth/email-verify-resend request.
+// It always returns 200, including on a malformed body, so that no response
+// distinguishes a known address from an unknown one.
+func PostCustomerEmailVerifyResend(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostCustomerEmailVerifyResend",
+		"request_address": c.ClientIP(),
+	})
+	log.Debug("Processing email verification resend.")
+
+	// ShouldBindJSON, not BindJSON: BindJSON writes a 400 itself on failure, which
+	// would leak the difference between a malformed request and an accepted one.
+	var req RequestBodyEmailVerifyResendPOST
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Warnf("Could not bind the request body. err: %v", err)
+		c.JSON(200, gin.H{})
+		return
+	}
+
+	sh := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
+	if err := sh.CustomerEmailVerifyResend(c.Request.Context(), req.Email); err != nil {
+		log.Debugf("Email verification resend failed. err: %v", err)
+	}
+
+	c.JSON(200, gin.H{})
+}
+
 // GetCustomerEmailVerify handles GET /auth/email-verify request.
 // It serves a simple HTML page that auto-submits the verification token.
 func GetCustomerEmailVerify(c *gin.Context) {
@@ -139,6 +171,9 @@ const emailVerifyHTML = `<!DOCTYPE html>
   .message { padding: 12px; border-radius: 4px; margin-top: 16px; font-size: 14px; display: none; }
   .message.success { display: block; background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
   .message.error { display: block; background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+  #resend-box { margin-top: 24px; padding-top: 24px; border-top: 1px solid #eee; text-align: left; }
+  #resend-box p { margin-bottom: 12px; }
+  #resend-box input { width: 100%%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -147,6 +182,12 @@ const emailVerifyHTML = `<!DOCTYPE html>
   <p>Click the button below to verify your email address and activate your VoIPBin account.</p>
   <button id="verifyBtn" onclick="verify()">Verify Email</button>
   <div id="message" class="message"></div>
+  <div id="resend-box" style="display:none">
+    <p>Enter your email address and we will send a new verification link.</p>
+    <input id="resend-email" type="email" placeholder="you@example.com" autocomplete="email">
+    <button id="resend-btn" onclick="resend()">Send new link</button>
+    <p id="resend-msg" class="message"></p>
+  </div>
 </div>
 <script>
   var token = "%s";
@@ -167,15 +208,39 @@ const emailVerifyHTML = `<!DOCTYPE html>
         msgEl.className = 'message success';
         btn.style.display = 'none';
       } else {
-        msgEl.textContent = 'Your verification link has expired or is invalid. Please sign up again.';
+        msgEl.textContent = 'This verification link is no longer valid.';
         msgEl.className = 'message error';
-        btn.textContent = 'Verification Failed';
+        btn.style.display = 'none';
+        document.getElementById('resend-box').style.display = 'block';
       }
     }).catch(function() {
       msgEl.textContent = 'An error occurred. Please try again.';
       msgEl.className = 'message error';
       btn.disabled = false;
       btn.textContent = 'Verify Email';
+    });
+  }
+
+  function resend() {
+    var emailEl = document.getElementById('resend-email');
+    var outEl = document.getElementById('resend-msg');
+    var rbtn = document.getElementById('resend-btn');
+    rbtn.disabled = true;
+    fetch('/auth/email-verify-resend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailEl.value })
+    }).then(function() {
+      // Always the same copy, and always re-enabled. The API deliberately returns
+      // 200 for unknown addresses, and branching the message or the button state
+      // here would undo that.
+      outEl.textContent = 'If an account exists for that address, a new verification link is on its way.';
+      outEl.className = 'message success';
+      rbtn.disabled = false;
+    }).catch(function() {
+      outEl.textContent = 'If an account exists for that address, a new verification link is on its way.';
+      outEl.className = 'message success';
+      rbtn.disabled = false;
     });
   }
 </script>

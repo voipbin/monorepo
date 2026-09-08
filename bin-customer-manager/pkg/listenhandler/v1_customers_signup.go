@@ -97,3 +97,27 @@ func (h *listenHandler) processV1CustomersEmailVerifyPost(ctx context.Context, m
 
 	return res, nil
 }
+
+// processV1CustomersEmailVerifyResendPost handles POST /v1/customers/email_verify_resend request
+func (h *listenHandler) processV1CustomersEmailVerifyResendPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CustomersEmailVerifyResendPost",
+		"request": m,
+	})
+	log.Debug("Executing processV1CustomersEmailVerifyResendPost.")
+
+	var reqData request.V1DataCustomersEmailVerifyResendPost
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	// EmailVerifyResend swallows every non-fault outcome, so a 200 here says
+	// "request accepted", never "that address exists".
+	if err := h.customerHandler.EmailVerifyResend(ctx, reqData.Email); err != nil {
+		log.Errorf("Could not resend the verification email. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	return simpleResponse(200), nil
+}
