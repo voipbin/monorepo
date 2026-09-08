@@ -137,7 +137,7 @@ fail-open 전환(전면 장애 위험)과는 성격이 다르다. 로그인 경�
 **허용목록**이다(`boot.go:108`). **이것을 그대로 가져오면 두 가지가 깨진다.**
 
 1. **`initial`이 막힌다.** 가입 후 72시간 유예 중인 정상 사용자가 `initial`이며
-   (`cleanup.go:39`가 이 상태를 `expired`로 바꾼다), 이들을 막으면 VOIP-1490이 만든 온보딩 창이
+   (`cleanup.go:39`가 이 상태를 선택하고 `:56`이 `expired`로 바꾼다), 이들을 막으면 VOIP-1490이 만든 온보딩 창이
    무의미해진다.
 2. **`frozen`이 막히고, 그 결과 frozen 자가 복구 UX가 끊긴다.** frozen 분기가 `details`로 안내하는
    복구 엔드포인트는 `DELETE /auth/unregister`이고(`authenticate.go:273`), 그 경로는
@@ -210,9 +210,17 @@ username enumeration oracle이 생긴다. `AuthPasswordForgot`이 정확히 그 
   같은 패키지의 `ratelimit.go:22-31`이 이미 쓰는 방식을 따른다
   (`pkg/servicehandler/auth_delegate.go:19`의 `promauto` 스타일이 아니다)
 - 라벨: **`identity_type`**(agent / accesskey / delegate)과 **에러 클래스**(timeout / not_found / other).
-  에러 클래스 판정은 `errors.Is(err, context.DeadlineExceeded)` -> timeout,
-  `errors.Is(err, commonrequesthandler.ErrNotFound)` -> not_found, 그 외 other로 한다.
-  구현자가 임의로 정하지 않도록 여기서 못박는다
+  에러 클래스 판정 순서를 못박는다.
+  `errors.Is(err, circuitbreakerhandler.ErrCircuitOpen)` -> `circuit_open`,
+  `errors.Is(err, context.DeadlineExceeded)` -> `timeout`,
+  `errors.Is(err, commonrequesthandler.ErrNotFound)` -> `not_found`, 그 외 `other`.
+
+  **`circuit_open`을 별도로 두는 것이 중요하다.** 요청 경로에는 회로차단기가 항상 걸려 있고
+  (`requesthandler/main.go:1608`, `send_request.go:51-55`), 3절이 이 카운터에 위임한 바로 그
+  장애 시나리오에서 차단기가 열리면 이후 호출이 전부 `ErrCircuitOpen`
+  (`circuitbreakerhandler/main.go:101`)을 반환한다. 이를 `other`로 뭉치면 정작 판단이 필요한
+  구간이 관측되지 않는다. 연결/채널 실패는 `%v`로 포맷되어 unwrap이 안 되므로
+  (`rabbitmqhandler/publish.go:55-58, 64-74, 106-108`) 어차피 `other`로 남는다는 점도 감안할 것
 
 `identity_type`이 핵심이다. fail-closed 전환이 안전한지는 **어떤 identity가 이 분기를 타느냐**에 달려 있다.
 accesskey가 이 분기를 타는 일은 드물다. `AccesskeyRawGetByToken`도 같은 customer-manager를 호출하므로
@@ -246,8 +254,27 @@ details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 | 구분 | 건수 | 복구 경로 |
 |---|---|---|
 | 살아있는 agent 보유 | 92 | `POST /auth/email-verify-resend` 로 자가 복구 |
+| agent 없음 + `tm_delete` 설정됨 (VOIP-1490 이전 만료) | 101 | 재발송 불가(`resendTarget`이 nil). **재가입은 가능** |
+| agent 없음 + `tm_delete` NULL (VOIP-1490 이후 만료) | 현재 0 | **세 문이 모두 닫힌다.** 아래 참조 |
 
-| agent 없음 | 101 | 재발송 불가(`resendTarget`이 nil 반환). **재가입만 가능** |
+**세 번째 집단이 존재한다.** 초안은 두 갈래로만 봤는데 틀렸다.
+
+`validateCreate`의 고객 중복 검사는 `FieldDeleted: false` + `FieldEmail`이다
+(`customerhandler/customer.go:63-75`). 즉 재가입 가능 여부는 전적으로 `tm_delete`에 달려 있다.
+
+- **VOIP-1490 이전** 만료 행은 `tm_delete`가 설정되어 있어 이 필터에 걸리지 않는다 -> 재가입 가능
+- **VOIP-1490 이후** 만료 행은 의도적으로 `tm_delete`를 설정하지 않는다(`cleanup.go:52-57`).
+  `deleted=false, status=expired`이므로 중복 검사에 **걸린다** -> 재가입 불가
+
+여기에 agent까지 없으면 재발송도 거부되고(`signup.go:449-450`), 이 설계가 로그인까지 막는다.
+**세 문이 전부 닫힌다.**
+
+현재 모수는 0이다(agent 없는 101건은 전부 VOIP-1490 이전 행이다). 그러나 앞으로 만료되는 계정 중
+agent 생성이 실패한 건이 나오면 그때부터 발생한다. VOIP-1490 설계서 3-4-1이 이미 이 구멍을
+기록해 두었고, **이 설계는 그것을 더 확실하게 만든다.**
+
+따라서 4-2의 안내 문구에서 **재가입을 무조건 약속하지 않는다.** 재발송을 우선 안내하고,
+그것이 통하지 않으면 문의처로 보낸다. 이 막다른 길 자체는 5절에 후속으로 기록한다.
 
 에러 메시지가 재발송만 안내하면 101건에게는 막다른 길이 된다.
 
@@ -261,8 +288,9 @@ details: [{"recovery_endpoint": "POST /auth/email-verify-resend"}]
 customer_id 조인으로 구한 값이라면 상한이다. 아래 결론은 어느 쪽이든 바뀌지 않는다.)
 
 **그럼에도 분기하지 않기로 한다.** 이유는 불가능해서가 아니라 메시지 복잡도에 비해 이득이 작기
-때문이다. 두 경로를 모두 언급하는 문구 하나로 충분하다
-("인증 메일 재발송을 요청하거나, 계정이 없다면 다시 가입하십시오").
+때문이다. 문구 하나로 충분하다
+("인증 메일 재발송을 요청하십시오. 해결되지 않으면 support@voipbin.net으로 문의하십시오").
+**재가입을 약속하는 문구는 쓰지 않는다.** 위 세 번째 집단에게는 거짓이 된다.
 
 ### 4-4. 테스트
 
@@ -306,7 +334,11 @@ customer_id 조인으로 구한 값이라면 상한이다. 아래 결론은 어�
    다음 독자를 오도하는 것은 그 주석이므로 후속 티켓은 주석을 가리켜야 한다.
 3. `bin-customer-manager/pkg/listenhandler/v1_customers_freeze.go`가 모든 오류를 400으로 뭉갠다.
 4. fail-open -> fail-closed 전환 판단. 이번에 추가하는 카운터에 데이터가 쌓인 뒤.
-5. **registrar/kamailio 경로의 `StatusExpired` 미처리 (티켓 미등록).**
+5. **VOIP-1490 이후 만료되고 agent가 없는 계정은 복구 경로가 0개다 (티켓 미등록).**
+   재발송 불가(agent 없음), 재가입 불가(`tm_delete` NULL이라 `validateCreate`에 걸림),
+   로그인 불가(이 설계). 현재 모수 0이나 구조적으로 발생 가능하다. 4-3 참조.
+   VOIP-1492/1504와 함께 검토하는 것이 자연스럽다.
+6. **registrar/kamailio 경로의 `StatusExpired` 미처리 (티켓 미등록).**
    SIP 등록은 api-manager를 거치지 않으므로 이 게이트로는 닫히지 않는다. 193건의 SIP 자격증명은
    그대로 살아있다. 남은 표면 중 가장 크다.
    **그럼에도 이번에 다루지 않는 이유**: (i) 별개 서비스 경로라 이 티켓의 변경과 공유하는 코드가 없고,
