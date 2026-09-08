@@ -16,8 +16,13 @@ import (
 )
 
 func TestCleanupConstants(t *testing.T) {
-	if unverifiedMaxAge != time.Hour {
-		t.Errorf("unverifiedMaxAge = %v, expected %v", unverifiedMaxAge, time.Hour)
+	if unverifiedMaxAge != 72*time.Hour {
+		t.Errorf("unverifiedMaxAge = %v, expected %v", unverifiedMaxAge, 72*time.Hour)
+	}
+	// The window must stay strictly longer than the link TTL, otherwise a user
+	// whose link expired has no interval in which to ask for a new one.
+	if emailVerifyTokenTTL >= unverifiedMaxAge {
+		t.Errorf("emailVerifyTokenTTL = %v, expected less than unverifiedMaxAge %v", emailVerifyTokenTTL, unverifiedMaxAge)
 	}
 }
 

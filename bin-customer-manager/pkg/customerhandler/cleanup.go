@@ -10,7 +10,11 @@ import (
 )
 
 const (
-	unverifiedMaxAge = time.Hour
+	// unverifiedMaxAge is how long an unverified signup is left usable before it
+	// is moved to StatusExpired. It is deliberately longer than
+	// emailVerifyTokenTTL so a user whose link expired can still ask for a new
+	// one (POST /auth/email-verify-resend) before the account is expired.
+	unverifiedMaxAge = 72 * time.Hour
 )
 
 // CleanupUnverified removes unverified customers older than unverifiedMaxAge.

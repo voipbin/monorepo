@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	emailVerifyTokenTTL    = time.Hour
+	emailVerifyTokenTTL    = 24 * time.Hour
 	emailVerifyTokenLen    = 32                   // 32 bytes = 64 hex chars
 	defaultAccesskeyExpire = 365 * 24 * time.Hour // 1 year
 )
@@ -114,7 +114,9 @@ func (h *customerHandler) Signup(
 	// Best-effort verification email: generate token, store in Redis, and send email.
 	// Failures here are non-fatal because the customer and access key are already committed
 	// and cannot be rolled back. The client needs the SignupResult to authenticate.
-	// If the verification email fails, the customer can re-request signup to trigger a new email.
+	// If the verification email fails or expires, the customer requests a new one via
+	// POST /auth/email-verify-resend. Re-running signup does NOT work: validateCreate
+	// rejects the duplicate email.
 	if err := h.sendSignupVerification(ctx, id, email); err != nil {
 		log.Errorf("Could not complete verification email flow. err: %v", err)
 	}
@@ -250,8 +252,9 @@ func (h *customerHandler) sendVerificationEmail(ctx context.Context, email strin
 	subject := "VoIPBin - Verify Your Email"
 	content := fmt.Sprintf(
 		"Welcome to VoIPBin!\n\n"+
-			"Click the link below to verify your email address (expires in 1 hour):\n\n"+
+			"Click the link below to verify your email address (expires in 24 hours):\n\n"+
 			"%s\n\n"+
+			"If the link has expired, you can request a new one from the verification page.\n\n"+
 			"If you did not create this account, you can safely ignore this email.",
 		verifyLink,
 	)
