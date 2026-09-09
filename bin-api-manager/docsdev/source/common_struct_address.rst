@@ -7,7 +7,7 @@ Address
 
 Address
 -------
-Defines source/destination address. This structure is used throughout VoIPBIN wherever communication endpoints are specified, including calls (``POST /calls``), messages (``POST /messages``), flows (connect/call actions), and number configurations.
+Defines source/destination address. This structure is used throughout VoIPBin wherever communication endpoints are specified, including calls (``POST /calls``), messages (``POST /messages``), flows (connect/call actions), and number configurations.
 
 .. code::
 

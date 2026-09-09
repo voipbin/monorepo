@@ -9,7 +9,7 @@ Accesskey API Overview
    * **Cost:** Free (no charges for accesskey operations)
    * **Async:** No. All accesskey operations are synchronous and return immediately.
 
-The Accesskey API provides a secure and efficient way to authenticate and interact with the VoIPBIN platform. It utilizes access keys as API tokens to enable authorized access to API endpoints. This ensures seamless integration while maintaining the security and integrity of your operations.
+The Accesskey API provides a secure and efficient way to authenticate and interact with the VoIPBin platform. It utilizes access keys as API tokens to enable authorized access to API endpoints. This ensures seamless integration while maintaining the security and integrity of your operations.
 
 .. note:: **AI Implementation Hint**
 

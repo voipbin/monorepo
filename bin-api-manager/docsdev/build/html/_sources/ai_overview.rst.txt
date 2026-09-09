@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable (credit deduction per AI session based on LLM, TTS, and STT usage)
    * **Async:** Yes. AI sessions run asynchronously during calls. Monitor via ``GET https://api.voipbin.net/v1.0/calls/{id}`` or WebSocket events.
 
-VoIPBIN's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.
+VoIPBin's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.
 
 .. note:: **AI Implementation Hint**
 
@@ -20,12 +20,12 @@ How it works
 
 Architecture Overview
 ---------------------
-VoIPBIN's AI system consists of two main components working together: the AI Manager (Go) for orchestration and the Pipecat Manager (Python) for real-time audio processing.
+VoIPBin's AI system consists of two main components working together: the AI Manager (Go) for orchestration and the Pipecat Manager (Python) for real-time audio processing.
 
 ::
 
     +-----------------------------------------------------------------------+
-    |                        VoIPBIN AI Architecture                        |
+    |                        VoIPBin AI Architecture                        |
     +-----------------------------------------------------------------------+
 
                                  +-------------------+
@@ -63,7 +63,7 @@ Audio flows through the system with sample rate conversion between components:
     |                           Audio Flow                                  |
     +-----------------------------------------------------------------------+
 
-    User (Phone)                    VoIPBIN                    AI Providers
+    User (Phone)                    VoIPBin                    AI Providers
          |                               |                           |
          |  RTP (8kHz PCM)               |                           |
          +------------------------------>|                           |
@@ -159,7 +159,7 @@ An AI call goes through several stages from initialization to termination:
 
 Action Component
 ----------------
-The AI is integrated as a configurable action within VoIPBIN flows. When a call reaches an AI action, the system triggers the AI to generate responses based on the provided prompt.
+The AI is integrated as a configurable action within VoIPBin flows. When a call reaches an AI action, the system triggers the AI to generate responses based on the provided prompt.
 
 .. image:: _static/images/ai_overview_overview.png
     :alt: AI component in action builder
@@ -167,7 +167,7 @@ The AI is integrated as a configurable action within VoIPBIN flows. When a call 
 
 TTS/STT + AI Engine
 -------------------
-VoIPBIN's AI uses Speech-to-Text (STT) to convert spoken words into text, processes through the LLM, and Text-to-Speech (TTS) converts responses back to audio. This happens in real-time for seamless conversations.
+VoIPBin's AI uses Speech-to-Text (STT) to convert spoken words into text, processes through the LLM, and Text-to-Speech (TTS) converts responses back to audio. This happens in real-time for seamless conversations.
 
 .. image:: _static/images/ai_overview_stt_tts.png
     :alt: AI implementation using TTS/STT + AI Engine
@@ -175,7 +175,7 @@ VoIPBIN's AI uses Speech-to-Text (STT) to convert spoken words into text, proces
 
 Voice Detection and Play Interruption
 -------------------------------------
-VoIPBIN incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the user's voice, it immediately stops TTS and routes the user's speech to STT and then to the LLM. This ensures user input is prioritized, enabling dynamic interaction that resembles real conversation.
+VoIPBin incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the user's voice, it immediately stops TTS and routes the user's speech to STT and then to the LLM. This ensures user input is prioritized, enabling dynamic interaction that resembles real conversation.
 
 ::
 
@@ -218,11 +218,11 @@ VoIPBIN incorporates voice detection for natural conversational flow. While the 
 
 Context Retention
 -----------------
-VoIPBIN's AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.
+VoIPBin's AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.
 
 Multilingual Support
 --------------------
-VoIPBIN's AI supports multiple languages. The STT language is configured on the AI resource itself using the ``stt_language`` field in BCP-47 format (e.g., ``ko-KR``, ``en-US``). This tells the Speech-to-Text engine which language to listen for, improving recognition accuracy.
+VoIPBin's AI supports multiple languages. The STT language is configured on the AI resource itself using the ``stt_language`` field in BCP-47 format (e.g., ``ko-KR``, ``en-US``). This tells the Speech-to-Text engine which language to listen for, improving recognition accuracy.
 
 To support multiple languages, create separate AI configurations — one per language — and reference the appropriate ``ai_id`` in each flow action. When ``stt_language`` is omitted, the STT provider uses auto-detection.
 
@@ -448,7 +448,7 @@ Example Prompt:
 AI Talk
 =======
 
-**AI Talk** enables real-time conversational AI with voice in VoIPBIN, powered by high-quality TTS engines (ElevenLabs, Deepgram, OpenAI, etc.) for natural-sounding speech.
+**AI Talk** enables real-time conversational AI with voice in VoIPBin, powered by high-quality TTS engines (ElevenLabs, Deepgram, OpenAI, etc.) for natural-sounding speech.
 
 .. image:: _static/images/ai_overview_ai_talk.png
     :alt: AI Talk component in action builder
@@ -466,7 +466,7 @@ Key Features
 
 Built-in ElevenLabs Voice IDs
 ---------------------------------
-VoIPBIN uses a predefined set of voice IDs for various languages. Here are the default ElevenLabs Voice IDs currently in use:
+VoIPBin uses a predefined set of voice IDs for various languages. Here are the default ElevenLabs Voice IDs currently in use:
 
 =========================== ==================================== =================================== =================================
 Language                    Male Voice ID (Name)                 Female Voice ID (Name)              Neutral Voice ID (Name)
@@ -502,7 +502,7 @@ Polish                      ``H5xTcsAIeS5RAykjz57a`` (Alex)      ``W0sqKm1Sfw1Ez
 
 Other ElevenLabs Voice ID Options
 ---------------------------------
-VoIPBIN allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the *voipbin.tts.elevenlabs.voice_id* variable, you can override the default voice selection.
+VoIPBin allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the *voipbin.tts.elevenlabs.voice_id* variable, you can override the default voice selection.
 
 ..
 
@@ -515,7 +515,7 @@ See how to set the variables :ref:`here <variable-overview>`.
 Using AI in Conversations (SMS / LINE)
 ======================================
 
-VoIPBIN can run an AI agent inside a text conversation channel (SMS or LINE),
+VoIPBin can run an AI agent inside a text conversation channel (SMS or LINE),
 not only inside voice calls. The plumbing is the same ``ai_talk`` flow action
 used for voice; the difference is the reference type the AIcall is bound to.
 
@@ -622,7 +622,7 @@ Concurrency and Reliability
 AI Summary
 ==========
 
-The AI Summary feature in VoIPBIN generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.
+The AI Summary feature in VoIPBin generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.
 
 .. image:: _static/images/ai_overview_summary.png
     :alt: AI summary component in action builder
@@ -676,7 +676,7 @@ Since starting an AI summary action late in the call results in missing earlier 
 
 External AI Agent Integration
 =============================
-For users who prefer to use external AI services, VoIPBIN offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
+For users who prefer to use external AI services, VoIPBin offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
 
 MCP Server
 ----------
@@ -1052,7 +1052,7 @@ See :ref:`AI Audit Structure <ai-struct-aiaudit>` for the full field reference.
 AI Prompt Improvement Proposals
 ===============================
 
-VoIPbin can analyze multiple completed AI audits for a single AI and generate
+VoIPBin can analyze multiple completed AI audits for a single AI and generate
 an improved system prompt that addresses the failure patterns the audits
 surfaced. The improved prompt is produced by Gemini 2.5 Pro and returned for
 human review; nothing is applied to the live AI until you explicitly accept
@@ -1068,7 +1068,7 @@ Workflow
 
 1. Run audits via the AI Audit API on completed AI calls.
 2. ``POST https://api.voipbin.net/v1.0/aipromptproposals`` with the target
-   AI's id and a list of audit ids. VoIPbin returns ``202 Accepted`` and a
+   AI's id and a list of audit ids. VoIPBin returns ``202 Accepted`` and a
    proposal record in ``progressing`` status; generation runs asynchronously
    via Gemini 2.5 Pro.
 3. Poll ``GET https://api.voipbin.net/v1.0/aipromptproposals/{id}`` until
@@ -1076,7 +1076,7 @@ Workflow
    ``proposed_prompt``, and a ``rationale``. Render the diff client-side from
    ``original_prompt`` vs. ``proposed_prompt``.
 4. To apply: ``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/accept``.
-   VoIPbin writes a new ``AIPromptHistory`` row and updates the AI's
+   VoIPBin writes a new ``AIPromptHistory`` row and updates the AI's
    ``init_prompt`` in a single transaction. The proposal status becomes
    ``accepted``.
 5. To dismiss: ``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/reject``
@@ -1087,7 +1087,7 @@ Create a proposal
 
 ``POST https://api.voipbin.net/v1.0/aipromptproposals``
 
-Submits a set of completed audits and asks VoIPbin to generate an improved
+Submits a set of completed audits and asks VoIPBin to generate an improved
 ``init_prompt`` for the target AI.
 
 **Request body**

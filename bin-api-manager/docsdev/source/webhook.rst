@@ -3,7 +3,7 @@
 **************
 Webhook
 **************
-Configure HTTP webhook endpoints to receive real-time event notifications from VoIPBIN services.
+Configure HTTP webhook endpoints to receive real-time event notifications from VoIPBin services.
 
 **API Reference:** `Webhook endpoints <https://api.voipbin.net/redoc/#tag/Webhook>`_
 

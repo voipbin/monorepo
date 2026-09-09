@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free -- Talk messaging does not incur per-message charges.
    * **Async:** No. ``POST https://api.voipbin.net/v1.0/service_agents/talk_chats`` and ``POST https://api.voipbin.net/v1.0/service_agents/talk_messages`` return synchronously with the created resource. Real-time delivery to other participants is handled via WebSocket push events.
 
-VoIPBIN's Talk API provides a modern messaging platform for real-time communication between agents. With support for threading, reactions, and group conversations, Talk enables efficient team collaboration and internal communication.
+VoIPBin's Talk API provides a modern messaging platform for real-time communication between agents. With support for threading, reactions, and group conversations, Talk enables efficient team collaboration and internal communication.
 
 With the Talk API you can:
 
@@ -29,7 +29,7 @@ Talk provides a real-time messaging system where agents communicate through conv
 ::
 
     +----------+        +----------------+        +-----------+
-    | Agent A  |--API-->|    VoIPBIN     |--push->| Agent B   |
+    | Agent A  |--API-->|    VoIPBin     |--push->| Agent B   |
     +----------+        |   Talk Hub     |        +-----------+
                         +----------------+
                                |
@@ -54,7 +54,7 @@ Talk provides a real-time messaging system where agents communicate through conv
 
 Chat Types
 ----------
-VoIPBIN supports different chat types for various communication needs.
+VoIPBin supports different chat types for various communication needs.
 
 **Chat Type Values**
 
@@ -232,7 +232,7 @@ Send messages within talks with support for threading and media.
 
 ::
 
-    Agent                                   VoIPBIN              Other Participants
+    Agent                                   VoIPBin              Other Participants
        |                                       |                        |
        | POST /service_agents/talk_messages    |                        |
        +-------------------------------------->|                        |
@@ -403,7 +403,7 @@ Receive real-time message updates via WebSocket.
 
 ::
 
-    Agent                          VoIPBIN
+    Agent                          VoIPBin
        |                              |
        | WebSocket connect            |
        +----------------------------->|

@@ -5,11 +5,11 @@ Overview
 
 .. note:: **AI Context**
 
-   * **Complexity:** Low -- The SDK wraps the VoIPBIN REST API into language-specific libraries. No separate billing or API calls are specific to the SDK itself.
+   * **Complexity:** Low -- The SDK wraps the VoIPBin REST API into language-specific libraries. No separate billing or API calls are specific to the SDK itself.
    * **Cost:** Free. Using the SDK incurs no additional charges beyond the underlying API operations.
    * **Async:** N/A. The SDK is a client library; async behavior depends on the underlying API endpoints called.
 
-The VoIPBIN SDK (Software Development Kit) provides a set of tools and libraries that developers can use to create communication applications using the VoIPBIN platform. The SDK includes client libraries that wrap the VoIPBIN REST API, making it easier to integrate VoIPBIN's capabilities into your applications without dealing with low-level HTTP requests.
+The VoIPBin SDK (Software Development Kit) provides a set of tools and libraries that developers can use to create communication applications using the VoIPBin platform. The SDK includes client libraries that wrap the VoIPBin REST API, making it easier to integrate VoIPBin's capabilities into your applications without dealing with low-level HTTP requests.
 
 SDKs simplify the development process by providing:
 
@@ -21,7 +21,7 @@ SDKs simplify the development process by providing:
 
 Accesskey
 ---------
-Most SDK methods require an accesskey (String) to authenticate the user and authorize access to the VoIPBIN platform.
+Most SDK methods require an accesskey (String) to authenticate the user and authorize access to the VoIPBin platform.
 The accesskey is a long-lived API token obtained from ``GET https://api.voipbin.net/v1.0/accesskeys`` or created via ``POST https://api.voipbin.net/v1.0/accesskeys``.
 You can also generate an accesskey through the `admin console <https://admin.voipbin.net>`_.
 

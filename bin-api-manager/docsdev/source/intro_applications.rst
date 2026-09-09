@@ -5,13 +5,13 @@ Applications
 
 .. note:: **AI Context**
 
-   VoIPBIN applications are the building blocks for communication automation: **Flows** for call/message routing logic, **Agents** for queue-based call handling, **Campaigns** for outbound mass calling, **Conferences** for multi-party calls, **Conversations** for threaded messaging, **Queues** for call distribution, **Trunks** for BYOC SIP connectivity, and **Webhooks** for event delivery.
+   VoIPBin applications are the building blocks for communication automation: **Flows** for call/message routing logic, **Agents** for queue-based call handling, **Campaigns** for outbound mass calling, **Conferences** for multi-party calls, **Conversations** for threaded messaging, **Queues** for call distribution, **Trunks** for BYOC SIP connectivity, and **Webhooks** for event delivery.
 
 .. _intro-applications-flow:
 
 Flow
 ----
-The Flow feature in VoIPBIN allows users to define a set of instructions that guide the system on how to handle incoming calls. With Flow, users can customize call handling, creating personalized and efficient call experiences for their customers.
+The Flow feature in VoIPBin allows users to define a set of instructions that guide the system on how to handle incoming calls. With Flow, users can customize call handling, creating personalized and efficient call experiences for their customers.
 
 See detail at :ref:`here <flow-overview>`.
 
@@ -27,7 +27,7 @@ See detail at :ref:`here <agent-overview>`.
 
 Campaign
 --------
-The Campaign API in VoIPBIN provides services for massive outbound calling and messaging. With Campaigns, businesses can efficiently reach out to their target audience, delivering messages, announcements, or promotional content at scale.
+The Campaign API in VoIPBin provides services for massive outbound calling and messaging. With Campaigns, businesses can efficiently reach out to their target audience, delivering messages, announcements, or promotional content at scale.
 
 See detail at :ref:`here <campaign-overview>`.
 
@@ -43,7 +43,7 @@ See detail at :ref:`here <conference-overview>`.
 
 Conversation
 ------------
-VoIPBIN Conversations allow developers to build conversational and cross-channel messaging solutions with just a few API calls. This feature empowers businesses to engage with their customers through seamless and interactive conversations.
+VoIPBin Conversations allow developers to build conversational and cross-channel messaging solutions with just a few API calls. This feature empowers businesses to engage with their customers through seamless and interactive conversations.
 
 See detail at :ref:`here <conversation-overview>`.
 
@@ -51,7 +51,7 @@ See detail at :ref:`here <conversation-overview>`.
 
 Trunk
 ------
-A SIP Trunk resource in VoIPBIN describes a custom DNS hostname that can accept SIP traffic for a user's account. This feature facilitates efficient SIP communication, allowing users to manage custom DNS settings for their VoIPBIN account.
+A SIP Trunk resource in VoIPBin describes a custom DNS hostname that can accept SIP traffic for a user's account. This feature facilitates efficient SIP communication, allowing users to manage custom DNS settings for their VoIPBin account.
 
 See detail at :ref:`here <trunk-overview>`.
 
@@ -59,7 +59,7 @@ See detail at :ref:`here <trunk-overview>`.
 
 Queue
 -----
-Call queueing in VoIPBIN allows calls to be placed on hold, ensuring a systematic handling of incoming calls. Callers are put in a queue until they can be appropriately attended to or transferred to the desired party.
+Call queueing in VoIPBin allows calls to be placed on hold, ensuring a systematic handling of incoming calls. Callers are put in a queue until they can be appropriately attended to or transferred to the desired party.
 
 See detail at :ref:`here <queue-overview>`.
 
@@ -67,7 +67,7 @@ See detail at :ref:`here <queue-overview>`.
 
 Webhook
 -------
-Webhooks in VoIPBIN are a mechanism for receiving event data related to calls and associated resources on users' own servers. This feature allows users to stay updated on call events and take actions accordingly.
+Webhooks in VoIPBin are a mechanism for receiving event data related to calls and associated resources on users' own servers. This feature allows users to stay updated on call events and take actions accordingly.
 
 See detail at :ref:`here <webhook-overview>`.
 

@@ -3,7 +3,7 @@
 ************
 Storage
 ************
-Upload, download, and manage media files and other stored assets used across VoIPBIN services.
+Upload, download, and manage media files and other stored assets used across VoIPBin services.
 
 **API Reference:** `Storage endpoints <https://api.voipbin.net/redoc/#tag/Storage>`_
 

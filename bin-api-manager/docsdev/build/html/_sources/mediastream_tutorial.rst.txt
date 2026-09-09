@@ -61,7 +61,7 @@ This allows you to:
 Encapsulation Types
 -------------------
 
-VoIPBIN supports three encapsulation types for media streaming:
+VoIPBin supports three encapsulation types for media streaming:
 
 **1. RTP (Real-time Transport Protocol)**
 
@@ -306,7 +306,7 @@ For sending audio to a call without receiving audio back, use the ``external_med
             ]
         }'
 
-This creates a uni-directional stream where VoIPBIN:
+This creates a uni-directional stream where VoIPBin:
 1. Establishes the call
 2. Connects to your media server via WebSocket
 3. Receives audio from your server
@@ -316,9 +316,9 @@ This creates a uni-directional stream where VoIPBIN:
 
 .. code::
 
-    WebSocket connection from VoIPBIN
+    WebSocket connection from VoIPBin
     → Send audio chunks (PCM format for AudioSocket)
-    → VoIPBIN plays audio to call
+    → VoIPBin plays audio to call
 
 Common Use Cases
 ----------------
@@ -490,7 +490,7 @@ Connection Lifecycle
 
 .. code::
 
-    Client ←→ VoIPBIN
+    Client ←→ VoIPBin
     - Send audio: Binary frames with RTP packets
     - Receive audio: Binary frames with RTP packets
 

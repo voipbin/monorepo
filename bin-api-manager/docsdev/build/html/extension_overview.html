@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Extension" href="extension_struct_extension.html"><link rel="prev" title="Extension" href="extension.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,7 +648,7 @@
 <li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/extensions</span></code> returns immediately with the created extension. SIP device registration is a separate process handled by the SIP device itself.</p></li>
 </ul>
 </div>
-<p>VoIPBIN’s Extension API enables management of SIP endpoints that can register with VoIPBIN to receive inbound calls. Extensions provide the bridge between VoIPBIN’s cloud infrastructure and your SIP devices, softphones, or PBX systems.</p>
+<p>VoIPBin’s Extension API enables management of SIP endpoints that can register with VoIPBin to receive inbound calls. Extensions provide the bridge between VoIPBin’s cloud infrastructure and your SIP devices, softphones, or PBX systems.</p>
 <p>With the Extension API you can:</p>
 <ul class="simple">
 <li><p>Create extensions for SIP device registration</p></li>
@@ -700,14 +700,14 @@
 <li><p><strong>Extension</strong>: A SIP address of record (AOR) for device registration</p></li>
 <li><p><strong>Username</strong>: Authentication identity for the extension</p></li>
 <li><p><strong>Password</strong>: Secret credential for authentication</p></li>
-<li><p><strong>Registrar</strong>: VoIPBIN’s SIP registration server</p></li>
+<li><p><strong>Registrar</strong>: VoIPBin’s SIP registration server</p></li>
 </ul>
 </section>
 <section id="registration-process">
 <span id="extension-overview-registration"></span><h2>Registration Process<a class="headerlink" href="#registration-process" title="Link to this heading">¶</a></h2>
-<p>SIP devices must register with VoIPBIN to receive inbound calls.</p>
+<p>SIP devices must register with VoIPBin to receive inbound calls.</p>
 <p><strong>Registration Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SIP</span> <span class="n">Device</span>                                <span class="n">VoIPBIN</span> <span class="n">Registrar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SIP</span> <span class="n">Device</span>                                <span class="n">VoIPBin</span> <span class="n">Registrar</span>
 
 <span class="o">|</span>                                              <span class="o">|</span>
 <span class="o">|</span> <span class="mf">1.</span> <span class="n">REGISTER</span> <span class="p">(</span><span class="n">no</span> <span class="n">credentials</span><span class="p">)</span>                 <span class="o">|</span>
@@ -761,15 +761,15 @@
 </section>
 <section id="proxy-authentication-required">
 <h2>407 Proxy Authentication Required<a class="headerlink" href="#proxy-authentication-required" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN uses digest authentication for secure registration.</p>
+<p>VoIPBin uses digest authentication for secure registration.</p>
 <p><strong>Authentication Challenge Process</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Challenge</span> <span class="n">Response</span><span class="p">:</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="mi">407</span> <span class="n">Proxy</span> <span class="n">Authentication</span> <span class="n">Required</span>                                     <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">WWW</span><span class="o">-</span><span class="n">Authenticate</span><span class="p">:</span> <span class="n">Digest</span>                                              <span class="o">|</span>
-<span class="o">|</span>   <span class="n">realm</span><span class="o">=</span><span class="s2">&quot;voipbin.net&quot;</span><span class="p">,</span>                                               <span class="o">|</span>
-<span class="o">|</span>   <span class="n">nonce</span><span class="o">=</span><span class="s2">&quot;unique-random-string&quot;</span><span class="p">,</span>                                       <span class="o">|</span>
+<span class="o">|</span>   <span class="n">realm</span><span class="o">=</span><span class="s2">"voipbin.net"</span><span class="p">,</span>                                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">nonce</span><span class="o">=</span><span class="s2">"unique-random-string"</span><span class="p">,</span>                                       <span class="o">|</span>
 <span class="o">|</span>   <span class="n">algorithm</span><span class="o">=</span><span class="n">MD5</span>                                                       <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
@@ -778,11 +778,11 @@
 <span class="o">|</span> <span class="n">REGISTER</span> <span class="n">sip</span><span class="p">:</span><span class="n">ab12</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>                                     <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Authorization</span><span class="p">:</span> <span class="n">Digest</span>                                                 <span class="o">|</span>
-<span class="o">|</span>   <span class="n">username</span><span class="o">=</span><span class="s2">&quot;extension-name&quot;</span><span class="p">,</span>                                         <span class="o">|</span>
-<span class="o">|</span>   <span class="n">realm</span><span class="o">=</span><span class="s2">&quot;voipbin.net&quot;</span><span class="p">,</span>                                               <span class="o">|</span>
-<span class="o">|</span>   <span class="n">nonce</span><span class="o">=</span><span class="s2">&quot;unique-random-string&quot;</span><span class="p">,</span>                                       <span class="o">|</span>
-<span class="o">|</span>   <span class="n">uri</span><span class="o">=</span><span class="s2">&quot;sip:ab12.reg.voipbin.net&quot;</span><span class="p">,</span>                                    <span class="o">|</span>
-<span class="o">|</span>   <span class="n">response</span><span class="o">=</span><span class="s2">&quot;calculated-hash&quot;</span>                                          <span class="o">|</span>
+<span class="o">|</span>   <span class="n">username</span><span class="o">=</span><span class="s2">"extension-name"</span><span class="p">,</span>                                         <span class="o">|</span>
+<span class="o">|</span>   <span class="n">realm</span><span class="o">=</span><span class="s2">"voipbin.net"</span><span class="p">,</span>                                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">nonce</span><span class="o">=</span><span class="s2">"unique-random-string"</span><span class="p">,</span>                                       <span class="o">|</span>
+<span class="o">|</span>   <span class="n">uri</span><span class="o">=</span><span class="s2">"sip:ab12.reg.voipbin.net"</span><span class="p">,</span>                                    <span class="o">|</span>
+<span class="o">|</span>   <span class="n">response</span><span class="o">=</span><span class="s2">"calculated-hash"</span>                                          <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 </pre></div>
 </div>
@@ -798,43 +798,43 @@
 <h2>Extension Configuration<a class="headerlink" href="#extension-configuration" title="Link to this heading">¶</a></h2>
 <p>Create and manage extensions for your SIP endpoints.</p>
 <p><strong>Create an Extension</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;name&quot;: &quot;office-phone-1&quot;,
-        &quot;detail&quot;: &quot;Main office IP phone&quot;,
-        &quot;extension&quot;: &quot;office1&quot;,
-        &quot;password&quot;: &quot;secure-password-123&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/extensions?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "name": "office-phone-1",
+        "detail": "Main office IP phone",
+        "extension": "office1",
+        "password": "secure-password-123"
+    }'
 </pre></div>
 </div>
 <p><strong>Response:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;extension-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;office-phone-1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Main office IP phone&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="s2">&quot;office1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;domain_name&quot;</span><span class="p">:</span> <span class="s2">&quot;ab12.reg.voipbin.net&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;office1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;secure-password-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;a8f3b2c1d4e5&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"extension-uuid-123"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-uuid-456"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"office-phone-1"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Main office IP phone"</span><span class="p">,</span>
+    <span class="s2">"extension"</span><span class="p">:</span> <span class="s2">"office1"</span><span class="p">,</span>
+    <span class="s2">"domain_name"</span><span class="p">:</span> <span class="s2">"ab12.reg.voipbin.net"</span><span class="p">,</span>
+    <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"office1"</span><span class="p">,</span>
+    <span class="s2">"password"</span><span class="p">:</span> <span class="s2">"secure-password-123"</span><span class="p">,</span>
+    <span class="s2">"direct_hash"</span><span class="p">:</span> <span class="s2">"a8f3b2c1d4e5"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">""</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>List Extensions</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/extensions?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Get Extension Details</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/extensions/&lt;extension-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/extensions/&lt;extension-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Delete Extension</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/extensions/&lt;extension-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE 'https://api.voipbin.net/v1.0/extensions/&lt;extension-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 </section>
@@ -854,7 +854,7 @@
 </pre></div>
 </div>
 <p><strong>Inbound Call Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Incoming</span> <span class="n">Call</span>                     <span class="n">VoIPBIN</span>                    <span class="n">SIP</span> <span class="n">Device</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Incoming</span> <span class="n">Call</span>                     <span class="n">VoIPBin</span>                    <span class="n">SIP</span> <span class="n">Device</span>
      <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
      <span class="o">|</span> <span class="n">Call</span> <span class="n">to</span> <span class="n">extension</span>             <span class="o">|</span>                           <span class="o">|</span>
      <span class="o">+------------------------------&gt;|</span>                           <span class="o">|</span>
@@ -878,7 +878,7 @@
 </section>
 <section id="direct-extension">
 <span id="extension-overview-direct"></span><h2>Direct Extension<a class="headerlink" href="#direct-extension" title="Link to this heading">¶</a></h2>
-<p>Direct extensions provide a public SIP URI that allows external callers to reach a registered extension without needing to know the customer’s registrar domain. When direct access is enabled for an extension, VoIPBIN generates a unique hash and exposes a simplified SIP address.</p>
+<p>Direct extensions provide a public SIP URI that allows external callers to reach a registered extension without needing to know the customer’s registrar domain. When direct access is enabled for an extension, VoIPBin generates a unique hash and exposes a simplified SIP address.</p>
 <p><strong>Direct SIP URI Format</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Standard</span> <span class="n">extension</span> <span class="n">address</span> <span class="p">(</span><span class="n">requires</span> <span class="n">customer</span> <span class="n">domain</span> <span class="n">knowledge</span><span class="p">):</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
@@ -898,7 +898,7 @@
 </pre></div>
 </div>
 <p><strong>How Direct Extensions Work</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                    <span class="n">VoIPBIN</span>                     <span class="n">SIP</span> <span class="n">Device</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                    <span class="n">VoIPBin</span>                     <span class="n">SIP</span> <span class="n">Device</span>
 
      <span class="o">|</span>                                <span class="o">|</span>                            <span class="o">|</span>
      <span class="o">|</span> <span class="n">INVITE</span>                         <span class="o">|</span>                            <span class="o">|</span>
@@ -939,7 +939,7 @@
 <span id="extension-overview-provisioning"></span><h2>Softphone QR Provisioning<a class="headerlink" href="#softphone-qr-provisioning" title="Link to this heading">¶</a></h2>
 <p>Softphone QR provisioning lets a user configure the Linphone mobile app for an extension without typing any credentials. An administrator requests a short-lived provisioning token for the extension, renders the returned URL as a QR code, and the user scans the code with Linphone. Linphone fetches the provisioning URL and applies the SIP account settings (domain, username, password, transport) automatically. This uses Linphone’s standard remote provisioning mechanism (lpconfig XML).</p>
 <p><strong>Provisioning Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Admin (API)                    VoIPBIN                     Linphone App
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Admin (API)                    VoIPBin                     Linphone App
 
 |                                 |                             |
 | 1. POST /extensions/{id}/       |                             |
@@ -992,14 +992,14 @@
 <section id="common-scenarios">
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h2>
 <p><strong>Scenario 1: IP Phone Registration</strong></p>
-<p>Configure a hardware IP phone to register with VoIPBIN.</p>
+<p>Configure a hardware IP phone to register with VoIPBin.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IP</span> <span class="n">Phone</span> <span class="n">Configuration</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">SIP</span> <span class="n">Server</span><span class="p">:</span> <span class="n">ab12</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">Username</span><span class="p">:</span> <span class="n">office</span><span class="o">-</span><span class="n">phone</span><span class="o">-</span><span class="mi">1</span>                   <span class="o">|</span>
 <span class="o">|</span> <span class="n">Password</span><span class="p">:</span> <span class="o">********</span>                         <span class="o">|</span>
 <span class="o">|</span> <span class="n">Domain</span><span class="p">:</span> <span class="n">ab12</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>               <span class="o">|</span>
-<span class="o">|</span> <span class="p">(</span><span class="n">use</span> <span class="n">the</span> <span class="n">extension</span><span class="s1">&#39;s domain_name)          |</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">use</span> <span class="n">the</span> <span class="n">extension</span><span class="s1">'s domain_name)          |</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Registration</span> <span class="n">Result</span><span class="p">:</span>
@@ -1024,7 +1024,7 @@
 <span class="o">|</span> <span class="n">User</span><span class="p">:</span> <span class="n">mobile</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="n">john</span>                     <span class="o">|</span>
 <span class="o">|</span> <span class="n">Password</span><span class="p">:</span> <span class="o">********</span>                         <span class="o">|</span>
 <span class="o">|</span> <span class="n">Domain</span><span class="p">:</span> <span class="n">ab12</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>               <span class="o">|</span>
-<span class="o">|</span> <span class="p">(</span><span class="n">use</span> <span class="n">the</span> <span class="n">extension</span><span class="s1">&#39;s domain_name)          |</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">use</span> <span class="n">the</span> <span class="n">extension</span><span class="s1">'s domain_name)          |</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Use</span> <span class="n">Case</span><span class="p">:</span>
@@ -1037,25 +1037,25 @@
 </pre></div>
 </div>
 <p><strong>Scenario 3: PBX System Integration</strong></p>
-<p>Connect an on-premise PBX to VoIPBIN for inbound calls.</p>
+<p>Connect an on-premise PBX to VoIPBin for inbound calls.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PBX</span> <span class="n">Configuration</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">PBX</span> <span class="n">Type</span><span class="p">:</span> <span class="n">Asterisk</span> <span class="o">/</span> <span class="n">FreePBX</span>               <span class="o">|</span>
 <span class="o">|</span>                                            <span class="o">|</span>
-<span class="o">|</span> <span class="n">SIP</span> <span class="n">Trunk</span> <span class="n">to</span> <span class="n">VoIPBIN</span><span class="p">:</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">SIP</span> <span class="n">Trunk</span> <span class="n">to</span> <span class="n">VoIPBin</span><span class="p">:</span>                      <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">Register</span><span class="p">:</span> <span class="n">Yes</span>                            <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">Host</span><span class="p">:</span> <span class="n">ab12</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>               <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">Username</span><span class="p">:</span> <span class="n">pbx</span><span class="o">-</span><span class="n">main</span>                       <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">Password</span><span class="p">:</span> <span class="o">********</span>                       <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">From</span> <span class="n">Domain</span><span class="p">:</span> <span class="n">ab12</span><span class="o">.</span><span class="n">reg</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span>        <span class="o">|</span>
-<span class="o">|</span>   <span class="p">(</span><span class="n">use</span> <span class="n">the</span> <span class="n">extension</span><span class="s1">&#39;s domain_name)        |</span>
+<span class="o">|</span>   <span class="p">(</span><span class="n">use</span> <span class="n">the</span> <span class="n">extension</span><span class="s1">'s domain_name)        |</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Inbound</span> <span class="n">Call</span> <span class="n">Flow</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="mf">1.</span> <span class="n">Call</span> <span class="n">arrives</span> <span class="n">at</span> <span class="n">VoIPBIN</span> <span class="n">number</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Call</span> <span class="n">arrives</span> <span class="n">at</span> <span class="n">VoIPBin</span> <span class="n">number</span>          <span class="o">|</span>
 <span class="o">|</span> <span class="mf">2.</span> <span class="n">Flow</span> <span class="n">routes</span> <span class="n">to</span> <span class="n">extension</span><span class="p">:</span> <span class="n">pbx</span><span class="o">-</span><span class="n">main</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mf">3.</span> <span class="n">VoIPBIN</span> <span class="n">sends</span> <span class="n">INVITE</span> <span class="n">to</span> <span class="n">registered</span> <span class="n">PBX</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">VoIPBin</span> <span class="n">sends</span> <span class="n">INVITE</span> <span class="n">to</span> <span class="n">registered</span> <span class="n">PBX</span>  <span class="o">|</span>
 <span class="o">|</span> <span class="mf">4.</span> <span class="n">PBX</span> <span class="n">IVR</span> <span class="n">answers</span> <span class="ow">and</span> <span class="n">routes</span> <span class="n">internally</span>   <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 </pre></div>
@@ -1260,8 +1260,8 @@ extensions for each device</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

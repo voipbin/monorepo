@@ -3,7 +3,7 @@
 Flow Execution Internals
 ========================
 
-This section provides deep technical details about how VoIPBIN's flow engine executes actions internally, including the interaction between services and the state machine that drives flow execution.
+This section provides deep technical details about how VoIPBin's flow engine executes actions internally, including the interaction between services and the state machine that drives flow execution.
 
 .. note:: **AI Implementation Hint**
 
@@ -524,7 +524,7 @@ Many actions wait for external events to continue:
 Safety Mechanisms
 -----------------
 
-VoIPBIN includes safeguards to prevent runaway flows:
+VoIPBin includes safeguards to prevent runaway flows:
 
 .. code::
 

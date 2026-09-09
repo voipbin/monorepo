@@ -92,7 +92,7 @@ gcp         Google Cloud Speech-to-Text
 aws         Amazon Transcribe
 =========== ============
 
-When creating a transcription, the ``provider`` field is optional. If omitted, VoIPBIN selects the best available provider automatically (default order: GCP, then AWS). If a specific provider is requested but unavailable, the system falls back to the default order.
+When creating a transcription, the ``provider`` field is optional. If omitted, VoIPBin selects the best available provider automatically (default order: GCP, then AWS). If a specific provider is requested but unavailable, the system falls back to the default order.
 
 .. _transcribe-struct-transcribe-direction:
 
@@ -106,7 +106,7 @@ Direction   Description
 =========== ============
 both        Transcribe both incoming and outgoing audio directions.
 in          Transcribe only incoming audio (what the remote party says).
-out         Transcribe only outgoing audio (what VoIPBIN sends).
+out         Transcribe only outgoing audio (what VoIPBin sends).
 =========== ============
 
 .. _transcribe-struct-transcribe-status:
@@ -177,8 +177,8 @@ All possible values for the ``direction`` field:
 =========== ============
 Direction   Description
 =========== ============
-in          Incoming speech toward VoIPBIN (i.e., what the caller/remote party said).
-out         Outgoing speech from VoIPBIN (i.e., TTS audio, recorded prompts, or the connected party's speech sent from VoIPBIN).
+in          Incoming speech toward VoIPBin (i.e., what the caller/remote party said).
+out         Outgoing speech from VoIPBin (i.e., TTS audio, recorded prompts, or the connected party's speech sent from VoIPBin).
 =========== ============
 
 .. _transcribe-struct-speech-webhook:

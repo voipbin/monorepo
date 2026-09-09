@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Backend Microservices" href="architecture_backend.html"><link rel="prev" title="Architecture" href="architecture.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -643,18 +643,18 @@
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
 <ul class="simple">
-<li><p><strong>Complexity:</strong> Low – This is reference documentation describing VoIPBIN’s system architecture. No API calls are specific to this section.</p></li>
+<li><p><strong>Complexity:</strong> Low – This is reference documentation describing VoIPBin’s system architecture. No API calls are specific to this section.</p></li>
 <li><p><strong>Cost:</strong> Free. Architecture documentation is informational only; no operations are performed.</p></li>
 <li><p><strong>Async:</strong> N/A. This section documents the platform structure, not API endpoints.</p></li>
 </ul>
-<p>This page describes VoIPBIN’s high-level system architecture, including the three major layers (API gateway, microservices, real-time communication) and core design principles. Relevant when an AI agent needs to understand the overall platform structure, service categories, or technology stack choices.</p>
+<p>This page describes VoIPBin’s high-level system architecture, including the three major layers (API gateway, microservices, real-time communication) and core design principles. Relevant when an AI agent needs to understand the overall platform structure, service categories, or technology stack choices.</p>
 </div>
-<p>VoIPBIN is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.</p>
-<p>VoIPBIN is designed from the ground up for scalability, reliability, and developer productivity, enabling businesses to build sophisticated communication solutions through simple API calls.</p>
+<p>VoIPBin is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.</p>
+<p>VoIPBin is designed from the ground up for scalability, reliability, and developer productivity, enabling businesses to build sophisticated communication solutions through simple API calls.</p>
 <img alt="_images/architecture_overview_all.png" src="_images/architecture_overview_all.png" />
 <section id="high-level-system-architecture">
 <h2>High-Level System Architecture<a class="headerlink" href="#high-level-system-architecture" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN consists of three major architectural layers:</p>
+<p>VoIPBin consists of three major architectural layers:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------------------------------------------------------------------+</span>
 <span class="o">|</span>                      <span class="n">Client</span> <span class="n">Applications</span>                             <span class="o">|</span>
 <span class="o">|</span>  <span class="p">(</span><span class="n">Web</span> <span class="n">Apps</span><span class="p">,</span> <span class="n">Mobile</span> <span class="n">Apps</span><span class="p">,</span> <span class="n">Server</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Server</span> <span class="n">Integrations</span><span class="p">)</span>              <span class="o">|</span>
@@ -712,7 +712,7 @@
 <li><p><strong>Response Aggregation</strong>: Collects responses from backend services and returns to clients</p></li>
 </ul>
 <p><strong>2. Microservices Layer</strong></p>
-<p>VoIPBIN consists of 34 specialized Go microservices, organized by domain:</p>
+<p>VoIPBin consists of 34 specialized Go microservices, organized by domain:</p>
 <p><strong>Communication Services:</strong>
 * bin-call-manager: Call lifecycle and routing
 * bin-conference-manager: Conference bridge management
@@ -736,7 +736,7 @@
 </section>
 <section id="core-design-principles">
 <h2>Core Design Principles<a class="headerlink" href="#core-design-principles" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN is designed around these key architectural principles:</p>
+<p>VoIPBin is designed around these key architectural principles:</p>
 <p><strong>Microservices Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Service</span> <span class="n">Isolation</span><span class="p">:</span>
 <span class="o">+------------+</span>     <span class="o">+------------+</span>     <span class="o">+------------+</span>
@@ -835,7 +835,7 @@
 </section>
 <section id="communication-channels">
 <h2>Communication Channels<a class="headerlink" href="#communication-channels" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN supports multiple communication channels through dedicated gateways:</p>
+<p>VoIPBin supports multiple communication channels through dedicated gateways:</p>
 <p><strong>Voice Communication:</strong></p>
 <ul class="simple">
 <li><p><strong>PSTN</strong>: Traditional phone calls via carrier integrations</p></li>
@@ -858,7 +858,7 @@
 </section>
 <section id="integration-capabilities">
 <h2>Integration Capabilities<a class="headerlink" href="#integration-capabilities" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN provides multiple integration methods:</p>
+<p>VoIPBin provides multiple integration methods:</p>
 <p><strong>REST API:</strong></p>
 <ul class="simple">
 <li><p>Comprehensive REST API for all platform features</p></li>
@@ -885,7 +885,7 @@
 </section>
 <section id="key-architectural-benefits">
 <h2>Key Architectural Benefits<a class="headerlink" href="#key-architectural-benefits" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s architecture is designed to deliver these advantages:</p>
+<p>VoIPBin’s architecture is designed to deliver these advantages:</p>
 <p><strong>Scalability</strong></p>
 <ul class="simple">
 <li><p><strong>Horizontal Scaling</strong>: Add more service instances to handle increased load</p></li>
@@ -928,7 +928,7 @@
 </section>
 <section id="service-dependencies">
 <h2>Service Dependencies<a class="headerlink" href="#service-dependencies" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN services have well-defined dependencies for coordinated operations:</p>
+<p>VoIPBin services have well-defined dependencies for coordinated operations:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Core</span> <span class="n">Service</span> <span class="n">Dependencies</span><span class="p">:</span>
 
 <span class="o">+-----------------------------------------------------------------+</span>
@@ -977,12 +977,12 @@
   <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">conference</span><span class="o">-</span><span class="n">manager</span> <span class="p">(</span><span class="n">conference</span> <span class="n">bridges</span><span class="p">)</span>
 
 <span class="n">Infrastructure</span> <span class="n">Monitoring</span><span class="p">:</span>
-<span class="nb">bin</span><span class="o">-</span><span class="n">sentinel</span><span class="o">-</span><span class="n">manager</span>
+<span class="nb">bin</span><span class="o">-</span><span class="nb">sentinel</span><span class="o">-</span><span class="n">manager</span>
   <span class="o">+--&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>      <span class="p">(</span><span class="n">SIP</span> <span class="n">session</span> <span class="n">recovery</span> <span class="n">events</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Circular Dependencies:</strong></p>
-<p>VoIPBIN avoids circular dependencies through:</p>
+<p>VoIPBin avoids circular dependencies through:</p>
 <ul class="simple">
 <li><p><strong>Event-Driven Decoupling</strong>: Services publish events, others subscribe</p></li>
 <li><p><strong>Gateway Orchestration</strong>: API Gateway coordinates cross-service operations</p></li>
@@ -991,7 +991,7 @@
 </section>
 <section id="technology-stack">
 <h2>Technology Stack<a class="headerlink" href="#technology-stack" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN is built on modern, proven technologies:</p>
+<p>VoIPBin is built on modern, proven technologies:</p>
 <p><strong>Backend Services:</strong></p>
 <ul class="simple">
 <li><p><strong>Language</strong>: Go (Golang) for all microservices</p></li>
@@ -1019,7 +1019,7 @@
 <li><p><strong>Broker</strong>: RabbitMQ for async messaging</p></li>
 <li><p><strong>Event Bus</strong>: RabbitMQ pub/sub events; in-process fan-out inside the API gateway for WebSocket delivery</p></li>
 </ul>
-<p>This architecture enables VoIPBIN to deliver enterprise-grade communication services at scale while maintaining developer simplicity and operational excellence.</p>
+<p>This architecture enables VoIPBin to deliver enterprise-grade communication services at scale while maintaining developer simplicity and operational excellence.</p>
 </section>
 </section>
 
@@ -1102,8 +1102,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

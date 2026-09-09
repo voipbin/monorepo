@@ -17,7 +17,7 @@ A long-lived authentication credential that can be used instead of JWT tokens. A
 
 Action
 ------
-A single step in a flow that defines what VoIPBIN should do during call or message handling. Examples include ``answer``, ``talk``, ``play``, ``digits_receive``, and ``branch``. Actions are executed sequentially unless interrupted or branched.
+A single step in a flow that defines what VoIPBin should do during call or message handling. Examples include ``answer``, ``talk``, ``play``, ``digits_receive``, and ``branch``. Actions are executed sequentially unless interrupted or branched.
 
 .. _glossary-activeflow:
 
@@ -35,7 +35,7 @@ A call center agent or representative who handles calls on behalf of the company
 
 AI Voice Agent
 --------------
-An AI-powered conversational agent that can interact with callers using natural language via speech recognition (STT) and text-to-speech (TTS). Configured through VoIPBIN's AI resource and invoked in flows via the ``ai_talk`` action. See :ref:`AI Voice Agent Integration <ai-voice-agent-integration-overview>`.
+An AI-powered conversational agent that can interact with callers using natural language via speech recognition (STT) and text-to-speech (TTS). Configured through VoIPBin's AI resource and invoked in flows via the ``ai_talk`` action. See :ref:`AI Voice Agent Integration <ai-voice-agent-integration-overview>`.
 
 .. _glossary-branch:
 
@@ -47,7 +47,7 @@ A flow action that enables conditional logic by evaluating variables and directi
 
 Call Leg
 --------
-In VoIPBIN's architecture, a traditional A-to-B call consists of two separate call legs: A → VoIPBIN (Call 1) and VoIPBIN → B (Call 2). Each leg is tracked independently with its own call ID, allowing for complex call scenarios like transfers and conferences.
+In VoIPBin's architecture, a traditional A-to-B call consists of two separate call legs: A → VoIPBin (Call 1) and VoIPBin → B (Call 2). Each leg is tracked independently with its own call ID, allowing for complex call scenarios like transfers and conferences.
 
 .. _glossary-campaign:
 
@@ -65,25 +65,25 @@ A multi-party call session where multiple participants can communicate simultane
 
 DID (Direct Inward Dialing)
 ---------------------------
-A phone number that routes directly to a specific destination. In VoIPBIN, DIDs are managed through the Number resource and can be associated with flows.
+A phone number that routes directly to a specific destination. In VoIPBin, DIDs are managed through the Number resource and can be associated with flows.
 
 .. _glossary-dtmf:
 
 DTMF (Dual-Tone Multi-Frequency)
 --------------------------------
-Touch-tone signals generated when pressing phone keypad buttons. Used in IVR systems to capture user input. Also referred to as "digits" in VoIPBIN documentation.
+Touch-tone signals generated when pressing phone keypad buttons. Used in IVR systems to capture user input. Also referred to as "digits" in VoIPBin documentation.
 
 .. _glossary-email:
 
 Email
 -----
-An email message sent or received via the VoIPBIN platform. Emails can be triggered from flows using the ``email_send`` action for automated notifications, confirmations, or follow-ups.
+An email message sent or received via the VoIPBin platform. Emails can be triggered from flows using the ``email_send`` action for automated notifications, confirmations, or follow-ups.
 
 .. _glossary-e164:
 
 E.164
 -----
-International standard for phone number formatting. All phone numbers in VoIPBIN must use E.164 format: ``+`` followed by country code and number, with no spaces or special characters. Example: ``+16062067563``
+International standard for phone number formatting. All phone numbers in VoIPBin must use E.164 format: ``+`` followed by country code and number, with no spaces or special characters. Example: ``+16062067563``
 
 .. _glossary-flow:
 
@@ -107,25 +107,25 @@ Special actions that can be triggered asynchronously via API at any point during
 
 IVR (Interactive Voice Response)
 --------------------------------
-Automated telephone system that interacts with callers through voice prompts and DTMF input. VoIPBIN flows enable building sophisticated IVR systems using actions like ``talk``, ``play``, ``digits_receive``, and ``branch``.
+Automated telephone system that interacts with callers through voice prompts and DTMF input. VoIPBin flows enable building sophisticated IVR systems using actions like ``talk``, ``play``, ``digits_receive``, and ``branch``.
 
 .. _glossary-media-server:
 
 Media Server
 ------------
-Backend infrastructure that handles real-time audio processing including transcoding, mixing, echo cancellation, and jitter buffering. VoIPBIN's media servers ensure high-quality media streams.
+Backend infrastructure that handles real-time audio processing including transcoding, mixing, echo cancellation, and jitter buffering. VoIPBin's media servers ensure high-quality media streams.
 
 .. _glossary-pstn:
 
 PSTN (Public Switched Telephone Network)
 ----------------------------------------
-Traditional telephone network for landlines and mobile phones. VoIPBIN connects to PSTN through gateways to enable calls to/from regular phone numbers.
+Traditional telephone network for landlines and mobile phones. VoIPBin connects to PSTN through gateways to enable calls to/from regular phone numbers.
 
 .. _glossary-rag:
 
 RAG (Retrieval-Augmented Generation)
 -------------------------------------
-A technique that enhances AI responses by first retrieving relevant documents or knowledge base content, then using that context to generate more accurate answers. In VoIPBIN, RAG resources store and index documents that AI agents can reference during conversations.
+A technique that enhances AI responses by first retrieving relevant documents or knowledge base content, then using that context to generate more accurate answers. In VoIPBin, RAG resources store and index documents that AI agents can reference during conversations.
 
 .. _glossary-queue:
 
@@ -137,7 +137,7 @@ A call holding system that places callers on hold until an available agent is fo
 
 RTP (Real-time Transport Protocol)
 ----------------------------------
-Network protocol for transmitting audio and video streams. VoIPBIN uses RTP for media transmission between endpoints.
+Network protocol for transmitting audio and video streams. VoIPBin uses RTP for media transmission between endpoints.
 
 .. _glossary-route:
 
@@ -149,13 +149,13 @@ A routing rule that maps incoming calls or messages to specific flows based on c
 
 SIP (Session Initiation Protocol)
 ---------------------------------
-Signaling protocol used to establish, manage, and terminate VoIP calls. VoIPBIN supports SIP for call control and integrates with SIP trunks.
+Signaling protocol used to establish, manage, and terminate VoIP calls. VoIPBin supports SIP for call control and integrates with SIP trunks.
 
 .. _glossary-sip-trunk:
 
 SIP Trunk
 ---------
-A custom DNS hostname that accepts SIP traffic for your VoIPBIN account. Enables integration with external SIP systems and PBXes.
+A custom DNS hostname that accepts SIP traffic for your VoIPBin account. Enables integration with external SIP systems and PBXes.
 
 .. _glossary-speaking:
 
@@ -167,25 +167,25 @@ A real-time voice interaction session between a caller and an AI voice agent. Th
 
 Storage
 -------
-VoIPBIN's file storage service for managing media files such as call recordings, voicemail messages, and uploaded audio files. Files can be accessed via the Storage API.
+VoIPBin's file storage service for managing media files such as call recordings, voicemail messages, and uploaded audio files. Files can be accessed via the Storage API.
 
 .. _glossary-stt:
 
 STT (Speech-to-Text)
 --------------------
-Technology that converts spoken words into text. Used in VoIPBIN for transcription and AI voice assistant features.
+Technology that converts spoken words into text. Used in VoIPBin for transcription and AI voice assistant features.
 
 .. _glossary-tts:
 
 TTS (Text-to-Speech)
 --------------------
-Technology that converts text into spoken audio. VoIPBIN's ``talk`` action uses TTS to generate voice prompts in multiple languages and voices.
+Technology that converts text into spoken audio. VoIPBin's ``talk`` action uses TTS to generate voice prompts in multiple languages and voices.
 
 .. _glossary-talk:
 
 Talk
 ----
-A messaging conversation session within VoIPBIN's Talk feature. Supports real-time communication between agents and customers through text-based messaging interfaces.
+A messaging conversation session within VoIPBin's Talk feature. Supports real-time communication between agents and customers through text-based messaging interfaces.
 
 .. _glossary-team:
 
@@ -197,7 +197,7 @@ A group of agents organized together for collaborative call handling. Teams can 
 
 Transcribe
 ----------
-The process of converting live call audio into text in real-time. VoIPBIN supports real-time transcription via the ``transcribe_start`` flow action, with results delivered via webhooks for monitoring, analytics, or AI processing.
+The process of converting live call audio into text in real-time. VoIPBin supports real-time transcription via the ``transcribe_start`` flow action, with results delivered via webhooks for monitoring, analytics, or AI processing.
 
 .. _glossary-variable:
 
@@ -209,19 +209,19 @@ Dynamic values that can be referenced in flow actions using ``${variable.name}``
 
 Webhook
 -------
-HTTP callback that VoIPBIN sends to your server when events occur (call status changes, message received, etc.). Webhooks enable real-time notifications and integrations.
+HTTP callback that VoIPBin sends to your server when events occur (call status changes, message received, etc.). Webhooks enable real-time notifications and integrations.
 
 .. _glossary-webrtc:
 
 WebRTC (Web Real-Time Communication)
 ------------------------------------
-Browser-based standard for real-time audio/video communication. VoIPBIN supports WebRTC for in-browser calling without plugins.
+Browser-based standard for real-time audio/video communication. VoIPBin supports WebRTC for in-browser calling without plugins.
 
 .. _timestamp:
 
 Timestamp
 ---------
-All timestamps in VoIPBIN follow the format ``YYYY-MM-DD HH:MM:SS.microseconds`` in UTC timezone. Example: ``2022-05-01 15:10:38.785510878``
+All timestamps in VoIPBin follow the format ``YYYY-MM-DD HH:MM:SS.microseconds`` in UTC timezone. Example: ``2022-05-01 15:10:38.785510878``
 
 
 Requirement levels indicator

@@ -5,9 +5,9 @@ System Request Flows
 
 .. note:: **AI Context**
 
-   This page demonstrates detailed request flows through VoIPBIN: creating a call, reading with cache, event broadcasting, multi-service orchestration, real-time WebSocket notifications, and error handling with retries. Relevant when an AI agent needs to understand the step-by-step processing of API requests, timing breakdowns, caching behavior, or debugging strategies.
+   This page demonstrates detailed request flows through VoIPBin: creating a call, reading with cache, event broadcasting, multi-service orchestration, real-time WebSocket notifications, and error handling with retries. Relevant when an AI agent needs to understand the step-by-step processing of API requests, timing breakdowns, caching behavior, or debugging strategies.
 
-This section demonstrates how requests flow through VoIPBIN's architecture from client to backend services and back. Understanding these flows helps developers build integrations and debug issues.
+This section demonstrates how requests flow through VoIPBin's architecture from client to backend services and back. Understanding these flows helps developers build integrations and debug issues.
 
 Request Flow Overview
 ---------------------
@@ -548,7 +548,7 @@ This flow demonstrates error handling and retry logic.
 Performance Optimization
 ------------------------
 
-VoIPBIN optimizes flow performance through several techniques:
+VoIPBin optimizes flow performance through several techniques:
 
 **Parallel Processing**
 
@@ -601,7 +601,7 @@ VoIPBIN optimizes flow performance through several techniques:
 Best Practices for Developers
 ------------------------------
 
-**When Integrating with VoIPBIN:**
+**When Integrating with VoIPBin:**
 
 1. **Always Include Authentication**
    - Include JWT token in Authorization header
@@ -682,7 +682,7 @@ Debugging Request Flows
 Summary
 -------
 
-VoIPBIN's request flows are designed for:
+VoIPBin's request flows are designed for:
 
 * **Performance**: Caching, connection pooling, parallel processing
 * **Reliability**: Retry logic, circuit breakers, health checks

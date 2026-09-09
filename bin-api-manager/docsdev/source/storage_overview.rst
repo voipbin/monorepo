@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable (per GB stored; default quota is 10 GB per customer)
    * **Async:** No. File uploads and downloads are synchronous. ``POST https://api.voipbin.net/v1.0/storage_files`` returns immediately with the file metadata. ``GET https://api.voipbin.net/v1.0/storage_files/{id}`` returns file details including a time-limited ``uri_download``.
 
-VoIPBIN's Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.
+VoIPBin's Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.
 
 With the Storage API you can:
 
@@ -22,7 +22,7 @@ With the Storage API you can:
 
 How Storage Works
 -----------------
-VoIPBIN storage provides cloud-based file management with quota limits.
+VoIPBin storage provides cloud-based file management with quota limits.
 
 **Storage Architecture**
 

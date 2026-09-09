@@ -4,7 +4,7 @@
 
 Send an Email
 -------------
-Send an email using the VoIPBIN API.
+Send an email using the VoIPBin API.
 
 Prerequisites
 +++++++++++++
@@ -15,7 +15,7 @@ Prerequisites
 
 .. note:: **AI Implementation Hint**
 
-   The sender address is always VoIPBIN's own platform address (``service@voipbin.net``) -- it is fixed and not configurable per request. The request body has no ``source`` field. The ``destinations`` field uses the Address format with ``type`` set to ``email``. The ``attachments`` field is required (send an empty array ``[]`` when there is nothing to attach). ``content`` is plain text only. Sending emails incurs charges per email sent.
+   The sender address is always VoIPBin's own platform address (``service@voipbin.net``) -- it is fixed and not configurable per request. The request body has no ``source`` field. The ``destinations`` field uses the Address format with ``type`` set to ``email``. The ``attachments`` field is required (send an empty array ``[]`` when there is nothing to attach). ``content`` is plain text only. Sending emails incurs charges per email sent.
 
 Send an email
 ~~~~~~~~~~~~~
@@ -32,8 +32,8 @@ Send an email by providing the destination, subject, content, and attachments:
                     "target": "recipient@example.com"
                 }
             ],
-            "subject": "Hello from VoIPBIN",
-            "content": "This is a test email sent via the VoIPBIN API.",
+            "subject": "Hello from VoIPBin",
+            "content": "This is a test email sent via the VoIPBin API.",
             "attachments": []
         }'
 
@@ -67,8 +67,8 @@ Response:
             }
         ],
         "status": "initiated",
-        "subject": "Hello from VoIPBIN",
-        "content": "This is a test email sent via the VoIPBIN API.",
+        "subject": "Hello from VoIPBin",
+        "content": "This is a test email sent via the VoIPBin API.",
         "attachments": [],
         ...
     }

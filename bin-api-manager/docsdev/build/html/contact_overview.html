@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Structures" href="contact_struct_contact.html"><link rel="prev" title="Contact" href="contact.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,7 +648,7 @@
 <li><p><strong>Async:</strong> No. All contact CRUD operations are synchronous and return the result immediately.</p></li>
 </ul>
 </div>
-<p>VoIPBIN’s Contact API provides CRM-style contact management for organizing and enriching communication workflows. Each contact can hold multiple phone numbers, email addresses, and tags, enabling caller ID enrichment, routing decisions, and integration with external CRM systems.</p>
+<p>VoIPBin’s Contact API provides CRM-style contact management for organizing and enriching communication workflows. Each contact can hold multiple phone numbers, email addresses, and tags, enabling caller ID enrichment, routing decisions, and integration with external CRM systems.</p>
 <p>With the Contact API you can:</p>
 <ul class="simple">
 <li><p>Create and manage contacts with structured personal and company information</p></li>
@@ -770,7 +770,7 @@ Contact matched → enrich conversation context
 <h2>External CRM Integration<a class="headerlink" href="#external-crm-integration" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">external_id</span></code> field links a contact to its record in an external CRM system such as Salesforce, HubSpot, or Zoho.</p>
 <p><strong>Integration Pattern</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">CRM</span>                     <span class="n">VoIPBIN</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">CRM</span>                     <span class="n">VoIPBin</span>
 <span class="o">+-------------------+</span>            <span class="o">+-------------------+</span>
 <span class="o">|</span> <span class="n">Salesforce</span>        <span class="o">|</span>            <span class="o">|</span> <span class="n">Contact</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">Contact</span> <span class="n">ID</span><span class="p">:</span>       <span class="o">|</span>   <span class="n">sync</span>     <span class="o">|</span> <span class="n">external_id</span><span class="p">:</span>      <span class="o">|</span>
@@ -782,8 +782,8 @@ Contact matched → enrich conversation context
 <p><strong>Use Cases</strong></p>
 <ul class="simple">
 <li><p><strong>Deduplication</strong>: Prevent duplicate contacts during re-imports by matching on <code class="docutils literal notranslate"><span class="pre">external_id</span></code></p></li>
-<li><p><strong>Two-Way Sync</strong>: Keep contact data consistent between VoIPBIN and your CRM</p></li>
-<li><p><strong>Referential Integrity</strong>: Maintain links between VoIPBIN contacts and CRM records</p></li>
+<li><p><strong>Two-Way Sync</strong>: Keep contact data consistent between VoIPBin and your CRM</p></li>
+<li><p><strong>Referential Integrity</strong>: Maintain links between VoIPBin contacts and CRM records</p></li>
 </ul>
 </section>
 <section id="key-features-and-use-cases">
@@ -828,10 +828,10 @@ Lookup contact → check tags
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Contact</span><span class="p">:</span> <span class="n">John</span> <span class="n">Smith</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Addresses</span><span class="p">:</span>                                  <span class="o">|</span>
-<span class="o">|</span>   <span class="o">+</span><span class="mi">15551234567</span> <span class="p">(</span><span class="n">tel</span><span class="p">,</span> <span class="s2">&quot;Mobile&quot;</span><span class="p">,</span> <span class="n">primary</span><span class="p">)</span>    <span class="o">|</span>
-<span class="o">|</span>   <span class="o">+</span><span class="mi">15559876543</span> <span class="p">(</span><span class="n">tel</span><span class="p">,</span> <span class="s2">&quot;Work&quot;</span><span class="p">)</span>               <span class="o">|</span>
-<span class="o">|</span>   <span class="n">john</span><span class="nd">@acme</span><span class="o">.</span><span class="n">com</span> <span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="s2">&quot;Work&quot;</span><span class="p">,</span> <span class="n">primary</span><span class="p">)</span>   <span class="o">|</span>
-<span class="o">|</span>   <span class="n">john</span><span class="o">.</span><span class="n">smith</span><span class="nd">@gmail</span><span class="o">.</span><span class="n">com</span> <span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="s2">&quot;Personal&quot;</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="o">+</span><span class="mi">15551234567</span> <span class="p">(</span><span class="n">tel</span><span class="p">,</span> <span class="s2">"Mobile"</span><span class="p">,</span> <span class="n">primary</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">|</span>   <span class="o">+</span><span class="mi">15559876543</span> <span class="p">(</span><span class="n">tel</span><span class="p">,</span> <span class="s2">"Work"</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">john</span><span class="nd">@acme</span><span class="o">.</span><span class="n">com</span> <span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="s2">"Work"</span><span class="p">,</span> <span class="n">primary</span><span class="p">)</span>   <span class="o">|</span>
+<span class="o">|</span>   <span class="n">john</span><span class="o">.</span><span class="n">smith</span><span class="nd">@gmail</span><span class="o">.</span><span class="n">com</span> <span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="s2">"Personal"</span><span class="p">)</span> <span class="o">|</span>
 <span class="o">|</span>                                            <span class="o">|</span>
 <span class="o">|</span> <span class="n">All</span> <span class="n">channels</span> <span class="n">linked</span> <span class="n">to</span> <span class="n">one</span> <span class="n">identity</span>        <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
@@ -995,8 +995,8 @@ Lookup contact → check tags
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

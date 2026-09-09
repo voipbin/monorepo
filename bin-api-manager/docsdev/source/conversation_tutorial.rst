@@ -228,7 +228,7 @@ The admin (or manager) sends a ``PUT`` with only the ``owner_id`` field. The ser
 Step 2. Agent receives a ``conversation_updated`` webhook
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-VoIPBIN delivers a webhook to your application reflecting the new owner. The webhook body is the conversation's ``WebhookMessage``, with the assignment fields populated.
+VoIPBin delivers a webhook to your application reflecting the new owner. The webhook body is the conversation's ``WebhookMessage``, with the assignment fields populated.
 
 .. code::
 

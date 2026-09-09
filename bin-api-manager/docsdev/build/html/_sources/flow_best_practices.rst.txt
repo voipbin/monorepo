@@ -689,7 +689,7 @@ Rate Limiting Awareness
 
     Be aware of limits on:
     - Webhook requests to your server
-    - VoIPBIN API calls
+    - VoIPBin API calls
     - TTS generation requests
 
     Design flows to minimize API calls:

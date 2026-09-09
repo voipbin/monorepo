@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="ProviderCall" href="providercall_struct_providercall.html"><link rel="prev" title="ProviderCall" href="providercall.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -649,7 +649,7 @@
 <li><p><strong>Access:</strong> Admin-only. Requires <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code>. Customer-tier users (<code class="docutils literal notranslate"><span class="pre">PermissionCustomerAdmin</span></code>, <code class="docutils literal notranslate"><span class="pre">PermissionCustomerManager</span></code>, <code class="docutils literal notranslate"><span class="pre">PermissionCustomerAgent</span></code>) cannot call this endpoint.</p></li>
 </ul>
 </div>
-<p>VoIPBIN’s ProviderCall API lets platform super-admins place a real outbound call through a specific SIP provider, forcing the routing decision instead of letting the normal customer / default dialroute merge choose one. Use cases:</p>
+<p>VoIPBin’s ProviderCall API lets platform super-admins place a real outbound call through a specific SIP provider, forcing the routing decision instead of letting the normal customer / default dialroute merge choose one. Use cases:</p>
 <ul class="simple">
 <li><p><strong>Provider onboarding.</strong> Verify that a newly-configured provider actually accepts calls, routes to the PSTN, and returns a sensible SIP response — before live customer traffic touches it.</p></li>
 <li><p><strong>Routing debugging.</strong> When a provider is suspected of misbehaving, isolate it from normal dialroute priority so the admin can exercise it directly.</p></li>
@@ -670,7 +670,7 @@
 <li><p><strong>Create the underlying Call(s)</strong> — route-manager issues <code class="docutils literal notranslate"><span class="pre">CallV1CallsCreate</span></code> synchronously. Call-manager persists the Call(s), reads <code class="docutils literal notranslate"><span class="pre">route_provider_ids</span></code> in <code class="docutils literal notranslate"><span class="pre">getDialroutes</span></code> and forwards them to <code class="docutils literal notranslate"><span class="pre">DialrouteList</span></code>, honors <code class="docutils literal notranslate"><span class="pre">skip_source_validation</span></code> in <code class="docutils literal notranslate"><span class="pre">getValidatedSourceForOutgoingCall</span></code>.</p></li>
 <li><p><strong>Persist the ProviderCall audit record</strong> — route-manager saves the admin’s request info (<code class="docutils literal notranslate"><span class="pre">customer_id</span></code>, <code class="docutils literal notranslate"><span class="pre">provider_id</span></code>, <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>, <code class="docutils literal notranslate"><span class="pre">source</span></code>, <code class="docutils literal notranslate"><span class="pre">destinations</span></code>, <code class="docutils literal notranslate"><span class="pre">anonymous</span></code>) alongside the IDs of the Call and Groupcall records that step 3 produced.</p></li>
 </ol>
-<p>The response is the persisted <code class="docutils literal notranslate"><span class="pre">ProviderCall.WebhookMessage</span></code> — an atomic record (IDs only, no embedded Call/Groupcall objects, per the VoIPBIN atomic-API rule). Admin retrieves per-call state separately.</p>
+<p>The response is the persisted <code class="docutils literal notranslate"><span class="pre">ProviderCall.WebhookMessage</span></code> — an atomic record (IDs only, no embedded Call/Groupcall objects, per the VoIPBin atomic-API rule). Admin retrieves per-call state separately.</p>
 <p><strong>Internal-only metadata (not a customer-facing API field)</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">Call.Metadata</span></code> is server-side-only on internal trust paths. No customer-facing <code class="docutils literal notranslate"><span class="pre">POST</span></code> endpoint accepts a <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field in the request body. Both <code class="docutils literal notranslate"><span class="pre">route_provider_ids</span></code> and <code class="docutils literal notranslate"><span class="pre">skip_source_validation</span></code> are built server-side by the admin endpoint (never passed in by clients). The call-manager listen handler rejects unknown metadata keys with HTTP 400, so new keys must be declared in the typed-registry before they can be set.</p>
 <div class="admonition note">
@@ -777,8 +777,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

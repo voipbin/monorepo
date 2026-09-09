@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Conversation" href="conversation_struct_conversation.html"><link rel="prev" title="Conversation" href="conversation.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -653,7 +653,7 @@
 <p><strong>Recent change (additive, non-breaking)</strong></p>
 <p>As of this release, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> and <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> in conversation webhook payloads will start carrying real values for conversations that have been explicitly assigned to an agent. Existing unassigned conversations continue to read empty values for both fields, so no client-side change is required. See <a class="reference internal" href="#conversation-overview-assigning-conversation-to-agent"><span class="std std-ref">Assigning a Conversation to an Agent</span></a>.</p>
 </div>
-<p>VoIPBIN’s Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.</p>
+<p>VoIPBin’s Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.</p>
 <p>With the Conversation API you can:</p>
 <ul class="simple">
 <li><p>Create unified conversations across multiple channels</p></li>
@@ -664,13 +664,13 @@
 </ul>
 <section id="how-conversations-work">
 <h2>How Conversations Work<a class="headerlink" href="#how-conversations-work" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN Conversations acts as a unified hub that routes messages across different communication channels while maintaining conversation context.</p>
+<p>VoIPBin Conversations acts as a unified hub that routes messages across different communication channels while maintaining conversation context.</p>
 <p><strong>Conversation Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>        <span class="o">+----------------+</span>        <span class="o">+---------------+</span>
 <span class="o">|</span>   <span class="n">SMS</span>    <span class="o">|-------&gt;|</span>                <span class="o">|-------&gt;|</span>    <span class="n">SMS</span><span class="o">/</span><span class="n">MMS</span>    <span class="o">|</span>
 <span class="o">+----------+</span>        <span class="o">|</span>                <span class="o">|</span>        <span class="o">+---------------+</span>
                     <span class="o">|</span>                <span class="o">|</span>
-<span class="o">+----------+</span>        <span class="o">|</span>    <span class="n">VoIPBIN</span>     <span class="o">|</span>        <span class="o">+---------------+</span>
+<span class="o">+----------+</span>        <span class="o">|</span>    <span class="n">VoIPBin</span>     <span class="o">|</span>        <span class="o">+---------------+</span>
 <span class="o">|</span>  <span class="n">Email</span>   <span class="o">|-------&gt;|</span>  <span class="n">Conversation</span>  <span class="o">|-------&gt;|</span>     <span class="n">Email</span>     <span class="o">|</span>
 <span class="o">+----------+</span>        <span class="o">|</span>      <span class="n">Hub</span>       <span class="o">|</span>        <span class="o">+---------------+</span>
                     <span class="o">|</span>                <span class="o">|</span>
@@ -692,16 +692,16 @@
 <li><p><strong>Channel</strong>: The communication method (SMS, MMS, email, chat, SNS)</p></li>
 </ul>
 <p><strong>Unified Conversation Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">User</span>                    <span class="n">VoIPBIN</span>                     <span class="n">Recipient</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">User</span>                    <span class="n">VoIPBin</span>                     <span class="n">Recipient</span>
   <span class="o">|</span>                        <span class="o">|</span>                            <span class="o">|</span>
-  <span class="o">|</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">&quot;Hello&quot;</span>           <span class="o">|</span>                            <span class="o">|</span>
+  <span class="o">|</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Hello"</span>           <span class="o">|</span>                            <span class="o">|</span>
   <span class="o">+-----------------------&gt;|</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">conversation</span>      <span class="o">|</span>
   <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="n">auto</span><span class="o">-</span><span class="n">detect</span> <span class="ow">or</span> <span class="n">create</span><span class="p">)</span>    <span class="o">|</span>
   <span class="o">|</span>                        <span class="o">+---------------------------&gt;|</span>
   <span class="o">|</span>                        <span class="o">|</span>              <span class="n">SMS</span> <span class="n">delivered</span> <span class="o">|</span>
   <span class="o">|</span>                        <span class="o">|</span>                            <span class="o">|</span>
   <span class="o">|</span>                        <span class="o">|&lt;---------------------------+</span>
-  <span class="o">|</span>                        <span class="o">|</span>   <span class="n">Email</span> <span class="n">reply</span><span class="p">:</span> <span class="s2">&quot;Hi there&quot;</span>  <span class="o">|</span>
+  <span class="o">|</span>                        <span class="o">|</span>   <span class="n">Email</span> <span class="n">reply</span><span class="p">:</span> <span class="s2">"Hi there"</span>  <span class="o">|</span>
   <span class="o">|</span>                        <span class="o">|</span>                            <span class="o">|</span>
   <span class="o">|&lt;-----------------------+</span>                            <span class="o">|</span>
   <span class="o">|</span> <span class="n">Webhook</span><span class="p">:</span> <span class="n">message</span>       <span class="o">|</span>                            <span class="o">|</span>
@@ -712,7 +712,7 @@
 </section>
 <section id="channel-types">
 <h2>Channel Types<a class="headerlink" href="#channel-types" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN supports multiple communication channels within a single conversation.</p>
+<p>VoIPBin supports multiple communication channels within a single conversation.</p>
 <p><strong>Supported Channels</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -760,7 +760,7 @@ immediate                   interactive     global reach,
 </section>
 <section id="conversation-lifecycle">
 <h2>Conversation Lifecycle<a class="headerlink" href="#conversation-lifecycle" title="Link to this heading">¶</a></h2>
-<p>A conversation is created automatically when VoIPBIN receives an inbound message (SMS/MMS or LINE) or when a message is sent via the API. Conversations persist as long as they are not deleted.</p>
+<p>A conversation is created automatically when VoIPBin receives an inbound message (SMS/MMS or LINE) or when a message is sent via the API. Conversations persist as long as they are not deleted.</p>
 <p><strong>Conversation Message States</strong></p>
 <p>Messages within a conversation move through predictable states.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Message</span> <span class="n">sent</span><span class="o">/</span><span class="n">received</span>
@@ -802,7 +802,7 @@ immediate                   interactive     global reach,
 </section>
 <section id="conversation-rooms">
 <h2>Conversation Rooms<a class="headerlink" href="#conversation-rooms" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN automatically organizes messages into distinct conversation rooms based on participants and channels.</p>
+<p>VoIPBin automatically organizes messages into distinct conversation rooms based on participants and channels.</p>
 <p><strong>Room Matching Logic</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>New message arrives
        |
@@ -836,7 +836,7 @@ immediate                   interactive     global reach,
 </section>
 <section id="how-conversations-are-created">
 <h2>How Conversations Are Created<a class="headerlink" href="#how-conversations-are-created" title="Link to this heading">¶</a></h2>
-<p>Conversations are created automatically by VoIPBIN when inbound messages arrive or when messages are sent through flows. You can list existing conversations with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>.</p>
+<p>Conversations are created automatically by VoIPBin when inbound messages arrive or when messages are sent through flows. You can list existing conversations with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -845,9 +845,9 @@ immediate                   interactive     global reach,
 </section>
 <section id="sending-messages">
 <h2>Sending Messages<a class="headerlink" href="#sending-messages" title="Link to this heading">¶</a></h2>
-<p>Send messages to a conversation and VoIPBIN routes to appropriate channels.</p>
+<p>Send messages to a conversation and VoIPBin routes to appropriate channels.</p>
 <p><strong>Send Message Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBIN</span>                 <span class="n">Participants</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBin</span>                 <span class="n">Participants</span>
     <span class="o">|</span>                          <span class="o">|</span>                         <span class="o">|</span>
     <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">conversations</span><span class="o">/</span>     <span class="o">|</span>                         <span class="o">|</span>
     <span class="o">|</span>   <span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">messages</span>          <span class="o">|</span>                         <span class="o">|</span>
@@ -864,15 +864,15 @@ immediate                   interactive     global reach,
 </pre></div>
 </div>
 <p><strong>Send Message Example</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;/messages?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;text&quot;: &quot;Your order has been shipped!&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;/messages?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "text": "Your order has been shipped!"
+    }'
 </pre></div>
 </div>
 <p><strong>Channel Selection Priority</strong></p>
-<p>When sending to a conversation, VoIPBIN selects the best channel based on:</p>
+<p>When sending to a conversation, VoIPBin selects the best channel based on:</p>
 <ol class="arabic simple">
 <li><p>Participant’s last active channel</p></li>
 <li><p>Message content (media requires MMS/email)</p></li>
@@ -882,9 +882,9 @@ immediate                   interactive     global reach,
 </section>
 <section id="receiving-messages">
 <h2>Receiving Messages<a class="headerlink" href="#receiving-messages" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN delivers inbound messages to your application via webhooks.</p>
+<p>VoIPBin delivers inbound messages to your application via webhooks.</p>
 <p><strong>Webhook Delivery</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Participant</span>             <span class="n">VoIPBIN</span>                      <span class="n">Your</span> <span class="n">App</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Participant</span>             <span class="n">VoIPBin</span>                      <span class="n">Your</span> <span class="n">App</span>
      <span class="o">|</span>                     <span class="o">|</span>                            <span class="o">|</span>
      <span class="o">|</span> <span class="n">SMS</span> <span class="n">reply</span>           <span class="o">|</span>                            <span class="o">|</span>
      <span class="o">+--------------------&gt;|</span>                            <span class="o">|</span>
@@ -901,26 +901,26 @@ immediate                   interactive     global reach,
 </div>
 <p><strong>Inbound Message Webhook</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation_message_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg-xyz-789&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cust-1111-3333&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;conversation_id&quot;</span><span class="p">:</span> <span class="s2">&quot;conv-abc-123&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;incoming&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;done&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ref-7777-9999&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+155****6543&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"conversation_message_created"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"msg-xyz-789"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"cust-1111-3333"</span><span class="p">,</span>
+        <span class="s2">"conversation_id"</span><span class="p">:</span> <span class="s2">"conv-abc-123"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"incoming"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"done"</span><span class="p">,</span>
+        <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"message"</span><span class="p">,</span>
+        <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"ref-7777-9999"</span><span class="p">,</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+155****6543"</span>
         <span class="p">},</span>
-        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+155****0000&quot;</span>
+        <span class="s2">"destination"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+155****0000"</span>
         <span class="p">},</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thanks for the update!&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000&quot;</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Thanks for the update!"</span><span class="p">,</span>
+        <span class="s2">"medias"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00.000000"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -940,7 +940,7 @@ message the remote party is the <code class="docutils literal notranslate"><span
 Content-Type:<span class="w"> </span>application/json
 
 <span class="o">{</span>
-<span class="w">    </span><span class="s2">&quot;owner_id&quot;</span>:<span class="w"> </span><span class="s2">&quot;&lt;agent-uuid&gt;&quot;</span>
+<span class="w">    </span><span class="s2">"owner_id"</span>:<span class="w"> </span><span class="s2">"&lt;agent-uuid&gt;"</span>
 <span class="o">}</span>
 </pre></div>
 </div>
@@ -956,7 +956,7 @@ PUT<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conver
 Content-Type:<span class="w"> </span>application/json
 
 <span class="o">{</span>
-<span class="w">    </span><span class="s2">&quot;owner_id&quot;</span>:<span class="w"> </span><span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span>
+<span class="w">    </span><span class="s2">"owner_id"</span>:<span class="w"> </span><span class="s2">"00000000-0000-0000-0000-000000000000"</span>
 <span class="o">}</span>
 </pre></div>
 </div>
@@ -1045,28 +1045,28 @@ POST<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conve
 </section>
 <section id="cross-channel-continuity">
 <h2>Cross-Channel Continuity<a class="headerlink" href="#cross-channel-continuity" title="Link to this heading">¶</a></h2>
-<p>The key feature of VoIPBIN Conversations is seamless channel switching.</p>
+<p>The key feature of VoIPBin Conversations is seamless channel switching.</p>
 <p><strong>Cross-Channel Example</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Conversation</span><span class="p">:</span> <span class="s2">&quot;Order Support #5678&quot;</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Conversation</span><span class="p">:</span> <span class="s2">"Order Support #5678"</span>                           <span class="o">|</span>
 <span class="o">+---------------------------------------------------------------+</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
 <span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">]</span> <span class="n">Customer</span> <span class="n">via</span> <span class="n">SMS</span><span class="p">:</span>                                     <span class="o">|</span>
-<span class="o">|</span>         <span class="s2">&quot;When will my order arrive?&quot;</span>                          <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"When will my order arrive?"</span>                          <span class="o">|</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
 <span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">05</span><span class="p">]</span> <span class="n">Support</span> <span class="n">via</span> <span class="n">Email</span><span class="p">:</span>                                    <span class="o">|</span>
-<span class="o">|</span>         <span class="s2">&quot;Your order is scheduled for Friday delivery.         |</span>
-<span class="o">|</span>          <span class="n">Here</span><span class="s1">&#39;s the tracking link: ...&quot;                       |</span>
+<span class="o">|</span>         <span class="s2">"Your order is scheduled for Friday delivery.         |</span>
+<span class="o">|</span>          <span class="n">Here</span><span class="s1">'s the tracking link: ..."                       |</span>
 <span class="o">|</span>         <span class="p">[</span><span class="n">attachment</span><span class="p">:</span> <span class="n">tracking</span><span class="o">-</span><span class="n">details</span><span class="o">.</span><span class="n">pdf</span><span class="p">]</span>                    <span class="o">|</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
 <span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="n">Customer</span> <span class="n">via</span> <span class="n">Chat</span><span class="p">:</span>                                    <span class="o">|</span>
-<span class="o">|</span>         <span class="s2">&quot;Can I change the delivery address?&quot;</span>                  <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"Can I change the delivery address?"</span>                  <span class="o">|</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
 <span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span> <span class="n">Support</span> <span class="n">via</span> <span class="n">Chat</span><span class="p">:</span>                                     <span class="o">|</span>
-<span class="o">|</span>         <span class="s2">&quot;Yes, I&#39;ve updated it. Sending confirmation...&quot;</span>       <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"Yes, I've updated it. Sending confirmation..."</span>       <span class="o">|</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
 <span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">13</span><span class="p">]</span> <span class="n">Support</span> <span class="n">via</span> <span class="n">SMS</span><span class="p">:</span>                                      <span class="o">|</span>
-<span class="o">|</span>         <span class="s2">&quot;Address updated! Confirmation sent to your email.&quot;</span>   <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"Address updated! Confirmation sent to your email."</span>   <span class="o">|</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
 <span class="o">+---------------------------------------------------------------+</span>
 </pre></div>
@@ -1081,7 +1081,7 @@ POST<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conve
 </section>
 <section id="event-types">
 <h2>Event Types<a class="headerlink" href="#event-types" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN sends webhook events for conversation activities.</p>
+<p>VoIPBin sends webhook events for conversation activities.</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -1116,11 +1116,11 @@ POST<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conve
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h2>
 <p><strong>Scenario 1: Customer Support Ticket</strong></p>
 <p>Unified support across channels.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="n">SMS</span> <span class="s2">&quot;Having login issues&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="n">SMS</span> <span class="s2">"Having login issues"</span>
      <span class="o">|</span>
      <span class="n">v</span>
 <span class="o">+---------------------------+</span>
-<span class="o">|</span> <span class="n">VoIPBIN</span> <span class="n">creates</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">VoIPBin</span> <span class="n">creates</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">conversation</span>              <span class="o">|</span>
 <span class="o">+---------------------------+</span>
      <span class="o">|</span>
@@ -1141,26 +1141,26 @@ POST<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conve
 <p>Multi-channel order updates.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Order</span> <span class="n">placed</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">&quot;Order confirmed! #12345&quot;</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Order confirmed! #12345"</span>          <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
                    <span class="o">|</span>
                    <span class="n">v</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Order</span> <span class="n">shipped</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Email</span><span class="p">:</span> <span class="n">Tracking</span> <span class="n">details</span> <span class="o">+</span> <span class="n">invoice</span>       <span class="o">|</span>
-<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">&quot;Your order shipped!&quot;</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Your order shipped!"</span>              <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
                    <span class="o">|</span>
                    <span class="n">v</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Out</span> <span class="k">for</span> <span class="n">delivery</span>                           <span class="o">|</span>
-<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">&quot;Arriving today by 5pm&quot;</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Arriving today by 5pm"</span>            <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
                    <span class="o">|</span>
                    <span class="n">v</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Delivered</span>                                  <span class="o">|</span>
-<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">&quot;Delivered! Rate your experience&quot;</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Delivered! Rate your experience"</span>  <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
@@ -1170,10 +1170,10 @@ POST<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conve
     <span class="n">Email</span> <span class="o">-&gt;</span> <span class="n">Detailed</span> <span class="n">appointment</span> <span class="n">info</span>
 
 <span class="mi">1</span> <span class="n">day</span> <span class="n">before</span><span class="p">:</span>
-    <span class="n">SMS</span> <span class="o">-&gt;</span> <span class="s2">&quot;Reminder: Appointment tomorrow at 2pm&quot;</span>
+    <span class="n">SMS</span> <span class="o">-&gt;</span> <span class="s2">"Reminder: Appointment tomorrow at 2pm"</span>
 
 <span class="mi">2</span> <span class="n">hours</span> <span class="n">before</span><span class="p">:</span>
-    <span class="n">SMS</span> <span class="o">-&gt;</span> <span class="s2">&quot;Your appointment is in 2 hours&quot;</span>
+    <span class="n">SMS</span> <span class="o">-&gt;</span> <span class="s2">"Your appointment is in 2 hours"</span>
 
 <span class="n">Customer</span> <span class="n">replies</span> <span class="n">via</span> <span class="nb">any</span> <span class="n">channel</span>
     <span class="o">-&gt;</span> <span class="n">All</span> <span class="n">responses</span> <span class="ow">in</span> <span class="n">same</span> <span class="n">conversation</span>
@@ -1329,7 +1329,7 @@ Auto-generated titles apply only to conversations created automatically; convers
 </section>
 <section id="setting-up-a-whatsapp-conversation-account">
 <h2>Setting Up a WhatsApp Conversation Account<a class="headerlink" href="#setting-up-a-whatsapp-conversation-account" title="Link to this heading">¶</a></h2>
-<p>To receive and send WhatsApp messages through VoIPBIN, you must create a <code class="docutils literal notranslate"><span class="pre">whatsapp</span></code> conversation account and configure Meta Business Manager to forward events to VoIPBIN’s webhook endpoint.</p>
+<p>To receive and send WhatsApp messages through VoIPBin, you must create a <code class="docutils literal notranslate"><span class="pre">whatsapp</span></code> conversation account and configure Meta Business Manager to forward events to VoIPBin’s webhook endpoint.</p>
 <p><strong>Prerequisites</strong></p>
 <ul class="simple">
 <li><p>A Meta Business Manager account with a WhatsApp Business App set up.</p></li>
@@ -1338,34 +1338,34 @@ Auto-generated titles apply only to conversations created automatically; convers
 <li><p>The Meta app secret for your app. Found in Meta Business Manager under <strong>App settings → Basic</strong>.</p></li>
 </ul>
 <p><strong>Step 1 — Create the conversation account</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/conversation_accounts?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;type&quot;: &quot;whatsapp&quot;,
-        &quot;name&quot;: &quot;My WhatsApp Account&quot;,
-        &quot;detail&quot;: &quot;WhatsApp Business account for customer support&quot;,
-        &quot;token&quot;: &quot;&lt;META_SYSTEM_USER_ACCESS_TOKEN&gt;&quot;,
-        &quot;secret&quot;: &quot;&lt;YOUR_WEBHOOK_VERIFY_TOKEN&gt;&quot;,
-        &quot;provider_data&quot;: {
-            &quot;phone_number_id&quot;: &quot;&lt;META_PHONE_NUMBER_ID&gt;&quot;,
-            &quot;app_secret&quot;: &quot;&lt;META_APP_SECRET&gt;&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/conversation_accounts?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "type": "whatsapp",
+        "name": "My WhatsApp Account",
+        "detail": "WhatsApp Business account for customer support",
+        "token": "&lt;META_SYSTEM_USER_ACCESS_TOKEN&gt;",
+        "secret": "&lt;YOUR_WEBHOOK_VERIFY_TOKEN&gt;",
+        "provider_data": {
+            "phone_number_id": "&lt;META_PHONE_NUMBER_ID&gt;",
+            "app_secret": "&lt;META_APP_SECRET&gt;"
         }
-    }&#39;
+    }'
 
 {
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;type&quot;: &quot;whatsapp&quot;,
-    &quot;name&quot;: &quot;My WhatsApp Account&quot;,
-    &quot;detail&quot;: &quot;WhatsApp Business account for customer support&quot;,
-    &quot;provider_data&quot;: {
-        &quot;phone_number_id&quot;: &quot;&lt;META_PHONE_NUMBER_ID&gt;&quot;,
-        &quot;app_secret&quot;: &quot;&lt;META_APP_SECRET&gt;&quot;
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "type": "whatsapp",
+    "name": "My WhatsApp Account",
+    "detail": "WhatsApp Business account for customer support",
+    "provider_data": {
+        "phone_number_id": "&lt;META_PHONE_NUMBER_ID&gt;",
+        "app_secret": "&lt;META_APP_SECRET&gt;"
     },
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;tm_create&quot;: &quot;2026-01-15T09:30:00.000000Z&quot;,
-    &quot;tm_update&quot;: &quot;2026-01-15T09:30:00.000000Z&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01T00:00:00.000000Z&quot;
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "tm_create": "2026-01-15T09:30:00.000000Z",
+    "tm_update": "2026-01-15T09:30:00.000000Z",
+    "tm_delete": "9999-01-01T00:00:00.000000Z"
 }
 </pre></div>
 </div>
@@ -1380,9 +1380,9 @@ Auto-generated titles apply only to conversations created automatically; convers
 <li><p><strong>Verify token</strong>: The value you set in the <code class="docutils literal notranslate"><span class="pre">secret</span></code> field when creating the account.</p></li>
 <li><p><strong>Webhook fields to subscribe</strong>: <code class="docutils literal notranslate"><span class="pre">messages</span></code></p></li>
 </ul>
-<p>Meta will send a <code class="docutils literal notranslate"><span class="pre">GET</span></code> request to the callback URL to verify ownership. VoIPBIN handles this automatically using the <code class="docutils literal notranslate"><span class="pre">secret</span></code> you configured.</p>
+<p>Meta will send a <code class="docutils literal notranslate"><span class="pre">GET</span></code> request to the callback URL to verify ownership. VoIPBin handles this automatically using the <code class="docutils literal notranslate"><span class="pre">secret</span></code> you configured.</p>
 <p><strong>Step 4 — Verify the setup</strong></p>
-<p>Send a test WhatsApp message to your configured phone number. VoIPBIN will:</p>
+<p>Send a test WhatsApp message to your configured phone number. VoIPBin will:</p>
 <ol class="arabic simple">
 <li><p>Receive the inbound webhook from Meta.</p></li>
 <li><p>Validate the <code class="docutils literal notranslate"><span class="pre">X-Hub-Signature-256</span></code> signature using the <code class="docutils literal notranslate"><span class="pre">app_secret</span></code> from <code class="docutils literal notranslate"><span class="pre">provider_data</span></code>.</p></li>
@@ -1496,8 +1496,8 @@ Auto-generated titles apply only to conversations created automatically; convers
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

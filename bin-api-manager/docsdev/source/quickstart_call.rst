@@ -8,12 +8,12 @@ Prerequisites
 ~~~~~~~~~~~~~
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
-* A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
+* A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBin account. Obtain available numbers via ``GET /numbers``.
 * A registered SIP extension and softphone. See :ref:`Extension & Softphone Setup <quickstart-extension>`.
 
 .. note:: **AI Implementation Hint**
 
-   Phone numbers must be in E.164 format: ``+`` followed by country code and number, no dashes or spaces (e.g., ``+15551234567``, ``+821012345678``). The ``source`` number must be a VoIPBIN-owned number — using an unowned number will result in a ``400 Bad Request``. The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart-extension>`.
+   Phone numbers must be in E.164 format: ``+`` followed by country code and number, no dashes or spaces (e.g., ``+15551234567``, ``+821012345678``). The ``source`` number must be a VoIPBin-owned number — using an unowned number will result in a ``400 Bad Request``. The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart-extension>`.
 
 Make your first call
 ^^^^^^^^^^^^^^^^^^^^
@@ -38,7 +38,7 @@ This example calls your registered extension and plays a text-to-speech greeting
                 {
                     "type": "talk",
                     "option": {
-                        "text": "Hello. This is a VoIPBIN test call. Thank you, bye.",
+                        "text": "Hello. This is a VoIPBin test call. Thank you, bye.",
                         "language": "en-US"
                     }
                 }
@@ -87,7 +87,7 @@ Troubleshooting
 ~~~~~~~~~~~~~~~
 
 * **400 Bad Request:**
-    * **Cause:** The ``source`` number is not owned by your VoIPBIN account, or the phone number is not in E.164 format.
+    * **Cause:** The ``source`` number is not owned by your VoIPBin account, or the phone number is not in E.164 format.
     * **Fix:** Verify your numbers via ``GET /numbers``. Ensure all phone numbers start with ``+`` followed by digits only (e.g., ``+15551234567``).
 
 * **Call created but Linphone does not ring:**

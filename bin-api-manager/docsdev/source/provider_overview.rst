@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free. Providers are configuration records. Costs are incurred when calls are routed through the configured provider, not when creating the provider entry.
    * **Async:** No. ``POST https://api.voipbin.net/v1.0/providers`` returns immediately with the created provider.
 
-VoIPBIN's Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBIN to the PSTN (Public Switched Telephone Network) and other external networks.
+VoIPBin's Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBin to the PSTN (Public Switched Telephone Network) and other external networks.
 
 With the Provider API you can:
 
@@ -24,7 +24,7 @@ With the Provider API you can:
 Easy Provider Setup
 -------------------
 
-``POST https://api.voipbin.net/v1.0/providers/setup`` lets a ProjectSuperAdmin submit a carrier API key and have VoIPBIN automatically validate the key, create the carrier-side SIP credential connection, and create the VoIPBin provider record — all in a single request.
+``POST https://api.voipbin.net/v1.0/providers/setup`` lets a ProjectSuperAdmin submit a carrier API key and have VoIPBin automatically validate the key, create the carrier-side SIP credential connection, and create the VoIPBin provider record — all in a single request.
 
 **Supported carriers:** ``telnyx``
 
@@ -37,7 +37,7 @@ Easy Provider Setup
     |                                            |
     |  1. Validate carrier API key               |
     |  2. Create carrier SIP credential conn.    |
-    |  3. Create VoIPBIN provider record         |
+    |  3. Create VoIPBin provider record         |
     |  Returns: provider (id, hostname, …)       |
     +--------------------------------------------+
 
@@ -48,7 +48,7 @@ Easy Provider Setup
 
 How Providers Work
 ------------------
-Providers connect VoIPBIN to external telephone networks.
+Providers connect VoIPBin to external telephone networks.
 
 **Provider Architecture**
 
@@ -58,7 +58,7 @@ Providers connect VoIPBIN to external telephone networks.
     |                         Provider System                               |
     +-----------------------------------------------------------------------+
 
-    VoIPBIN                         Provider                    External
+    VoIPBin                         Provider                    External
        |                               |                           |
        | Outbound call                 |                           |
        +------------------------------>|                           |
@@ -70,7 +70,7 @@ Providers connect VoIPBIN to external telephone networks.
        |                               |                           |
 
     +-------------------+        +-------------------+        +-----------+
-    |    VoIPBIN        |        |     Provider      |        |   PSTN    |
+    |    VoIPBin        |        |     Provider      |        |   PSTN    |
     |    Platform       |<------>|   (SIP Trunk)     |<------>|  Network  |
     +-------------------+        +-------------------+        +-----------+
                                         |
@@ -141,20 +141,20 @@ Configure providers with technical parameters.
 Codec Configuration
 -------------------
 
-The ``codecs`` field controls which audio codecs VoIPBIN offers during SDP negotiation for PSTN
+The ``codecs`` field controls which audio codecs VoIPBin offers during SDP negotiation for PSTN
 outbound calls routed through this provider.
 
 **How it works:**
 
-When an outbound call is placed through a SIP provider, VoIPBIN sends an SDP offer listing the
+When an outbound call is placed through a SIP provider, VoIPBin sends an SDP offer listing the
 allowed codecs in the order specified. The provider (carrier) selects from that list during SDP
-negotiation. Setting ``codecs`` restricts VoIPBIN's offer to only the listed codecs.
+negotiation. Setting ``codecs`` restricts VoIPBin's offer to only the listed codecs.
 
 **Codecs field rules:**
 
 - **Format:** Comma-separated codec names (e.g., ``"PCMU,PCMA"``). No spaces around commas.
-- **Empty string (``""``):** No restriction applied — VoIPBIN uses its system-default codec list during SDP negotiation.
-- **PSTN outbound only:** This field only affects calls routed to the PSTN through this provider. SIP-to-SIP calls within VoIPBIN are not affected.
+- **Empty string (``""``):** No restriction applied — VoIPBin uses its system-default codec list during SDP negotiation.
+- **PSTN outbound only:** This field only affects calls routed to the PSTN through this provider. SIP-to-SIP calls within VoIPBin are not affected.
 - **Valid only for type ``sip``:** Ignored for other provider types.
 
 **Commonly used codecs:**
@@ -179,14 +179,14 @@ negotiation. Setting ``codecs`` restricts VoIPBIN's offer to only the listed cod
 .. note:: **AI Implementation Hint**
 
    Use ``codecs`` to force a specific codec when a carrier has interoperability issues with
-   VoIPBIN's default SDP offer. For example, if a carrier only supports G.711 variants, set
+   VoIPBin's default SDP offer. For example, if a carrier only supports G.711 variants, set
    ``"codecs": "PCMU,PCMA"`` to prevent codec mismatch errors. Leave ``codecs`` as an empty
    string (``""``) unless you have a specific reason to restrict the codec list — restricting
    unnecessarily can reduce audio quality options.
 
 Provider Types
 --------------
-VoIPBIN supports various provider configurations.
+VoIPBin supports various provider configurations.
 
 **SIP Provider**
 
@@ -201,7 +201,7 @@ VoIPBIN supports various provider configurations.
     +--------------------------------------------+
 
     Outbound Call Flow:
-    VoIPBIN -> SIP INVITE -> Provider -> PSTN
+    VoIPBin -> SIP INVITE -> Provider -> PSTN
 
 
 Number Formatting

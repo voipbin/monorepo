@@ -102,7 +102,7 @@ Call Never Connects
     active number you already own. Virtual numbers cannot be
     used as the source for outgoing PSTN calls.
 
-    If the source fails validation, VoIPBIN falls back to the
+    If the source fails validation, VoIPBin falls back to the
     OutboundConfig's ``default_outgoing_source_number_id``. If
     that field is not set (uuid.Nil), the call is rejected.
 
@@ -211,7 +211,7 @@ Source Number / Caller ID Issues
 
 .. code::
 
-    If the source fails validation, VoIPBIN checks the customer's
+    If the source fails validation, VoIPBin checks the customer's
     OutboundConfig for ``default_outgoing_source_number_id``.
 
     If set: The call uses that number as caller ID (after re-validation
@@ -256,7 +256,7 @@ Call Rings But No Answer
 
     "dialout":
     +------------------------------------------+
-    | VoIPBIN's dial timeout expired before    |
+    | VoIPBin's dial timeout expired before    |
     | the call was answered.                   |
     |                                          |
     | Duration: Your configured timeout        |
@@ -326,7 +326,7 @@ Call Answers But No Audio
     - RTP flows but audio is garbled or silent
 
     Fix:
-    VoIPBIN auto-transcodes between codecs, but check
+    VoIPBin auto-transcodes between codecs, but check
     endpoint codec configuration if using SIP trunking.
 
 **Cause 3: Hold State Stuck**
@@ -351,7 +351,7 @@ Call Answers But No Audio
 
 .. note:: **AI Implementation Hint**
 
-   For WebRTC no-audio issues, the problem is almost always network-related (firewall, NAT, TURN). Check the browser's developer console for ICE connection state errors. For SIP calls with one-way audio, the issue is typically NAT -- the RTP packets are being sent to the wrong IP address. VoIPBIN's RTPEngine handles most NAT traversal automatically.
+   For WebRTC no-audio issues, the problem is almost always network-related (firewall, NAT, TURN). Check the browser's developer console for ICE connection state errors. For SIP calls with one-way audio, the issue is typically NAT -- the RTP packets are being sent to the wrong IP address. VoIPBin's RTPEngine handles most NAT traversal automatically.
 
 Flow Actions Not Executing
 --------------------------
@@ -455,7 +455,7 @@ Webhooks Not Received
     - Error indicates connection refused or timeout
 
     Fix:
-    - Whitelist VoIPBIN IP ranges in your firewall
+    - Whitelist VoIPBin IP ranges in your firewall
     - Use valid SSL certificate (self-signed certs are rejected)
     - Ensure your endpoint returns HTTP 200 OK
 
@@ -465,7 +465,7 @@ Webhooks Not Received
 
     Symptoms:
     - Webhook times out (> 5 seconds)
-    - VoIPBIN retries, causing duplicate deliveries
+    - VoIPBin retries, causing duplicate deliveries
 
     Fix:
     - Return HTTP 200 immediately
@@ -493,7 +493,7 @@ Webhooks Not Received
 
 .. note:: **AI Implementation Hint**
 
-   Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Webhook configuration is managed via the customer profile: use ``GET /customer`` to check ``webhook_method`` and ``webhook_uri``, and ``PUT /customer`` to update them. VoIPBIN sends all event types to your configured endpoint -- there is no per-event subscription.
+   Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Webhook configuration is managed via the customer profile: use ``GET /customer`` to check ``webhook_method`` and ``webhook_uri``, and ``PUT /customer`` to update them. VoIPBin sends all event types to your configured endpoint -- there is no per-event subscription.
 
 Recording Issues
 ----------------
@@ -704,7 +704,7 @@ Error Reference
     | busy           | Destination busy                 | Retry later            |
     | noanswer       | No answer before timeout         | Leave voicemail        |
     | cancel         | Caller cancelled                 | No action needed       |
-    | dialout        | VoIPBIN timeout                  | Increase dial_timeout  |
+    | dialout        | VoIPBin timeout                  | Increase dial_timeout  |
     | timeout        | Max call duration exceeded       | Check timeout settings |
     | amd            | Answering machine detected       | Expected behavior      |
     +----------------+----------------------------------+------------------------+

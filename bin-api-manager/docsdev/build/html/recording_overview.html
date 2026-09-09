@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Recording" href="recording_struct_recording.html"><link rel="prev" title="Recording" href="recording.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,7 +648,7 @@
 <li><p><strong>Async:</strong> Yes. Recordings transition through states: <code class="docutils literal notranslate"><span class="pre">initiating</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">recording</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">stopping</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">ended</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/recordings/{id}</span></code> to check for <code class="docutils literal notranslate"><span class="pre">ended</span></code> status before downloading.</p></li>
 </ul>
 </div>
-<p>VoIPBIN’s Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.</p>
+<p>VoIPBin’s Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.</p>
 <p>With the Recording API you can:</p>
 <ul class="simple">
 <li><p>Record calls and conferences in real-time</p></li>
@@ -659,7 +659,7 @@
 </ul>
 <section id="how-recording-works">
 <h2>How Recording Works<a class="headerlink" href="#how-recording-works" title="Link to this heading">¶</a></h2>
-<p>When you start a recording, VoIPBIN captures the audio stream and writes it to cloud storage. The recording continues until you stop it, the call ends, or the maximum duration is reached.</p>
+<p>When you start a recording, VoIPBin captures the audio stream and writes it to cloud storage. The recording continues until you stop it, the call ends, or the maximum duration is reached.</p>
 <p><strong>Recording Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------+</span>        <span class="o">+----------------+</span>        <span class="o">+-----------+</span>
 <span class="o">|</span>  <span class="n">Call</span>  <span class="o">|--</span><span class="n">audio</span><span class="o">--&gt;|</span>   <span class="n">Recording</span>  <span class="o">|--</span><span class="n">file</span><span class="o">--&gt;|</span>  <span class="n">Storage</span>  <span class="o">|</span>
@@ -761,7 +761,7 @@ Recording</p></td>
 </section>
 <section id="starting-and-stopping-recordings">
 <h2>Starting and Stopping Recordings<a class="headerlink" href="#starting-and-stopping-recordings" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN provides multiple ways to control recordings based on your use case.</p>
+<p>VoIPBin provides multiple ways to control recordings based on your use case.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -769,7 +769,7 @@ Recording</p></td>
 </div>
 <p><strong>Method 1: Via Flow Action</strong></p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">recording_start</span></code> and <code class="docutils literal notranslate"><span class="pre">recording_stop</span></code> actions in your call flow for automatic recording control.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Flow</span>                    <span class="n">VoIPBIN</span>                     <span class="n">Storage</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Flow</span>                    <span class="n">VoIPBin</span>                     <span class="n">Storage</span>
     <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
     <span class="o">|</span> <span class="n">recording_start</span> <span class="n">action</span>    <span class="o">|</span>                           <span class="o">|</span>
     <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
@@ -787,30 +787,30 @@ Recording</p></td>
 </div>
 <p><strong>Example flow with recording:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"answer"</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;wav&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_start"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"wav"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This call is being recorded for quality purposes.&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"This call is being recorded for quality purposes."</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">}]</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"connect"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">}]</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_stop"</span>
         <span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
@@ -819,11 +819,11 @@ Recording</p></td>
 <p><strong>Method 2: Via API (Interrupt Method)</strong></p>
 <p>Start or stop recording on an active call or conference programmatically.</p>
 <p><strong>Start recording on a call:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/recording_start?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;format&quot;: &quot;wav&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/recording_start?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "format": "wav"
+    }'
 </pre></div>
 </div>
 <p>The request body also accepts these optional fields (all default to their zero value – <code class="docutils literal notranslate"><span class="pre">0</span></code>/empty – when omitted, which disables the corresponding limit):</p>
@@ -834,15 +834,15 @@ Recording</p></td>
 <li><p><code class="docutils literal notranslate"><span class="pre">on_end_flow_id</span></code> (UUID): A flow to execute automatically once the recording ends.</p></li>
 </ul>
 <p><strong>Stop recording on a call:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/recording_stop?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/recording_stop?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Start recording on a conference:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/conferences/&lt;conference-id&gt;/recording_start?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;format&quot;: &quot;wav&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/conferences/&lt;conference-id&gt;/recording_start?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "format": "wav"
+    }'
 </pre></div>
 </div>
 <p><strong>When to Use Each Method</strong></p>
@@ -866,7 +866,7 @@ Recording</p></td>
 </section>
 <section id="recording-storage">
 <h2>Recording Storage<a class="headerlink" href="#recording-storage" title="Link to this heading">¶</a></h2>
-<p>Recordings are stored securely in Google Cloud Storage and accessible via the VoIPBIN API.</p>
+<p>Recordings are stored securely in Google Cloud Storage and accessible via the VoIPBin API.</p>
 <p><strong>Storage Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Download</span><span class="p">:</span>
 <span class="o">+------+</span>   <span class="n">GET</span> <span class="o">/</span><span class="n">recordingfiles</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>
@@ -882,15 +882,15 @@ Recording</p></td>
 </div>
 <p><strong>Accessing Recordings</strong></p>
 <p><em>List all recordings:</em></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/recordings?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/recordings?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><em>Get recording metadata:</em></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/recordings/&lt;recording-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/recordings/&lt;recording-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><em>Download recording file:</em></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/recordingfiles/&lt;recording-id&gt;?token=&lt;token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/recordingfiles/&lt;recording-id&gt;?token=&lt;token&gt;' \
     --output recording.wav
 </pre></div>
 </div>
@@ -926,12 +926,12 @@ Recording</p></td>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------------------------------------------------------+</span>
 <span class="o">|</span>                           <span class="n">Call</span>                                    <span class="o">|</span>
 <span class="o">|</span>                                                                   <span class="o">|</span>
-<span class="o">|</span>   <span class="n">recording_id</span><span class="p">:</span> <span class="s2">&quot;abc-123&quot;</span>     <span class="o">&lt;-</span> <span class="n">Currently</span> <span class="n">active</span> <span class="n">recording</span>       <span class="o">|</span>
+<span class="o">|</span>   <span class="n">recording_id</span><span class="p">:</span> <span class="s2">"abc-123"</span>     <span class="o">&lt;-</span> <span class="n">Currently</span> <span class="n">active</span> <span class="n">recording</span>       <span class="o">|</span>
 <span class="o">|</span>                                                                   <span class="o">|</span>
 <span class="o">|</span>   <span class="n">recording_ids</span><span class="p">:</span> <span class="p">[</span>            <span class="o">&lt;-</span> <span class="n">All</span> <span class="n">recordings</span> <span class="kn">from</span><span class="w"> </span><span class="nn">this</span> <span class="n">call</span>    <span class="o">|</span>
-<span class="o">|</span>       <span class="s2">&quot;abc-123&quot;</span><span class="p">,</span>                                                  <span class="o">|</span>
-<span class="o">|</span>       <span class="s2">&quot;def-456&quot;</span><span class="p">,</span>                                                  <span class="o">|</span>
-<span class="o">|</span>       <span class="s2">&quot;ghi-789&quot;</span>                                                   <span class="o">|</span>
+<span class="o">|</span>       <span class="s2">"abc-123"</span><span class="p">,</span>                                                  <span class="o">|</span>
+<span class="o">|</span>       <span class="s2">"def-456"</span><span class="p">,</span>                                                  <span class="o">|</span>
+<span class="o">|</span>       <span class="s2">"ghi-789"</span>                                                   <span class="o">|</span>
 <span class="o">|</span>   <span class="p">]</span>                                                               <span class="o">|</span>
 <span class="o">|</span>                                                                   <span class="o">|</span>
 <span class="o">+-------------------------------------------------------------------+</span>
@@ -960,11 +960,11 @@ Recording</p></td>
 <p><strong>Scenario 1: Record Entire Call</strong></p>
 <p>Start recording immediately when the call is answered.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">},</span>
-        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">},</span>
-        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span> <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}},</span>
-        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span><span class="p">}</span>
+    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"answer"</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_start"</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"connect"</span><span class="p">,</span> <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}},</span>
+        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_stop"</span><span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -975,9 +975,9 @@ Recording</p></td>
      <span class="o">|</span>
      <span class="n">v</span>
 <span class="o">+------------------+</span>
-<span class="o">|</span> <span class="s2">&quot;Press 1 to      |</span>
+<span class="o">|</span> <span class="s2">"Press 1 to      |</span>
 <span class="o">|</span>  <span class="n">consent</span> <span class="n">to</span>      <span class="o">|</span>
-<span class="o">|</span>  <span class="n">recording</span><span class="s2">&quot;      |</span>
+<span class="o">|</span>  <span class="n">recording</span><span class="s2">"      |</span>
 <span class="o">+--------+---------+</span>
          <span class="o">|</span>
     <span class="o">+----+----+</span>
@@ -1016,7 +1016,7 @@ Recording</p></td>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">active</span>
      <span class="o">|</span>
      <span class="n">v</span>
-<span class="s2">&quot;Please provide your credit card number&quot;</span>
+<span class="s2">"Please provide your credit card number"</span>
      <span class="o">|</span>
      <span class="n">v</span>
 <span class="n">STOP</span> <span class="n">recording</span>
@@ -1038,14 +1038,14 @@ Recording</p></td>
 <ul class="simple">
 <li><p><strong>Consent</strong>: Many jurisdictions require consent before recording. Always announce recordings.</p></li>
 <li><p><strong>Retention</strong>: Define clear retention policies. Delete recordings when no longer needed.</p></li>
-<li><p><strong>Access Control</strong>: Limit who can access recordings. Use VoIPBIN’s permission system.</p></li>
+<li><p><strong>Access Control</strong>: Limit who can access recordings. Use VoIPBin’s permission system.</p></li>
 </ul>
 <p><strong>2. Announcement Examples</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This call may be recorded for quality and training purposes.&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"This call may be recorded for quality and training purposes."</span><span class="p">,</span>
+        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1104,7 +1104,7 @@ immediately stops</p></td>
 after starting. Ensure audio is flowing.</p></td>
 </tr>
 <tr class="row-odd"><td><p>File won’t play</p></td>
-<td><p>Verify file format. VoIPBIN uses WAV format.
+<td><p>Verify file format. VoIPBin uses WAV format.
 Some players may not support 8kHz mono.</p></td>
 </tr>
 <tr class="row-even"><td><p>Audio is silent</p></td>
@@ -1226,8 +1226,8 @@ Muted calls produce silent recordings.</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Advanced Call Scenarios" href="call_scenarios.html"><link rel="prev" title="Tutorial" href="call_tutorial.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Internal Call Sequences - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -639,7 +639,7 @@
         <article role="main" id="furo-main-content">
           <section id="internal-call-sequences">
 <span id="call-sequences"></span><h1>Internal Call Sequences<a class="headerlink" href="#internal-call-sequences" title="Link to this heading">¶</a></h1>
-<p>This section reveals how calls flow through VoIPBIN’s internal components. Understanding these sequences helps developers debug issues and optimize their integrations.</p>
+<p>This section reveals how calls flow through VoIPBin’s internal components. Understanding these sequences helps developers debug issues and optimize their integrations.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -647,7 +647,7 @@
 </div>
 <section id="inbound-pstn-call-flow">
 <h2>Inbound PSTN Call Flow<a class="headerlink" href="#inbound-pstn-call-flow" title="Link to this heading">¶</a></h2>
-<p>When someone calls your VoIPBIN number from a regular phone:</p>
+<p>When someone calls your VoIPBin number from a regular phone:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Inbound</span> <span class="n">PSTN</span> <span class="n">Call</span> <span class="o">-</span> <span class="n">Complete</span> <span class="n">Internal</span> <span class="n">Flow</span><span class="p">:</span>
 
 <span class="n">PSTN</span> <span class="n">Carrier</span>     <span class="n">Kamailio</span>        <span class="n">Asterisk</span>      <span class="n">asterisk</span><span class="o">-</span><span class="n">proxy</span>    <span class="n">call</span><span class="o">-</span><span class="n">manager</span>     <span class="n">flow</span><span class="o">-</span><span class="n">manager</span>
@@ -1083,7 +1083,7 @@
    <span class="o">|</span>           <span class="o">|</span> <span class="n">Connected</span>    <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
    <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
    <span class="o">|</span> <span class="n">Speak</span><span class="p">:</span>    <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
-   <span class="o">|</span> <span class="s2">&quot;Hello&quot;</span>   <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
+   <span class="o">|</span> <span class="s2">"Hello"</span>   <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
    <span class="o">+----------&gt;|</span>              <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
    <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
    <span class="o">|</span>           <span class="o">|</span> <span class="n">Audio</span> <span class="n">Frame</span>  <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
@@ -1099,7 +1099,7 @@
    <span class="o">|</span>           <span class="o">|</span>              <span class="o">+-----------------&gt;|</span>                <span class="o">|</span>
    <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
    <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span> <span class="n">STT</span><span class="p">:</span> <span class="n">Deepgram</span>  <span class="o">|</span>
-   <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span> <span class="s2">&quot;Hello&quot;</span>        <span class="o">|</span>
+   <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span> <span class="s2">"Hello"</span>        <span class="o">|</span>
    <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">+---------------&gt;|</span>
    <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>
    <span class="o">|</span>           <span class="o">|</span>              <span class="o">|</span>                  <span class="o">|&lt;---------------+</span>
@@ -1137,7 +1137,7 @@
       <span class="o">|</span> <span class="n">Frame</span><span class="p">:</span>          <span class="o">|</span>                 <span class="o">|</span>                <span class="o">|</span>
       <span class="o">|</span> <span class="n">LLM_FUNCTION_CALL</span>                 <span class="o">|</span>                <span class="o">|</span>
       <span class="o">|</span> <span class="n">tool</span><span class="p">:</span> <span class="n">transfer_call</span>               <span class="o">|</span>                <span class="o">|</span>
-      <span class="o">|</span> <span class="n">args</span><span class="p">:</span> <span class="p">{</span><span class="n">dest</span><span class="p">:</span> <span class="s2">&quot;sales&quot;</span><span class="p">}</span>             <span class="o">|</span>                <span class="o">|</span>
+      <span class="o">|</span> <span class="n">args</span><span class="p">:</span> <span class="p">{</span><span class="n">dest</span><span class="p">:</span> <span class="s2">"sales"</span><span class="p">}</span>             <span class="o">|</span>                <span class="o">|</span>
       <span class="o">+----------------&gt;|</span>                 <span class="o">|</span>                <span class="o">|</span>
       <span class="o">|</span>                 <span class="o">|</span>                 <span class="o">|</span>                <span class="o">|</span>
       <span class="o">|</span>                 <span class="o">|</span> <span class="n">RPC</span><span class="p">:</span> <span class="n">Execute</span>    <span class="o">|</span>                <span class="o">|</span>
@@ -1398,8 +1398,8 @@ transcribe_done
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

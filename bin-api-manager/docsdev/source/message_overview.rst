@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable (per message segment sent)
    * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/messages`` returns immediately with target status ``queued``. Poll ``GET https://api.voipbin.net/v1.0/messages/{id}`` or use webhooks to track delivery status changes.
 
-VoIPBIN's Message API enables you to send and receive SMS (Short Message Service) messages globally. Whether you need to send notifications, alerts, verification codes, or marketing messages, the Message API provides a reliable solution for text-based communication.
+VoIPBin's Message API enables you to send and receive SMS (Short Message Service) messages globally. Whether you need to send notifications, alerts, verification codes, or marketing messages, the Message API provides a reliable solution for text-based communication.
 
 With the Message API you can:
 
@@ -21,14 +21,14 @@ With the Message API you can:
 
 How Messaging Works
 -------------------
-When you send a message, VoIPBIN routes it through carrier networks to reach the recipient's mobile device.
+When you send a message, VoIPBin routes it through carrier networks to reach the recipient's mobile device.
 
 **Message Architecture**
 
 ::
 
     +----------+        +----------------+        +-----------+
-    | Your App |--API-->|    VoIPBIN     |--SMPP->|  Carrier  |
+    | Your App |--API-->|    VoIPBin     |--SMPP->|  Carrier  |
     +----------+        |  Message Hub   |        |  Network  |
                         +----------------+        +-----+-----+
                                |                        |
@@ -56,7 +56,7 @@ When you send a message, VoIPBIN routes it through carrier networks to reach the
 
 .. note:: **AI Implementation Hint**
 
-   VoIPBIN's Message API currently supports SMS only. The public ``POST /messages`` endpoint accepts ``source``, ``destinations``, and ``text`` -- there is no ``medias``/MMS parameter.
+   VoIPBin's Message API currently supports SMS only. The public ``POST /messages`` endpoint accepts ``source``, ``destinations``, and ``text`` -- there is no ``medias``/MMS parameter.
 
 
 
@@ -122,14 +122,14 @@ Every message moves through a predictable set of states from sending to delivery
    * - failed
      - Delivery failure reported by gateway or downstream carrier
    * - received
-     - Inbound message received by VoIPBIN messaging services
+     - Inbound message received by VoIPBin messaging services
 
 
 **Inbound Message Flow**
 
 ::
 
-    Sender Device        Carrier Network           VoIPBIN              Your App
+    Sender Device        Carrier Network           VoIPBin              Your App
          |                     |                      |                    |
          | SMS                 |                      |                    |
          +------------------->|                      |                    |
@@ -144,7 +144,7 @@ Every message moves through a predictable set of states from sending to delivery
 
 Sending Messages
 ----------------
-VoIPBIN provides multiple ways to send messages based on your use case.
+VoIPBin provides multiple ways to send messages based on your use case.
 
 **Method 1: Via API**
 
@@ -152,7 +152,7 @@ Send messages directly using the REST API.
 
 ::
 
-    Your App                    VoIPBIN                    Recipient
+    Your App                    VoIPBin                    Recipient
        |                           |                           |
        | POST /messages            |                           |
        +-------------------------->|                           |
@@ -220,13 +220,13 @@ Send messages as part of an automated flow.
 
 Receiving Messages
 ------------------
-VoIPBIN delivers inbound messages to your application via webhooks.
+VoIPBin delivers inbound messages to your application via webhooks.
 
 **Webhook Delivery**
 
 ::
 
-    VoIPBIN                           Your App
+    VoIPBin                           Your App
         |                                 |
         | POST /your-webhook-endpoint     |
         | {message_created event}         |
@@ -308,7 +308,7 @@ Understanding message limits and encoding helps optimize delivery.
                                         |
                                         v
     +-------------------------------------------------------------------+
-    | VoIPBIN automatically splits into segments:                       |
+    | VoIPBin automatically splits into segments:                       |
     |                                                                   |
     | Segment 1: "This is a longer message that exceeds 160 char..."   |
     | Segment 2: "...acters and continues here with more content..."   |
@@ -368,7 +368,7 @@ Enable customers to reply to messages.
 
 ::
 
-    Your App                VoIPBIN                  Customer
+    Your App                VoIPBin                  Customer
         |                      |                        |
         | "Order shipped!"     |                        |
         +--------------------->+----------------------->|

@@ -14,7 +14,7 @@ Before working with routes, you need:
 
 .. note:: **AI Implementation Hint**
 
-   Routes are evaluated by ``priority`` (lower number = higher priority). To set up failover, create multiple routes for the same ``customer_id`` and ``target`` with different ``provider_id`` values and incrementing ``priority`` values (e.g., 1, 2, 3). If the first provider fails, VoIPBIN automatically tries the next route.
+   Routes are evaluated by ``priority`` (lower number = higher priority). To set up failover, create multiple routes for the same ``customer_id`` and ``target`` with different ``provider_id`` values and incrementing ``priority`` values (e.g., 1, 2, 3). If the first provider fails, VoIPBin automatically tries the next route.
 
 Get list of routes
 ---------------------

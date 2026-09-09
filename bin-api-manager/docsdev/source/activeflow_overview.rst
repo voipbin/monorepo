@@ -9,7 +9,7 @@ Overview
    * **Cost:** No direct cost. Activeflows are a monitoring/control interface. However, the underlying trigger (call, message) may incur charges.
    * **Async:** Yes. Activeflows execute asynchronously. Use ``GET /activeflows/{id}`` to poll the current state, or subscribe via WebSocket for real-time updates.
 
-The activeflow is a dynamic entity within the VoIPBIN system that plays a vital role in representing the real-time state of a registered flow. As the flow is executed, it generates an activeflow, which contains an action cursor and relevant status information. This activeflow serves as a control interface, providing efficient management and flexibility during flow execution.
+The activeflow is a dynamic entity within the VoIPBin system that plays a vital role in representing the real-time state of a registered flow. As the flow is executed, it generates an activeflow, which contains an action cursor and relevant status information. This activeflow serves as a control interface, providing efficient management and flexibility during flow execution.
 
 In essence, the activeflow concept is a powerful tool that facilitates the smooth and flexible execution of registered flows. Its dynamic nature allows for real-time updates, ensuring that users can monitor and manage the flow execution efficiently.
 
@@ -18,7 +18,7 @@ By providing real-time status updates and a flexible control interface, the acti
 
 Flow vs ActiveFlow
 ------------------
-Understanding the difference between a Flow and an ActiveFlow is essential for working with VoIPBIN.
+Understanding the difference between a Flow and an ActiveFlow is essential for working with VoIPBin.
 
 ::
 
@@ -344,9 +344,9 @@ Executed Actions
 ----------------
 Within the CPaaS environment, flows can be complex, incorporating various service types such as call, SMS, chat, and more. Handling history logs for these diverse services requires a structured approach.
 
-VoIPBIN simplifies the tracking of executed actions by providing a comprehensive history log within the activeflow. Unlike traditional telephony services with straightforward flows, CPaaS services demand a more flexible approach due to their diverse nature.
+VoIPBin simplifies the tracking of executed actions by providing a comprehensive history log within the activeflow. Unlike traditional telephony services with straightforward flows, CPaaS services demand a more flexible approach due to their diverse nature.
 
-In VoIPBIN, each action in the activeflow defines a distinct step in the service's behavior. This ensures clarity in tracking the sequence of actions performed.
+In VoIPBin, each action in the activeflow defines a distinct step in the service's behavior. This ensures clarity in tracking the sequence of actions performed.
 
 ::
 

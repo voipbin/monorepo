@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Flow" href="flow_struct_flow.html"><link rel="prev" title="Flow" href="flow.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,8 +648,8 @@
 <li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/flows</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/flows/{id}</span></code>, and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">https://api.voipbin.net/v1.0/flows/{id}</span></code> are synchronous and return the result immediately.</p></li>
 </ul>
 </div>
-<p>The Flow in VoIPBIN is a powerful set of instructions that guides the platform on how to handle incoming calls. When someone calls one of your VoIPBIN numbers or destinations, the platform looks up the associated URL and sends a request. The Flow instructions are then read to determine the appropriate actions to be taken, such as recording the call, playing a message, or prompting the caller to press digits on their keypad.</p>
-<p>At its core, the Flow is an array of JSON objects with special tags defined by VoIPBIN, enabling users to build their own Programmable Voice applications.</p>
+<p>The Flow in VoIPBin is a powerful set of instructions that guides the platform on how to handle incoming calls. When someone calls one of your VoIPBin numbers or destinations, the platform looks up the associated URL and sends a request. The Flow instructions are then read to determine the appropriate actions to be taken, such as recording the call, playing a message, or prompting the caller to press digits on their keypad.</p>
+<p>At its core, the Flow is an array of JSON objects with special tags defined by VoIPBin, enabling users to build their own Programmable Voice applications.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -657,7 +657,7 @@
 </div>
 <section id="how-the-flow-works">
 <span id="flow-overview-how-the-flow-works"></span><h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Link to this heading">¶</a></h2>
-<p>When an incoming call is received on one of your VoIPBIN numbers or destinations, the platform identifies the associated URL and sends a request.</p>
+<p>When an incoming call is received on one of your VoIPBin numbers or destinations, the platform identifies the associated URL and sends a request.</p>
 <p>The Flow instructions are then processed, providing a step-by-step guide on how to handle the call. This might involve greeting the caller, presenting options, gathering input, or executing various actions based on the caller’s response.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -667,9 +667,9 @@
 </section>
 <section id="understanding-flow-execution">
 <h2>Understanding Flow Execution<a class="headerlink" href="#understanding-flow-execution" title="Link to this heading">¶</a></h2>
-<p>Think of a Flow like a recipe. Each action is a step, and VoIPBIN follows the steps one by one until the recipe is complete.</p>
+<p>Think of a Flow like a recipe. Each action is a step, and VoIPBin follows the steps one by one until the recipe is complete.</p>
 <p><strong>The Execution Cursor</strong></p>
-<p>VoIPBIN uses a “cursor” to track where it is in the flow - like a finger pointing at the current step:</p>
+<p>VoIPBin uses a “cursor” to track where it is in the flow - like a finger pointing at the current step:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Flow</span> <span class="n">Actions</span> <span class="n">Array</span><span class="p">:</span>
 <span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>   <span class="o">+---------+</span>
 <span class="o">|</span> <span class="n">answer</span>  <span class="o">|--&gt;|</span>  <span class="n">talk</span>   <span class="o">|--&gt;|</span> <span class="n">digits</span>  <span class="o">|--&gt;|</span> <span class="n">branch</span>  <span class="o">|--&gt;|</span> <span class="n">hangup</span>  <span class="o">|</span>
@@ -738,7 +738,7 @@
 <p><strong>Media Actions (Wait for Completion)</strong></p>
 <p>These actions take time and the flow waits for them to finish:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>     <span class="o">+------------------------------+</span>     <span class="o">+----------+</span>
-<span class="o">|</span>  <span class="n">talk</span>    <span class="o">|----&gt;|</span>  <span class="n">Playing</span> <span class="s2">&quot;Welcome to...&quot;</span>     <span class="o">|----&gt;|</span>  <span class="nb">next</span>    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">talk</span>    <span class="o">|----&gt;|</span>  <span class="n">Playing</span> <span class="s2">"Welcome to..."</span>     <span class="o">|----&gt;|</span>  <span class="nb">next</span>    <span class="o">|</span>
 <span class="o">+----------+</span>     <span class="o">|</span>  <span class="p">(</span><span class="n">audio</span> <span class="n">playing</span><span class="p">,</span> <span class="n">please</span> <span class="n">wait</span><span class="p">)</span><span class="o">|</span>     <span class="o">|</span>  <span class="n">action</span>  <span class="o">|</span>
                  <span class="o">+------------------------------+</span>     <span class="o">+----------+</span>
                               <span class="o">|</span>
@@ -803,7 +803,7 @@
                 +---------------+---------------+
                 |               |               |
                 v               v               v
-              &quot;1&quot;             &quot;2&quot;           (default)
+              "1"             "2"           (default)
                 |               |               |
                 v               v               v
         +------------+  +------------+  +------------+
@@ -816,13 +816,13 @@
 <p>Variables are set by previous actions and then read by branch:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Collect</span> <span class="nb">input</span>
 <span class="o">+-----------------+</span>
-<span class="o">|</span> <span class="n">digits_receive</span>  <span class="o">|</span>  <span class="o">--&gt;</span>  <span class="n">User</span> <span class="n">presses</span> <span class="s2">&quot;2&quot;</span>
-<span class="o">+-----------------+</span>       <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">digits</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
+<span class="o">|</span> <span class="n">digits_receive</span>  <span class="o">|</span>  <span class="o">--&gt;</span>  <span class="n">User</span> <span class="n">presses</span> <span class="s2">"2"</span>
+<span class="o">+-----------------+</span>       <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">digits</span> <span class="o">=</span> <span class="s2">"2"</span>
 
 <span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Branch</span> <span class="n">based</span> <span class="n">on</span> <span class="nb">input</span>
 <span class="o">+-----------------+</span>
 <span class="o">|</span>     <span class="n">branch</span>      <span class="o">|</span>  <span class="o">--&gt;</span>  <span class="n">Read</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">digits</span>
-<span class="o">|</span>                 <span class="o">|</span>       <span class="n">Value</span> <span class="ow">is</span> <span class="s2">&quot;2&quot;</span>
+<span class="o">|</span>                 <span class="o">|</span>       <span class="n">Value</span> <span class="ow">is</span> <span class="s2">"2"</span>
 <span class="o">|</span> <span class="n">variable</span><span class="p">:</span>       <span class="o">|</span>       <span class="n">Jump</span> <span class="n">to</span> <span class="n">Support</span> <span class="n">menu</span>
 <span class="o">|</span>  <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="n">digits</span>         <span class="o">|</span>
@@ -833,7 +833,7 @@
 <p>For more complex logic, use condition actions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>condition_variable:
 +-------------------------------------------------------------------+
-|  IF ${customer.tier} equals &quot;premium&quot;                             |
+|  IF ${customer.tier} equals "premium"                             |
 |     → Continue to next action (VIP treatment)                     |
 |  ELSE                                                             |
 |     → Jump to false_target_id (standard treatment)                |
@@ -849,7 +849,7 @@
 <h2>The Variable System<a class="headerlink" href="#the-variable-system" title="Link to this heading">¶</a></h2>
 <p>Variables store information during flow execution. They’re like sticky notes that actions can write and read.</p>
 <p><strong>Built-in Variables</strong></p>
-<p>VoIPBIN automatically creates these variables:</p>
+<p>VoIPBin automatically creates these variables:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------+</span>
 <span class="o">|</span>                    <span class="n">Built</span><span class="o">-</span><span class="ow">in</span> <span class="n">Variables</span>                           <span class="o">|</span>
 <span class="o">+---------------------------------+-------------------------------+</span>
@@ -859,7 +859,7 @@
 <span class="o">+---------------------------------+-------------------------------+</span>
 <span class="o">|</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">digits</span>             <span class="o">|</span> <span class="n">DTMF</span> <span class="n">digits</span> <span class="n">received</span>          <span class="o">|</span>
 <span class="o">+---------------------------------+-------------------------------+</span>
-<span class="o">|</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">caller_id</span>          <span class="o">|</span> <span class="n">Caller</span><span class="s1">&#39;s phone number         |</span>
+<span class="o">|</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">caller_id</span>          <span class="o">|</span> <span class="n">Caller</span><span class="s1">'s phone number         |</span>
 <span class="o">+---------------------------------+-------------------------------+</span>
 <span class="o">|</span> <span class="n">voipbin</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">text</span>            <span class="o">|</span> <span class="n">Received</span> <span class="n">message</span> <span class="n">content</span>      <span class="o">|</span>
 <span class="o">+---------------------------------+-------------------------------+</span>
@@ -870,10 +870,10 @@
 <p><strong>Custom Variables</strong></p>
 <p>You can set your own variables with the <code class="docutils literal notranslate"><span class="pre">variable_set</span></code> action:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;customer.language&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"variable_set"</span><span class="p">,</span>
+  <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"customer.language"</span><span class="p">,</span>
+    <span class="s2">"value"</span><span class="p">:</span> <span class="s2">"en-US"</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -881,28 +881,28 @@
 <p><strong>Using Variables in Actions</strong></p>
 <p>Variables are substituted using <code class="docutils literal notranslate"><span class="pre">${variable.name}</span></code> syntax:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello $</span><span class="si">{customer.name}</span><span class="s2">, welcome back!&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{customer.language}</span><span class="s2">&quot;</span>
+  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+  <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello $</span><span class="si">{customer.name}</span><span class="s2">, welcome back!"</span><span class="p">,</span>
+    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"$</span><span class="si">{customer.language}</span><span class="s2">"</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Before this action executes, VoIPBIN replaces the placeholders:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Before</span><span class="p">:</span> <span class="s2">&quot;Hello $</span><span class="si">{customer.name}</span><span class="s2">, welcome back!&quot;</span>
-<span class="n">After</span><span class="p">:</span>  <span class="s2">&quot;Hello John Smith, welcome back!&quot;</span>
+<p>Before this action executes, VoIPBin replaces the placeholders:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Before</span><span class="p">:</span> <span class="s2">"Hello $</span><span class="si">{customer.name}</span><span class="s2">, welcome back!"</span>
+<span class="n">After</span><span class="p">:</span>  <span class="s2">"Hello John Smith, welcome back!"</span>
 </pre></div>
 </div>
 </section>
 <section id="unified-flow">
 <span id="flow-overview-unified-flow"></span><h2>Unified flow<a class="headerlink" href="#unified-flow" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice calls, SMS, and RESTful API triggers.</p>
-<p>With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBIN then automatically executes this flow, ensuring a consistent experience for customers across various channels.</p>
+<p>VoIPBin’s Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice calls, SMS, and RESTful API triggers.</p>
+<p>With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBin then automatically executes this flow, ensuring a consistent experience for customers across various channels.</p>
 </section>
 <section id="non-linear-action-execution">
 <span id="flow-overview-non-linear-action-execution"></span><h2>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s Flow provides the flexibility of Non-Linear action execution.</p>
+<p>VoIPBin’s Flow provides the flexibility of Non-Linear action execution.</p>
 <p>Users can customize their actions in both linear and non-linear ways, allowing them to define complex logic and decision trees to handle various call scenarios.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Linear Execution:
 +---+   +---+   +---+   +---+
@@ -950,8 +950,8 @@ Non-Linear Execution (with goto and branch):
 </section>
 <section id="actions">
 <span id="flow-overview-actions"></span><h2>Actions<a class="headerlink" href="#actions" title="Link to this heading">¶</a></h2>
-<p>Within VoIPBIN, actions dictate the course of the platform’s response in a given flow, encompassing tasks such as initiating calls, playing sounds or prompts, activating text-to-speech, sending SMS or DTMFs, and dispatching SNS messages. These diverse actions serve as indispensable building blocks for crafting customized voice applications, ensuring the creation of uniquely tailored call experiences for users.</p>
-<p>VoIPBIN’s Flow provides developers with a versatile and robust toolkit, empowering them to forge dynamic voice applications, efficiently manage incoming calls, and curate personalized call encounters. Through its non-linear execution, cohesive flow capabilities, and an array of actions including SMS, DTMFs, SNS messages, and more, VoIPBIN’s Flow unveils limitless possibilities for the development of sophisticated and interactive voice applications, precisely tailored to meet specific business needs.</p>
+<p>Within VoIPBin, actions dictate the course of the platform’s response in a given flow, encompassing tasks such as initiating calls, playing sounds or prompts, activating text-to-speech, sending SMS or DTMFs, and dispatching SNS messages. These diverse actions serve as indispensable building blocks for crafting customized voice applications, ensuring the creation of uniquely tailored call experiences for users.</p>
+<p>VoIPBin’s Flow provides developers with a versatile and robust toolkit, empowering them to forge dynamic voice applications, efficiently manage incoming calls, and curate personalized call encounters. Through its non-linear execution, cohesive flow capabilities, and an array of actions including SMS, DTMFs, SNS messages, and more, VoIPBin’s Flow unveils limitless possibilities for the development of sophisticated and interactive voice applications, precisely tailored to meet specific business needs.</p>
 <p><strong>Action Categories</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -992,14 +992,14 @@ Non-Linear Execution (with goto and branch):
 </section>
 <section id="flow-execution">
 <span id="flow-overview-flow-execution"></span><h2>Flow execution<a class="headerlink" href="#flow-execution" title="Link to this heading">¶</a></h2>
-<p>In VoIPBIN, the execution of flows is versatile and can be initiated through various methods:</p>
+<p>In VoIPBin, the execution of flows is versatile and can be initiated through various methods:</p>
 <section id="incoming-outgoing-calls">
 <h3>Incoming/Outgoing Calls<a class="headerlink" href="#incoming-outgoing-calls" title="Link to this heading">¶</a></h3>
-<p>VoIPBIN facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBIN will seamlessly execute the associated flow.
+<p>VoIPBin facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBin will seamlessly execute the associated flow.
 Users can also initiate a call with a predefined flow. Once the outgoing call is answered, the attached flow will be triggered.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Incoming</span> <span class="n">Call</span> <span class="n">Flow</span><span class="p">:</span>
 <span class="o">+--------------+</span>      <span class="o">+-----------------+</span>      <span class="o">+---------------+</span>
-<span class="o">|</span>  <span class="n">Caller</span> <span class="n">dials</span><span class="o">|-----&gt;|</span>  <span class="n">VoIPBIN</span> <span class="n">looks</span>  <span class="o">|-----&gt;|</span>  <span class="n">Flow</span> <span class="n">starts</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Caller</span> <span class="n">dials</span><span class="o">|-----&gt;|</span>  <span class="n">VoIPBin</span> <span class="n">looks</span>  <span class="o">|-----&gt;|</span>  <span class="n">Flow</span> <span class="n">starts</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="n">your</span> <span class="n">number</span> <span class="o">|</span>      <span class="o">|</span>  <span class="n">up</span> <span class="n">the</span> <span class="n">number</span>  <span class="o">|</span>      <span class="o">|</span>  <span class="n">executing</span>    <span class="o">|</span>
 <span class="o">+--------------+</span>      <span class="o">+-----------------+</span>      <span class="o">+---------------+</span>
 
@@ -1013,17 +1013,17 @@ Users can also initiate a call with a predefined flow. Once the outgoing call is
 </section>
 <section id="received-messages">
 <h3>Received Messages<a class="headerlink" href="#received-messages" title="Link to this heading">¶</a></h3>
-<p>VoIPBIN allows users to register flows to received messages. When a message is received, the registered flow will be executed.
+<p>VoIPBin allows users to register flows to received messages. When a message is received, the registered flow will be executed.
 For example, you can register the flow like the below.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="p">{</span>
-  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.message.text&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;call me&quot;</span><span class="p">:</span> <span class="s2">&quot;7a1e8c4c-aaea-11ed-9f0f-bffcc31ca3c3&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;text me&quot;</span><span class="p">:</span> <span class="s2">&quot;79fd8c9a-aaea-11ed-a238-0b094a49c637&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;text developer&quot;</span><span class="p">:</span> <span class="s2">&quot;73107b70-d56b-4b47-b331-dc4f2ac43a5b&quot;</span>
+  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"branch"</span><span class="p">,</span>
+  <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"variable"</span><span class="p">:</span> <span class="s2">"voipbin.message.text"</span><span class="p">,</span>
+    <span class="s2">"target_ids"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">"call me"</span><span class="p">:</span> <span class="s2">"7a1e8c4c-aaea-11ed-9f0f-bffcc31ca3c3"</span><span class="p">,</span>
+      <span class="s2">"text me"</span><span class="p">:</span> <span class="s2">"79fd8c9a-aaea-11ed-a238-0b094a49c637"</span><span class="p">,</span>
+      <span class="s2">"text developer"</span><span class="p">:</span> <span class="s2">"73107b70-d56b-4b47-b331-dc4f2ac43a5b"</span>
     <span class="p">}</span>
   <span class="p">}</span>
 <span class="p">}</span>
@@ -1036,7 +1036,7 @@ See the <a class="reference internal" href="variable_variable.html#variable-vari
 </section>
 <section id="outbound-campaigns">
 <h3>Outbound Campaigns<a class="headerlink" href="#outbound-campaigns" title="Link to this heading">¶</a></h3>
-<p>The VoIPBIN platform integrates flows into outbound campaigns, providing a structured and automated approach to execution.</p>
+<p>The VoIPBin platform integrates flows into outbound campaigns, providing a structured and automated approach to execution.</p>
 </section>
 <section id="api">
 <h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
@@ -1089,7 +1089,7 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 </section>
 <section id="flow-actions-and-interrupt-actions">
 <h2>Flow Actions and Interrupt Actions<a class="headerlink" href="#flow-actions-and-interrupt-actions" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s Flow is built on an action-based engine. Each flow is defined as a JSON array of actions, where a “cursor” tracks the current execution point. Under normal circumstances, the cursor advances sequentially from one action to the next based on the flow’s logic. This modular design lets you compose a variety of call-handling scenarios—from answering calls and playing prompts to branching based on caller input.</p>
+<p>VoIPBin’s Flow is built on an action-based engine. Each flow is defined as a JSON array of actions, where a “cursor” tracks the current execution point. Under normal circumstances, the cursor advances sequentially from one action to the next based on the flow’s logic. This modular design lets you compose a variety of call-handling scenarios—from answering calls and playing prompts to branching based on caller input.</p>
 <section id="standard-flow-actions">
 <h3>Standard Flow Actions<a class="headerlink" href="#standard-flow-actions" title="Link to this heading">¶</a></h3>
 <p>Standard flow actions are the building blocks of your call handling logic. Examples include:</p>
@@ -1101,37 +1101,37 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 </ul>
 <p>Each action is executed in sequence, and upon completion, the flow cursor moves to the next action defined in the JSON array. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9bc851be-f05e-11ef-a1e0-77ec628521e0&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Sample Call Flow&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+  <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9bc851be-f05e-11ef-a1e0-77ec628521e0"</span><span class="p">,</span>
+  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"flow"</span><span class="p">,</span>
+  <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Sample Call Flow"</span><span class="p">,</span>
+  <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
     <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9c8ebac0-f05e-11ef-b9ae-4b8aecc935fe&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9c8ebac0-f05e-11ef-b9ae-4b8aecc935fe"</span><span class="p">,</span>
+      <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"answer"</span>
     <span class="p">},</span>
     <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9c30642a-f05e-11ef-8674-ebba44c5cb0f2&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Welcome to VoIPBIN&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9c30642a-f05e-11ef-8674-ebba44c5cb0f2"</span><span class="p">,</span>
+      <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+      <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Welcome to VoIPBin"</span><span class="p">,</span>
+        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
       <span class="p">}</span>
     <span class="p">},</span>
     <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9c659370-f05e-11ef-b141-63708262508b&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
-        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9c659370-f05e-11ef-b141-63708262508b"</span><span class="p">,</span>
+      <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"digits_receive"</span><span class="p">,</span>
+      <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+        <span class="s2">"length"</span><span class="p">:</span> <span class="mi">1</span>
       <span class="p">}</span>
     <span class="p">},</span>
     <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9cb2962a-f05e-11ef-ae35-2374e1ae16df&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;9c30642a-f05e-11ef-8674-ebba44c5cb0f2&quot;</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9cb2962a-f05e-11ef-ae35-2374e1ae16df"</span><span class="p">,</span>
+      <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"branch"</span><span class="p">,</span>
+      <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"variable"</span><span class="p">:</span> <span class="s2">"voipbin.call.digits"</span><span class="p">,</span>
+        <span class="s2">"target_ids"</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">"1"</span><span class="p">:</span> <span class="s2">"9c30642a-f05e-11ef-8674-ebba44c5cb0f2"</span>
         <span class="p">}</span>
       <span class="p">}</span>
     <span class="p">}</span>
@@ -1175,9 +1175,9 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <ul class="simple">
 <li><p>Flexibility: Use standard flow actions to define your routine call-handling steps, and rely on interrupt actions for events that require immediate attention.</p></li>
 <li><p>API Integration: Interrupt actions can be initiated via dedicated API calls, enabling your application to react in real time to dynamic call events.</p></li>
-<li><p>Flow Resumption: After an interrupt action completes, VoIPBIN resumes the flow from the designated point, ensuring a seamless call experience.</p></li>
+<li><p>Flow Resumption: After an interrupt action completes, VoIPBin resumes the flow from the designated point, ensuring a seamless call experience.</p></li>
 </ul>
-<p>By combining sequential flow actions with the ability to trigger interrupt actions at any time, VoIPBIN provides a robust, programmable environment that can handle both predictable call scenarios and unexpected events with equal ease.</p>
+<p>By combining sequential flow actions with the ability to trigger interrupt actions at any time, VoIPBin provides a robust, programmable environment that can handle both predictable call scenarios and unexpected events with equal ease.</p>
 </section>
 </section>
 <section id="the-on-complete-flow-id">
@@ -1193,7 +1193,7 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <span class="n">Flow</span> <span class="n">A</span> <span class="p">(</span><span class="n">Main</span> <span class="n">Call</span> <span class="n">Flow</span><span class="p">)</span>                  <span class="n">Flow</span> <span class="n">B</span> <span class="p">(</span><span class="n">After</span> <span class="n">Call</span> <span class="n">Work</span><span class="p">)</span>
 <span class="o">+-------------------------+</span>             <span class="o">+-------------------------+</span>
 <span class="o">|</span> <span class="n">answer</span>                  <span class="o">|</span>             <span class="o">|</span> <span class="n">fetch</span> <span class="n">recording</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">talk</span> <span class="s2">&quot;Hello&quot;</span>            <span class="o">|</span>             <span class="o">|</span> <span class="n">ai_summarize</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="n">talk</span> <span class="s2">"Hello"</span>            <span class="o">|</span>             <span class="o">|</span> <span class="n">ai_summarize</span>            <span class="o">|</span>
 <span class="o">|</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">agent</span>        <span class="o">|</span>             <span class="o">|</span> <span class="n">email_send</span> <span class="n">summary</span>      <span class="o">|</span>
 <span class="o">|</span> <span class="p">(</span><span class="n">call</span> <span class="n">happens</span><span class="o">...</span><span class="p">)</span>       <span class="o">|</span>             <span class="o">|</span> <span class="n">webhook_send</span> <span class="n">analytics</span>  <span class="o">|</span>
 <span class="o">|</span> <span class="n">hangup</span>                  <span class="o">|</span>             <span class="o">|</span>                         <span class="o">|</span>
@@ -1206,7 +1206,7 @@ And due to the absence of any media-based incoming or outgoing elements in the A
           <span class="n">v</span>                                        <span class="n">v</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>             <span class="n">VoIPBIN</span> <span class="n">Engine</span>              <span class="n">Flow</span> <span class="n">A</span>                <span class="n">Flow</span> <span class="n">B</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>             <span class="n">VoIPBin</span> <span class="n">Engine</span>              <span class="n">Flow</span> <span class="n">A</span>                <span class="n">Flow</span> <span class="n">B</span>
 <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>                     <span class="o">|</span>
 <span class="o">|</span> <span class="o">---</span> <span class="n">Incoming</span> <span class="n">Call</span> <span class="o">--&gt;|</span>                        <span class="o">|</span>                     <span class="o">|</span>
 <span class="o">|</span>                      <span class="o">|--</span> <span class="n">Start</span> <span class="n">Flow</span> <span class="n">A</span> <span class="o">-------&gt;|</span>                     <span class="o">|</span>
@@ -1235,15 +1235,15 @@ And due to the absence of any media-based incoming or outgoing elements in the A
                                                                         <span class="ow">and</span> <span class="n">depth</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="n">then</span> <span class="n">start</span> <span class="n">another</span> <span class="n">chain</span>
 </pre></div>
 </div>
-<p>When a flow ends—either by reaching the end of its action list, encountering a stop action, or due to call termination—VoIPBIN checks whether on_complete_flow_id is defined.</p>
-<p>If so, VoIPBIN starts the referenced flow as a new independent session.</p>
+<p>When a flow ends—either by reaching the end of its action list, encountering a stop action, or due to call termination—VoIPBin checks whether on_complete_flow_id is defined.</p>
+<p>If so, VoIPBin starts the referenced flow as a new independent session.</p>
 <p>Most runtime variables from the original flow (e.g., ${voipbin.recording.id}, ${voipbin.call.id}) are inherited automatically, allowing seamless post-call workflows without requiring manual variable passing.</p>
 <p><strong>Variable Inheritance</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Flow A ends with these variables:
 +-----------------------------------------+
-| voipbin.call.id = &quot;abc-123&quot;             |
-| voipbin.recording.id = &quot;rec-456&quot;        |
-| customer.name = &quot;John&quot;                  |
+| voipbin.call.id = "abc-123"             |
+| voipbin.recording.id = "rec-456"        |
+| customer.name = "John"                  |
 | voipbin.activeflow.complete_count = 0   |
 +-----------------------------------------+
                      |
@@ -1251,9 +1251,9 @@ And due to the absence of any media-based incoming or outgoing elements in the A
                      v
 Flow B starts with these variables:
 +-----------------------------------------+
-| voipbin.call.id = &quot;abc-123&quot;             |  ← inherited
-| voipbin.recording.id = &quot;rec-456&quot;        |  ← inherited
-| customer.name = &quot;John&quot;                  |  ← inherited
+| voipbin.call.id = "abc-123"             |  ← inherited
+| voipbin.recording.id = "rec-456"        |  ← inherited
+| customer.name = "John"                  |  ← inherited
 | voipbin.activeflow.complete_count = 1   |  ← incremented
 +-----------------------------------------+
 </pre></div>
@@ -1262,7 +1262,7 @@ Flow B starts with these variables:
 </section>
 <section id="execution-limits">
 <h2>Execution limits<a class="headerlink" href="#execution-limits" title="Link to this heading">¶</a></h2>
-<p>To prevent infinite recursion, VoIPBIN enforces:</p>
+<p>To prevent infinite recursion, VoIPBin enforces:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Flow</span> <span class="n">A</span> <span class="o">--&gt;</span> <span class="n">Flow</span> <span class="n">B</span> <span class="o">--&gt;</span> <span class="n">Flow</span> <span class="n">C</span> <span class="o">--&gt;</span> <span class="n">Flow</span> <span class="n">D</span> <span class="o">--&gt;</span> <span class="n">Flow</span> <span class="n">E</span> <span class="o">--&gt;</span> <span class="n">STOP</span>
   <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>
 <span class="n">count</span><span class="o">=</span><span class="mi">0</span>    <span class="n">count</span><span class="o">=</span><span class="mi">1</span>    <span class="n">count</span><span class="o">=</span><span class="mi">2</span>    <span class="n">count</span><span class="o">=</span><span class="mi">3</span>    <span class="n">count</span><span class="o">=</span><span class="mi">4</span>
@@ -1287,8 +1287,8 @@ Flow B starts with these variables:
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flow_initial&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;on_complete_flow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flow_after_call_work&quot;</span>
+<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flow_initial"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"on_complete_flow_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"flow_after_call_work"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1296,7 +1296,7 @@ Flow B starts with these variables:
 </section>
 <section id="error-handling-in-flows">
 <h2>Error Handling in Flows<a class="headerlink" href="#error-handling-in-flows" title="Link to this heading">¶</a></h2>
-<p>When something goes wrong during flow execution, VoIPBIN handles it gracefully.</p>
+<p>When something goes wrong during flow execution, VoIPBin handles it gracefully.</p>
 <p><strong>Error Scenarios</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -1325,7 +1325,7 @@ Flow B starts with these variables:
 </table>
 </div>
 <p><strong>Safety Limits</strong></p>
-<p>VoIPBIN prevents runaway flows with built-in limits:</p>
+<p>VoIPBin prevents runaway flows with built-in limits:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Maximum</span> <span class="n">iterations</span> <span class="n">per</span> <span class="n">execution</span> <span class="n">cycle</span><span class="p">:</span> <span class="mi">1000</span>
 <span class="n">Maximum</span> <span class="n">total</span> <span class="n">executions</span> <span class="n">per</span> <span class="n">activeflow</span><span class="p">:</span> <span class="mi">100</span>
 <span class="n">Maximum</span> <span class="n">on_complete_flow</span> <span class="n">chain</span> <span class="n">depth</span><span class="p">:</span> <span class="mi">5</span>
@@ -1445,8 +1445,8 @@ Flow B starts with these variables:
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

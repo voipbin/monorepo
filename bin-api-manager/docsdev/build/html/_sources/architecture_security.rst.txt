@@ -5,9 +5,9 @@ Security Architecture
 
 .. note:: **AI Context**
 
-   This page describes VoIPBIN's security architecture: four defense-in-depth layers (edge, API gateway, internal services, data), JWT and Access Key authentication, RBAC authorization model, transport security (TLS, SRTP), Kubernetes secrets management, network isolation (VPC, firewall rules, network policies), input validation, rate limiting, DDoS protection, audit logging, data protection, and compliance frameworks. Relevant when an AI agent needs to understand authentication flows, permission models, or security controls.
+   This page describes VoIPBin's security architecture: four defense-in-depth layers (edge, API gateway, internal services, data), JWT and Access Key authentication, RBAC authorization model, transport security (TLS, SRTP), Kubernetes secrets management, network isolation (VPC, firewall rules, network policies), input validation, rate limiting, DDoS protection, audit logging, data protection, and compliance frameworks. Relevant when an AI agent needs to understand authentication flows, permission models, or security controls.
 
-VoIPBIN implements defense-in-depth security across all layers, from API authentication to data encryption. This section details the security architecture, authentication flows, and protection mechanisms.
+VoIPBin implements defense-in-depth security across all layers, from API authentication to data encryption. This section details the security architecture, authentication flows, and protection mechanisms.
 
 Security Overview
 -----------------
@@ -56,7 +56,7 @@ Security Overview
 Authentication Architecture
 ---------------------------
 
-VoIPBIN supports two authentication methods: JWT tokens and Access Keys.
+VoIPBin supports two authentication methods: JWT tokens and Access Keys.
 
 **Authentication Flow:**
 
@@ -183,7 +183,7 @@ VoIPBIN supports two authentication methods: JWT tokens and Access Keys.
 Authorization Model
 -------------------
 
-VoIPBIN uses role-based access control (RBAC):
+VoIPBin uses role-based access control (RBAC):
 
 **Permission Hierarchy:**
 
@@ -353,7 +353,7 @@ All communication encrypted:
 
     PSTN Calls:
     +------------------------------------------+
-    | Internal:     SRTP within VoIPBIN        |
+    | Internal:     SRTP within VoIPBin        |
     | To Carrier:   Depends on carrier support |
     +------------------------------------------+
 
@@ -750,7 +750,7 @@ Complete audit trail:
       "resource_id": "uuid",
       "action": "create",
       "source_ip": "192.168.1.100",
-      "user_agent": "VoIPBIN-SDK/1.0",
+      "user_agent": "VoIPBin-SDK/1.0",
       "request_id": "uuid",
       "details": {
         "source": "+15551234567",

@@ -5,14 +5,14 @@ Inter-Service Communication
 
 .. note:: **AI Context**
 
-   This page describes VoIPBIN's inter-service communication patterns: RabbitMQ RPC (synchronous request-response), RabbitMQ pub/sub (asynchronous events), in-process event fan-out inside the API gateway, and WebSocket (client notifications). Relevant when an AI agent needs to understand how services talk to each other, message reliability guarantees, queue naming conventions, or event types.
+   This page describes VoIPBin's inter-service communication patterns: RabbitMQ RPC (synchronous request-response), RabbitMQ pub/sub (asynchronous events), in-process event fan-out inside the API gateway, and WebSocket (client notifications). Relevant when an AI agent needs to understand how services talk to each other, message reliability guarantees, queue naming conventions, or event types.
 
-VoIPBIN's microservices communicate through multiple messaging patterns optimized for different use cases. The architecture uses RabbitMQ for RPC and pub/sub, an in-process pub/sub inside the API gateway for WebSocket fan-out, and WebSocket for real-time client communication.
+VoIPBin's microservices communicate through multiple messaging patterns optimized for different use cases. The architecture uses RabbitMQ for RPC and pub/sub, an in-process pub/sub inside the API gateway for WebSocket fan-out, and WebSocket for real-time client communication.
 
 Communication Patterns Overview
 --------------------------------
 
-VoIPBIN uses three primary communication mechanisms:
+VoIPBin uses three primary communication mechanisms:
 
 .. code::
 
@@ -46,7 +46,7 @@ VoIPBIN uses three primary communication mechanisms:
 RabbitMQ RPC Pattern
 --------------------
 
-VoIPBIN uses RabbitMQ for synchronous request-response communication between services.
+VoIPBin uses RabbitMQ for synchronous request-response communication between services.
 
 **RPC Flow**
 
@@ -201,7 +201,7 @@ Multiple service instances share the same queue:
 RabbitMQ Pub/Sub Pattern
 -------------------------
 
-For asynchronous event notifications, VoIPBIN uses RabbitMQ's pub/sub (fanout exchange) pattern.
+For asynchronous event notifications, VoIPBin uses RabbitMQ's pub/sub (fanout exchange) pattern.
 
 **Pub/Sub Flow**
 
@@ -236,7 +236,7 @@ For asynchronous event notifications, VoIPBIN uses RabbitMQ's pub/sub (fanout ex
 
 **Event Types**
 
-VoIPBIN publishes events for major state changes:
+VoIPBin publishes events for major state changes:
 
 .. code::
 
@@ -413,7 +413,7 @@ subscription matches.
 WebSocket Communication
 -----------------------
 
-For real-time client communication, VoIPBIN uses WebSocket connections.
+For real-time client communication, VoIPBin uses WebSocket connections.
 
 **WebSocket Architecture**
 
@@ -541,7 +541,7 @@ Clients subscribe to specific event topics:
 
 **Keep-Alive Mechanism (Server-Side Ping/Pong)**
 
-VoIPBIN implements server-side keep-alive to prevent load balancer timeouts:
+VoIPBin implements server-side keep-alive to prevent load balancer timeouts:
 
 .. code::
 
@@ -645,7 +645,7 @@ Different patterns provide different reliability guarantees:
 Message Ordering
 ----------------
 
-VoIPBIN guarantees ordering within specific boundaries:
+VoIPBin guarantees ordering within specific boundaries:
 
 .. code::
 
@@ -682,7 +682,7 @@ VoIPBIN guarantees ordering within specific boundaries:
 Error Handling and Retries
 ---------------------------
 
-VoIPBIN implements comprehensive error handling:
+VoIPBin implements comprehensive error handling:
 
 **Retry Strategy**
 
@@ -759,7 +759,7 @@ Failed messages move to dead letter queue for investigation:
 Performance Optimization
 ------------------------
 
-VoIPBIN optimizes messaging performance:
+VoIPBin optimizes messaging performance:
 
 **Connection Pooling**
 
@@ -815,7 +815,7 @@ For high-volume operations:
 Monitoring and Debugging
 -------------------------
 
-VoIPBIN monitors all communication channels:
+VoIPBin monitors all communication channels:
 
 **Metrics**
 

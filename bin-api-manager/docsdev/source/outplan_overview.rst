@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free. Creating and managing outplans is free. Costs are incurred when the associated campaign dials targets.
    * **Async:** No. ``POST /outplans`` returns immediately with the created outplan.
 
-VoIPBIN's Outplan API provides fine-grained control over dialing strategies for outbound campaigns. An outplan defines how the system should handle dial attempts, including timeouts, retry intervals, and maximum attempt counts. By configuring outplans, you can optimize contact rates while respecting recipient preferences and regulatory requirements.
+VoIPBin's Outplan API provides fine-grained control over dialing strategies for outbound campaigns. An outplan defines how the system should handle dial attempts, including timeouts, retry intervals, and maximum attempt counts. By configuring outplans, you can optimize contact rates while respecting recipient preferences and regulatory requirements.
 
 With the Outplan API you can:
 

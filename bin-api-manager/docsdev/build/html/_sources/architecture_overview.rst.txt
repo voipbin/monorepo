@@ -5,22 +5,22 @@ Overview
 
 .. note:: **AI Context**
 
-   * **Complexity:** Low -- This is reference documentation describing VoIPBIN's system architecture. No API calls are specific to this section.
+   * **Complexity:** Low -- This is reference documentation describing VoIPBin's system architecture. No API calls are specific to this section.
    * **Cost:** Free. Architecture documentation is informational only; no operations are performed.
    * **Async:** N/A. This section documents the platform structure, not API endpoints.
 
-   This page describes VoIPBIN's high-level system architecture, including the three major layers (API gateway, microservices, real-time communication) and core design principles. Relevant when an AI agent needs to understand the overall platform structure, service categories, or technology stack choices.
+   This page describes VoIPBin's high-level system architecture, including the three major layers (API gateway, microservices, real-time communication) and core design principles. Relevant when an AI agent needs to understand the overall platform structure, service categories, or technology stack choices.
 
-VoIPBIN is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.
+VoIPBin is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.
 
-VoIPBIN is designed from the ground up for scalability, reliability, and developer productivity, enabling businesses to build sophisticated communication solutions through simple API calls.
+VoIPBin is designed from the ground up for scalability, reliability, and developer productivity, enabling businesses to build sophisticated communication solutions through simple API calls.
 
 .. image:: _static/images/architecture_overview_all.png
 
 High-Level System Architecture
 -------------------------------
 
-VoIPBIN consists of three major architectural layers:
+VoIPBin consists of three major architectural layers:
 
 .. code::
 
@@ -82,7 +82,7 @@ The API Gateway (bin-api-manager) serves as the single entry point for all exter
 
 **2. Microservices Layer**
 
-VoIPBIN consists of 34 specialized Go microservices, organized by domain:
+VoIPBin consists of 34 specialized Go microservices, organized by domain:
 
 **Communication Services:**
 * bin-call-manager: Call lifecycle and routing
@@ -113,7 +113,7 @@ See :ref:`RTC Architecture <architecture-rtc>` for detailed information about th
 Core Design Principles
 ----------------------
 
-VoIPBIN is designed around these key architectural principles:
+VoIPBin is designed around these key architectural principles:
 
 **Microservices Architecture**
 
@@ -217,7 +217,7 @@ VoIPBIN is designed around these key architectural principles:
 Communication Channels
 ----------------------
 
-VoIPBIN supports multiple communication channels through dedicated gateways:
+VoIPBin supports multiple communication channels through dedicated gateways:
 
 **Voice Communication:**
 
@@ -241,7 +241,7 @@ VoIPBIN supports multiple communication channels through dedicated gateways:
 Integration Capabilities
 ------------------------
 
-VoIPBIN provides multiple integration methods:
+VoIPBin provides multiple integration methods:
 
 **REST API:**
 
@@ -269,7 +269,7 @@ VoIPBIN provides multiple integration methods:
 Key Architectural Benefits
 --------------------------
 
-VoIPBIN's architecture is designed to deliver these advantages:
+VoIPBin's architecture is designed to deliver these advantages:
 
 **Scalability**
 
@@ -313,7 +313,7 @@ VoIPBIN's architecture is designed to deliver these advantages:
 Service Dependencies
 --------------------
 
-VoIPBIN services have well-defined dependencies for coordinated operations:
+VoIPBin services have well-defined dependencies for coordinated operations:
 
 .. code::
 
@@ -372,7 +372,7 @@ VoIPBIN services have well-defined dependencies for coordinated operations:
 
 **Circular Dependencies:**
 
-VoIPBIN avoids circular dependencies through:
+VoIPBin avoids circular dependencies through:
 
 * **Event-Driven Decoupling**: Services publish events, others subscribe
 * **Gateway Orchestration**: API Gateway coordinates cross-service operations
@@ -381,7 +381,7 @@ VoIPBIN avoids circular dependencies through:
 Technology Stack
 ----------------
 
-VoIPBIN is built on modern, proven technologies:
+VoIPBin is built on modern, proven technologies:
 
 **Backend Services:**
 
@@ -410,4 +410,4 @@ VoIPBIN is built on modern, proven technologies:
 * **Broker**: RabbitMQ for async messaging
 * **Event Bus**: RabbitMQ pub/sub events; in-process fan-out inside the API gateway for WebSocket delivery
 
-This architecture enables VoIPBIN to deliver enterprise-grade communication services at scale while maintaining developer simplicity and operational excellence.
+This architecture enables VoIPBin to deliver enterprise-grade communication services at scale while maintaining developer simplicity and operational excellence.

@@ -11,7 +11,7 @@ Overview
 
 Call queueing allows calls to be placed on hold without handling the actual inquiries or transferring callers to the desired party. While in the call queue, the caller is played pre-recorded music or messages. Call queues are often used in call centers when there are not enough staff to handle a large number of calls. Call center operators generally receive information about the number of callers in the call queue and the duration of the waiting time. This allows them to respond flexibly to peak demand by deploying extra call center staff.
 
-With the VoIPBIN's queueing feature, businesses and call centers can effectively manage inbound calls, provide a smooth waiting experience for callers, and ensure that calls are efficiently distributed to available agents, improving overall customer service and call center performance.
+With the VoIPBin's queueing feature, businesses and call centers can effectively manage inbound calls, provide a smooth waiting experience for callers, and ensure that calls are efficiently distributed to available agents, improving overall customer service and call center performance.
 
 
 The purpose of call queueing
@@ -659,7 +659,7 @@ Best Practices
 
 Related Documentation
 ---------------------
-Queues integrate with many VoIPBIN features. Use these links for detailed information:
+Queues integrate with many VoIPBin features. Use these links for detailed information:
 
 **Queue Conference Bridge**
 

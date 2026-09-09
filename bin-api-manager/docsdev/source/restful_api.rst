@@ -3,7 +3,7 @@
 **********************************************
 RESTful API(Application Programming Interface)
 **********************************************
-The VoIPBIN RESTful API offers a robust set of endpoints designed to facilitate seamless Voice over IP (VoIP) communications. By leveraging the OpenAPI specification, the API ensures a standardized, well-documented, and comprehensive interface for developers. This allows for easy integration and interaction with the VoIPBIN service, enabling efficient management of VoIP functionalities and services.
+The VoIPBin RESTful API offers a robust set of endpoints designed to facilitate seamless Voice over IP (VoIP) communications. By leveraging the OpenAPI specification, the API ensures a standardized, well-documented, and comprehensive interface for developers. This allows for easy integration and interaction with the VoIPBin service, enabling efficient management of VoIP functionalities and services.
 
 API Reference Documentation
 ============================
@@ -105,7 +105,7 @@ Error Response Envelope
 
 .. note:: **AI Context**
 
-   Every 4xx/5xx response from the VoIPbin API (v1.0 paths under ``api.voipbin.net``) contains a JSON error envelope with a canonical ``status``, a specific ``reason``, a human-readable ``message``, and a ``request_id`` for support correlation. Branch on ``error.reason`` for debugging; ``error.status`` maps 1:1 to the HTTP status code.
+   Every 4xx/5xx response from the VoIPBin API (v1.0 paths under ``api.voipbin.net``) contains a JSON error envelope with a canonical ``status``, a specific ``reason``, a human-readable ``message``, and a ``request_id`` for support correlation. Branch on ``error.reason`` for debugging; ``error.status`` maps 1:1 to the HTTP status code.
 
 All errors emitted by ``https://api.voipbin.net/v1.0/...`` carry the same envelope shape:
 
@@ -125,7 +125,7 @@ Fields
 
 * ``status`` (enum string, required): Canonical error status. One of:
   ``INVALID_ARGUMENT``, ``UNAUTHENTICATED``, ``PAYMENT_REQUIRED``, ``PERMISSION_DENIED``, ``NOT_FOUND``, ``ALREADY_EXISTS``, ``FAILED_PRECONDITION``, ``RESOURCE_EXHAUSTED``, ``UNAVAILABLE``, ``INTERNAL``.
-* ``reason`` (string, required): Specific VoIPbin reason code in ``UPPER_SNAKE``. Open-ended — see :ref:`error-reason-catalog` for the full list.
+* ``reason`` (string, required): Specific VoIPBin reason code in ``UPPER_SNAKE``. Open-ended — see :ref:`error-reason-catalog` for the full list.
 * ``message`` (string, required): Human-readable message for debugging. Do not parse or display this to end users verbatim — use ``reason`` for programmatic branching and craft user-facing text based on ``reason``.
 * ``request_id`` (string, required): Request correlation ID. Include this in support tickets so engineers can grep the server logs for the exact request.
 * ``details`` (array of object, optional): Reserved for future per-field or structured error detail (e.g., field violations on ``INVALID_ARGUMENT``). May be omitted.
@@ -178,5 +178,5 @@ Use the ``reason`` field to branch. See :ref:`error-reason-catalog` for per-reas
 
 .. note:: **AI Implementation Hint**
 
-   When handling a VoIPbin API response, check the HTTP status code first for branching on the canonical class (4xx vs 5xx), then inspect ``error.reason`` for the specific cause. Include ``error.request_id`` in any support escalation — it is the single piece of information that lets engineering find the exact server-side log line.
+   When handling a VoIPBin API response, check the HTTP status code first for branching on the canonical class (4xx vs 5xx), then inspect ``error.reason`` for the specific cause. Include ``error.request_id`` in any support escalation — it is the single piece of information that lets engineering find the exact server-side log line.
 

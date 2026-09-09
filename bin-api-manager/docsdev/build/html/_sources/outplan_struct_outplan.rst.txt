@@ -81,7 +81,7 @@ Example
 
 Try interval
 ------------
-When VoIPBIN makes a retry dial attempt, it waits the ``try_interval`` duration (in milliseconds) after the previous call ends before dialing again.
+When VoIPBin makes a retry dial attempt, it waits the ``try_interval`` duration (in milliseconds) after the previous call ends before dialing again.
 
 .. image:: _static/images/outplan_struct_try_interval.png
 

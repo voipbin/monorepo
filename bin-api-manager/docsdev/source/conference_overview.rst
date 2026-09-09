@@ -268,7 +268,7 @@ Participants can leave naturally (hangup) or be removed via API.
 
 Conference Types
 ----------------
-VoIPBIN supports different conference types for different use cases.
+VoIPBin supports different conference types for different use cases.
 
 **Type: Conference (Standard)**
 
@@ -683,7 +683,7 @@ Best Practices
 
 Related Documentation
 ---------------------
-Conferences integrate with many VoIPBIN features. Use these links for detailed information:
+Conferences integrate with many VoIPBin features. Use these links for detailed information:
 
 **Recording a Conference**
 

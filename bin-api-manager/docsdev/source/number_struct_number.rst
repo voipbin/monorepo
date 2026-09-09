@@ -96,7 +96,7 @@ All possible values for the ``type`` field:
 Type    Description
 ======= ===========
 normal  A standard phone number purchased from a provider (Telnyx or Twilio). Routed via PSTN. Supports inbound calls and messages from external callers. Incurs provider purchase and usage charges.
-virtual A virtual number with ``+899`` prefix. No provider purchase required. Routed internally within VoIPBIN only. Designed for non-PSTN callers such as AI calls, WebRTC calls, and internal routing. Free to create but subject to tier-based limits.
+virtual A virtual number with ``+899`` prefix. No provider purchase required. Routed internally within VoIPBin only. Designed for non-PSTN callers such as AI calls, WebRTC calls, and internal routing. Free to create but subject to tier-based limits.
 ======= ===========
 
 

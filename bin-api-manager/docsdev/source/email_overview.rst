@@ -9,26 +9,26 @@ Overview
    * **Cost:** Chargeable (per email sent)
    * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/emails`` returns immediately with status ``initiated``. Poll ``GET https://api.voipbin.net/v1.0/emails/{id}`` or use webhooks to track delivery status changes.
 
-VoIPBIN's Email API provides a reliable and scalable email delivery service for your applications. Whether you need to send transactional emails, notifications, or marketing communications, the Email API handles delivery while you focus on your content.
+VoIPBin's Email API provides a reliable and scalable email delivery service for your applications. Whether you need to send transactional emails, notifications, or marketing communications, the Email API handles delivery while you focus on your content.
 
 With the Email API you can:
 
 - Send plain-text emails to one or more recipients
-- Attach existing VoIPBIN resources (e.g. call recordings) to your emails
+- Attach existing VoIPBin resources (e.g. call recordings) to your emails
 - Track email delivery status
 - Integrate email into automated workflows
 
 
 How Email Works
 ---------------
-When you send an email, VoIPBIN processes and delivers it through email infrastructure optimized for deliverability.
+When you send an email, VoIPBin processes and delivers it through email infrastructure optimized for deliverability.
 
 **Email Architecture**
 
 ::
 
     +----------+        +----------------+        +-------------+
-    | Your App |--API-->|    VoIPBIN     |--SMTP->|   Email     |
+    | Your App |--API-->|    VoIPBin     |--SMTP->|   Email     |
     +----------+        |   Email Hub    |        |   Provider  |
                         +----------------+        +------+------+
                                |                         |
@@ -115,13 +115,13 @@ Every email moves through states from composition to delivery.
 
 Sending Emails
 --------------
-Send emails through the VoIPBIN API with full control over content and formatting.
+Send emails through the VoIPBin API with full control over content and formatting.
 
 **Send Email via API**
 
 ::
 
-    Your App                    VoIPBIN                    Recipient
+    Your App                    VoIPBin                    Recipient
        |                           |                           |
        | POST /emails              |                           |
        +-------------------------->|                           |
@@ -137,7 +137,7 @@ Send emails through the VoIPBIN API with full control over content and formattin
 
 .. note:: **AI Implementation Hint**
 
-   The sender (``source``) is always VoIPBIN's own platform address (``service@voipbin.net``) -- it is not configurable per request and there is no sender-domain verification step. Sending is gated instead on your customer account's identity verification status; unverified customer accounts cannot send email. The ``destinations`` field accepts an array of :ref:`Address <common-struct-address-address>` objects with ``type`` set to ``email``, not plain email strings. ``content`` is plain text only -- there is no separate HTML body.
+   The sender (``source``) is always VoIPBin's own platform address (``service@voipbin.net``) -- it is not configurable per request and there is no sender-domain verification step. Sending is gated instead on your customer account's identity verification status; unverified customer accounts cannot send email. The ``destinations`` field accepts an array of :ref:`Address <common-struct-address-address>` objects with ``type`` set to ``email``, not plain email strings. ``content`` is plain text only -- there is no separate HTML body.
 
 **Basic Email Example:**
 
@@ -158,7 +158,7 @@ Send emails through the VoIPBIN API with full control over content and formattin
 
 **Email with Attachment:**
 
-Attachments reference an existing VoIPBIN resource by ``reference_type`` and ``reference_id`` (for example a call recording) -- you cannot upload arbitrary file content.
+Attachments reference an existing VoIPBin resource by ``reference_type`` and ``reference_id`` (for example a call recording) -- you cannot upload arbitrary file content.
 
 .. code::
 
@@ -213,7 +213,7 @@ Understanding email structure helps you create effective messages.
    * - Field
      - Description
    * - source
-     - Fixed VoIPBIN platform address (``service@voipbin.net``). Not set by the caller.
+     - Fixed VoIPBin platform address (``service@voipbin.net``). Not set by the caller.
    * - destinations
      - List of recipient email addresses (:ref:`Address <common-struct-address-address>` objects, ``type`` ``email``). No ``cc``/``bcc`` support.
    * - subject
@@ -221,7 +221,7 @@ Understanding email structure helps you create effective messages.
    * - content
      - Plain text body of the email. There is no separate HTML body.
    * - attachments
-     - List of attachments referencing existing VoIPBIN resources. See :ref:`Attachment <email-struct-attachment>`.
+     - List of attachments referencing existing VoIPBin resources. See :ref:`Attachment <email-struct-attachment>`.
 
 
 
@@ -340,7 +340,7 @@ Best Practices
 
 **1. Sender Reputation**
 
-- The sending address is fixed to VoIPBIN's platform address; you cannot set a custom "from" or authenticate your own domain
+- The sending address is fixed to VoIPBin's platform address; you cannot set a custom "from" or authenticate your own domain
 - Keep your customer account's identity verification current -- sending is rejected for unverified accounts
 - Maintain low bounce and complaint rates
 
@@ -390,7 +390,7 @@ Troubleshooting
    * - Attachment missing from email
      - Verify ``reference_type``/``reference_id`` point to an existing, accessible resource (e.g. a recording owned by the same customer)
    * - Request rejected
-     - Attachments only support referencing existing VoIPBIN resources; arbitrary file uploads are not supported
+     - Attachments only support referencing existing VoIPBin resources; arbitrary file uploads are not supported
 
 
 

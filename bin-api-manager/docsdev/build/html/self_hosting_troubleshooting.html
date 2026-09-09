@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Operations and troubleshooting - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -674,7 +674,7 @@ sops<span class="w"> </span>--decrypt<span class="w"> </span>secrets.yaml
 
 <span class="c1"># SSH into Kamailio for debugging</span>
 gcloud<span class="w"> </span>compute<span class="w"> </span>ssh<span class="w"> </span>kamailio-0<span class="w"> </span>--tunnel-through-iap<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--project<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>yq<span class="w"> </span>.gcp_project_id<span class="w"> </span>config.yaml<span class="k">)</span><span class="s2">&quot;</span>
+<span class="w">  </span>--project<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>yq<span class="w"> </span>.gcp_project_id<span class="w"> </span>config.yaml<span class="k">)</span><span class="s2">"</span>
 
 <span class="c1"># Get logs from a backend service</span>
 kubectl<span class="w"> </span>-n<span class="w"> </span>bin-manager<span class="w"> </span>logs<span class="w"> </span>deploy/call-manager<span class="w"> </span>--tail<span class="w"> </span><span class="m">200</span>
@@ -747,7 +747,7 @@ gcloud<span class="w"> </span>projects<span class="w"> </span>get-iam-policy<spa
 <p><code class="docutils literal notranslate"><span class="pre">Could</span> <span class="pre">not</span> <span class="pre">get</span> <span class="pre">lock</span> <span class="pre">/var/lib/dpkg/lock</span></code> typically means cloud-init is
 still running. Wait for it and rerun the stage:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>ssh<span class="w"> </span>kamailio-0<span class="w"> </span>--tunnel-through-iap<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--<span class="w"> </span><span class="s1">&#39;cloud-init status --wait&#39;</span>
+<span class="w">  </span>--<span class="w"> </span><span class="s1">'cloud-init status --wait'</span>
 ./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible_run
 </pre></div>
 </div>
@@ -790,7 +790,7 @@ permissions, and the connection name matches the Terraform output.</p>
 <h3>DNS: domain not resolving<a class="headerlink" href="#dns-domain-not-resolving" title="Link to this heading">¶</a></h3>
 <p>When <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">auto</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>dns<span class="w"> </span>managed-zones<span class="w"> </span>describe<span class="w"> </span>voipbin-zone<span class="w"> </span>--project<span class="w"> </span>PROJECT_ID<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--format<span class="o">=</span><span class="s2">&quot;value(nameServers)&quot;</span>
+<span class="w">  </span>--format<span class="o">=</span><span class="s2">"value(nameServers)"</span>
 </pre></div>
 </div>
 <p>Update your registrar’s NS records to point at those nameservers. NS
@@ -808,8 +808,8 @@ outputs and create A records for <code class="docutils literal notranslate"><spa
 <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">logs</span> <span class="pre">--tail</span> <span class="pre">100</span></code>.</p></li>
 <li><p>List the Kamailio load balancer resources and check health, since the
 exact resource names vary by deployment environment:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>target-pools<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">&quot;name~kamailio&quot;</span>
-gcloud<span class="w"> </span>compute<span class="w"> </span>forwarding-rules<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">&quot;name~kamailio&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>target-pools<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">"name~kamailio"</span>
+gcloud<span class="w"> </span>compute<span class="w"> </span>forwarding-rules<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">"name~kamailio"</span>
 </pre></div>
 </div>
 </li>
@@ -927,8 +927,8 @@ outputs.</p></li>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

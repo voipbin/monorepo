@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Internal Call Sequences" href="call_sequences.html"><link rel="prev" title="Struct Groupcall" href="call_struct_groupcall.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -657,50 +657,50 @@
 <h3>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call with TTS (Text-to-Speech) action.
 When the destination answers the call, it will speak the given text message.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "+15551234567"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15559876543&quot;
+                "type": "tel",
+                "target": "+15559876543"
             }
         ],
-        &quot;actions&quot;: [
+        "actions": [
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye",
+                    "language": "en-US"
                 }
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 </section>
 <section id="simple-outbound-call-with-an-existing-flow">
 <h3>Simple outbound call with an existing flow<a class="headerlink" href="#simple-outbound-call-with-an-existing-flow" title="Link to this heading">¶</a></h3>
 <p>If you have already created a flow, you can reference it by <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> instead of defining actions inline:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "&lt;your-source-number&gt;"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;&lt;your-destination-number&gt;&quot;
+                "type": "tel",
+                "target": "&lt;your-destination-number&gt;"
             }
         ],
-        &quot;flow_id&quot;: &quot;&lt;your-flow-id&gt;&quot;
-    }&#39;
+        "flow_id": "&lt;your-flow-id&gt;"
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -713,33 +713,33 @@ When the destination answers the call, it will speak the given text message.</p>
 <section id="passing-custom-variables-into-the-call-s-flow">
 <h3>Passing custom variables into the call’s flow<a class="headerlink" href="#passing-custom-variables-into-the-call-s-flow" title="Link to this heading">¶</a></h3>
 <p>You can seed per-call context into the flow by adding an optional <code class="docutils literal notranslate"><span class="pre">variables</span></code> object to the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request. Each key becomes referenceable inside the flow as <code class="docutils literal notranslate"><span class="pre">${&lt;key&gt;}</span></code> (for example, in a <code class="docutils literal notranslate"><span class="pre">talk</span></code> action’s text or a <code class="docutils literal notranslate"><span class="pre">webhook</span></code> action’s body).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+155****4567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "+155****4567"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+155****6543&quot;
+                "type": "tel",
+                "target": "+155****6543"
             }
         ],
-        &quot;actions&quot;: [
+        "actions": [
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Hello ${customer_name}, this is a call about campaign ${campaign_id}.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "Hello ${customer_name}, this is a call about campaign ${campaign_id}.",
+                    "language": "en-US"
                 }
             }
         ],
-        &quot;variables&quot;: {
-            &quot;campaign_id&quot;: &quot;summer-2026&quot;,
-            &quot;customer_name&quot;: &quot;Jane Doe&quot;
+        "variables": {
+            "campaign_id": "summer-2026",
+            "customer_name": "Jane Doe"
         }
-    }&#39;
+    }'
 </pre></div>
 </div>
 <p>At runtime the destination hears “Hello Jane Doe, this is a call about campaign summer-2026.”</p>
@@ -752,30 +752,30 @@ When the destination answers the call, it will speak the given text message.</p>
 <section id="anonymous-outbound-call-api-initiated">
 <h3>Anonymous outbound call (API-initiated)<a class="headerlink" href="#anonymous-outbound-call-api-initiated" title="Link to this heading">¶</a></h3>
 <p>You can hide your caller ID on outgoing PSTN calls by setting <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;yes&quot;</span></code> in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request. The destination sees “Anonymous” or “Private number” instead of your real phone number.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;anonymous&quot;: &quot;yes&quot;,
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "anonymous": "yes",
+        "source": {
+            "type": "tel",
+            "target": "+15551234567"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15559876543&quot;
+                "type": "tel",
+                "target": "+15559876543"
             }
         ],
-        &quot;actions&quot;: [
+        "actions": [
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Hello. This is an anonymous call from voipbin.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "Hello. This is an anonymous call from voipbin.",
+                    "language": "en-US"
                 }
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter accepts three values:</p>
@@ -792,58 +792,58 @@ When the destination answers the call, it will speak the given text message.</p>
 </section>
 <section id="anonymous-outbound-call-within-a-flow-connect-action">
 <h3>Anonymous outbound call within a flow (connect action)<a class="headerlink" href="#anonymous-outbound-call-within-a-flow-connect-action" title="Link to this heading">¶</a></h3>
-<p>A common scenario is receiving an incoming call on a registered extension and then connecting it to an external PSTN number with anonymous caller ID. For example, a customer calls your VoIPBIN number, your flow answers and plays a greeting, then connects to a mobile phone — but you want the mobile phone to see “Anonymous” instead of your VoIPBIN number.</p>
+<p>A common scenario is receiving an incoming call on a registered extension and then connecting it to an external PSTN number with anonymous caller ID. For example, a customer calls your VoIPBin number, your flow answers and plays a greeting, then connects to a mobile phone — but you want the mobile phone to see “Anonymous” instead of your VoIPBin number.</p>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">connect</span></code> action with <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;yes&quot;</span></code> in the flow:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "+15551234567"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15559876543&quot;
+                "type": "tel",
+                "target": "+15559876543"
             }
         ],
-        &quot;actions&quot;: [
+        "actions": [
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Please wait while we connect your call.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "Please wait while we connect your call.",
+                    "language": "en-US"
                 }
             },
             {
-                &quot;type&quot;: &quot;connect&quot;,
-                &quot;option&quot;: {
-                    &quot;anonymous&quot;: &quot;yes&quot;,
-                    &quot;source&quot;: {
-                        &quot;type&quot;: &quot;tel&quot;,
-                        &quot;target&quot;: &quot;+15551234567&quot;
+                "type": "connect",
+                "option": {
+                    "anonymous": "yes",
+                    "source": {
+                        "type": "tel",
+                        "target": "+15551234567"
                     },
-                    &quot;destinations&quot;: [
+                    "destinations": [
                         {
-                            &quot;type&quot;: &quot;tel&quot;,
-                            &quot;target&quot;: &quot;+15557778888&quot;
+                            "type": "tel",
+                            "target": "+15557778888"
                         }
                     ]
                 }
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <p>In this example:</p>
 <ol class="arabic simple">
 <li><p>An outbound call is made to <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>.</p></li>
-<li><p>When answered, VoIPBIN plays a greeting message.</p></li>
+<li><p>When answered, VoIPBin plays a greeting message.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">connect</span></code> action creates a second outbound leg to <code class="docutils literal notranslate"><span class="pre">+15557778888</span></code> with anonymous caller ID.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">+15557778888</span></code> sees “Anonymous” instead of <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>.</p></li>
 <li><p>Once <code class="docutils literal notranslate"><span class="pre">+15557778888</span></code> answers, both parties are bridged together.</p></li>
 </ol>
-<p>The same pattern works for incoming calls. If you assign this flow to a VoIPBIN number, incoming callers hear the greeting and are connected anonymously to the PSTN destination.</p>
+<p>The same pattern works for incoming calls. If you assign this flow to a VoIPBin number, incoming callers hear the greeting and are connected anonymously to the PSTN destination.</p>
 <p>You can also use <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;auto&quot;</span></code> in the <code class="docutils literal notranslate"><span class="pre">connect</span></code> action. In that case, if the <em>incoming</em> call already had a Privacy header (i.e., the original caller was anonymous), the outbound leg preserves that anonymity. Otherwise, the real caller ID is shown.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -855,55 +855,55 @@ When the destination answers the call, it will speak the given text message.</p>
 <h3>Anonymous outbound call within a flow (call action)<a class="headerlink" href="#anonymous-outbound-call-within-a-flow-call-action" title="Link to this heading">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">call</span></code> action creates an <strong>independent</strong> outbound call from within a flow. Unlike <code class="docutils literal notranslate"><span class="pre">connect</span></code> (which bridges the current call to another party), <code class="docutils literal notranslate"><span class="pre">call</span></code> spawns a separate call that runs its own flow or actions independently.</p>
 <p>Use this when you want to trigger an anonymous notification call to a third party without bridging it to the current call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;Notify third party anonymously&quot;,
-        &quot;actions&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "Notify third party anonymously",
+        "actions": [
             {
-                &quot;type&quot;: &quot;answer&quot;
+                "type": "answer"
             },
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Incoming customer request detected. Triggering anonymous notification.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "Incoming customer request detected. Triggering anonymous notification.",
+                    "language": "en-US"
                 }
             },
             {
-                &quot;type&quot;: &quot;call&quot;,
-                &quot;option&quot;: {
-                    &quot;anonymous&quot;: &quot;yes&quot;,
-                    &quot;source&quot;: {
-                        &quot;type&quot;: &quot;tel&quot;,
-                        &quot;target&quot;: &quot;+15551234567&quot;
+                "type": "call",
+                "option": {
+                    "anonymous": "yes",
+                    "source": {
+                        "type": "tel",
+                        "target": "+15551234567"
                     },
-                    &quot;destinations&quot;: [
+                    "destinations": [
                         {
-                            &quot;type&quot;: &quot;tel&quot;,
-                            &quot;target&quot;: &quot;+15557778888&quot;
+                            "type": "tel",
+                            "target": "+15557778888"
                         }
                     ],
-                    &quot;actions&quot;: [
+                    "actions": [
                         {
-                            &quot;type&quot;: &quot;talk&quot;,
-                            &quot;option&quot;: {
-                                &quot;text&quot;: &quot;This is an automated notification. A customer request has been received.&quot;,
-                                &quot;language&quot;: &quot;en-US&quot;
+                            "type": "talk",
+                            "option": {
+                                "text": "This is an automated notification. A customer request has been received.",
+                                "language": "en-US"
                             }
                         }
                     ]
                 }
             },
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Notification sent. Thank you.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "Notification sent. Thank you.",
+                    "language": "en-US"
                 }
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <p>In this example:</p>
@@ -922,9 +922,9 @@ When the destination answers the call, it will speak the given text message.</p>
 </section>
 <section id="anonymous-outbound-call-from-a-registered-endpoint-sip-phone">
 <h3>Anonymous outbound call from a registered endpoint (SIP phone)<a class="headerlink" href="#anonymous-outbound-call-from-a-registered-endpoint-sip-phone" title="Link to this heading">¶</a></h3>
-<p>When a SIP phone registered with VoIPBIN dials an external PSTN number, the system automatically handles anonymous caller ID based on the phone’s SIP <code class="docutils literal notranslate"><span class="pre">Privacy</span></code> header. There is no API parameter to set — the behavior is determined entirely by the SIP phone’s own settings.</p>
+<p>When a SIP phone registered with VoIPBin dials an external PSTN number, the system automatically handles anonymous caller ID based on the phone’s SIP <code class="docutils literal notranslate"><span class="pre">Privacy</span></code> header. There is no API parameter to set — the behavior is determined entirely by the SIP phone’s own settings.</p>
 <p><strong>How it works:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SIP</span> <span class="n">Phone</span>                    <span class="n">VoIPBIN</span>                     <span class="n">PSTN</span> <span class="n">Destination</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SIP</span> <span class="n">Phone</span>                    <span class="n">VoIPBin</span>                     <span class="n">PSTN</span> <span class="n">Destination</span>
    <span class="o">|</span>                           <span class="o">|</span>                              <span class="o">|</span>
    <span class="o">|</span>  <span class="n">INVITE</span> <span class="o">+</span><span class="mi">15559876543</span>      <span class="o">|</span>                              <span class="o">|</span>
    <span class="o">|</span>  <span class="n">Privacy</span><span class="p">:</span> <span class="nb">id</span>              <span class="o">|</span>                              <span class="o">|</span>
@@ -939,12 +939,12 @@ When the destination answers the call, it will speak the given text message.</p>
    <span class="o">|</span>  <span class="mi">180</span> <span class="n">Ringing</span>              <span class="o">|</span>                              <span class="o">|</span>
    <span class="o">|&lt;--------------------------+</span>                              <span class="o">|</span>
    <span class="o">|</span>                           <span class="o">|</span>                              <span class="o">|</span>
-   <span class="o">|</span>  <span class="p">(</span><span class="n">Destination</span> <span class="n">sees</span> <span class="s2">&quot;Anonymous&quot;</span> <span class="n">on</span> <span class="n">their</span> <span class="n">phone</span><span class="p">)</span>           <span class="o">|</span>
+   <span class="o">|</span>  <span class="p">(</span><span class="n">Destination</span> <span class="n">sees</span> <span class="s2">"Anonymous"</span> <span class="n">on</span> <span class="n">their</span> <span class="n">phone</span><span class="p">)</span>           <span class="o">|</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>If the SIP phone includes <code class="docutils literal notranslate"><span class="pre">Privacy:</span> <span class="pre">id</span></code> in the outgoing INVITE, VoIPBIN forwards the call as anonymous — the PSTN destination sees “Anonymous” or “Private number”.</p></li>
-<li><p>If the SIP phone does <strong>not</strong> include a Privacy header, VoIPBIN uses the real caller ID — the PSTN destination sees the actual source number.</p></li>
+<li><p>If the SIP phone includes <code class="docutils literal notranslate"><span class="pre">Privacy:</span> <span class="pre">id</span></code> in the outgoing INVITE, VoIPBin forwards the call as anonymous — the PSTN destination sees “Anonymous” or “Private number”.</p></li>
+<li><p>If the SIP phone does <strong>not</strong> include a Privacy header, VoIPBin uses the real caller ID — the PSTN destination sees the actual source number.</p></li>
 </ul>
 <p><strong>Setting up anonymous calls on your SIP phone:</strong></p>
 <p>Most SIP phones and softphones have a “Hide Caller ID”, “Anonymous Call”, or “CLIR” (Calling Line Identification Restriction) setting. Enable this to send the <code class="docutils literal notranslate"><span class="pre">Privacy:</span> <span class="pre">id</span></code> header automatically. The exact steps vary by phone manufacturer:</p>
@@ -963,68 +963,68 @@ When the destination answers the call, it will speak the given text message.</p>
 <h3>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call with media file play action.
 When the destination answer the call, it will play the given media file.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15551234567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "source": {
+        "type": "tel",
+        "target": "+15551234567"
     },
-    &quot;destinations&quot;: [
+    "destinations": [
         {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;
+            "type": "tel",
+            "target": "+15559876543"
         }
     ],
-    &quot;actions&quot;: [
+    "actions": [
         {
-            &quot;type&quot;: &quot;play&quot;,
-            &quot;option&quot;: {
-                &quot;stream_urls&quot;: [
-                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
+            "type": "play",
+            "option": {
+                "stream_urls": [
+                    "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
                 ]
             }
         }
     ]
-}&#39;
+}'
 
 [
     {
-        &quot;id&quot;: &quot;a023bfa8-1091-4e94-8eaa-7f01fbecc71a&quot;,
-        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-        &quot;flow_id&quot;: &quot;f089791a-ac78-4ea0-be88-8a8e131f9fc5&quot;,
-        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;flow&quot;,
-        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;chained_call_ids&quot;: [],
-        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;recording_ids&quot;: [],
-        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+        "id": "a023bfa8-1091-4e94-8eaa-7f01fbecc71a",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "flow_id": "f089791a-ac78-4ea0-be88-8a8e131f9fc5",
+        "activeflow_id": "00000000-0000-0000-0000-000000000000",
+        "type": "flow",
+        "master_call_id": "00000000-0000-0000-0000-000000000000",
+        "chained_call_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
+        "recording_ids": [],
+        "groupcall_id": "00000000-0000-0000-0000-000000000000",
+        "source": {
+            "type": "tel",
+            "target": "+15551234567",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
-        &quot;destination&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+        "destination": {
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
-        &quot;status&quot;: &quot;dialing&quot;,
-        &quot;direction&quot;: &quot;outgoing&quot;,
-        &quot;mute_direction&quot;: &quot;&quot;,
-        &quot;hangup_by&quot;: &quot;&quot;,
-        &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: null,
-        &quot;tm_ringing&quot;: null,
-        &quot;tm_hangup&quot;: null,
-        &quot;tm_create&quot;: &quot;2021-02-04T04:44:20Z&quot;,
-        &quot;tm_update&quot;: null,
-        &quot;tm_delete&quot;: null
+        "status": "dialing",
+        "direction": "outgoing",
+        "mute_direction": "",
+        "hangup_by": "",
+        "hangup_reason": "",
+        "tm_progressing": null,
+        "tm_ringing": null,
+        "tm_hangup": null,
+        "tm_create": "2021-02-04T04:44:20Z",
+        "tm_update": null,
+        "tm_delete": null
     }
 ]
 </pre></div>
@@ -1033,83 +1033,83 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="simple-outbound-call-with-tts-and-connect">
 <h3>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call with TTS(Text-to-Speech) and connect to other destination.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---data-raw &#39;{
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15559876543&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--data-raw '{
+    "source": {
+        "type": "tel",
+        "target": "+15559876543"
     },
-    &quot;destinations&quot;: [
+    "destinations": [
         {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;
+            "type": "tel",
+            "target": "+15559876543"
         }
     ],
-    &quot;actions&quot;: [
+    "actions": [
         {
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "type": "talk",
+            "option": {
+                "text": "hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service.",
+                "language": "en-US"
             }
         },
         {
-            &quot;type&quot;: &quot;connect&quot;,
-            &quot;option&quot;: {
-                &quot;source&quot;: {
-                    &quot;type&quot;: &quot;tel&quot;,
-                    &quot;target&quot;: &quot;+15559876543&quot;
+            "type": "connect",
+            "option": {
+                "source": {
+                    "type": "tel",
+                    "target": "+15559876543"
                 },
-                &quot;destinations&quot;: [
+                "destinations": [
                     {
-                        &quot;type&quot;: &quot;tel&quot;,
-                        &quot;target&quot;: &quot;+15551111111&quot;
+                        "type": "tel",
+                        "target": "+15551111111"
                     }
                 ]
             }
         }
     ]
-}&#39;
+}'
 
 [
     {
-        &quot;id&quot;: &quot;9f6265bc-6b59-4e80-a906-2679aca11455&quot;,
-        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-        &quot;flow_id&quot;: &quot;d665fbc0-6dd8-44bc-99ea-2ae54bc59428&quot;,
-        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;flow&quot;,
-        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;chained_call_ids&quot;: [],
-        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;recording_ids&quot;: [],
-        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+        "id": "9f6265bc-6b59-4e80-a906-2679aca11455",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "flow_id": "d665fbc0-6dd8-44bc-99ea-2ae54bc59428",
+        "activeflow_id": "00000000-0000-0000-0000-000000000000",
+        "type": "flow",
+        "master_call_id": "00000000-0000-0000-0000-000000000000",
+        "chained_call_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
+        "recording_ids": [],
+        "groupcall_id": "00000000-0000-0000-0000-000000000000",
+        "source": {
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
-        &quot;destination&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+        "destination": {
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
-        &quot;status&quot;: &quot;dialing&quot;,
-        &quot;direction&quot;: &quot;outgoing&quot;,
-        &quot;mute_direction&quot;: &quot;&quot;,
-        &quot;hangup_by&quot;: &quot;&quot;,
-        &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: null,
-        &quot;tm_ringing&quot;: null,
-        &quot;tm_hangup&quot;: null,
-        &quot;tm_create&quot;: &quot;2021-02-06T09:52:49Z&quot;,
-        &quot;tm_update&quot;: null,
-        &quot;tm_delete&quot;: null
+        "status": "dialing",
+        "direction": "outgoing",
+        "mute_direction": "",
+        "hangup_by": "",
+        "hangup_reason": "",
+        "tm_progressing": null,
+        "tm_ringing": null,
+        "tm_hangup": null,
+        "tm_create": "2021-02-06T09:52:49Z",
+        "tm_update": null,
+        "tm_delete": null
     }
 ]
 </pre></div>
@@ -1118,82 +1118,82 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="simple-outbound-call-with-talk-and-digits-send">
 <h3>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15551234567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "source": {
+        "type": "tel",
+        "target": "+15551234567"
     },
-    &quot;destinations&quot;: [
+    "destinations": [
         {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;
+            "type": "tel",
+            "target": "+15559876543"
         }
     ],
-    &quot;actions&quot;: [
+    "actions": [
         {
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;This is dtmf send test call. Please wait.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "type": "talk",
+            "option": {
+                "text": "This is dtmf send test call. Please wait.",
+                "language": "en-US"
             }
         },
         {
-            &quot;type&quot;: &quot;digits_send&quot;,
-            &quot;option&quot;: {
-                &quot;digits&quot;: &quot;1234567890&quot;,
-                &quot;duration&quot;: 500,
-                &quot;interval&quot;: 500
+            "type": "digits_send",
+            "option": {
+                "digits": "1234567890",
+                "duration": 500,
+                "interval": 500
             }
         },
         {
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Thank you. DTMF send test has done.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "type": "talk",
+            "option": {
+                "text": "Thank you. DTMF send test has done.",
+                "language": "en-US"
             }
         }
     ]
-}&#39;
+}'
 
 [
     {
-        &quot;id&quot;: &quot;d7520a58-0b07-4dd7-ab72-a4e2d1979ec0&quot;,
-        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-        &quot;flow_id&quot;: &quot;0f4bd9bc-9df5-4a5b-9465-2189822a3019&quot;,
-        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;flow&quot;,
-        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;chained_call_ids&quot;: [],
-        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;recording_ids&quot;: [],
-        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+        "id": "d7520a58-0b07-4dd7-ab72-a4e2d1979ec0",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "flow_id": "0f4bd9bc-9df5-4a5b-9465-2189822a3019",
+        "activeflow_id": "00000000-0000-0000-0000-000000000000",
+        "type": "flow",
+        "master_call_id": "00000000-0000-0000-0000-000000000000",
+        "chained_call_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
+        "recording_ids": [],
+        "groupcall_id": "00000000-0000-0000-0000-000000000000",
+        "source": {
+            "type": "tel",
+            "target": "+15551234567",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
-        &quot;destination&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+        "destination": {
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
-        &quot;status&quot;: &quot;dialing&quot;,
-        &quot;direction&quot;: &quot;outgoing&quot;,
-        &quot;mute_direction&quot;: &quot;&quot;,
-        &quot;hangup_by&quot;: &quot;&quot;,
-        &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: null,
-        &quot;tm_ringing&quot;: null,
-        &quot;tm_hangup&quot;: null,
-        &quot;tm_create&quot;: &quot;2021-02-08T03:59:33Z&quot;,
-        &quot;tm_update&quot;: null,
-        &quot;tm_delete&quot;: null
+        "status": "dialing",
+        "direction": "outgoing",
+        "mute_direction": "",
+        "hangup_by": "",
+        "hangup_reason": "",
+        "tm_progressing": null,
+        "tm_ringing": null,
+        "tm_hangup": null,
+        "tm_create": "2021-02-08T03:59:33Z",
+        "tm_update": null,
+        "tm_delete": null
     }
 ]
 </pre></div>
@@ -1205,7 +1205,7 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              <span class="n">Start</span>
                 <span class="o">|</span>
                 <span class="o">|</span>
-<span class="o">------------&gt;</span>  <span class="n">Talk</span><span class="p">(</span><span class="s2">&quot;Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;</span><span class="p">)</span>
+<span class="o">------------&gt;</span>  <span class="n">Talk</span><span class="p">(</span><span class="s2">"Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust"</span><span class="p">)</span>
 <span class="o">|</span>               <span class="o">|</span>
 <span class="o">|</span>               <span class="o">|</span>
 <span class="o">|</span>              <span class="n">Digit</span><span class="p">(</span><span class="n">DTMF</span><span class="p">)</span> <span class="n">receive</span>
@@ -1213,7 +1213,7 @@ When the destination answer the call, it will play the given media file.</p>
 <span class="o">|</span>               <span class="o">|</span>
 <span class="o">|</span>       <span class="o">-----------------------------------------------</span>
 <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
-<span class="o">|</span>     <span class="n">default</span>      <span class="s2">&quot;1&quot;</span>              <span class="s2">&quot;2&quot;</span>              <span class="s2">&quot;3&quot;</span>
+<span class="o">|</span>     <span class="n">default</span>      <span class="s2">"1"</span>              <span class="s2">"2"</span>              <span class="s2">"3"</span>
 <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>       <span class="o">|</span>          <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>        <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>        <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
@@ -1233,149 +1233,149 @@ When the destination answer the call, it will play the given media file.</p>
        <span class="n">Hangup</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---data-raw &#39;{
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15551234567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--data-raw '{
+    "source": {
+        "type": "tel",
+        "target": "+15551234567"
     },
-    &quot;destinations&quot;: [
+    "destinations": [
         {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;
+            "type": "tel",
+            "target": "+15559876543"
         }
     ],
-    &quot;actions&quot;: [
+    "actions": [
         {
-            &quot;id&quot;: &quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;,
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "id": "b8781e56-c524-11ec-889f-d37b0dbb7eb8",
+            "type": "talk",
+            "option": {
+                "text": "Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust",
+                "language": "en-US"
             }
         },
         {
-            &quot;type&quot;: &quot;digits_receive&quot;,
-            &quot;option&quot;: {
-                &quot;duration&quot;: 5000,
-                &quot;length&quot;: 1
+            "type": "digits_receive",
+            "option": {
+                "duration": 5000,
+                "length": 1
             }
         },
         {
-            &quot;type&quot;: &quot;branch&quot;,
-            &quot;option&quot;: {
-                &quot;default_target_id&quot;: &quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;,
-                &quot;target_ids&quot;: {
-                    &quot;1&quot;: &quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;,
-                    &quot;2&quot;: &quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;,
-                    &quot;3&quot;: &quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;
+            "type": "branch",
+            "option": {
+                "default_target_id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
+                "target_ids": {
+                    "1": "c3eb8e62-c524-11ec-94c5-abafec8af561",
+                    "2": "dc87123e-c524-11ec-89c6-5fb18da14034",
+                    "3": "e70fb030-c524-11ec-b657-ebec72f097ef"
                 }
             }
         },
         {
-            &quot;id&quot;: &quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;,
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "id": "c3eb8e62-c524-11ec-94c5-abafec8af561",
+            "type": "talk",
+            "option": {
+                "text": "Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime",
+                "language": "en-US"
             }
         },
         {
-            &quot;type&quot;: &quot;hangup&quot;
+            "type": "hangup"
         },
         {
-            &quot;id&quot;: &quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;,
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he&#39;\&#39;&#39;s dead. Mama, life had just begun, But now I&#39;\&#39;&#39;ve gone and thrown it all away.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "id": "dc87123e-c524-11ec-89c6-5fb18da14034",
+            "type": "talk",
+            "option": {
+                "text": "Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he'\''s dead. Mama, life had just begun, But now I'\''ve gone and thrown it all away.",
+                "language": "en-US"
             }
         },
         {
-            &quot;type&quot;: &quot;hangup&quot;
+            "type": "hangup"
         },
         {
-            &quot;id&quot;: &quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;,
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Steve walks warily down the street. With his brim pulled way down low. Ain&#39;\&#39;&#39;t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "id": "e70fb030-c524-11ec-b657-ebec72f097ef",
+            "type": "talk",
+            "option": {
+                "text": "Steve walks warily down the street. With his brim pulled way down low. Ain'\''t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?",
+                "language": "en-US"
             }
         },
         {
-            &quot;type&quot;: &quot;hangup&quot;
+            "type": "hangup"
         },
         {
-            &quot;id&quot;: &quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;,
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;You didn&#39;\&#39;&#39;t choose the correct number. Default selected.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "id": "ed9705ca-c524-11ec-a3fb-8feb7731ad45",
+            "type": "talk",
+            "option": {
+                "text": "You didn'\''t choose the correct number. Default selected.",
+                "language": "en-US"
             }
         },
         {
-            &quot;type&quot;: &quot;goto&quot;,
-            &quot;option&quot;: {
-                &quot;target_id&quot;: &quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;,
-                &quot;loop_count&quot;: 2
+            "type": "goto",
+            "option": {
+                "target_id": "b8781e56-c524-11ec-889f-d37b0dbb7eb8",
+                "loop_count": 2
             }
         },
         {
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Loop over. Hangup the call. Thank you, good bye.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "type": "talk",
+            "option": {
+                "text": "Loop over. Hangup the call. Thank you, good bye.",
+                "language": "en-US"
             }
         },
         {
-            &quot;type&quot;: &quot;hangup&quot;
+            "type": "hangup"
         }
     ]
-}&#39;
+}'
 
 [
     {
-        &quot;id&quot;: &quot;77517719-ffb9-4583-ba44-737ba991d685&quot;,
-        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-        &quot;flow_id&quot;: &quot;c0827e56-41ef-4fa1-9da0-a8a36fbb76c4&quot;,
-        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;flow&quot;,
-        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;chained_call_ids&quot;: [],
-        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;recording_ids&quot;: [],
-        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+        "id": "77517719-ffb9-4583-ba44-737ba991d685",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "flow_id": "c0827e56-41ef-4fa1-9da0-a8a36fbb76c4",
+        "activeflow_id": "00000000-0000-0000-0000-000000000000",
+        "type": "flow",
+        "master_call_id": "00000000-0000-0000-0000-000000000000",
+        "chained_call_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
+        "recording_ids": [],
+        "groupcall_id": "00000000-0000-0000-0000-000000000000",
+        "source": {
+            "type": "tel",
+            "target": "+15551234567",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
-        &quot;destination&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+        "destination": {
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
-        &quot;status&quot;: &quot;dialing&quot;,
-        &quot;action&quot;: {
-            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-            &quot;type&quot;: &quot;&quot;
+        "status": "dialing",
+        "action": {
+            "id": "00000000-0000-0000-0000-000000000001",
+            "type": ""
         },
-        &quot;direction&quot;: &quot;outgoing&quot;,
-        &quot;mute_direction&quot;: &quot;&quot;,
-        &quot;hangup_by&quot;: &quot;&quot;,
-        &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: null,
-        &quot;tm_ringing&quot;: null,
-        &quot;tm_hangup&quot;: null,
-        &quot;tm_create&quot;: &quot;2022-02-24T02:08:14Z&quot;,
-        &quot;tm_update&quot;: null,
-        &quot;tm_delete&quot;: null
+        "direction": "outgoing",
+        "mute_direction": "",
+        "hangup_by": "",
+        "hangup_reason": "",
+        "tm_progressing": null,
+        "tm_ringing": null,
+        "tm_hangup": null,
+        "tm_create": "2022-02-24T02:08:14Z",
+        "tm_update": null,
+        "tm_delete": null
     }
 ]
 </pre></div>
@@ -1384,50 +1384,50 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="get-call-list">
 <h3>Get call list<a class="headerlink" href="#get-call-list" title="Link to this heading">¶</a></h3>
 <p>Getting a list of calls.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;9a7857ca-73ba-4000-8101-c47d3b48f9d1&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;type&quot;: &quot;sip-service&quot;,
-            &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;chained_call_ids&quot;: [],
-            &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;recording_ids&quot;: [],
-            &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;source&quot;: {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15551234567&quot;,
-                &quot;target_name&quot;: &quot;&quot;,
-                &quot;name&quot;: &quot;109&quot;,
-                &quot;detail&quot;: &quot;&quot;
+            "id": "9a7857ca-73ba-4000-8101-c47d3b48f9d1",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "flow_id": "00000000-0000-0000-0000-000000000000",
+            "activeflow_id": "00000000-0000-0000-0000-000000000000",
+            "type": "sip-service",
+            "master_call_id": "00000000-0000-0000-0000-000000000000",
+            "chained_call_ids": [],
+            "recording_id": "00000000-0000-0000-0000-000000000000",
+            "recording_ids": [],
+            "groupcall_id": "00000000-0000-0000-0000-000000000000",
+            "source": {
+                "type": "tel",
+                "target": "+15551234567",
+                "target_name": "",
+                "name": "109",
+                "detail": ""
             },
-            &quot;destination&quot;: {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+972595897084&quot;,
-                &quot;target_name&quot;: &quot;&quot;,
-                &quot;name&quot;: &quot;&quot;,
-                &quot;detail&quot;: &quot;&quot;
+            "destination": {
+                "type": "tel",
+                "target": "+972595897084",
+                "target_name": "",
+                "name": "",
+                "detail": ""
             },
-            &quot;status&quot;: &quot;hangup&quot;,
-            &quot;direction&quot;: &quot;incoming&quot;,
-            &quot;mute_direction&quot;: &quot;&quot;,
-            &quot;hangup_by&quot;: &quot;remote&quot;,
-            &quot;hangup_reason&quot;: &quot;normal&quot;,
-            &quot;tm_progressing&quot;: &quot;2021-02-06T09:47:10Z&quot;,
-            &quot;tm_ringing&quot;: null,
-            &quot;tm_hangup&quot;: &quot;2021-02-06T09:48:14Z&quot;,
-            &quot;tm_create&quot;: &quot;2021-02-06T09:47:10Z&quot;,
-            &quot;tm_update&quot;: &quot;2021-02-06T09:48:14Z&quot;,
-            &quot;tm_delete&quot;: null
+            "status": "hangup",
+            "direction": "incoming",
+            "mute_direction": "",
+            "hangup_by": "remote",
+            "hangup_reason": "normal",
+            "tm_progressing": "2021-02-06T09:47:10Z",
+            "tm_ringing": null,
+            "tm_hangup": "2021-02-06T09:48:14Z",
+            "tm_create": "2021-02-06T09:47:10Z",
+            "tm_update": "2021-02-06T09:48:14Z",
+            "tm_delete": null
         },
         ...
     ],
-    &quot;next_page_token&quot;: &quot;2021-02-06T08:54:38Z&quot;
+    "next_page_token": "2021-02-06T08:54:38Z"
 }
 </pre></div>
 </div>
@@ -1435,46 +1435,46 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="get-specific-call">
 <h3>Get specific call<a class="headerlink" href="#get-specific-call" title="Link to this heading">¶</a></h3>
 <p>Getting a given call uuid’s call info.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;flow_id&quot;: &quot;246aeabe-fab5-4a1b-8e98-852b50e89dd7&quot;,
-    &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;type&quot;: &quot;flow&quot;,
-    &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;chained_call_ids&quot;: [],
-    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;recording_ids&quot;: [
-        &quot;142e8ef8-392c-4514-abf0-8656da5d2fdf&quot;
+    "id": "f457951b-9918-44af-a834-2216b1cc31bc",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "flow_id": "246aeabe-fab5-4a1b-8e98-852b50e89dd7",
+    "activeflow_id": "00000000-0000-0000-0000-000000000000",
+    "type": "flow",
+    "master_call_id": "00000000-0000-0000-0000-000000000000",
+    "chained_call_ids": [],
+    "recording_id": "00000000-0000-0000-0000-000000000000",
+    "recording_ids": [
+        "142e8ef8-392c-4514-abf0-8656da5d2fdf"
     ],
-    &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15551234567&quot;,
-        &quot;target_name&quot;: &quot;&quot;,
-        &quot;name&quot;: &quot;&quot;,
-        &quot;detail&quot;: &quot;&quot;
+    "groupcall_id": "00000000-0000-0000-0000-000000000000",
+    "source": {
+        "type": "tel",
+        "target": "+15551234567",
+        "target_name": "",
+        "name": "",
+        "detail": ""
     },
-    &quot;destination&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15559876543&quot;,
-        &quot;target_name&quot;: &quot;&quot;,
-        &quot;name&quot;: &quot;&quot;,
-        &quot;detail&quot;: &quot;&quot;
+    "destination": {
+        "type": "tel",
+        "target": "+15559876543",
+        "target_name": "",
+        "name": "",
+        "detail": ""
     },
-    &quot;status&quot;: &quot;hangup&quot;,
-    &quot;direction&quot;: &quot;outgoing&quot;,
-    &quot;mute_direction&quot;: &quot;&quot;,
-    &quot;hangup_by&quot;: &quot;remote&quot;,
-    &quot;hangup_reason&quot;: &quot;normal&quot;,
-    &quot;tm_progressing&quot;: &quot;2021-01-29T03:18:07Z&quot;,
-    &quot;tm_ringing&quot;: &quot;2021-01-29T03:17:55Z&quot;,
-    &quot;tm_hangup&quot;: &quot;2021-01-29T03:18:22Z&quot;,
-    &quot;tm_create&quot;: &quot;2021-01-29T03:17:54Z&quot;,
-    &quot;tm_update&quot;: &quot;2021-01-29T03:18:22Z&quot;,
-    &quot;tm_delete&quot;: null
+    "status": "hangup",
+    "direction": "outgoing",
+    "mute_direction": "",
+    "hangup_by": "remote",
+    "hangup_reason": "normal",
+    "tm_progressing": "2021-01-29T03:18:07Z",
+    "tm_ringing": "2021-01-29T03:17:55Z",
+    "tm_hangup": "2021-01-29T03:18:22Z",
+    "tm_create": "2021-01-29T03:17:54Z",
+    "tm_update": "2021-01-29T03:18:22Z",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -1484,81 +1484,81 @@ When the destination answer the call, it will play the given media file.</p>
 <p>Make a groupcall to the multiple destinations.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Provide either <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> or <code class="docutils literal notranslate"><span class="pre">actions</span></code>, but not both. If <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> is set, that flow runs and <code class="docutils literal notranslate"><span class="pre">actions</span></code> is ignored. If <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> is omitted (or empty), VoIPBIN builds a temporary flow from <code class="docutils literal notranslate"><span class="pre">actions</span></code>. If both are present, <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> wins.</p>
+<p>Provide either <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> or <code class="docutils literal notranslate"><span class="pre">actions</span></code>, but not both. If <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> is set, that flow runs and <code class="docutils literal notranslate"><span class="pre">actions</span></code> is ignored. If <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> is omitted (or empty), VoIPBin builds a temporary flow from <code class="docutils literal notranslate"><span class="pre">actions</span></code>. If both are present, <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> wins.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ring_method</span></code> controls how destinations are dialed: <code class="docutils literal notranslate"><span class="pre">ring_all</span></code> (dial all at once) or <code class="docutils literal notranslate"><span class="pre">linear</span></code> (dial one at a time). <code class="docutils literal notranslate"><span class="pre">answer_method</span></code> controls what happens once a destination answers: <code class="docutils literal notranslate"><span class="pre">hangup_others</span></code> hangs up the remaining calls. See <a class="reference internal" href="call_struct_groupcall.html#call-struct-groupcall"><span class="std std-ref">Groupcall struct</span></a> for details.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">+155****XXXX</span></code> values below are masked placeholders. Replace them with real E.164 numbers (the source must be a number you own; see Prerequisites above).</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+155****4567&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/groupcalls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "+155****4567"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+155****1111&quot;
+                "type": "tel",
+                "target": "+155****1111"
             },
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+155****2222&quot;
+                "type": "tel",
+                "target": "+155****2222"
             }
         ],
-        &quot;ring_method&quot;: &quot;ring_all&quot;,
-        &quot;answer_method&quot;: &quot;hangup_others&quot;,
-        &quot;actions&quot;: [
+        "ring_method": "ring_all",
+        "answer_method": "hangup_others",
+        "actions": [
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "hello. welcome to voipbin. This is test message. This audio file is generated dynamically by the tts module. Please enjoy the voipbin service. Thank you. Bye",
+                    "language": "en-US"
                 }
             }
         ]
-    }&#39;
+    }'
 
 {
-    &quot;id&quot;: &quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+155****4567&quot;,
-        &quot;target_name&quot;: &quot;&quot;,
-        &quot;name&quot;: &quot;&quot;,
-        &quot;detail&quot;: &quot;&quot;
+    "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "flow_id": "00000000-0000-0000-0000-000000000000",
+    "source": {
+        "type": "tel",
+        "target": "+155****4567",
+        "target_name": "",
+        "name": "",
+        "detail": ""
     },
-    &quot;destinations&quot;: [
+    "destinations": [
         {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+155****1111&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+            "type": "tel",
+            "target": "+155****1111",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
         {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+155****2222&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+            "type": "tel",
+            "target": "+155****2222",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         }
     ],
-    &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;master_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;ring_method&quot;: &quot;ring_all&quot;,
-    &quot;answer_method&quot;: &quot;hangup_others&quot;,
-    &quot;answer_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;call_ids&quot;: [
-        &quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;,
-        &quot;2bcaff64-e05d-11ed-84a6-133172844032&quot;
+    "master_call_id": "00000000-0000-0000-0000-000000000000",
+    "master_groupcall_id": "00000000-0000-0000-0000-000000000000",
+    "ring_method": "ring_all",
+    "answer_method": "hangup_others",
+    "answer_call_id": "00000000-0000-0000-0000-000000000000",
+    "call_ids": [
+        "3c77eb43-2098-4890-bb6c-5af0707ba4a6",
+        "2bcaff64-e05d-11ed-84a6-133172844032"
     ],
-    &quot;answer_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;groupcall_ids&quot;: [],
-    &quot;tm_create&quot;: &quot;2023-04-21T15:33:28Z&quot;,
-    &quot;tm_update&quot;: null,
-    &quot;tm_delete&quot;: null
+    "answer_groupcall_id": "00000000-0000-0000-0000-000000000000",
+    "groupcall_ids": [],
+    "tm_create": "2023-04-21T15:33:28Z",
+    "tm_update": null,
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -1566,51 +1566,51 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="get-groupcall-list">
 <h3>Get groupcall list<a class="headerlink" href="#get-groupcall-list" title="Link to this heading">¶</a></h3>
 <p>Getting a list of groupcalls.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/groupcalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/groupcalls?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;status&quot;: &quot;hangup&quot;,
-            &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;source&quot;: {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15551234567&quot;,
-                &quot;target_name&quot;: &quot;&quot;,
-                &quot;name&quot;: &quot;&quot;,
-                &quot;detail&quot;: &quot;&quot;
+            "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "status": "hangup",
+            "flow_id": "00000000-0000-0000-0000-000000000000",
+            "source": {
+                "type": "tel",
+                "target": "+15551234567",
+                "target_name": "",
+                "name": "",
+                "detail": ""
             },
-            &quot;destinations&quot;: [
+            "destinations": [
                 {
-                    &quot;type&quot;: &quot;tel&quot;,
-                    &quot;target&quot;: &quot;+155****1111&quot;,
-                    &quot;target_name&quot;: &quot;&quot;,
-                    &quot;name&quot;: &quot;&quot;,
-                    &quot;detail&quot;: &quot;&quot;
+                    "type": "tel",
+                    "target": "+155****1111",
+                    "target_name": "",
+                    "name": "",
+                    "detail": ""
                 }
             ],
-            &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;master_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;ring_method&quot;: &quot;ring_all&quot;,
-            &quot;answer_method&quot;: &quot;hangup_others&quot;,
-            &quot;answer_call_id&quot;: &quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;,
-            &quot;call_ids&quot;: [
-                &quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;
+            "master_call_id": "00000000-0000-0000-0000-000000000000",
+            "master_groupcall_id": "00000000-0000-0000-0000-000000000000",
+            "ring_method": "ring_all",
+            "answer_method": "hangup_others",
+            "answer_call_id": "3c77eb43-2098-4890-bb6c-5af0707ba4a6",
+            "call_ids": [
+                "3c77eb43-2098-4890-bb6c-5af0707ba4a6"
             ],
-            &quot;answer_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;groupcall_ids&quot;: [],
-            &quot;call_count&quot;: 0,
-            &quot;groupcall_count&quot;: 0,
-            &quot;dial_index&quot;: 0,
-            &quot;tm_create&quot;: &quot;2023-04-21T15:33:28Z&quot;,
-            &quot;tm_update&quot;: &quot;2023-04-21T15:34:02Z&quot;,
-            &quot;tm_delete&quot;: null
+            "answer_groupcall_id": "00000000-0000-0000-0000-000000000000",
+            "groupcall_ids": [],
+            "call_count": 0,
+            "groupcall_count": 0,
+            "dial_index": 0,
+            "tm_create": "2023-04-21T15:33:28Z",
+            "tm_update": "2023-04-21T15:34:02Z",
+            "tm_delete": null
         },
         ...
     ],
-    &quot;next_page_token&quot;: &quot;2023-04-21T15:33:28Z&quot;
+    "next_page_token": "2023-04-21T15:33:28Z"
 }
 </pre></div>
 </div>
@@ -1618,45 +1618,45 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="get-specific-groupcall">
 <h3>Get specific groupcall<a class="headerlink" href="#get-specific-groupcall" title="Link to this heading">¶</a></h3>
 <p>Getting a given groupcall uuid’s info.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;status&quot;: &quot;progressing&quot;,
-    &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15551234567&quot;,
-        &quot;target_name&quot;: &quot;&quot;,
-        &quot;name&quot;: &quot;&quot;,
-        &quot;detail&quot;: &quot;&quot;
+    "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "status": "progressing",
+    "flow_id": "00000000-0000-0000-0000-000000000000",
+    "source": {
+        "type": "tel",
+        "target": "+15551234567",
+        "target_name": "",
+        "name": "",
+        "detail": ""
     },
-    &quot;destinations&quot;: [
+    "destinations": [
         {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+155****1111&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+            "type": "tel",
+            "target": "+155****1111",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         }
     ],
-    &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;master_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;ring_method&quot;: &quot;ring_all&quot;,
-    &quot;answer_method&quot;: &quot;hangup_others&quot;,
-    &quot;answer_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;call_ids&quot;: [
-        &quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;
+    "master_call_id": "00000000-0000-0000-0000-000000000000",
+    "master_groupcall_id": "00000000-0000-0000-0000-000000000000",
+    "ring_method": "ring_all",
+    "answer_method": "hangup_others",
+    "answer_call_id": "00000000-0000-0000-0000-000000000000",
+    "call_ids": [
+        "3c77eb43-2098-4890-bb6c-5af0707ba4a6"
     ],
-    &quot;answer_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;groupcall_ids&quot;: [],
-    &quot;call_count&quot;: 1,
-    &quot;groupcall_count&quot;: 0,
-    &quot;dial_index&quot;: 0,
-    &quot;tm_create&quot;: &quot;2023-04-21T15:33:28Z&quot;,
-    &quot;tm_update&quot;: null,
-    &quot;tm_delete&quot;: null
+    "answer_groupcall_id": "00000000-0000-0000-0000-000000000000",
+    "groupcall_ids": [],
+    "call_count": 1,
+    "groupcall_count": 0,
+    "dial_index": 0,
+    "tm_create": "2023-04-21T15:33:28Z",
+    "tm_update": null,
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -1664,12 +1664,12 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="hangup-a-groupcall">
 <h3>Hangup a groupcall<a class="headerlink" href="#hangup-a-groupcall" title="Link to this heading">¶</a></h3>
 <p>Ends every call currently belonging to the groupcall.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7/hangup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7/hangup?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;status&quot;: &quot;hangingup&quot;,
+    "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "status": "hangingup",
     ...
 }
 </pre></div>
@@ -1677,20 +1677,20 @@ When the destination answer the call, it will play the given media file.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Hangup transitions the groupcall to <code class="docutils literal notranslate"><span class="pre">hangingup</span></code> while VoIPBIN ends each individual call in <code class="docutils literal notranslate"><span class="pre">call_ids</span></code> (and, for nested groupcalls, each entry in <code class="docutils literal notranslate"><span class="pre">groupcall_ids</span></code>); the groupcall reaches <code class="docutils literal notranslate"><span class="pre">hangup</span></code> once all of them have ended. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls/{id}</span></code> or watch the groupcall webhook events to confirm the final state.</p>
+<p>Hangup transitions the groupcall to <code class="docutils literal notranslate"><span class="pre">hangingup</span></code> while VoIPBin ends each individual call in <code class="docutils literal notranslate"><span class="pre">call_ids</span></code> (and, for nested groupcalls, each entry in <code class="docutils literal notranslate"><span class="pre">groupcall_ids</span></code>); the groupcall reaches <code class="docutils literal notranslate"><span class="pre">hangup</span></code> once all of them have ended. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls/{id}</span></code> or watch the groupcall webhook events to confirm the final state.</p>
 </div>
 </section>
 <section id="delete-a-groupcall">
 <h3>Delete a groupcall<a class="headerlink" href="#delete-a-groupcall" title="Link to this heading">¶</a></h3>
 <p>Deletes the groupcall record. This does not hang up any calls that are still active — hang up the groupcall first if any destination may still be ringing or connected.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;status&quot;: &quot;hangup&quot;,
+    "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "status": "hangup",
     ...
-    &quot;tm_delete&quot;: &quot;2023-04-21T16:00:00Z&quot;
+    "tm_delete": "2023-04-21T16:00:00Z"
 }
 </pre></div>
 </div>
@@ -1698,9 +1698,9 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="hold-and-unhold-a-call">
 <h3>Hold and unhold a call<a class="headerlink" href="#hold-and-unhold-a-call" title="Link to this heading">¶</a></h3>
 <p>Put an answered call on hold, or resume it. See <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Media Control Operations</span></a> for hold behavior.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/hold?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/hold?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
-$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/hold?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/hold?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -1712,17 +1712,17 @@ $ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&l
 <section id="mute-and-unmute-a-call">
 <h3>Mute and unmute a call<a class="headerlink" href="#mute-and-unmute-a-call" title="Link to this heading">¶</a></h3>
 <p>Mute or unmute one or both directions of an answered call’s audio, independent of hold.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/mute?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;direction&quot;: &quot;both&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/mute?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "direction": "both"
+    }'
 
-$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/mute?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;direction&quot;: &quot;both&quot;
-    }&#39;
+$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/mute?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "direction": "both"
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -1734,38 +1734,38 @@ $ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&l
 <section id="music-on-hold-moh">
 <h3>Music on hold (MOH)<a class="headerlink" href="#music-on-hold-moh" title="Link to this heading">¶</a></h3>
 <p>Play music (instead of silence) while a call is on hold.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/moh?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/moh?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
-$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/moh?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/moh?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="silence-a-call">
 <h3>Silence a call<a class="headerlink" href="#silence-a-call" title="Link to this heading">¶</a></h3>
 <p>Mute the call’s audio stream without changing its hold state.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/silence?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/silence?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
-$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/silence?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/silence?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="talk-to-an-active-call">
 <h3>Talk to an active call<a class="headerlink" href="#talk-to-an-active-call" title="Link to this heading">¶</a></h3>
 <p>Inject a TTS message into an already-answered call at any time, independent of the flow’s own <code class="docutils literal notranslate"><span class="pre">talk</span></code> action.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/talk?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;text&quot;: &quot;Please hold while we transfer your call.&quot;,
-        &quot;language&quot;: &quot;en-US&quot;,
-        &quot;provider&quot;: &quot;gcp&quot;,
-        &quot;voice_id&quot;: &quot;&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/talk?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "text": "Please hold while we transfer your call.",
+        "language": "en-US",
+        "provider": "gcp",
+        "voice_id": ""
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">provider</span></code> accepts <code class="docutils literal notranslate"><span class="pre">gcp</span></code> or <code class="docutils literal notranslate"><span class="pre">aws</span></code>; if omitted, VoIPBIN defaults to GCP. If the selected provider’s TTS call fails, VoIPBIN falls back to the other provider using its default voice for the language. <code class="docutils literal notranslate"><span class="pre">voice_id</span></code> is provider-specific; leave it empty to use the default voice for <code class="docutils literal notranslate"><span class="pre">language</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">provider</span></code> accepts <code class="docutils literal notranslate"><span class="pre">gcp</span></code> or <code class="docutils literal notranslate"><span class="pre">aws</span></code>; if omitted, VoIPBin defaults to GCP. If the selected provider’s TTS call fails, VoIPBin falls back to the other provider using its default voice for the language. <code class="docutils literal notranslate"><span class="pre">voice_id</span></code> is provider-specific; leave it empty to use the default voice for <code class="docutils literal notranslate"><span class="pre">language</span></code>.</p>
 </div>
 </section>
 <section id="troubleshooting">
@@ -1781,7 +1781,7 @@ $ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&l
 </li>
 <li><dl class="simple">
 <dt><strong>400 Bad Request (source number):</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source.target</span></code> phone number is not owned by your VoIPBIN account.</p></li>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source.target</span></code> phone number is not owned by your VoIPBin account.</p></li>
 <li><p><strong>Fix:</strong> Use a number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Only <strong>normal</strong> (non-virtual) numbers with <strong>active</strong> status that you own can be used as the source for outgoing PSTN calls.</p></li>
 </ul>
 </dd>
@@ -1930,8 +1930,8 @@ $ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&l
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

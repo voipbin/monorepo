@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Webhook" href="webhook_struct_webhook.html"><link rel="prev" title="Webhook" href="webhook.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,28 +648,28 @@
 <li><p><strong>Async:</strong> No. Webhook configuration is set on the customer resource via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> (fields <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code>). Event delivery to your endpoint happens asynchronously as events occur.</p></li>
 </ul>
 </div>
-<p>Webhooks, a robust feature offered by VoIPBIN, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBIN resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.</p>
+<p>Webhooks, a robust feature offered by VoIPBin, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBin resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.</p>
 <section id="notification-mechanism">
 <h2>Notification Mechanism<a class="headerlink" href="#notification-mechanism" title="Link to this heading">¶</a></h2>
-<p>Webhook events act as notifications sent by VoIPBIN, triggering when specific events or actions unfold within the system, such as call events, message events, or changes to resources like queues or agents. Configured webhook endpoints receive these events, ensuring users promptly receive pertinent data related to their VoIPBIN resources.</p>
+<p>Webhook events act as notifications sent by VoIPBin, triggering when specific events or actions unfold within the system, such as call events, message events, or changes to resources like queues or agents. Configured webhook endpoints receive these events, ensuring users promptly receive pertinent data related to their VoIPBin resources.</p>
 <img alt="_images/webhook_overview_notification.png" src="_images/webhook_overview_notification.png" />
 </section>
 <section id="types-of-webhooks">
 <h2>Types of Webhooks<a class="headerlink" href="#types-of-webhooks" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN tailors webhooks for each resource type, ensuring users receive granular progress and updates for various events. This resource-specific approach allows users to monitor their VoIPBIN resources with precision, obtaining notifications and data tailored to each resource type. For instance, call-specific webhook events furnish details on call status, duration, and caller ID, while message-specific events offer insights into SMS or MMS messages, including content, sender ID, and delivery status.</p>
+<p>VoIPBin tailors webhooks for each resource type, ensuring users receive granular progress and updates for various events. This resource-specific approach allows users to monitor their VoIPBin resources with precision, obtaining notifications and data tailored to each resource type. For instance, call-specific webhook events furnish details on call status, duration, and caller ID, while message-specific events offer insights into SMS or MMS messages, including content, sender ID, and delivery status.</p>
 </section>
 <section id="custom-endpoints">
 <h2>Custom Endpoints<a class="headerlink" href="#custom-endpoints" title="Link to this heading">¶</a></h2>
-<p>To harness webhooks, users must configure custom webhook endpoints on their servers. These endpoints, serving as URLs, dictate where VoIPBIN transmits webhook events. Upon an event occurrence, VoIPBIN initiates an HTTP request to the configured endpoint, incorporating relevant data in the payload. This empowers users to process and respond to events according to their unique requirements.</p>
+<p>To harness webhooks, users must configure custom webhook endpoints on their servers. These endpoints, serving as URLs, dictate where VoIPBin transmits webhook events. Upon an event occurrence, VoIPBin initiates an HTTP request to the configured endpoint, incorporating relevant data in the payload. This empowers users to process and respond to events according to their unique requirements.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>VoIPBIN retries delivery up to 3 times (1 second apart) when the request fails outright (e.g. connection error) or your endpoint returns a <code class="docutils literal notranslate"><span class="pre">5xx</span></code> status; any other response (including <code class="docutils literal notranslate"><span class="pre">4xx</span></code>) is treated as delivered and is not retried. The delivery HTTP client allows up to ~30 seconds per attempt. Webhooks may still be delivered more than once, so implement idempotent processing using the event type and resource ID to deduplicate.</p>
+<p>VoIPBin retries delivery up to 3 times (1 second apart) when the request fails outright (e.g. connection error) or your endpoint returns a <code class="docutils literal notranslate"><span class="pre">5xx</span></code> status; any other response (including <code class="docutils literal notranslate"><span class="pre">4xx</span></code>) is treated as delivered and is not retried. The delivery HTTP client allows up to ~30 seconds per attempt. Webhooks may still be delivered more than once, so implement idempotent processing using the event type and resource ID to deduplicate.</p>
 </div>
 </section>
 <section id="webhook-event-types">
 <h2>Webhook Event Types<a class="headerlink" href="#webhook-event-types" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN sends webhook events for various resource types. Each event includes the resource type, event type, and the full resource data.</p>
+<p>VoIPBin sends webhook events for various resource types. Each event includes the resource type, event type, and the full resource data.</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -735,12 +735,12 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (object): The full resource payload. Its shape matches the resource that the event belongs to (call, message, activeflow, and so on).</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hangup&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;5371e9db-d035-4db6-a8d6-0994d33e744e&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d157ce07-0360-4cad-9007-c8ab89fccf9c&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;...&quot;</span><span class="p">:</span> <span class="s2">&quot;remaining resource fields&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call_hangup"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"5371e9db-d035-4db6-a8d6-0994d33e744e"</span><span class="p">,</span>
+        <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"d157ce07-0360-4cad-9007-c8ab89fccf9c"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"hangup"</span><span class="p">,</span>
+        <span class="s2">"..."</span><span class="p">:</span> <span class="s2">"remaining resource fields"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -754,12 +754,12 @@
 </section>
 <section id="benefits-of-webhooks">
 <h2>Benefits of Webhooks<a class="headerlink" href="#benefits-of-webhooks" title="Link to this heading">¶</a></h2>
-<p>Webhooks deliver a range of advantages for VoIPBIN users:</p>
+<p>Webhooks deliver a range of advantages for VoIPBin users:</p>
 <ul class="simple">
-<li><p><strong>Real-Time Updates</strong>: Offering immediate event notifications, webhooks keep users abreast of real-time changes to their VoIPBIN resources.</p></li>
+<li><p><strong>Real-Time Updates</strong>: Offering immediate event notifications, webhooks keep users abreast of real-time changes to their VoIPBin resources.</p></li>
 <li><p><strong>Customization</strong>: Users can tailor webhook endpoints and process data as per their specific needs, facilitating the creation of customized workflows and integrations.</p></li>
 <li><p><strong>Automated Actions</strong>: Webhooks enable users to automate actions based on event data, such as record updates, notifications, or the initiation of additional processes.</p></li>
-<li><p><strong>Enhanced Monitoring</strong>: Providing a proactive monitoring solution, webhooks empower users to track and respond promptly to changes within the VoIPBIN system, ensuring informed decision-making.</p></li>
+<li><p><strong>Enhanced Monitoring</strong>: Providing a proactive monitoring solution, webhooks empower users to track and respond promptly to changes within the VoIPBin system, ensuring informed decision-making.</p></li>
 </ul>
 </section>
 <section id="troubleshooting">
@@ -775,7 +775,7 @@
 </li>
 <li><dl class="simple">
 <dt><strong>Duplicate webhook events:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> VoIPBIN retries delivery (up to 3 attempts) when a request fails outright or your endpoint returns a <code class="docutils literal notranslate"><span class="pre">5xx</span></code> status.</p></li>
+<li><p><strong>Cause:</strong> VoIPBin retries delivery (up to 3 attempts) when a request fails outright or your endpoint returns a <code class="docutils literal notranslate"><span class="pre">5xx</span></code> status.</p></li>
 <li><p><strong>Fix:</strong> Implement idempotent processing. Use the combination of resource <code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">status</span></code> to deduplicate events.</p></li>
 </ul>
 </dd>
@@ -881,8 +881,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

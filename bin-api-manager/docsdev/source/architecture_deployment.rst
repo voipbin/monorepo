@@ -5,16 +5,16 @@ Deployment Architecture
 
 .. note:: **AI Context**
 
-   This page describes VoIPBIN's production deployment on Google Cloud Platform: GKE cluster configuration, Kubernetes deployment patterns, HPA auto-scaling, VoIP VM infrastructure (Kamailio, Asterisk, RTPEngine), database and cache infrastructure, network architecture (VPC, firewall rules), CI/CD pipeline (CircleCI), and disaster recovery. Relevant when an AI agent needs to understand infrastructure sizing, scaling limits, deployment strategies, or network topology.
+   This page describes VoIPBin's production deployment on Google Cloud Platform: GKE cluster configuration, Kubernetes deployment patterns, HPA auto-scaling, VoIP VM infrastructure (Kamailio, Asterisk, RTPEngine), database and cache infrastructure, network architecture (VPC, firewall rules), CI/CD pipeline (CircleCI), and disaster recovery. Relevant when an AI agent needs to understand infrastructure sizing, scaling limits, deployment strategies, or network topology.
 
-VoIPBIN runs on Google Cloud Platform (GCP) using Google Kubernetes Engine (GKE) for container orchestration. This section details the deployment topology, scaling strategies, and infrastructure components.
+VoIPBin runs on Google Cloud Platform (GCP) using Google Kubernetes Engine (GKE) for container orchestration. This section details the deployment topology, scaling strategies, and infrastructure components.
 
 Infrastructure Overview
 -----------------------
 
 .. code::
 
-    VoIPBIN Production Infrastructure:
+    VoIPBin Production Infrastructure:
 
     +------------------------------------------------------------------+
     |                    Google Cloud Platform                          |
@@ -149,7 +149,7 @@ manifests today only declare the metrics container port and do not define
 
 .. note:: **AI Implementation Hint**
 
-   VoIPBIN services run on GKE with a minimum of 2 replicas each for high availability. The API endpoint ``https://api.voipbin.net/v1.0/`` is served through a Cloud Load Balancer with TLS termination. SIP traffic uses a separate L4 load balancer on ``sip.voipbin.net`` (ports 5060/5061). All infrastructure runs within a single GCP VPC with network segmentation.
+   VoIPBin services run on GKE with a minimum of 2 replicas each for high availability. The API endpoint ``https://api.voipbin.net/v1.0/`` is served through a Cloud Load Balancer with TLS termination. SIP traffic uses a separate L4 load balancer on ``sip.voipbin.net`` (ports 5060/5061). All infrastructure runs within a single GCP VPC with network segmentation.
 
 Service Scaling
 ---------------
@@ -165,7 +165,7 @@ Service Scaling
    scaling beyond the fixed replica count is a manual operation (edit
    ``replicas`` and re-apply), not automatic.
 
-VoIPBIN scales services based on demand:
+VoIPBin scales services based on demand:
 
 **Horizontal Pod Autoscaler (HPA):**
 

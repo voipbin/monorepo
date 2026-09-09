@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="SDK(Software Development Kit)" href="sdk.html"><link rel="prev" title="Introduction" href="intro.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Quickstart - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -641,10 +641,10 @@
 <span id="quickstart-main"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">¶</a></h1>
 <section id="getting-started">
 <h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h2>
-<p>Create your VoIPBIN account and get API credentials.</p>
+<p>Create your VoIPBin account and get API credentials.</p>
 <section id="signup">
 <span id="quickstart-signup"></span><h3>Signup<a class="headerlink" href="#signup" title="Link to this heading">¶</a></h3>
-<p>To use the VoIPBIN production API, you need your own account. There are two ways to sign up: via the Admin Console (browser) or via the API (headless, for automated systems).</p>
+<p>To use the VoIPBin production API, you need your own account. There are two ways to sign up: via the Admin Console (browser) or via the API (headless, for automated systems).</p>
 <section id="sign-up-via-admin-console">
 <h4>Sign up via Admin Console<a class="headerlink" href="#sign-up-via-admin-console" title="Link to this heading">¶</a></h4>
 <ol class="arabic simple">
@@ -668,26 +668,26 @@
 </div>
 <p><strong>Initiate signup</strong></p>
 <p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/signup</span></code> with your email address (String, Required) and <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code> (Boolean, Required, must be <code class="docutils literal notranslate"><span class="pre">true</span></code>). All other fields are optional.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/signup&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;email&quot;: &quot;your-email@example.com&quot;,
-        &quot;name&quot;: &quot;Your Company Name&quot;,
-        &quot;accepted_tos&quot;: true
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/auth/signup' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "email": "your-email@example.com",
+        "name": "Your Company Name",
+        "accepted_tos": true
+    }'
 </pre></div>
 </div>
 <p>Response (always HTTP 200):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;customer&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Your Company Name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;your-email@example.com&quot;</span><span class="p">,</span>
+    <span class="s2">"customer"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Your Company Name"</span><span class="p">,</span>
+        <span class="s2">"email"</span><span class="p">:</span> <span class="s2">"your-email@example.com"</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">},</span>
-    <span class="s2">&quot;accesskey&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;your-api-access-key-token&quot;</span>
+    <span class="s2">"accesskey"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+        <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"your-api-access-key-token"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -737,18 +737,18 @@
 <section id="generate-a-token">
 <h4>Generate a Token<a class="headerlink" href="#generate-a-token" title="Link to this heading">¶</a></h4>
 <p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/login</span></code> with your username (String) and password (String) to receive a JWT token. The token is valid for 7 days.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/login&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;username&quot;: &quot;your-voipbin-username&quot;,
-        &quot;password&quot;: &quot;your-voipbin-password&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/auth/login' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "username": "your-voipbin-username",
+        "password": "your-voipbin-password"
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;your-voipbin-username&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...&quot;</span>
+    <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"your-voipbin-username"</span><span class="p">,</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -760,20 +760,20 @@
 <p><strong>Via Admin Console:</strong></p>
 <img alt="_images/quickstart_authentication_accesskey.png" src="_images/quickstart_authentication_accesskey.png" />
 <p><strong>Via API:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/accesskeys?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;my-api-key&quot;,
-        &quot;detail&quot;: &quot;API key for automated access&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/accesskeys?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "my-api-key",
+        "detail": "API key for automated access"
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;your-access-key-token&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;my-api-key&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;API key for automated access&quot;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"your-access-key-token"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"my-api-key"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"API key for automated access"</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -786,23 +786,23 @@
 </section>
 <section id="direct-token-boot">
 <h4>Direct Token (Boot)<a class="headerlink" href="#direct-token-boot" title="Link to this heading">¶</a></h4>
-<p>For resource-scoped access without user credentials, use a <strong>direct hash</strong> to obtain a short-lived JWT. This is used for direct links (e.g., AI voice agent web widgets) where the end user does not have a VoIPBIN account.</p>
+<p>For resource-scoped access without user credentials, use a <strong>direct hash</strong> to obtain a short-lived JWT. This is used for direct links (e.g., AI voice agent web widgets) where the end user does not have a VoIPBin account.</p>
 <p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/auth/boot</span></code> with the <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String, Required). The hash is obtained from a direct link URL or from the <code class="docutils literal notranslate"><span class="pre">hash</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/directs</span></code>. Must start with <code class="docutils literal notranslate"><span class="pre">direct.</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/boot&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;direct_hash&quot;: &quot;direct.abc123def456...&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/auth/boot' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "direct_hash": "direct.abc123def456..."
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;direct&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;ai&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;resource_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-06T20:00:00Z&quot;</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"direct"</span><span class="p">,</span>
+    <span class="s2">"resource_type"</span><span class="p">:</span> <span class="s2">"ai"</span><span class="p">,</span>
+    <span class="s2">"resource_id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"c1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"expire"</span><span class="p">:</span> <span class="s2">"2026-04-06T20:00:00Z"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -845,19 +845,19 @@
 <p>Platform superadmins can issue a short-lived <strong>delegate token</strong> that grants full customer-admin access to a specific customer account. This is used for support and investigation scenarios where a superadmin needs to act on behalf of a customer.</p>
 <p><strong>Requires:</strong> <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code></p>
 <p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/auth/delegate</span></code> with a valid superadmin token, the target <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>, and a mandatory <code class="docutils literal notranslate"><span class="pre">reason</span></code> for the access.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/delegate?token=&lt;superadmin-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;customer_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-        &quot;reason&quot;: &quot;Investigating dropped call reported by customer support&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/auth/delegate?token=&lt;superadmin-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "customer_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "reason": "Investigating dropped call reported by customer support"
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-19T06:00:00.000000Z&quot;</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"expire"</span><span class="p">:</span> <span class="s2">"2026-05-19T06:00:00.000000Z"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -905,16 +905,16 @@
 </table>
 </div>
 <p><strong>Token example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET 'https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;'
 </pre></div>
 </div>
 <p><strong>Accesskey example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET &#39;https://api.voipbin.net/v1.0/calls?accesskey=&lt;your-accesskey&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET 'https://api.voipbin.net/v1.0/calls?accesskey=&lt;your-accesskey&gt;'
 </pre></div>
 </div>
 <p>Tokens can also be passed via the <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET &#39;https://api.voipbin.net/v1.0/calls&#39; \
-    --header &#39;Authorization: Bearer &lt;your-token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET 'https://api.voipbin.net/v1.0/calls' \
+    --header 'Authorization: Bearer &lt;your-token&gt;'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -960,7 +960,7 @@
 <p>Before running the tutorials, set up a SIP extension and softphone for voice testing, and configure event delivery to observe real-time notifications.</p>
 <section id="extension-softphone-setup">
 <span id="quickstart-extension"></span><h3>Extension &amp; Softphone Setup<a class="headerlink" href="#extension-softphone-setup" title="Link to this heading">¶</a></h3>
-<p>Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBIN. This is required for the <a class="reference internal" href="#quickstart-realtime"><span class="std std-ref">Real-Time Voice Interaction</span></a> scenario.</p>
+<p>Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBin. This is required for the <a class="reference internal" href="#quickstart-realtime"><span class="std std-ref">Real-Time Voice Interaction</span></a> scenario.</p>
 <section id="prerequisites">
 <h4>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h4>
 <ul class="simple">
@@ -976,30 +976,30 @@
 <section id="create-an-extension">
 <h5>Create an extension<a class="headerlink" href="#create-an-extension" title="Link to this heading">¶</a></h5>
 <p>Create a SIP extension that your softphone will register to. The <code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required) identifies the extension for dialing. The <code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Required) is a description. The <code class="docutils literal notranslate"><span class="pre">extension</span></code> (String, Required) and <code class="docutils literal notranslate"><span class="pre">password</span></code> (String, Required) are used for SIP authentication.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;quickstart-phone&quot;,
-        &quot;detail&quot;: &quot;Quickstart softphone extension&quot;,
-        &quot;extension&quot;: &quot;quickstart1&quot;,
-        &quot;password&quot;: &quot;your-secure-password-here&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/extensions?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "quickstart-phone",
+        "detail": "Quickstart softphone extension",
+        "extension": "quickstart1",
+        "password": "your-secure-password-here"
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart-phone&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Quickstart softphone extension&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;extension&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;your-secure-password-here&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;domain_name&quot;</span><span class="p">:</span> <span class="s2">&quot;ab12.reg.voipbin.net&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;a8f3b2c1d4e5&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-21T10:00:00.000000Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"quickstart-phone"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Quickstart softphone extension"</span><span class="p">,</span>
+    <span class="s2">"extension"</span><span class="p">:</span> <span class="s2">"quickstart1"</span><span class="p">,</span>
+    <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"quickstart1"</span><span class="p">,</span>
+    <span class="s2">"password"</span><span class="p">:</span> <span class="s2">"your-secure-password-here"</span><span class="p">,</span>
+    <span class="s2">"domain_name"</span><span class="p">:</span> <span class="s2">"ab12.reg.voipbin.net"</span><span class="p">,</span>
+    <span class="s2">"direct_hash"</span><span class="p">:</span> <span class="s2">"a8f3b2c1d4e5"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:00:00.000000Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">""</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1007,12 +1007,12 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">extension</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> are SIP credentials, not VoIPBIN login credentials. The <code class="docutils literal notranslate"><span class="pre">name</span></code> field is the extension identifier used when dialing (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;target_name&quot;:</span> <span class="pre">&quot;quickstart-phone&quot;</span></code> in the call request). The response includes both <code class="docutils literal notranslate"><span class="pre">extension</span></code> and <code class="docutils literal notranslate"><span class="pre">username</span></code> fields — they contain the same value (<code class="docutils literal notranslate"><span class="pre">username</span></code> is a Kamailio-internal mirror of <code class="docutils literal notranslate"><span class="pre">extension</span></code>). Choose a memorable <code class="docutils literal notranslate"><span class="pre">extension</span></code> value and a strong <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">extension</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> are SIP credentials, not VoIPBin login credentials. The <code class="docutils literal notranslate"><span class="pre">name</span></code> field is the extension identifier used when dialing (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;target_name&quot;:</span> <span class="pre">&quot;quickstart-phone&quot;</span></code> in the call request). The response includes both <code class="docutils literal notranslate"><span class="pre">extension</span></code> and <code class="docutils literal notranslate"><span class="pre">username</span></code> fields — they contain the same value (<code class="docutils literal notranslate"><span class="pre">username</span></code> is a Kamailio-internal mirror of <code class="docutils literal notranslate"><span class="pre">extension</span></code>). Choose a memorable <code class="docutils literal notranslate"><span class="pre">extension</span></code> value and a strong <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p>
 </div>
 </section>
 <section id="register-linphone">
 <h5>Register Linphone<a class="headerlink" href="#register-linphone" title="Link to this heading">¶</a></h5>
-<p>Configure your Linphone softphone to register with VoIPBIN using the extension credentials created above.</p>
+<p>Configure your Linphone softphone to register with VoIPBin using the extension credentials created above.</p>
 <p><strong>Linphone configuration:</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -1077,7 +1077,7 @@
 </section>
 <section id="receiving-events">
 <span id="quickstart-event-subscription"></span><span id="quickstart-events"></span><h3>Receiving Events<a class="headerlink" href="#receiving-events" title="Link to this heading">¶</a></h3>
-<p>VoIPBIN notifies you in real-time when things happen — calls connect, transcriptions arrive, recordings complete. There are two delivery methods:</p>
+<p>VoIPBin notifies you in real-time when things happen — calls connect, transcriptions arrive, recordings complete. There are two delivery methods:</p>
 <ul class="simple">
 <li><p><strong>WebSocket</strong> — Maintain a persistent connection and receive events instantly. No public server needed.</p></li>
 <li><p><strong>Customer Webhook</strong> — Configure a webhook URI on your customer account to receive all events via HTTP POST.</p></li>
@@ -1121,17 +1121,17 @@
 </div>
 <section id="websocket">
 <h4>WebSocket<a class="headerlink" href="#websocket" title="Link to this heading">¶</a></h4>
-<p>Connect to VoIPBIN’s WebSocket endpoint and subscribe to topics to receive events in real-time.</p>
+<p>Connect to VoIPBin’s WebSocket endpoint and subscribe to topics to receive events in real-time.</p>
 <p><strong>Connect:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;your-token&gt;
 </pre></div>
 </div>
 <p><strong>Subscribe</strong> by sending a JSON message after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:call:*&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:*&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"customer_id:&lt;your-customer-id&gt;:call:*"</span><span class="p">,</span>
+        <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:*"</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -1141,34 +1141,34 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
-<span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-token&gt;&quot;</span>
-<span class="n">customer_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-customer-id&gt;&quot;</span>
+<span class="n">token</span> <span class="o">=</span> <span class="s2">"&lt;your-token&gt;"</span>
+<span class="n">customer_id</span> <span class="o">=</span> <span class="s2">"&lt;your-customer-id&gt;"</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-    <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"event_type"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">event_type</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">&quot;transcript&quot;</span> <span class="ow">in</span> <span class="n">event_type</span><span class="p">:</span>
-            <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
-            <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;direction&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[TRANSCRIBE </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"transcript"</span> <span class="ow">in</span> <span class="n">event_type</span><span class="p">:</span>
+            <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"direction"</span><span class="p">,</span> <span class="s2">"?"</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"message"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[TRANSCRIBE </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[EVENT] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[EVENT] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">&quot;customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:call:*&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:transcribe:*&quot;</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+        <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">"customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:call:*"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:transcribe:*"</span>
         <span class="p">]</span>
     <span class="p">}</span>
     <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to call and transcribe events. Waiting...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Subscribed to call and transcribe events. Waiting..."</span><span class="p">)</span>
 
 <span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="sa">f</span><span class="s2">"wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="n">on_open</span><span class="o">=</span><span class="n">on_open</span><span class="p">,</span>
     <span class="n">on_message</span><span class="o">=</span><span class="n">on_message</span>
 <span class="p">)</span>
@@ -1184,26 +1184,26 @@
 </section>
 <section id="customer-webhook">
 <h4>Customer Webhook<a class="headerlink" href="#customer-webhook" title="Link to this heading">¶</a></h4>
-<p>Configure a webhook URI on your customer account. VoIPBIN sends HTTP POST requests to this URI for <strong>all</strong> events associated with your account — no per-event-type filtering is needed.</p>
+<p>Configure a webhook URI on your customer account. VoIPBin sends HTTP POST requests to this URI for <strong>all</strong> events associated with your account — no per-event-type filtering is needed.</p>
 <p><strong>Update your customer’s webhook configuration:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;webhook_method&quot;: &quot;POST&quot;,
-        &quot;webhook_uri&quot;: &quot;https://your-server.com/voipbin/events&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT 'https://api.voipbin.net/v1.0/customer?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "webhook_method": "POST",
+        "webhook_uri": "https://your-server.com/voipbin/events"
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/voipbin/events&quot;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+    <span class="s2">"webhook_method"</span><span class="p">:</span> <span class="s2">"POST"</span><span class="p">,</span>
+    <span class="s2">"webhook_uri"</span><span class="p">:</span> <span class="s2">"https://your-server.com/voipbin/events"</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Once configured, VoIPBIN sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> each time any event occurs for your account. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds.</p>
+<p>Once configured, VoIPBin sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> each time any event occurs for your account. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds.</p>
 <p><strong>Fields:</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum String): The HTTP method used for webhook delivery. Use <code class="docutils literal notranslate"><span class="pre">&quot;POST&quot;</span></code>.</p></li>
@@ -1248,7 +1248,7 @@
 </section>
 <section id="make-your-first-hello-world">
 <h2>Make your first Hello World<a class="headerlink" href="#make-your-first-hello-world" title="Link to this heading">¶</a></h2>
-<p>Try VoIPBIN’s core communication APIs:</p>
+<p>Try VoIPBin’s core communication APIs:</p>
 <ol class="arabic simple">
 <li><p><strong>Your First Call</strong> — Place an outbound voice call with text-to-speech.</p></li>
 <li><p><strong>Your First Real-Time Voice Interaction</strong> — Make a call with live transcription and speak into the call using the TTS API.</p></li>
@@ -1265,66 +1265,66 @@
 <h4>Prerequisites<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
-<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBin account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>A registered SIP extension and softphone. See <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>. The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
+<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBin-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>. The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
 </div>
 <section id="make-your-first-call">
 <h5>Make your first call<a class="headerlink" href="#make-your-first-call" title="Link to this heading">¶</a></h5>
 <p>This example calls your registered extension and plays a text-to-speech greeting. Make sure Linphone is registered and ready to receive the call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "&lt;your-source-number&gt;"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;extension&quot;,
-                &quot;target_name&quot;: &quot;quickstart-phone&quot;
+                "type": "extension",
+                "target_name": "quickstart-phone"
             }
         ],
-        &quot;actions&quot;: [
+        "actions": [
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Hello. This is a VoIPBIN test call. Thank you, bye.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "Hello. This is a VoIPBin test call. Thank you, bye.",
+                    "language": "en-US"
                 }
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <p>When calling an extension, the response contains a <code class="docutils literal notranslate"><span class="pre">groupcalls</span></code> entry (the system creates a group call to ring the extension):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"calls"</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">"groupcalls"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;8dfb3692-9403-49d5-b2b2-031ef7f52d9d&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"8dfb3692-9403-49d5-b2b2-031ef7f52d9d"</span><span class="p">,</span>
+            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;your-source-number&gt;"</span>
             <span class="p">},</span>
-            <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart-phone&quot;</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"extension"</span><span class="p">,</span>
+                    <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"quickstart-phone"</span>
                 <span class="p">}</span>
             <span class="p">],</span>
-            <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;ring_all&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;answer_method&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup_others&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">&quot;98146643-1b81-498c-a3e2-9dd480899945&quot;</span>
+            <span class="s2">"ring_method"</span><span class="p">:</span> <span class="s2">"ring_all"</span><span class="p">,</span>
+            <span class="s2">"answer_method"</span><span class="p">:</span> <span class="s2">"hangup_others"</span><span class="p">,</span>
+            <span class="s2">"call_ids"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"98146643-1b81-498c-a3e2-9dd480899945"</span>
             <span class="p">],</span>
-            <span class="s2">&quot;call_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">"call_count"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
             <span class="o">...</span>
         <span class="p">}</span>
     <span class="p">]</span>
@@ -1344,7 +1344,7 @@
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source</span></code> number is not owned by your VoIPBIN account, or the phone number is not in E.164 format.</p></li>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source</span></code> number is not owned by your VoIPBin account, or the phone number is not in E.164 format.</p></li>
 <li><p><strong>Fix:</strong> Verify your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Ensure all phone numbers start with <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by digits only (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>).</p></li>
 </ul>
 </dd>
@@ -1381,7 +1381,7 @@
 <h4>Prerequisites<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
-<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBin account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> or from your admin console profile.</p></li>
 <li><p>A registered SIP extension and softphone. See <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
 <li><p>Event subscription set up (WebSocket or customer webhook). See <a class="reference internal" href="#quickstart-events"><span class="std std-ref">Receiving Events</span></a>.</p></li>
@@ -1394,63 +1394,63 @@
 <section id="make-a-call-to-the-extension">
 <h5>Make a call to the extension<a class="headerlink" href="#make-a-call-to-the-extension" title="Link to this heading">¶</a></h5>
 <p>With event subscription configured and Linphone registered, make an outbound call to the extension. This call starts real-time transcription, plays a TTS greeting, and then sleeps to keep the call alive while you interact.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "&lt;your-source-number&gt;"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;extension&quot;,
-                &quot;target_name&quot;: &quot;quickstart-phone&quot;
+                "type": "extension",
+                "target_name": "quickstart-phone"
             }
         ],
-        &quot;actions&quot;: [
+        "actions": [
             {
-                &quot;type&quot;: &quot;transcribe_start&quot;,
-                &quot;option&quot;: {
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "transcribe_start",
+                "option": {
+                    "language": "en-US"
                 }
             },
             {
-                &quot;type&quot;: &quot;talk&quot;,
-                &quot;option&quot;: {
-                    &quot;text&quot;: &quot;Hello. This is the VoIPBIN real-time voice interaction test. You can speak now and your speech will be transcribed. The call will stay open for you to test the Speaking API.&quot;,
-                    &quot;language&quot;: &quot;en-US&quot;
+                "type": "talk",
+                "option": {
+                    "text": "Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed. The call will stay open for you to test the Speaking API.",
+                    "language": "en-US"
                 }
             },
             {
-                &quot;type&quot;: &quot;sleep&quot;,
-                &quot;option&quot;: {
-                    &quot;duration&quot;: 600000
+                "type": "sleep",
+                "option": {
+                    "duration": 600000
                 }
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"calls"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e2a65df2-4e50-4e37-8628-df07b3cec579&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"e2a65df2-4e50-4e37-8628-df07b3cec579"</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;your-source-number&gt;"</span><span class="p">,</span>
+                <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">""</span>
             <span class="p">},</span>
-            <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart-phone&quot;</span>
+            <span class="s2">"destination"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"extension"</span><span class="p">,</span>
+                <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"quickstart-phone"</span>
             <span class="p">},</span>
-            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"dialing"</span><span class="p">,</span>
+            <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"outgoing"</span><span class="p">,</span>
             <span class="o">...</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="s2">"groupcalls"</span><span class="p">:</span> <span class="p">[]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1474,23 +1474,23 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>). The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>. The <code class="docutils literal notranslate"><span class="pre">sleep</span></code> <code class="docutils literal notranslate"><span class="pre">duration</span></code> (Integer, milliseconds) keeps the call alive — <code class="docutils literal notranslate"><span class="pre">600000</span></code> = 10 minutes. The <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action uses BCP47 language codes (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code>).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBin-owned number (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>). The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>. The <code class="docutils literal notranslate"><span class="pre">sleep</span></code> <code class="docutils literal notranslate"><span class="pre">duration</span></code> (Integer, milliseconds) keeps the call alive — <code class="docutils literal notranslate"><span class="pre">600000</span></code> = 10 minutes. The <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action uses BCP47 language codes (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code>).</p>
 </div>
 </section>
 <section id="observe-real-time-transcription">
 <h5>Observe real-time transcription<a class="headerlink" href="#observe-real-time-transcription" title="Link to this heading">¶</a></h5>
 <p>After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads.</p>
-<p><strong>The TTS greeting appears first</strong> (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code> — VoIPBIN to caller):</p>
+<p><strong>The TTS greeting appears first</strong> (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code> — VoIPBin to caller):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-21T10:05:02.000000Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:&lt;transcribe-id&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is the VoIPBIN real-time voice interaction test. You can speak now and your speech will be transcribed.&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-21T10:05:02.233415Z&quot;</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
+    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:02.000000Z"</span><span class="p">,</span>
+    <span class="s2">"topic"</span><span class="p">:</span> <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:&lt;transcribe-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
+        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed."</span><span class="p">,</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:02.233415Z"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1498,17 +1498,17 @@
 <p><strong>Transcript event fields:</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">data.transcribe_id</span></code> (UUID): The transcription session ID, generated internally when the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action executes. Query all transcripts for this session via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcripts?transcribe_id=&lt;transcribe_id&gt;</span></code>. Transcripts are paginated; see the <a class="reference internal" href="transcribe_tutorial.html#transcribe-tutorial"><span class="std std-ref">Transcribe tutorial</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data.direction</span></code> (enum String): <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> — speech from the caller to VoIPBIN. <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> — speech from VoIPBIN to the caller (TTS output).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data.direction</span></code> (enum String): <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> — speech from the caller to VoIPBin. <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> — speech from VoIPBin to the caller (TTS output).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">data.message</span></code> (String): The transcribed text.</p></li>
 </ul>
-<p><strong>When you speak into Linphone</strong>, your speech appears as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code> (caller to VoIPBIN):</p>
+<p><strong>When you speak into Linphone</strong>, your speech appears as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code> (caller to VoIPBin):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, this is a test of the transcription feature.&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-21T10:05:15.100000Z&quot;</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hi, this is a test of the transcription feature."</span><span class="p">,</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:15.100000Z"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1516,7 +1516,7 @@
 <p>If you run the Python WebSocket example from <a class="reference internal" href="#quickstart-events"><span class="std std-ref">Receiving Events</span></a>, you will see output like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Subscribed</span> <span class="n">to</span> <span class="n">call</span> <span class="ow">and</span> <span class="n">transcribe</span> <span class="n">events</span><span class="o">.</span> <span class="n">Waiting</span><span class="o">...</span>
 <span class="p">[</span><span class="n">EVENT</span><span class="p">]</span> <span class="n">call_progressing</span>
-<span class="p">[</span><span class="n">TRANSCRIBE</span> <span class="n">out</span><span class="p">]</span> <span class="n">Hello</span><span class="o">.</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">VoIPBIN</span> <span class="n">real</span><span class="o">-</span><span class="n">time</span> <span class="n">voice</span> <span class="n">interaction</span> <span class="n">test</span><span class="o">...</span>
+<span class="p">[</span><span class="n">TRANSCRIBE</span> <span class="n">out</span><span class="p">]</span> <span class="n">Hello</span><span class="o">.</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">VoIPBin</span> <span class="n">real</span><span class="o">-</span><span class="n">time</span> <span class="n">voice</span> <span class="n">interaction</span> <span class="n">test</span><span class="o">...</span>
 <span class="p">[</span><span class="n">TRANSCRIBE</span> <span class="ow">in</span><span class="p">]</span> <span class="n">Hi</span><span class="p">,</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">test</span> <span class="n">of</span> <span class="n">the</span> <span class="n">transcription</span> <span class="n">feature</span><span class="o">.</span>
 </pre></div>
 </div>
@@ -1532,31 +1532,31 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">provider</span></code> (String, Optional): TTS provider. Use <code class="docutils literal notranslate"><span class="pre">&quot;elevenlabs&quot;</span></code> for high-quality streaming TTS</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum String, Optional): Controls which side of the call hears the TTS audio. One of: <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> (the call’s destination hears the TTS), <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> (the call’s source hears the TTS), <code class="docutils literal notranslate"><span class="pre">&quot;both&quot;</span></code> (both sides hear). In this scenario, use <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> so the Linphone user (destination) hears the TTS.</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;reference_type&quot;: &quot;call&quot;,
-        &quot;reference_id&quot;: &quot;&lt;call-id&gt;&quot;,
-        &quot;language&quot;: &quot;en-US&quot;,
-        &quot;provider&quot;: &quot;elevenlabs&quot;,
-        &quot;direction&quot;: &quot;out&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/speakings?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "reference_type": "call",
+        "reference_id": "&lt;call-id&gt;",
+        "language": "en-US",
+        "provider": "elevenlabs",
+        "direction": "out"
+    }'
 </pre></div>
 </div>
 <p>Response (HTTP 201 Created):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1e103d2-0429-4170-83b3-e95e29bb0ca8&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;call-id&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;initiating&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-21T10:06:00.000000Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1e103d2-0429-4170-83b3-e95e29bb0ca8"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;call-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
+    <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"elevenlabs"</span><span class="p">,</span>
+    <span class="s2">"voice_id"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
+    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"initiating"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:06:00.000000Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">""</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1580,22 +1580,22 @@
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (String, Required): The text to speak. Maximum 5000 characters.</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/speakings/&lt;speaking-id&gt;/say?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;text&quot;: &quot;Hello, how are you today? This is VoIPBIN speaking to you in real time using the ElevenLabs text-to-speech engine.&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/speakings/&lt;speaking-id&gt;/say?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "text": "Hello, how are you today? This is VoIPBin speaking to you in real time using the ElevenLabs text-to-speech engine."
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1e103d2-0429-4170-83b3-e95e29bb0ca8&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;call-id&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1e103d2-0429-4170-83b3-e95e29bb0ca8"</span><span class="p">,</span>
+    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;call-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
+    <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"elevenlabs"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
+    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -1678,11 +1678,11 @@
 </section>
 <section id="sandbox">
 <span id="quickstart-sandbox"></span><h3>Sandbox<a class="headerlink" href="#sandbox" title="Link to this heading">¶</a></h3>
-<p>The VoIPBIN Sandbox lets you run the entire VoIPBIN platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
+<p>The VoIPBin Sandbox lets you run the entire VoIPBin platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The Sandbox is a fully functional local VoIPBIN instance. When working with the Sandbox, replace all API URLs from <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code> to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code>. The Sandbox uses a self-signed SSL certificate, so add <code class="docutils literal notranslate"><span class="pre">-k</span></code> (insecure) flag to curl commands. The default credentials are <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code> / <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code>.</p>
+<p>The Sandbox is a fully functional local VoIPBin instance. When working with the Sandbox, replace all API URLs from <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code> to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code>. The Sandbox uses a self-signed SSL certificate, so add <code class="docutils literal notranslate"><span class="pre">-k</span></code> (insecure) flag to curl commands. The default credentials are <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code> / <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code>.</p>
 </div>
 <section id="id10">
 <h4>Prerequisites<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
@@ -1718,12 +1718,12 @@ $ sudo ./voipbin
 <li><p><strong>Sandbox</strong>: <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code></p></li>
 </ul>
 <p>For example, to generate a token using the sandbox:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request POST &#39;https://api.voipbin.test:8443/auth/login&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;username&quot;: &quot;admin@localhost&quot;,
-        &quot;password&quot;: &quot;admin@localhost&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request POST 'https://api.voipbin.test:8443/auth/login' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "username": "admin@localhost",
+        "password": "admin@localhost"
+    }'
 </pre></div>
 </div>
 </section>
@@ -1769,7 +1769,7 @@ $ sudo ./voipbin
 </section>
 <section id="what-s-next">
 <span id="quickstart-next"></span><h2>What’s Next<a class="headerlink" href="#what-s-next" title="Link to this heading">¶</a></h2>
-<p>Now that you have completed the quickstart, explore the full capabilities of VoIPBIN:</p>
+<p>Now that you have completed the quickstart, explore the full capabilities of VoIPBin:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow</span></a> — Build programmable voice workflows with the visual flow builder.</p></li>
 <li><p><a class="reference internal" href="ai.html#ai-main"><span class="std std-ref">AI</span></a> — Integrate AI-powered voice agents with real-time speech processing.</p></li>
@@ -1925,8 +1925,8 @@ $ sudo ./voipbin
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

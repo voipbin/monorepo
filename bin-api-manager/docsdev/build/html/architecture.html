@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Overview" href="architecture_overview.html"><link rel="prev" title="Tutorial" href="tag_tutorial.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Architecture - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -639,16 +639,16 @@
         <article role="main" id="furo-main-content">
           <section id="architecture">
 <span id="architecture-main"></span><h1>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">¶</a></h1>
-<p>Deep dive into VoIPBIN’s internal architecture, microservices, communication patterns, and deployment.</p>
+<p>Deep dive into VoIPBin’s internal architecture, microservices, communication patterns, and deployment.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
-<p>This section provides comprehensive documentation of VoIPBIN’s system internals. Relevant when an AI agent needs to understand how the platform is built, how services communicate, or how infrastructure is deployed. For API usage, see the individual resource documentation pages.</p>
+<p>This section provides comprehensive documentation of VoIPBin’s system internals. Relevant when an AI agent needs to understand how the platform is built, how services communicate, or how infrastructure is deployed. For API usage, see the individual resource documentation pages.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>VoIPBIN uses RabbitMQ RPC for all inter-service communication, not HTTP. When making API calls, use <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code> as the base URL. The API gateway (bin-api-manager) handles authentication and routes requests internally via RabbitMQ to the appropriate backend service.</p>
+<p>VoIPBin uses RabbitMQ RPC for all inter-service communication, not HTTP. When making API calls, use <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code> as the base URL. The API gateway (bin-api-manager) handles authentication and routes requests internally via RabbitMQ to the appropriate backend service.</p>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
@@ -840,8 +840,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

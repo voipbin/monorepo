@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free to create and manage. Outbound calls placed through the trunk incur per-call charges based on the destination.
    * **Async:** No. ``POST https://api.voipbin.net/v1.0/trunks`` returns immediately with the created trunk.
 
-VoIPBIN's Trunk API lets you connect your own SIP device or PBX to VoIPBIN as a SIP trunk, so it can place outbound calls to the PSTN through VoIPBIN. Creating a trunk reserves a dedicated SIP domain address (``{domain_name}.trunk.voipbin.net``) and configures how VoIPBIN authenticates INVITE requests arriving at that address.
+VoIPBin's Trunk API lets you connect your own SIP device or PBX to VoIPBin as a SIP trunk, so it can place outbound calls to the PSTN through VoIPBin. Creating a trunk reserves a dedicated SIP domain address (``{domain_name}.trunk.voipbin.net``) and configures how VoIPBin authenticates INVITE requests arriving at that address.
 
 The Trunk API provides:
 
@@ -24,7 +24,7 @@ A trunk is a standalone resource. It does not require a :ref:`Provider <provider
 
 How Trunks Work
 ---------------
-A trunk lets an external SIP device authenticate against VoIPBIN and place outbound calls through it.
+A trunk lets an external SIP device authenticate against VoIPBin and place outbound calls through it.
 
 **Trunk Architecture**
 
@@ -43,7 +43,7 @@ A trunk lets an external SIP device authenticate against VoIPBIN and place outbo
              | (authenticated via username/password or source IP)
              v
     +-------------------+
-    |     VoIPBIN       |
+    |     VoIPBin       |
     |   Trunk Endpoint  |
     +--------+----------+
              |
@@ -63,23 +63,23 @@ A trunk lets an external SIP device authenticate against VoIPBIN and place outbo
 
 Trunking vs Other Resources
 ----------------------------
-"SIP trunking" appears in several related but independent VoIPBIN resources. A trunk is not built from these other resources, and they are not built from a trunk.
+"SIP trunking" appears in several related but independent VoIPBin resources. A trunk is not built from these other resources, and they are not built from a trunk.
 
 +-----------------------+---------------------------------------------+------------------------------------------------+
 | Resource              | Direction                                   | Purpose                                        |
 +=======================+=============================================+================================================+
-| Trunk (this API)      | Your device -> VoIPBIN -> PSTN              | Lets your own SIP device/PBX                   |
-|                       | (outbound)                                  | authenticate into VoIPBIN and place            |
+| Trunk (this API)      | Your device -> VoIPBin -> PSTN              | Lets your own SIP device/PBX                   |
+|                       | (outbound)                                  | authenticate into VoIPBin and place            |
 |                       |                                             | outbound calls                                 |
 +-----------------------+---------------------------------------------+------------------------------------------------+
-| Provider              | VoIPBIN -> Carrier -> PSTN                  | Configures the upstream carrier                |
-|                       | (outbound)                                  | VoIPBIN itself uses to place                   |
+| Provider              | VoIPBin -> Carrier -> PSTN                  | Configures the upstream carrier                |
+|                       | (outbound)                                  | VoIPBin itself uses to place                   |
 |                       |                                             | outbound calls                                 |
 +-----------------------+---------------------------------------------+------------------------------------------------+
-| Route                 | VoIPBIN -> Provider selection               | Chooses which Provider handles an              |
+| Route                 | VoIPBin -> Provider selection               | Chooses which Provider handles an              |
 |                       |                                             | outbound call, with failover                   |
 +-----------------------+---------------------------------------------+------------------------------------------------+
-| Extension             | PSTN -> VoIPBIN -> your device              | Registers your SIP device to receive           |
+| Extension             | PSTN -> VoIPBin -> your device              | Registers your SIP device to receive           |
 |                       | (inbound)                                   | inbound calls                                  |
 +-----------------------+---------------------------------------------+------------------------------------------------+
 
@@ -189,7 +189,7 @@ Common Scenarios
 
 **Scenario 1: PBX with basic authentication**
 
-Point an on-premise PBX at VoIPBIN using a username and password.
+Point an on-premise PBX at VoIPBin using a username and password.
 
 ::
 
@@ -205,7 +205,7 @@ Point an on-premise PBX at VoIPBIN using a username and password.
     +--------------------------------------------+
     | PBX sends INVITE with credentials          |
     |   -> office-pbx.example.com.trunk.voipbin.net |
-    |   -> VoIPBIN authenticates and connects    |
+    |   -> VoIPBin authenticates and connects    |
     |      the call to the PSTN                  |
     +--------------------------------------------+
 
@@ -285,7 +285,7 @@ Related Documentation
 
 - :ref:`Trunk Overview <trunk-overview-trunking>` - Authentication and call handling details
 - :ref:`Domain name <trunk-overview-domain_name>` - How the SIP domain address works
-- :ref:`Provider Overview <provider-overview>` - VoIPBIN's own outbound carrier configuration
+- :ref:`Provider Overview <provider-overview>` - VoIPBin's own outbound carrier configuration
 - :ref:`Route Overview <route-overview>` - Call routing and failover between providers
 - :ref:`Extension Overview <extension-overview>` - SIP endpoint registration for inbound calls
 - :ref:`Call Overview <call-overview>` - Making and receiving calls

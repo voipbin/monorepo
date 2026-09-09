@@ -20,7 +20,7 @@ Before connecting to WebSocket, you need:
 Connect to WebSocket
 --------------------
 
-Establish a WebSocket connection to receive real-time event updates from VoIPBIN. The WebSocket provides bi-directional communication for subscribing to specific event topics.
+Establish a WebSocket connection to receive real-time event updates from VoIPBin. The WebSocket provides bi-directional communication for subscribing to specific event topics.
 
 **WebSocket Endpoint:**
 

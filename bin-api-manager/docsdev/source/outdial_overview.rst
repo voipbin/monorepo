@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free. Creating outdials and targets is free. Costs are incurred when a campaign dials the targets.
    * **Async:** No. ``POST /outdials`` and ``POST /outdials/{id}/targets`` return immediately with the created resource.
 
-VoIPBIN's Outdial API provides a scalable solution for managing outbound call destinations. An outdial is a collection of targets (phone numbers, SIP URIs, email addresses) that campaigns or flows dial sequentially. With built-in retry tracking and status management, the Outdial API handles large-scale outbound operations efficiently.
+VoIPBin's Outdial API provides a scalable solution for managing outbound call destinations. An outdial is a collection of targets (phone numbers, SIP URIs, email addresses) that campaigns or flows dial sequentially. With built-in retry tracking and status management, the Outdial API handles large-scale outbound operations efficiently.
 
 With the Outdial API you can:
 

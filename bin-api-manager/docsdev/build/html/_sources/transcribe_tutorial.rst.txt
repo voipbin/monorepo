@@ -68,7 +68,7 @@ For existing calls or conferences, start transcription manually by making an API
 
 .. note:: **Optional parameter:** ``on_end_flow_id``
 
-   You may include an optional ``on_end_flow_id`` (a flow UUID) in the request body. When the transcription ends, VoIPBIN executes that flow, which is useful for post-transcription processing (for example, running an AI summary flow). If omitted, no follow-up flow is triggered. The ``reference_type``, ``reference_id``, and ``language`` fields are required.
+   You may include an optional ``on_end_flow_id`` (a flow UUID) in the request body. When the transcription ends, VoIPBin executes that flow, which is useful for post-transcription processing (for example, running an AI summary flow). If omitted, no follow-up flow is triggered. The ``reference_type``, ``reference_id``, and ``language`` fields are required.
 
 .. note:: **Optional parameter:** ``id`` (caller-specified transcribe id)
 
@@ -235,20 +235,20 @@ call yet.
 Understanding Transcription Direction
 --------------------------------------
 
-VoIPBIN distinguishes between incoming and outgoing audio:
+VoIPBin distinguishes between incoming and outgoing audio:
 
-**Direction: "in"** - Audio from the customer/caller to VoIPBIN
+**Direction: "in"** - Audio from the customer/caller to VoIPBin
 
-**Direction: "out"** - Audio from VoIPBIN to the customer/caller
+**Direction: "out"** - Audio from VoIPBin to the customer/caller
 
 .. code::
 
-    Customer  -----"in"------>  VoIPBIN
+    Customer  -----"in"------>  VoIPBin
              <----"out"-------
 
 This helps identify who said what in the conversation:
 - **"in"**: What the customer said
-- **"out"**: What VoIPBIN played (TTS, recordings, or other party in the call)
+- **"out"**: What VoIPBin played (TTS, recordings, or other party in the call)
 
 Real-Time Transcription with WebSocket
 ---------------------------------------
@@ -345,7 +345,7 @@ Real-time events delivered over the WebSocket use the same envelope as webhooks:
 Receive Transcripts via Webhook
 --------------------------------
 
-Webhooks are configured at the **customer account level**, not as separate resources. There is no ``/webhooks`` CRUD endpoint. You set a single delivery URL on your customer profile, and VoIPBIN sends **all** event types (including transcribe and transcript events) to that URL. For the full configuration guide, see :ref:`Webhook Tutorial <webhook-tutorial>`.
+Webhooks are configured at the **customer account level**, not as separate resources. There is no ``/webhooks`` CRUD endpoint. You set a single delivery URL on your customer profile, and VoIPBin sends **all** event types (including transcribe and transcript events) to that URL. For the full configuration guide, see :ref:`Webhook Tutorial <webhook-tutorial>`.
 
 **1. Configure Your Webhook Endpoint:**
 
@@ -431,7 +431,7 @@ Every webhook is a JSON object with a common two-field envelope: ``type`` (the e
 Supported Languages
 -------------------
 
-VoIPBIN supports transcription in multiple languages. See :ref:`supported languages <transcribe-overview-supported_languages>`.
+VoIPBin supports transcription in multiple languages. See :ref:`supported languages <transcribe-overview-supported_languages>`.
 
 **Common Languages:**
 - ``en-US`` - English (United States)
@@ -557,7 +557,7 @@ Common Use Cases
 
 **6. Multi-Language Customer Support:**
 
-VoIPBIN does not auto-detect the spoken language. The ``language`` parameter is required, so determine the language out of band (for example, from the customer's account profile, IVR menu selection, or the dialed number) and pass the corresponding BCP47 code when starting transcription.
+VoIPBin does not auto-detect the spoken language. The ``language`` parameter is required, so determine the language out of band (for example, from the customer's account profile, IVR menu selection, or the dialed number) and pass the corresponding BCP47 code when starting transcription.
 
 .. code::
 

@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free. Extensions are internal routing endpoints with no per-unit charges.
    * **Async:** No. ``POST https://api.voipbin.net/v1.0/extensions`` returns immediately with the created extension. SIP device registration is a separate process handled by the SIP device itself.
 
-VoIPBIN's Extension API enables management of SIP endpoints that can register with VoIPBIN to receive inbound calls. Extensions provide the bridge between VoIPBIN's cloud infrastructure and your SIP devices, softphones, or PBX systems.
+VoIPBin's Extension API enables management of SIP endpoints that can register with VoIPBin to receive inbound calls. Extensions provide the bridge between VoIPBin's cloud infrastructure and your SIP devices, softphones, or PBX systems.
 
 With the Extension API you can:
 
@@ -66,20 +66,20 @@ Extensions provide address endpoints for SIP device registration.
 - **Extension**: A SIP address of record (AOR) for device registration
 - **Username**: Authentication identity for the extension
 - **Password**: Secret credential for authentication
-- **Registrar**: VoIPBIN's SIP registration server
+- **Registrar**: VoIPBin's SIP registration server
 
 
 .. _extension-overview-registration:
 
 Registration Process
 --------------------
-SIP devices must register with VoIPBIN to receive inbound calls.
+SIP devices must register with VoIPBin to receive inbound calls.
 
 **Registration Flow**
 
 ::
 
-    SIP Device                                VoIPBIN Registrar
+    SIP Device                                VoIPBin Registrar
 
     |                                              |
     | 1. REGISTER (no credentials)                 |
@@ -134,7 +134,7 @@ SIP devices must register with VoIPBIN to receive inbound calls.
 
 407 Proxy Authentication Required
 ---------------------------------
-VoIPBIN uses digest authentication for secure registration.
+VoIPBin uses digest authentication for secure registration.
 
 **Authentication Challenge Process**
 
@@ -248,7 +248,7 @@ Inbound calls reach registered devices via the extension address.
 
 ::
 
-    Incoming Call                     VoIPBIN                    SIP Device
+    Incoming Call                     VoIPBin                    SIP Device
          |                               |                           |
          | Call to extension             |                           |
          +------------------------------>|                           |
@@ -273,7 +273,7 @@ Inbound calls reach registered devices via the extension address.
 
 Direct Extension
 ----------------
-Direct extensions provide a public SIP URI that allows external callers to reach a registered extension without needing to know the customer's registrar domain. When direct access is enabled for an extension, VoIPBIN generates a unique hash and exposes a simplified SIP address.
+Direct extensions provide a public SIP URI that allows external callers to reach a registered extension without needing to know the customer's registrar domain. When direct access is enabled for an extension, VoIPBin generates a unique hash and exposes a simplified SIP address.
 
 **Direct SIP URI Format**
 
@@ -299,7 +299,7 @@ Direct extensions provide a public SIP URI that allows external callers to reach
 
 ::
 
-    External Caller                    VoIPBIN                     SIP Device
+    External Caller                    VoIPBin                     SIP Device
 
          |                                |                            |
          | INVITE                         |                            |
@@ -346,7 +346,7 @@ Softphone QR provisioning lets a user configure the Linphone mobile app for an e
 
 ::
 
-    Admin (API)                    VoIPBIN                     Linphone App
+    Admin (API)                    VoIPBin                     Linphone App
 
     |                                 |                             |
     | 1. POST /extensions/{id}/       |                             |
@@ -400,7 +400,7 @@ Common Scenarios
 
 **Scenario 1: IP Phone Registration**
 
-Configure a hardware IP phone to register with VoIPBIN.
+Configure a hardware IP phone to register with VoIPBin.
 
 ::
 
@@ -451,7 +451,7 @@ Register a mobile softphone for remote workers.
 
 **Scenario 3: PBX System Integration**
 
-Connect an on-premise PBX to VoIPBIN for inbound calls.
+Connect an on-premise PBX to VoIPBin for inbound calls.
 
 ::
 
@@ -459,7 +459,7 @@ Connect an on-premise PBX to VoIPBIN for inbound calls.
     +--------------------------------------------+
     | PBX Type: Asterisk / FreePBX               |
     |                                            |
-    | SIP Trunk to VoIPBIN:                      |
+    | SIP Trunk to VoIPBin:                      |
     | - Register: Yes                            |
     | - Host: ab12.reg.voipbin.net               |
     | - Username: pbx-main                       |
@@ -470,9 +470,9 @@ Connect an on-premise PBX to VoIPBIN for inbound calls.
 
     Inbound Call Flow:
     +--------------------------------------------+
-    | 1. Call arrives at VoIPBIN number          |
+    | 1. Call arrives at VoIPBin number          |
     | 2. Flow routes to extension: pbx-main      |
-    | 3. VoIPBIN sends INVITE to registered PBX  |
+    | 3. VoIPBin sends INVITE to registered PBX  |
     | 4. PBX IVR answers and routes internally   |
     +--------------------------------------------+
 

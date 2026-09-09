@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Queuecall" href="queue_struct_queuecall.html"><link rel="prev" title="Overview" href="queue_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Queue - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -643,33 +643,33 @@
 <span id="id1"></span><h2>Queue<a class="headerlink" href="#queue-struct-queue-queue" title="Link to this heading">¶</a></h2>
 <p>Queue struct</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;routing_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"routing_method"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"tag_ids"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">&quot;wait_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;service_timeout&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;wait_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">"wait_flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"wait_timeout"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"service_timeout"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"wait_queuecall_ids"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">&quot;service_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">"service_queuecall_ids"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;total_incoming_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;total_serviced_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;total_abandoned_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="s2">"direct_hash"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"total_incoming_count"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"total_serviced_count"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"total_abandoned_count"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -792,8 +792,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

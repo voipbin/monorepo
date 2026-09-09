@@ -9,7 +9,7 @@ Peer Events Overview
    * **Cost:** Free (read-only query against an existing log)
    * **Async:** No. ``GET /contact_peer_events`` is synchronous and returns results immediately.
 
-VoIPBIN's Peer Events API returns the raw, unfiltered log of peer/local address activity recorded by the platform. As of the Contact Interactions retirement (see below), :ref:`GET /contact_interactions <contact-overview>` now returns this **same raw, unfiltered** log via a legacy-compatible path — it no longer applies identity resolution or CRM eligibility filtering. Both endpoints may include rows for internal-resource peer types (agent extensions, AI participants, conference legs, SIP trunks); applications must filter or label these rows themselves before customer-facing display.
+VoIPBin's Peer Events API returns the raw, unfiltered log of peer/local address activity recorded by the platform. As of the Contact Interactions retirement (see below), :ref:`GET /contact_interactions <contact-overview>` now returns this **same raw, unfiltered** log via a legacy-compatible path — it no longer applies identity resolution or CRM eligibility filtering. Both endpoints may include rows for internal-resource peer types (agent extensions, AI participants, conference legs, SIP trunks); applications must filter or label these rows themselves before customer-facing display.
 
 Use ``GET /contact_peer_events`` for new integrations. ``GET /contact_interactions`` is kept only for backward compatibility with existing callers and additionally accepts an ``address_id`` filter that ``contact_peer_events`` does not support; it carries no other advantage over ``contact_peer_events`` going forward.
 

@@ -2,7 +2,7 @@
 
 Extension & Softphone Setup
 ----------------------------
-Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBIN. This is required for the :ref:`Real-Time Voice Interaction <quickstart-realtime>` scenario.
+Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBin. This is required for the :ref:`Real-Time Voice Interaction <quickstart-realtime>` scenario.
 
 Prerequisites
 ~~~~~~~~~~~~~
@@ -53,11 +53,11 @@ The ``id`` (UUID) is the extension's unique identifier — use it for ``GET /ext
 
 .. note:: **AI Implementation Hint**
 
-   The ``extension`` and ``password`` are SIP credentials, not VoIPBIN login credentials. The ``name`` field is the extension identifier used when dialing (e.g., ``"target_name": "quickstart-phone"`` in the call request). The response includes both ``extension`` and ``username`` fields — they contain the same value (``username`` is a Kamailio-internal mirror of ``extension``). Choose a memorable ``extension`` value and a strong ``password``.
+   The ``extension`` and ``password`` are SIP credentials, not VoIPBin login credentials. The ``name`` field is the extension identifier used when dialing (e.g., ``"target_name": "quickstart-phone"`` in the call request). The response includes both ``extension`` and ``username`` fields — they contain the same value (``username`` is a Kamailio-internal mirror of ``extension``). Choose a memorable ``extension`` value and a strong ``password``.
 
 Register Linphone
 ^^^^^^^^^^^^^^^^^^
-Configure your Linphone softphone to register with VoIPBIN using the extension credentials created above.
+Configure your Linphone softphone to register with VoIPBin using the extension credentials created above.
 
 **Linphone configuration:**
 

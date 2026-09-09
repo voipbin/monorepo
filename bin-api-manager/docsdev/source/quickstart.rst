@@ -6,7 +6,7 @@ Quickstart
 
 Getting Started
 ===============
-Create your VoIPBIN account and get API credentials.
+Create your VoIPBin account and get API credentials.
 
 .. include:: quickstart_signup.rst
 .. include:: quickstart_authentication.rst
@@ -20,7 +20,7 @@ Before running the tutorials, set up a SIP extension and softphone for voice tes
 
 Make your first Hello World
 ===========================
-Try VoIPBIN's core communication APIs:
+Try VoIPBin's core communication APIs:
 
 1. **Your First Call** — Place an outbound voice call with text-to-speech.
 2. **Your First Real-Time Voice Interaction** — Make a call with live transcription and speak into the call using the TTS API.
@@ -40,7 +40,7 @@ Additional standalone walkthroughs are also available: :ref:`Send an SMS <quicks
 
 What's Next
 ===========
-Now that you have completed the quickstart, explore the full capabilities of VoIPBIN:
+Now that you have completed the quickstart, explore the full capabilities of VoIPBin:
 
 - :ref:`Flow <flow-main>` — Build programmable voice workflows with the visual flow builder.
 - :ref:`AI <ai-main>` — Integrate AI-powered voice agents with real-time speech processing.

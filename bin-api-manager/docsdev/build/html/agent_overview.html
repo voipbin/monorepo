@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Struct" href="agent_struct_agent.html"><link rel="prev" title="Agent" href="agent.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -649,7 +649,7 @@
 </ul>
 </div>
 <p>The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.</p>
-<p>In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags determine which queues can route calls to them (see below).</p>
+<p>In VoIPBin, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags determine which queues can route calls to them (see below).</p>
 <section id="agent-status">
 <h2>Agent Status<a class="headerlink" href="#agent-status" title="Link to this heading">¶</a></h2>
 <p>Every agent has a status that reflects their current availability. The status determines whether an agent can receive calls from queues.</p>
@@ -687,7 +687,7 @@
           <span class="o">|</span>
           <span class="o">|</span> <span class="n">Call</span> <span class="n">ends</span>
           <span class="n">v</span>
-    <span class="p">(</span><span class="n">stays</span> <span class="s2">&quot;busy&quot;</span> <span class="n">until</span> <span class="n">the</span> <span class="n">agent</span>
+    <span class="p">(</span><span class="n">stays</span> <span class="s2">"busy"</span> <span class="n">until</span> <span class="n">the</span> <span class="n">agent</span>
      <span class="n">manually</span> <span class="n">sets</span> <span class="n">a</span> <span class="n">new</span> <span class="n">status</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -748,7 +748,7 @@ queue calls?</p></th>
                                           <span class="o">|</span>   <span class="n">busy</span>    <span class="o">|</span>
                                           <span class="o">+-----------+</span>
 
-<span class="n">Note</span><span class="p">:</span> <span class="n">there</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">automatic</span> <span class="n">transition</span> <span class="n">back</span> <span class="n">to</span> <span class="s2">&quot;available&quot;</span> <span class="n">when</span> <span class="n">the</span>
+<span class="n">Note</span><span class="p">:</span> <span class="n">there</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">automatic</span> <span class="n">transition</span> <span class="n">back</span> <span class="n">to</span> <span class="s2">"available"</span> <span class="n">when</span> <span class="n">the</span>
 <span class="n">call</span> <span class="n">ends</span><span class="o">.</span> <span class="n">The</span> <span class="n">agent</span> <span class="p">(</span><span class="ow">or</span> <span class="n">your</span> <span class="n">application</span><span class="p">)</span> <span class="n">must</span> <span class="n">explicitly</span> <span class="n">call</span>
 <span class="n">PUT</span> <span class="o">/</span><span class="n">agents</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">status</span> <span class="n">to</span> <span class="n">become</span> <span class="n">eligible</span> <span class="k">for</span> <span class="n">queue</span> <span class="n">calls</span> <span class="n">again</span><span class="o">.</span>
 </pre></div>
@@ -778,7 +778,7 @@ queue calls?</p></th>
                       <span class="o">|</span> <span class="n">Agent</span> <span class="ow">is</span> <span class="n">eligible</span>  <span class="o">|</span>
                       <span class="o">|</span> <span class="k">if</span> <span class="n">it</span> <span class="n">has</span> <span class="n">ANY</span> <span class="n">tag</span>  <span class="o">|</span>
                       <span class="o">|</span> <span class="ow">in</span> <span class="n">common</span> <span class="k">with</span> <span class="n">the</span> <span class="o">|</span>
-                      <span class="o">|</span> <span class="n">queue</span><span class="s1">&#39;s tag_ids.   |</span>
+                      <span class="o">|</span> <span class="n">queue</span><span class="s1">'s tag_ids.   |</span>
                       <span class="o">+-------------------+</span>
 </pre></div>
 </div>
@@ -805,15 +805,15 @@ queue calls?</p></th>
 </div>
 <p><strong>Managing Agent Tags</strong></p>
 <p>Update an agent’s tags via the API:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/tag_ids?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;tag_ids&quot;: [
-            &quot;uuid-for-english-tag&quot;,
-            &quot;uuid-for-billing-tag&quot;,
-            &quot;uuid-for-tier2-tag&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/tag_ids?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "tag_ids": [
+            "uuid-for-english-tag",
+            "uuid-for-billing-tag",
+            "uuid-for-tier2-tag"
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 </section>
@@ -850,7 +850,7 @@ queue calls?</p></th>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>extension</p></td>
-<td><p>Internal extension number (must be registered with VoIPBIN)</p></td>
+<td><p>Internal extension number (must be registered with VoIPBin)</p></td>
 </tr>
 <tr class="row-odd"><td><p>tel</p></td>
 <td><p>External phone number in E.164 format (+15551234567)</p></td>
@@ -876,7 +876,7 @@ queue calls?</p></th>
 </section>
 <section id="call-to-agent">
 <h2>Call to agent<a class="headerlink" href="#call-to-agent" title="Link to this heading">¶</a></h2>
-<p>To reach an agent, VoIPBIN employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBIN generates calls to every agent’s address simultaneously. If an agent answers one of the calls, VoIPBIN automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.</p>
+<p>To reach an agent, VoIPBin employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBin generates calls to every agent’s address simultaneously. If an agent answers one of the calls, VoIPBin automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.</p>
 <p><strong>Simultaneous Ring</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------------------+
 |                      Agent with Multiple Addresses                       |
@@ -922,11 +922,11 @@ Queue finds Agent Smith (available)
 <span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">agents</span>
 <span class="o">+---------------------------------------+</span>
 <span class="o">|</span> <span class="p">{</span>                                     <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;john@company.com&quot;</span><span class="p">,</span>     <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;secure_password&quot;</span><span class="p">,</span>      <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John Smith&quot;</span><span class="p">,</span>               <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                   <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;addresses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>                  <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"john@company.com"</span><span class="p">,</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"password"</span><span class="p">:</span> <span class="s2">"secure_password"</span><span class="p">,</span>      <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"John Smith"</span><span class="p">,</span>               <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"tag_ids"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>                   <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"addresses"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>                  <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                                     <span class="o">|</span>
 <span class="o">+---------------------------------------+</span>
                  <span class="o">|</span>
@@ -946,7 +946,7 @@ Queue finds Agent Smith (available)
 
 1. Agent calls login API
    POST https://api.voipbin.net/v1.0/login
-   { &quot;username&quot;: &quot;...&quot;, &quot;password&quot;: &quot;...&quot; }
+   { "username": "...", "password": "..." }
           |
           v
 2. System validates credentials
@@ -959,18 +959,18 @@ Queue finds Agent Smith (available)
 3. Return agent info
    +------------------------------------+
    | {                                  |
-   |   &quot;id&quot;: &quot;agent-uuid&quot;,              |
-   |   &quot;name&quot;: &quot;John Smith&quot;,            |
-   |   &quot;status&quot;: &quot;offline&quot;,             |
-   |   &quot;permission&quot;: &quot;user&quot;,            |
+   |   "id": "agent-uuid",              |
+   |   "name": "John Smith",            |
+   |   "status": "offline",             |
+   |   "permission": "user",            |
    |   ...                              |
    | }                                  |
    +------------------------------------+
           |
           v
-4. Agent sets status to &quot;available&quot;
+4. Agent sets status to "available"
    PUT https://api.voipbin.net/v1.0/agents/{id}/status
-   { &quot;status&quot;: &quot;available&quot; }
+   { "status": "available" }
           |
           v
 5. Agent is now ready to receive calls!
@@ -1010,9 +1010,9 @@ Queue finds Agent Smith (available)
 <span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Queue</span> <span class="n">searches</span> <span class="k">for</span> <span class="n">agents</span>
 <span class="o">+----------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">SELECT</span> <span class="n">agents</span> <span class="n">WHERE</span><span class="p">:</span>                                                  <span class="o">|</span>
-<span class="o">|</span>   <span class="n">o</span> <span class="n">customer_id</span> <span class="o">=</span> <span class="n">queue</span><span class="s1">&#39;s customer_id                                |</span>
-<span class="o">|</span>   <span class="n">o</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;available&#39;</span>                                             <span class="o">|</span>
-<span class="o">|</span>   <span class="n">o</span> <span class="n">tag_ids</span> <span class="n">overlaps</span> <span class="n">queue</span><span class="s1">&#39;s tag_ids (skipped if the queue has no    |</span>
+<span class="o">|</span>   <span class="n">o</span> <span class="n">customer_id</span> <span class="o">=</span> <span class="n">queue</span><span class="s1">'s customer_id                                |</span>
+<span class="o">|</span>   <span class="n">o</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">'available'</span>                                             <span class="o">|</span>
+<span class="o">|</span>   <span class="n">o</span> <span class="n">tag_ids</span> <span class="n">overlaps</span> <span class="n">queue</span><span class="s1">'s tag_ids (skipped if the queue has no    |</span>
 <span class="o">|</span>     <span class="n">tags</span> <span class="o">--</span> <span class="n">see</span> <span class="n">the</span> <span class="n">Queue</span> <span class="n">Overview</span><span class="p">)</span>                                  <span class="o">|</span>
 <span class="o">+----------------------------------------------------------------------+</span>
            <span class="o">|</span>
@@ -1030,7 +1030,7 @@ Queue finds Agent Smith (available)
 <span class="o">|</span> <span class="n">available</span> <span class="o">-&gt;</span> <span class="n">ringing</span>  <span class="o">|</span>
 <span class="o">+----------+-----------+</span>
            <span class="o">|</span>
-           <span class="o">|</span> <span class="n">Agent</span><span class="s1">&#39;s phones ring</span>
+           <span class="o">|</span> <span class="n">Agent</span><span class="s1">'s phones ring</span>
            <span class="n">v</span>
 <span class="n">Step</span> <span class="mi">5</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">answers</span>
 <span class="o">+----------------------+</span>
@@ -1069,14 +1069,14 @@ Queue finds Agent Smith (available)
 </div>
 <p><strong>Example Webhook Payload</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_status_updated&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;john@company.com&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John Smith&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"agent_status_updated"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"agent-uuid"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-uuid"</span><span class="p">,</span>
+        <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"john@company.com"</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"John Smith"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"available"</span><span class="p">,</span>
+        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1084,7 +1084,7 @@ Queue finds Agent Smith (available)
 </section>
 <section id="permission">
 <h2>Permission<a class="headerlink" href="#permission" title="Link to this heading">¶</a></h2>
-<p>In the VoIPBIN ecosystem, permissions play a crucial role in governing the actions that can be performed by the system’s agents. Each API within VoIPBIN is subject to specific permission limitations, ensuring a secure and controlled environment.</p>
+<p>In the VoIPBin ecosystem, permissions play a crucial role in governing the actions that can be performed by the system’s agents. Each API within VoIPBin is subject to specific permission limitations, ensuring a secure and controlled environment.</p>
 <p><strong>Permission Levels</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------------+</span>
 <span class="o">|</span>                       <span class="n">Permission</span> <span class="n">Hierarchy</span>                               <span class="o">|</span>
@@ -1092,7 +1092,7 @@ Queue finds Agent Smith (available)
 
 <span class="o">+-----------------------------------------------------------------------------+</span>
 <span class="o">|</span>                     <span class="n">CUSTOMER</span> <span class="n">ADMIN</span> <span class="p">(</span><span class="mh">0x0020</span> <span class="o">/</span> <span class="mi">32</span><span class="p">)</span>                         <span class="o">|</span>
-<span class="o">|</span>  <span class="n">o</span> <span class="n">Full</span> <span class="n">access</span> <span class="n">to</span> <span class="n">the</span> <span class="n">customer</span><span class="s1">&#39;s APIs                                   |</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Full</span> <span class="n">access</span> <span class="n">to</span> <span class="n">the</span> <span class="n">customer</span><span class="s1">'s APIs                                   |</span>
 <span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">manage</span> <span class="n">other</span> <span class="n">agents</span> <span class="p">(</span><span class="n">create</span><span class="p">,</span> <span class="n">update</span><span class="p">,</span> <span class="n">delete</span><span class="p">,</span> <span class="n">permissions</span><span class="p">)</span>        <span class="o">|</span>
 <span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">create</span><span class="o">/</span><span class="n">delete</span> <span class="n">resources</span> <span class="p">(</span><span class="n">queues</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span>                     <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------------+</span>
@@ -1115,8 +1115,8 @@ Queue finds Agent Smith (available)
 <span class="o">+-----------------------------------------------------------------------------+</span>
 </pre></div>
 </div>
-<p>VoIPBIN employs a bitmask permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Each agent’s <code class="docutils literal notranslate"><span class="pre">permission</span></code> field is a combination of bit flags; multiple levels can be combined (e.g. <code class="docutils literal notranslate"><span class="pre">0x0060</span></code> = admin + manager). See <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-permission"><span class="std std-ref">Permission</span></a> for the full list of permission bit values, including project-level flags reserved for VoIPBIN operators.</p>
-<p>Every API in VoIPBIN is associated with granular permission limitations. These limitations are designed to:</p>
+<p>VoIPBin employs a bitmask permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Each agent’s <code class="docutils literal notranslate"><span class="pre">permission</span></code> field is a combination of bit flags; multiple levels can be combined (e.g. <code class="docutils literal notranslate"><span class="pre">0x0060</span></code> = admin + manager). See <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-permission"><span class="std std-ref">Permission</span></a> for the full list of permission bit values, including project-level flags reserved for VoIPBin operators.</p>
+<p>Every API in VoIPBin is associated with granular permission limitations. These limitations are designed to:</p>
 <ul class="simple">
 <li><p>Restrict Access: Ensure that only authorized agents can invoke specific APIs.</p></li>
 </ul>
@@ -1158,7 +1158,7 @@ Queue finds Agent Smith (available)
 2. Agent sets available → Status: available
 3. Call comes in → Status: ringing (automatic)
 4. Agent answers → Status: busy (automatic)
-5. Call ends → Status stays &quot;busy&quot;; the agent must manually set it
+5. Call ends → Status stays "busy"; the agent must manually set it
    back to available via PUT /agents/{id}/status
 6. Agent takes break → Status: away (manual)
 7. Agent logs out → Status: offline (manual)
@@ -1181,7 +1181,7 @@ Queue finds Agent Smith (available)
        Status: available → ringing → busy
 
 Call ends
-       Status stays &quot;busy&quot; (no automatic revert)
+       Status stays "busy" (no automatic revert)
 
 Agent manually sets status back to available
 
@@ -1196,7 +1196,7 @@ Agent returns
 </div>
 <p><strong>Scenario 3: End of Day</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent finishes last call
-       Status stays &quot;busy&quot; until manually changed
+       Status stays "busy" until manually changed
 
 Agent logs out for the day
        Status: available → offline
@@ -1377,8 +1377,8 @@ receiving calls, check <code class="docutils literal notranslate"><span class="p
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

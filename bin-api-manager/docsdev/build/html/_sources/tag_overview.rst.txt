@@ -10,7 +10,7 @@ Overview
    * **Async:** No. ``POST https://api.voipbin.net/v1.0/tags`` returns immediately with the created tag.
    * **Access:** Requires ``PermissionCustomerAdmin`` or ``PermissionCustomerManager`` on the tag's customer account. Direct access (access key) is not supported; all Tag endpoints require a JWT-authenticated customer agent identity.
 
-VoIPBIN's Tag API provides a flexible labeling system for organizing and categorizing resources. Tags are primarily used for skill-based routing in queues, but can also categorize agents by teams, departments, languages, or any custom attribute.
+VoIPBin's Tag API provides a flexible labeling system for organizing and categorizing resources. Tags are primarily used for skill-based routing in queues, but can also categorize agents by teams, departments, languages, or any custom attribute.
 
 With the Tag API you can:
 

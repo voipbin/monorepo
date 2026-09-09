@@ -5,14 +5,14 @@ Call Flow Sequences
 
 .. note:: **AI Context**
 
-   This page provides detailed sequence diagrams for VoIPBIN's core operations: inbound call flow (PSTN to flow execution), outbound campaign flow, AI voice assistant (Pipecat hybrid architecture), call transfer sequences (blind and attended), queue call distribution, conference join, and webhook delivery. Relevant when an AI agent needs to understand the exact component interactions for specific call scenarios or integration points.
+   This page provides detailed sequence diagrams for VoIPBin's core operations: inbound call flow (PSTN to flow execution), outbound campaign flow, AI voice assistant (Pipecat hybrid architecture), call transfer sequences (blind and attended), queue call distribution, conference join, and webhook delivery. Relevant when an AI agent needs to understand the exact component interactions for specific call scenarios or integration points.
 
-This section provides detailed sequence diagrams for VoIPBIN's core call flows, showing how components interact during real-world scenarios.
+This section provides detailed sequence diagrams for VoIPBin's core call flows, showing how components interact during real-world scenarios.
 
 Inbound Call Flow
 -----------------
 
-When an external caller dials a VoIPBIN number, the following sequence occurs:
+When an external caller dials a VoIPBin number, the following sequence occurs:
 
 .. code::
 
@@ -198,7 +198,7 @@ Outbound campaigns automate calling lists of targets:
 AI Voice Assistant Flow (Pipecat)
 ---------------------------------
 
-VoIPBIN's AI voice assistant uses a hybrid Go+Python architecture:
+VoIPBin's AI voice assistant uses a hybrid Go+Python architecture:
 
 .. code::
 
@@ -267,7 +267,7 @@ VoIPBIN's AI voice assistant uses a hybrid Go+Python architecture:
 
 **Why Hybrid Architecture:**
 
-* **Go (pipecat-manager)**: Efficient audio handling, low-latency resampling, integration with VoIPBIN RPC
+* **Go (pipecat-manager)**: Efficient audio handling, low-latency resampling, integration with VoIPBin RPC
 * **Python (pipecat-runner)**: Rich AI/ML ecosystem, Pipecat framework, easy LLM integration
 
 **Protobuf Frame Format:**
@@ -586,7 +586,7 @@ Events trigger webhook notifications to customer endpoints:
 
     POST https://customer.example.com/webhook
     Content-Type: application/json
-    X-VoIPBIN-Signature: sha256=...
+    X-VoIPBin-Signature: sha256=...
 
     {
       "type": "call_hangup",

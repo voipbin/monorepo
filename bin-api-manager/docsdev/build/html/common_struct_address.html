@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Call" href="call.html"><link rel="prev" title="Overview" href="common_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Address - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -641,13 +641,13 @@
 <span id="common-struct-address"></span><h1>Address<a class="headerlink" href="#address" title="Link to this heading">¶</a></h1>
 <section id="common-struct-address-address">
 <span id="id1"></span><h2>Address<a class="headerlink" href="#common-struct-address-address" title="Link to this heading">¶</a></h2>
-<p>Defines source/destination address. This structure is used throughout VoIPBIN wherever communication endpoints are specified, including calls (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code>), messages (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code>), flows (connect/call actions), and number configurations.</p>
+<p>Defines source/destination address. This structure is used throughout VoIPBin wherever communication endpoints are specified, including calls (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code>), messages (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code>), flows (connect/call actions), and number configurations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -669,8 +669,8 @@
 <li><p>The <code class="docutils literal notranslate"><span class="pre">tel</span></code> type address. The target is a phone number in E.164 format.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+  <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000001"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -678,8 +678,8 @@
 <li><p>The <code class="docutils literal notranslate"><span class="pre">extension</span></code> type address. The target is an extension number.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;2001&quot;</span>
+  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"extension"</span><span class="p">,</span>
+  <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"2001"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -687,8 +687,8 @@
 <li><p>The <code class="docutils literal notranslate"><span class="pre">agent</span></code> type address. The target is the agent’s UUID, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;eed6a98a-f18d-11ee-96d3-133e13eafff9&quot;</span>
+  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"agent"</span><span class="p">,</span>
+  <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"eed6a98a-f18d-11ee-96d3-133e13eafff9"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -696,8 +696,8 @@
 <li><p>The <code class="docutils literal notranslate"><span class="pre">sip</span></code> type address. The target is a SIP URI.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;testuser@example.com&quot;</span>
+  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sip"</span><span class="p">,</span>
+  <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"testuser@example.com"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -832,8 +832,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

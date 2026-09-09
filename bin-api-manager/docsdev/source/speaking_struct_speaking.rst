@@ -89,7 +89,7 @@ gcp         Google Cloud Text-to-Speech. Wide language support with WaveNet and 
 aws         Amazon Polly. Neural and standard voices with SSML support.
 =========== ============
 
-When creating a speaking session, the ``provider`` field is optional. If omitted, VoIPBIN defaults to ``elevenlabs``.
+When creating a speaking session, the ``provider`` field is optional. If omitted, VoIPBin defaults to ``elevenlabs``.
 
 .. _speaking-struct-speaking-status:
 

@@ -9,11 +9,11 @@ Overview
    * **Cost:** Free -- the Agent Console surface itself has no per-call charge. Underlying resources (AI calls, transcription, ...) keep their own billing, unchanged by which path (``/service_agents/*`` vs the top-level path) was used to reach them.
    * **Async:** No. Every ``/service_agents/*`` endpoint documented on this page returns synchronously. Real-time push (new messages, case updates) is delivered over the WebSocket connection described below.
 
-``/service_agents/*`` is a parallel, agent-scoped path prefix that mirrors a large slice of VoIPBIN's REST surface (agents, calls, contacts, AI calls, tags, extensions, transcription, files, conversations) plus a handful of endpoints that exist **only** under this prefix: case management, agent self-service (``me``), and public-channel discovery for Talk. This page documents the authentication/authorization model shared by all ``/service_agents/*`` endpoints and the pieces of the surface that are genuinely new. For everything else, see the resource's own page (:ref:`Contact <contact-main>`, :ref:`Call <call-main>`, :ref:`AI <ai-main>`, :ref:`Agent <agent-main>`, :ref:`Talk <talk-main>`, :ref:`Transcribe <transcribe-main>`, :ref:`Storage <storage-main>`, :ref:`Tag <tag-main>`, :ref:`Extension <extension-main>`, :ref:`Customer <customer-main>`) -- the request/response shapes are identical, only the path prefix and the permission check differ.
+``/service_agents/*`` is a parallel, agent-scoped path prefix that mirrors a large slice of VoIPBin's REST surface (agents, calls, contacts, AI calls, tags, extensions, transcription, files, conversations) plus a handful of endpoints that exist **only** under this prefix: case management, agent self-service (``me``), and public-channel discovery for Talk. This page documents the authentication/authorization model shared by all ``/service_agents/*`` endpoints and the pieces of the surface that are genuinely new. For everything else, see the resource's own page (:ref:`Contact <contact-main>`, :ref:`Call <call-main>`, :ref:`AI <ai-main>`, :ref:`Agent <agent-main>`, :ref:`Talk <talk-main>`, :ref:`Transcribe <transcribe-main>`, :ref:`Storage <storage-main>`, :ref:`Tag <tag-main>`, :ref:`Extension <extension-main>`, :ref:`Customer <customer-main>`) -- the request/response shapes are identical, only the path prefix and the permission check differ.
 
 Why a separate path prefix
 ---------------------------
-VoIPBIN exposes two REST surfaces backed by the same resources, deliberately kept separate:
+VoIPBin exposes two REST surfaces backed by the same resources, deliberately kept separate:
 
 .. list-table::
    :header-rows: 1

@@ -1014,8 +1014,8 @@ Example
                 }
             ],
             "status": "initiated",
-            "subject": "Hello from VoIPBIN",
-            "content": "This is a test email sent via the VoIPBIN API.",
+            "subject": "Hello from VoIPBin",
+            "content": "This is a test email sent via the VoIPBin API.",
             "attachments": [],
             "tm_create": "2025-03-14 19:04:01.160250",
             "tm_update": "2025-03-14 19:04:01.160250",

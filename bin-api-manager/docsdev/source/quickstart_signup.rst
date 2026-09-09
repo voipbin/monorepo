@@ -2,7 +2,7 @@
 
 Signup
 ------
-To use the VoIPBIN production API, you need your own account. There are two ways to sign up: via the Admin Console (browser) or via the API (headless, for automated systems).
+To use the VoIPBin production API, you need your own account. There are two ways to sign up: via the Admin Console (browser) or via the API (headless, for automated systems).
 
 Sign up via Admin Console
 ~~~~~~~~~~~~~~~~~~~~~~~~~

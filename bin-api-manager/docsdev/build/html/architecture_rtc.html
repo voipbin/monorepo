@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="System Request Flows" href="architecture_flow.html"><link rel="prev" title="Data Flow Diagrams" href="architecture_dataflow.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Real-Time Communication (RTC) - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -642,12 +642,12 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
-<p>This page describes VoIPBIN’s real-time communication stack: Kamailio (stateless SIP edge routing), Asterisk (three specialized farms for calls, conferences, and registration), RTPEngine (media proxy and codec transcoding), conference architecture, and SIP session recovery after Asterisk crashes. Relevant when an AI agent needs to understand VoIP call flow mechanics, media handling, codec strategies, or high-availability features.</p>
+<p>This page describes VoIPBin’s real-time communication stack: Kamailio (stateless SIP edge routing), Asterisk (three specialized farms for calls, conferences, and registration), RTPEngine (media proxy and codec transcoding), conference architecture, and SIP session recovery after Asterisk crashes. Relevant when an AI agent needs to understand VoIP call flow mechanics, media handling, codec strategies, or high-availability features.</p>
 </div>
-<p>VoIPBIN’s RTC architecture handles all real-time voice communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.</p>
+<p>VoIPBin’s RTC architecture handles all real-time voice communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.</p>
 <section id="voip-stack-overview">
 <h2>VoIP Stack Overview<a class="headerlink" href="#voip-stack-overview" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s VoIP stack consists of three main components working together:</p>
+<p>VoIPBin’s VoIP stack consists of three main components working together:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Full</span> <span class="n">SIP</span> <span class="n">Signaling</span> <span class="n">Topology</span><span class="p">:</span>
 
 <span class="o">+------------------+</span>
@@ -713,11 +713,11 @@
 <li><p><strong>Media Setup</strong>: RTPEngine handles RTP media streams and codec transcoding</p></li>
 <li><p><strong>Call Control</strong>: Asterisk manages call state and conference bridges</p></li>
 </ol>
-<p>This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.</p>
+<p>This modular design ensures VoIPBin can provide reliable, scalable VoIP services while accommodating high traffic loads.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>VoIPBIN uses ulaw (G.711) as the exclusive internal codec. All external codecs (G.722, Opus, etc.) are transcoded at the edge by RTPEngine. When integrating SIP endpoints, any standard codec is accepted, but for lowest latency configure your SIP client to prefer G.711 ulaw to avoid transcoding overhead.</p>
+<p>VoIPBin uses ulaw (G.711) as the exclusive internal codec. All external codecs (G.722, Opus, etc.) are transcoded at the edge by RTPEngine. When integrating SIP endpoints, any standard codec is accepted, but for lowest latency configure your SIP client to prefer G.711 ulaw to avoid transcoding overhead.</p>
 </div>
 </section>
 <section id="kamailio-sip-edge-router">
@@ -726,7 +726,7 @@
 <ul class="simple">
 <li><p><strong>Official Site</strong>: <a class="reference external" href="https://www.kamailio.org/">https://www.kamailio.org/</a></p></li>
 </ul>
-<p><strong>Role in VoIPBIN:</strong></p>
+<p><strong>Role in VoIPBin:</strong></p>
 <p>Kamailio acts as the stateless SIP proxy and edge router, responsible for:</p>
 <ul class="simple">
 <li><p><strong>SIP Routing</strong>: Forwarding SIP messages to appropriate backend services</p></li>
@@ -813,7 +813,7 @@ a <strong>bidirectionally decoupled architecture</strong>:</p>
 <section id="re-invite-and-within-dialog-routing">
 <h2>RE-INVITE and Within-Dialog Routing<a class="headerlink" href="#re-invite-and-within-dialog-routing" title="Link to this heading">¶</a></h2>
 <p>For requests within an established SIP dialog (such as RE-INVITE for media renegotiation
-or hold/resume), VoIPBIN uses a <strong>direct routing</strong> strategy that bypasses the Internal
+or hold/resume), VoIPBin uses a <strong>direct routing</strong> strategy that bypasses the Internal
 Asterisk LB entirely.</p>
 <p><strong>Why direct routing matters:</strong></p>
 <p>When an INVITE creates a new dialog, Asterisk records its own address in the SIP
@@ -848,7 +848,7 @@ Asterisk instance – skipping the Internal Asterisk LB completely.</p>
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>When integrating SIP endpoints, ensure your SIP stack correctly handles the
-<code class="docutils literal notranslate"><span class="pre">Record-Route</span></code> and <code class="docutils literal notranslate"><span class="pre">Route</span></code> headers returned by VoIPBIN. Most standard SIP
+<code class="docutils literal notranslate"><span class="pre">Record-Route</span></code> and <code class="docutils literal notranslate"><span class="pre">Route</span></code> headers returned by VoIPBin. Most standard SIP
 libraries (PJSIP, Sofia-SIP, etc.) handle this automatically. Do not strip or
 modify these headers, as doing so will cause RE-INVITEs to be routed to the
 wrong Asterisk instance.</p>
@@ -858,8 +858,8 @@ wrong Asterisk instance.</p>
 <h2>Asterisk - Media and Call Processing<a class="headerlink" href="#asterisk-media-and-call-processing" title="Link to this heading">¶</a></h2>
 <p>Asterisk is an open-source communications platform providing comprehensive telephony services.</p>
 <img alt="Architecture Asterisk" src="_images/architecture_rtc_asterisk.png" />
-<p><strong>VoIPBIN’s Three Asterisk Farms:</strong></p>
-<p>VoIPBIN employs three specialized Asterisk farms for optimized scalability and fault isolation:</p>
+<p><strong>VoIPBin’s Three Asterisk Farms:</strong></p>
+<p>VoIPBin employs three specialized Asterisk farms for optimized scalability and fault isolation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Asterisk</span> <span class="n">Farm</span> <span class="n">Architecture</span><span class="p">:</span>
 
 <span class="o">+---------------------------------------------------------+</span>
@@ -920,11 +920,11 @@ wrong Asterisk instance.</p>
 <h2>RTPEngine - Media Proxy and Transcoding<a class="headerlink" href="#rtpengine-media-proxy-and-transcoding" title="Link to this heading">¶</a></h2>
 <p>RTPEngine is an open-source media proxy providing RTP processing and transcoding capabilities.</p>
 <img alt="Architecture RTPEngine" src="_images/architecture_rtc_rtpengine.png" />
-<p><strong>Role in VoIPBIN:</strong></p>
+<p><strong>Role in VoIPBin:</strong></p>
 <p>RTPEngine serves as the codec edge server and media proxy:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Codec</span> <span class="n">Transcoding</span><span class="p">:</span>
 
-<span class="n">External</span> <span class="n">Client</span>                      <span class="n">VoIPBIN</span> <span class="n">Internal</span>
+<span class="n">External</span> <span class="n">Client</span>                      <span class="n">VoIPBin</span> <span class="n">Internal</span>
 <span class="p">(</span><span class="n">Various</span> <span class="n">Codecs</span><span class="p">)</span>                     <span class="p">(</span><span class="n">ulaw</span> <span class="n">only</span><span class="p">)</span>
      <span class="o">|</span>                                     <span class="o">|</span>
      <span class="o">|</span> <span class="n">RTP</span> <span class="p">(</span><span class="n">G</span><span class="mf">.722</span><span class="p">,</span> <span class="n">Opus</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span>             <span class="o">|</span>
@@ -954,7 +954,7 @@ wrong Asterisk instance.</p>
 </ul>
 <p><strong>Internal Codec Strategy:</strong></p>
 <ul class="simple">
-<li><p><strong>Internal</strong>: VoIPBIN uses ulaw codec exclusively for all internal communication</p></li>
+<li><p><strong>Internal</strong>: VoIPBin uses ulaw codec exclusively for all internal communication</p></li>
 <li><p><strong>External</strong>: Clients can use any supported codec (G.711, G.722, Opus, etc.)</p></li>
 <li><p><strong>Edge Transcoding</strong>: RTPEngine performs all transcoding at the edge</p></li>
 <li><p><strong>Performance</strong>: Internal ulaw ensures minimal CPU overhead for media processing</p></li>
@@ -963,10 +963,10 @@ wrong Asterisk instance.</p>
 </section>
 <section id="conference-architecture">
 <h2>Conference Architecture<a class="headerlink" href="#conference-architecture" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s conference functionality is powered by the dedicated Asterisk-Conference farm.</p>
+<p>VoIPBin’s conference functionality is powered by the dedicated Asterisk-Conference farm.</p>
 <img alt="Architecture Conference" src="_images/architecture_rtc_conference.png" />
 <p><strong>Conference Design:</strong></p>
-<p>VoIPBIN leverages a dedicated Asterisk-Conference component for all conference calls:</p>
+<p>VoIPBin leverages a dedicated Asterisk-Conference component for all conference calls:</p>
 <p><strong>Advantages:</strong></p>
 <ul class="simple">
 <li><p><strong>Isolation and Scalability</strong>: Conference processing separated from regular calls ensures stable service</p></li>
@@ -1022,7 +1022,7 @@ wrong Asterisk instance.</p>
 </section>
 <section id="calls-as-conferences">
 <h3>1:1 Calls as Conferences<a class="headerlink" href="#calls-as-conferences" title="Link to this heading">¶</a></h3>
-<p>VoIPBIN treats 1:1 calls as special cases of conferencing with only two participants:</p>
+<p>VoIPBin treats 1:1 calls as special cases of conferencing with only two participants:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span> <span class="n">Call</span> <span class="o">=</span> <span class="n">Conference</span> <span class="k">with</span> <span class="mi">2</span> <span class="n">Participants</span>
 
 <span class="o">+--------------+</span>         <span class="o">+--------------+</span>
@@ -1067,12 +1067,12 @@ wrong Asterisk instance.</p>
 </section>
 <section id="sip-session-recovery">
 <h2>SIP Session Recovery<a class="headerlink" href="#sip-session-recovery" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN provides <strong>SIP session recovery</strong> to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents call drops, conference exits, and media failures by making the client perceive the session as uninterrupted.</p>
+<p>VoIPBin provides <strong>SIP session recovery</strong> to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents call drops, conference exits, and media failures by making the client perceive the session as uninterrupted.</p>
 <div class="video_wrapper" style="">
 <iframe allowfullscreen="true" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/GMd-pOwyrtA" style="border: 0; height: 345px; width: 560px">
 </iframe></div><section id="how-it-works">
 <h3>How It Works<a class="headerlink" href="#how-it-works" title="Link to this heading">¶</a></h3>
-<p>When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Without a BYE message, clients experience unexpected termination. VoIPBIN recovers sessions through an automated process:</p>
+<p>When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Without a BYE message, clients experience unexpected termination. VoIPBin recovers sessions through an automated process:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Session</span> <span class="n">Recovery</span> <span class="n">Flow</span><span class="p">:</span>
 
 <span class="n">Asterisk</span><span class="o">-</span><span class="mi">1</span>     <span class="n">Client</span>       <span class="n">Sentinel</span>    <span class="n">Call</span><span class="o">-</span><span class="n">manager</span>  <span class="n">HOMER</span> <span class="n">DB</span>    <span class="n">Asterisk</span><span class="o">-</span><span class="mi">2</span>
@@ -1151,18 +1151,18 @@ wrong Asterisk instance.</p>
 </section>
 <section id="asterisk-patch-for-recovery">
 <h3>Asterisk Patch for Recovery<a class="headerlink" href="#asterisk-patch-for-recovery" title="Link to this heading">¶</a></h3>
-<p>VoIPBIN patches Asterisk’s PJSIP stack to override SIP header fields based on channel variables:</p>
+<p>VoIPBin patches Asterisk’s PJSIP stack to override SIP header fields based on channel variables:</p>
 <img alt="SIP Session Recovery Diagram" src="_images/architecture_rtc_sip_session_recovery_diagram.png" />
 <p><strong>Patch Implementation:</strong></p>
 <p>This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Extract</span> <span class="n">recovery</span> <span class="n">variables</span> <span class="kn">from</span><span class="w"> </span><span class="nn">channel</span>
-<span class="n">val_from_display_c_str</span> <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_DISPLAY&quot;</span><span class="p">);</span>
-<span class="n">val_from_uri_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_URI&quot;</span><span class="p">);</span>
-<span class="n">val_from_tag_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_TAG&quot;</span><span class="p">);</span>
+<span class="n">val_from_display_c_str</span> <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">"PJSIP_RECOVERY_FROM_DISPLAY"</span><span class="p">);</span>
+<span class="n">val_from_uri_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">"PJSIP_RECOVERY_FROM_URI"</span><span class="p">);</span>
+<span class="n">val_from_tag_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">"PJSIP_RECOVERY_FROM_TAG"</span><span class="p">);</span>
 
-<span class="n">val_to_display_c_str</span>   <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_DISPLAY&quot;</span><span class="p">);</span>
-<span class="n">val_to_uri_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_URI&quot;</span><span class="p">);</span>
-<span class="n">val_to_tag_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_TO_TAG&quot;</span><span class="p">);</span>
+<span class="n">val_to_display_c_str</span>   <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">"PJSIP_RECOVERY_TO_DISPLAY"</span><span class="p">);</span>
+<span class="n">val_to_uri_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">"PJSIP_RECOVERY_TO_URI"</span><span class="p">);</span>
+<span class="n">val_to_tag_c_str</span>       <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">"PJSIP_RECOVERY_TO_TAG"</span><span class="p">);</span>
 
 <span class="o">//</span> <span class="n">Call</span><span class="o">-</span><span class="n">ID</span><span class="p">,</span> <span class="n">CSeq</span><span class="p">,</span> <span class="n">Routes</span><span class="p">,</span> <span class="ow">and</span> <span class="n">other</span> <span class="n">headers</span> <span class="n">are</span> <span class="n">handled</span> <span class="n">similarly</span>
 <span class="o">//</span> <span class="n">Override</span> <span class="n">PJSIP</span> <span class="n">headers</span> <span class="k">with</span> <span class="n">recovery</span> <span class="n">values</span>
@@ -1320,8 +1320,8 @@ ensuring that health probe traffic never affects call quality or latency.</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

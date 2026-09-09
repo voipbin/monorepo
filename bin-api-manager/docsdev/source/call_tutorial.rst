@@ -166,7 +166,7 @@ The ``anonymous`` parameter accepts three values:
 Anonymous outbound call within a flow (connect action)
 ------------------------------------------------------
 
-A common scenario is receiving an incoming call on a registered extension and then connecting it to an external PSTN number with anonymous caller ID. For example, a customer calls your VoIPBIN number, your flow answers and plays a greeting, then connects to a mobile phone — but you want the mobile phone to see "Anonymous" instead of your VoIPBIN number.
+A common scenario is receiving an incoming call on a registered extension and then connecting it to an external PSTN number with anonymous caller ID. For example, a customer calls your VoIPBin number, your flow answers and plays a greeting, then connects to a mobile phone — but you want the mobile phone to see "Anonymous" instead of your VoIPBin number.
 
 Use the ``connect`` action with ``"anonymous": "yes"`` in the flow:
 
@@ -215,12 +215,12 @@ Use the ``connect`` action with ``"anonymous": "yes"`` in the flow:
 In this example:
 
 1. An outbound call is made to ``+15559876543``.
-2. When answered, VoIPBIN plays a greeting message.
+2. When answered, VoIPBin plays a greeting message.
 3. The ``connect`` action creates a second outbound leg to ``+15557778888`` with anonymous caller ID.
 4. ``+15557778888`` sees "Anonymous" instead of ``+15551234567``.
 5. Once ``+15557778888`` answers, both parties are bridged together.
 
-The same pattern works for incoming calls. If you assign this flow to a VoIPBIN number, incoming callers hear the greeting and are connected anonymously to the PSTN destination.
+The same pattern works for incoming calls. If you assign this flow to a VoIPBin number, incoming callers hear the greeting and are connected anonymously to the PSTN destination.
 
 You can also use ``"anonymous": "auto"`` in the ``connect`` action. In that case, if the *incoming* call already had a Privacy header (i.e., the original caller was anonymous), the outbound leg preserves that anonymity. Otherwise, the real caller ID is shown.
 
@@ -305,13 +305,13 @@ Key differences from the ``connect`` action:
 Anonymous outbound call from a registered endpoint (SIP phone)
 --------------------------------------------------------------
 
-When a SIP phone registered with VoIPBIN dials an external PSTN number, the system automatically handles anonymous caller ID based on the phone's SIP ``Privacy`` header. There is no API parameter to set — the behavior is determined entirely by the SIP phone's own settings.
+When a SIP phone registered with VoIPBin dials an external PSTN number, the system automatically handles anonymous caller ID based on the phone's SIP ``Privacy`` header. There is no API parameter to set — the behavior is determined entirely by the SIP phone's own settings.
 
 **How it works:**
 
 ::
 
-    SIP Phone                    VoIPBIN                     PSTN Destination
+    SIP Phone                    VoIPBin                     PSTN Destination
        |                           |                              |
        |  INVITE +15559876543      |                              |
        |  Privacy: id              |                              |
@@ -328,8 +328,8 @@ When a SIP phone registered with VoIPBIN dials an external PSTN number, the syst
        |                           |                              |
        |  (Destination sees "Anonymous" on their phone)           |
 
-- If the SIP phone includes ``Privacy: id`` in the outgoing INVITE, VoIPBIN forwards the call as anonymous — the PSTN destination sees "Anonymous" or "Private number".
-- If the SIP phone does **not** include a Privacy header, VoIPBIN uses the real caller ID — the PSTN destination sees the actual source number.
+- If the SIP phone includes ``Privacy: id`` in the outgoing INVITE, VoIPBin forwards the call as anonymous — the PSTN destination sees "Anonymous" or "Private number".
+- If the SIP phone does **not** include a Privacy header, VoIPBin uses the real caller ID — the PSTN destination sees the actual source number.
 
 **Setting up anonymous calls on your SIP phone:**
 
@@ -887,7 +887,7 @@ Make a groupcall to the multiple destinations.
 
 .. note::
 
-   Provide either ``flow_id`` or ``actions``, but not both. If ``flow_id`` is set, that flow runs and ``actions`` is ignored. If ``flow_id`` is omitted (or empty), VoIPBIN builds a temporary flow from ``actions``. If both are present, ``flow_id`` wins.
+   Provide either ``flow_id`` or ``actions``, but not both. If ``flow_id`` is set, that flow runs and ``actions`` is ignored. If ``flow_id`` is omitted (or empty), VoIPBin builds a temporary flow from ``actions``. If both are present, ``flow_id`` wins.
 
    ``ring_method`` controls how destinations are dialed: ``ring_all`` (dial all at once) or ``linear`` (dial one at a time). ``answer_method`` controls what happens once a destination answers: ``hangup_others`` hangs up the remaining calls. See :ref:`Groupcall struct <call-struct-groupcall>` for details.
 
@@ -1088,7 +1088,7 @@ Ends every call currently belonging to the groupcall.
 
 .. note:: **AI Implementation Hint**
 
-   Hangup transitions the groupcall to ``hangingup`` while VoIPBIN ends each individual call in ``call_ids`` (and, for nested groupcalls, each entry in ``groupcall_ids``); the groupcall reaches ``hangup`` once all of them have ended. Poll ``GET /groupcalls/{id}`` or watch the groupcall webhook events to confirm the final state.
+   Hangup transitions the groupcall to ``hangingup`` while VoIPBin ends each individual call in ``call_ids`` (and, for nested groupcalls, each entry in ``groupcall_ids``); the groupcall reaches ``hangup`` once all of them have ended. Poll ``GET /groupcalls/{id}`` or watch the groupcall webhook events to confirm the final state.
 
 Delete a groupcall
 --------------------
@@ -1185,7 +1185,7 @@ Inject a TTS message into an already-answered call at any time, independent of t
 
 .. note:: **AI Implementation Hint**
 
-   ``provider`` accepts ``gcp`` or ``aws``; if omitted, VoIPBIN defaults to GCP. If the selected provider's TTS call fails, VoIPBIN falls back to the other provider using its default voice for the language. ``voice_id`` is provider-specific; leave it empty to use the default voice for ``language``.
+   ``provider`` accepts ``gcp`` or ``aws``; if omitted, VoIPBin defaults to GCP. If the selected provider's TTS call fails, VoIPBin falls back to the other provider using its default voice for the language. ``voice_id`` is provider-specific; leave it empty to use the default voice for ``language``.
 
 Troubleshooting
 ---------------
@@ -1195,7 +1195,7 @@ Troubleshooting
     * **Fix:** Normalize all phone numbers to E.164 format: ``+`` followed by country code and number, no spaces or dashes (e.g., ``+15551234567``).
 
 * **400 Bad Request (source number):**
-    * **Cause:** The ``source.target`` phone number is not owned by your VoIPBIN account.
+    * **Cause:** The ``source.target`` phone number is not owned by your VoIPBin account.
     * **Fix:** Use a number from ``GET https://api.voipbin.net/v1.0/numbers``. Only **normal** (non-virtual) numbers with **active** status that you own can be used as the source for outgoing PSTN calls.
 
 * **Caller ID shows "Anonymous":**

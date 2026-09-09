@@ -50,7 +50,7 @@ Billing account
 
 .. note:: **AI Implementation Hint**
 
-   Unlike other VoIPBIN resources that use ``9999-01-01 00:00:00.000000`` as the sentinel for "not deleted," the billing account's ``tm_delete`` field uses ``null`` to indicate an active account. Always check for ``null`` rather than the sentinel timestamp when determining if a billing account is active. The ``balance_credit`` field is in micros (int64) -- divide by 1,000,000 to get USD.
+   Unlike other VoIPBin resources that use ``9999-01-01 00:00:00.000000`` as the sentinel for "not deleted," the billing account's ``tm_delete`` field uses ``null`` to indicate an active account. Always check for ``null`` rather than the sentinel timestamp when determining if a billing account is active. The ``balance_credit`` field is in micros (int64) -- divide by 1,000,000 to get USD.
 
 **Admin-Only Fields**
 
