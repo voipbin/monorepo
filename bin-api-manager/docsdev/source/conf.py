@@ -8,8 +8,8 @@
 # -- Project information -----------------------------------------------------
 
 project = "voipbin"
-copyright = "2026, VoIPBIN"
-author = "VoIPBIN"
+copyright = "2026, VoIPBin"
+author = "VoIPBin"
 
 # The short X.Y version
 version = ""
