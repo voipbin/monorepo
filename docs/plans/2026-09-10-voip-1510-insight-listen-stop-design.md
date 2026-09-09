@@ -178,14 +178,41 @@ PR.
    traceback) so the next real occurrence is directly diagnosable from Loki
    instead of requiring log-timing forensics.
 2. Confirm `voipbin-pipecat-manager-*`'s Python subprocess stdout IS actually
-   captured by the Alloy/Loki pipeline (§3 noted a `stream=stdout` query
-   returned 0 rows in the reproduction window — need to confirm whether that
-   is because nothing logged, or because stdout genuinely isn't collected;
-   fix the pipeline if the latter, since debugging pipecat-manager's Python
-   side is currently blind). **Timebox: this step must be confirmed within
-   one business day of implementation start — if the collection gap itself
-   turns out to be non-trivial to fix (e.g. requires an infra-loki change),
-   escalate/split rather than let this PR stall waiting on it.**
+   captured by the Alloy/Loki pipeline. **RESOLVED during implementation
+   (2026-09-10): confirmed NOT collected, and root cause found.** The Python
+   runner does not run inside the `pipecat-manager-N` container at all — it
+   is a SEPARATE container, `pipecat-script-runner-N`
+   (`bin-pipecat-manager/komodo/docker-compose.yml`), joined to the manager's
+   network namespace via `network_mode: "service:pipecat-manager-N"` so the
+   Go side can reach `localhost:8000`. Grepping Loki's `service_name` label
+   values confirms no `*script-runner*` entry exists at all (0 rows for 24h).
+   `infra-loki`'s Alloy discovery config
+   (`monorepo-etc/infra-loki/komodo/docker-compose.yml`) keeps only
+   containers whose `__meta_docker_network_name` matches `production|host`;
+   a container using `network_mode: service:X` does not join any network of
+   its own (it borrows the peer's namespace), so Docker reports its network
+   name as something outside that keep-regex, and Alloy silently drops it
+   at the discovery-relabel stage — this is the ONLY compose service in the
+   whole monorepo using this network_mode pattern (confirmed via
+   `grep -rl 'network_mode.*service:' */komodo/docker-compose.yml`), which is
+   why the gap wasn't already known from any other service.
+   **This IS a pre-existing infra observability gap, independent of §2/§3's
+   bug, and blocks any future live debugging of the Python runner side (not
+   just this investigation) until fixed — treat as its own concern within
+   Phase 1, not merely "logging I meant to add".**
+
+   **Scope decision (2026-09-10): the fix for this gap lives in a DIFFERENT
+   repository (`monorepo-etc/infra-loki`, an Alloy/Loki discovery config
+   change) than this ticket's code (`monorepo/bin-pipecat-manager`), and
+   pinpointing the exact relabel-rule fix needs a live `docker inspect` on
+   bm-nyc-01 that this investigation session could not perform (Grafana HTTP
+   proxy access only, no direct SSH/docker exec in this environment). Filed
+   as a separate ticket, ETC-8, rather than blocking VOIP-1510 on it — this
+   PR proceeds with step 1's logging additions (which land regardless of
+   where Loki eventually surfaces them) and step 3's live reproduction using
+   whatever log visibility is available at merge time (worst case: this PR's
+   logging additions still help once ETC-8 lands, even if not immediately
+   queryable).**
 3. Reproduce live again with logging from (1)+(2) in place, capture the exact
    failure signature, and confirm which of §3(a)/(b)/(c) is the real cause. If
    reproduction does not occur naturally within a reasonable window, drive it
