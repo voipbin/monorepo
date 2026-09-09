@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free -- Variables are part of flow execution and do not incur separate charges.
    * **Async:** No. Variables are resolved synchronously at the time each flow action executes. There is no separate API endpoint for variables; they are used within flow action definitions.
 
-VoIPBIN provides a powerful feature called Variables, enabling users to define, manipulate, and reference dynamic values throughout the lifecycle of a flow execution. Variables act as flexible placeholders for data that may change over time—such as user input, call metadata, or results from other applications—and can be injected into any compatible action in the flow.
+VoIPBin provides a powerful feature called Variables, enabling users to define, manipulate, and reference dynamic values throughout the lifecycle of a flow execution. Variables act as flexible placeholders for data that may change over time—such as user input, call metadata, or results from other applications—and can be injected into any compatible action in the flow.
 
 This mechanism introduces contextual awareness and reactivity to flow logic, allowing users to build intelligent, data-driven call and messaging workflows that adapt in real time to current conditions and external inputs.
 
@@ -36,7 +36,7 @@ Variables can be used within flow actions by referencing them using the followin
 
     -> Hello, Batman.
 
-At runtime, VoIPBIN resolves this placeholder and replaces it with the actual value stored in the variable. This process occurs at the time the action is executed, ensuring that the most up-to-date value is used—even if the variable was set earlier or modified by another action.
+At runtime, VoIPBin resolves this placeholder and replaces it with the actual value stored in the variable. This process occurs at the time the action is executed, ensuring that the most up-to-date value is used—even if the variable was set earlier or modified by another action.
 
 .. image:: _static/images/variable_overview_substitute.png
    :alt: Variable substitution
@@ -50,7 +50,7 @@ Variables can be used in any field that supports templating. For example:
 * Embedding values in external API calls via webhooks
 * Controlling logic in conditional (branch) or fork actions
 
-VoIPBIN supports nested variables and safely resolves deep paths like:
+VoIPBin supports nested variables and safely resolves deep paths like:
 
 .. code::
 
@@ -70,7 +70,7 @@ Variables can be populated in several ways:
 Automatically by the system 
 ---------------------------
 
-VoIPBIN injects key metadata about the call or message, such as:
+VoIPBin injects key metadata about the call or message, such as:
 
 * voipbin.call.source.name
 * voipbin.call.destination.number
@@ -138,7 +138,7 @@ The ``variables`` field is currently accepted on:
 Integration with Applications
 =============================
 
-Each application in VoIPBIN can expose its own set of variables, which can be used by other parts of the flow. For example:
+Each application in VoIPBin can expose its own set of variables, which can be used by other parts of the flow. For example:
 
 * Call Application: Sets variables like caller name, number, codec, and session info.
 * SMS Application: Sets sender/receiver numbers and message content.
@@ -174,4 +174,4 @@ Troubleshooting
     * **Cause:** Variables are scoped to the current activeflow instance. If the flow restarts or a new activeflow is created, previous variables are lost.
     * **Fix:** Use a webhook or external storage to persist values that must survive across flow executions.
 
-In conclusion, VoIPBIN's Variable system is a core feature that enables dynamic, data-aware flows. By using variables effectively, developers can create tailored communication experiences that respond intelligently to the context of each interaction—whether through voice, messaging, or external integrations.
+In conclusion, VoIPBin's Variable system is a core feature that enables dynamic, data-aware flows. By using variables effectively, developers can create tailored communication experiences that respond intelligently to the context of each interaction—whether through voice, messaging, or external integrations.

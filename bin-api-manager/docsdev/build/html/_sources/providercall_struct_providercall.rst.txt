@@ -89,7 +89,7 @@ Example
 Anonymous
 +++++++++
 
-Controls whether the outbound caller ID is anonymized on the INVITE that leaves VoIPbin.
+Controls whether the outbound caller ID is anonymized on the INVITE that leaves VoIPBin.
 
 =========== ====================================================================
 Value       Description

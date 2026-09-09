@@ -3,7 +3,7 @@
 *************
 Number
 *************
-A number is a phone number provisioned on the VoIPBIN platform that can be bound to flows for handling incoming calls and messages.
+A number is a phone number provisioned on the VoIPBin platform that can be bound to flows for handling incoming calls and messages.
 
 **API Reference:** `Number endpoints <https://api.voipbin.net/redoc/#tag/Number>`_
 

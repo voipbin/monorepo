@@ -24,7 +24,7 @@ Prerequisites
 .. note:: **Cost note**
 
    Each proposal calls Gemini 2.5 Pro once and is billed against your
-   VoIPBIN balance. Generation typically completes in 10–30 seconds.
+   VoIPBin balance. Generation typically completes in 10–30 seconds.
 
 Step 1: Submit a proposal
 -------------------------

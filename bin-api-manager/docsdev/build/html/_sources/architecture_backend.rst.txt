@@ -5,9 +5,9 @@ Backend Microservices
 
 .. note:: **AI Context**
 
-   This page describes VoIPBIN's 34 Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.
+   This page describes VoIPBin's 34 Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.
 
-VoIPBIN's backend consists of 34 specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.
+VoIPBin's backend consists of 34 specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.
 
 Microservices Organization
 ---------------------------
@@ -16,7 +16,7 @@ Services are organized by functional domain:
 
 .. code::
 
-    VoIPBIN Microservices Architecture
+    VoIPBin Microservices Architecture
 
     +-------------------------------------------------------------+
     |                   Communication Services                    |
@@ -224,7 +224,7 @@ The API Gateway serves as the single entry point for all external requests, hand
 
 **Authorization Pattern**
 
-VoIPBIN implements authorization at the API Gateway, NOT in backend services:
+VoIPBin implements authorization at the API Gateway, NOT in backend services:
 
 .. code::
 
@@ -417,7 +417,7 @@ This service receives external webhooks and routes them internally:
 
     External Webhook Flow:
 
-    External Provider                       VoIPBIN Internal
+    External Provider                       VoIPBin Internal
     (Telnyx, MessageBird)                   Services
          |                                      |
          | HTTPS POST                           |
@@ -441,7 +441,7 @@ This service receives external webhooks and routes them internally:
 Service Independence
 --------------------
 
-VoIPBIN's microservices architecture enables true service independence:
+VoIPBin's microservices architecture enables true service independence:
 
 **Independent Deployment**
 
@@ -587,7 +587,7 @@ Services communicate primarily through RabbitMQ RPC:
 Service Discovery and Configuration
 ------------------------------------
 
-VoIPBIN uses a hybrid approach for service discovery:
+VoIPBin uses a hybrid approach for service discovery:
 
 **Queue-Based Discovery**
 
@@ -874,7 +874,7 @@ All services use structured logging:
 Best Practices
 --------------
 
-VoIPBIN's backend follows these best practices:
+VoIPBin's backend follows these best practices:
 
 **Service Design:**
 

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Outdial" href="outdial.html"><link rel="prev" title="Campaigncall" href="campaign_struct_campaigncall.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -660,40 +660,40 @@
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/campaigns?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/campaigns?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;183c0d5c-691e-42f3-af2b-9bffc2740f83&quot;,
-            &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
-            &quot;type&quot;: &quot;call&quot;,
-            &quot;name&quot;: &quot;test campaign&quot;,
-            &quot;detail&quot;: &quot;test campaign detail&quot;,
-            &quot;status&quot;: &quot;stop&quot;,
-            &quot;service_level&quot;: 100,
-            &quot;end_handle&quot;: &quot;stop&quot;,
-            &quot;actions&quot;: [
+            "id": "183c0d5c-691e-42f3-af2b-9bffc2740f83",
+            "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+            "type": "call",
+            "name": "test campaign",
+            "detail": "test campaign detail",
+            "status": "stop",
+            "service_level": 100,
+            "end_handle": "stop",
+            "actions": [
                 {
-                    &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-                    &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-                    &quot;type&quot;: &quot;talk&quot;,
-                    &quot;option&quot;: {
-                        &quot;text&quot;: &quot;Hello. This is outbound campaign&#39;s test calling. Please wait until the agent answer the call. Thank you.&quot;,
-                        &quot;language&quot;: &quot;en-US&quot;
+                    "id": "00000000-0000-0000-0000-000000000000",
+                    "next_id": "00000000-0000-0000-0000-000000000000",
+                    "type": "talk",
+                    "option": {
+                        "text": "Hello. This is outbound campaign's test calling. Please wait until the agent answer the call. Thank you.",
+                        "language": "en-US"
                     }
                 }
             ],
-            &quot;outplan_id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
-            &quot;outdial_id&quot;: &quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;,
-            &quot;queue_id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
-            &quot;next_campaign_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;tm_create&quot;: &quot;2022-04-28 02:16:39.712142&quot;,
-            &quot;tm_update&quot;: &quot;2022-04-30 17:53:51.685259&quot;,
-            &quot;tm_delete&quot;: null
+            "outplan_id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
+            "outdial_id": "40bea034-1d17-474d-a5de-da00d0861c69",
+            "queue_id": "99bf739a-932f-433c-b1bf-103d33d7e9bb",
+            "next_campaign_id": "00000000-0000-0000-0000-000000000000",
+            "tm_create": "2022-04-28 02:16:39.712142",
+            "tm_update": "2022-04-30 17:53:51.685259",
+            "tm_delete": null
         }
     ],
-    &quot;next_page_token&quot;: &quot;2022-04-28 02:16:39.712142&quot;
+    "next_page_token": "2022-04-28 02:16:39.712142"
 }
 </pre></div>
 </div>
@@ -703,35 +703,35 @@
 </section>
 <section id="id1">
 <h2>Example<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/campaigns/183c0d5c-691e-42f3-af2b-9bffc2740f83?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/campaigns/183c0d5c-691e-42f3-af2b-9bffc2740f83?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;183c0d5c-691e-42f3-af2b-9bffc2740f83&quot;,
-    &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
-    &quot;type&quot;: &quot;call&quot;,
-    &quot;name&quot;: &quot;test campaign&quot;,
-    &quot;detail&quot;: &quot;test campaign detail&quot;,
-    &quot;status&quot;: &quot;stop&quot;,
-    &quot;service_level&quot;: 100,
-    &quot;end_handle&quot;: &quot;stop&quot;,
-    &quot;actions&quot;: [
+    "id": "183c0d5c-691e-42f3-af2b-9bffc2740f83",
+    "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+    "type": "call",
+    "name": "test campaign",
+    "detail": "test campaign detail",
+    "status": "stop",
+    "service_level": 100,
+    "end_handle": "stop",
+    "actions": [
         {
-            &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Hello. This is outbound campaign&#39;s test calling. Please wait until the agent answer the call. Thank you.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "id": "00000000-0000-0000-0000-000000000000",
+            "next_id": "00000000-0000-0000-0000-000000000000",
+            "type": "talk",
+            "option": {
+                "text": "Hello. This is outbound campaign's test calling. Please wait until the agent answer the call. Thank you.",
+                "language": "en-US"
             }
         }
     ],
-    &quot;outplan_id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
-    &quot;outdial_id&quot;: &quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;,
-    &quot;queue_id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
-    &quot;next_campaign_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;tm_create&quot;: &quot;2022-04-28 02:16:39.712142&quot;,
-    &quot;tm_update&quot;: &quot;2022-04-30 17:53:51.685259&quot;,
-    &quot;tm_delete&quot;: null
+    "outplan_id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
+    "outdial_id": "40bea034-1d17-474d-a5de-da00d0861c69",
+    "queue_id": "99bf739a-932f-433c-b1bf-103d33d7e9bb",
+    "next_campaign_id": "00000000-0000-0000-0000-000000000000",
+    "tm_create": "2022-04-28 02:16:39.712142",
+    "tm_update": "2022-04-30 17:53:51.685259",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -741,53 +741,53 @@
 </section>
 <section id="id2">
 <h2>Example<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/campaigns?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;name&quot;: &quot;test campaign&quot;,
-    &quot;detail&quot;: &quot;test campaign detail&quot;,
-    &quot;type&quot;: &quot;call&quot;,
-    &quot;service_level&quot;: 100,
-    &quot;end_handle&quot;: &quot;stop&quot;,
-    &quot;actions&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/campaigns?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "test campaign",
+    "detail": "test campaign detail",
+    "type": "call",
+    "service_level": 100,
+    "end_handle": "stop",
+    "actions": [
         {
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Hello. This is outbound campaign&#39;s test calling. Please wait until the agent answer the call. Thank you.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "type": "talk",
+            "option": {
+                "text": "Hello. This is outbound campaign's test calling. Please wait until the agent answer the call. Thank you.",
+                "language": "en-US"
             }
         }
     ],
-    &quot;outplan_id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
-    &quot;outdial_id&quot;: &quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;,
-    &quot;queue_id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;
-}&#39;
+    "outplan_id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
+    "outdial_id": "40bea034-1d17-474d-a5de-da00d0861c69",
+    "queue_id": "99bf739a-932f-433c-b1bf-103d33d7e9bb"
+}'
 
 {
-    &quot;id&quot;: &quot;c1d2e3f4-a5b6-7890-cdef-123456789012&quot;,
-    &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
-    &quot;type&quot;: &quot;call&quot;,
-    &quot;name&quot;: &quot;test campaign&quot;,
-    &quot;detail&quot;: &quot;test campaign detail&quot;,
-    &quot;status&quot;: &quot;stop&quot;,
-    &quot;service_level&quot;: 100,
-    &quot;end_handle&quot;: &quot;stop&quot;,
-    &quot;actions&quot;: [
+    "id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+    "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+    "type": "call",
+    "name": "test campaign",
+    "detail": "test campaign detail",
+    "status": "stop",
+    "service_level": 100,
+    "end_handle": "stop",
+    "actions": [
         {
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;Hello. This is outbound campaign&#39;s test calling. Please wait until the agent answer the call. Thank you.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
+            "type": "talk",
+            "option": {
+                "text": "Hello. This is outbound campaign's test calling. Please wait until the agent answer the call. Thank you.",
+                "language": "en-US"
             }
         }
     ],
-    &quot;outplan_id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
-    &quot;outdial_id&quot;: &quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;,
-    &quot;queue_id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
-    &quot;next_campaign_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-    &quot;tm_update&quot;: null,
-    &quot;tm_delete&quot;: null
+    "outplan_id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
+    "outdial_id": "40bea034-1d17-474d-a5de-da00d0861c69",
+    "queue_id": "99bf739a-932f-433c-b1bf-103d33d7e9bb",
+    "next_campaign_id": "00000000-0000-0000-0000-000000000000",
+    "tm_create": "2022-10-22 16:16:16.874761",
+    "tm_update": null,
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -823,7 +823,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -878,8 +878,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

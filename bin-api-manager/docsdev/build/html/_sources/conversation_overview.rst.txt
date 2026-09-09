@@ -13,7 +13,7 @@ Overview
 
    As of this release, ``owner_type`` and ``owner_id`` in conversation webhook payloads will start carrying real values for conversations that have been explicitly assigned to an agent. Existing unassigned conversations continue to read empty values for both fields, so no client-side change is required. See :ref:`Assigning a Conversation to an Agent <conversation-overview-assigning-conversation-to-agent>`.
 
-VoIPBIN's Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.
+VoIPBin's Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.
 
 With the Conversation API you can:
 
@@ -26,7 +26,7 @@ With the Conversation API you can:
 
 How Conversations Work
 ----------------------
-VoIPBIN Conversations acts as a unified hub that routes messages across different communication channels while maintaining conversation context.
+VoIPBin Conversations acts as a unified hub that routes messages across different communication channels while maintaining conversation context.
 
 **Conversation Architecture**
 
@@ -36,7 +36,7 @@ VoIPBIN Conversations acts as a unified hub that routes messages across differen
     |   SMS    |------->|                |------->|    SMS/MMS    |
     +----------+        |                |        +---------------+
                         |                |
-    +----------+        |    VoIPBIN     |        +---------------+
+    +----------+        |    VoIPBin     |        +---------------+
     |  Email   |------->|  Conversation  |------->|     Email     |
     +----------+        |      Hub       |        +---------------+
                         |                |
@@ -60,7 +60,7 @@ VoIPBIN Conversations acts as a unified hub that routes messages across differen
 
 ::
 
-    User                    VoIPBIN                     Recipient
+    User                    VoIPBin                     Recipient
       |                        |                            |
       | SMS: "Hello"           |                            |
       +----------------------->| Route to conversation      |
@@ -79,7 +79,7 @@ VoIPBIN Conversations acts as a unified hub that routes messages across differen
 
 Channel Types
 -------------
-VoIPBIN supports multiple communication channels within a single conversation.
+VoIPBin supports multiple communication channels within a single conversation.
 
 **Supported Channels**
 
@@ -122,7 +122,7 @@ VoIPBIN supports multiple communication channels within a single conversation.
 
 Conversation Lifecycle
 ----------------------
-A conversation is created automatically when VoIPBIN receives an inbound message (SMS/MMS or LINE) or when a message is sent via the API. Conversations persist as long as they are not deleted.
+A conversation is created automatically when VoIPBin receives an inbound message (SMS/MMS or LINE) or when a message is sent via the API. Conversations persist as long as they are not deleted.
 
 **Conversation Message States**
 
@@ -162,7 +162,7 @@ Messages within a conversation move through predictable states.
 
 Conversation Rooms
 ------------------
-VoIPBIN automatically organizes messages into distinct conversation rooms based on participants and channels.
+VoIPBin automatically organizes messages into distinct conversation rooms based on participants and channels.
 
 **Room Matching Logic**
 
@@ -199,7 +199,7 @@ VoIPBIN automatically organizes messages into distinct conversation rooms based 
 
 How Conversations Are Created
 -----------------------------
-Conversations are created automatically by VoIPBIN when inbound messages arrive or when messages are sent through flows. You can list existing conversations with ``GET https://api.voipbin.net/v1.0/conversations``.
+Conversations are created automatically by VoIPBin when inbound messages arrive or when messages are sent through flows. You can list existing conversations with ``GET https://api.voipbin.net/v1.0/conversations``.
 
 .. note:: **AI Implementation Hint**
 
@@ -208,13 +208,13 @@ Conversations are created automatically by VoIPBIN when inbound messages arrive 
 
 Sending Messages
 ----------------
-Send messages to a conversation and VoIPBIN routes to appropriate channels.
+Send messages to a conversation and VoIPBin routes to appropriate channels.
 
 **Send Message Flow**
 
 ::
 
-    Your App                    VoIPBIN                 Participants
+    Your App                    VoIPBin                 Participants
         |                          |                         |
         | POST /conversations/     |                         |
         |   {id}/messages          |                         |
@@ -241,7 +241,7 @@ Send messages to a conversation and VoIPBIN routes to appropriate channels.
 
 **Channel Selection Priority**
 
-When sending to a conversation, VoIPBIN selects the best channel based on:
+When sending to a conversation, VoIPBin selects the best channel based on:
 
 1. Participant's last active channel
 2. Message content (media requires MMS/email)
@@ -251,13 +251,13 @@ When sending to a conversation, VoIPBIN selects the best channel based on:
 
 Receiving Messages
 ------------------
-VoIPBIN delivers inbound messages to your application via webhooks.
+VoIPBin delivers inbound messages to your application via webhooks.
 
 **Webhook Delivery**
 
 ::
 
-    Participant             VoIPBIN                      Your App
+    Participant             VoIPBin                      Your App
          |                     |                            |
          | SMS reply           |                            |
          +-------------------->|                            |
@@ -423,7 +423,7 @@ When a conversation is assigned or unassigned, a ``conversation_updated`` event 
 
 Cross-Channel Continuity
 ------------------------
-The key feature of VoIPBIN Conversations is seamless channel switching.
+The key feature of VoIPBin Conversations is seamless channel switching.
 
 **Cross-Channel Example**
 
@@ -462,7 +462,7 @@ The key feature of VoIPBIN Conversations is seamless channel switching.
 
 Event Types
 -----------
-VoIPBIN sends webhook events for conversation activities.
+VoIPBin sends webhook events for conversation activities.
 
 .. list-table::
    :header-rows: 1
@@ -497,7 +497,7 @@ Unified support across channels.
          |
          v
     +---------------------------+
-    | VoIPBIN creates           |
+    | VoIPBin creates           |
     | conversation              |
     +---------------------------+
          |
@@ -691,7 +691,7 @@ Troubleshooting
 Setting Up a WhatsApp Conversation Account
 ------------------------------------------
 
-To receive and send WhatsApp messages through VoIPBIN, you must create a ``whatsapp`` conversation account and configure Meta Business Manager to forward events to VoIPBIN's webhook endpoint.
+To receive and send WhatsApp messages through VoIPBin, you must create a ``whatsapp`` conversation account and configure Meta Business Manager to forward events to VoIPBin's webhook endpoint.
 
 **Prerequisites**
 
@@ -749,11 +749,11 @@ In Meta Business Manager, navigate to your WhatsApp app's **Webhooks** settings 
 - **Verify token**: The value you set in the ``secret`` field when creating the account.
 - **Webhook fields to subscribe**: ``messages``
 
-Meta will send a ``GET`` request to the callback URL to verify ownership. VoIPBIN handles this automatically using the ``secret`` you configured.
+Meta will send a ``GET`` request to the callback URL to verify ownership. VoIPBin handles this automatically using the ``secret`` you configured.
 
 **Step 4 — Verify the setup**
 
-Send a test WhatsApp message to your configured phone number. VoIPBIN will:
+Send a test WhatsApp message to your configured phone number. VoIPBin will:
 
 1. Receive the inbound webhook from Meta.
 2. Validate the ``X-Hub-Signature-256`` signature using the ``app_secret`` from ``provider_data``.

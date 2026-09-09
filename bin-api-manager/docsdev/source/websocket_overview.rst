@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free -- WebSocket connections and event delivery do not incur charges.
    * **Async:** Yes. Connect via ``wss://api.voipbin.net/v1.0/ws?token=<token>``, then send subscribe messages to receive events. Events are pushed asynchronously as they occur on subscribed topics.
 
-VoIPBIN's WebSocket API enables real-time, bi-directional communication for receiving instant event notifications. WebSockets maintain persistent connections, allowing immediate delivery of call status changes, message arrivals, flow updates, and other platform events without polling.
+VoIPBin's WebSocket API enables real-time, bi-directional communication for receiving instant event notifications. WebSockets maintain persistent connections, allowing immediate delivery of call status changes, message arrivals, flow updates, and other platform events without polling.
 
 The WebSocket API provides:
 
@@ -32,7 +32,7 @@ WebSocket maintains a persistent connection for instant event delivery.
     |                       WebSocket System                                |
     +-----------------------------------------------------------------------+
 
-    Client                          VoIPBIN                        Services
+    Client                          VoIPBin                        Services
        |                               |                               |
        | 1. WSS Connection             |                               |
        +------------------------------>|                               |
@@ -74,7 +74,7 @@ WebSocket maintains a persistent connection for instant event delivery.
 
 Connection Architecture
 -----------------------
-WebSocket connections integrate with VoIPBIN's event system.
+WebSocket connections integrate with VoIPBin's event system.
 
 **Event Flow Architecture**
 
@@ -85,7 +85,7 @@ WebSocket connections integrate with VoIPBIN's event system.
     +-----------------------------------------------------------------------+
 
     +-------------------+     +-------------------+     +-------------------+
-    |   VoIPBIN         |     |   Event           |     |   WebSocket       |
+    |   VoIPBin         |     |   Event           |     |   WebSocket       |
     |   Services        |---->|   Router          |---->|   Handler         |
     +-------------------+     +-------------------+     +-------------------+
                                       |

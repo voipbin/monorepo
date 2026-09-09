@@ -11,7 +11,7 @@ Overview
 
 The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.
 
-In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags determine which queues can route calls to them (see below).
+In VoIPBin, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags determine which queues can route calls to them (see below).
 
 
 Agent Status
@@ -206,7 +206,7 @@ Each agent can have multiple contact addresses - these are the endpoints where c
 +------------+----------------------------------------------------------------+
 | Type       | Description                                                    |
 +============+================================================================+
-| extension  | Internal extension number (must be registered with VoIPBIN)    |
+| extension  | Internal extension number (must be registered with VoIPBin)    |
 +------------+----------------------------------------------------------------+
 | tel        | External phone number in E.164 format (+15551234567)           |
 +------------+----------------------------------------------------------------+
@@ -230,7 +230,7 @@ Each address can only belong to one agent per customer:
 
 Call to agent
 -------------
-To reach an agent, VoIPBIN employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBIN generates calls to every agent's address simultaneously. If an agent answers one of the calls, VoIPBIN automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.
+To reach an agent, VoIPBin employs a system that allows the agent to have multiple addresses. When a call is initiated to agents, VoIPBin generates calls to every agent's address simultaneously. If an agent answers one of the calls, VoIPBin automatically terminates the other calls, streamlining the communication process and ensuring that only one connection is established with the available agent.
 
 **Simultaneous Ring**
 
@@ -457,7 +457,7 @@ Agent status changes trigger events that you can subscribe to:
 
 Permission
 ----------
-In the VoIPBIN ecosystem, permissions play a crucial role in governing the actions that can be performed by the system's agents. Each API within VoIPBIN is subject to specific permission limitations, ensuring a secure and controlled environment.
+In the VoIPBin ecosystem, permissions play a crucial role in governing the actions that can be performed by the system's agents. Each API within VoIPBin is subject to specific permission limitations, ensuring a secure and controlled environment.
 
 **Permission Levels**
 
@@ -491,9 +491,9 @@ In the VoIPBIN ecosystem, permissions play a crucial role in governing the actio
     |  o Cannot manage other agents or customer-wide resources                |
     +-----------------------------------------------------------------------------+
 
-VoIPBIN employs a bitmask permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Each agent's ``permission`` field is a combination of bit flags; multiple levels can be combined (e.g. ``0x0060`` = admin + manager). See :ref:`Permission <agent-struct-agent-permission>` for the full list of permission bit values, including project-level flags reserved for VoIPBIN operators.
+VoIPBin employs a bitmask permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Each agent's ``permission`` field is a combination of bit flags; multiple levels can be combined (e.g. ``0x0060`` = admin + manager). See :ref:`Permission <agent-struct-agent-permission>` for the full list of permission bit values, including project-level flags reserved for VoIPBin operators.
 
-Every API in VoIPBIN is associated with granular permission limitations. These limitations are designed to:
+Every API in VoIPBin is associated with granular permission limitations. These limitations are designed to:
 
 * Restrict Access: Ensure that only authorized agents can invoke specific APIs.
 

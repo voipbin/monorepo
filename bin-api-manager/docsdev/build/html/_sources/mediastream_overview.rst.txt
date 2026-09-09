@@ -7,9 +7,9 @@ Overview
 
    * **Complexity:** High
    * **Cost:** Free (no additional charge beyond the underlying call/conference costs)
-   * **Async:** Yes. ``GET https://api.voipbin.net/v1.0/calls/{id}/media_stream`` upgrades to a WebSocket connection for real-time bi-directional audio streaming. The connection remains open for the duration of the call. Uni-directional streaming via the ``external_media_start`` flow action is initiated by VoIPBIN connecting to your server.
+   * **Async:** Yes. ``GET https://api.voipbin.net/v1.0/calls/{id}/media_stream`` upgrades to a WebSocket connection for real-time bi-directional audio streaming. The connection remains open for the duration of the call. Uni-directional streaming via the ``external_media_start`` flow action is initiated by VoIPBin connecting to your server.
 
-VoIPBIN's Media Stream API provides direct access to call and conference audio via WebSocket connections. Instead of relying on SIP signaling for media control, you can stream audio bidirectionally with your applications for real-time processing, AI integration, custom IVR, and more.
+VoIPBin's Media Stream API provides direct access to call and conference audio via WebSocket connections. Instead of relying on SIP signaling for media control, you can stream audio bidirectionally with your applications for real-time processing, AI integration, custom IVR, and more.
 
 With the Media Stream API you can:
 
@@ -22,15 +22,15 @@ With the Media Stream API you can:
 
 How Media Streaming Works
 -------------------------
-When you connect to a media stream, VoIPBIN establishes a WebSocket connection that carries audio data directly between the call/conference and your application.
+When you connect to a media stream, VoIPBin establishes a WebSocket connection that carries audio data directly between the call/conference and your application.
 
 **Media Stream Architecture**
 
 ::
 
-    Traditional VoIP:                   VoIPBIN Media Stream:
+    Traditional VoIP:                   VoIPBin Media Stream:
     +-------+   SIP   +-------+         +-------+   WebSocket  +----------+
-    | Phone |<------->|VoIPBIN|         | Call  |<============>| Your App |
+    | Phone |<------->|VoIPBin|         | Call  |<============>| Your App |
     +-------+         +-------+         +-------+              +----------+
          (signaling only)                    (direct audio access)
 
@@ -64,7 +64,7 @@ When you connect to a media stream, VoIPBIN establishes a WebSocket connection t
     |  Call  |<------- RTP ------->+                        |           |
     +--------+                     |                        |  Your     |
                               +----+-----+                  |  App      |
-                              | VoIPBIN  |<== WebSocket ===>|           |
+                              | VoIPBin  |<== WebSocket ===>|           |
                               | Media    |                  | - AI/ML   |
                               | Bridge   |                  | - STT/TTS |
     +------------+            +----+-----+                  | - IVR     |
@@ -76,7 +76,7 @@ The Media Bridge handles protocol conversion between RTP (VoIP standard) and Web
 
 Streaming Modes
 ---------------
-VoIPBIN supports two streaming modes based on your application's needs.
+VoIPBin supports two streaming modes based on your application's needs.
 
 .. note:: **AI Implementation Hint**
 
@@ -90,7 +90,7 @@ Your application both receives and sends audio through the same WebSocket connec
 
     +----------+                              +----------+
     |          |======= audio IN ============>|          |
-    | VoIPBIN  |                              | Your App |
+    | VoIPBin  |                              | Your App |
     |          |<====== audio OUT ============|          |
     +----------+                              +----------+
 
@@ -108,13 +108,13 @@ Your application both receives and sends audio through the same WebSocket connec
 
 **Uni-Directional Streaming**
 
-VoIPBIN receives audio from your server and plays it to the call. Your app sends audio but doesn't receive call audio.
+VoIPBin receives audio from your server and plays it to the call. Your app sends audio but doesn't receive call audio.
 
 ::
 
     +----------+                              +----------+
     |          |                              |          |
-    | VoIPBIN  |<====== audio only ===========| Your App |
+    | VoIPBin  |<====== audio only ===========| Your App |
     |          |                              |          |
     +----------+                              +----------+
 
@@ -153,8 +153,8 @@ See detail :ref:`here <flow-struct-action-external_media_start>`.
      - API call (GET /media_stream)
      - Flow action (external_media_start
    * - Connection
-     - Your app connects to VoIPBIN
-     - VoIPBIN connects to your server
+     - Your app connects to VoIPBin
+     - VoIPBin connects to your server
    * - Best for
      - Interactive applications
      - Playback applications
@@ -163,7 +163,7 @@ See detail :ref:`here <flow-struct-action-external_media_start>`.
 
 Encapsulation Types
 -------------------
-VoIPBIN supports three encapsulation types for different integration scenarios.
+VoIPBin supports three encapsulation types for different integration scenarios.
 
 **Decision Guide**
 
@@ -381,7 +381,7 @@ Understanding the WebSocket connection lifecycle helps build robust streaming ap
 
 ::
 
-    Your App                         VoIPBIN
+    Your App                         VoIPBin
         |                               |
         | GET /calls/{id}/media_stream  |
         +------------------------------>|

@@ -9,17 +9,17 @@ Prerequisites
 Before configuring webhooks, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* A publicly accessible HTTPS endpoint URL where VoIPBIN will send event notifications.
+* A publicly accessible HTTPS endpoint URL where VoIPBin will send event notifications.
 * Knowledge of which event types you want to receive (e.g., ``call_created``, ``message_created``). See :ref:`Webhook Structure <webhook-struct-webhook>` for the full list.
 
 .. note:: **AI Implementation Hint**
 
-   Webhooks are configured at the **customer account level**, not as separate resources. Use ``PUT https://api.voipbin.net/v1.0/customer`` to set the ``webhook_uri`` and ``webhook_method`` fields on your customer profile. There is no ``/webhooks`` CRUD endpoint. Your webhook endpoint must be publicly reachable from the internet; VoIPBIN retries up to 3 times (1 second apart) on a connection failure or a ``5xx`` response, with roughly 30 seconds allowed per attempt. For local development, use tools like ngrok to expose a local server.
+   Webhooks are configured at the **customer account level**, not as separate resources. Use ``PUT https://api.voipbin.net/v1.0/customer`` to set the ``webhook_uri`` and ``webhook_method`` fields on your customer profile. There is no ``/webhooks`` CRUD endpoint. Your webhook endpoint must be publicly reachable from the internet; VoIPBin retries up to 3 times (1 second apart) on a connection failure or a ``5xx`` response, with roughly 30 seconds allowed per attempt. For local development, use tools like ngrok to expose a local server.
 
 Configure Webhook Endpoint
 --------------------------
 
-Set your webhook delivery URL and HTTP method by updating your customer profile. VoIPBIN will send all event notifications to this URL.
+Set your webhook delivery URL and HTTP method by updating your customer profile. VoIPBin will send all event notifications to this URL.
 
 .. code::
 
@@ -62,7 +62,7 @@ To stop receiving webhook notifications, set the ``webhook_uri`` to an empty str
 Webhook Event Types
 -------------------
 
-VoIPBIN sends different event types to your webhook endpoint. For the complete list, see :ref:`Webhook Structure <webhook-struct-webhook>`.
+VoIPBin sends different event types to your webhook endpoint. For the complete list, see :ref:`Webhook Structure <webhook-struct-webhook>`.
 
 **Call Events:**
 
@@ -299,7 +299,7 @@ Best Practices
 **1. Acknowledge Quickly:**
 - Return a non-5xx status (e.g. 200 OK) immediately upon receiving the webhook
 - Process time-consuming tasks asynchronously (queue jobs, background workers)
-- VoIPBIN retries up to 3 times (1 second apart) on connection failure or a 5xx response
+- VoIPBin retries up to 3 times (1 second apart) on connection failure or a 5xx response
 
 **2. Handle Duplicates:**
 - Webhooks may be delivered more than once

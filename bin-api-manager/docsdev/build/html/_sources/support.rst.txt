@@ -4,7 +4,7 @@
 Support
 =======
 
-This section provides information on how to get help with VoIPBIN services.
+This section provides information on how to get help with VoIPBin services.
 
 .. _support-contact:
 
@@ -20,7 +20,7 @@ When contacting us, please include:
 
 - Detailed description of the issue or question
 - Your deployment environment (GCP, on-premise, etc.)
-- VoIPBIN version or commit hash you're running
+- VoIPBin version or commit hash you're running
 - Relevant log outputs or error messages
 - Steps to reproduce the issue
 - Expected vs actual behavior

@@ -2,7 +2,7 @@
 
 Structures
 ==========
-This section documents the message structures used in VoIPBIN's WebSocket API for subscription management and event delivery.
+This section documents the message structures used in VoIPBin's WebSocket API for subscription management and event delivery.
 
 
 Message Overview

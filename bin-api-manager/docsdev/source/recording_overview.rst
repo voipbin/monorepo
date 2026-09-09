@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable. Billing runs for the duration between the recording's ``tm_start`` and ``tm_end`` (a separate billing line item from the underlying call/conference). There is currently no separate per-GB storage charge.
    * **Async:** Yes. Recordings transition through states: ``initiating`` -> ``recording`` -> ``stopping`` -> ``ended``. Poll ``GET https://api.voipbin.net/v1.0/recordings/{id}`` to check for ``ended`` status before downloading.
 
-VoIPBIN's Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.
+VoIPBin's Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.
 
 With the Recording API you can:
 
@@ -22,7 +22,7 @@ With the Recording API you can:
 
 How Recording Works
 -------------------
-When you start a recording, VoIPBIN captures the audio stream and writes it to cloud storage. The recording continues until you stop it, the call ends, or the maximum duration is reached.
+When you start a recording, VoIPBin captures the audio stream and writes it to cloud storage. The recording continues until you stop it, the call ends, or the maximum duration is reached.
 
 **Recording Architecture**
 
@@ -112,7 +112,7 @@ Every recording moves through a predictable set of states from creation to avail
 
 Starting and Stopping Recordings
 --------------------------------
-VoIPBIN provides multiple ways to control recordings based on your use case.
+VoIPBin provides multiple ways to control recordings based on your use case.
 
 .. note:: **AI Implementation Hint**
 
@@ -124,7 +124,7 @@ Use ``recording_start`` and ``recording_stop`` actions in your call flow for aut
 
 ::
 
-    Your Flow                    VoIPBIN                     Storage
+    Your Flow                    VoIPBin                     Storage
         |                           |                           |
         | recording_start action    |                           |
         +-------------------------->|                           |
@@ -222,7 +222,7 @@ The request body also accepts these optional fields (all default to their zero v
 
 Recording Storage
 -----------------
-Recordings are stored securely in Google Cloud Storage and accessible via the VoIPBIN API.
+Recordings are stored securely in Google Cloud Storage and accessible via the VoIPBin API.
 
 **Storage Architecture**
 
@@ -414,7 +414,7 @@ Best Practices
 
 - **Consent**: Many jurisdictions require consent before recording. Always announce recordings.
 - **Retention**: Define clear retention policies. Delete recordings when no longer needed.
-- **Access Control**: Limit who can access recordings. Use VoIPBIN's permission system.
+- **Access Control**: Limit who can access recordings. Use VoIPBin's permission system.
 
 **2. Announcement Examples**
 
@@ -467,7 +467,7 @@ Troubleshooting
 | File size is 0 bytes      | Recording may have been stopped immediately    |
 |                           | after starting. Ensure audio is flowing.       |
 +---------------------------+------------------------------------------------+
-| File won't play           | Verify file format. VoIPBIN uses WAV format.   |
+| File won't play           | Verify file format. VoIPBin uses WAV format.   |
 |                           | Some players may not support 8kHz mono.        |
 +---------------------------+------------------------------------------------+
 | Audio is silent           | Check that audio was flowing during recording. |

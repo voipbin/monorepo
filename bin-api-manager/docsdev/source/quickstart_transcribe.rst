@@ -4,18 +4,18 @@
 
 Transcribe
 ==========
-Set up real-time speech-to-text transcription on a voice call using the VoIPBIN API. This walkthrough creates a flow that answers a call, starts transcription, speaks a greeting, and pauses — then shows how to receive transcription events via WebSocket and webhook.
+Set up real-time speech-to-text transcription on a voice call using the VoIPBin API. This walkthrough creates a flow that answers a call, starts transcription, speaks a greeting, and pauses — then shows how to receive transcription events via WebSocket and webhook.
 
 Prerequisites
 +++++++++++++
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
-* A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
+* A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBin account. Obtain available numbers via ``GET /numbers``.
 * Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer`` or from your admin console profile.
 
 .. note:: **AI Implementation Hint**
 
-   This guide uses virtual numbers (``+899`` prefix) which are free and do not require a provider purchase. The TTS ``talk`` action produces audio that is transcribed as ``direction: "out"`` (VoIPBIN to caller). If you speak into the call, your speech appears as ``direction: "in"`` (caller to VoIPBIN). The ``sleep`` action keeps the call alive for 30 seconds so you can observe transcription events in real time.
+   This guide uses virtual numbers (``+899`` prefix) which are free and do not require a provider purchase. The TTS ``talk`` action produces audio that is transcribed as ``direction: "out"`` (VoIPBin to caller). If you speak into the call, your speech appears as ``direction: "in"`` (caller to VoIPBin). The ``sleep`` action keeps the call alive for 30 seconds so you can observe transcription events in real time.
 
 Step 1: Create a transcription flow
 ------------------------------------
@@ -41,7 +41,7 @@ Create a flow that answers the call, starts transcription, speaks a greeting, an
                 {
                     "type": "talk",
                     "option": {
-                        "text": "Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.",
+                        "text": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
                         "language": "en-US"
                     }
                 },
@@ -78,7 +78,7 @@ The response includes the created flow with a server-generated ``id`` (UUID). Sa
                 "id": "a1b2c3d4-0001-0000-0000-000000000003",
                 "type": "talk",
                 "option": {
-                    "text": "Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.",
+                    "text": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
                     "language": "en-US"
                 }
             },
@@ -166,11 +166,11 @@ Now, any inbound call to ``+899100000001`` will execute your transcription flow.
 
 .. note:: **AI Implementation Hint**
 
-   Virtual numbers (``+899`` prefix) are free and routed internally within VoIPBIN. They do not require a provider purchase. If ``+899100000001`` is already taken, try ``+899100000002`` or search for available virtual numbers via ``GET /available_numbers?type=virtual``.
+   Virtual numbers (``+899`` prefix) are free and routed internally within VoIPBin. They do not require a provider purchase. If ``+899100000001`` is already taken, try ``+899100000002`` or search for available virtual numbers via ``GET /available_numbers?type=virtual``.
 
 Step 3: Subscribe to transcribe events via WebSocket
 -----------------------------------------------------
-Before making the call, connect to the VoIPBIN WebSocket and subscribe to transcription events. This way you receive transcripts as they are generated during the call.
+Before making the call, connect to the VoIPBin WebSocket and subscribe to transcription events. This way you receive transcripts as they are generated during the call.
 
 **Connect to WebSocket:**
 
@@ -205,7 +205,7 @@ The wildcard ``*`` subscribes to events from all transcriptions under your accou
         data = json.loads(message)
         if data.get("event_type") == "transcript_created":
             transcript = data["data"]
-            direction = transcript["direction"]  # "in" = caller, "out" = VoIPBIN TTS
+            direction = transcript["direction"]  # "in" = caller, "out" = VoIPBin TTS
             text = transcript["message"]
             print(f"[{direction}] {text}")
 
@@ -274,7 +274,7 @@ The call dials the virtual number, which triggers the transcription flow: answer
 
 .. note:: **AI Implementation Hint**
 
-   The ``source`` number must be a VoIPBIN-owned number (obtained from ``GET /numbers``). The ``destinations`` target is the virtual number you created. Since the virtual number has a ``call_flow_id`` assigned, VoIPBIN executes the flow when the call is answered. No ``flow_id`` or ``actions`` field is needed in the call request — the number's assigned flow handles everything.
+   The ``source`` number must be a VoIPBin-owned number (obtained from ``GET /numbers``). The ``destinations`` target is the virtual number you created. Since the virtual number has a ``call_flow_id`` assigned, VoIPBin executes the flow when the call is answered. No ``flow_id`` or ``actions`` field is needed in the call request — the number's assigned flow handles everything.
 
 Step 5: Receive real-time transcription events
 -----------------------------------------------
@@ -292,7 +292,7 @@ Within seconds of the call being answered, the WebSocket begins delivering ``tra
             "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
             "direction": "out",
-            "message": "Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.",
+            "message": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
             "tm_transcript": "0001-01-01 00:00:08.991840",
             "tm_create": "2026-02-18 10:02:05.233415"
         }
@@ -302,7 +302,7 @@ Within seconds of the call being answered, the WebSocket begins delivering ``tra
 
 - ``event_type`` (String): Always ``transcript_created`` for new transcript segments.
 - ``data.transcribe_id`` (UUID): The transcription session ID. Use this to query all transcripts for this session via ``GET /transcripts?transcribe_id=<transcribe_id>``.
-- ``data.direction`` (enum string): ``"out"`` = audio from VoIPBIN to the caller (TTS output). ``"in"`` = audio from the caller to VoIPBIN (caller speech).
+- ``data.direction`` (enum string): ``"out"`` = audio from VoIPBin to the caller (TTS output). ``"in"`` = audio from the caller to VoIPBin (caller speech).
 - ``data.message`` (String): The transcribed text.
 
 If you run the Python WebSocket example from Step 3, you will see output like:
@@ -310,12 +310,12 @@ If you run the Python WebSocket example from Step 3, you will see output like:
 .. code::
 
     Subscribed to transcribe events. Waiting for transcripts...
-    [out] Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.
+    [out] Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.
     [in] Hi, this is a test of the transcription feature.
 
 Receive events via webhook (alternative)
 -----------------------------------------
-Instead of WebSocket, you can receive transcription events via your customer webhook. Configure a webhook URI on your customer account — VoIPBIN sends HTTP POST requests for **all** events associated with your account, including transcription events:
+Instead of WebSocket, you can receive transcription events via your customer webhook. Configure a webhook URI on your customer account — VoIPBin sends HTTP POST requests for **all** events associated with your account, including transcription events:
 
 .. code::
 
@@ -328,7 +328,7 @@ Instead of WebSocket, you can receive transcription events via your customer web
 
 Once configured, transcription events (along with all other account events) are delivered to your ``webhook_uri`` as HTTP POST requests. There is no per-event-type filtering — your endpoint receives all events and must filter by ``event_type`` (e.g., ``transcript_created``).
 
-VoIPBIN sends a ``POST`` request to your endpoint each time a transcript segment is generated:
+VoIPBin sends a ``POST`` request to your endpoint each time a transcript segment is generated:
 
 .. code::
 
@@ -376,7 +376,7 @@ After the call ends, you can retrieve the full transcript via the API. Use the `
                 "id": "3c95ea10-a5b7-4a68-aebf-ed1903baf110",
                 "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
                 "direction": "out",
-                "message": "Hello. This is a VoIPBIN transcription test. Everything you say will be transcribed in real time. Please speak now.",
+                "message": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
                 "tm_transcript": "0001-01-01T00:00:08.99184Z",
                 "tm_create": "2026-02-18T10:02:05.233415Z"
             }
@@ -384,7 +384,7 @@ After the call ends, you can retrieve the full transcript via the API. Use the `
         "next_page_token": "2026-02-18T10:02:05.233415Z"
     }
 
-The ``direction`` field distinguishes speakers: ``"out"`` is the TTS greeting played by VoIPBIN, ``"in"`` is the caller's speech.
+The ``direction`` field distinguishes speakers: ``"out"`` is the TTS greeting played by VoIPBin, ``"in"`` is the caller's speech.
 
 Troubleshooting
 +++++++++++++++

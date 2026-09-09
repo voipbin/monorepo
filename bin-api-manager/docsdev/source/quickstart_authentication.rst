@@ -69,7 +69,7 @@ Response:
 
 Direct Token (Boot)
 ~~~~~~~~~~~~~~~~~~~
-For resource-scoped access without user credentials, use a **direct hash** to obtain a short-lived JWT. This is used for direct links (e.g., AI voice agent web widgets) where the end user does not have a VoIPBIN account.
+For resource-scoped access without user credentials, use a **direct hash** to obtain a short-lived JWT. This is used for direct links (e.g., AI voice agent web widgets) where the end user does not have a VoIPBin account.
 
 Send a ``POST`` request to ``https://api.voipbin.net/auth/boot`` with the ``direct_hash`` (String, Required). The hash is obtained from a direct link URL or from the ``hash`` field of ``GET https://api.voipbin.net/v1.0/directs``. Must start with ``direct.``.
 

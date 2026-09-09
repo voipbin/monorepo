@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable for normal numbers (provider purchase fee). Virtual numbers (+899 prefix) are free but subject to tier-based limits.
    * **Async:** No. ``POST https://api.voipbin.net/v1.0/numbers`` returns immediately with status ``active`` for both virtual and normal numbers.
 
-VoIPBIN's Number API enables you to provision, manage, and configure phone numbers for your communication applications. Numbers serve as the entry points for inbound calls and messages, and can be configured with custom flows for automated handling.
+VoIPBin's Number API enables you to provision, manage, and configure phone numbers for your communication applications. Numbers serve as the entry points for inbound calls and messages, and can be configured with custom flows for automated handling.
 
 With the Number API you can:
 
@@ -22,7 +22,7 @@ With the Number API you can:
 
 How Numbers Work
 ----------------
-Numbers connect external callers to your VoIPBIN applications through configurable flows.
+Numbers connect external callers to your VoIPBin applications through configurable flows.
 
 **Number Architecture**
 
@@ -32,7 +32,7 @@ Numbers connect external callers to your VoIPBIN applications through configurab
     |                         Number System                                 |
     +-----------------------------------------------------------------------+
 
-    External World                    VoIPBIN                    Your Application
+    External World                    VoIPBin                    Your Application
          |                               |                              |
          | Inbound call/SMS              |                              |
          | to +15551234567               |                              |
@@ -64,7 +64,7 @@ Numbers connect external callers to your VoIPBIN applications through configurab
 
 **Key Components**
 
-- **Number**: A phone number provisioned in VoIPBIN
+- **Number**: A phone number provisioned in VoIPBin
 - **Call Flow**: Actions to execute when a call arrives
 - **Message Flow**: Actions to execute when an SMS/MMS arrives
 - **Webhook**: Notifications sent to your application
@@ -161,7 +161,7 @@ Provision numbers through a two-step process: search, then provision.
 
 Flow Execution
 --------------
-VoIPBIN's Number resource allows you to associate multiple flows with a single number for handling different types of communications.
+VoIPBin's Number resource allows you to associate multiple flows with a single number for handling different types of communications.
 
 **Flow Configuration**
 
@@ -212,7 +212,7 @@ VoIPBIN's Number resource allows you to associate multiple flows with a single n
 
 Number Types
 ------------
-VoIPBIN supports two number types.
+VoIPBin supports two number types.
 
 .. list-table::
    :header-rows: 1
@@ -220,7 +220,7 @@ VoIPBIN supports two number types.
    * - Type
      - Description
    * - normal
-     - A standard phone number purchased from a provider (Telnyx or Twilio). Routed via PSTN. The provider's own inventory may include geographic (local), toll-free, or mobile numbers -- VoIPBIN does not distinguish between these sub-categories itself.
+     - A standard phone number purchased from a provider (Telnyx or Twilio). Routed via PSTN. The provider's own inventory may include geographic (local), toll-free, or mobile numbers -- VoIPBin does not distinguish between these sub-categories itself.
    * - virtual
      - Virtual numbers with +899 prefix. No provider purchase required. Designed for non-PSTN callers such as AI calls, WebRTC calls, and internal routing.
 
@@ -292,8 +292,8 @@ Normal numbers are routed through an external provider (Telnyx/Twilio) from the 
      - Telnyx or Twilio
      - None (internal only)
    * - Inbound routing
-     - PSTN -> Provider -> VoIPBIN
-     - Non-PSTN caller -> VoIPBIN
+     - PSTN -> Provider -> VoIPBin
+     - Non-PSTN caller -> VoIPBin
    * - Flow execution
      - Same (call_flow/message_flow)
      - Same (call_flow/message_flow)

@@ -63,7 +63,7 @@ email_send              Send an email to one or more destinations. Fire-and-forg
 external_media_start    Start an external media stream (RTP) to/from an external host.
 external_media_stop     Stop the external media stream.
 fetch                   Fetch actions from a remote URL endpoint. Forks the flow with the fetched actions.
-fetch_flow              Fetch actions from an existing VoIPBIN flow by ID. Forks the flow.
+fetch_flow              Fetch actions from an existing VoIPBin flow by ID. Forks the flow.
 goto                    Jump to another action by ID. Use ``loop_count`` to prevent infinite loops.
 hangup                  Hang up the current call.
 message_send            Send an SMS/message to one or more destinations. Fire-and-forget.
@@ -368,7 +368,7 @@ Parameters
 * ``flow_id`` (UUID): Flow ID to attach to the new call. Obtained from ``GET /flows``. If not set, the ``actions`` array is used instead.
 * ``actions`` (Array of Object): Inline array of actions for the new call's flow. Used only if ``flow_id`` is not set.
 * ``chained`` (Boolean): If ``true``, the new call will be hung up when the master call hangs up. Default: ``false``.
-* ``early_execution`` (Boolean): If ``true``, VoIPBIN will execute the flow when the call starts ringing (before answer). Default: ``false``.
+* ``early_execution`` (Boolean): If ``true``, VoIPBin will execute the flow when the call starts ringing (before answer). Default: ``false``.
 * ``anonymous`` (String, Optional): Controls anonymous caller ID for the outbound PSTN call. One of: ``"yes"`` (always hide caller ID), ``"no"`` (always show), ``"auto"`` (inherit from incoming call's Privacy header). Default: ``"auto"``. Only affects PSTN destinations (``type: "tel"``).
 
 Example
@@ -1353,7 +1353,7 @@ Parameters
     }
 
 * ``language`` (String): Language in BCP47 format (e.g., ``en-US``).
-* ``provider`` (String, optional): STT provider to use: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
+* ``provider`` (String, optional): STT provider to use: ``gcp`` or ``aws``. If omitted, VoIPBin selects the best available provider automatically.
 * ``direction`` (String, optional): Audio direction to transcribe: ``in``, ``out``, or ``both``. Defaults to ``both``.
 * ``on_end_flow_id`` (UUID, optional): Flow to execute when the transcription ends.
 
@@ -1391,7 +1391,7 @@ Parameters
     }
 
 * ``language`` (String): Language in BCP47 format. Examples: ``en-US``, ``ko-KR``. The value may be a two-letter language code (e.g., ``en``) or language code with country/region (e.g., ``en-US``).
-* ``provider`` (String, optional): STT provider to use: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
+* ``provider`` (String, optional): STT provider to use: ``gcp`` or ``aws``. If omitted, VoIPBin selects the best available provider automatically.
 * ``direction`` (String, optional): Audio direction to transcribe: ``in``, ``out``, or ``both``. Defaults to ``both``.
 * ``on_end_flow_id`` (UUID, optional): Flow to execute when the transcription ends.
 

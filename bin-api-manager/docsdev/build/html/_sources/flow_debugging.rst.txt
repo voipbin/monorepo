@@ -21,7 +21,7 @@ Before debugging, you need:
 Debugging Tools
 ---------------
 
-VoIPBIN provides several tools for debugging flows:
+VoIPBin provides several tools for debugging flows:
 
 .. code::
 
@@ -529,7 +529,7 @@ Common issues with webhook_send:
 
     Common Issues:
     +------------------------------------------------------------------+
-    | - URL not reachable from VoIPBIN servers                         |
+    | - URL not reachable from VoIPBin servers                         |
     | - Firewall blocking incoming requests                            |
     | - SSL certificate issues (use valid cert)                        |
     | - Invalid JSON in data field                                     |

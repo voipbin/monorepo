@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Send an SMS - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -639,59 +639,59 @@
         <article role="main" id="furo-main-content">
           <section id="send-an-sms">
 <span id="quickstart-message"></span><h1>Send an SMS<a class="headerlink" href="#send-an-sms" title="Link to this heading">¶</a></h1>
-<p>Send an outbound SMS message using the VoIPBIN API.</p>
+<p>Send an outbound SMS message using the VoIPBin API.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
-<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBin account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number. Sending messages incurs charges per message segment. Unicode characters (emoji, non-Latin scripts) reduce the per-segment limit from 160 to 70 characters.</p>
+<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBin-owned number. Sending messages incurs charges per message segment. Unicode characters (emoji, non-Latin scripts) reduce the per-segment limit from 160 to 70 characters.</p>
 </div>
 <section id="send-a-message">
 <h3>Send a message<a class="headerlink" href="#send-a-message" title="Link to this heading">¶</a></h3>
 <p>Send an SMS by providing a source number, destination, and message text:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/messages?token=&lt;your-token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/messages?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "&lt;your-source-number&gt;"
         },
-        &quot;destinations&quot;: [
+        "destinations": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;&lt;destination-number&gt;&quot;
+                "type": "tel",
+                "target": "&lt;destination-number&gt;"
             }
         ],
-        &quot;text&quot;: &quot;Hello from VoIPBIN! This is a test message.&quot;
-    }&#39;
+        "text": "Hello from VoIPBin! This is a test message."
+    }'
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a5d2114a-8e84-48cd-8bb2-c406eeb08cd1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sms&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a5d2114a-8e84-48cd-8bb2-c406eeb08cd1"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sms"</span><span class="p">,</span>
+    <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;your-source-number&gt;"</span>
     <span class="p">},</span>
-    <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"targets"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;destination-number&gt;&quot;</span>
+            <span class="s2">"destination"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;destination-number&gt;"</span>
             <span class="p">},</span>
-            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;sending&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;parts&quot;</span><span class="p">:</span> <span class="mi">1</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"sending"</span><span class="p">,</span>
+            <span class="s2">"parts"</span><span class="p">:</span> <span class="mi">1</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello from VoIPBIN! This is a test message.&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outbound&quot;</span><span class="p">,</span>
+    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello from VoIPBin! This is a test message."</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"outbound"</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -708,7 +708,7 @@
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source</span></code> number is not owned by your VoIPBIN account, or phone numbers are not in E.164 format.</p></li>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source</span></code> number is not owned by your VoIPBin account, or phone numbers are not in E.164 format.</p></li>
 <li><p><strong>Fix:</strong> Verify your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Ensure all phone numbers start with <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by digits only.</p></li>
 </ul>
 </dd>
@@ -737,7 +737,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -784,8 +784,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

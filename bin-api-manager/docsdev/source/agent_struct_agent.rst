@@ -90,7 +90,7 @@ Permission     Description
 ============== ================
 0              (0x0000) No permissions.
 65535          (0xFFFF) All permissions.
-1              (0x0001) VoIPBIN project super admin.
+1              (0x0001) VoIPBin project super admin.
 15             (0x000F) All project-level permissions.
 16             (0x0010) Customer-level agent (basic user).
 32             (0x0020) Customer-level admin (can manage agents and resources).

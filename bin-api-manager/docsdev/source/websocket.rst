@@ -3,7 +3,7 @@
 **************
 Websocket
 **************
-Stream real-time events from VoIPBIN services over a persistent WebSocket connection for low-latency updates.
+Stream real-time events from VoIPBin services over a persistent WebSocket connection for low-latency updates.
 
 **API Reference:** `Websocket endpoints <https://api.voipbin.net/redoc/#tag/Websocket>`_
 

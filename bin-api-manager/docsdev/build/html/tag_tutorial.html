@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Architecture" href="architecture.html"><link rel="prev" title="Tag" href="tag_struct_tag.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -652,95 +652,95 @@
 </div>
 <section id="create-a-new-tag">
 <h3>Create a new tag<a class="headerlink" href="#create-a-new-tag" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/tags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;test tag&quot;,
-        &quot;detail&quot;: &quot;test tag example&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/tags?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "test tag",
+        "detail": "test tag example"
+    }'
 
 {
-    &quot;id&quot;: &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;test tag&quot;,
-    &quot;detail&quot;: &quot;test tag example&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "id": "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "test tag",
+    "detail": "test tag example",
+    "tm_create": "2022-10-22 16:16:16.874761",
+    "tm_update": "9999-01-01 00:00:00.000000",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
 </section>
 <section id="get-a-list-of-tags">
 <h3>Get a list of tags<a class="headerlink" href="#get-a-list-of-tags" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/tags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/tags?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;name&quot;: &quot;test tag&quot;,
-            &quot;detail&quot;: &quot;test tag example&quot;,
-            &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-            &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+            "id": "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "name": "test tag",
+            "detail": "test tag example",
+            "tm_create": "2022-10-22 16:16:16.874761",
+            "tm_update": "9999-01-01 00:00:00.000000",
+            "tm_delete": "9999-01-01 00:00:00.000000"
         }
     ],
-    &quot;next_page_token&quot;: &quot;2022-10-22 16:16:16.874761&quot;
+    "next_page_token": "2022-10-22 16:16:16.874761"
 }
 </pre></div>
 </div>
 </section>
 <section id="get-a-specific-tag">
 <h3>Get a specific tag<a class="headerlink" href="#get-a-specific-tag" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/tags/d7450dda-21e0-4611-b09a-8d771c50a5e6?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/tags/d7450dda-21e0-4611-b09a-8d771c50a5e6?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;test tag&quot;,
-    &quot;detail&quot;: &quot;test tag example&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "id": "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "test tag",
+    "detail": "test tag example",
+    "tm_create": "2022-10-22 16:16:16.874761",
+    "tm_update": "9999-01-01 00:00:00.000000",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
 </section>
 <section id="update-a-tag">
 <h3>Update a tag<a class="headerlink" href="#update-a-tag" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/tags/d7450dda-21e0-4611-b09a-8d771c50a5e6?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;test tag updated&quot;,
-        &quot;detail&quot;: &quot;test tag example updated&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/tags/d7450dda-21e0-4611-b09a-8d771c50a5e6?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "test tag updated",
+        "detail": "test tag example updated"
+    }'
 
 {
-    &quot;id&quot;: &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;test tag updated&quot;,
-    &quot;detail&quot;: &quot;test tag example updated&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-    &quot;tm_update&quot;: &quot;2022-10-22 16:20:16.874761&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "id": "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "test tag updated",
+    "detail": "test tag example updated",
+    "tm_create": "2022-10-22 16:16:16.874761",
+    "tm_update": "2022-10-22 16:20:16.874761",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
 </section>
 <section id="delete-a-tag">
 <h3>Delete a tag<a class="headerlink" href="#delete-a-tag" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/tags/d7450dda-21e0-4611-b09a-8d771c50a5e6?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/tags/d7450dda-21e0-4611-b09a-8d771c50a5e6?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;test tag updated&quot;,
-    &quot;detail&quot;: &quot;test tag example updated&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-    &quot;tm_update&quot;: &quot;2022-10-22 16:20:16.874761&quot;,
-    &quot;tm_delete&quot;: &quot;2022-10-22 16:25:16.874761&quot;
+    "id": "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "test tag updated",
+    "detail": "test tag example updated",
+    "tm_create": "2022-10-22 16:16:16.874761",
+    "tm_update": "2022-10-22 16:20:16.874761",
+    "tm_delete": "2022-10-22 16:25:16.874761"
 }
 </pre></div>
 </div>
@@ -777,7 +777,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -827,8 +827,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

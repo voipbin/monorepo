@@ -3,7 +3,7 @@
 Advanced Call Scenarios
 =======================
 
-This section covers real-world call scenarios that combine multiple VoIPBIN features. Each scenario includes the complete flow, API examples, and best practices.
+This section covers real-world call scenarios that combine multiple VoIPBin features. Each scenario includes the complete flow, API examples, and best practices.
 
 .. note:: **AI Implementation Hint**
 
@@ -18,7 +18,7 @@ A common contact center pattern: caller navigates an IVR menu, then enters a que
 
     IVR to Queue Flow:
 
-    Caller                          VoIPBIN                         Agent
+    Caller                          VoIPBin                         Agent
        |                               |                              |
        | Calls support number          |                              |
        +------------------------------>|                              |
@@ -243,7 +243,7 @@ Automated calling campaign that detects answering machines:
 
     Campaign Call Flow:
 
-    VoIPBIN             Destination              Voicemail
+    VoIPBin             Destination              Voicemail
        |                    |                       |
        | Dial               |                       |
        +------------------->|                       |
@@ -352,7 +352,7 @@ Website visitor clicks to call, conversation is recorded:
 
     Click-to-Call Flow:
 
-    Website          Your Server        VoIPBIN           Visitor Phone      Agent
+    Website          Your Server        VoIPBin           Visitor Phone      Agent
        |                 |                 |                    |              |
        | Click "Call Me" |                 |                    |              |
        +---------------->|                 |                    |              |
@@ -462,7 +462,7 @@ Create a conference with multiple participants joining at different times:
 
     Multi-leg Conference:
 
-    Organizer        VoIPBIN       Participant A    Participant B    Participant C
+    Organizer        VoIPBin       Participant A    Participant B    Participant C
         |               |               |                |                |
         | Create        |               |                |                |
         | Conference    |               |                |                |
@@ -579,7 +579,7 @@ Transfer call with context passed to the receiving agent:
 
     Warm Transfer Flow:
 
-    Caller           Agent A          VoIPBIN         Agent B
+    Caller           Agent A          VoIPBin         Agent B
        |                |                |                |
        |<===============>                |                |
        | Talking         |                |                |
@@ -657,7 +657,7 @@ Transcribe call in real-time for live captioning or analysis:
 
     Real-time Transcription:
 
-    Caller          VoIPBIN         STT Service       Your Server
+    Caller          VoIPBin         STT Service       Your Server
        |               |                |                  |
        | Speaking      |                |                  |
        +-------------->|                |                  |

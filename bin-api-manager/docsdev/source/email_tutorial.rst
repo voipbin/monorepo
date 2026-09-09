@@ -9,12 +9,12 @@ Prerequisites
 Before working with emails, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* A verified customer identity. VoIPBIN gates email sending on your customer account's identity verification status, not on a sender domain -- unverified accounts cannot send.
+* A verified customer identity. VoIPBin gates email sending on your customer account's identity verification status, not on a sender domain -- unverified accounts cannot send.
 * Recipient email addresses for sending.
 
 .. note:: **AI Implementation Hint**
 
-   Sending emails incurs charges. The ``source`` address is fixed to VoIPBIN's own platform address and is not set by the caller. The ``destinations`` field uses the :ref:`Address <common-struct-address-address>` format with ``type`` set to ``email``. ``content`` is plain text only. Email status follows this lifecycle: ``initiated`` -> ``processed`` -> ``delivered``. Additional statuses include ``open``, ``click``, ``bounce``, ``dropped``, ``deferred``, ``unsubscribe``, and ``spamreport``.
+   Sending emails incurs charges. The ``source`` address is fixed to VoIPBin's own platform address and is not set by the caller. The ``destinations`` field uses the :ref:`Address <common-struct-address-address>` format with ``type`` set to ``email``. ``content`` is plain text only. Email status follows this lifecycle: ``initiated`` -> ``processed`` -> ``delivered``. Additional statuses include ``open``, ``click``, ``bounce``, ``dropped``, ``deferred``, ``unsubscribe``, and ``spamreport``.
 
 Send an email
 -------------
@@ -33,8 +33,8 @@ Example
                 "target": "recipient@example.com"
             }
         ],
-        "subject": "Hello from VoIPBIN",
-        "content": "This is a test email sent via the VoIPBIN API.",
+        "subject": "Hello from VoIPBin",
+        "content": "This is a test email sent via the VoIPBin API.",
         "attachments": []
     }'
 
@@ -58,8 +58,8 @@ Example
             }
         ],
         "status": "initiated",
-        "subject": "Hello from VoIPBIN",
-        "content": "This is a test email sent via the VoIPBIN API.",
+        "subject": "Hello from VoIPBin",
+        "content": "This is a test email sent via the VoIPBin API.",
         "attachments": [],
         "tm_create": "2025-03-14 19:04:01.160250",
         "tm_update": "2025-03-14 19:04:01.160250",

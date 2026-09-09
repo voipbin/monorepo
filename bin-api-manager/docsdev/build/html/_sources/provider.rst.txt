@@ -3,7 +3,7 @@
 ************
 Provider
 ************
-A provider represents a telephony carrier configuration (e.g., Telnyx, Twilio) that supplies SIP trunking and phone number services to the VoIPBIN platform.
+A provider represents a telephony carrier configuration (e.g., Telnyx, Twilio) that supplies SIP trunking and phone number services to the VoIPBin platform.
 
 **API Reference:** `Provider endpoints <https://api.voipbin.net/redoc/#tag/Provider>`_
 

@@ -14,7 +14,7 @@ Overview
 
 ::
 
-    Caller                      AI Engine                    VoIPBIN Platform
+    Caller                      AI Engine                    VoIPBin Platform
       |                            |                              |
       |  "Transfer me to sales"    |                              |
       +--------------------------->|                              |
@@ -189,7 +189,7 @@ Sends an SMS text message to a phone number.
 
 .. note:: **AI Implementation Hint**
 
-   Phone numbers in ``source.target`` and ``destinations[].target`` must be in E.164 format (e.g., ``+15551234567``). If the user provides a local number like ``555-1234``, the LLM must normalize it to E.164 before invoking this tool. The ``source`` phone number must be a number owned by your VoIPBIN account (obtainable via ``GET /numbers``).
+   Phone numbers in ``source.target`` and ``destinations[].target`` must be in E.164 format (e.g., ``+15551234567``). If the user provides a local number like ``555-1234``, the LLM must normalize it to E.164 before invoking this tool. The ``source`` phone number must be a number owned by your VoIPBin account (obtainable via ``GET /numbers``).
 
 **When to use:**
 
@@ -697,7 +697,7 @@ Retrieves the correlation graph for a resource: the related resources (calls, me
 get_resource
 ------------
 
-Retrieves the content of a single VoIPBIN resource by its id and returns a readable summary. Use this as the follow-up to :ref:`get_correlation <ai-struct-tool-get_correlation>`, which returns the ids and types of linked resources.
+Retrieves the content of a single VoIPBin resource by its id and returns a readable summary. Use this as the follow-up to :ref:`get_correlation <ai-struct-tool-get_correlation>`, which returns the ids and types of linked resources.
 
 **Supported resource types:** ``call``, ``groupcall``, ``recording``, ``transcribe``, ``summary``, ``aicall``, ``conferencecall``, ``queuecall``.
 

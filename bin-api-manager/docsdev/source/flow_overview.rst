@@ -9,9 +9,9 @@ Overview
    * **Cost:** Free. Creating, updating, and deleting flows does not incur charges. Charges only apply when a flow is executed (e.g., via a call or message).
    * **Async:** No. ``POST https://api.voipbin.net/v1.0/flows``, ``PUT https://api.voipbin.net/v1.0/flows/{id}``, and ``DELETE https://api.voipbin.net/v1.0/flows/{id}`` are synchronous and return the result immediately.
 
-The Flow in VoIPBIN is a powerful set of instructions that guides the platform on how to handle incoming calls. When someone calls one of your VoIPBIN numbers or destinations, the platform looks up the associated URL and sends a request. The Flow instructions are then read to determine the appropriate actions to be taken, such as recording the call, playing a message, or prompting the caller to press digits on their keypad.
+The Flow in VoIPBin is a powerful set of instructions that guides the platform on how to handle incoming calls. When someone calls one of your VoIPBin numbers or destinations, the platform looks up the associated URL and sends a request. The Flow instructions are then read to determine the appropriate actions to be taken, such as recording the call, playing a message, or prompting the caller to press digits on their keypad.
 
-At its core, the Flow is an array of JSON objects with special tags defined by VoIPBIN, enabling users to build their own Programmable Voice applications.
+At its core, the Flow is an array of JSON objects with special tags defined by VoIPBin, enabling users to build their own Programmable Voice applications.
 
 .. note:: **AI Implementation Hint**
 
@@ -21,7 +21,7 @@ At its core, the Flow is an array of JSON objects with special tags defined by V
 
 How the flow works
 ------------------
-When an incoming call is received on one of your VoIPBIN numbers or destinations, the platform identifies the associated URL and sends a request.
+When an incoming call is received on one of your VoIPBin numbers or destinations, the platform identifies the associated URL and sends a request.
 
 The Flow instructions are then processed, providing a step-by-step guide on how to handle the call. This might involve greeting the caller, presenting options, gathering input, or executing various actions based on the caller's response.
 
@@ -32,11 +32,11 @@ The Flow instructions are then processed, providing a step-by-step guide on how 
 
 Understanding Flow Execution
 ----------------------------
-Think of a Flow like a recipe. Each action is a step, and VoIPBIN follows the steps one by one until the recipe is complete.
+Think of a Flow like a recipe. Each action is a step, and VoIPBin follows the steps one by one until the recipe is complete.
 
 **The Execution Cursor**
 
-VoIPBIN uses a "cursor" to track where it is in the flow - like a finger pointing at the current step:
+VoIPBin uses a "cursor" to track where it is in the flow - like a finger pointing at the current step:
 
 ::
 
@@ -255,7 +255,7 @@ Variables store information during flow execution. They're like sticky notes tha
 
 **Built-in Variables**
 
-VoIPBIN automatically creates these variables:
+VoIPBin automatically creates these variables:
 
 ::
 
@@ -303,7 +303,7 @@ Variables are substituted using ``${variable.name}`` syntax:
       }
     }
 
-Before this action executes, VoIPBIN replaces the placeholders:
+Before this action executes, VoIPBin replaces the placeholders:
 
 ::
 
@@ -315,15 +315,15 @@ Before this action executes, VoIPBIN replaces the placeholders:
 
 Unified flow
 ------------
-VoIPBIN's Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice calls, SMS, and RESTful API triggers.
+VoIPBin's Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice calls, SMS, and RESTful API triggers.
 
-With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBIN then automatically executes this flow, ensuring a consistent experience for customers across various channels.
+With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBin then automatically executes this flow, ensuring a consistent experience for customers across various channels.
 
 .. _flow-overview-non_linear_action_execution:
 
 Non-linear action execution
 ---------------------------
-VoIPBIN's Flow provides the flexibility of Non-Linear action execution.
+VoIPBin's Flow provides the flexibility of Non-Linear action execution.
 
 Users can customize their actions in both linear and non-linear ways, allowing them to define complex logic and decision trees to handle various call scenarios.
 
@@ -381,9 +381,9 @@ When the flow is forked, the execution cursor moves to the forked flow and start
 
 Actions
 -------
-Within VoIPBIN, actions dictate the course of the platform's response in a given flow, encompassing tasks such as initiating calls, playing sounds or prompts, activating text-to-speech, sending SMS or DTMFs, and dispatching SNS messages. These diverse actions serve as indispensable building blocks for crafting customized voice applications, ensuring the creation of uniquely tailored call experiences for users.
+Within VoIPBin, actions dictate the course of the platform's response in a given flow, encompassing tasks such as initiating calls, playing sounds or prompts, activating text-to-speech, sending SMS or DTMFs, and dispatching SNS messages. These diverse actions serve as indispensable building blocks for crafting customized voice applications, ensuring the creation of uniquely tailored call experiences for users.
 
-VoIPBIN's Flow provides developers with a versatile and robust toolkit, empowering them to forge dynamic voice applications, efficiently manage incoming calls, and curate personalized call encounters. Through its non-linear execution, cohesive flow capabilities, and an array of actions including SMS, DTMFs, SNS messages, and more, VoIPBIN's Flow unveils limitless possibilities for the development of sophisticated and interactive voice applications, precisely tailored to meet specific business needs.
+VoIPBin's Flow provides developers with a versatile and robust toolkit, empowering them to forge dynamic voice applications, efficiently manage incoming calls, and curate personalized call encounters. Through its non-linear execution, cohesive flow capabilities, and an array of actions including SMS, DTMFs, SNS messages, and more, VoIPBin's Flow unveils limitless possibilities for the development of sophisticated and interactive voice applications, precisely tailored to meet specific business needs.
 
 **Action Categories**
 
@@ -407,19 +407,19 @@ VoIPBIN's Flow provides developers with a versatile and robust toolkit, empoweri
 
 Flow execution
 --------------
-In VoIPBIN, the execution of flows is versatile and can be initiated through various methods:
+In VoIPBin, the execution of flows is versatile and can be initiated through various methods:
 
 Incoming/Outgoing Calls
 +++++++++++++++++++++++
 
-VoIPBIN facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBIN will seamlessly execute the associated flow.
+VoIPBin facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBin will seamlessly execute the associated flow.
 Users can also initiate a call with a predefined flow. Once the outgoing call is answered, the attached flow will be triggered.
 
 ::
 
     Incoming Call Flow:
     +--------------+      +-----------------+      +---------------+
-    |  Caller dials|----->|  VoIPBIN looks  |----->|  Flow starts  |
+    |  Caller dials|----->|  VoIPBin looks  |----->|  Flow starts  |
     |  your number |      |  up the number  |      |  executing    |
     +--------------+      +-----------------+      +---------------+
 
@@ -432,7 +432,7 @@ Users can also initiate a call with a predefined flow. Once the outgoing call is
 Received Messages
 ++++++++++++++++++
 
-VoIPBIN allows users to register flows to received messages. When a message is received, the registered flow will be executed.
+VoIPBin allows users to register flows to received messages. When a message is received, the registered flow will be executed.
 For example, you can register the flow like the below.
 
 .. code::
@@ -458,7 +458,7 @@ See the :ref:`Variable Reference <variable-variable>` for all available variable
 Outbound Campaigns
 ++++++++++++++++++
 
-The VoIPBIN platform integrates flows into outbound campaigns, providing a structured and automated approach to execution.
+The VoIPBin platform integrates flows into outbound campaigns, providing a structured and automated approach to execution.
 
 API
 +++
@@ -521,7 +521,7 @@ When a flow ends, if ``on_complete_flow_id`` is set, the next flow starts automa
 Flow Actions and Interrupt Actions
 ----------------------------------
 
-VoIPBIN's Flow is built on an action-based engine. Each flow is defined as a JSON array of actions, where a "cursor" tracks the current execution point. Under normal circumstances, the cursor advances sequentially from one action to the next based on the flow's logic. This modular design lets you compose a variety of call-handling scenarios—from answering calls and playing prompts to branching based on caller input.
+VoIPBin's Flow is built on an action-based engine. Each flow is defined as a JSON array of actions, where a "cursor" tracks the current execution point. Under normal circumstances, the cursor advances sequentially from one action to the next based on the flow's logic. This modular design lets you compose a variety of call-handling scenarios—from answering calls and playing prompts to branching based on caller input.
 
 Standard Flow Actions
 ++++++++++++++++++++++
@@ -549,7 +549,7 @@ Each action is executed in sequence, and upon completion, the flow cursor moves 
         "id": "9c30642a-f05e-11ef-8674-ebba44c5cb0f2",
         "type": "talk",
         "option": {
-          "text": "Welcome to VoIPBIN",
+          "text": "Welcome to VoIPBin",
           "language": "en-US"
         }
       },
@@ -614,9 +614,9 @@ Integration and Best Practices
 
 * Flexibility: Use standard flow actions to define your routine call-handling steps, and rely on interrupt actions for events that require immediate attention.
 * API Integration: Interrupt actions can be initiated via dedicated API calls, enabling your application to react in real time to dynamic call events.
-* Flow Resumption: After an interrupt action completes, VoIPBIN resumes the flow from the designated point, ensuring a seamless call experience.
+* Flow Resumption: After an interrupt action completes, VoIPBin resumes the flow from the designated point, ensuring a seamless call experience.
 
-By combining sequential flow actions with the ability to trigger interrupt actions at any time, VoIPBIN provides a robust, programmable environment that can handle both predictable call scenarios and unexpected events with equal ease.
+By combining sequential flow actions with the ability to trigger interrupt actions at any time, VoIPBin provides a robust, programmable environment that can handle both predictable call scenarios and unexpected events with equal ease.
 
 
 The on complete flow id
@@ -652,7 +652,7 @@ How it works
 
 .. code::
 
-  Caller             VoIPBIN Engine              Flow A                Flow B
+  Caller             VoIPBin Engine              Flow A                Flow B
   |                      |                        |                     |
   | --- Incoming Call -->|                        |                     |
   |                      |-- Start Flow A ------->|                     |
@@ -681,9 +681,9 @@ How it works
                                                                           and depth < 5 then start another chain
 
 
-When a flow ends—either by reaching the end of its action list, encountering a stop action, or due to call termination—VoIPBIN checks whether on_complete_flow_id is defined.
+When a flow ends—either by reaching the end of its action list, encountering a stop action, or due to call termination—VoIPBin checks whether on_complete_flow_id is defined.
 
-If so, VoIPBIN starts the referenced flow as a new independent session.
+If so, VoIPBin starts the referenced flow as a new independent session.
 
 Most runtime variables from the original flow (e.g., ${voipbin.recording.id}, ${voipbin.call.id}) are inherited automatically, allowing seamless post-call workflows without requiring manual variable passing.
 
@@ -712,7 +712,7 @@ Most runtime variables from the original flow (e.g., ${voipbin.recording.id}, ${
 Execution limits
 ----------------
 
-To prevent infinite recursion, VoIPBIN enforces:
+To prevent infinite recursion, VoIPBin enforces:
 
 ::
 
@@ -750,7 +750,7 @@ This configuration ensures that when *flow_initial* completes—regardless of ho
 
 Error Handling in Flows
 -----------------------
-When something goes wrong during flow execution, VoIPBIN handles it gracefully.
+When something goes wrong during flow execution, VoIPBin handles it gracefully.
 
 **Error Scenarios**
 
@@ -770,7 +770,7 @@ When something goes wrong during flow execution, VoIPBIN handles it gracefully.
 
 **Safety Limits**
 
-VoIPBIN prevents runaway flows with built-in limits:
+VoIPBin prevents runaway flows with built-in limits:
 
 ::
 

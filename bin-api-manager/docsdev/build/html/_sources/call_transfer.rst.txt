@@ -23,7 +23,7 @@ Blind transfer is the simplest type of call transfer. In this type of transfer, 
 
 .. code::
 
-    Caller           VoIPBIN        Transferer        Transferee
+    Caller           VoIPBin        Transferer        Transferee
     |                  |                |                |
     |    Call in       | Call in        |                |
     |    progress      | progress       |                |
@@ -48,14 +48,14 @@ Blind transfer is the simplest type of call transfer. In this type of transfer, 
     |  Stop ring       |                |                |
     |<-----------------|                |                |
 
-* The Caller initiates a call to the VoIPBIN and the call is in progress.
+* The Caller initiates a call to the VoIPBin and the call is in progress.
 * The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.
-* The Transferer sends a transfer request to the VoIPBIN, indicating the Transferee's number.
-* The VoIPBIN immediately hangs up the Transferer's call.
-* The VoIPBIN rings the Caller (who now hears ringback) and dials the Transferee.
+* The Transferer sends a transfer request to the VoIPBin, indicating the Transferee's number.
+* The VoIPBin immediately hangs up the Transferer's call.
+* The VoIPBin rings the Caller (who now hears ringback) and dials the Transferee.
 * The Transferee answers the call and is connected to the Caller.
 
-This is the basic process of an blind transfer using a CPaaS like VoIPBIN.
+This is the basic process of an blind transfer using a CPaaS like VoIPBin.
 
 .. note:: **AI Implementation Hint**
 
@@ -69,7 +69,7 @@ Attended transfer, also known as consultative transfer, involves the person init
 
 .. code::
 
-    Caller           VoIPBIN        Transferer        Transferee
+    Caller           VoIPBin        Transferer        Transferee
     |                  |                |                |
     |    Call in       | Call in        |                |
     |    progress      | progress       |                |
@@ -106,16 +106,16 @@ Attended transfer, also known as consultative transfer, involves the person init
     |    progress      |                |                |
     |<---------------->|                |                |
 
-* The Caller initiates a call to the VoIPBIN, and the call is in progress with transferer.
+* The Caller initiates a call to the VoIPBin, and the call is in progress with transferer.
 * The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.
-* The Transferer sends a transfer request to the VoIPBIN, indicating the Transferee's number.
-* The VoIPBIN puts the Caller on music on hold and mute (direction ``in``).
-* The VoIPBIN dials to the Transferee.
+* The Transferer sends a transfer request to the VoIPBin, indicating the Transferee's number.
+* The VoIPBin puts the Caller on music on hold and mute (direction ``in``).
+* The VoIPBin dials to the Transferee.
 * The Transferee answers the call and is connected to the Transferer and talk to each other.
 * The Transferer drops out of the call.
-* The VoIPBIN turn off the Caller's Music on hold and the Caller and Transferee can now hear each other.
+* The VoIPBin turn off the Caller's Music on hold and the Caller and Transferee can now hear each other.
 
-This is the basic process of an attended transfer using a CPaaS like VoIPBIN. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.
+This is the basic process of an attended transfer using a CPaaS like VoIPBin. It allows for seamless communication between parties and can help businesses manage their incoming calls more efficiently.
 
 .. note:: **AI Implementation Hint**
 

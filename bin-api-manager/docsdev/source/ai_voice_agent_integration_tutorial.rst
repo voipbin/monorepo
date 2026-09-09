@@ -180,13 +180,13 @@ Once the speaking session is ``active``, send an initial greeting to the caller.
         ...
     }
 
-The caller now hears the greeting. VoIPBIN synthesizes the text using the configured TTS provider and voice.
+The caller now hears the greeting. VoIPBin synthesizes the text using the configured TTS provider and voice.
 
 
 Step 5: Receive and Process Transcripts
 -----------------------------------------
 
-When the caller responds, VoIPBIN delivers a ``transcript_created`` event to your webhook URL.
+When the caller responds, VoIPBin delivers a ``transcript_created`` event to your webhook URL.
 
 **Webhook Payload:**
 

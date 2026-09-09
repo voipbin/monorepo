@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Call Flow Sequences" href="architecture_sequences.html"><link rel="prev" title="Real-Time Communication (RTC)" href="architecture_rtc.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>System Request Flows - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -642,9 +642,9 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
-<p>This page demonstrates detailed request flows through VoIPBIN: creating a call, reading with cache, event broadcasting, multi-service orchestration, real-time WebSocket notifications, and error handling with retries. Relevant when an AI agent needs to understand the step-by-step processing of API requests, timing breakdowns, caching behavior, or debugging strategies.</p>
+<p>This page demonstrates detailed request flows through VoIPBin: creating a call, reading with cache, event broadcasting, multi-service orchestration, real-time WebSocket notifications, and error handling with retries. Relevant when an AI agent needs to understand the step-by-step processing of API requests, timing breakdowns, caching behavior, or debugging strategies.</p>
 </div>
-<p>This section demonstrates how requests flow through VoIPBIN’s architecture from client to backend services and back. Understanding these flows helps developers build integrations and debug issues.</p>
+<p>This section demonstrates how requests flow through VoIPBin’s architecture from client to backend services and back. Understanding these flows helps developers build integrations and debug issues.</p>
 <section id="request-flow-overview">
 <h2>Request Flow Overview<a class="headerlink" href="#request-flow-overview" title="Link to this heading">¶</a></h2>
 <p>All external requests follow this general pattern:</p>
@@ -690,8 +690,8 @@ Client Application
     |  Content-Type: application/json
     |
     |  {
-    |    &quot;source&quot;: {&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+15551234567&quot;},
-    |    &quot;destinations&quot;: [{&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+15559876543&quot;}]
+    |    "source": {"type": "tel", "target": "+15551234567"},
+    |    "destinations": [{"type": "tel", "target": "+15559876543"}]
     |  }
     |
     v
@@ -700,14 +700,14 @@ Client Application
 
 +-------------------------------------------------+
 |  a) Extract JWT token                           |
-|     → token = &quot;eyJhbGc...&quot;                      |
+|     → token = "eyJhbGc..."                      |
 |                                                 |
 |  b) Validate JWT signature                      |
-|     → customer_id = &quot;customer-123&quot;              |
-|     → agent_id = &quot;agent-456&quot;                    |
+|     → customer_id = "customer-123"              |
+|     → agent_id = "agent-456"                    |
 |                                                 |
 |  c) Check permissions                           |
-|     → hasPermission(customer-123, &quot;call.create&quot;)|
+|     → hasPermission(customer-123, "call.create")|
 |     → ✓ Allowed                                 |
 |                                                 |
 |  d) Validate request body                       |
@@ -717,12 +717,12 @@ Client Application
 |                                                 |
 |  e) Build RPC message                           |
 |     {                                           |
-|       &quot;route&quot;: &quot;POST /v1/calls&quot;,                |
-|       &quot;headers&quot;: {                              |
-|         &quot;customer_id&quot;: &quot;customer-123&quot;,          |
-|         &quot;agent_id&quot;: &quot;agent-456&quot;                 |
+|       "route": "POST /v1/calls",                |
+|       "headers": {                              |
+|         "customer_id": "customer-123",          |
+|         "agent_id": "agent-456"                 |
 |       },                                        |
-|       &quot;body&quot;: {...}                             |
+|       "body": {...}                             |
 |     }                                           |
 |                                                 |
 |  f) Send to RabbitMQ                            |
@@ -755,16 +755,16 @@ Client Application
 |     → ✓ Sufficient funds                        |
 |                                                 |
 |  c) Create call record                          |
-|     → Generate call_id = &quot;call-789&quot;             |
+|     → Generate call_id = "call-789"             |
 |     → INSERT INTO calls (...)                   |
-|     → Status: &quot;initiating&quot;                      |
+|     → Status: "initiating"                      |
 |                                                 |
 |  d) Initiate SIP call                           |
 |     → Request Asterisk channel creation         |
 |     → via Kamailio SIP routing                  |
 |                                                 |
 |  e) Update call status                          |
-|     → UPDATE calls SET status=&#39;ringing&#39; WHERE...|
+|     → UPDATE calls SET status='ringing' WHERE...|
 |                                                 |
 |  f) Publish event                               |
 |     → Event: call.created                       |
@@ -772,11 +772,11 @@ Client Application
 |                                                 |
 |  g) Build response                              |
 |     {                                           |
-|       &quot;id&quot;: &quot;call-789&quot;,                         |
-|       &quot;status&quot;: &quot;ringing&quot;,                      |
-|       &quot;source&quot;: &quot;+15551234567&quot;,                 |
-|       &quot;destination&quot;: &quot;+15559876543&quot;,            |
-|       &quot;tm_create&quot;: &quot;2026-01-20T12:00:00.000Z&quot;   |
+|       "id": "call-789",                         |
+|       "status": "ringing",                      |
+|       "source": "+15551234567",                 |
+|       "destination": "+15559876543",            |
+|       "tm_create": "2026-01-20T12:00:00.000Z"   |
 |     }                                           |
 |                                                 |
 |  h) Send RPC response                           |
@@ -814,11 +814,11 @@ HTTP/1.1 201 Created
 Content-Type: application/json
 
 {
-  &quot;id&quot;: &quot;call-789&quot;,
-  &quot;status&quot;: &quot;ringing&quot;,
-  &quot;source&quot;: &quot;+15551234567&quot;,
-  &quot;destination&quot;: &quot;+15559876543&quot;,
-  &quot;tm_create&quot;: &quot;2026-01-20T12:00:00.000Z&quot;
+  "id": "call-789",
+  "status": "ringing",
+  "source": "+15551234567",
+  "destination": "+15559876543",
+  "tm_create": "2026-01-20T12:00:00.000Z"
 }
 </pre></div>
 </div>
@@ -866,7 +866,7 @@ Authorization: Bearer eyJhbGc...
 
 +------------------------------------------------+
 |  a) Check Redis cache first                    |
-|     key = &quot;call:call-789&quot;                      |
+|     key = "call:call-789"                      |
 |                                                |
 |     GET call:call-789                          |
 |     → Cache HIT! (90% of requests)             |
@@ -877,7 +877,7 @@ Authorization: Bearer eyJhbGc...
 |     → Cache MISS (10% of requests)             |
 |                                                |
 |  b) If cache miss, query MySQL                 |
-|     SELECT * FROM calls WHERE id=&#39;call-789&#39;    |
+|     SELECT * FROM calls WHERE id='call-789'    |
 |     → Query time: 10ms                         |
 |                                                |
 |  c) Store in Redis for next time               |
@@ -923,8 +923,8 @@ Cache Miss Path: ~27ms total
 |                                                |
 |  b) Update database                            |
 |     UPDATE calls                               |
-|     SET status=&#39;active&#39;, tm_answer=NOW()       |
-|     WHERE id=&#39;call-789&#39;                        |
+|     SET status='active', tm_answer=NOW()       |
+|     WHERE id='call-789'                        |
 |                                                |
 |  c) Invalidate cache                           |
 |     DEL call:call-789                          |
@@ -933,9 +933,9 @@ Cache Miss Path: ~27ms total
 |     Exchange: call.events                      |
 |     Event: call.answered                       |
 |     {                                          |
-|       &quot;event_type&quot;: &quot;call.answered&quot;,           |
-|       &quot;call_id&quot;: &quot;call-789&quot;,                   |
-|       &quot;timestamp&quot;: &quot;2026-01-20T12:00:05.000Z&quot;  |
+|       "event_type": "call.answered",           |
+|       "call_id": "call-789",                   |
+|       "timestamp": "2026-01-20T12:00:05.000Z"  |
 |     }                                          |
 |                                                |
 |  e) API gateway fans the event out to          |
@@ -955,13 +955,13 @@ Cache Miss Path: ~27ms total
 |                |    | endpoint       |    | via WebSocket  |   |                |
 | • Calculate    |    |                |    |                |   | • Active calls |
 |   charges      |    | POST https://  |    | {              |   | • Talk time    |
-| • Create       |    | customer.com/  |    |   &quot;event&quot;:     |   | • Status       |
-|   billing      |    | webhook        |    |   &quot;call.       |   |                |
-|   record       |    |                |    |   answered&quot;,   |   |                |
-|                |    | {              |    |   &quot;call_id&quot;:   |   |                |
-| INSERT INTO    |    |   &quot;event_type&quot;:|    |   &quot;call-789&quot;   |   |                |
-| billings       |    |   &quot;call.       |    | }              |   |                |
-| (...)          |    |   answered&quot;,   |    |                |   |                |
+| • Create       |    | customer.com/  |    |   "event":     |   | • Status       |
+|   billing      |    | webhook        |    |   "call.       |   |                |
+|   record       |    |                |    |   answered",   |   |                |
+|                |    | {              |    |   "call_id":   |   |                |
+| INSERT INTO    |    |   "event_type":|    |   "call-789"   |   |                |
+| billings       |    |   "call.       |    | }              |   |                |
+| (...)          |    |   answered",   |    |                |   |                |
 |                |    |   ...          |    |                |   |                |
 |                |    | }              |    |                |   |                |
 +----------------+    +----------------+    +----------------+   +----------------+
@@ -998,7 +998,7 @@ Client                API Gateway         Flow Manager        Conference Mgr    
   |                       |                    +--------------------------------------&gt;|
   |                       |                    |                    |                  |
   |                       |                    |  Action 2: Talk    |                  |
-  |                       |                    |  &quot;Welcome to conf&quot; |                  |
+  |                       |                    |  "Welcome to conf" |                  |
   |                       |                    +--------------------------------------&gt;|
   |                       |                    |                    |                  |
   |                       |                    |  Action 3: Join    |                  |
@@ -1048,10 +1048,10 @@ Client (Browser)        API Gateway (WebSocket)    Backend Services
     |                           |                       |
     |  Subscribe                |                       |
     |  {                        |                       |
-    |    &quot;type&quot;: &quot;subscribe&quot;,   |                       |
-    |    &quot;topics&quot;: [            |                       |
-    |      &quot;customer_id:123:    |                       |
-    |       call:*&quot;             |                       |
+    |    "type": "subscribe",   |                       |
+    |    "topics": [            |                       |
+    |      "customer_id:123:    |                       |
+    |       call:*"             |                       |
     |    ]                      |                       |
     |  }                        |                       |
     +--------------------------&gt;|                       |
@@ -1072,10 +1072,10 @@ Call Manager                RabbitMQ              API Gateway (WS)      Client
     |  Publish event            |                       |                  |
     +--------------------------&gt;|                       |                  |
     |  {                        |                       |                  |
-    |    &quot;event&quot;: &quot;call.        |                       |                  |
-    |     answered&quot;,            |                       |                  |
-    |    &quot;customer_id&quot;: &quot;123&quot;,  |                       |                  |
-    |    &quot;call_id&quot;: &quot;call-789&quot;  |                       |                  |
+    |    "event": "call.        |                       |                  |
+    |     answered",            |                       |                  |
+    |    "customer_id": "123",  |                       |                  |
+    |    "call_id": "call-789"  |                       |                  |
     |  }                        |                       |                  |
     |                           |                       |                  |
     |                           |  Fanout to            |                  |
@@ -1088,13 +1088,13 @@ Call Manager                RabbitMQ              API Gateway (WS)      Client
     |                           |                       +-----------------&gt;|
     |                           |                       |                  |
     |                           |                       |  {               |
-    |                           |                       |    &quot;event_type&quot;: |
-    |                           |                       |    &quot;call.        |
-    |                           |                       |    answered&quot;,    |
-    |                           |                       |    &quot;call_id&quot;:    |
-    |                           |                       |    &quot;call-789&quot;,   |
-    |                           |                       |    &quot;timestamp&quot;:  |
-    |                           |                       |    &quot;...&quot;         |
+    |                           |                       |    "event_type": |
+    |                           |                       |    "call.        |
+    |                           |                       |    answered",    |
+    |                           |                       |    "call_id":    |
+    |                           |                       |    "call-789",   |
+    |                           |                       |    "timestamp":  |
+    |                           |                       |    "..."         |
     |                           |                       |  }               |
 
 Latency: &lt; 100ms from event to client notification
@@ -1153,21 +1153,21 @@ API Gateway         Call Manager        Billing Manager
     |                   |  balance          |
     |                   |&lt;------------------+
     |                   |                   |
-    |  Error 402        |  Don&#39;t retry      |
+    |  Error 402        |  Don't retry      |
     |  Payment Required |  (permanent error)|
     |&lt;------------------+                   |
     |                   |                   |
 
 Error Categories:
 • Transient → Retry (network, timeout, connection)
-• Permanent → Don&#39;t retry (invalid data, permissions)
+• Permanent → Don't retry (invalid data, permissions)
 • Business → Return error (insufficient balance)
 </pre></div>
 </div>
 </section>
 <section id="performance-optimization">
 <h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN optimizes flow performance through several techniques:</p>
+<p>VoIPBin optimizes flow performance through several techniques:</p>
 <p><strong>Parallel Processing</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span> <span class="n">vs</span> <span class="n">Parallel</span><span class="p">:</span>
 
@@ -1213,7 +1213,7 @@ Total: 35ms                  Total: 12ms (3x faster)
 </section>
 <section id="best-practices-for-developers">
 <h2>Best Practices for Developers<a class="headerlink" href="#best-practices-for-developers" title="Link to this heading">¶</a></h2>
-<p><strong>When Integrating with VoIPBIN:</strong></p>
+<p><strong>When Integrating with VoIPBin:</strong></p>
 <ol class="arabic simple">
 <li><p><strong>Always Include Authentication</strong>
 - Include JWT token in Authorization header
@@ -1285,7 +1285,7 @@ Issue: Slow Response
 </section>
 <section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s request flows are designed for:</p>
+<p>VoIPBin’s request flows are designed for:</p>
 <ul class="simple">
 <li><p><strong>Performance</strong>: Caching, connection pooling, parallel processing</p></li>
 <li><p><strong>Reliability</strong>: Retry logic, circuit breakers, health checks</p></li>
@@ -1326,7 +1326,7 @@ Issue: Slow Response
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1379,8 +1379,8 @@ Issue: Slow Response
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -82,7 +82,7 @@ Call
 
 .. note:: **AI Implementation Hint**
 
-   Unlike most other VoIPBIN resources, the Call struct's timestamp fields (``tm_progressing``, ``tm_ringing``, ``tm_hangup``, ``tm_update``, ``tm_delete``) are omitted from the JSON response entirely when unset, rather than using a ``9999-01-01 00:00:00.000000`` sentinel or a ``null`` value. Check for the field's presence (e.g. ``"tm_hangup" in response``) rather than comparing its value against a sentinel.
+   Unlike most other VoIPBin resources, the Call struct's timestamp fields (``tm_progressing``, ``tm_ringing``, ``tm_hangup``, ``tm_update``, ``tm_delete``) are omitted from the JSON response entirely when unset, rather than using a ``9999-01-01 00:00:00.000000`` sentinel or a ``null`` value. Check for the field's presence (e.g. ``"tm_hangup" in response``) rather than comparing its value against a sentinel.
 
 Example
 +++++++
@@ -183,8 +183,8 @@ Call's direction (enum string).
 =========== ============
 Direction   Description
 =========== ============
-incoming    The call originated from outside VoIPBIN (e.g., a PSTN caller dialing a VoIPBIN number).
-outgoing    The call was initiated by VoIPBIN (e.g., via ``POST /calls``).
+incoming    The call originated from outside VoIPBin (e.g., a PSTN caller dialing a VoIPBin number).
+outgoing    The call was initiated by VoIPBin (e.g., via ``POST /calls``).
 =========== ============
 
 .. _call-struct-call-hangupby:
@@ -215,7 +215,7 @@ busy        The destination is on another call.
 cancel      The call was cancelled by the originator before the destination answered.
 timeout     The call exceeded the maximum allowed duration after being answered.
 noanswer    The destination did not answer before the destination's ring timeout expired.
-dialout     The call exceeded VoIPBIN's dialing timeout before being answered. This is VoIPBIN's own timeout for outgoing calls.
+dialout     The call exceeded VoIPBin's dialing timeout before being answered. This is VoIPBin's own timeout for outgoing calls.
 amd         The Answering Machine Detection (AMD) action detected a voicemail and hung up the call according to your AMD settings.
 =========== ============
 
@@ -224,7 +224,7 @@ amd         The Answering Machine Detection (AMD) action detected a voicemail an
 Call Metadata
 -------------
 
-The ``metadata`` field on a call is an internal-only key/value map populated by VoIPBIN services during call setup and execution. Customers can **read** this field via ``GET https://api.voipbin.net/v1.0/calls/{id}`` and via call webhook events for calls they own, but they **cannot set** it on call creation — ``POST /calls`` does not accept a ``metadata`` parameter, and any such field in the request body is ignored.
+The ``metadata`` field on a call is an internal-only key/value map populated by VoIPBin services during call setup and execution. Customers can **read** this field via ``GET https://api.voipbin.net/v1.0/calls/{id}`` and via call webhook events for calls they own, but they **cannot set** it on call creation — ``POST /calls`` does not accept a ``metadata`` parameter, and any such field in the request body is ignored.
 
 The map is a JSON object of the form ``{"<key>": <value>}``. Keys not listed below are reserved for internal use and may appear or disappear without notice. Customers should only rely on the documented keys.
 
@@ -234,13 +234,13 @@ Supported keys
 ======================= ========================= ============
 Key                     Type                      Description
 ======================= ========================= ============
-route_provider_ids      Array of UUID             Ordered list of provider UUIDs to force routing through when placing the outgoing leg of a call. Set by internal admin test flows only; never populated for normal customer traffic. When present, VoIPBIN attempts the listed providers in order and bypasses the default customer provider selection.
+route_provider_ids      Array of UUID             Ordered list of provider UUIDs to force routing through when placing the outgoing leg of a call. Set by internal admin test flows only; never populated for normal customer traffic. When present, VoIPBin attempts the listed providers in order and bypasses the default customer provider selection.
 rtp_debug               Boolean                   When true, RTPEngine is capturing RTP traffic for this call for debugging. Inherited from the source customer or destination number metadata at call-creation time.
-skip_source_validation  Boolean                   When true, VoIPBIN uses the caller-supplied ``source`` address for the outgoing leg verbatim, skipping customer-ownership validation and the ``OutboundConfig`` default-source fallback. Set by internal admin test flows only, to preserve a source number a carrier has pre-authorized that is not owned by any VoIPBIN customer. Never populated for normal customer traffic.
+skip_source_validation  Boolean                   When true, VoIPBin uses the caller-supplied ``source`` address for the outgoing leg verbatim, skipping customer-ownership validation and the ``OutboundConfig`` default-source fallback. Set by internal admin test flows only, to preserve a source number a carrier has pre-authorized that is not owned by any VoIPBin customer. Never populated for normal customer traffic.
 codecs                  String                    Comma-separated outbound codec preference for the call (e.g. ``PCMU,PCMA,G729``). When present, overrides the customer-level ``OutboundConfig`` codec setting for this call only. Set at call-creation time by internal/trusted callers; not settable via ``POST /calls``.
 ======================= ========================= ============
 
 .. note:: **AI Implementation Hint**
 
-   Do not include a ``metadata`` field in the request body when calling ``POST https://api.voipbin.net/v1.0/calls``. The field is read-only from a customer's perspective and is managed entirely by VoIPBIN's internal services. Treat ``metadata`` in API responses and webhook payloads as informational: use ``rtp_debug`` to surface RTP capture status in admin UIs, but do not depend on ``route_provider_ids``, ``skip_source_validation``, or ``codecs`` being present — they only appear on internal admin test calls or calls created by trusted internal callers.
+   Do not include a ``metadata`` field in the request body when calling ``POST https://api.voipbin.net/v1.0/calls``. The field is read-only from a customer's perspective and is managed entirely by VoIPBin's internal services. Treat ``metadata`` in API responses and webhook payloads as informational: use ``rtp_debug`` to surface RTP capture status in admin UIs, but do not depend on ``route_provider_ids``, ``skip_source_validation``, or ``codecs`` being present — they only appear on internal admin test calls or calls created by trusted internal callers.
 

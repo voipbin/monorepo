@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Support" href="support.html"><link rel="prev" title="Installation" href="self_hosting.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Glossary - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -647,7 +647,7 @@
 </section>
 <section id="action">
 <span id="glossary-action"></span><h3>Action<a class="headerlink" href="#action" title="Link to this heading">¶</a></h3>
-<p>A single step in a flow that defines what VoIPBIN should do during call or message handling. Examples include <code class="docutils literal notranslate"><span class="pre">answer</span></code>, <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">play</span></code>, <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code>, and <code class="docutils literal notranslate"><span class="pre">branch</span></code>. Actions are executed sequentially unless interrupted or branched.</p>
+<p>A single step in a flow that defines what VoIPBin should do during call or message handling. Examples include <code class="docutils literal notranslate"><span class="pre">answer</span></code>, <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">play</span></code>, <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code>, and <code class="docutils literal notranslate"><span class="pre">branch</span></code>. Actions are executed sequentially unless interrupted or branched.</p>
 </section>
 <section id="activeflow">
 <span id="glossary-activeflow"></span><h3>Activeflow<a class="headerlink" href="#activeflow" title="Link to this heading">¶</a></h3>
@@ -659,7 +659,7 @@
 </section>
 <section id="ai-voice-agent">
 <span id="glossary-ai-voice-agent"></span><h3>AI Voice Agent<a class="headerlink" href="#ai-voice-agent" title="Link to this heading">¶</a></h3>
-<p>An AI-powered conversational agent that can interact with callers using natural language via speech recognition (STT) and text-to-speech (TTS). Configured through VoIPBIN’s AI resource and invoked in flows via the <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> action. See <a class="reference internal" href="ai_voice_agent_integration_overview.html#ai-voice-agent-integration-overview"><span class="std std-ref">AI Voice Agent Integration</span></a>.</p>
+<p>An AI-powered conversational agent that can interact with callers using natural language via speech recognition (STT) and text-to-speech (TTS). Configured through VoIPBin’s AI resource and invoked in flows via the <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> action. See <a class="reference internal" href="ai_voice_agent_integration_overview.html#ai-voice-agent-integration-overview"><span class="std std-ref">AI Voice Agent Integration</span></a>.</p>
 </section>
 <section id="branch">
 <span id="glossary-branch"></span><h3>Branch<a class="headerlink" href="#branch" title="Link to this heading">¶</a></h3>
@@ -667,7 +667,7 @@
 </section>
 <section id="call-leg">
 <span id="glossary-call-leg"></span><h3>Call Leg<a class="headerlink" href="#call-leg" title="Link to this heading">¶</a></h3>
-<p>In VoIPBIN’s architecture, a traditional A-to-B call consists of two separate call legs: A → VoIPBIN (Call 1) and VoIPBIN → B (Call 2). Each leg is tracked independently with its own call ID, allowing for complex call scenarios like transfers and conferences.</p>
+<p>In VoIPBin’s architecture, a traditional A-to-B call consists of two separate call legs: A → VoIPBin (Call 1) and VoIPBin → B (Call 2). Each leg is tracked independently with its own call ID, allowing for complex call scenarios like transfers and conferences.</p>
 </section>
 <section id="campaign">
 <span id="glossary-campaign"></span><h3>Campaign<a class="headerlink" href="#campaign" title="Link to this heading">¶</a></h3>
@@ -679,19 +679,19 @@
 </section>
 <section id="did-direct-inward-dialing">
 <span id="glossary-did"></span><h3>DID (Direct Inward Dialing)<a class="headerlink" href="#did-direct-inward-dialing" title="Link to this heading">¶</a></h3>
-<p>A phone number that routes directly to a specific destination. In VoIPBIN, DIDs are managed through the Number resource and can be associated with flows.</p>
+<p>A phone number that routes directly to a specific destination. In VoIPBin, DIDs are managed through the Number resource and can be associated with flows.</p>
 </section>
 <section id="dtmf-dual-tone-multi-frequency">
 <span id="glossary-dtmf"></span><h3>DTMF (Dual-Tone Multi-Frequency)<a class="headerlink" href="#dtmf-dual-tone-multi-frequency" title="Link to this heading">¶</a></h3>
-<p>Touch-tone signals generated when pressing phone keypad buttons. Used in IVR systems to capture user input. Also referred to as “digits” in VoIPBIN documentation.</p>
+<p>Touch-tone signals generated when pressing phone keypad buttons. Used in IVR systems to capture user input. Also referred to as “digits” in VoIPBin documentation.</p>
 </section>
 <section id="email">
 <span id="glossary-email"></span><h3>Email<a class="headerlink" href="#email" title="Link to this heading">¶</a></h3>
-<p>An email message sent or received via the VoIPBIN platform. Emails can be triggered from flows using the <code class="docutils literal notranslate"><span class="pre">email_send</span></code> action for automated notifications, confirmations, or follow-ups.</p>
+<p>An email message sent or received via the VoIPBin platform. Emails can be triggered from flows using the <code class="docutils literal notranslate"><span class="pre">email_send</span></code> action for automated notifications, confirmations, or follow-ups.</p>
 </section>
 <section id="e-164">
 <span id="glossary-e164"></span><h3>E.164<a class="headerlink" href="#e-164" title="Link to this heading">¶</a></h3>
-<p>International standard for phone number formatting. All phone numbers in VoIPBIN must use E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, with no spaces or special characters. Example: <code class="docutils literal notranslate"><span class="pre">+16062067563</span></code></p>
+<p>International standard for phone number formatting. All phone numbers in VoIPBin must use E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, with no spaces or special characters. Example: <code class="docutils literal notranslate"><span class="pre">+16062067563</span></code></p>
 </section>
 <section id="flow">
 <span id="glossary-flow"></span><h3>Flow<a class="headerlink" href="#flow" title="Link to this heading">¶</a></h3>
@@ -707,19 +707,19 @@
 </section>
 <section id="ivr-interactive-voice-response">
 <span id="glossary-ivr"></span><h3>IVR (Interactive Voice Response)<a class="headerlink" href="#ivr-interactive-voice-response" title="Link to this heading">¶</a></h3>
-<p>Automated telephone system that interacts with callers through voice prompts and DTMF input. VoIPBIN flows enable building sophisticated IVR systems using actions like <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">play</span></code>, <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code>, and <code class="docutils literal notranslate"><span class="pre">branch</span></code>.</p>
+<p>Automated telephone system that interacts with callers through voice prompts and DTMF input. VoIPBin flows enable building sophisticated IVR systems using actions like <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">play</span></code>, <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code>, and <code class="docutils literal notranslate"><span class="pre">branch</span></code>.</p>
 </section>
 <section id="media-server">
 <span id="glossary-media-server"></span><h3>Media Server<a class="headerlink" href="#media-server" title="Link to this heading">¶</a></h3>
-<p>Backend infrastructure that handles real-time audio processing including transcoding, mixing, echo cancellation, and jitter buffering. VoIPBIN’s media servers ensure high-quality media streams.</p>
+<p>Backend infrastructure that handles real-time audio processing including transcoding, mixing, echo cancellation, and jitter buffering. VoIPBin’s media servers ensure high-quality media streams.</p>
 </section>
 <section id="pstn-public-switched-telephone-network">
 <span id="glossary-pstn"></span><h3>PSTN (Public Switched Telephone Network)<a class="headerlink" href="#pstn-public-switched-telephone-network" title="Link to this heading">¶</a></h3>
-<p>Traditional telephone network for landlines and mobile phones. VoIPBIN connects to PSTN through gateways to enable calls to/from regular phone numbers.</p>
+<p>Traditional telephone network for landlines and mobile phones. VoIPBin connects to PSTN through gateways to enable calls to/from regular phone numbers.</p>
 </section>
 <section id="rag-retrieval-augmented-generation">
 <span id="glossary-rag"></span><h3>RAG (Retrieval-Augmented Generation)<a class="headerlink" href="#rag-retrieval-augmented-generation" title="Link to this heading">¶</a></h3>
-<p>A technique that enhances AI responses by first retrieving relevant documents or knowledge base content, then using that context to generate more accurate answers. In VoIPBIN, RAG resources store and index documents that AI agents can reference during conversations.</p>
+<p>A technique that enhances AI responses by first retrieving relevant documents or knowledge base content, then using that context to generate more accurate answers. In VoIPBin, RAG resources store and index documents that AI agents can reference during conversations.</p>
 </section>
 <section id="queue">
 <span id="glossary-queue"></span><h3>Queue<a class="headerlink" href="#queue" title="Link to this heading">¶</a></h3>
@@ -727,7 +727,7 @@
 </section>
 <section id="rtp-real-time-transport-protocol">
 <span id="glossary-rtp"></span><h3>RTP (Real-time Transport Protocol)<a class="headerlink" href="#rtp-real-time-transport-protocol" title="Link to this heading">¶</a></h3>
-<p>Network protocol for transmitting audio and video streams. VoIPBIN uses RTP for media transmission between endpoints.</p>
+<p>Network protocol for transmitting audio and video streams. VoIPBin uses RTP for media transmission between endpoints.</p>
 </section>
 <section id="route">
 <span id="glossary-route"></span><h3>Route<a class="headerlink" href="#route" title="Link to this heading">¶</a></h3>
@@ -735,11 +735,11 @@
 </section>
 <section id="sip-session-initiation-protocol">
 <span id="glossary-sip"></span><h3>SIP (Session Initiation Protocol)<a class="headerlink" href="#sip-session-initiation-protocol" title="Link to this heading">¶</a></h3>
-<p>Signaling protocol used to establish, manage, and terminate VoIP calls. VoIPBIN supports SIP for call control and integrates with SIP trunks.</p>
+<p>Signaling protocol used to establish, manage, and terminate VoIP calls. VoIPBin supports SIP for call control and integrates with SIP trunks.</p>
 </section>
 <section id="sip-trunk">
 <span id="glossary-sip-trunk"></span><h3>SIP Trunk<a class="headerlink" href="#sip-trunk" title="Link to this heading">¶</a></h3>
-<p>A custom DNS hostname that accepts SIP traffic for your VoIPBIN account. Enables integration with external SIP systems and PBXes.</p>
+<p>A custom DNS hostname that accepts SIP traffic for your VoIPBin account. Enables integration with external SIP systems and PBXes.</p>
 </section>
 <section id="speaking">
 <span id="glossary-speaking"></span><h3>Speaking<a class="headerlink" href="#speaking" title="Link to this heading">¶</a></h3>
@@ -747,19 +747,19 @@
 </section>
 <section id="storage">
 <span id="glossary-storage"></span><h3>Storage<a class="headerlink" href="#storage" title="Link to this heading">¶</a></h3>
-<p>VoIPBIN’s file storage service for managing media files such as call recordings, voicemail messages, and uploaded audio files. Files can be accessed via the Storage API.</p>
+<p>VoIPBin’s file storage service for managing media files such as call recordings, voicemail messages, and uploaded audio files. Files can be accessed via the Storage API.</p>
 </section>
 <section id="stt-speech-to-text">
 <span id="glossary-stt"></span><h3>STT (Speech-to-Text)<a class="headerlink" href="#stt-speech-to-text" title="Link to this heading">¶</a></h3>
-<p>Technology that converts spoken words into text. Used in VoIPBIN for transcription and AI voice assistant features.</p>
+<p>Technology that converts spoken words into text. Used in VoIPBin for transcription and AI voice assistant features.</p>
 </section>
 <section id="tts-text-to-speech">
 <span id="glossary-tts"></span><h3>TTS (Text-to-Speech)<a class="headerlink" href="#tts-text-to-speech" title="Link to this heading">¶</a></h3>
-<p>Technology that converts text into spoken audio. VoIPBIN’s <code class="docutils literal notranslate"><span class="pre">talk</span></code> action uses TTS to generate voice prompts in multiple languages and voices.</p>
+<p>Technology that converts text into spoken audio. VoIPBin’s <code class="docutils literal notranslate"><span class="pre">talk</span></code> action uses TTS to generate voice prompts in multiple languages and voices.</p>
 </section>
 <section id="talk">
 <span id="glossary-talk"></span><h3>Talk<a class="headerlink" href="#talk" title="Link to this heading">¶</a></h3>
-<p>A messaging conversation session within VoIPBIN’s Talk feature. Supports real-time communication between agents and customers through text-based messaging interfaces.</p>
+<p>A messaging conversation session within VoIPBin’s Talk feature. Supports real-time communication between agents and customers through text-based messaging interfaces.</p>
 </section>
 <section id="team">
 <span id="glossary-team"></span><h3>Team<a class="headerlink" href="#team" title="Link to this heading">¶</a></h3>
@@ -767,7 +767,7 @@
 </section>
 <section id="transcribe">
 <span id="glossary-transcribe"></span><h3>Transcribe<a class="headerlink" href="#transcribe" title="Link to this heading">¶</a></h3>
-<p>The process of converting live call audio into text in real-time. VoIPBIN supports real-time transcription via the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> flow action, with results delivered via webhooks for monitoring, analytics, or AI processing.</p>
+<p>The process of converting live call audio into text in real-time. VoIPBin supports real-time transcription via the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> flow action, with results delivered via webhooks for monitoring, analytics, or AI processing.</p>
 </section>
 <section id="variable">
 <span id="glossary-variable"></span><h3>Variable<a class="headerlink" href="#variable" title="Link to this heading">¶</a></h3>
@@ -775,15 +775,15 @@
 </section>
 <section id="webhook">
 <span id="glossary-webhook"></span><h3>Webhook<a class="headerlink" href="#webhook" title="Link to this heading">¶</a></h3>
-<p>HTTP callback that VoIPBIN sends to your server when events occur (call status changes, message received, etc.). Webhooks enable real-time notifications and integrations.</p>
+<p>HTTP callback that VoIPBin sends to your server when events occur (call status changes, message received, etc.). Webhooks enable real-time notifications and integrations.</p>
 </section>
 <section id="webrtc-web-real-time-communication">
 <span id="glossary-webrtc"></span><h3>WebRTC (Web Real-Time Communication)<a class="headerlink" href="#webrtc-web-real-time-communication" title="Link to this heading">¶</a></h3>
-<p>Browser-based standard for real-time audio/video communication. VoIPBIN supports WebRTC for in-browser calling without plugins.</p>
+<p>Browser-based standard for real-time audio/video communication. VoIPBin supports WebRTC for in-browser calling without plugins.</p>
 </section>
 <section id="timestamp">
 <span id="id2"></span><h3>Timestamp<a class="headerlink" href="#timestamp" title="Link to this heading">¶</a></h3>
-<p>All timestamps in VoIPBIN follow the format <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span> <span class="pre">HH:MM:SS.microseconds</span></code> in UTC timezone. Example: <code class="docutils literal notranslate"><span class="pre">2022-05-01</span> <span class="pre">15:10:38.785510878</span></code></p>
+<p>All timestamps in VoIPBin follow the format <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span> <span class="pre">HH:MM:SS.microseconds</span></code> in UTC timezone. Example: <code class="docutils literal notranslate"><span class="pre">2022-05-01</span> <span class="pre">15:10:38.785510878</span></code></p>
 </section>
 </section>
 <section id="requirement-levels-indicator">
@@ -866,7 +866,7 @@ specification.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -948,8 +948,8 @@ specification.</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

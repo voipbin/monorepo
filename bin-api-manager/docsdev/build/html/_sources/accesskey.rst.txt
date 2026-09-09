@@ -3,7 +3,7 @@
 ************
 Accesskey
 ************
-Manage API access keys for authenticating requests to the VoIPBIN API. Access keys are long-lived Bearer tokens used in the ``Authorization`` header or as ``accesskey`` query parameters.
+Manage API access keys for authenticating requests to the VoIPBin API. Access keys are long-lived Bearer tokens used in the ``Authorization`` header or as ``accesskey`` query parameters.
 
 **API Reference:** `Accesskey endpoints <https://api.voipbin.net/redoc/#tag/Accesskey>`_
 

@@ -4,15 +4,15 @@
 Architecture
 ************
 
-Deep dive into VoIPBIN's internal architecture, microservices, communication patterns, and deployment.
+Deep dive into VoIPBin's internal architecture, microservices, communication patterns, and deployment.
 
 .. note:: **AI Context**
 
-   This section provides comprehensive documentation of VoIPBIN's system internals. Relevant when an AI agent needs to understand how the platform is built, how services communicate, or how infrastructure is deployed. For API usage, see the individual resource documentation pages.
+   This section provides comprehensive documentation of VoIPBin's system internals. Relevant when an AI agent needs to understand how the platform is built, how services communicate, or how infrastructure is deployed. For API usage, see the individual resource documentation pages.
 
 .. note:: **AI Implementation Hint**
 
-   VoIPBIN uses RabbitMQ RPC for all inter-service communication, not HTTP. When making API calls, use ``https://api.voipbin.net/v1.0/`` as the base URL. The API gateway (bin-api-manager) handles authentication and routes requests internally via RabbitMQ to the appropriate backend service.
+   VoIPBin uses RabbitMQ RPC for all inter-service communication, not HTTP. When making API calls, use ``https://api.voipbin.net/v1.0/`` as the base URL. The API gateway (bin-api-manager) handles authentication and routes requests internally via RabbitMQ to the appropriate backend service.
 
 .. toctree::
    :maxdepth: 2

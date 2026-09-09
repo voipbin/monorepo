@@ -9,7 +9,7 @@ Contact Addresses Overview
    * **Cost:** Free (addresses are organizational records with no per-operation charges)
    * **Async:** No. All ``/contact_addresses`` operations are synchronous and return the result immediately.
 
-VoIPBIN's Contact Addresses API is the standalone resource for managing individual phone-number/email/web-session entries independently of a specific contact. It backs the ``addresses`` array embedded on :ref:`Contact <contact-struct-contact-contact>`, but adds capabilities the nested ``/contacts/{id}/addresses`` endpoints do not have: creating an address before it is attached to any contact (an "unresolved" address), searching/filtering addresses across all contacts, and explicitly claiming an unresolved address onto a contact.
+VoIPBin's Contact Addresses API is the standalone resource for managing individual phone-number/email/web-session entries independently of a specific contact. It backs the ``addresses`` array embedded on :ref:`Contact <contact-struct-contact-contact>`, but adds capabilities the nested ``/contacts/{id}/addresses`` endpoints do not have: creating an address before it is attached to any contact (an "unresolved" address), searching/filtering addresses across all contacts, and explicitly claiming an unresolved address onto a contact.
 
 With the Contact Addresses API you can:
 

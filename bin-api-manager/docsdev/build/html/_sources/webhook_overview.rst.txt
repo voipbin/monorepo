@@ -9,29 +9,29 @@ Overview
    * **Cost:** Free -- Webhook delivery does not incur charges. Events are pushed to your configured endpoint at no cost.
    * **Async:** No. Webhook configuration is set on the customer resource via ``PUT https://api.voipbin.net/v1.0/customer`` (fields ``webhook_uri`` and ``webhook_method``). Event delivery to your endpoint happens asynchronously as events occur.
 
-Webhooks, a robust feature offered by VoIPBIN, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBIN resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.
+Webhooks, a robust feature offered by VoIPBin, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBin resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.
 
 Notification Mechanism
 ----------------------
-Webhook events act as notifications sent by VoIPBIN, triggering when specific events or actions unfold within the system, such as call events, message events, or changes to resources like queues or agents. Configured webhook endpoints receive these events, ensuring users promptly receive pertinent data related to their VoIPBIN resources.
+Webhook events act as notifications sent by VoIPBin, triggering when specific events or actions unfold within the system, such as call events, message events, or changes to resources like queues or agents. Configured webhook endpoints receive these events, ensuring users promptly receive pertinent data related to their VoIPBin resources.
 
 .. image:: _static/images/webhook_overview_notification.png
 
 Types of Webhooks
 -----------------
-VoIPBIN tailors webhooks for each resource type, ensuring users receive granular progress and updates for various events. This resource-specific approach allows users to monitor their VoIPBIN resources with precision, obtaining notifications and data tailored to each resource type. For instance, call-specific webhook events furnish details on call status, duration, and caller ID, while message-specific events offer insights into SMS or MMS messages, including content, sender ID, and delivery status.
+VoIPBin tailors webhooks for each resource type, ensuring users receive granular progress and updates for various events. This resource-specific approach allows users to monitor their VoIPBin resources with precision, obtaining notifications and data tailored to each resource type. For instance, call-specific webhook events furnish details on call status, duration, and caller ID, while message-specific events offer insights into SMS or MMS messages, including content, sender ID, and delivery status.
 
 Custom Endpoints
 ----------------
-To harness webhooks, users must configure custom webhook endpoints on their servers. These endpoints, serving as URLs, dictate where VoIPBIN transmits webhook events. Upon an event occurrence, VoIPBIN initiates an HTTP request to the configured endpoint, incorporating relevant data in the payload. This empowers users to process and respond to events according to their unique requirements.
+To harness webhooks, users must configure custom webhook endpoints on their servers. These endpoints, serving as URLs, dictate where VoIPBin transmits webhook events. Upon an event occurrence, VoIPBin initiates an HTTP request to the configured endpoint, incorporating relevant data in the payload. This empowers users to process and respond to events according to their unique requirements.
 
 .. note:: **AI Implementation Hint**
 
-   VoIPBIN retries delivery up to 3 times (1 second apart) when the request fails outright (e.g. connection error) or your endpoint returns a ``5xx`` status; any other response (including ``4xx``) is treated as delivered and is not retried. The delivery HTTP client allows up to ~30 seconds per attempt. Webhooks may still be delivered more than once, so implement idempotent processing using the event type and resource ID to deduplicate.
+   VoIPBin retries delivery up to 3 times (1 second apart) when the request fails outright (e.g. connection error) or your endpoint returns a ``5xx`` status; any other response (including ``4xx``) is treated as delivered and is not retried. The delivery HTTP client allows up to ~30 seconds per attempt. Webhooks may still be delivered more than once, so implement idempotent processing using the event type and resource ID to deduplicate.
 
 Webhook Event Types
 -------------------
-VoIPBIN sends webhook events for various resource types. Each event includes the resource type, event type, and the full resource data.
+VoIPBin sends webhook events for various resource types. Each event includes the resource type, event type, and the full resource data.
 
 ========================= ======================================================
 Resource Type             Events
@@ -80,12 +80,12 @@ The ``activeflow_id`` field, when present on a resource, is part of that resourc
 
 Benefits of Webhooks
 --------------------
-Webhooks deliver a range of advantages for VoIPBIN users:
+Webhooks deliver a range of advantages for VoIPBin users:
 
-* **Real-Time Updates**: Offering immediate event notifications, webhooks keep users abreast of real-time changes to their VoIPBIN resources.
+* **Real-Time Updates**: Offering immediate event notifications, webhooks keep users abreast of real-time changes to their VoIPBin resources.
 * **Customization**: Users can tailor webhook endpoints and process data as per their specific needs, facilitating the creation of customized workflows and integrations.
 * **Automated Actions**: Webhooks enable users to automate actions based on event data, such as record updates, notifications, or the initiation of additional processes.
-* **Enhanced Monitoring**: Providing a proactive monitoring solution, webhooks empower users to track and respond promptly to changes within the VoIPBIN system, ensuring informed decision-making.
+* **Enhanced Monitoring**: Providing a proactive monitoring solution, webhooks empower users to track and respond promptly to changes within the VoIPBin system, ensuring informed decision-making.
 
 Troubleshooting
 ---------------
@@ -95,7 +95,7 @@ Troubleshooting
     * **Fix:** Verify the endpoint URL via ``GET https://api.voipbin.net/v1.0/customer`` (check ``webhook_uri`` field). Ensure your server is publicly accessible and does not return a ``5xx`` status.
 
 * **Duplicate webhook events:**
-    * **Cause:** VoIPBIN retries delivery (up to 3 attempts) when a request fails outright or your endpoint returns a ``5xx`` status.
+    * **Cause:** VoIPBin retries delivery (up to 3 attempts) when a request fails outright or your endpoint returns a ``5xx`` status.
     * **Fix:** Implement idempotent processing. Use the combination of resource ``id`` and ``status`` to deduplicate events.
 
 * **400 Bad Request (updating webhook configuration):**

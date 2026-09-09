@@ -5,14 +5,14 @@ Real-Time Communication (RTC)
 
 .. note:: **AI Context**
 
-   This page describes VoIPBIN's real-time communication stack: Kamailio (stateless SIP edge routing), Asterisk (three specialized farms for calls, conferences, and registration), RTPEngine (media proxy and codec transcoding), conference architecture, and SIP session recovery after Asterisk crashes. Relevant when an AI agent needs to understand VoIP call flow mechanics, media handling, codec strategies, or high-availability features.
+   This page describes VoIPBin's real-time communication stack: Kamailio (stateless SIP edge routing), Asterisk (three specialized farms for calls, conferences, and registration), RTPEngine (media proxy and codec transcoding), conference architecture, and SIP session recovery after Asterisk crashes. Relevant when an AI agent needs to understand VoIP call flow mechanics, media handling, codec strategies, or high-availability features.
 
-VoIPBIN's RTC architecture handles all real-time voice communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.
+VoIPBin's RTC architecture handles all real-time voice communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.
 
 VoIP Stack Overview
 -------------------
 
-VoIPBIN's VoIP stack consists of three main components working together:
+VoIPBin's VoIP stack consists of three main components working together:
 
 .. code::
 
@@ -82,11 +82,11 @@ VoIPBIN's VoIP stack consists of three main components working together:
 5. **Media Setup**: RTPEngine handles RTP media streams and codec transcoding
 6. **Call Control**: Asterisk manages call state and conference bridges
 
-This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.
+This modular design ensures VoIPBin can provide reliable, scalable VoIP services while accommodating high traffic loads.
 
 .. note:: **AI Implementation Hint**
 
-   VoIPBIN uses ulaw (G.711) as the exclusive internal codec. All external codecs (G.722, Opus, etc.) are transcoded at the edge by RTPEngine. When integrating SIP endpoints, any standard codec is accepted, but for lowest latency configure your SIP client to prefer G.711 ulaw to avoid transcoding overhead.
+   VoIPBin uses ulaw (G.711) as the exclusive internal codec. All external codecs (G.722, Opus, etc.) are transcoded at the edge by RTPEngine. When integrating SIP endpoints, any standard codec is accepted, but for lowest latency configure your SIP client to prefer G.711 ulaw to avoid transcoding overhead.
 
 Kamailio - SIP Edge Router
 ---------------------------
@@ -95,7 +95,7 @@ Kamailio is an open-source SIP server providing the edge routing layer for all S
 
 * **Official Site**: https://www.kamailio.org/
 
-**Role in VoIPBIN:**
+**Role in VoIPBin:**
 
 Kamailio acts as the stateless SIP proxy and edge router, responsible for:
 
@@ -188,7 +188,7 @@ RE-INVITE and Within-Dialog Routing
 -------------------------------------
 
 For requests within an established SIP dialog (such as RE-INVITE for media renegotiation
-or hold/resume), VoIPBIN uses a **direct routing** strategy that bypasses the Internal
+or hold/resume), VoIPBin uses a **direct routing** strategy that bypasses the Internal
 Asterisk LB entirely.
 
 **Why direct routing matters:**
@@ -227,7 +227,7 @@ Asterisk instance -- skipping the Internal Asterisk LB completely.
 .. note:: **AI Implementation Hint**
 
    When integrating SIP endpoints, ensure your SIP stack correctly handles the
-   ``Record-Route`` and ``Route`` headers returned by VoIPBIN. Most standard SIP
+   ``Record-Route`` and ``Route`` headers returned by VoIPBin. Most standard SIP
    libraries (PJSIP, Sofia-SIP, etc.) handle this automatically. Do not strip or
    modify these headers, as doing so will cause RE-INVITEs to be routed to the
    wrong Asterisk instance.
@@ -240,9 +240,9 @@ Asterisk is an open-source communications platform providing comprehensive telep
 .. image:: _static/images/architecture_rtc_asterisk.png
     :alt: Architecture Asterisk
 
-**VoIPBIN's Three Asterisk Farms:**
+**VoIPBin's Three Asterisk Farms:**
 
-VoIPBIN employs three specialized Asterisk farms for optimized scalability and fault isolation:
+VoIPBin employs three specialized Asterisk farms for optimized scalability and fault isolation:
 
 .. code::
 
@@ -313,7 +313,7 @@ RTPEngine is an open-source media proxy providing RTP processing and transcoding
 .. image:: _static/images/architecture_rtc_rtpengine.png
     :alt: Architecture RTPEngine
 
-**Role in VoIPBIN:**
+**Role in VoIPBin:**
 
 RTPEngine serves as the codec edge server and media proxy:
 
@@ -321,7 +321,7 @@ RTPEngine serves as the codec edge server and media proxy:
 
     Codec Transcoding:
 
-    External Client                      VoIPBIN Internal
+    External Client                      VoIPBin Internal
     (Various Codecs)                     (ulaw only)
          |                                     |
          | RTP (G.722, Opus, etc.)             |
@@ -350,7 +350,7 @@ RTPEngine serves as the codec edge server and media proxy:
 
 **Internal Codec Strategy:**
 
-* **Internal**: VoIPBIN uses ulaw codec exclusively for all internal communication
+* **Internal**: VoIPBin uses ulaw codec exclusively for all internal communication
 * **External**: Clients can use any supported codec (G.711, G.722, Opus, etc.)
 * **Edge Transcoding**: RTPEngine performs all transcoding at the edge
 * **Performance**: Internal ulaw ensures minimal CPU overhead for media processing
@@ -360,14 +360,14 @@ This edge transcoding strategy ensures optimal internal performance while suppor
 Conference Architecture
 -----------------------
 
-VoIPBIN's conference functionality is powered by the dedicated Asterisk-Conference farm.
+VoIPBin's conference functionality is powered by the dedicated Asterisk-Conference farm.
 
 .. image:: _static/images/architecture_rtc_conference.png
     :alt: Architecture Conference
 
 **Conference Design:**
 
-VoIPBIN leverages a dedicated Asterisk-Conference component for all conference calls:
+VoIPBin leverages a dedicated Asterisk-Conference component for all conference calls:
 
 **Advantages:**
 
@@ -426,7 +426,7 @@ Conference Flow
 1:1 Calls as Conferences
 +++++++++++++++++++++++++
 
-VoIPBIN treats 1:1 calls as special cases of conferencing with only two participants:
+VoIPBin treats 1:1 calls as special cases of conferencing with only two participants:
 
 .. code::
 
@@ -474,14 +474,14 @@ VoIPBIN treats 1:1 calls as special cases of conferencing with only two particip
 SIP Session Recovery
 --------------------
 
-VoIPBIN provides **SIP session recovery** to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents call drops, conference exits, and media failures by making the client perceive the session as uninterrupted.
+VoIPBin provides **SIP session recovery** to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents call drops, conference exits, and media failures by making the client perceive the session as uninterrupted.
 
 .. youtube:: GMd-pOwyrtA
 
 How It Works
 ++++++++++++
 
-When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Without a BYE message, clients experience unexpected termination. VoIPBIN recovers sessions through an automated process:
+When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Without a BYE message, clients experience unexpected termination. VoIPBin recovers sessions through an automated process:
 
 .. code::
 
@@ -577,7 +577,7 @@ The recovered session resumes Flow execution from before the crash:
 Asterisk Patch for Recovery
 +++++++++++++++++++++++++++
 
-VoIPBIN patches Asterisk's PJSIP stack to override SIP header fields based on channel variables:
+VoIPBin patches Asterisk's PJSIP stack to override SIP header fields based on channel variables:
 
 .. image:: _static/images/architecture_rtc_sip_session_recovery_diagram.png
     :alt: SIP Session Recovery Diagram

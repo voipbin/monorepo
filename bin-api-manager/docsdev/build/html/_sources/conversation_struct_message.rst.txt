@@ -83,9 +83,9 @@ Message's direction.
 +------------------+------------------------------------------------------------------+
 | Direction        | Description                                                      |
 +==================+==================================================================+
-| incoming         | Incoming message from a participant towards VoIPBIN. Delivered   |
+| incoming         | Incoming message from a participant towards VoIPBin. Delivered   |
 |                  | to your application via webhook.                                 |
 +------------------+------------------------------------------------------------------+
-| outgoing         | Outgoing message sent from your application via VoIPBIN to a     |
+| outgoing         | Outgoing message sent from your application via VoIPBin to a     |
 |                  | conversation participant.                                        |
 +------------------+------------------------------------------------------------------+

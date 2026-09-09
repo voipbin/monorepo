@@ -51,7 +51,7 @@ Team
 
 .. note:: **AI Implementation Hint**
 
-   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the team has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent "not yet occurred."
+   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the team has not been deleted and is still active. This sentinel value is used across all VoIPBin resources to represent "not yet occurred."
 
 Example
 +++++++

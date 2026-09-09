@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free (customer management operations incur no charges)
    * **Async:** No. All customer operations are synchronous and return immediately.
 
-VoIPBIN's Customer API provides account-level management for your organization within the platform. A customer represents a tenant account that owns resources like agents, numbers, flows, and billing. The Customer API enables you to manage account settings, view usage, and configure organization-wide preferences.
+VoIPBin's Customer API provides account-level management for your organization within the platform. A customer represents a tenant account that owns resources like agents, numbers, flows, and billing. The Customer API enables you to manage account settings, view usage, and configure organization-wide preferences.
 
 With the Customer API you can:
 
@@ -22,7 +22,7 @@ With the Customer API you can:
 
 How Customers Work
 ------------------
-A customer is the top-level organizational unit in VoIPBIN that owns all other resources.
+A customer is the top-level organizational unit in VoIPBin that owns all other resources.
 
 **Customer Architecture**
 
@@ -199,7 +199,7 @@ Change the billing account used to fund the customer's usage. Requires CustomerA
 
 **Admin-Only Customer Management**
 
-VoIPBIN staff with ``ProjectSuperAdmin`` permission can manage any customer account via the plural ``/customers`` endpoints (list, create, get by ID, update, delete, freeze, recover, and manage another customer's billing account ID or metadata). Regular customer accounts always receive ``403 Permission Denied`` on these endpoints and should use the singular ``/customer`` endpoints documented above instead. See the :ref:`Customer Tutorial <customer-tutorial>` for admin endpoint examples.
+VoIPBin staff with ``ProjectSuperAdmin`` permission can manage any customer account via the plural ``/customers`` endpoints (list, create, get by ID, update, delete, freeze, recover, and manage another customer's billing account ID or metadata). Regular customer accounts always receive ``403 Permission Denied`` on these endpoints and should use the singular ``/customer`` endpoints documented above instead. See the :ref:`Customer Tutorial <customer-tutorial>` for admin endpoint examples.
 
 
 Account Deletion Lifecycle
@@ -312,7 +312,7 @@ All personally identifiable information (PII) is anonymized and the account stat
 
 Resource Ownership
 ------------------
-All resources in VoIPBIN are scoped to a customer.
+All resources in VoIPBin are scoped to a customer.
 
 **Resource Hierarchy**
 
@@ -388,7 +388,7 @@ The guest agent ensures every account has at least one administrator for recover
 
 .. note:: **AI Implementation Hint**
 
-   The customer ``id`` is the top-level scoping identifier for all resources in VoIPBIN. When creating agents, numbers, flows, or any other resource, they are automatically associated with the customer of the authenticated user. You do not need to pass ``customer_id`` explicitly in most creation requests -- it is derived from the authentication token.
+   The customer ``id`` is the top-level scoping identifier for all resources in VoIPBin. When creating agents, numbers, flows, or any other resource, they are automatically associated with the customer of the authenticated user. You do not need to pass ``customer_id`` explicitly in most creation requests -- it is derived from the authentication token.
 
 
 Common Scenarios

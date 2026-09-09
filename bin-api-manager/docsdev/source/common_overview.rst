@@ -5,32 +5,32 @@ Overview
 
 .. note:: **AI Context**
 
-   * **Complexity:** Low -- These are shared data structures and conventions used across all VoIPBIN APIs. No API calls are specific to this section.
+   * **Complexity:** Low -- These are shared data structures and conventions used across all VoIPBin APIs. No API calls are specific to this section.
    * **Cost:** Free. Common structures are reference documentation only; no operations are performed.
    * **Async:** N/A. This section documents conventions, not API endpoints.
 
-This section covers common data structures, patterns, and concepts used throughout the VoIPBIN API. Understanding these foundational elements will help you work more effectively with all VoIPBIN resources.
+This section covers common data structures, patterns, and concepts used throughout the VoIPBin API. Understanding these foundational elements will help you work more effectively with all VoIPBin resources.
 
 .. note:: **AI Implementation Hint**
 
-   All VoIPBIN timestamps use the format ``YYYY-MM-DD HH:MM:SS.microseconds`` in UTC. A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` means the resource has **not** been deleted (sentinel value). When filtering by time ranges, use URL-encoded timestamps as query parameters (e.g., ``?page_token=2022-06-17%2006%3A06%3A14.948432``).
+   All VoIPBin timestamps use the format ``YYYY-MM-DD HH:MM:SS.microseconds`` in UTC. A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` means the resource has **not** been deleted (sentinel value). When filtering by time ranges, use URL-encoded timestamps as query parameters (e.g., ``?page_token=2022-06-17%2006%3A06%3A14.948432``).
 
 Common Data Structures
 ----------------------
 
 Address Structure
 +++++++++++++++++
-The Address structure is used throughout VoIPBIN to represent communication endpoints, including phone numbers, SIP addresses, and extension numbers. See the detailed structure documentation at :ref:`here <common-struct-address-address>`.
+The Address structure is used throughout VoIPBin to represent communication endpoints, including phone numbers, SIP addresses, and extension numbers. See the detailed structure documentation at :ref:`here <common-struct-address-address>`.
 
 Timestamp Format
 ++++++++++++++++
-All timestamps in VoIPBIN follow the format ``YYYY-MM-DD HH:MM:SS.microseconds`` and are in UTC timezone unless otherwise specified.
+All timestamps in VoIPBin follow the format ``YYYY-MM-DD HH:MM:SS.microseconds`` and are in UTC timezone unless otherwise specified.
 
 Example: ``2022-05-01 15:10:38.785510878``
 
 UUID Format
 +++++++++++
-VoIPBIN uses UUIDs (Universally Unique Identifiers) to identify resources. All resource IDs follow the standard UUID v4 format.
+VoIPBin uses UUIDs (Universally Unique Identifiers) to identify resources. All resource IDs follow the standard UUID v4 format.
 
 Example: ``d9d32881-12fd-4b19-a6b2-6d5b6b6acf76``
 
@@ -77,7 +77,7 @@ Check the specific endpoint documentation for available filter options.
 
 Soft Deletion
 +++++++++++++
-VoIPBIN uses soft deletion for most resources. Deleted resources have their ``tm_delete`` timestamp set to the deletion time. Non-deleted resources have ``tm_delete`` set to ``9999-01-01 00:00:00.000000``.
+VoIPBin uses soft deletion for most resources. Deleted resources have their ``tm_delete`` timestamp set to the deletion time. Non-deleted resources have ``tm_delete`` set to ``9999-01-01 00:00:00.000000``.
 
 **Non-deleted resource:**
 
@@ -94,7 +94,7 @@ VoIPBIN uses soft deletion for most resources. Deleted resources have their ``tm
 HTTP Status Codes
 -----------------
 
-VoIPBIN API uses standard HTTP status codes to indicate success or failure.
+VoIPBin API uses standard HTTP status codes to indicate success or failure.
 
 Success Codes
 +++++++++++++
@@ -173,7 +173,7 @@ All API requests and responses use JSON format.
 
 .. note:: **AI Implementation Hint**
 
-   Besides the ``Authorization: Bearer <token>`` header, VoIPBIN also accepts the token as a ``token`` query parameter (e.g., ``?token=<token>``, used throughout this documentation for ``curl`` examples and required for the WebSocket endpoint since it cannot send custom headers) or as a ``token`` cookie.
+   Besides the ``Authorization: Bearer <token>`` header, VoIPBin also accepts the token as a ``token`` query parameter (e.g., ``?token=<token>``, used throughout this documentation for ``curl`` examples and required for the WebSocket endpoint since it cannot send custom headers) or as a ``token`` cookie.
 
 **Single resource response:**
 
@@ -205,7 +205,7 @@ All API requests and responses use JSON format.
 Rate Limiting
 -------------
 
-VoIPBIN applies two independent layers of rate limiting to API requests:
+VoIPBin applies two independent layers of rate limiting to API requests:
 
 * A **per-client-IP** limit (in-memory, per server instance), enforced in three tiers:
 

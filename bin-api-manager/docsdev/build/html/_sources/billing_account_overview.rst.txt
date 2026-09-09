@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free (reading billing data incurs no charges; adding balance is an admin-only operation)
    * **Async:** No. All billing account operations are synchronous and return immediately. Balance changes from service usage (calls, SMS) happen asynchronously as services are consumed.
 
-VoIPBIN's Billing Account API provides balance management, token tracking, and usage monitoring for your account. The billing system uses a State+Ledger architecture where the **account** holds the live state (current balance and tokens) and the **billings** table records every transaction as an immutable ledger entry with signed deltas and post-transaction snapshots.
+VoIPBin's Billing Account API provides balance management, token tracking, and usage monitoring for your account. The billing system uses a State+Ledger architecture where the **account** holds the live state (current balance and tokens) and the **billings** table records every transaction as an immutable ledger entry with signed deltas and post-transaction snapshots.
 
 With the Billing Account API you can:
 
@@ -23,7 +23,7 @@ With the Billing Account API you can:
 
 How Billing Works
 -----------------
-VoIPBIN uses a hybrid billing model with two cost mechanisms: **token balance** and **credit balance**.
+VoIPBin uses a hybrid billing model with two cost mechanisms: **token balance** and **credit balance**.
 
 Each plan tier includes a monthly allocation of tokens that cover certain service types (virtual number calls, TTS, and recording). When tokens are exhausted, usage overflows to the credit balance. PSTN calls, SMS, email, and number purchases are always charged to the credit balance.
 
@@ -160,7 +160,7 @@ Tokens are replenished at the scheduled top-up date. The current token balance i
 
 Rate Structure
 --------------
-VoIPBIN uses per-minute billing for calls (rounded up to the next whole minute) and per-unit billing for other services.
+VoIPBin uses per-minute billing for calls (rounded up to the next whole minute) and per-unit billing for other services.
 
 **Token Rates**
 

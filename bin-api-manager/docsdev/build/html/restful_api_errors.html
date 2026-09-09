@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Flow" href="flow.html"><link rel="prev" title="RESTful API(Application Programming Interface)" href="restful_api.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Error Reason Codes - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -642,7 +642,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
-<p>Every 4xx/5xx response from the VoIPbin API contains an <code class="docutils literal notranslate"><span class="pre">error.reason</span></code> field in <code class="docutils literal notranslate"><span class="pre">UPPER_SNAKE</span></code> that identifies the specific cause. This page catalogues all published reasons. Clients should branch on <code class="docutils literal notranslate"><span class="pre">reason</span></code> for self-healing behavior. <code class="docutils literal notranslate"><span class="pre">status</span></code> maps 1:1 to HTTP (see <a class="reference internal" href="restful_api.html"><span class="doc">RESTful API(Application Programming Interface)</span></a>).</p>
+<p>Every 4xx/5xx response from the VoIPBin API contains an <code class="docutils literal notranslate"><span class="pre">error.reason</span></code> field in <code class="docutils literal notranslate"><span class="pre">UPPER_SNAKE</span></code> that identifies the specific cause. This page catalogues all published reasons. Clients should branch on <code class="docutils literal notranslate"><span class="pre">reason</span></code> for self-healing behavior. <code class="docutils literal notranslate"><span class="pre">status</span></code> maps 1:1 to HTTP (see <a class="reference internal" href="restful_api.html"><span class="doc">RESTful API(Application Programming Interface)</span></a>).</p>
 <p>The error envelope contains <code class="docutils literal notranslate"><span class="pre">status</span></code> / <code class="docutils literal notranslate"><span class="pre">reason</span></code> / <code class="docutils literal notranslate"><span class="pre">message</span></code> / <code class="docutils literal notranslate"><span class="pre">request_id</span></code> (and an optional <code class="docutils literal notranslate"><span class="pre">details</span></code> array). Reason codes are append-only once published — adding a new reason does not require a schema version bump; removing or renaming one does and triggers a deprecation window.</p>
 <p>Reasons are organized below into two groups:</p>
 <ul class="simple">
@@ -1560,7 +1560,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1631,8 +1631,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

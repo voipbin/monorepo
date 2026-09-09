@@ -20,7 +20,7 @@ Before working with providers, you need:
 Set up a provider via carrier API key
 --------------------------------------
 
-``POST /providers/setup`` validates your carrier API key, creates the carrier-side SIP trunk, and returns a ready-to-use VoIPBIN provider record — all in one call. Requires **ProjectSuperAdmin** permission.
+``POST /providers/setup`` validates your carrier API key, creates the carrier-side SIP trunk, and returns a ready-to-use VoIPBin provider record — all in one call. Requires **ProjectSuperAdmin** permission.
 
 **Supported carriers:** ``telnyx``
 
@@ -117,7 +117,7 @@ Example
 Create a new provider
 ---------------------
 
-The following example creates a provider without codec restrictions. VoIPBIN will use its
+The following example creates a provider without codec restrictions. VoIPBin will use its
 system-default codec list during SDP negotiation for calls through this provider.
 
 Example
@@ -187,7 +187,7 @@ Example
 Set codec restriction on an existing provider
 +++++++++++++++++++++++++++++++++++++++++++++++
 
-Use ``PUT /providers/{id}`` to restrict which audio codecs VoIPBIN offers during SDP
+Use ``PUT /providers/{id}`` to restrict which audio codecs VoIPBin offers during SDP
 negotiation for PSTN outbound calls through this provider. This is useful when a carrier
 only supports specific codecs.
 
@@ -229,7 +229,7 @@ to an empty string:
 .. note:: **AI Implementation Hint**
 
    ``codecs`` only affects PSTN outbound calls routed through this provider. SIP-to-SIP calls
-   within VoIPBIN are not affected. The field is valid only for providers with ``"type": "sip"``.
+   within VoIPBin are not affected. The field is valid only for providers with ``"type": "sip"``.
    Leave ``codecs`` as ``""`` unless you have a specific carrier interoperability requirement.
 
 

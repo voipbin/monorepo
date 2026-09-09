@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Domain name" href="trunk_overview_domain_name.html"><link rel="prev" title="Overview" href="trunk_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Trunking - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -656,24 +656,24 @@
 </section>
 <section id="authentication">
 <h2>Authentication<a class="headerlink" href="#authentication" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s trunking authentication supports two methods, which can be enabled independently or together on the same trunk:</p>
+<p>VoIPBin’s trunking authentication supports two methods, which can be enabled independently or together on the same trunk:</p>
 <ul class="simple">
 <li><p>Basic authentication (SIP username/password)</p></li>
 <li><p>IP-based authentication (allowed source IP list)</p></li>
 </ul>
 <section id="basic-authentication">
 <h3>Basic authentication<a class="headerlink" href="#basic-authentication" title="Link to this heading">¶</a></h3>
-<p>To make a SIP outgoing call through a VoIPBIN using basic authentication, you need to follow a few steps:</p>
+<p>To make a SIP outgoing call through a VoIPBin using basic authentication, you need to follow a few steps:</p>
 <ol class="arabic simple">
 <li><p>Choose a SIP client: You can use a software-based SIP client, such as Zoiper or X-Lite, or a hardware-based SIP phone, such as a Cisco or Grandstream phone.</p></li>
-<li><p>Configure your SIP client: You need to configure your SIP client with VoIPBIN credentials, such as your name, extension, password, domain info.</p></li>
+<li><p>Configure your SIP client: You need to configure your SIP client with VoIPBin credentials, such as your name, extension, password, domain info.</p></li>
 <li><p>Set up your outgoing call settings: In your SIP client, you need to specify the destination address(phone number or extension) you want to call and set any additional options, such as the call type, call quality, or call duration.</p></li>
 <li><p>Initiate the call: Once you have configured your SIP client and set up your outgoing call settings, you can initiate the call by clicking on the call button or using a keypad command.</p></li>
-<li><p>Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBIN, using the basic authentication method. The VoIPBIN then verifies your credentials and authorizes the call.</p></li>
-<li><p>Make the call: Once your credentials are verified, the VoIPBIN establishes the call and connects you with the destination address.</p></li>
+<li><p>Authenticate your credentials: When you initiate the call, your SIP client sends your authentication credentials to the VoIPBin, using the basic authentication method. The VoIPBin then verifies your credentials and authorizes the call.</p></li>
+<li><p>Make the call: Once your credentials are verified, the VoIPBin establishes the call and connects you with the destination address.</p></li>
 </ol>
-<p>By following these steps, you can make a SIP outgoing call through VoIPBIN using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
+<p>By following these steps, you can make a SIP outgoing call through VoIPBin using basic authentication. This process can be used for a variety of business and personal applications, such as remote work, conferencing, and customer support.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">|----------------</span> <span class="n">INVITE</span> <span class="o">---------------&gt;|</span>                                        <span class="o">|</span>
@@ -709,19 +709,19 @@
 <li><p>Set <code class="docutils literal notranslate"><span class="pre">auth_types</span></code> to include <code class="docutils literal notranslate"><span class="pre">ip</span></code> when creating or updating the trunk.</p></li>
 <li><p>Add the SIP client’s or PBX’s public IP address to the trunk’s <code class="docutils literal notranslate"><span class="pre">allowed_ips</span></code> list.</p></li>
 <li><p>Point the SIP client at the trunk server address. No credentials are required in the INVITE.</p></li>
-<li><p>VoIPBIN checks the source IP of the INVITE against <code class="docutils literal notranslate"><span class="pre">allowed_ips</span></code> and, if it matches, authorizes the call without a 407 challenge.</p></li>
+<li><p>VoIPBin checks the source IP of the INVITE against <code class="docutils literal notranslate"><span class="pre">allowed_ips</span></code> and, if it matches, authorizes the call without a 407 challenge.</p></li>
 </ol>
 <p>This method is useful for devices with a static, known IP address, since it avoids storing SIP credentials on the device.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The trunk server address format is <code class="docutils literal notranslate"><span class="pre">sip:{your-domain}.trunk.voipbin.net</span></code>. When configuring a SIP client for basic authentication, use the trunk’s <code class="docutils literal notranslate"><span class="pre">username</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code>, and set the SIP proxy/outbound-proxy to the trunk server address. VoIPBIN uses 407 Proxy Authentication (not 401 WWW-Authenticate), so ensure your SIP client supports proxy authentication. For IP-based authentication, no credentials are sent; VoIPBIN authorizes the call by matching the source IP against <code class="docutils literal notranslate"><span class="pre">allowed_ips</span></code>.</p>
+<p>The trunk server address format is <code class="docutils literal notranslate"><span class="pre">sip:{your-domain}.trunk.voipbin.net</span></code>. When configuring a SIP client for basic authentication, use the trunk’s <code class="docutils literal notranslate"><span class="pre">username</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code>, and set the SIP proxy/outbound-proxy to the trunk server address. VoIPBin uses 407 Proxy Authentication (not 401 WWW-Authenticate), so ensure your SIP client supports proxy authentication. For IP-based authentication, no credentials are sent; VoIPBin authorizes the call by matching the source IP against <code class="docutils literal notranslate"><span class="pre">allowed_ips</span></code>.</p>
 </div>
 </section>
 </section>
 <section id="call-handle">
 <h2>Call handle<a class="headerlink" href="#call-handle" title="Link to this heading">¶</a></h2>
-<p>Unlike VoIPBIN’s normal call handling, the VoIPBIN handles trunking outbound calls in a different way. The VoIPBIN executes special flow for the trunking call.
+<p>Unlike VoIPBin’s normal call handling, the VoIPBin handles trunking outbound calls in a different way. The VoIPBin executes special flow for the trunking call.
 It executes the follow features:</p>
 <ul class="simple">
 <li><p>Enable the early media.</p></li>
@@ -729,8 +729,8 @@ It executes the follow features:</p>
 </ul>
 <section id="early-media-handle">
 <h3>Early media handle<a class="headerlink" href="#early-media-handle" title="Link to this heading">¶</a></h3>
-<p>The VoIPBIN enables the early-media feature for the trunking outbound call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
+<p>The VoIPBin enables the early-media feature for the trunking outbound call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">===================================================================================</span>
@@ -746,8 +746,8 @@ It executes the follow features:</p>
 </section>
 <section id="relay-hangup-cause">
 <h3>Relay hangup cause<a class="headerlink" href="#relay-hangup-cause" title="Link to this heading">¶</a></h3>
-<p>The VoIPBIN delivers the hangup cause code from the outgoing call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBIN</span>                                 <span class="n">Destination</span>
+<p>The VoIPBin delivers the hangup cause code from the outgoing call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UA</span>                                   <span class="n">VoIPBin</span>                                 <span class="n">Destination</span>
 
 <span class="o">|</span>                                        <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">===================================================================================</span>
@@ -792,7 +792,7 @@ It executes the follow features:</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -845,8 +845,8 @@ It executes the follow features:</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

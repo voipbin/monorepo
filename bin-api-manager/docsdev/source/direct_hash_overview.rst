@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free. Direct hash creation and regeneration incur no charges.
    * **Async:** No. Regenerate returns immediately with the updated resource.
 
-Direct hash provides simplified public SIP URIs for VoIPBIN resources. Instead of requiring callers to know a customer-specific domain (e.g., ``sip:office1@ab12.reg.voipbin.net``), direct hash exposes a short, unique address on a shared domain: ``sip:direct.<hash>@sip.voipbin.net``. This allows external SIP devices, trunks, and partners to reach your resources without any customer-specific configuration.
+Direct hash provides simplified public SIP URIs for VoIPBin resources. Instead of requiring callers to know a customer-specific domain (e.g., ``sip:office1@ab12.reg.voipbin.net``), direct hash exposes a short, unique address on a shared domain: ``sip:direct.<hash>@sip.voipbin.net``. This allows external SIP devices, trunks, and partners to reach your resources without any customer-specific configuration.
 
 Eight resource types support direct hash: **extensions**, **agents**, **conferences**, **queues**, **flows**, **AIs**, **teams**, and **webchat widgets**. For seven of these, the ``direct_hash`` resolves to a SIP URI as described above. For **webchat widgets** the same underlying hash mechanism is reused for a different purpose: the embed script uses the widget's ``direct_hash`` to authenticate anonymous visitors via ``POST /auth/boot`` rather than to route a SIP call. See :doc:`Webchat Overview <webchat_overview>` for details on that flow.
 
@@ -33,11 +33,11 @@ Each direct hash consists of a ``direct.`` prefix followed by 12 hexadecimal cha
 
 **Routing Flow**
 
-When an external caller dials a direct hash SIP URI, VoIPBIN resolves the hash to the underlying resource, automatically creates an activeflow with the appropriate action, and executes it.
+When an external caller dials a direct hash SIP URI, VoIPBin resolves the hash to the underlying resource, automatically creates an activeflow with the appropriate action, and executes it.
 
 ::
 
-    External Caller                              VoIPBIN
+    External Caller                              VoIPBin
          |                                          |
          | INVITE                                    |
          | sip:direct.<hash>@sip.voipbin.net        |
@@ -67,7 +67,7 @@ The activeflow action depends on the resource type:
 
 **Comparison with Standard Access**
 
-In both cases, VoIPBIN internally creates an activeflow and executes it. The difference is how the caller reaches the resource — not what happens after.
+In both cases, VoIPBin internally creates an activeflow and executes it. The difference is how the caller reaches the resource — not what happens after.
 
 ::
 
@@ -77,7 +77,7 @@ In both cases, VoIPBIN internally creates an activeflow and executes it. The dif
     Direct hash access:
     Caller -> sip:direct.<hash>@sip.voipbin.net -> resource
 
-Standard access requires purchasing an inbound number, creating a flow with the appropriate action, and routing the number to that flow. Direct hash eliminates all of this — VoIPBIN automatically creates the appropriate activeflow internally.
+Standard access requires purchasing an inbound number, creating a flow with the appropriate action, and routing the number to that flow. Direct hash eliminates all of this — VoIPBin automatically creates the appropriate activeflow internally.
 
 
 Supported Resources

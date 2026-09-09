@@ -3,7 +3,7 @@
 Call Media and Codecs
 =====================
 
-This section covers audio media handling in VoIPBIN, including codec support, quality considerations, and encryption.
+This section covers audio media handling in VoIPBin, including codec support, quality considerations, and encryption.
 
 .. note:: **AI Implementation Hint**
 
@@ -12,7 +12,7 @@ This section covers audio media handling in VoIPBIN, including codec support, qu
 Audio Codec Support
 -------------------
 
-VoIPBIN supports multiple audio codecs for different use cases:
+VoIPBin supports multiple audio codecs for different use cases:
 
 .. code::
 
@@ -74,7 +74,7 @@ VoIPBIN supports multiple audio codecs for different use cases:
 
 .. note:: **AI Implementation Hint**
 
-   Codec selection is automatic. VoIPBIN negotiates the best codec supported by both endpoints. You do not need to specify a codec when creating calls. If you experience audio quality issues, check the call type: PSTN calls use G.711 (narrowband), while WebRTC calls use Opus (wideband). Transcoding between codec types adds minimal latency.
+   Codec selection is automatic. VoIPBin negotiates the best codec supported by both endpoints. You do not need to specify a codec when creating calls. If you experience audio quality issues, check the call type: PSTN calls use G.711 (narrowband), while WebRTC calls use Opus (wideband). Transcoding between codec types adds minimal latency.
 
 Audio Quality Factors
 ---------------------
@@ -92,7 +92,7 @@ Several factors affect call audio quality:
     | > 500ms:  Poor - echo, overlap issues
     +------------------------------------------+
 
-    VoIPBIN Infrastructure:
+    VoIPBin Infrastructure:
     +------------------------------------------+
     | Global edge locations minimize latency   |
     | Typical added latency: < 30ms            |
@@ -109,7 +109,7 @@ Several factors affect call audio quality:
     | > 5%:  Significant quality loss
     +------------------------------------------+
 
-    VoIPBIN Mitigation:
+    VoIPBin Mitigation:
     +------------------------------------------+
     | - Opus codec: Built-in packet loss       |
     |   concealment up to 15%                  |
@@ -129,7 +129,7 @@ Several factors affect call audio quality:
     | > 50ms:  Poor - buffer underruns         |
     +------------------------------------------+
 
-    VoIPBIN Jitter Buffer:
+    VoIPBin Jitter Buffer:
     +------------------------------------------+
     | Type: Adaptive                           |
     | Range: 20-200ms                          |
@@ -171,7 +171,7 @@ Real-time Transport Protocol (RTP) carries audio:
 
 .. code::
 
-    VoIPBIN RTP Ports:
+    VoIPBin RTP Ports:
 
     Media Servers (Asterisk):
     +------------------------------------------+
@@ -188,7 +188,7 @@ Real-time Transport Protocol (RTP) carries audio:
 
     Client Requirements:
     +------------------------------------------+
-    | Outbound UDP to VoIPBIN ports required   |
+    | Outbound UDP to VoIPBin ports required   |
     | If blocked: WebRTC with TURN as fallback |
     +------------------------------------------+
 
@@ -199,7 +199,7 @@ Real-time Transport Protocol (RTP) carries audio:
 Media Encryption
 ----------------
 
-VoIPBIN supports encrypted media for security:
+VoIPBin supports encrypted media for security:
 
 **SRTP (Secure RTP):**
 
@@ -256,11 +256,11 @@ VoIPBIN supports encrypted media for security:
     WebRTC to PSTN:
     +------------------------------------------+
     | WebRTC leg: SRTP encrypted               |
-    | VoIPBIN: Decrypts to mix/process         |
+    | VoIPBin: Decrypts to mix/process         |
     | PSTN leg: Unencrypted (carrier limit)    |
     +------------------------------------------+
 
-    Note: VoIPBIN must decrypt media for:
+    Note: VoIPBin must decrypt media for:
     - Transcoding between codecs
     - Recording
     - Transcription
@@ -268,7 +268,7 @@ VoIPBIN supports encrypted media for security:
 
 .. note:: **AI Implementation Hint**
 
-   WebRTC calls are always encrypted (SRTP). PSTN calls are unencrypted on the carrier segment -- this is a carrier limitation, not a VoIPBIN limitation. If you need recording or transcription, VoIPBIN must access the unencrypted audio stream, so true end-to-end encryption is not possible when these features are enabled.
+   WebRTC calls are always encrypted (SRTP). PSTN calls are unencrypted on the carrier segment -- this is a carrier limitation, not a VoIPBin limitation. If you need recording or transcription, VoIPBin must access the unencrypted audio stream, so true end-to-end encryption is not possible when these features are enabled.
 
 DTMF Handling
 -------------
@@ -284,7 +284,7 @@ Dual-Tone Multi-Frequency (DTMF) for IVR input:
     | DTMF sent as special RTP packets         |
     | Payload type: 101 (commonly)             |
     | Most reliable for VoIP                   |
-    | VoIPBIN default method                   |
+    | VoIPBin default method                   |
     +------------------------------------------+
 
     In-band (Audio):
@@ -332,7 +332,7 @@ Dual-Tone Multi-Frequency (DTMF) for IVR input:
 Recording Formats
 -----------------
 
-VoIPBIN currently supports a single recording format:
+VoIPBin currently supports a single recording format:
 
 .. code::
 
@@ -485,7 +485,7 @@ Real-time transcription of audio:
     3. Sample Rate:
        +------------------------------------------+
        | Higher sample rate (16kHz+) helps        |
-       | VoIPBIN resamples automatically          |
+       | VoIPBin resamples automatically          |
        +------------------------------------------+
 
 .. note:: **AI Implementation Hint**
@@ -571,4 +571,4 @@ Monitor call quality with metrics:
 
 .. note:: **AI Implementation Hint**
 
-   Call-level metrics (``duration``, ``hangup_reason``) are available in the call object via ``GET /calls/{call-id}`` after the call ends. Media-level metrics (``jitter``, ``packet_loss``, ``mos``) may not be available for all call types. A MOS score below 3.6 typically indicates network issues (high latency, packet loss, or jitter) rather than a VoIPBIN platform problem.
+   Call-level metrics (``duration``, ``hangup_reason``) are available in the call object via ``GET /calls/{call-id}`` after the call ends. Media-level metrics (``jitter``, ``packet_loss``, ``mos``) may not be available for all call types. A MOS score below 3.6 typically indicates network issues (high latency, packet loss, or jitter) rather than a VoIPBin platform problem.

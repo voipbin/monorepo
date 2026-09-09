@@ -17,7 +17,7 @@ Before using AI features, you need:
 
 .. note:: **AI Implementation Hint**
 
-   AI features use three external services: an LLM (e.g., OpenAI), a TTS provider (e.g., ElevenLabs), and an STT provider (e.g., Deepgram). Each incurs costs on both VoIPBIN credits and the external provider's billing. Verify your VoIPBIN balance via ``GET /billing-accounts`` and your provider API key validity before creating AI calls.
+   AI features use three external services: an LLM (e.g., OpenAI), a TTS provider (e.g., ElevenLabs), and an STT provider (e.g., Deepgram). Each incurs costs on both VoIPBin credits and the external provider's billing. Verify your VoIPBin balance via ``GET /billing-accounts`` and your provider API key validity before creating AI calls.
 
 Simple AI Voice Assistant
 -------------------------
@@ -100,7 +100,7 @@ Use AI Talk for more natural, low-latency conversations powered by ElevenLabs. T
                 {
                     "type": "ai_talk",
                     "option": {
-                        "initial_prompt": "You are an expert sales representative for VoIPBIN. Help customers understand our calling and messaging platform. Be enthusiastic but professional.",
+                        "initial_prompt": "You are an expert sales representative for VoIPBin. Help customers understand our calling and messaging platform. Be enthusiastic but professional.",
                         "voice_type": "male"
                     }
                 }
@@ -399,7 +399,7 @@ Troubleshooting
     * **Fix:** Verify ``engine_model`` uses ``<provider>.<model>`` format (e.g., ``openai.gpt-4o``). Ensure ``initial_prompt`` is provided.
 
 * **402 Payment Required:**
-    * **Cause:** Insufficient VoIPBIN account balance.
+    * **Cause:** Insufficient VoIPBin account balance.
     * **Fix:** Check balance via ``GET /billing-accounts``. Top up before retrying.
 
 * **AI not responding during call:**

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Email" href="email_struct_email.html"><link rel="prev" title="Email" href="email.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,20 +648,20 @@
 <li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/emails</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">initiated</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/emails/{id}</span></code> or use webhooks to track delivery status changes.</p></li>
 </ul>
 </div>
-<p>VoIPBIN’s Email API provides a reliable and scalable email delivery service for your applications. Whether you need to send transactional emails, notifications, or marketing communications, the Email API handles delivery while you focus on your content.</p>
+<p>VoIPBin’s Email API provides a reliable and scalable email delivery service for your applications. Whether you need to send transactional emails, notifications, or marketing communications, the Email API handles delivery while you focus on your content.</p>
 <p>With the Email API you can:</p>
 <ul class="simple">
 <li><p>Send plain-text emails to one or more recipients</p></li>
-<li><p>Attach existing VoIPBIN resources (e.g. call recordings) to your emails</p></li>
+<li><p>Attach existing VoIPBin resources (e.g. call recordings) to your emails</p></li>
 <li><p>Track email delivery status</p></li>
 <li><p>Integrate email into automated workflows</p></li>
 </ul>
 <section id="how-email-works">
 <h2>How Email Works<a class="headerlink" href="#how-email-works" title="Link to this heading">¶</a></h2>
-<p>When you send an email, VoIPBIN processes and delivers it through email infrastructure optimized for deliverability.</p>
+<p>When you send an email, VoIPBin processes and delivers it through email infrastructure optimized for deliverability.</p>
 <p><strong>Email Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>        <span class="o">+----------------+</span>        <span class="o">+-------------+</span>
-<span class="o">|</span> <span class="n">Your</span> <span class="n">App</span> <span class="o">|--</span><span class="n">API</span><span class="o">--&gt;|</span>    <span class="n">VoIPBIN</span>     <span class="o">|--</span><span class="n">SMTP</span><span class="o">-&gt;|</span>   <span class="n">Email</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">Your</span> <span class="n">App</span> <span class="o">|--</span><span class="n">API</span><span class="o">--&gt;|</span>    <span class="n">VoIPBin</span>     <span class="o">|--</span><span class="n">SMTP</span><span class="o">-&gt;|</span>   <span class="n">Email</span>     <span class="o">|</span>
 <span class="o">+----------+</span>        <span class="o">|</span>   <span class="n">Email</span> <span class="n">Hub</span>    <span class="o">|</span>        <span class="o">|</span>   <span class="n">Provider</span>  <span class="o">|</span>
                     <span class="o">+----------------+</span>        <span class="o">+------+------+</span>
                            <span class="o">|</span>                         <span class="o">|</span>
@@ -760,16 +760,16 @@
 </section>
 <section id="sending-emails">
 <h2>Sending Emails<a class="headerlink" href="#sending-emails" title="Link to this heading">¶</a></h2>
-<p>Send emails through the VoIPBIN API with full control over content and formatting.</p>
+<p>Send emails through the VoIPBin API with full control over content and formatting.</p>
 <p><strong>Send Email via API</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBIN</span>                    <span class="n">Recipient</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBin</span>                    <span class="n">Recipient</span>
    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>              <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
    <span class="o">|</span>                           <span class="o">|</span> <span class="n">Process</span> <span class="ow">and</span> <span class="n">send</span>          <span class="o">|</span>
    <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
    <span class="o">|</span>  <span class="n">email_id</span>                 <span class="o">|</span>                           <span class="o">|</span>
-   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;initiated&quot;</span>      <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">"initiated"</span>      <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">|&lt;--------------------------+</span>                           <span class="o">|</span>
    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">|</span> <span class="n">Webhook</span><span class="p">:</span> <span class="n">delivered</span>        <span class="o">|</span>   <span class="n">Email</span> <span class="ow">in</span> <span class="n">inbox</span>          <span class="o">|</span>
@@ -780,43 +780,43 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The sender (<code class="docutils literal notranslate"><span class="pre">source</span></code>) is always VoIPBIN’s own platform address (<code class="docutils literal notranslate"><span class="pre">service&#64;voipbin.net</span></code>) – it is not configurable per request and there is no sender-domain verification step. Sending is gated instead on your customer account’s identity verification status; unverified customer accounts cannot send email. The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> field accepts an array of <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> objects with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">email</span></code>, not plain email strings. <code class="docutils literal notranslate"><span class="pre">content</span></code> is plain text only – there is no separate HTML body.</p>
+<p>The sender (<code class="docutils literal notranslate"><span class="pre">source</span></code>) is always VoIPBin’s own platform address (<code class="docutils literal notranslate"><span class="pre">service&#64;voipbin.net</span></code>) – it is not configurable per request and there is no sender-domain verification step. Sending is gated instead on your customer account’s identity verification status; unverified customer accounts cannot send email. The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> field accepts an array of <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> objects with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">email</span></code>, not plain email strings. <code class="docutils literal notranslate"><span class="pre">content</span></code> is plain text only – there is no separate HTML body.</p>
 </div>
 <p><strong>Basic Email Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;destinations&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "destinations": [
             {
-                &quot;type&quot;: &quot;email&quot;,
-                &quot;target&quot;: &quot;customer@example.com&quot;
+                "type": "email",
+                "target": "customer@example.com"
             }
         ],
-        &quot;subject&quot;: &quot;Your Order Confirmation&quot;,
-        &quot;content&quot;: &quot;Thank you for your order #12345.&quot;
-    }&#39;
+        "subject": "Your Order Confirmation",
+        "content": "Thank you for your order #12345."
+    }'
 </pre></div>
 </div>
 <p><strong>Email with Attachment:</strong></p>
-<p>Attachments reference an existing VoIPBIN resource by <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (for example a call recording) – you cannot upload arbitrary file content.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;destinations&quot;: [
+<p>Attachments reference an existing VoIPBin resource by <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (for example a call recording) – you cannot upload arbitrary file content.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "destinations": [
             {
-                &quot;type&quot;: &quot;email&quot;,
-                &quot;target&quot;: &quot;customer@example.com&quot;
+                "type": "email",
+                "target": "customer@example.com"
             }
         ],
-        &quot;subject&quot;: &quot;Your Call Recording&quot;,
-        &quot;content&quot;: &quot;Please find your call recording attached.&quot;,
-        &quot;attachments&quot;: [
+        "subject": "Your Call Recording",
+        "content": "Please find your call recording attached.",
+        "attachments": [
             {
-                &quot;reference_type&quot;: &quot;recording&quot;,
-                &quot;reference_id&quot;: &quot;1f25e6c9-6709-44d1-b93e-a5f1c5f80411&quot;
+                "reference_type": "recording",
+                "reference_id": "1f25e6c9-6709-44d1-b93e-a5f1c5f80411"
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 </section>
@@ -850,7 +850,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>source</p></td>
-<td><p>Fixed VoIPBIN platform address (<code class="docutils literal notranslate"><span class="pre">service&#64;voipbin.net</span></code>). Not set by the caller.</p></td>
+<td><p>Fixed VoIPBin platform address (<code class="docutils literal notranslate"><span class="pre">service&#64;voipbin.net</span></code>). Not set by the caller.</p></td>
 </tr>
 <tr class="row-odd"><td><p>destinations</p></td>
 <td><p>List of recipient email addresses (<a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> objects, <code class="docutils literal notranslate"><span class="pre">type</span></code> <code class="docutils literal notranslate"><span class="pre">email</span></code>). No <code class="docutils literal notranslate"><span class="pre">cc</span></code>/<code class="docutils literal notranslate"><span class="pre">bcc</span></code> support.</p></td>
@@ -862,7 +862,7 @@
 <td><p>Plain text body of the email. There is no separate HTML body.</p></td>
 </tr>
 <tr class="row-even"><td><p>attachments</p></td>
-<td><p>List of attachments referencing existing VoIPBIN resources. See <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">Attachment</span></a>.</p></td>
+<td><p>List of attachments referencing existing VoIPBin resources. See <a class="reference internal" href="email_struct_attachment.html#email-struct-attachment"><span class="std std-ref">Attachment</span></a>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -907,7 +907,7 @@
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
-<span class="n">Subject</span><span class="p">:</span> <span class="s2">&quot;Order #12345 Confirmed&quot;</span>
+<span class="n">Subject</span><span class="p">:</span> <span class="s2">"Order #12345 Confirmed"</span>
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">Customer</span> <span class="n">receives</span> <span class="n">confirmation</span>
@@ -925,7 +925,7 @@
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
-<span class="n">Subject</span><span class="p">:</span> <span class="s2">&quot;Reset Your Password&quot;</span>
+<span class="n">Subject</span><span class="p">:</span> <span class="s2">"Reset Your Password"</span>
 <span class="n">Content</span><span class="p">:</span> <span class="n">Link</span> <span class="k">with</span> <span class="n">token</span>
              <span class="o">|</span>
              <span class="n">v</span>
@@ -944,7 +944,7 @@
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
-<span class="n">attachments</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording&quot;</span><span class="p">,</span> <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">}]</span>
+<span class="n">attachments</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"recording"</span><span class="p">,</span> <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;uuid&gt;"</span><span class="p">}]</span>
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">Customer</span> <span class="n">receives</span> <span class="n">email</span> <span class="n">referencing</span> <span class="n">the</span> <span class="n">recording</span>
@@ -957,11 +957,11 @@
 <span class="o">|</span>                                          <span class="o">|</span>
 <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>                             <span class="o">|</span>
 <span class="o">|</span> <span class="p">{</span>                                        <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>                      <span class="o">|</span>
-<span class="o">|</span>     <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">sub</span><span class="p">}</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>                      <span class="o">|</span>
+<span class="o">|</span>     <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"email"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="n">sub</span><span class="p">}</span>     <span class="o">|</span>
 <span class="o">|</span>   <span class="p">],</span>                                     <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;Weekly Newsletter&quot;</span><span class="p">,</span>        <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span>                       <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Weekly Newsletter"</span><span class="p">,</span>        <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"content"</span><span class="p">:</span> <span class="s2">"..."</span>                       <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                                        <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
                   <span class="o">|</span>
@@ -974,7 +974,7 @@
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
 <p><strong>1. Sender Reputation</strong></p>
 <ul class="simple">
-<li><p>The sending address is fixed to VoIPBIN’s platform address; you cannot set a custom “from” or authenticate your own domain</p></li>
+<li><p>The sending address is fixed to VoIPBin’s platform address; you cannot set a custom “from” or authenticate your own domain</p></li>
 <li><p>Keep your customer account’s identity verification current – sending is rejected for unverified accounts</p></li>
 <li><p>Maintain low bounce and complaint rates</p></li>
 </ul>
@@ -1032,7 +1032,7 @@
 <td><p>Verify <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>/<code class="docutils literal notranslate"><span class="pre">reference_id</span></code> point to an existing, accessible resource (e.g. a recording owned by the same customer)</p></td>
 </tr>
 <tr class="row-odd"><td><p>Request rejected</p></td>
-<td><p>Attachments only support referencing existing VoIPBIN resources; arbitrary file uploads are not supported</p></td>
+<td><p>Attachments only support referencing existing VoIPBin resources; arbitrary file uploads are not supported</p></td>
 </tr>
 </tbody>
 </table>
@@ -1077,7 +1077,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1128,8 +1128,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

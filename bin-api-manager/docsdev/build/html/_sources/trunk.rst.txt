@@ -3,7 +3,7 @@
 **************
 Trunk
 **************
-Configure SIP trunks so your own SIP device or PBX can authenticate into VoIPBIN and place outbound calls to the PSTN.
+Configure SIP trunks so your own SIP device or PBX can authenticate into VoIPBin and place outbound calls to the PSTN.
 
 **API Reference:** `Trunk endpoints <https://api.voipbin.net/redoc/#tag/Trunk>`_
 

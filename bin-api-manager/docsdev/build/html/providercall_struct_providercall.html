@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial" href="providercall_tutorial.html"><link rel="prev" title="Overview" href="providercall_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>ProviderCall - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -643,28 +643,28 @@
 <span id="id1"></span><h2>ProviderCall<a class="headerlink" href="#providercall-struct-providercall-providercall" title="Link to this heading">¶</a></h2>
 <p>A <code class="docutils literal notranslate"><span class="pre">ProviderCall</span></code> is a persisted audit record for an admin-triggered call placed through a specific SIP provider. It captures the admin’s original request (customer, provider, flow, source, destinations, anonymous option) plus the identifiers of the calls and groupcalls that were created by the underlying call-creation step. The <code class="docutils literal notranslate"><span class="pre">ProviderCall</span></code> itself does not embed the full Call/Groupcall records — use the IDs with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> to observe per-call progress.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;provider_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"provider_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+        <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
     <span class="p">},</span>
-    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+            <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;groupcall_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="s2">"anonymous"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"call_ids"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"&lt;string&gt;"</span><span class="p">],</span>
+    <span class="s2">"groupcall_ids"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"&lt;string&gt;"</span><span class="p">],</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -690,35 +690,35 @@
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;6a93f71e-8b2d-4e5f-9a1c-2d3e4f5a6b7c&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;provider_id&quot;</span><span class="p">:</span> <span class="s2">&quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+14155551234&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"6a93f71e-8b2d-4e5f-9a1c-2d3e4f5a6b7c"</span><span class="p">,</span>
+    <span class="s2">"provider_id"</span><span class="p">:</span> <span class="s2">"4dbeabd6-f397-4375-95d2-a38411e07ed1"</span><span class="p">,</span>
+    <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+    <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+14155551234"</span><span class="p">,</span>
+        <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">""</span>
     <span class="p">},</span>
-    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821012345678&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821012345678"</span><span class="p">,</span>
+            <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">""</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;groupcall_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-21 23:15:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-21 23:15:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">"anonymous"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="s2">"call_ids"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345"</span><span class="p">],</span>
+    <span class="s2">"groupcall_ids"</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-04-21 23:15:00.000000"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-04-21 23:15:00.000000"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </section>
 <section id="anonymous">
 <span id="providercall-struct-providercall-anonymous"></span><h3>Anonymous<a class="headerlink" href="#anonymous" title="Link to this heading">¶</a></h3>
-<p>Controls whether the outbound caller ID is anonymized on the INVITE that leaves VoIPbin.</p>
+<p>Controls whether the outbound caller ID is anonymized on the INVITE that leaves VoIPBin.</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -780,7 +780,7 @@ when the outbound call is a relay of an inbound leg.</p></td>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -827,8 +827,8 @@ when the outbound call is a relay of an inbound leg.</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable (each analysis runs one or more AI model calls)
    * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/timeline-analyses`` returns immediately with status ``progressing``. Poll ``GET https://api.voipbin.net/v1.0/timeline-analyses/{id}`` until ``status`` becomes ``completed`` or ``failed``.
 
-VoIPBIN's Timeline Analysis API turns a finished communication flow into a structured, human-readable diagnosis. After an activeflow ends, you can ask VoIPBIN to analyze everything that happened (calls, conferences, transcripts, errors) and return a verdict describing the outcome and any problems, with each problem backed by the exact timeline events that support it.
+VoIPBin's Timeline Analysis API turns a finished communication flow into a structured, human-readable diagnosis. After an activeflow ends, you can ask VoIPBin to analyze everything that happened (calls, conferences, transcripts, errors) and return a verdict describing the outcome and any problems, with each problem backed by the exact timeline events that support it.
 
 With the Timeline Analysis API you can:
 
@@ -21,7 +21,7 @@ With the Timeline Analysis API you can:
 How Analysis Works
 ------------------
 
-When you trigger an analysis, VoIPBIN gathers the ended activeflow's timeline of events and any available transcripts, runs an AI analysis over them, validates the result, and stores a single structured verdict per activeflow.
+When you trigger an analysis, VoIPBin gathers the ended activeflow's timeline of events and any available transcripts, runs an AI analysis over them, validates the result, and stores a single structured verdict per activeflow.
 
 ::
 
@@ -77,7 +77,7 @@ Analysis Lifecycle
 Re-analysis and Rate Limits
 ---------------------------
 
-You can re-run an analysis with ``reanalyze: true``. To control cost, VoIPBIN applies:
+You can re-run an analysis with ``reanalyze: true``. To control cost, VoIPBin applies:
 
 - A short per-activeflow cooldown between re-analyses (a too-frequent re-analyze returns HTTP ``429``).
 - A per-customer cap on the number of analyses running at once (triggering past the cap returns HTTP ``429``).

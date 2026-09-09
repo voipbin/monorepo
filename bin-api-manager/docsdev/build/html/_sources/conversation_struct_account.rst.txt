@@ -80,8 +80,8 @@ Replace ``{account_id}`` with the ``id`` returned when the account is created.
 
 Meta sends two types of requests to this URL:
 
-1. **Hub challenge** (``GET``): Sent by Meta to verify your endpoint. VoIPBIN responds automatically using the ``secret`` (verify token) you configured.
-2. **Inbound messages** (``POST``): WhatsApp messages forwarded by Meta. VoIPBIN validates the ``X-Hub-Signature-256`` header using ``app_secret`` from ``provider_data``.
+1. **Hub challenge** (``GET``): Sent by Meta to verify your endpoint. VoIPBin responds automatically using the ``secret`` (verify token) you configured.
+2. **Inbound messages** (``POST``): WhatsApp messages forwarded by Meta. VoIPBin validates the ``X-Hub-Signature-256`` header using ``app_secret`` from ``provider_data``.
 
 **Inbound message identifiers**
 
@@ -90,7 +90,7 @@ Meta sends two types of requests to this URL:
 
 **Outbound messages**
 
-VoIPBIN sends outbound text messages via the Meta Cloud API using the ``phone_number_id`` from ``provider_data`` and the ``token`` you configured. The ``wamid`` returned by Meta is stored as the conversation message's ``transaction_id``.
+VoIPBin sends outbound text messages via the Meta Cloud API using the ``phone_number_id`` from ``provider_data`` and the ``token`` you configured. The ``wamid`` returned by Meta is stored as the conversation message's ``transaction_id``.
 
 Examples
 --------

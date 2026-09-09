@@ -46,7 +46,7 @@ Recording
 
 .. note:: **AI Implementation Hint**
 
-   Unlike most other VoIPBIN resources, the Recording struct's timestamp fields are omitted from the JSON response entirely when unset, rather than using the ``9999-01-01 00:00:00.000000`` sentinel or a ``null`` value used elsewhere in the platform. Check for the field's presence (e.g. ``"tm_delete" in response``) rather than comparing its value against a sentinel.
+   Unlike most other VoIPBin resources, the Recording struct's timestamp fields are omitted from the JSON response entirely when unset, rather than using the ``9999-01-01 00:00:00.000000`` sentinel or a ``null`` value used elsewhere in the platform. Check for the field's presence (e.g. ``"tm_delete" in response``) rather than comparing its value against a sentinel.
 
 .. _recording-struct-reference-type:
 

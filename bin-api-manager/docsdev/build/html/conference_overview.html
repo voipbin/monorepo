@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Conference" href="conference_struct_conference.html"><link rel="prev" title="Conference" href="conference.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -876,7 +876,7 @@ Flow                    Conference-Manager              Call-Manager
     <span class="o">|</span>                         <span class="o">|---------------------------&gt;|</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">Update</span> <span class="n">status</span>
-    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">to</span> <span class="s2">&quot;leaved&quot;</span>
+    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">to</span> <span class="s2">"leaved"</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">Remove</span> <span class="kn">from</span>
 <span class="w">    </span><span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">participant</span> <span class="nb">list</span>
@@ -889,9 +889,9 @@ Flow                    Conference-Manager              Call-Manager
                  <span class="n">v</span>
 <span class="o">+----------------------------------------+</span>
 <span class="o">|</span> <span class="mf">1.</span> <span class="n">Validate</span> <span class="n">participant</span> <span class="ow">is</span> <span class="ow">in</span>          <span class="o">|</span>
-<span class="o">|</span>    <span class="s2">&quot;joining&quot;</span> <span class="ow">or</span> <span class="s2">&quot;joined&quot;</span> <span class="n">status</span>        <span class="o">|</span>
+<span class="o">|</span>    <span class="s2">"joining"</span> <span class="ow">or</span> <span class="s2">"joined"</span> <span class="n">status</span>        <span class="o">|</span>
 <span class="o">|</span>                                        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">2.</span> <span class="n">Update</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">&quot;leaving&quot;</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.</span> <span class="n">Update</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">"leaving"</span>          <span class="o">|</span>
 <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">|</span> <span class="mf">3.</span> <span class="n">Send</span> <span class="n">kick</span> <span class="n">request</span> <span class="n">to</span> <span class="n">confbridge</span>     <span class="o">|</span>
 <span class="o">|</span>                                        <span class="o">|</span>
@@ -899,14 +899,14 @@ Flow                    Conference-Manager              Call-Manager
 <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">|</span> <span class="mf">5.</span> <span class="n">confbridge_leaved</span> <span class="n">event</span> <span class="n">fires</span>       <span class="o">|</span>
 <span class="o">|</span>                                        <span class="o">|</span>
-<span class="o">|</span> <span class="mf">6.</span> <span class="n">Update</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">&quot;leaved&quot;</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="mf">6.</span> <span class="n">Update</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">"leaved"</span>           <span class="o">|</span>
 <span class="o">+----------------------------------------+</span>
 </pre></div>
 </div>
 </section>
 <section id="conference-types">
 <h2>Conference Types<a class="headerlink" href="#conference-types" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN supports different conference types for different use cases.</p>
+<p>VoIPBin supports different conference types for different use cases.</p>
 <p><strong>Type: Conference (Standard)</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-------------------------------------------------------------------------+
 |                    Type: Conference (Multi-Party)                       |
@@ -987,8 +987,8 @@ When one participant leaves:
 <span class="o">|</span>          <span class="o">|</span>    <span class="n">File</span>     <span class="o">|</span>                                                <span class="o">|</span>
 <span class="o">|</span>          <span class="o">+-------------+</span>                                                <span class="o">|</span>
 <span class="o">|</span>                                                                         <span class="o">|</span>
-<span class="o">|</span>   <span class="n">recording_id</span><span class="p">:</span> <span class="s2">&quot;abc-123&quot;</span>  <span class="p">(</span><span class="n">current</span> <span class="n">active</span> <span class="n">recording</span><span class="p">)</span>                   <span class="o">|</span>
-<span class="o">|</span>   <span class="n">recording_ids</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;abc-123&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>  <span class="p">(</span><span class="nb">all</span> <span class="n">recordings</span> <span class="n">history</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span>   <span class="n">recording_id</span><span class="p">:</span> <span class="s2">"abc-123"</span>  <span class="p">(</span><span class="n">current</span> <span class="n">active</span> <span class="n">recording</span><span class="p">)</span>                   <span class="o">|</span>
+<span class="o">|</span>   <span class="n">recording_ids</span><span class="p">:</span> <span class="p">[</span><span class="s2">"abc-123"</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>  <span class="p">(</span><span class="nb">all</span> <span class="n">recordings</span> <span class="n">history</span><span class="p">)</span>             <span class="o">|</span>
 <span class="o">|</span>                                                                         <span class="o">|</span>
 <span class="o">+-------------------------------------------------------------------------+</span>
 </pre></div>
@@ -1027,16 +1027,16 @@ When one participant leaves:
 
 <span class="n">Conference</span> <span class="n">Audio</span>                              <span class="n">Transcription</span> <span class="n">Service</span>
 <span class="o">+---------------------+</span>                      <span class="o">+---------------------+</span>
-<span class="o">|</span> <span class="n">User</span> <span class="n">A</span><span class="p">:</span> <span class="s2">&quot;Hello&quot;</span>     <span class="o">|</span>                      <span class="o">|</span>                     <span class="o">|</span>
-<span class="o">|</span> <span class="n">User</span> <span class="n">B</span><span class="p">:</span> <span class="s2">&quot;Hi there&quot;</span>  <span class="o">|---------------------&gt;|</span>  <span class="n">Speech</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Text</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="n">User</span> <span class="n">C</span><span class="p">:</span> <span class="s2">&quot;Welcome&quot;</span>   <span class="o">|</span>      <span class="n">audio</span> <span class="n">stream</span>    <span class="o">|</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">User</span> <span class="n">A</span><span class="p">:</span> <span class="s2">"Hello"</span>     <span class="o">|</span>                      <span class="o">|</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">User</span> <span class="n">B</span><span class="p">:</span> <span class="s2">"Hi there"</span>  <span class="o">|---------------------&gt;|</span>  <span class="n">Speech</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Text</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">User</span> <span class="n">C</span><span class="p">:</span> <span class="s2">"Welcome"</span>   <span class="o">|</span>      <span class="n">audio</span> <span class="n">stream</span>    <span class="o">|</span>                     <span class="o">|</span>
 <span class="o">+---------------------+</span>                      <span class="o">+----------+----------+</span>
                                                         <span class="o">|</span>
                                                         <span class="n">v</span>
                                              <span class="o">+---------------------+</span>
                                              <span class="o">|</span> <span class="n">Transcript</span> <span class="n">Output</span>   <span class="o">|</span>
-                                             <span class="o">|</span> <span class="s2">&quot;Hello. Hi there.   |</span>
-                                             <span class="o">|</span>  <span class="n">Welcome</span><span class="o">.</span><span class="s2">&quot;          |</span>
+                                             <span class="o">|</span> <span class="s2">"Hello. Hi there.   |</span>
+                                             <span class="o">|</span>  <span class="n">Welcome</span><span class="o">.</span><span class="s2">"          |</span>
                                              <span class="o">+---------------------+</span>
 </pre></div>
 </div>
@@ -1083,7 +1083,7 @@ When one participant leaves:
 
 3. Start transcription
    POST https://api.voipbin.net/v1.0/conferences/{id}/transcribe_start
-   { &quot;language&quot;: &quot;en-US&quot; }
+   { "language": "en-US" }
 
 4. Participants join and talk
    → Recording captures all audio
@@ -1151,7 +1151,7 @@ When one participant leaves:
 <li><p>A <code class="docutils literal notranslate"><span class="pre">timeout</span></code> between 1 and 59 seconds is silently replaced with the default of 86400 seconds (24 hours); use <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout, or 60 seconds or more for an explicit timeout</p></li>
 </ul>
 <p><strong>Auto-Cleanup When Empty</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conference in &quot;terminating&quot; status
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conference in "terminating" status
             |
             v
 +------------------------+
@@ -1179,11 +1179,11 @@ to leave         Status: terminated
 Every 5 seconds, for each participant:
 
 +----------------------------------------+
-| 1. Is the participant&#39;s call still     |
-|    in &quot;progressing&quot; status?            |
+| 1. Is the participant's call still     |
+|    in "progressing" status?            |
 |                                        |
 | 2. Is the conference still in          |
-|    &quot;progressing&quot; status?               |
+|    "progressing" status?               |
 |                                        |
 | 3. Was the participant created less    |
 |    than 24 hours ago?                  |
@@ -1204,7 +1204,7 @@ Every 5 seconds, for each participant:
 <p><strong>Scenario 1: Simple Conference Call</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create conference
    POST https://api.voipbin.net/v1.0/conferences
-   → Conference in &quot;progressing&quot; status
+   → Conference in "progressing" status
 
 2. Participants join through flow
    +----------+  +----------+  +----------+
@@ -1233,7 +1233,7 @@ Every 5 seconds, for each participant:
 <p><strong>Scenario 3: Customer-Agent Connect</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create connect-type conference
    POST https://api.voipbin.net/v1.0/conferences
-   { &quot;type&quot;: &quot;connect&quot; }
+   { "type": "connect" }
 
 2. Customer call joins
 3. Agent call joins
@@ -1292,7 +1292,7 @@ Every 5 seconds, for each participant:
 </section>
 <section id="related-documentation">
 <h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h2>
-<p>Conferences integrate with many VoIPBIN features. Use these links for detailed information:</p>
+<p>Conferences integrate with many VoIPBin features. Use these links for detailed information:</p>
 <p><strong>Recording a Conference</strong></p>
 <p>Capture all participant audio into a single file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Conference</span>                        <span class="n">Recording</span>
@@ -1379,7 +1379,7 @@ Every 5 seconds, for each participant:
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1436,8 +1436,8 @@ Every 5 seconds, for each participant:
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

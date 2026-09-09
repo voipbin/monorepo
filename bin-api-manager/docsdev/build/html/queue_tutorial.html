@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Recording" href="recording.html"><link rel="prev" title="Queuecall" href="queue_struct_queuecall.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -656,40 +656,40 @@
 <section id="create-a-new-queue">
 <h3>Create a new queue<a class="headerlink" href="#create-a-new-queue" title="Link to this heading">¶</a></h3>
 <p>Create a new queue.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queues?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;name&quot;: &quot;test queue&quot;,
-    &quot;detail&quot;: &quot;test queue detail&quot;,
-    &quot;routing_method&quot;: &quot;random&quot;,
-    &quot;tag_ids&quot;: [
-        &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/queues?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "test queue",
+    "detail": "test queue detail",
+    "routing_method": "random",
+    "tag_ids": [
+        "d7450dda-21e0-4611-b09a-8d771c50a5e6"
     ],
-    &quot;wait_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;wait_timeout&quot;: 100000,
-    &quot;service_timeout&quot;: 10000000
-}&#39;
+    "wait_flow_id": "00000000-0000-0000-0000-000000000000",
+    "wait_timeout": 100000,
+    "service_timeout": 10000000
+}'
 
 {
-    &quot;id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
-    &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
-    &quot;name&quot;: &quot;test queue&quot;,
-    &quot;detail&quot;: &quot;test queue detail&quot;,
-    &quot;routing_method&quot;: &quot;random&quot;,
-    &quot;tag_ids&quot;: [
-        &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
+    "id": "99bf739a-932f-433c-b1bf-103d33d7e9bb",
+    "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+    "name": "test queue",
+    "detail": "test queue detail",
+    "routing_method": "random",
+    "tag_ids": [
+        "d7450dda-21e0-4611-b09a-8d771c50a5e6"
     ],
-    &quot;wait_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;wait_timeout&quot;: 100000,
-    &quot;service_timeout&quot;: 10000000,
-    &quot;wait_queuecall_ids&quot;: [],
-    &quot;service_queuecall_ids&quot;: [],
-    &quot;total_incoming_count&quot;: 0,
-    &quot;total_serviced_count&quot;: 0,
-    &quot;total_abandoned_count&quot;: 0,
-    &quot;tm_create&quot;: &quot;2021-12-24 06:33:10.556226&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "wait_flow_id": "00000000-0000-0000-0000-000000000000",
+    "wait_timeout": 100000,
+    "service_timeout": 10000000,
+    "wait_queuecall_ids": [],
+    "service_queuecall_ids": [],
+    "total_incoming_count": 0,
+    "total_serviced_count": 0,
+    "total_abandoned_count": 0,
+    "tm_create": "2021-12-24 06:33:10.556226",
+    "tm_update": "9999-01-01 00:00:00.000000",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -702,29 +702,29 @@
 <section id="get-a-queue">
 <h3>Get a queue<a class="headerlink" href="#get-a-queue" title="Link to this heading">¶</a></h3>
 <p>Get the details of a queue by its ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
-    &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
-    &quot;name&quot;: &quot;test queue&quot;,
-    &quot;detail&quot;: &quot;test queue detail&quot;,
-    &quot;routing_method&quot;: &quot;random&quot;,
-    &quot;tag_ids&quot;: [
-        &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
+    "id": "99bf739a-932f-433c-b1bf-103d33d7e9bb",
+    "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+    "name": "test queue",
+    "detail": "test queue detail",
+    "routing_method": "random",
+    "tag_ids": [
+        "d7450dda-21e0-4611-b09a-8d771c50a5e6"
     ],
-    &quot;wait_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;wait_timeout&quot;: 100000,
-    &quot;service_timeout&quot;: 10000000,
-    &quot;wait_queuecall_ids&quot;: [],
-    &quot;service_queuecall_ids&quot;: [],
-    &quot;direct_hash&quot;: &quot;&quot;,
-    &quot;total_incoming_count&quot;: 0,
-    &quot;total_serviced_count&quot;: 0,
-    &quot;total_abandoned_count&quot;: 0,
-    &quot;tm_create&quot;: &quot;2021-12-24 06:33:10.556226&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "wait_flow_id": "00000000-0000-0000-0000-000000000000",
+    "wait_timeout": 100000,
+    "service_timeout": 10000000,
+    "wait_queuecall_ids": [],
+    "service_queuecall_ids": [],
+    "direct_hash": "",
+    "total_incoming_count": 0,
+    "total_serviced_count": 0,
+    "total_abandoned_count": 0,
+    "tm_create": "2021-12-24 06:33:10.556226",
+    "tm_update": "9999-01-01 00:00:00.000000",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -732,30 +732,30 @@
 <section id="update-a-queue">
 <h3>Update a queue<a class="headerlink" href="#update-a-queue" title="Link to this heading">¶</a></h3>
 <p>Update a queue’s basic settings (name, detail, routing method, tags, wait flow, timeouts). All fields shown are required in the request body.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;updated queue&quot;,
-        &quot;detail&quot;: &quot;updated queue detail&quot;,
-        &quot;routing_method&quot;: &quot;random&quot;,
-        &quot;tag_ids&quot;: [
-            &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "updated queue",
+        "detail": "updated queue detail",
+        "routing_method": "random",
+        "tag_ids": [
+            "d7450dda-21e0-4611-b09a-8d771c50a5e6"
         ],
-        &quot;wait_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;wait_timeout&quot;: 200000,
-        &quot;service_timeout&quot;: 0
-    }&#39;
+        "wait_flow_id": "00000000-0000-0000-0000-000000000000",
+        "wait_timeout": 200000,
+        "service_timeout": 0
+    }'
 </pre></div>
 </div>
 </section>
 <section id="update-a-queue-s-routing-method">
 <h3>Update a queue’s routing method<a class="headerlink" href="#update-a-queue-s-routing-method" title="Link to this heading">¶</a></h3>
 <p>Update only the queue’s routing method.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb/routing_method?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;routing_method&quot;: &quot;random&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb/routing_method?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "routing_method": "random"
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -767,14 +767,14 @@
 <section id="update-a-queue-s-tag-ids">
 <h3>Update a queue’s tag IDs<a class="headerlink" href="#update-a-queue-s-tag-ids" title="Link to this heading">¶</a></h3>
 <p>Replace the queue’s <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> list. These are stored and returned by the API, but – as noted above – not currently used to select which agent receives a call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb/tag_ids?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;tag_ids&quot;: [
-            &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
-            &quot;b1a2c3d4-e5f6-7890-abcd-ef1234567890&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb/tag_ids?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "tag_ids": [
+            "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+            "b1a2c3d4-e5f6-7890-abcd-ef1234567890"
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -786,22 +786,22 @@
 <section id="delete-a-queue">
 <h3>Delete a queue<a class="headerlink" href="#delete-a-queue" title="Link to this heading">¶</a></h3>
 <p>Delete a queue by its ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/queues/99bf739a-932f-433c-b1bf-103d33d7e9bb?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="regenerate-direct-queue-hash">
 <h3>Regenerate direct queue hash<a class="headerlink" href="#regenerate-direct-queue-hash" title="Link to this heading">¶</a></h3>
 <p>Regenerate the direct hash for a queue. This invalidates the previous SIP URI and creates a new one. If the queue has no existing direct hash, one is created automatically.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queues/&lt;queue-id&gt;/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/queues/&lt;queue-id&gt;/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test queue&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test queue detail&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;routing_method&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;direct.e9f0a1b2c3d4&quot;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"99bf739a-932f-433c-b1bf-103d33d7e9bb"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"test queue"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"test queue detail"</span><span class="p">,</span>
+    <span class="s2">"routing_method"</span><span class="p">:</span> <span class="s2">"random"</span><span class="p">,</span>
+    <span class="s2">"direct_hash"</span><span class="p">:</span> <span class="s2">"direct.e9f0a1b2c3d4"</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -815,41 +815,41 @@
 <section id="get-list-of-queues">
 <h3>Get list of queues<a class="headerlink" href="#get-list-of-queues" title="Link to this heading">¶</a></h3>
 <p>Gets the list of created queues.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/queues?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/queues?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
-            &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
-            &quot;name&quot;: &quot;test queue&quot;,
-            &quot;detail&quot;: &quot;test queue detail&quot;,
-            &quot;routing_method&quot;: &quot;random&quot;,
-            &quot;tag_ids&quot;: [
-                &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
+            "id": "99bf739a-932f-433c-b1bf-103d33d7e9bb",
+            "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+            "name": "test queue",
+            "detail": "test queue detail",
+            "routing_method": "random",
+            "tag_ids": [
+                "d7450dda-21e0-4611-b09a-8d771c50a5e6"
             ],
-            &quot;direct_hash&quot;: &quot;&quot;,
-            &quot;wait_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;wait_timeout&quot;: 100000,
-            &quot;service_timeout&quot;: 10000000,
-            &quot;wait_queuecall_ids&quot;: [
-                &quot;2eb40044-2e5e-4dae-b41e-61968e4febf9&quot;,
-                &quot;b0aa4639-fea3-4727-8b86-44667d8f4c27&quot;,
-                &quot;ec590f5b-6de5-477b-905b-1833dde213a0&quot;,
-                &quot;003e8242-a0ed-4d55-9e4f-59c317c023ad&quot;,
-                &quot;467fdfc2-fa2b-40f6-82cf-18dcb4c952c3&quot;,
-                &quot;2973648e-5989-4f75-9bda-b356d7a470dc&quot;
+            "direct_hash": "",
+            "wait_flow_id": "00000000-0000-0000-0000-000000000000",
+            "wait_timeout": 100000,
+            "service_timeout": 10000000,
+            "wait_queuecall_ids": [
+                "2eb40044-2e5e-4dae-b41e-61968e4febf9",
+                "b0aa4639-fea3-4727-8b86-44667d8f4c27",
+                "ec590f5b-6de5-477b-905b-1833dde213a0",
+                "003e8242-a0ed-4d55-9e4f-59c317c023ad",
+                "467fdfc2-fa2b-40f6-82cf-18dcb4c952c3",
+                "2973648e-5989-4f75-9bda-b356d7a470dc"
             ],
-            &quot;service_queuecall_ids&quot;: [],
-            &quot;total_incoming_count&quot;: 76,
-            &quot;total_serviced_count&quot;: 70,
-            &quot;total_abandoned_count&quot;: 21,
-            &quot;tm_create&quot;: &quot;2021-12-24 06:33:10.556226&quot;,
-            &quot;tm_update&quot;: &quot;2022-02-20 05:30:31.067539&quot;,
-            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+            "service_queuecall_ids": [],
+            "total_incoming_count": 76,
+            "total_serviced_count": 70,
+            "total_abandoned_count": 21,
+            "tm_create": "2021-12-24 06:33:10.556226",
+            "tm_update": "2022-02-20 05:30:31.067539",
+            "tm_delete": "9999-01-01 00:00:00.000000"
         }
     ],
-    &quot;next_page_token&quot;: &quot;2021-12-24 06:33:10.556226&quot;
+    "next_page_token": "2021-12-24 06:33:10.556226"
 }
 </pre></div>
 </div>
@@ -857,26 +857,26 @@
 <section id="get-list-of-queuecalls">
 <h3>Get list of queuecalls<a class="headerlink" href="#get-list-of-queuecalls" title="Link to this heading">¶</a></h3>
 <p>Gets the list of queuecalls (calls currently in, or having passed through, a queue).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/queuecalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/queuecalls?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;c7c1e226-8c86-4b43-9606-2d5bb2059a09&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-98a7-2fea5968d85b&quot;,
-            &quot;reference_type&quot;: &quot;call&quot;,
-            &quot;reference_id&quot;: &quot;1fe1356f-3f7f-4ff9-9d33-08136b38f506&quot;,
-            &quot;status&quot;: &quot;waiting&quot;,
-            &quot;service_agent_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;duration_waiting&quot;: 0,
-            &quot;duration_service&quot;: 0,
-            &quot;tm_create&quot;: &quot;2022-03-29 15:07:46.111715&quot;,
-            &quot;tm_service&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-            &quot;tm_update&quot;: &quot;2022-03-29 15:07:46.111715&quot;,
-            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+            "id": "c7c1e226-8c86-4b43-9606-2d5bb2059a09",
+            "customer_id": "5e4a0680-804e-11ec-98a7-2fea5968d85b",
+            "reference_type": "call",
+            "reference_id": "1fe1356f-3f7f-4ff9-9d33-08136b38f506",
+            "status": "waiting",
+            "service_agent_id": "00000000-0000-0000-0000-000000000000",
+            "duration_waiting": 0,
+            "duration_service": 0,
+            "tm_create": "2022-03-29 15:07:46.111715",
+            "tm_service": "9999-01-01 00:00:00.000000",
+            "tm_update": "2022-03-29 15:07:46.111715",
+            "tm_delete": "9999-01-01 00:00:00.000000"
         }
     ],
-    &quot;next_page_token&quot;: &quot;2022-03-29 15:07:46.111715&quot;
+    "next_page_token": "2022-03-29 15:07:46.111715"
 }
 </pre></div>
 </div>
@@ -884,28 +884,28 @@
 <section id="get-a-queuecall">
 <h3>Get a queuecall<a class="headerlink" href="#get-a-queuecall" title="Link to this heading">¶</a></h3>
 <p>Get the details of a queuecall by its ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/queuecalls/c7c1e226-8c86-4b43-9606-2d5bb2059a09?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/queuecalls/c7c1e226-8c86-4b43-9606-2d5bb2059a09?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="kick-a-queuecall-from-the-queue">
 <h3>Kick a queuecall from the queue<a class="headerlink" href="#kick-a-queuecall-from-the-queue" title="Link to this heading">¶</a></h3>
 <p>Force-remove a queuecall from the queue by its queuecall ID. The queuecall’s status becomes <code class="docutils literal notranslate"><span class="pre">abandoned</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queuecalls/c7c1e226-8c86-4b43-9606-2d5bb2059a09/kick?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/queuecalls/c7c1e226-8c86-4b43-9606-2d5bb2059a09/kick?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="kick-a-queuecall-by-reference-id">
 <h3>Kick a queuecall by reference ID<a class="headerlink" href="#kick-a-queuecall-by-reference-id" title="Link to this heading">¶</a></h3>
 <p>Force-remove a queuecall from the queue using the ID of the referenced resource (e.g., the call ID) instead of the queuecall ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queuecalls/reference_id/1fe1356f-3f7f-4ff9-9d33-08136b38f506/kick?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/queuecalls/reference_id/1fe1356f-3f7f-4ff9-9d33-08136b38f506/kick?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="delete-a-queuecall">
 <h3>Delete a queuecall<a class="headerlink" href="#delete-a-queuecall" title="Link to this heading">¶</a></h3>
 <p>Delete a queuecall by its ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/queuecalls/c7c1e226-8c86-4b43-9606-2d5bb2059a09?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/queuecalls/c7c1e226-8c86-4b43-9606-2d5bb2059a09?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
@@ -941,7 +941,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -999,8 +999,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

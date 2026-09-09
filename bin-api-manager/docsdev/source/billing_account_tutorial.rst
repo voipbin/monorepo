@@ -188,7 +188,7 @@ Admins can also update another customer's payment info via ``PUT /billing_accoun
 Understanding Service Rates
 ----------------------------
 
-VoIPBIN uses a hybrid billing model: token-eligible services (VN calls, TTS) consume tokens first, then overflow to credits. Credit-only services (PSTN calls, SMS, email, numbers) always charge the credit balance directly. All calls are billed per minute with ceiling rounding.
+VoIPBin uses a hybrid billing model: token-eligible services (VN calls, TTS) consume tokens first, then overflow to credits. Credit-only services (PSTN calls, SMS, email, numbers) always charge the credit balance directly. All calls are billed per minute with ceiling rounding.
 
 For the complete rate table, see :ref:`Rate Structure <billing-account-rate-structure>`.
 

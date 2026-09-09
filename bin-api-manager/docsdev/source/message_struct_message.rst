@@ -111,7 +111,7 @@ Message's direction.
    * - Direction
      - Description
    * - inbound
-     - Incoming message received from an external sender to your VoIPBIN number. Delivered to your application via webhook.
+     - Incoming message received from an external sender to your VoIPBin number. Delivered to your application via webhook.
    * - outbound
-     - Outgoing message sent from your application via the VoIPBIN API to an external recipient.
+     - Outgoing message sent from your application via the VoIPBin API to an external recipient.
 

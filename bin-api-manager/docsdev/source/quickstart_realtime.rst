@@ -13,7 +13,7 @@ Prerequisites
 ~~~~~~~~~~~~~
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
-* A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
+* A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBin account. Obtain available numbers via ``GET /numbers``.
 * Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer`` or from your admin console profile.
 * A registered SIP extension and softphone. See :ref:`Extension & Softphone Setup <quickstart-extension>`.
 * Event subscription set up (WebSocket or customer webhook). See :ref:`Receiving Events <quickstart-events>`.
@@ -51,7 +51,7 @@ With event subscription configured and Linphone registered, make an outbound cal
                 {
                     "type": "talk",
                     "option": {
-                        "text": "Hello. This is the VoIPBIN real-time voice interaction test. You can speak now and your speech will be transcribed. The call will stay open for you to test the Speaking API.",
+                        "text": "Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed. The call will stay open for you to test the Speaking API.",
                         "language": "en-US"
                     }
                 },
@@ -109,13 +109,13 @@ Save the call ``id`` (UUID) from ``calls[0].id`` in the response — you will ne
 
 .. note:: **AI Implementation Hint**
 
-   The ``source`` number must be a VoIPBIN-owned number (from ``GET /numbers``). The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart-extension>`. The ``sleep`` ``duration`` (Integer, milliseconds) keeps the call alive — ``600000`` = 10 minutes. The ``transcribe_start`` action uses BCP47 language codes (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
+   The ``source`` number must be a VoIPBin-owned number (from ``GET /numbers``). The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart-extension>`. The ``sleep`` ``duration`` (Integer, milliseconds) keeps the call alive — ``600000`` = 10 minutes. The ``transcribe_start`` action uses BCP47 language codes (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
 
 Observe real-time transcription
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads.
 
-**The TTS greeting appears first** (``direction: "out"`` — VoIPBIN to caller):
+**The TTS greeting appears first** (``direction: "out"`` — VoIPBin to caller):
 
 .. code::
 
@@ -127,7 +127,7 @@ After answering the call on Linphone, you receive transcription events via your 
             "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
             "direction": "out",
-            "message": "Hello. This is the VoIPBIN real-time voice interaction test. You can speak now and your speech will be transcribed.",
+            "message": "Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed.",
             "tm_create": "2026-02-21T10:05:02.233415Z"
         }
     }
@@ -135,10 +135,10 @@ After answering the call on Linphone, you receive transcription events via your 
 **Transcript event fields:**
 
 - ``data.transcribe_id`` (UUID): The transcription session ID, generated internally when the ``transcribe_start`` action executes. Query all transcripts for this session via ``GET /transcripts?transcribe_id=<transcribe_id>``. Transcripts are paginated; see the :ref:`Transcribe tutorial <transcribe-tutorial>`.
-- ``data.direction`` (enum String): ``"in"`` — speech from the caller to VoIPBIN. ``"out"`` — speech from VoIPBIN to the caller (TTS output).
+- ``data.direction`` (enum String): ``"in"`` — speech from the caller to VoIPBin. ``"out"`` — speech from VoIPBin to the caller (TTS output).
 - ``data.message`` (String): The transcribed text.
 
-**When you speak into Linphone**, your speech appears as ``direction: "in"`` (caller to VoIPBIN):
+**When you speak into Linphone**, your speech appears as ``direction: "in"`` (caller to VoIPBin):
 
 .. code::
 
@@ -158,7 +158,7 @@ If you run the Python WebSocket example from :ref:`Receiving Events <quickstart-
 
     Subscribed to call and transcribe events. Waiting...
     [EVENT] call_progressing
-    [TRANSCRIBE out] Hello. This is the VoIPBIN real-time voice interaction test...
+    [TRANSCRIBE out] Hello. This is the VoIPBin real-time voice interaction test...
     [TRANSCRIBE in] Hi, this is a test of the transcription feature.
 
 Create a speaking stream
@@ -229,7 +229,7 @@ Send text to the speaking stream to have it spoken into the call in real time.
     $ curl --request POST 'https://api.voipbin.net/v1.0/speakings/<speaking-id>/say?token=<your-token>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "text": "Hello, how are you today? This is VoIPBIN speaking to you in real time using the ElevenLabs text-to-speech engine."
+            "text": "Hello, how are you today? This is VoIPBin speaking to you in real time using the ElevenLabs text-to-speech engine."
         }'
 
 Response:

@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free (contacts are organizational records with no per-operation charges)
    * **Async:** No. All contact CRUD operations are synchronous and return the result immediately.
 
-VoIPBIN's Contact API provides CRM-style contact management for organizing and enriching communication workflows. Each contact can hold multiple phone numbers, email addresses, and tags, enabling caller ID enrichment, routing decisions, and integration with external CRM systems.
+VoIPBin's Contact API provides CRM-style contact management for organizing and enriching communication workflows. Each contact can hold multiple phone numbers, email addresses, and tags, enabling caller ID enrichment, routing decisions, and integration with external CRM systems.
 
 With the Contact API you can:
 
@@ -136,7 +136,7 @@ The ``external_id`` field links a contact to its record in an external CRM syste
 
 ::
 
-    External CRM                     VoIPBIN
+    External CRM                     VoIPBin
     +-------------------+            +-------------------+
     | Salesforce        |            | Contact           |
     | Contact ID:       |   sync     | external_id:      |
@@ -147,8 +147,8 @@ The ``external_id`` field links a contact to its record in an external CRM syste
 **Use Cases**
 
 - **Deduplication**: Prevent duplicate contacts during re-imports by matching on ``external_id``
-- **Two-Way Sync**: Keep contact data consistent between VoIPBIN and your CRM
-- **Referential Integrity**: Maintain links between VoIPBIN contacts and CRM records
+- **Two-Way Sync**: Keep contact data consistent between VoIPBin and your CRM
+- **Referential Integrity**: Maintain links between VoIPBin contacts and CRM records
 
 
 .. _contact-overview-key_features:

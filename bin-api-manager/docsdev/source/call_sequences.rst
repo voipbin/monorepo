@@ -3,7 +3,7 @@
 Internal Call Sequences
 =======================
 
-This section reveals how calls flow through VoIPBIN's internal components. Understanding these sequences helps developers debug issues and optimize their integrations.
+This section reveals how calls flow through VoIPBin's internal components. Understanding these sequences helps developers debug issues and optimize their integrations.
 
 .. note:: **AI Implementation Hint**
 
@@ -12,7 +12,7 @@ This section reveals how calls flow through VoIPBIN's internal components. Under
 Inbound PSTN Call Flow
 ----------------------
 
-When someone calls your VoIPBIN number from a regular phone:
+When someone calls your VoIPBin number from a regular phone:
 
 .. code::
 

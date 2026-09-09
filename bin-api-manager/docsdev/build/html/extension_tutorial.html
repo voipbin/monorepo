@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Trunk" href="trunk.html"><link rel="prev" title="Extension" href="extension_struct_extension.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -654,26 +654,26 @@
 <section id="get-list-of-extensions">
 <h3>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Link to this heading">¶</a></h3>
 <p>Gets the list of registered extensions for your account.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;0e7f8158-c770-4930-a98e-f2165b189c1f&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;name&quot;: &quot;test domain&quot;,
-            &quot;detail&quot;: &quot;test domain creation&quot;,
-            &quot;extension&quot;: &quot;test11&quot;,
-            &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
-            &quot;username&quot;: &quot;test11&quot;,
-            &quot;password&quot;: &quot;bad79bd2-71e6-11eb-9577-c756bf092a88&quot;,
-            &quot;direct_hash&quot;: &quot;&quot;,
-            &quot;tm_create&quot;: &quot;2021-02-18 12:42:27.688282&quot;,
-            &quot;tm_update&quot;: &quot;&quot;,
-            &quot;tm_delete&quot;: &quot;&quot;
+            "id": "0e7f8158-c770-4930-a98e-f2165b189c1f",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "name": "test domain",
+            "detail": "test domain creation",
+            "extension": "test11",
+            "domain_name": "ab12.reg.voipbin.net",
+            "username": "test11",
+            "password": "bad79bd2-71e6-11eb-9577-c756bf092a88",
+            "direct_hash": "",
+            "tm_create": "2021-02-18 12:42:27.688282",
+            "tm_update": "",
+            "tm_delete": ""
         }
     ],
-    &quot;next_page_token&quot;: &quot;2021-02-18 12:42:27.688282&quot;
+    "next_page_token": "2021-02-18 12:42:27.688282"
 }
 </pre></div>
 </div>
@@ -681,21 +681,21 @@
 <section id="get-detail-of-specified-extension">
 <h3>Get detail of specified extension<a class="headerlink" href="#get-detail-of-specified-extension" title="Link to this heading">¶</a></h3>
 <p>Gets the detail of registered extension.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions/0e7f8158-c770-4930-a98e-f2165b189c1f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/extensions/0e7f8158-c770-4930-a98e-f2165b189c1f?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;0e7f8158-c770-4930-a98e-f2165b189c1f&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;test domain&quot;,
-    &quot;detail&quot;: &quot;test domain creation&quot;,
-    &quot;extension&quot;: &quot;test11&quot;,
-    &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test11&quot;,
-    &quot;password&quot;: &quot;bad79bd2-71e6-11eb-9577-c756bf092a88&quot;,
-    &quot;direct_hash&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2021-02-18 12:42:27.688282&quot;,
-    &quot;tm_update&quot;: &quot;&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    "id": "0e7f8158-c770-4930-a98e-f2165b189c1f",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "test domain",
+    "detail": "test domain creation",
+    "extension": "test11",
+    "domain_name": "ab12.reg.voipbin.net",
+    "username": "test11",
+    "password": "bad79bd2-71e6-11eb-9577-c756bf092a88",
+    "direct_hash": "",
+    "tm_create": "2021-02-18 12:42:27.688282",
+    "tm_update": "",
+    "tm_delete": ""
 }
 </pre></div>
 </div>
@@ -703,28 +703,28 @@
 <section id="create-a-extension">
 <h3>Create a extension<a class="headerlink" href="#create-a-extension" title="Link to this heading">¶</a></h3>
 <p>Create a new extension.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;name&quot;: &quot;test domain&quot;,
-    &quot;detail&quot;: &quot;test domain creation&quot;,
-    &quot;extension&quot;: &quot;test12&quot;,
-    &quot;password&quot;: &quot;27a4d0f2-757c-11eb-bc8f-4f045857b89c&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "test domain",
+    "detail": "test domain creation",
+    "extension": "test12",
+    "password": "27a4d0f2-757c-11eb-bc8f-4f045857b89c"
+}'
 
 {
-    &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;test domain&quot;,
-    &quot;detail&quot;: &quot;test domain creation&quot;,
-    &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
-    &quot;password&quot;: &quot;27a4d0f2-757c-11eb-bc8f-4f045857b89c&quot;,
-    &quot;direct_hash&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    "id": "6a7934ff-0e1c-4857-857b-23c9e27d267b",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "test domain",
+    "detail": "test domain creation",
+    "extension": "test12",
+    "domain_name": "ab12.reg.voipbin.net",
+    "username": "test12",
+    "password": "27a4d0f2-757c-11eb-bc8f-4f045857b89c",
+    "direct_hash": "",
+    "tm_create": "2021-02-23 02:09:39.701458",
+    "tm_update": "",
+    "tm_delete": ""
 }
 </pre></div>
 </div>
@@ -732,27 +732,27 @@
 <section id="update-the-extension">
 <h3>Update the extension<a class="headerlink" href="#update-the-extension" title="Link to this heading">¶</a></h3>
 <p>Update the existing extension with given info.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;name&quot;: &quot;update test extension name&quot;,
-    &quot;detail&quot;: &quot;update test extension detail&quot;,
-    &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "update test extension name",
+    "detail": "update test extension detail",
+    "password": "5316382a-757c-11eb-9348-bb32547e99c4"
+}'
 
 {
-    &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;update test extension name&quot;,
-    &quot;detail&quot;: &quot;update test extension detail&quot;,
-    &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
-    &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
-    &quot;direct_hash&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;2021-02-23 02:11:03.992067&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    "id": "6a7934ff-0e1c-4857-857b-23c9e27d267b",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "update test extension name",
+    "detail": "update test extension detail",
+    "extension": "test12",
+    "domain_name": "ab12.reg.voipbin.net",
+    "username": "test12",
+    "password": "5316382a-757c-11eb-9348-bb32547e99c4",
+    "direct_hash": "",
+    "tm_create": "2021-02-23 02:09:39.701458",
+    "tm_update": "2021-02-23 02:11:03.992067",
+    "tm_delete": ""
 }
 </pre></div>
 </div>
@@ -760,21 +760,21 @@
 <section id="regenerate-direct-extension-hash">
 <h3>Regenerate direct extension hash<a class="headerlink" href="#regenerate-direct-extension-hash" title="Link to this heading">¶</a></h3>
 <p>Regenerate the direct extension hash. This invalidates the previous SIP URI and creates a new one. If the extension has no existing direct hash, one is created automatically. Useful when the existing hash has been compromised or shared unintentionally.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;update test extension name&quot;,
-    &quot;detail&quot;: &quot;update test extension detail&quot;,
-    &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
-    &quot;username&quot;: &quot;test12&quot;,
-    &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
-    &quot;direct_hash&quot;: &quot;f7e8d9c0b1a2&quot;,
-    &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
-    &quot;tm_update&quot;: &quot;2021-02-23 02:18:45.334567&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    "id": "6a7934ff-0e1c-4857-857b-23c9e27d267b",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "update test extension name",
+    "detail": "update test extension detail",
+    "extension": "test12",
+    "domain_name": "ab12.reg.voipbin.net",
+    "username": "test12",
+    "password": "5316382a-757c-11eb-9348-bb32547e99c4",
+    "direct_hash": "f7e8d9c0b1a2",
+    "tm_create": "2021-02-23 02:09:39.701458",
+    "tm_update": "2021-02-23 02:18:45.334567",
+    "tm_delete": ""
 }
 </pre></div>
 </div>
@@ -788,35 +788,35 @@
 <h3>Provision Linphone via QR code<a class="headerlink" href="#provision-linphone-via-qr-code" title="Link to this heading">¶</a></h3>
 <p>Issue a short-lived provisioning token for the extension, then render the returned <code class="docutils literal notranslate"><span class="pre">url</span></code> as a QR code. Scanning the QR code with the Linphone mobile app configures the SIP account automatically. See <a class="reference internal" href="extension_overview.html#extension-overview-provisioning"><span class="std std-ref">Softphone QR Provisioning</span></a> for concepts and security notes.</p>
 <p><strong>Step 1: Issue a provisioning token</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b/provisioning-token?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b/provisioning-token?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;token&quot;: &quot;3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a&quot;,
-    &quot;url&quot;: &quot;https://api.voipbin.net/provisioning/extension?token=3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a&quot;,
-    &quot;expire&quot;: &quot;2026-08-24T12:10:00Z&quot;
+    "token": "3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a",
+    "url": "https://api.voipbin.net/provisioning/extension?token=3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a",
+    "expire": "2026-08-24T12:10:00Z"
 }
 </pre></div>
 </div>
 <p><strong>Step 2: Render the url as a QR code and scan it with Linphone</strong></p>
 <p>Display the <code class="docutils literal notranslate"><span class="pre">url</span></code> value as a QR code (any QR library or generator works). In the Linphone mobile app, choose the QR code scan option on the account setup screen and scan the code. Linphone fetches the URL and applies the SIP account settings, then registers.</p>
 <p>The URL serves the following Linphone configuration XML (<code class="docutils literal notranslate"><span class="pre">application/xml</span></code>). You do not need to handle this content yourself; Linphone consumes it directly:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;config xmlns=&quot;http://www.linphone.org/xsds/lpconfig.xsd&quot;&gt;
-  &lt;section name=&quot;misc&quot;&gt;
-    &lt;entry name=&quot;transient_provisioning&quot; overwrite=&quot;true&quot;&gt;1&lt;/entry&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;config xmlns="http://www.linphone.org/xsds/lpconfig.xsd"&gt;
+  &lt;section name="misc"&gt;
+    &lt;entry name="transient_provisioning" overwrite="true"&gt;1&lt;/entry&gt;
   &lt;/section&gt;
-  &lt;section name=&quot;proxy_0&quot;&gt;
-    &lt;entry name=&quot;reg_proxy&quot; overwrite=&quot;true&quot;&gt;&amp;lt;sip:ab12.reg.voipbin.net;transport=udp&amp;gt;&lt;/entry&gt;
-    &lt;entry name=&quot;reg_identity&quot; overwrite=&quot;true&quot;&gt;sip:test12@ab12.reg.voipbin.net&lt;/entry&gt;
-    &lt;entry name=&quot;reg_expires&quot; overwrite=&quot;true&quot;&gt;3600&lt;/entry&gt;
-    &lt;entry name=&quot;reg_sendregister&quot; overwrite=&quot;true&quot;&gt;1&lt;/entry&gt;
-    &lt;entry name=&quot;publish&quot; overwrite=&quot;true&quot;&gt;0&lt;/entry&gt;
+  &lt;section name="proxy_0"&gt;
+    &lt;entry name="reg_proxy" overwrite="true"&gt;&amp;lt;sip:ab12.reg.voipbin.net;transport=udp&amp;gt;&lt;/entry&gt;
+    &lt;entry name="reg_identity" overwrite="true"&gt;sip:test12@ab12.reg.voipbin.net&lt;/entry&gt;
+    &lt;entry name="reg_expires" overwrite="true"&gt;3600&lt;/entry&gt;
+    &lt;entry name="reg_sendregister" overwrite="true"&gt;1&lt;/entry&gt;
+    &lt;entry name="publish" overwrite="true"&gt;0&lt;/entry&gt;
   &lt;/section&gt;
-  &lt;section name=&quot;auth_info_0&quot;&gt;
-    &lt;entry name=&quot;username&quot; overwrite=&quot;true&quot;&gt;test12&lt;/entry&gt;
-    &lt;entry name=&quot;domain&quot; overwrite=&quot;true&quot;&gt;ab12.reg.voipbin.net&lt;/entry&gt;
-    &lt;entry name=&quot;passwd&quot; overwrite=&quot;true&quot;&gt;5316382a-757c-11eb-9348-bb32547e99c4&lt;/entry&gt;
-    &lt;entry name=&quot;realm&quot; overwrite=&quot;true&quot;&gt;ab12.reg.voipbin.net&lt;/entry&gt;
+  &lt;section name="auth_info_0"&gt;
+    &lt;entry name="username" overwrite="true"&gt;test12&lt;/entry&gt;
+    &lt;entry name="domain" overwrite="true"&gt;ab12.reg.voipbin.net&lt;/entry&gt;
+    &lt;entry name="passwd" overwrite="true"&gt;5316382a-757c-11eb-9348-bb32547e99c4&lt;/entry&gt;
+    &lt;entry name="realm" overwrite="true"&gt;ab12.reg.voipbin.net&lt;/entry&gt;
   &lt;/section&gt;
 &lt;/config&gt;
 </pre></div>
@@ -830,7 +830,7 @@
 <section id="delete-the-extension">
 <h3>Delete the extension<a class="headerlink" href="#delete-the-extension" title="Link to this heading">¶</a></h3>
 <p>Delete the existing extension of given id.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
@@ -866,7 +866,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -918,8 +918,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

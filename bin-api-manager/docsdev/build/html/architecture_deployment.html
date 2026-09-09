@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Security Architecture" href="architecture_security.html"><link rel="prev" title="Call Flow Sequences" href="architecture_sequences.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Deployment Architecture - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -642,12 +642,12 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
-<p>This page describes VoIPBIN’s production deployment on Google Cloud Platform: GKE cluster configuration, Kubernetes deployment patterns, HPA auto-scaling, VoIP VM infrastructure (Kamailio, Asterisk, RTPEngine), database and cache infrastructure, network architecture (VPC, firewall rules), CI/CD pipeline (CircleCI), and disaster recovery. Relevant when an AI agent needs to understand infrastructure sizing, scaling limits, deployment strategies, or network topology.</p>
+<p>This page describes VoIPBin’s production deployment on Google Cloud Platform: GKE cluster configuration, Kubernetes deployment patterns, HPA auto-scaling, VoIP VM infrastructure (Kamailio, Asterisk, RTPEngine), database and cache infrastructure, network architecture (VPC, firewall rules), CI/CD pipeline (CircleCI), and disaster recovery. Relevant when an AI agent needs to understand infrastructure sizing, scaling limits, deployment strategies, or network topology.</p>
 </div>
-<p>VoIPBIN runs on Google Cloud Platform (GCP) using Google Kubernetes Engine (GKE) for container orchestration. This section details the deployment topology, scaling strategies, and infrastructure components.</p>
+<p>VoIPBin runs on Google Cloud Platform (GCP) using Google Kubernetes Engine (GKE) for container orchestration. This section details the deployment topology, scaling strategies, and infrastructure components.</p>
 <section id="infrastructure-overview">
 <h2>Infrastructure Overview<a class="headerlink" href="#infrastructure-overview" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBIN</span> <span class="n">Production</span> <span class="n">Infrastructure</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBin</span> <span class="n">Production</span> <span class="n">Infrastructure</span><span class="p">:</span>
 
 <span class="o">+------------------------------------------------------------------+</span>
 <span class="o">|</span>                    <span class="n">Google</span> <span class="n">Cloud</span> <span class="n">Platform</span>                          <span class="o">|</span>
@@ -737,11 +737,11 @@ manifests today only declare the metrics container port and do not define
         <span class="o">-</span> <span class="n">containerPort</span><span class="p">:</span> <span class="mi">2112</span>      <span class="c1"># Prometheus metrics</span>
         <span class="n">resources</span><span class="p">:</span>
           <span class="n">requests</span><span class="p">:</span>
-            <span class="n">memory</span><span class="p">:</span> <span class="s2">&quot;256Mi&quot;</span>
-            <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;100m&quot;</span>
+            <span class="n">memory</span><span class="p">:</span> <span class="s2">"256Mi"</span>
+            <span class="n">cpu</span><span class="p">:</span> <span class="s2">"100m"</span>
           <span class="n">limits</span><span class="p">:</span>
-            <span class="n">memory</span><span class="p">:</span> <span class="s2">&quot;512Mi&quot;</span>
-            <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;500m&quot;</span>
+            <span class="n">memory</span><span class="p">:</span> <span class="s2">"512Mi"</span>
+            <span class="n">cpu</span><span class="p">:</span> <span class="s2">"500m"</span>
         <span class="n">env</span><span class="p">:</span>
         <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">DATABASE_DSN</span>
           <span class="n">valueFrom</span><span class="p">:</span>
@@ -777,7 +777,7 @@ manifests today only declare the metrics container port and do not define
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>VoIPBIN services run on GKE with a minimum of 2 replicas each for high availability. The API endpoint <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code> is served through a Cloud Load Balancer with TLS termination. SIP traffic uses a separate L4 load balancer on <code class="docutils literal notranslate"><span class="pre">sip.voipbin.net</span></code> (ports 5060/5061). All infrastructure runs within a single GCP VPC with network segmentation.</p>
+<p>VoIPBin services run on GKE with a minimum of 2 replicas each for high availability. The API endpoint <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code> is served through a Cloud Load Balancer with TLS termination. SIP traffic uses a separate L4 load balancer on <code class="docutils literal notranslate"><span class="pre">sip.voipbin.net</span></code> (ports 5060/5061). All infrastructure runs within a single GCP VPC with network segmentation.</p>
 </div>
 </section>
 <section id="service-scaling">
@@ -793,7 +793,7 @@ currently sets a fixed <code class="docutils literal notranslate"><span class="p
 scaling beyond the fixed replica count is a manual operation (edit
 <code class="docutils literal notranslate"><span class="pre">replicas</span></code> and re-apply), not automatic.</p>
 </div>
-<p>VoIPBIN scales services based on demand:</p>
+<p>VoIPBin scales services based on demand:</p>
 <p><strong>Horizontal Pod Autoscaler (HPA):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HPA</span> <span class="n">Configuration</span><span class="p">:</span>
 
@@ -1401,7 +1401,7 @@ scaling beyond the fixed replica count is a manual operation (edit
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1456,8 +1456,8 @@ scaling beyond the fixed replica count is a manual operation (edit
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

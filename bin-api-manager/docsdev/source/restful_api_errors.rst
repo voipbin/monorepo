@@ -5,7 +5,7 @@ Error Reason Codes
 
 .. note:: **AI Context**
 
-   Every 4xx/5xx response from the VoIPbin API contains an ``error.reason`` field in ``UPPER_SNAKE`` that identifies the specific cause. This page catalogues all published reasons. Clients should branch on ``reason`` for self-healing behavior. ``status`` maps 1:1 to HTTP (see :doc:`restful_api`).
+   Every 4xx/5xx response from the VoIPBin API contains an ``error.reason`` field in ``UPPER_SNAKE`` that identifies the specific cause. This page catalogues all published reasons. Clients should branch on ``reason`` for self-healing behavior. ``status`` maps 1:1 to HTTP (see :doc:`restful_api`).
 
    The error envelope contains ``status`` / ``reason`` / ``message`` / ``request_id`` (and an optional ``details`` array). Reason codes are append-only once published — adding a new reason does not require a schema version bump; removing or renaming one does and triggers a deprecation window.
 

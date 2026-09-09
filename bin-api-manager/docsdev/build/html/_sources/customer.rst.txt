@@ -3,7 +3,7 @@
 ************
 Customer
 ************
-A customer represents an account on the VoIPBIN platform, containing billing details, permissions, and configuration for all owned resources.
+A customer represents an account on the VoIPBin platform, containing billing details, permissions, and configuration for all owned resources.
 
 **API Reference:** `Customer endpoints <https://api.voipbin.net/redoc/#tag/Customer>`_
 

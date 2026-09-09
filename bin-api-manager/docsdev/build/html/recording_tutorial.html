@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Transcribe" href="transcribe.html"><link rel="prev" title="Recording" href="recording_struct_recording.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -655,60 +655,60 @@
 <section id="get-list-of-recordings">
 <h3>Get list of recordings<a class="headerlink" href="#get-list-of-recordings" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/recordings?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&amp;page_token=2021-05-03+21%3A35%3A02.809&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&amp;page_token=2021-05-03+21%3A35%3A02.809'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;348d988b-2ac9-4702-84f0-ae81301ad349&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;owner_type&quot;: &quot;&quot;,
-            &quot;owner_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;reference_type&quot;: &quot;call&quot;,
-            &quot;reference_id&quot;: &quot;531bc6f4-c695-4c6d-a478-f28b88dfc2ca&quot;,
-            &quot;status&quot;: &quot;ended&quot;,
-            &quot;format&quot;: &quot;wav&quot;,
-            &quot;on_end_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;tm_start&quot;: &quot;2021-01-29 05:31:47.870000&quot;,
-            &quot;tm_end&quot;: &quot;2021-01-29 05:31:58.932000&quot;,
-            &quot;tm_create&quot;: &quot;2021-01-29 05:31:45.051136&quot;,
-            &quot;tm_update&quot;: &quot;2021-01-29 05:31:58.943456&quot;
+            "id": "348d988b-2ac9-4702-84f0-ae81301ad349",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "owner_type": "",
+            "owner_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "activeflow_id": "00000000-0000-0000-0000-000000000000",
+            "reference_type": "call",
+            "reference_id": "531bc6f4-c695-4c6d-a478-f28b88dfc2ca",
+            "status": "ended",
+            "format": "wav",
+            "on_end_flow_id": "00000000-0000-0000-0000-000000000000",
+            "tm_start": "2021-01-29 05:31:47.870000",
+            "tm_end": "2021-01-29 05:31:58.932000",
+            "tm_create": "2021-01-29 05:31:45.051136",
+            "tm_update": "2021-01-29 05:31:58.943456"
         },
         {
-            &quot;id&quot;: &quot;142e8ef8-392c-4514-abf0-8656da5d2fdf&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;owner_type&quot;: &quot;&quot;,
-            &quot;owner_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;reference_type&quot;: &quot;call&quot;,
-            &quot;reference_id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
-            &quot;status&quot;: &quot;ended&quot;,
-            &quot;format&quot;: &quot;wav&quot;,
-            &quot;on_end_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;tm_start&quot;: &quot;2021-01-29 03:18:10.790000&quot;,
-            &quot;tm_end&quot;: &quot;2021-01-29 03:18:22.131000&quot;,
-            &quot;tm_create&quot;: &quot;2021-01-29 03:18:07.950164&quot;,
-            &quot;tm_update&quot;: &quot;2021-01-29 03:18:22.144432&quot;
+            "id": "142e8ef8-392c-4514-abf0-8656da5d2fdf",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "owner_type": "",
+            "owner_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "activeflow_id": "00000000-0000-0000-0000-000000000000",
+            "reference_type": "call",
+            "reference_id": "f457951b-9918-44af-a834-2216b1cc31bc",
+            "status": "ended",
+            "format": "wav",
+            "on_end_flow_id": "00000000-0000-0000-0000-000000000000",
+            "tm_start": "2021-01-29 03:18:10.790000",
+            "tm_end": "2021-01-29 03:18:22.131000",
+            "tm_create": "2021-01-29 03:18:07.950164",
+            "tm_update": "2021-01-29 03:18:22.144432"
         },
         {
-            &quot;id&quot;: &quot;f27d65bc-2f10-49e1-a49d-a7762965df13&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;owner_type&quot;: &quot;&quot;,
-            &quot;owner_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;reference_type&quot;: &quot;call&quot;,
-            &quot;reference_id&quot;: &quot;5f7a0eff-9de9-4c41-a018-08bffd4a19aa&quot;,
-            &quot;status&quot;: &quot;ended&quot;,
-            &quot;format&quot;: &quot;wav&quot;,
-            &quot;on_end_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;tm_start&quot;: &quot;2021-01-28 09:17:00.814000&quot;,
-            &quot;tm_end&quot;: &quot;2021-01-28 09:17:11.883000&quot;,
-            &quot;tm_create&quot;: &quot;2021-01-28 09:16:58.076735&quot;,
-            &quot;tm_update&quot;: &quot;2021-01-28 09:17:11.890500&quot;
+            "id": "f27d65bc-2f10-49e1-a49d-a7762965df13",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "owner_type": "",
+            "owner_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "activeflow_id": "00000000-0000-0000-0000-000000000000",
+            "reference_type": "call",
+            "reference_id": "5f7a0eff-9de9-4c41-a018-08bffd4a19aa",
+            "status": "ended",
+            "format": "wav",
+            "on_end_flow_id": "00000000-0000-0000-0000-000000000000",
+            "tm_start": "2021-01-28 09:17:00.814000",
+            "tm_end": "2021-01-28 09:17:11.883000",
+            "tm_create": "2021-01-28 09:16:58.076735",
+            "tm_update": "2021-01-28 09:17:11.890500"
         }
     ],
-    &quot;next_page_token&quot;: &quot;2021-01-28 09:16:58.076735&quot;
+    "next_page_token": "2021-01-28 09:16:58.076735"
 }
 </pre></div>
 </div>
@@ -716,23 +716,23 @@
 <section id="get-detail-of-recording">
 <h3>Get detail of recording<a class="headerlink" href="#get-detail-of-recording" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/recordings/f27d65bc-2f10-49e1-a49d-a7762965df13?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings/f27d65bc-2f10-49e1-a49d-a7762965df13?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;f27d65bc-2f10-49e1-a49d-a7762965df13&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;owner_type&quot;: &quot;&quot;,
-    &quot;owner_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;5f7a0eff-9de9-4c41-a018-08bffd4a19aa&quot;,
-    &quot;status&quot;: &quot;ended&quot;,
-    &quot;format&quot;: &quot;wav&quot;,
-    &quot;on_end_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;tm_start&quot;: &quot;2021-01-28 09:17:00.814000&quot;,
-    &quot;tm_end&quot;: &quot;2021-01-28 09:17:11.883000&quot;,
-    &quot;tm_create&quot;: &quot;2021-01-28 09:16:58.076735&quot;,
-    &quot;tm_update&quot;: &quot;2021-01-28 09:17:11.890500&quot;
+    "id": "f27d65bc-2f10-49e1-a49d-a7762965df13",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "owner_type": "",
+    "owner_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "activeflow_id": "00000000-0000-0000-0000-000000000000",
+    "reference_type": "call",
+    "reference_id": "5f7a0eff-9de9-4c41-a018-08bffd4a19aa",
+    "status": "ended",
+    "format": "wav",
+    "on_end_flow_id": "00000000-0000-0000-0000-000000000000",
+    "tm_start": "2021-01-28 09:17:00.814000",
+    "tm_end": "2021-01-28 09:17:11.883000",
+    "tm_create": "2021-01-28 09:16:58.076735",
+    "tm_update": "2021-01-28 09:17:11.890500"
 }
 </pre></div>
 </div>
@@ -740,7 +740,7 @@
 <section id="simple-recordingfile-download">
 <h3>Simple recordingfile download<a class="headerlink" href="#simple-recordingfile-download" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/recordingfiles/348d988b-2ac9-4702-84f0-ae81301ad349?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; -o tmp.wav
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordingfiles/348d988b-2ac9-4702-84f0-ae81301ad349?token=&lt;YOUR_AUTH_TOKEN&gt;' -o tmp.wav
 
 $ play tmp.wav                                                                                                                                                                                     11s
 
@@ -790,7 +790,7 @@ Done.
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -838,8 +838,8 @@ Done.
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

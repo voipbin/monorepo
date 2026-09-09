@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Transfer" href="call_transfer.html"><link rel="prev" title="Call" href="call.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,11 +648,11 @@
 <li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">dialing</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> or subscribe via WebSocket to track call status changes.</p></li>
 </ul>
 </div>
-<p>The VoIPBIN call API provides a straightforward and convenient way to develop high-quality call applications in the Cloud. With the VoIPBIN API, developers can leverage familiar web technologies to build scalable and feature-rich call applications, giving them the power to control inbound and outbound call flows using JSON-based VoIPBIN actions. Additionally, the API offers capabilities to record and store inbound or outbound calls, create conference calls, and send text-to-speech messages in multiple languages with different voices and accents.</p>
-<p>With the VoIPBIN API you can:</p>
+<p>The VoIPBin call API provides a straightforward and convenient way to develop high-quality call applications in the Cloud. With the VoIPBin API, developers can leverage familiar web technologies to build scalable and feature-rich call applications, giving them the power to control inbound and outbound call flows using JSON-based VoIPBin actions. Additionally, the API offers capabilities to record and store inbound or outbound calls, create conference calls, and send text-to-speech messages in multiple languages with different voices and accents.</p>
+<p>With the VoIPBin API you can:</p>
 <ul class="simple">
 <li><p>Build apps that scale with the web technologies you are already using.</p></li>
-<li><p>Control the flow of inbound and outbound calls in JSON with VoIPBIN’s actions.</p></li>
+<li><p>Control the flow of inbound and outbound calls in JSON with VoIPBin’s actions.</p></li>
 <li><p>Record and store inbound or outbound calls.</p></li>
 <li><p>Create conference calls.</p></li>
 <li><p>Send text-to-speech messages in 50 languages with different voices and accents.</p></li>
@@ -664,13 +664,13 @@
 </div>
 <section id="protocol">
 <h2>Protocol<a class="headerlink" href="#protocol" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN offers support for various call protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.</p>
+<p>VoIPBin offers support for various call protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.</p>
 <img alt="_images/call_overview_protocol.png" src="_images/call_overview_protocol.png" />
 </section>
 <section id="pstn-phone-number-format">
 <h2>PSTN/Phone Number Format<a class="headerlink" href="#pstn-phone-number-format" title="Link to this heading">¶</a></h2>
-<p>In the VoIPBIN APIs, all PSTN/Phone numbers must adhere to the <a class="reference external" href="https://en.wikipedia.org/wiki/E.164">+E164</a> format. This format standardizes the representation of phone numbers to facilitate smooth communication and interoperability across different systems.</p>
-<p>Key requirements for phone numbers within the VoIPBIN APIs:</p>
+<p>In the VoIPBin APIs, all PSTN/Phone numbers must adhere to the <a class="reference external" href="https://en.wikipedia.org/wiki/E.164">+E164</a> format. This format standardizes the representation of phone numbers to facilitate smooth communication and interoperability across different systems.</p>
+<p>Key requirements for phone numbers within the VoIPBin APIs:</p>
 <ul class="simple">
 <li><p>The phone number must have the ‘+’ symbol at the beginning.</p></li>
 <li><p>The number should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
@@ -679,15 +679,15 @@
 </section>
 <section id="extension-number-format">
 <h2>Extension Number Format<a class="headerlink" href="#extension-number-format" title="Link to this heading">¶</a></h2>
-<p>The extension numbers used in the VoIPBIN system can be customized according to specific requirements. However, they must adhere to the following limitation:</p>
+<p>The extension numbers used in the VoIPBin system can be customized according to specific requirements. However, they must adhere to the following limitation:</p>
 <ul class="simple">
 <li><p>Extension numbers should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
 </ul>
-<p>The absence of special characters ensures consistent and reliable processing of extension numbers within the VoIPBIN system, promoting smooth communication and interaction.</p>
+<p>The absence of special characters ensures consistent and reliable processing of extension numbers within the VoIPBin system, promoting smooth communication and interaction.</p>
 </section>
 <section id="call-lifecycle">
 <h2>Call Lifecycle<a class="headerlink" href="#call-lifecycle" title="Link to this heading">¶</a></h2>
-<p>Every call in VoIPBIN follows a predictable lifecycle from creation to termination. Understanding this lifecycle helps you build reliable applications that respond correctly to call state changes.</p>
+<p>Every call in VoIPBin follows a predictable lifecycle from creation to termination. Understanding this lifecycle helps you build reliable applications that respond correctly to call state changes.</p>
 <p><strong>State Diagram</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                               <span class="o">+--------------+</span>
                                <span class="o">|</span>   <span class="n">dialing</span>    <span class="o">|</span>
@@ -766,7 +766,7 @@
 <h2>What Happens At Each Stage<a class="headerlink" href="#what-happens-at-each-stage" title="Link to this heading">¶</a></h2>
 <p><strong>During Dialing</strong></p>
 <p>When you create an outbound call or receive an inbound call, the call enters the dialing state.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBIN</span>                    <span class="n">Destination</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBin</span>                    <span class="n">Destination</span>
    <span class="o">|</span>                           <span class="o">|</span>                            <span class="o">|</span>
    <span class="o">|</span>  <span class="n">POST</span> <span class="o">/</span><span class="n">calls</span>              <span class="o">|</span>                            <span class="o">|</span>
    <span class="o">+--------------------------&gt;|</span>                            <span class="o">|</span>
@@ -774,13 +774,13 @@
    <span class="o">|</span>                           <span class="o">+---------------------------&gt;|</span>
    <span class="o">|</span>                           <span class="o">|</span>                            <span class="o">|</span>
    <span class="o">|</span>  <span class="n">Call</span> <span class="nb">object</span>              <span class="o">|</span>                            <span class="o">|</span>
-   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span>        <span class="o">|</span>                            <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">"dialing"</span>        <span class="o">|</span>                            <span class="o">|</span>
    <span class="o">|&lt;--------------------------+</span>                            <span class="o">|</span>
 </pre></div>
 </div>
 <p>At this point:</p>
 <ul class="simple">
-<li><p>VoIPBIN is trying to reach the destination</p></li>
+<li><p>VoIPBin is trying to reach the destination</p></li>
 <li><p>No audio is flowing yet</p></li>
 <li><p>The call may fail if the network is unreachable</p></li>
 </ul>
@@ -790,7 +790,7 @@
 <span class="o">|</span>                           <span class="o">|</span>  <span class="mi">180</span> <span class="n">Ringing</span>               <span class="o">|</span>
 <span class="o">|</span>                           <span class="o">|&lt;---------------------------+</span>
 <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="n">call_updated</span>    <span class="o">|</span>                            <span class="o">|</span>
-<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span>        <span class="o">|</span>       <span class="n">Ring</span> <span class="n">Ring</span>            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">"ringing"</span>        <span class="o">|</span>       <span class="n">Ring</span> <span class="n">Ring</span>            <span class="o">|</span>
 <span class="o">|&lt;--------------------------+</span>                            <span class="o">|</span>
 </pre></div>
 </div>
@@ -806,7 +806,7 @@
 <span class="o">|</span>                           <span class="o">|</span>  <span class="mi">200</span> <span class="n">OK</span>                    <span class="o">|</span>
 <span class="o">|</span>                           <span class="o">|&lt;---------------------------+</span>
 <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="n">call_updated</span>    <span class="o">|</span>                            <span class="o">|</span>
-<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span>    <span class="o">|</span>   <span class="o">&lt;=====================&gt;</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">"progressing"</span>    <span class="o">|</span>   <span class="o">&lt;=====================&gt;</span>  <span class="o">|</span>
 <span class="o">|&lt;--------------------------+</span>        <span class="p">(</span><span class="n">Audio</span> <span class="n">flows</span><span class="p">)</span>       <span class="o">|</span>
 </pre></div>
 </div>
@@ -823,16 +823,16 @@
 <span class="o">|</span>                           <span class="o">|</span>  <span class="n">BYE</span>                       <span class="o">|</span>
 <span class="o">|</span>                           <span class="o">|&lt;---------------------------+</span>
 <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="n">call_updated</span>    <span class="o">|</span>                            <span class="o">|</span>
-<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>         <span class="o">|</span>                            <span class="o">|</span>
-<span class="o">|</span>  <span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>      <span class="o">|</span>                            <span class="o">|</span>
-<span class="o">|</span>  <span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>  <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">"hangup"</span>         <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">hangup_by</span><span class="p">:</span> <span class="s2">"remote"</span>      <span class="o">|</span>                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">"normal"</span>  <span class="o">|</span>                            <span class="o">|</span>
 <span class="o">|&lt;--------------------------+</span>                            <span class="o">|</span>
 </pre></div>
 </div>
 </section>
 <section id="understanding-hangup-reasons">
 <h2>Understanding Hangup Reasons<a class="headerlink" href="#understanding-hangup-reasons" title="Link to this heading">¶</a></h2>
-<p>When a call ends, VoIPBIN tells you why it ended. This helps you build appropriate responses for different scenarios.</p>
+<p>When a call ends, VoIPBin tells you why it ended. This helps you build appropriate responses for different scenarios.</p>
 <p><strong>Hangup Reason Values</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -861,7 +861,7 @@
 <td><p>The destination phone rang but nobody picked up.</p></td>
 </tr>
 <tr class="row-even"><td><p>dialout</p></td>
-<td><p>VoIPBIN’s dialing timeout expired before the destination answered. Different from noanswer - this is our timeout.</p></td>
+<td><p>VoIPBin’s dialing timeout expired before the destination answered. Different from noanswer - this is our timeout.</p></td>
 </tr>
 <tr class="row-odd"><td><p>amd</p></td>
 <td><p>The Answering Machine Detection (AMD) action detected a voicemail and hung up according to your settings.</p></td>
@@ -890,26 +890,26 @@
 <p><strong>Common Scenarios</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scenario</span><span class="p">:</span> <span class="n">Normal</span> <span class="n">conversation</span>
 <span class="o">----------------------------</span>
-<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>
-<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
+<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">"remote"</span>
+<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">"normal"</span>
 <span class="o">-&gt;</span> <span class="n">The</span> <span class="n">other</span> <span class="n">person</span> <span class="n">hung</span> <span class="n">up</span> <span class="n">after</span> <span class="n">talking</span>
 
 <span class="n">Scenario</span><span class="p">:</span> <span class="n">Missed</span> <span class="n">call</span>
 <span class="o">----------------------------</span>
-<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>
-<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;noanswer&quot;</span>
+<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">"remote"</span>
+<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">"noanswer"</span>
 <span class="o">-&gt;</span> <span class="n">Phone</span> <span class="n">rang</span> <span class="n">but</span> <span class="n">nobody</span> <span class="n">answered</span>
 
 <span class="n">Scenario</span><span class="p">:</span> <span class="n">Your</span> <span class="n">app</span> <span class="n">ended</span> <span class="n">the</span> <span class="n">call</span>
 <span class="o">----------------------------</span>
-<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span>
-<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
+<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">"local"</span>
+<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">"normal"</span>
 <span class="o">-&gt;</span> <span class="n">Your</span> <span class="n">flow</span> <span class="n">action</span> <span class="ow">or</span> <span class="n">API</span> <span class="n">call</span> <span class="n">ended</span> <span class="n">it</span>
 
 <span class="n">Scenario</span><span class="p">:</span> <span class="n">Network</span> <span class="n">problem</span>
 <span class="o">----------------------------</span>
-<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>
-<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span>
+<span class="n">hangup_by</span><span class="p">:</span> <span class="s2">"remote"</span>
+<span class="n">hangup_reason</span><span class="p">:</span> <span class="s2">"failed"</span>
 <span class="o">-&gt;</span> <span class="n">Call</span> <span class="n">never</span> <span class="n">connected</span> <span class="n">due</span> <span class="n">to</span> <span class="n">network</span> <span class="n">issues</span>
 </pre></div>
 </div>
@@ -921,7 +921,7 @@
 <p>Pauses the call. The other party hears silence (or music if MOH is enabled).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Before</span> <span class="n">Hold</span>                          <span class="n">After</span> <span class="n">Hold</span>
 <span class="o">+---------+</span>     <span class="n">audio</span>      <span class="o">+---------+</span>     <span class="o">+---------+</span>     <span class="n">silence</span>   <span class="o">+---------+</span>
-<span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">&lt;============&gt;</span> <span class="o">|</span> <span class="n">VoIPBIN</span> <span class="o">|</span>     <span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">------------&gt;</span> <span class="o">|</span> <span class="n">VoIPBIN</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">&lt;============&gt;</span> <span class="o">|</span> <span class="n">VoIPBin</span> <span class="o">|</span>     <span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">------------&gt;</span> <span class="o">|</span> <span class="n">VoIPBin</span> <span class="o">|</span>
 <span class="o">+---------+</span>                <span class="o">+---------+</span>     <span class="o">+---------+</span>  <span class="p">(</span><span class="ow">or</span> <span class="n">music</span><span class="p">)</span>   <span class="o">+---------+</span>
 </pre></div>
 </div>
@@ -932,7 +932,7 @@
 </ul>
 <p><strong>Mute</strong></p>
 <p>Silences audio in one or both directions without putting the call on hold.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Mute</span> <span class="s2">&quot;in&quot;</span>                    <span class="n">Mute</span> <span class="s2">&quot;out&quot;</span>                   <span class="n">Mute</span> <span class="s2">&quot;both&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Mute</span> <span class="s2">"in"</span>                    <span class="n">Mute</span> <span class="s2">"out"</span>                   <span class="n">Mute</span> <span class="s2">"both"</span>
 <span class="o">+----+</span>  <span class="o">---</span><span class="n">X</span><span class="o">--&gt;</span>  <span class="o">+----+</span>     <span class="o">+----+</span>  <span class="o">&lt;--</span><span class="n">X</span><span class="o">---</span>  <span class="o">+----+</span>      <span class="o">+----+</span>  <span class="o">--</span><span class="n">X</span><span class="o">--</span>  <span class="o">+----+</span>
 <span class="o">|</span> <span class="n">A</span>  <span class="o">|</span>  <span class="o">&lt;------</span>  <span class="o">|</span> <span class="n">B</span>  <span class="o">|</span>     <span class="o">|</span> <span class="n">A</span>  <span class="o">|</span>  <span class="o">-------&gt;</span> <span class="o">|</span> <span class="n">B</span>  <span class="o">|</span>      <span class="o">|</span> <span class="n">A</span>  <span class="o">|</span>  <span class="o">--</span><span class="n">X</span><span class="o">--</span>  <span class="o">|</span> <span class="n">B</span>  <span class="o">|</span>
 <span class="o">+----+</span>           <span class="o">+----+</span>     <span class="o">+----+</span>           <span class="o">+----+</span>      <span class="o">+----+</span>         <span class="o">+----+</span>
@@ -947,7 +947,7 @@
 <p><strong>Recording</strong></p>
 <p>Captures the call audio for later playback.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------+</span>         <span class="o">+---------+</span>         <span class="o">+---------+</span>
-<span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">&lt;=====&gt;</span> <span class="o">|</span> <span class="n">VoIPBIN</span> <span class="o">|</span> <span class="o">&lt;=====&gt;</span> <span class="o">|</span>  <span class="n">Dest</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Caller</span>  <span class="o">|</span> <span class="o">&lt;=====&gt;</span> <span class="o">|</span> <span class="n">VoIPBin</span> <span class="o">|</span> <span class="o">&lt;=====&gt;</span> <span class="o">|</span>  <span class="n">Dest</span>   <span class="o">|</span>
 <span class="o">+---------+</span>         <span class="o">+----+----+</span>         <span class="o">+---------+</span>
                          <span class="o">|</span>
                          <span class="n">v</span> <span class="p">(</span><span class="n">recording</span><span class="p">)</span>
@@ -964,12 +964,12 @@
 </section>
 <section id="call-chaining">
 <h2>Call Chaining<a class="headerlink" href="#call-chaining" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN’s call concept differs from traditional 1:1 calls. A single logical conversation may involve multiple call objects linked together.</p>
+<p>VoIPBin’s call concept differs from traditional 1:1 calls. A single logical conversation may involve multiple call objects linked together.</p>
 <p><strong>The Two-Call Model</strong></p>
-<p>When you make a call from A to B through VoIPBIN, there are actually two separate calls:</p>
+<p>When you make a call from A to B through VoIPBin, there are actually two separate calls:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traditional</span> <span class="n">View</span><span class="p">:</span>     <span class="n">A</span> <span class="o">-----------------------&gt;</span> <span class="n">B</span>
 
-<span class="n">VoIPBIN</span> <span class="n">Reality</span><span class="p">:</span>      <span class="n">A</span> <span class="o">&lt;---</span> <span class="n">Call</span> <span class="mi">1</span> <span class="o">---&gt;</span> <span class="n">VoIPBIN</span> <span class="o">&lt;---</span> <span class="n">Call</span> <span class="mi">2</span> <span class="o">---&gt;</span> <span class="n">B</span>
+<span class="n">VoIPBin</span> <span class="n">Reality</span><span class="p">:</span>      <span class="n">A</span> <span class="o">&lt;---</span> <span class="n">Call</span> <span class="mi">1</span> <span class="o">---&gt;</span> <span class="n">VoIPBin</span> <span class="o">&lt;---</span> <span class="n">Call</span> <span class="mi">2</span> <span class="o">---&gt;</span> <span class="n">B</span>
                                <span class="o">|</span>                        <span class="o">|</span>
                                <span class="o">+------------------------+</span>
                                       <span class="p">(</span><span class="n">bridged</span> <span class="n">audio</span><span class="p">)</span>
@@ -978,7 +978,7 @@
 <p><strong>Why Two Calls?</strong></p>
 <p>This design enables powerful features:</p>
 <ul class="simple">
-<li><p><strong>Recording</strong>: VoIPBIN can record both sides independently</p></li>
+<li><p><strong>Recording</strong>: VoIPBin can record both sides independently</p></li>
 <li><p><strong>Conferencing</strong>: Add more parties without changing the original calls</p></li>
 <li><p><strong>Transfer</strong>: Move calls between agents without dropping the caller</p></li>
 <li><p><strong>Flow Control</strong>: Run different actions on each call leg</p></li>
@@ -1009,14 +1009,14 @@
 <p><strong>Common Use Case: Transfer</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Caller</span> <span class="ow">and</span> <span class="n">Agent</span> <span class="n">talking</span>
 <span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+--------+</span>
-<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBIN</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Agent</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBin</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Agent</span>  <span class="o">|</span>
 <span class="o">+--------+</span>       <span class="o">+----+----+</span>       <span class="o">+--------+</span>
                       <span class="o">|</span>
                  <span class="n">Master</span> <span class="n">Call</span>
 
 <span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">initiates</span> <span class="n">transfer</span> <span class="n">to</span> <span class="n">Supervisor</span>
 <span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+--------+</span>
-<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBIN</span> <span class="o">|</span>       <span class="o">|</span> <span class="n">Agent</span>  <span class="o">|</span> <span class="p">(</span><span class="n">on</span> <span class="n">hold</span><span class="p">)</span>
+<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBin</span> <span class="o">|</span>       <span class="o">|</span> <span class="n">Agent</span>  <span class="o">|</span> <span class="p">(</span><span class="n">on</span> <span class="n">hold</span><span class="p">)</span>
 <span class="o">+--------+</span>       <span class="o">+----+----+</span>       <span class="o">+--------+</span>
                       <span class="o">|</span>
                       <span class="o">+-----------&gt;</span> <span class="o">+------------+</span>
@@ -1025,14 +1025,14 @@
 
 <span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Supervisor</span> <span class="n">answers</span><span class="p">,</span> <span class="n">Agent</span> <span class="n">drops</span>
 <span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+------------+</span>
-<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBIN</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Supervisor</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBin</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Supervisor</span> <span class="o">|</span>
 <span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+------------+</span>
 </pre></div>
 </div>
 <p><strong>Multi-Party Chaining (3+ Parties)</strong></p>
 <p>Call chaining supports more than two parties. Each chained call connects to the master:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------+</span>       <span class="o">+---------+</span>       <span class="o">+---------+</span>
-<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBIN</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Agent</span> <span class="mi">1</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Caller</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">VoIPBin</span> <span class="o">|&lt;-----&gt;|</span> <span class="n">Agent</span> <span class="mi">1</span> <span class="o">|</span>
 <span class="o">+--------+</span>       <span class="o">+----+----+</span>       <span class="o">+---------+</span>
                       <span class="o">|</span>
                       <span class="o">+------------&gt;+---------+</span>
@@ -1043,7 +1043,7 @@
                                     <span class="o">|</span> <span class="n">Supervisor</span> <span class="o">|</span>
                                     <span class="o">+------------+</span>
 
-<span class="n">Master</span><span class="p">:</span> <span class="n">Caller</span><span class="s1">&#39;s call</span>
+<span class="n">Master</span><span class="p">:</span> <span class="n">Caller</span><span class="s1">'s call</span>
 <span class="n">Chained</span><span class="p">:</span> <span class="n">Agent</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Agent</span> <span class="mi">2</span><span class="p">,</span> <span class="n">Supervisor</span> <span class="p">(</span><span class="nb">all</span> <span class="n">linked</span> <span class="n">to</span> <span class="n">master</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1127,7 +1127,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>tm_create</p></td>
-<td><p>When the call object was created in VoIPBIN</p></td>
+<td><p>When the call object was created in VoIPBin</p></td>
 </tr>
 <tr class="row-odd"><td><p>tm_ringing</p></td>
 <td><p>When the destination phone started ringing</p></td>
@@ -1153,7 +1153,7 @@
 </section>
 <section id="route-failover">
 <h2>Route Failover<a class="headerlink" href="#route-failover" title="Link to this heading">¶</a></h2>
-<p>When an outgoing call fails during dialing or ringing, VoIPBIN can automatically try alternate routes.</p>
+<p>When an outgoing call fails during dialing or ringing, VoIPBin can automatically try alternate routes.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------+
 |                       Call Attempt Flow                         |
 +-----------------------------------------------------------------+
@@ -1191,7 +1191,7 @@
 </pre></div>
 </div>
 <p><strong>Failover Rules</strong></p>
-<p>Not all failures trigger failover. VoIPBIN only tries the next route when recovery is possible:</p>
+<p>Not all failures trigger failover. VoIPBin only tries the next route when recovery is possible:</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -1207,7 +1207,7 @@
 </tr>
 <tr class="row-odd"><td><p>dialout</p></td>
 <td><p>Yes</p></td>
-<td><p>VoIPBIN’s own dialing timeout expired before an answer - another route might succeed</p></td>
+<td><p>VoIPBin’s own dialing timeout expired before an answer - another route might succeed</p></td>
 </tr>
 <tr class="row-even"><td><p>busy</p></td>
 <td><p>No</p></td>
@@ -1246,13 +1246,13 @@
 </section>
 <section id="incoming-call">
 <h2>Incoming call<a class="headerlink" href="#incoming-call" title="Link to this heading">¶</a></h2>
-<p>The VoIPBIN system provides the functionality to receive incoming calls from external parties. This feature allows users to accept and handle incoming calls through their VoIP services. Incoming calls are crucial for various communication applications and call center setups as they enable users to receive inquiries, provide support, and engage with customers, clients, or other users.
-When an incoming call is received, the VoIPBIN system processes the call request and prepares for call handling based on the specified parameters and configurations.</p>
+<p>The VoIPBin system provides the functionality to receive incoming calls from external parties. This feature allows users to accept and handle incoming calls through their VoIP services. Incoming calls are crucial for various communication applications and call center setups as they enable users to receive inquiries, provide support, and engage with customers, clients, or other users.
+When an incoming call is received, the VoIPBin system processes the call request and prepares for call handling based on the specified parameters and configurations.</p>
 </section>
 <section id="execution-of-call-flow-for-incoming-call">
 <h2>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Link to this heading">¶</a></h2>
 <p>The execution of the call flow for incoming calls involves a simple yet effective sequence of actions:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                <span class="n">VoIPBIN</span>                    <span class="n">Your</span> <span class="n">Flow</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                <span class="n">VoIPBin</span>                    <span class="n">Your</span> <span class="n">Flow</span>
       <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
       <span class="o">|</span>  <span class="n">INVITE</span> <span class="p">(</span><span class="n">call</span> <span class="n">request</span><span class="p">)</span>    <span class="o">|</span>                           <span class="o">|</span>
       <span class="o">+--------------------------&gt;|</span>                           <span class="o">|</span>
@@ -1269,21 +1269,21 @@ When an incoming call is received, the VoIPBIN system processes the call request
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><strong>Call Verification</strong>: When an incoming call is received, the VoIPBIN system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
+<li><p><strong>Call Verification</strong>: When an incoming call is received, the VoIPBin system verifies the call’s authenticity and checks for any potential security risks, such as spoofed or fraudulent calls. This verification process ensures that legitimate calls are allowed to proceed.</p></li>
 <li><p><strong>Determine Call Flow</strong>: After successful verification, the system determines the appropriate call flow based on the destination of the incoming call. The call flow includes a set of predefined actions and configurations tailored to handle calls directed to a specific user, department, or interactive voice response (IVR) system.</p></li>
 <li><p><strong>Execute Call Flow</strong>: Once the call flow is determined, the system proceeds to execute it without delay. The call flow actions are triggered in accordance with the predefined configuration for the call destination.</p></li>
 <li><p><strong>End the Call</strong>: After executing the call flow actions, the system initiates the process of ending the call. The call is terminated, and the connection with the external party is disconnected.</p></li>
 </ul>
-<p>By following this streamlined call flow process, the VoIPBIN system efficiently handles incoming calls, ensures their secure and verified handling, and executes the appropriate flow actions based on the call destination. After executing the call flow, the system promptly ends the call, completing the call handling process for the incoming call. Customizable flow actions allow users to tailor the call handling process according to their application’s needs, optimizing user experience and call management efficiency.</p>
+<p>By following this streamlined call flow process, the VoIPBin system efficiently handles incoming calls, ensures their secure and verified handling, and executes the appropriate flow actions based on the call destination. After executing the call flow, the system promptly ends the call, completing the call handling process for the incoming call. Customizable flow actions allow users to tailor the call handling process according to their application’s needs, optimizing user experience and call management efficiency.</p>
 <img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
 </section>
 <section id="outgoing-call">
 <h2>Outgoing call<a class="headerlink" href="#outgoing-call" title="Link to this heading">¶</a></h2>
-<p>The VoIPBIN system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
-To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBIN system, which then processes the request and attempts to establish a connection with the specified destination.</p>
+<p>The VoIPBin system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
+To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBin system, which then processes the request and attempts to establish a connection with the specified destination.</p>
 <section id="outgoing-call-permission-requirements">
 <h3>Outgoing Call Permission Requirements<a class="headerlink" href="#outgoing-call-permission-requirements" title="Link to this heading">¶</a></h3>
-<p>Before placing an outgoing call, VoIPBIN validates the customer’s account eligibility. Both checks must pass before the call proceeds to balance validation, source number resolution, and routing.</p>
+<p>Before placing an outgoing call, VoIPBin validates the customer’s account eligibility. Both checks must pass before the call proceeds to balance validation, source number resolution, and routing.</p>
 <p><strong>1. Customer Account Status</strong></p>
 <p>The customer account must have <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">&quot;active&quot;</span></code>. Accounts in any other state (<code class="docutils literal notranslate"><span class="pre">initial</span></code>, <code class="docutils literal notranslate"><span class="pre">frozen</span></code>, <code class="docutils literal notranslate"><span class="pre">expired</span></code>, <code class="docutils literal notranslate"><span class="pre">deleted</span></code>) are rejected.</p>
 <ul class="simple">
@@ -1302,17 +1302,17 @@ To utilize the outgoing call feature, users need to provide the necessary call p
 
 Is the customer account active?
     │
-    ├── NO → Reject: &quot;customer account is not active&quot;
+    ├── NO → Reject: "customer account is not active"
     │
-    └── YES → Is the destination PSTN (type: &quot;tel&quot;)?
+    └── YES → Is the destination PSTN (type: "tel")?
                 │
                 ├── NO (SIP) → Permission granted ✓
                 │
-                └── YES → Is identity_verification_status &quot;verified&quot;?
+                └── YES → Is identity_verification_status "verified"?
                             │
                             ├── YES → Permission granted ✓
                             │
-                            └── NO → Reject: &quot;customer identity verification required for PSTN calls&quot;
+                            └── NO → Reject: "customer identity verification required for PSTN calls"
 </pre></div>
 </div>
 <div class="admonition note">
@@ -1323,7 +1323,7 @@ Is the customer account active?
 </section>
 <section id="source-number-validation-outgoing-pstn-calls">
 <h3>Source Number Validation (Outgoing PSTN Calls)<a class="headerlink" href="#source-number-validation-outgoing-pstn-calls" title="Link to this heading">¶</a></h3>
-<p>For outgoing calls to PSTN phone numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>), VoIPBIN validates the source number before placing the call. The system uses a cascading fallback to determine the caller ID shown to the destination:</p>
+<p>For outgoing calls to PSTN phone numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>), VoIPBin validates the source number before placing the call. The system uses a cascading fallback to determine the caller ID shown to the destination:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Source Number Resolution Flow
 ─────────────────────────────
 
@@ -1342,7 +1342,7 @@ Does the customer have a default outgoing source number configured?
     │
     ├── YES → Use the default outgoing source number as caller ID ✓
     │
-    └── NO → Set caller ID to &quot;Anonymous&quot; ✓
+    └── NO → Set caller ID to "Anonymous" ✓
 </pre></div>
 </div>
 <p><strong>Key rules:</strong></p>
@@ -1385,7 +1385,7 @@ Does the customer have a default outgoing source number configured?
 <td><p><code class="docutils literal notranslate"><span class="pre">anonymous</span></code> field in the <code class="docutils literal notranslate"><span class="pre">call</span></code> action’s <code class="docutils literal notranslate"><span class="pre">option</span></code> object</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>Registered endpoint outbound call (SIP phone dialing out via VoIPBIN)</p></td>
+<tr class="row-odd"><td><p>Registered endpoint outbound call (SIP phone dialing out via VoIPBin)</p></td>
 <td><p>Automatic — inherited from the incoming SIP <code class="docutils literal notranslate"><span class="pre">Privacy</span></code> header. Cannot be overridden by the user.</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (always)</p></td>
 </tr>
@@ -1422,7 +1422,7 @@ Does the customer have a default outgoing source number configured?
 </ul>
 <p>When the destination is not a PSTN number (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;sip&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;extension&quot;</span></code>), the <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter has no effect — the caller ID is always shown.</p>
 <p><strong>Registered endpoint behavior:</strong></p>
-<p>When a SIP phone registered with VoIPBIN dials an external PSTN number, the system always uses <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> for the anonymous setting. This means:</p>
+<p>When a SIP phone registered with VoIPBin dials an external PSTN number, the system always uses <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> for the anonymous setting. This means:</p>
 <ul class="simple">
 <li><p>If the SIP phone sends a <code class="docutils literal notranslate"><span class="pre">Privacy:</span> <span class="pre">id</span></code> header in the INVITE, the outbound PSTN call will be anonymous.</p></li>
 <li><p>If the SIP phone does not send a Privacy header, the outbound call uses the real caller ID.</p></li>
@@ -1439,8 +1439,8 @@ Does the customer have a default outgoing source number configured?
 </section>
 <section id="execution-of-call-flow-for-outgoing-call">
 <h2>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Link to this heading">¶</a></h2>
-<p>Once the outgoing call request is initiated, the VoIPBIN system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Application</span>               <span class="n">VoIPBIN</span>                    <span class="n">Destination</span>
+<p>Once the outgoing call request is initiated, the VoIPBin system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Application</span>               <span class="n">VoIPBin</span>                    <span class="n">Destination</span>
       <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
       <span class="o">|</span>  <span class="n">POST</span> <span class="o">/</span><span class="n">calls</span>              <span class="o">|</span>                           <span class="o">|</span>
       <span class="o">|</span>  <span class="p">(</span><span class="k">with</span> <span class="n">flow</span> <span class="n">actions</span><span class="p">)</span>      <span class="o">|</span>                           <span class="o">|</span>
@@ -1448,13 +1448,13 @@ Does the customer have a default outgoing source number configured?
       <span class="o">|</span>                           <span class="o">|</span>  <span class="n">INVITE</span>                   <span class="o">|</span>
       <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
       <span class="o">|</span>  <span class="n">Call</span> <span class="n">created</span>             <span class="o">|</span>                           <span class="o">|</span>
-      <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span>        <span class="o">|</span>  <span class="mi">180</span> <span class="n">Ringing</span>              <span class="o">|</span>
+      <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">"dialing"</span>        <span class="o">|</span>  <span class="mi">180</span> <span class="n">Ringing</span>              <span class="o">|</span>
       <span class="o">|&lt;--------------------------+&lt;--------------------------+</span>
       <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
-      <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span>       <span class="o">|</span>  <span class="mi">200</span> <span class="n">OK</span> <span class="p">(</span><span class="n">answered</span><span class="p">)</span>        <span class="o">|</span>
+      <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="s2">"ringing"</span>       <span class="o">|</span>  <span class="mi">200</span> <span class="n">OK</span> <span class="p">(</span><span class="n">answered</span><span class="p">)</span>        <span class="o">|</span>
       <span class="o">|&lt;--------------------------+&lt;--------------------------+</span>
       <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
-      <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span>   <span class="o">|</span>  <span class="o">&lt;=====================&gt;</span>  <span class="o">|</span>
+      <span class="o">|</span>  <span class="n">Webhook</span><span class="p">:</span> <span class="s2">"progressing"</span>   <span class="o">|</span>  <span class="o">&lt;=====================&gt;</span>  <span class="o">|</span>
       <span class="o">|&lt;--------------------------+</span>  <span class="n">Execute</span> <span class="n">flow</span> <span class="n">actions</span>     <span class="o">|</span>
       <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
 </pre></div>
@@ -1462,7 +1462,7 @@ Does the customer have a default outgoing source number configured?
 <p>The call flow execution occurs as follows:</p>
 <ul class="simple">
 <li><p><strong>Initiation</strong>: The user triggers the outgoing call request, providing the necessary call parameters.</p></li>
-<li><p><strong>Call Setup</strong>: The VoIPBIN system processes the request and establishes a connection with the destination phone number.</p></li>
+<li><p><strong>Call Setup</strong>: The VoIPBin system processes the request and establishes a connection with the destination phone number.</p></li>
 <li><p><strong>Wait for Call Answer</strong>: After the call setup, the system waits for the called party to answer the call. This waiting period involves ringing the called party’s phone and monitoring the call status.</p></li>
 <li><p><strong>Call Answered</strong>: Once the called party answers the outgoing call, the system proceeds to execute the predefined call flow actions.</p></li>
 <li><p><strong>Flow Actions Execution</strong>: The call flow actions are a set of customizable operations that are executed upon call answer. These actions can include call recording, call routing, call analytics, notifications, and post-call actions, among others.</p></li>
@@ -1473,7 +1473,7 @@ Does the customer have a default outgoing source number configured?
 <section id="error-handling-and-termination">
 <h2>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Link to this heading">¶</a></h2>
 <p>During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
-The VoIPBIN system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
+The VoIPBin system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
 <p><strong>Common Error Scenarios</strong></p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -1504,31 +1504,31 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </section>
 <section id="call-concept">
 <h2>Call concept<a class="headerlink" href="#call-concept" title="Link to this heading">¶</a></h2>
-<p>The concept of a call in VoIPBIN departs from the traditional 1:1 call model. Here’s an overview:</p>
-<p>In VoIPBIN, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call’s trajectory as it connects to an agent and then diverges to another destination.</p>
-<p>In VoIPBIN, the conventional call scenario A -&gt; B is delineated by two distinct calls:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>            <span class="n">VoIPBIN</span>            <span class="n">B</span>
+<p>The concept of a call in VoIPBin departs from the traditional 1:1 call model. Here’s an overview:</p>
+<p>In VoIPBin, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call’s trajectory as it connects to an agent and then diverges to another destination.</p>
+<p>In VoIPBin, the conventional call scenario A -&gt; B is delineated by two distinct calls:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span>            <span class="n">VoIPBin</span>            <span class="n">B</span>
 <span class="o">|&lt;--</span> <span class="n">Call</span> <span class="mi">1</span> <span class="o">---&gt;|</span>               <span class="o">|</span>
 <span class="o">|</span>               <span class="o">|&lt;---</span> <span class="n">Call</span> <span class="mi">2</span> <span class="o">--&gt;|</span>
 <span class="o">|&lt;-----</span><span class="n">RTP</span><span class="o">-----&gt;|&lt;-----</span><span class="n">RTP</span><span class="o">-----&gt;|</span>
 </pre></div>
 </div>
 <section id="comparison-traditional-call-concept-vs-voipbin-call-concept">
-<h3>Comparison: Traditional Call Concept vs VoIPBIN Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Link to this heading">¶</a></h3>
+<h3>Comparison: Traditional Call Concept vs VoIPBin Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Link to this heading">¶</a></h3>
 <p>Traditional Call Concept</p>
 <ul class="simple">
 <li><p>Follows a 1:1 model where a call is a direct connection between a source and a destination.</p></li>
 <li><p>Typically involves a straightforward flow from the caller to the recipient.</p></li>
 <li><p>Limited in handling complex call journeys or interactions with multiple parties.</p></li>
 </ul>
-<p>VoIPBIN Call Concept</p>
+<p>VoIPBin Call Concept</p>
 <ul class="simple">
 <li><p>Deviates from the traditional 1:1 model, allowing for more intricate call structures.</p></li>
 <li><p>Encompasses source, destination, and additional metadata in a call.</p></li>
 <li><p>Permits connections to multiple other calls, creating dynamic call journeys.</p></li>
 <li><p>Visualizes a call’s path, which may involve connecting to an agent and branching to additional destinations.</p></li>
 </ul>
-<p>In summary, while the traditional call concept adheres to a simple point-to-point model, the VoIPBIN call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.</p>
+<p>In summary, while the traditional call concept adheres to a simple point-to-point model, the VoIPBin call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.</p>
 </section>
 </section>
 <section id="troubleshooting">
@@ -1593,7 +1593,7 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </section>
 <section id="related-documentation">
 <h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h2>
-<p>Calls integrate with many VoIPBIN features. Use these links for detailed information:</p>
+<p>Calls integrate with many VoIPBin features. Use these links for detailed information:</p>
 <p><strong>Recording a Call</strong></p>
 <p>Capture call audio for compliance, training, or analysis.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span>                              <span class="n">Recording</span>
@@ -1680,7 +1680,7 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1731,7 +1731,7 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 <li><a class="reference internal" href="#execution-of-call-flow-for-outgoing-call">Execution of Call Flow for outgoing call</a></li>
 <li><a class="reference internal" href="#error-handling-and-termination">Error handling and Termination</a></li>
 <li><a class="reference internal" href="#call-concept">Call concept</a><ul>
-<li><a class="reference internal" href="#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs VoIPBIN Call Concept</a></li>
+<li><a class="reference internal" href="#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs VoIPBin Call Concept</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
@@ -1748,8 +1748,8 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

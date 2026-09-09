@@ -9,16 +9,16 @@ Overview
    * **Cost:** Chargeable (STT per minute of audio transcribed + TTS per character synthesized)
    * **Async:** Yes. Both ``POST https://api.voipbin.net/v1.0/speakings`` and ``POST https://api.voipbin.net/v1.0/transcribes`` return immediately. Transcripts are delivered asynchronously via webhook (``transcript_created`` events) or WebSocket subscription.
 
-VoIPBIN enables you to build fully custom AI voice agents by combining two independent APIs:
+VoIPBin enables you to build fully custom AI voice agents by combining two independent APIs:
 
 - **Transcribe API** (``https://api.voipbin.net/v1.0/transcribes``): Converts caller speech to text in real-time (STT)
 - **Speaking API** (``https://api.voipbin.net/v1.0/speakings``): Converts your AI-generated text to speech and injects it into the call (TTS)
 
-By using these APIs individually, you retain full control over the AI logic — choose any LLM, RAG pipeline, or custom NLP system as your backend. VoIPBIN handles the telecom layer (SIP, RTP, codecs) and the speech processing; your backend handles the intelligence.
+By using these APIs individually, you retain full control over the AI logic — choose any LLM, RAG pipeline, or custom NLP system as your backend. VoIPBin handles the telecom layer (SIP, RTP, codecs) and the speech processing; your backend handles the intelligence.
 
 .. note:: **AI Implementation Hint**
 
-   This guide describes the **custom integration** approach where you manage your own AI backend. If you want VoIPBIN to manage the entire STT → LLM → TTS pipeline automatically, use the ``ai_talk`` flow action instead. See :ref:`AI Overview <ai-overview>` for the managed approach.
+   This guide describes the **custom integration** approach where you manage your own AI backend. If you want VoIPBin to manage the entire STT → LLM → TTS pipeline automatically, use the ``ai_talk`` flow action instead. See :ref:`AI Overview <ai-overview>` for the managed approach.
 
 
 Architecture
@@ -29,7 +29,7 @@ The custom AI voice agent architecture follows a three-step loop:
 
     +-----------------+                    +----------------------------+
     |                 | <=== SIP/RTP ====> |                            |
-    |  Caller (Phone) |                    |  VoIPBIN (CPaaS)           |
+    |  Caller (Phone) |                    |  VoIPBin (CPaaS)           |
     |                 |                    |  [SIP, RTP, STT, TTS]      |
     +-----------------+                    +----------------------------+
                                                |                  ^
@@ -50,9 +50,9 @@ The custom AI voice agent architecture follows a three-step loop:
 
 **The Loop:**
 
-1. VoIPBIN transcribes the caller's speech and delivers text to your backend via ``transcript_created`` webhook or WebSocket event
+1. VoIPBin transcribes the caller's speech and delivers text to your backend via ``transcript_created`` webhook or WebSocket event
 2. Your AI backend processes the text (e.g., sends to an LLM) and generates a response
-3. Your backend sends the response text to VoIPBIN via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``, which synthesizes and plays it to the caller
+3. Your backend sends the response text to VoIPBin via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``, which synthesizes and plays it to the caller
 
 
 API Components
@@ -60,7 +60,7 @@ API Components
 
 **Speaking API (Text-to-Speech)**
 
-The Speaking API creates a streaming TTS session on an active call or conference. You send text, and VoIPBIN synthesizes it into speech and injects the audio into the call.
+The Speaking API creates a streaming TTS session on an active call or conference. You send text, and VoIPBin synthesizes it into speech and injects the audio into the call.
 
 .. list-table::
    :header-rows: 1
@@ -181,7 +181,7 @@ Key endpoints for this integration:
 
 Transcripts are delivered via ``transcript_created`` webhook events or WebSocket subscription. Each transcript includes:
 
-- ``direction``: ``in`` (caller's speech) or ``out`` (VoIPBIN's speech toward caller)
+- ``direction``: ``in`` (caller's speech) or ``out`` (VoIPBin's speech toward caller)
 - ``message``: The transcribed text
 - ``transcribe_id``: UUID linking back to the transcription session
 
@@ -189,11 +189,11 @@ Transcripts are delivered via ``transcript_created`` webhook events or WebSocket
 Receiving Events
 ----------------
 
-VoIPBIN delivers events to your backend through two methods: **webhooks** (push-based HTTP POST) and **WebSocket** (persistent bidirectional connection). You must configure at least one before starting the agent loop, since transcript and call events drive the conversation cycle.
+VoIPBin delivers events to your backend through two methods: **webhooks** (push-based HTTP POST) and **WebSocket** (persistent bidirectional connection). You must configure at least one before starting the agent loop, since transcript and call events drive the conversation cycle.
 
 **Webhook Delivery**
 
-Webhooks push events to an HTTPS endpoint you register via ``PUT https://api.voipbin.net/v1.0/customer``. VoIPBIN sends an HTTP POST with the event payload each time a matching event occurs. Your endpoint must respond with HTTP ``200`` within 5 seconds or delivery will be retried.
+Webhooks push events to an HTTPS endpoint you register via ``PUT https://api.voipbin.net/v1.0/customer``. VoIPBin sends an HTTP POST with the event payload each time a matching event occurs. Your endpoint must respond with HTTP ``200`` within 5 seconds or delivery will be retried.
 
 Key event types for AI voice agent integration:
 
@@ -226,7 +226,7 @@ Key event types for AI voice agent integration:
 
 .. note:: **AI Implementation Hint**
 
-   Implement idempotent processing using the resource ``id`` and ``status`` fields, because VoIPBIN may retry delivery if your endpoint does not respond in time. See :ref:`Webhook Overview <webhook-overview>` for full configuration details.
+   Implement idempotent processing using the resource ``id`` and ``status`` fields, because VoIPBin may retry delivery if your endpoint does not respond in time. See :ref:`Webhook Overview <webhook-overview>` for full configuration details.
 
 **WebSocket Delivery**
 
@@ -262,8 +262,8 @@ Events arrive as JSON messages on the open connection. No polling required.
      - Higher (HTTP round-trip per event)
      - Lower (persistent connection)
    * - Connection model
-     - Stateless — VoIPBIN POSTs to your endpoint
-     - Stateful — your client holds an open connection to VoIPBIN
+     - Stateless — VoIPBin POSTs to your endpoint
+     - Stateful — your client holds an open connection to VoIPBin
    * - Best for
      - Serverless backends, simple setups, multi-region redundancy
      - Real-time voice agents, low-latency event loops, interactive dashboards
@@ -295,7 +295,7 @@ Create a transcription session on the active call using ``POST https://api.voipb
 
 **Step 3: Receive transcript events**
 
-VoIPBIN delivers ``transcript_created`` events to your webhook URL or WebSocket connection. Each event contains the transcribed text and direction.
+VoIPBin delivers ``transcript_created`` events to your webhook URL or WebSocket connection. Each event contains the transcribed text and direction.
 
 **Step 4: Process with your AI backend**
 
@@ -303,7 +303,7 @@ Your backend receives the text, sends it to your LLM or NLP system, and generate
 
 **Step 5: Send AI response as speech**
 
-Send the response text to VoIPBIN via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``. VoIPBIN synthesizes the text and plays it into the call.
+Send the response text to VoIPBin via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``. VoIPBin synthesizes the text and plays it into the call.
 
 **Step 6: Repeat**
 
@@ -316,7 +316,7 @@ Continue listening for new ``transcript_created`` events and responding. The loo
 
 Handling Interruptions (Barge-in)
 ---------------------------------
-When the caller speaks while TTS audio is playing, VoIPBIN detects the incoming speech and generates a new ``transcript_created`` event. Your backend should handle this by:
+When the caller speaks while TTS audio is playing, VoIPBin detects the incoming speech and generates a new ``transcript_created`` event. Your backend should handle this by:
 
 1. Calling ``POST https://api.voipbin.net/v1.0/speakings/{id}/flush`` to stop the current TTS playback and clear queued text
 2. Processing the new transcript through your AI
@@ -324,7 +324,7 @@ When the caller speaks while TTS audio is playing, VoIPBIN detects the incoming 
 
 ::
 
-    Your AI Backend                VoIPBIN                    Caller
+    Your AI Backend                VoIPBin                    Caller
          |                            |                         |
          | POST /say "Let me check"   |                         |
          +--------------------------->| Playing TTS audio...    |
@@ -347,7 +347,7 @@ When the caller speaks while TTS audio is playing, VoIPBIN detects the incoming 
 
 Custom Integration vs ai_talk
 ------------------------------
-VoIPBIN offers two approaches for AI voice agents:
+VoIPBin offers two approaches for AI voice agents:
 
 .. list-table::
    :header-rows: 1
@@ -357,7 +357,7 @@ VoIPBIN offers two approaches for AI voice agents:
      - ai_talk (Managed)
    * - AI Backend
      - You manage your own LLM (any provider)
-     - VoIPBIN manages the LLM (configured via AI resource)
+     - VoIPBin manages the LLM (configured via AI resource)
    * - STT/TTS Control
      - Individual API calls (``/transcribes``, ``/speakings``
      - Automatic pipeline (configured in flow action)

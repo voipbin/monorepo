@@ -3,7 +3,7 @@
 ************
 Common
 ************
-Shared data structures and conventions used across multiple VoIPBIN API resources, including address formats, pagination parameters, and standard response envelopes.
+Shared data structures and conventions used across multiple VoIPBin API resources, including address formats, pagination parameters, and standard response envelopes.
 
 .. toctree::
    :maxdepth: 2

@@ -4,7 +4,7 @@
 
 Receiving Events
 ----------------
-VoIPBIN notifies you in real-time when things happen — calls connect, transcriptions arrive, recordings complete. There are two delivery methods:
+VoIPBin notifies you in real-time when things happen — calls connect, transcriptions arrive, recordings complete. There are two delivery methods:
 
 - **WebSocket** — Maintain a persistent connection and receive events instantly. No public server needed.
 - **Customer Webhook** — Configure a webhook URI on your customer account to receive all events via HTTP POST.
@@ -29,7 +29,7 @@ VoIPBIN notifies you in real-time when things happen — calls connect, transcri
 
 WebSocket
 ~~~~~~~~~
-Connect to VoIPBIN's WebSocket endpoint and subscribe to topics to receive events in real-time.
+Connect to VoIPBin's WebSocket endpoint and subscribe to topics to receive events in real-time.
 
 **Connect:**
 
@@ -99,7 +99,7 @@ For the full WebSocket guide, see :ref:`WebSocket documentation <websocket-main>
 
 Customer Webhook
 ~~~~~~~~~~~~~~~~
-Configure a webhook URI on your customer account. VoIPBIN sends HTTP POST requests to this URI for **all** events associated with your account — no per-event-type filtering is needed.
+Configure a webhook URI on your customer account. VoIPBin sends HTTP POST requests to this URI for **all** events associated with your account — no per-event-type filtering is needed.
 
 **Update your customer's webhook configuration:**
 
@@ -123,7 +123,7 @@ Response:
         ...
     }
 
-Once configured, VoIPBIN sends a ``POST`` request to your ``webhook_uri`` each time any event occurs for your account. Your endpoint must respond with HTTP ``200`` within 5 seconds.
+Once configured, VoIPBin sends a ``POST`` request to your ``webhook_uri`` each time any event occurs for your account. Your endpoint must respond with HTTP ``200`` within 5 seconds.
 
 **Fields:**
 

@@ -5,14 +5,14 @@ Data Architecture
 
 .. note:: **AI Context**
 
-   This page describes VoIPBIN's data layer: shared MySQL database (schema organization, common table patterns, migrations via Alembic), Redis cache (cache-aside pattern, key naming, TTL strategies), and session management. Relevant when an AI agent needs to understand database schema conventions, caching strategies, data consistency models, or backup/recovery procedures.
+   This page describes VoIPBin's data layer: shared MySQL database (schema organization, common table patterns, migrations via Alembic), Redis cache (cache-aside pattern, key naming, TTL strategies), and session management. Relevant when an AI agent needs to understand database schema conventions, caching strategies, data consistency models, or backup/recovery procedures.
 
-VoIPBIN uses a shared data layer with MySQL for persistent storage and Redis for caching and session management. This architecture provides consistency across services while enabling high-performance data access.
+VoIPBin uses a shared data layer with MySQL for persistent storage and Redis for caching and session management. This architecture provides consistency across services while enabling high-performance data access.
 
 Data Layer Overview
 -------------------
 
-VoIPBIN's data architecture consists of three layers:
+VoIPBin's data architecture consists of three layers:
 
 .. code::
 
@@ -43,7 +43,7 @@ VoIPBIN's data architecture consists of three layers:
 MySQL Database
 --------------
 
-VoIPBIN uses a single shared MySQL database accessed by all services.
+VoIPBin uses a single shared MySQL database accessed by all services.
 
 **Database Characteristics**
 
@@ -187,7 +187,7 @@ Services access data through consistent patterns:
 
 **Transaction Handling**
 
-VoIPBIN uses transactions for consistency:
+VoIPBin uses transactions for consistency:
 
 .. code::
 
@@ -218,7 +218,7 @@ VoIPBIN uses transactions for consistency:
 
 **Query Optimization**
 
-VoIPBIN optimizes queries for performance:
+VoIPBin optimizes queries for performance:
 
 .. code::
 
@@ -362,7 +362,7 @@ Redis provides fast access to frequently used data:
 
 **Cache Key Patterns**
 
-VoIPBIN uses structured cache keys:
+VoIPBin uses structured cache keys:
 
 .. code::
 
@@ -442,7 +442,7 @@ All cached data has Time-To-Live (TTL):
 
 **Cache Invalidation**
 
-VoIPBIN invalidates cache on updates:
+VoIPBin invalidates cache on updates:
 
 .. code::
 
@@ -490,7 +490,7 @@ VoIPBIN invalidates cache on updates:
     3. Write-Behind (Async):
        App writes to cache -> Return success -> Cache writes to DB later
 
-    VoIPBIN primarily uses Cache-Aside for simplicity and consistency.
+    VoIPBin primarily uses Cache-Aside for simplicity and consistency.
 
 Session Management
 ------------------
@@ -552,7 +552,7 @@ Redis stores session data for authenticated users:
 Data Consistency
 ----------------
 
-VoIPBIN ensures consistency across data layers:
+VoIPBin ensures consistency across data layers:
 
 **Consistency Model**
 
@@ -629,7 +629,7 @@ VoIPBIN ensures consistency across data layers:
 Data Backup and Recovery
 -------------------------
 
-VoIPBIN implements comprehensive backup strategy:
+VoIPBin implements comprehensive backup strategy:
 
 **Backup Architecture**
 
@@ -715,7 +715,7 @@ VoIPBIN implements comprehensive backup strategy:
 Performance Monitoring
 ----------------------
 
-VoIPBIN monitors data layer performance:
+VoIPBin monitors data layer performance:
 
 **Database Metrics**
 
@@ -776,7 +776,7 @@ VoIPBIN monitors data layer performance:
 Scalability Considerations
 ---------------------------
 
-As VoIPBIN scales, data layer adapts:
+As VoIPBin scales, data layer adapts:
 
 **Database Scaling**
 

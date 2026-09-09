@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Customer" href="customer_struct_customer.html"><link rel="prev" title="Customer" href="customer.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,7 +648,7 @@
 <li><p><strong>Async:</strong> No. All customer operations are synchronous and return immediately.</p></li>
 </ul>
 </div>
-<p>VoIPBIN’s Customer API provides account-level management for your organization within the platform. A customer represents a tenant account that owns resources like agents, numbers, flows, and billing. The Customer API enables you to manage account settings, view usage, and configure organization-wide preferences.</p>
+<p>VoIPBin’s Customer API provides account-level management for your organization within the platform. A customer represents a tenant account that owns resources like agents, numbers, flows, and billing. The Customer API enables you to manage account settings, view usage, and configure organization-wide preferences.</p>
 <p>With the Customer API you can:</p>
 <ul class="simple">
 <li><p>View and update customer account information</p></li>
@@ -659,7 +659,7 @@
 </ul>
 <section id="how-customers-work">
 <h2>How Customers Work<a class="headerlink" href="#how-customers-work" title="Link to this heading">¶</a></h2>
-<p>A customer is the top-level organizational unit in VoIPBIN that owns all other resources.</p>
+<p>A customer is the top-level organizational unit in VoIPBin that owns all other resources.</p>
 <p><strong>Customer Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span>                         <span class="n">Customer</span> <span class="n">Account</span>                              <span class="o">|</span>
@@ -778,49 +778,49 @@
 <h2>Managing Customers<a class="headerlink" href="#managing-customers" title="Link to this heading">¶</a></h2>
 <p>Access and update customer account information.</p>
 <p><strong>Get Customer Information</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/customer?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/customer?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Response:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Acme Corporation&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Enterprise customer account&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;admin@acme-corp.com&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;phone_number&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;123 Main St, San Francisco, CA 94105&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhooks.acme-corp.com/voipbin&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Acme Corporation"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Enterprise customer account"</span><span class="p">,</span>
+    <span class="s2">"email"</span><span class="p">:</span> <span class="s2">"admin@acme-corp.com"</span><span class="p">,</span>
+    <span class="s2">"phone_number"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">,</span>
+    <span class="s2">"address"</span><span class="p">:</span> <span class="s2">"123 Main St, San Francisco, CA 94105"</span><span class="p">,</span>
+    <span class="s2">"webhook_method"</span><span class="p">:</span> <span class="s2">"POST"</span><span class="p">,</span>
+    <span class="s2">"webhook_uri"</span><span class="p">:</span> <span class="s2">"https://webhooks.acme-corp.com/voipbin"</span><span class="p">,</span>
+    <span class="s2">"billing_account_id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-5678-90ab-cdef-1234567890ab"</span><span class="p">,</span>
+    <span class="s2">"metadata"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"rtp_debug"</span><span class="p">:</span> <span class="n">false</span>
     <span class="p">},</span>
-    <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;identity_verification_status&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">"email_verified"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
+    <span class="s2">"identity_verification_status"</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">,</span>
+    <span class="s2">"tm_deletion_scheduled"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-01T00:00:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Update Customer Information</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;name&quot;: &quot;Acme Corporation Inc.&quot;,
-        &quot;detail&quot;: &quot;Updated enterprise account&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/customer?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "name": "Acme Corporation Inc.",
+        "detail": "Updated enterprise account"
+    }'
 </pre></div>
 </div>
 <p><strong>Update Customer Metadata</strong></p>
 <p>Update configuration flags for your customer account. Requires CustomerAdmin permission.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/customer/metadata?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;rtp_debug&quot;: true
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/customer/metadata?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "rtp_debug": true
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -832,15 +832,15 @@
 <p>The default caller ID used for outgoing PSTN calls when no explicit source number is specified in the call request is now managed via the OutboundConfig API. See the <a class="reference internal" href="outbound_config_overview.html#outbound-config-overview"><span class="std std-ref">OutboundConfig Overview</span></a> for details.</p>
 <p><strong>Update Default Billing Account</strong></p>
 <p>Change the billing account used to fund the customer’s usage. Requires CustomerAdmin permission. The target billing account must already exist.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/customer/billing_account_id?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;billing_account_id&quot;: &quot;b8c9d0e1-f2a3-4567-8901-23456789abcd&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/customer/billing_account_id?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "billing_account_id": "b8c9d0e1-f2a3-4567-8901-23456789abcd"
+    }'
 </pre></div>
 </div>
 <p><strong>Admin-Only Customer Management</strong></p>
-<p>VoIPBIN staff with <code class="docutils literal notranslate"><span class="pre">ProjectSuperAdmin</span></code> permission can manage any customer account via the plural <code class="docutils literal notranslate"><span class="pre">/customers</span></code> endpoints (list, create, get by ID, update, delete, freeze, recover, and manage another customer’s billing account ID or metadata). Regular customer accounts always receive <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Permission</span> <span class="pre">Denied</span></code> on these endpoints and should use the singular <code class="docutils literal notranslate"><span class="pre">/customer</span></code> endpoints documented above instead. See the <a class="reference internal" href="customer_tutorial.html#customer-tutorial"><span class="std std-ref">Customer Tutorial</span></a> for admin endpoint examples.</p>
+<p>VoIPBin staff with <code class="docutils literal notranslate"><span class="pre">ProjectSuperAdmin</span></code> permission can manage any customer account via the plural <code class="docutils literal notranslate"><span class="pre">/customers</span></code> endpoints (list, create, get by ID, update, delete, freeze, recover, and manage another customer’s billing account ID or metadata). Regular customer accounts always receive <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Permission</span> <span class="pre">Denied</span></code> on these endpoints and should use the singular <code class="docutils literal notranslate"><span class="pre">/customer</span></code> endpoints documented above instead. See the <a class="reference internal" href="customer_tutorial.html#customer-tutorial"><span class="std std-ref">Customer Tutorial</span></a> for admin endpoint examples.</p>
 </section>
 <section id="account-deletion-lifecycle">
 <h2>Account Deletion Lifecycle<a class="headerlink" href="#account-deletion-lifecycle" title="Link to this heading">¶</a></h2>
@@ -889,12 +889,12 @@
 </div>
 <p><strong>Self-Service Unregistration</strong></p>
 <p>A customer can request account deletion via the unregister endpoint. This freezes the account and schedules permanent deletion after a 30-day grace period.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/auth/unregister&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Authorization: Bearer &lt;token&gt;&#39; \
-    --data &#39;{
-        &quot;password&quot;: &quot;yourPassword&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/auth/unregister' \
+    --header 'Content-Type: application/json' \
+    --header 'Authorization: Bearer &lt;token&gt;' \
+    --data '{
+        "password": "yourPassword"
+    }'
 </pre></div>
 </div>
 <p>When an account is frozen:</p>
@@ -906,13 +906,13 @@
 </ul>
 <p><strong>Immediate Deletion</strong></p>
 <p>To skip the 30-day grace period and delete the account immediately, include <code class="docutils literal notranslate"><span class="pre">&quot;immediate&quot;:</span> <span class="pre">true</span></code>. <code class="docutils literal notranslate"><span class="pre">password</span></code> and <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> are mutually exclusive – provide exactly one: <code class="docutils literal notranslate"><span class="pre">password</span></code> for password-based accounts, or <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> set to <code class="docutils literal notranslate"><span class="pre">&quot;DELETE&quot;</span></code> for SSO or API-key authenticated requests.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/auth/unregister&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Authorization: Bearer &lt;token&gt;&#39; \
-    --data &#39;{
-        &quot;confirmation_phrase&quot;: &quot;DELETE&quot;,
-        &quot;immediate&quot;: true
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/auth/unregister' \
+    --header 'Content-Type: application/json' \
+    --header 'Authorization: Bearer &lt;token&gt;' \
+    --data '{
+        "confirmation_phrase": "DELETE",
+        "immediate": true
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -922,8 +922,8 @@
 </div>
 <p><strong>Cancel Unregistration (Recover Account)</strong></p>
 <p>During the 30-day grace period, a frozen account can be recovered by cancelling the unregistration.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/auth/unregister&#39; \
-    --header &#39;Authorization: Bearer &lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE 'https://api.voipbin.net/auth/unregister' \
+    --header 'Authorization: Bearer &lt;token&gt;'
 </pre></div>
 </div>
 <p>This restores the account to <code class="docutils literal notranslate"><span class="pre">active</span></code> status, clears the <code class="docutils literal notranslate"><span class="pre">tm_deletion_scheduled</span></code> field, and re-enables all operations.</p>
@@ -946,9 +946,9 @@
 </section>
 <section id="resource-ownership">
 <h2>Resource Ownership<a class="headerlink" href="#resource-ownership" title="Link to this heading">¶</a></h2>
-<p>All resources in VoIPBIN are scoped to a customer.</p>
+<p>All resources in VoIPBin are scoped to a customer.</p>
 <p><strong>Resource Hierarchy</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="s2">&quot;Acme Corp&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="s2">"Acme Corp"</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span>                                                                       <span class="o">|</span>
 <span class="o">|</span>  <span class="n">Agents</span> <span class="p">(</span><span class="mi">10</span><span class="p">)</span>                                                          <span class="o">|</span>
@@ -985,7 +985,7 @@
        <span class="o">|</span>                            <span class="o">|</span>
        <span class="o">|</span>  <span class="n">ISOLATED</span>                  <span class="o">|</span>
        <span class="o">|</span>  <span class="p">(</span><span class="n">cannot</span> <span class="n">access</span>            <span class="o">|</span>
-       <span class="o">|</span>   <span class="n">each</span> <span class="n">other</span><span class="s1">&#39;s resources)  |</span>
+       <span class="o">|</span>   <span class="n">each</span> <span class="n">other</span><span class="s1">'s resources)  |</span>
        <span class="o">+----------------------------+</span>
 </pre></div>
 </div>
@@ -1015,7 +1015,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The customer <code class="docutils literal notranslate"><span class="pre">id</span></code> is the top-level scoping identifier for all resources in VoIPBIN. When creating agents, numbers, flows, or any other resource, they are automatically associated with the customer of the authenticated user. You do not need to pass <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> explicitly in most creation requests – it is derived from the authentication token.</p>
+<p>The customer <code class="docutils literal notranslate"><span class="pre">id</span></code> is the top-level scoping identifier for all resources in VoIPBin. When creating agents, numbers, flows, or any other resource, they are automatically associated with the customer of the authenticated user. You do not need to pass <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> explicitly in most creation requests – it is derived from the authentication token.</p>
 </div>
 </section>
 <section id="common-scenarios">
@@ -1024,19 +1024,19 @@
 <p>Initial configuration of a new customer account.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Customer</span> <span class="n">account</span> <span class="n">created</span>
    <span class="o">+--------------------------------------------+</span>
-   <span class="o">|</span> <span class="n">Customer</span><span class="p">:</span> <span class="s2">&quot;New Company LLC&quot;</span>               <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Customer</span><span class="p">:</span> <span class="s2">"New Company LLC"</span>               <span class="o">|</span>
    <span class="o">|</span> <span class="n">Status</span><span class="p">:</span> <span class="n">active</span>                            <span class="o">|</span>
    <span class="o">|</span> <span class="n">Guest</span> <span class="n">agent</span><span class="p">:</span> <span class="n">auto</span><span class="o">-</span><span class="n">created</span>                 <span class="o">|</span>
    <span class="o">+--------------------------------------------+</span>
 
 <span class="mf">2.</span> <span class="n">Create</span> <span class="n">additional</span> <span class="n">agents</span>
-   <span class="n">POST</span> <span class="o">/</span><span class="n">agents</span> <span class="p">{</span> <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;admin@...&quot;</span> <span class="p">}</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">agents</span> <span class="p">{</span> <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"admin@..."</span> <span class="p">}</span>
 
 <span class="mf">3.</span> <span class="n">Provision</span> <span class="n">numbers</span>
-   <span class="n">POST</span> <span class="o">/</span><span class="n">numbers</span> <span class="p">{</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+1555...&quot;</span> <span class="p">}</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">numbers</span> <span class="p">{</span> <span class="s2">"number"</span><span class="p">:</span> <span class="s2">"+1555..."</span> <span class="p">}</span>
 
 <span class="mf">4.</span> <span class="n">Create</span> <span class="n">flows</span>
-   <span class="n">POST</span> <span class="o">/</span><span class="n">flows</span> <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Main IVR&quot;</span> <span class="p">}</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">flows</span> <span class="p">{</span> <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Main IVR"</span> <span class="p">}</span>
 
 <span class="mf">5.</span> <span class="n">Configure</span> <span class="n">resources</span>
    <span class="n">Link</span> <span class="n">numbers</span> <span class="n">to</span> <span class="n">flows</span><span class="p">,</span> <span class="n">agents</span> <span class="n">to</span> <span class="n">queues</span>
@@ -1044,7 +1044,7 @@
 </div>
 <p><strong>Scenario 2: Multi-Department Setup</strong></p>
 <p>Organize resources by department.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="s2">&quot;Enterprise Corp&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="s2">"Enterprise Corp"</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span>                                            <span class="o">|</span>
 <span class="o">|</span> <span class="n">Sales</span> <span class="n">Department</span><span class="p">:</span>                          <span class="o">|</span>
@@ -1190,7 +1190,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1242,8 +1242,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

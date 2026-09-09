@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Provider" href="provider_struct_provider.html"><link rel="prev" title="Provider" href="provider.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -648,7 +648,7 @@
 <li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/providers</span></code> returns immediately with the created provider.</p></li>
 </ul>
 </div>
-<p>VoIPBIN’s Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBIN to the PSTN (Public Switched Telephone Network) and other external networks.</p>
+<p>VoIPBin’s Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBin to the PSTN (Public Switched Telephone Network) and other external networks.</p>
 <p>With the Provider API you can:</p>
 <ul class="simple">
 <li><p>Set up a carrier-backed SIP trunk in one step via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code></p></li>
@@ -660,7 +660,7 @@
 </ul>
 <section id="easy-provider-setup">
 <h2>Easy Provider Setup<a class="headerlink" href="#easy-provider-setup" title="Link to this heading">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/providers/setup</span></code> lets a ProjectSuperAdmin submit a carrier API key and have VoIPBIN automatically validate the key, create the carrier-side SIP credential connection, and create the VoIPBin provider record — all in a single request.</p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/providers/setup</span></code> lets a ProjectSuperAdmin submit a carrier API key and have VoIPBin automatically validate the key, create the carrier-side SIP credential connection, and create the VoIPBin provider record — all in a single request.</p>
 <p><strong>Supported carriers:</strong> <code class="docutils literal notranslate"><span class="pre">telnyx</span></code></p>
 <p><strong>How it works:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+--------------------------------------------+
@@ -668,7 +668,7 @@
 |                                            |
 |  1. Validate carrier API key               |
 |  2. Create carrier SIP credential conn.    |
-|  3. Create VoIPBIN provider record         |
+|  3. Create VoIPBin provider record         |
 |  Returns: provider (id, hostname, …)       |
 +--------------------------------------------+
 </pre></div>
@@ -681,13 +681,13 @@
 </section>
 <section id="how-providers-work">
 <h2>How Providers Work<a class="headerlink" href="#how-providers-work" title="Link to this heading">¶</a></h2>
-<p>Providers connect VoIPBIN to external telephone networks.</p>
+<p>Providers connect VoIPBin to external telephone networks.</p>
 <p><strong>Provider Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span>                         <span class="n">Provider</span> <span class="n">System</span>                               <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
-<span class="n">VoIPBIN</span>                         <span class="n">Provider</span>                    <span class="n">External</span>
+<span class="n">VoIPBin</span>                         <span class="n">Provider</span>                    <span class="n">External</span>
    <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">|</span> <span class="n">Outbound</span> <span class="n">call</span>                 <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">+------------------------------&gt;|</span>                           <span class="o">|</span>
@@ -699,7 +699,7 @@
    <span class="o">|</span>                               <span class="o">|</span>                           <span class="o">|</span>
 
 <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-----------+</span>
-<span class="o">|</span>    <span class="n">VoIPBIN</span>        <span class="o">|</span>        <span class="o">|</span>     <span class="n">Provider</span>      <span class="o">|</span>        <span class="o">|</span>   <span class="n">PSTN</span>    <span class="o">|</span>
+<span class="o">|</span>    <span class="n">VoIPBin</span>        <span class="o">|</span>        <span class="o">|</span>     <span class="n">Provider</span>      <span class="o">|</span>        <span class="o">|</span>   <span class="n">PSTN</span>    <span class="o">|</span>
 <span class="o">|</span>    <span class="n">Platform</span>       <span class="o">|&lt;------&gt;|</span>   <span class="p">(</span><span class="n">SIP</span> <span class="n">Trunk</span><span class="p">)</span>     <span class="o">|&lt;------&gt;|</span>  <span class="n">Network</span>  <span class="o">|</span>
 <span class="o">+-------------------+</span>        <span class="o">+-------------------+</span>        <span class="o">+-----------+</span>
                                     <span class="o">|</span>
@@ -760,16 +760,16 @@
 </div>
 <p><strong>Example Provider Configuration</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;provider-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Telnyx Production&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;sip.telnyx.com&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tech_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tech_postfix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tech_headers&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;X-Custom-Header&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"provider-uuid-123"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Telnyx Production"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sip"</span><span class="p">,</span>
+    <span class="s2">"hostname"</span><span class="p">:</span> <span class="s2">"sip.telnyx.com"</span><span class="p">,</span>
+    <span class="s2">"tech_prefix"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"tech_postfix"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"tech_headers"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"X-Custom-Header"</span><span class="p">:</span> <span class="s2">"value"</span>
     <span class="p">},</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-01T00:00:00Z"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -781,17 +781,17 @@
 </section>
 <section id="codec-configuration">
 <h2>Codec Configuration<a class="headerlink" href="#codec-configuration" title="Link to this heading">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">codecs</span></code> field controls which audio codecs VoIPBIN offers during SDP negotiation for PSTN
+<p>The <code class="docutils literal notranslate"><span class="pre">codecs</span></code> field controls which audio codecs VoIPBin offers during SDP negotiation for PSTN
 outbound calls routed through this provider.</p>
 <p><strong>How it works:</strong></p>
-<p>When an outbound call is placed through a SIP provider, VoIPBIN sends an SDP offer listing the
+<p>When an outbound call is placed through a SIP provider, VoIPBin sends an SDP offer listing the
 allowed codecs in the order specified. The provider (carrier) selects from that list during SDP
-negotiation. Setting <code class="docutils literal notranslate"><span class="pre">codecs</span></code> restricts VoIPBIN’s offer to only the listed codecs.</p>
+negotiation. Setting <code class="docutils literal notranslate"><span class="pre">codecs</span></code> restricts VoIPBin’s offer to only the listed codecs.</p>
 <p><strong>Codecs field rules:</strong></p>
 <ul class="simple">
 <li><p><strong>Format:</strong> Comma-separated codec names (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;PCMU,PCMA&quot;</span></code>). No spaces around commas.</p></li>
-<li><p><strong>Empty string (``””``):</strong> No restriction applied — VoIPBIN uses its system-default codec list during SDP negotiation.</p></li>
-<li><p><strong>PSTN outbound only:</strong> This field only affects calls routed to the PSTN through this provider. SIP-to-SIP calls within VoIPBIN are not affected.</p></li>
+<li><p><strong>Empty string (``””``):</strong> No restriction applied — VoIPBin uses its system-default codec list during SDP negotiation.</p></li>
+<li><p><strong>PSTN outbound only:</strong> This field only affects calls routed to the PSTN through this provider. SIP-to-SIP calls within VoIPBin are not affected.</p></li>
 <li><p><strong>Valid only for type ``sip``:</strong> Ignored for other provider types.</p></li>
 </ul>
 <p><strong>Commonly used codecs:</strong></p>
@@ -826,7 +826,7 @@ Set codec restrictions afterward using <code class="docutils literal notranslate
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">codecs</span></code> to force a specific codec when a carrier has interoperability issues with
-VoIPBIN’s default SDP offer. For example, if a carrier only supports G.711 variants, set
+VoIPBin’s default SDP offer. For example, if a carrier only supports G.711 variants, set
 <code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;:</span> <span class="pre">&quot;PCMU,PCMA&quot;</span></code> to prevent codec mismatch errors. Leave <code class="docutils literal notranslate"><span class="pre">codecs</span></code> as an empty
 string (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>) unless you have a specific reason to restrict the codec list — restricting
 unnecessarily can reduce audio quality options.</p>
@@ -834,7 +834,7 @@ unnecessarily can reduce audio quality options.</p>
 </section>
 <section id="provider-types">
 <h2>Provider Types<a class="headerlink" href="#provider-types" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN supports various provider configurations.</p>
+<p>VoIPBin supports various provider configurations.</p>
 <p><strong>SIP Provider</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">SIP</span> <span class="n">Provider</span>                               <span class="o">|</span>
@@ -845,7 +845,7 @@ unnecessarily can reduce audio quality options.</p>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Outbound</span> <span class="n">Call</span> <span class="n">Flow</span><span class="p">:</span>
-<span class="n">VoIPBIN</span> <span class="o">-&gt;</span> <span class="n">SIP</span> <span class="n">INVITE</span> <span class="o">-&gt;</span> <span class="n">Provider</span> <span class="o">-&gt;</span> <span class="n">PSTN</span>
+<span class="n">VoIPBin</span> <span class="o">-&gt;</span> <span class="n">SIP</span> <span class="n">INVITE</span> <span class="o">-&gt;</span> <span class="n">Provider</span> <span class="o">-&gt;</span> <span class="n">PSTN</span>
 </pre></div>
 </div>
 </section>
@@ -855,12 +855,12 @@ unnecessarily can reduce audio quality options.</p>
 <p><strong>Tech Prefix/Postfix Usage</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Original</span> <span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">15551234567</span>
 
-<span class="n">With</span> <span class="n">Prefix</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+<span class="n">With</span> <span class="n">Prefix</span> <span class="s2">"1"</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Dialed</span><span class="p">:</span> <span class="mi">1</span><span class="o">+</span><span class="mi">15551234567</span>                      <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
-<span class="n">With</span> <span class="n">Postfix</span> <span class="s2">&quot;@provider.com&quot;</span><span class="p">:</span>
+<span class="n">With</span> <span class="n">Postfix</span> <span class="s2">"@provider.com"</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Dialed</span><span class="p">:</span> <span class="o">+</span><span class="mi">15551234567</span><span class="nd">@provider</span><span class="o">.</span><span class="n">com</span>          <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
@@ -876,11 +876,11 @@ unnecessarily can reduce audio quality options.</p>
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h2>
 <p><strong>Scenario 1: Primary Provider Setup</strong></p>
 <p>Configure main outbound provider.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Main Carrier&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Provider</span><span class="p">:</span> <span class="s2">"Main Carrier"</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;Telnyx Production&quot;</span>                  <span class="o">|</span>
-<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">&quot;sip.telnyx.com&quot;</span>                 <span class="o">|</span>
-<span class="o">|</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">"Telnyx Production"</span>                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">"sip.telnyx.com"</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">"sip"</span>                                <span class="o">|</span>
 <span class="o">|</span>                                            <span class="o">|</span>
 <span class="o">|</span> <span class="n">Used</span> <span class="k">for</span><span class="p">:</span> <span class="n">All</span> <span class="n">outbound</span> <span class="n">calls</span>               <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
@@ -888,15 +888,15 @@ unnecessarily can reduce audio quality options.</p>
 </div>
 <p><strong>Scenario 2: Multi-Provider Configuration</strong></p>
 <p>Configure multiple providers for failover.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Primary</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Telnyx&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Primary</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">"Telnyx"</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">&quot;sip.telnyx.com&quot;</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">"sip.telnyx.com"</span>                 <span class="o">|</span>
 <span class="o">|</span> <span class="n">Priority</span><span class="p">:</span> <span class="mi">1</span> <span class="p">(</span><span class="n">first</span> <span class="n">choice</span><span class="p">)</span>                 <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
-<span class="n">Secondary</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Twilio&quot;</span>
+<span class="n">Secondary</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">"Twilio"</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">&quot;sip.twilio.com&quot;</span>                 <span class="o">|</span>
+<span class="o">|</span> <span class="n">hostname</span><span class="p">:</span> <span class="s2">"sip.twilio.com"</span>                 <span class="o">|</span>
 <span class="o">|</span> <span class="n">Priority</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">failover</span><span class="p">)</span>                     <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
@@ -907,13 +907,13 @@ unnecessarily can reduce audio quality options.</p>
 </div>
 <p><strong>Scenario 3: Regional Providers</strong></p>
 <p>Use different providers for different regions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">US</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Telnyx US&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">US</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">"Telnyx US"</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">For</span> <span class="n">numbers</span><span class="p">:</span> <span class="o">+</span><span class="mi">1</span><span class="n">xxx</span>                         <span class="o">|</span>
 <span class="o">|</span> <span class="n">Optimal</span> <span class="n">routing</span> <span class="k">for</span> <span class="n">US</span> <span class="n">calls</span>               <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
-<span class="n">EU</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">&quot;Telnyx EU&quot;</span>
+<span class="n">EU</span> <span class="n">Provider</span><span class="p">:</span> <span class="s2">"Telnyx EU"</span>
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">For</span> <span class="n">numbers</span><span class="p">:</span> <span class="o">+</span><span class="mi">44</span><span class="p">,</span> <span class="o">+</span><span class="mi">49</span><span class="p">,</span> <span class="o">+</span><span class="mf">33.</span><span class="o">..</span>             <span class="o">|</span>
 <span class="o">|</span> <span class="n">Optimal</span> <span class="n">routing</span> <span class="k">for</span> <span class="n">EU</span> <span class="n">calls</span>               <span class="o">|</span>
@@ -1052,7 +1052,7 @@ number is allowed</p></td>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1104,8 +1104,8 @@ number is allowed</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

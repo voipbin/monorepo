@@ -10,7 +10,7 @@ Overview
    * **Async:** Yes. The ``POST`` response is a ``ProviderCall`` audit record that contains the IDs of the created Call and Groupcall records. Per-call state (dialing / ringing / answered / hangup reason) must be observed via ``GET https://api.voipbin.net/v1.0/calls/{id}`` or the normal Call webhooks.
    * **Access:** Admin-only. Requires ``PermissionProjectSuperAdmin``. Customer-tier users (``PermissionCustomerAdmin``, ``PermissionCustomerManager``, ``PermissionCustomerAgent``) cannot call this endpoint.
 
-VoIPBIN's ProviderCall API lets platform super-admins place a real outbound call through a specific SIP provider, forcing the routing decision instead of letting the normal customer / default dialroute merge choose one. Use cases:
+VoIPBin's ProviderCall API lets platform super-admins place a real outbound call through a specific SIP provider, forcing the routing decision instead of letting the normal customer / default dialroute merge choose one. Use cases:
 
 - **Provider onboarding.** Verify that a newly-configured provider actually accepts calls, routes to the PSTN, and returns a sensible SIP response — before live customer traffic touches it.
 - **Routing debugging.** When a provider is suspected of misbehaving, isolate it from normal dialroute priority so the admin can exercise it directly.
@@ -34,7 +34,7 @@ bin-api-manager is a thin gateway: it authenticates, verifies the ``provider_id`
 
 4. **Persist the ProviderCall audit record** — route-manager saves the admin's request info (``customer_id``, ``provider_id``, ``flow_id``, ``source``, ``destinations``, ``anonymous``) alongside the IDs of the Call and Groupcall records that step 3 produced.
 
-The response is the persisted ``ProviderCall.WebhookMessage`` — an atomic record (IDs only, no embedded Call/Groupcall objects, per the VoIPBIN atomic-API rule). Admin retrieves per-call state separately.
+The response is the persisted ``ProviderCall.WebhookMessage`` — an atomic record (IDs only, no embedded Call/Groupcall objects, per the VoIPBin atomic-API rule). Admin retrieves per-call state separately.
 
 **Internal-only metadata (not a customer-facing API field)**
 

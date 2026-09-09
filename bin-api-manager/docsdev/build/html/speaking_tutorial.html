@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Mediastream" href="mediastream.html"><link rel="prev" title="Speaking" href="speaking_struct_speaking.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -659,37 +659,37 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="create-a-speaking-session">
 <h3>Create a Speaking Session<a class="headerlink" href="#create-a-speaking-session" title="Link to this heading">¶</a></h3>
 <p>Attach a TTS session to a live call. The session starts in <code class="docutils literal notranslate"><span class="pre">initiating</span></code> status while the provider connection is established.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;12f8f1c9-a6c3-4f81-93db-ae445dcf188f&quot;,
-    &quot;language&quot;: &quot;en-US&quot;,
-    &quot;direction&quot;: &quot;both&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "reference_type": "call",
+    "reference_id": "12f8f1c9-a6c3-4f81-93db-ae445dcf188f",
+    "language": "en-US",
+    "direction": "both"
+}'
 
 {
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;12f8f1c9-a6c3-4f81-93db-ae445dcf188f&quot;,
-    &quot;language&quot;: &quot;en-US&quot;,
-    &quot;provider&quot;: &quot;elevenlabs&quot;,
-    &quot;voice_id&quot;: &quot;&quot;,
-    &quot;direction&quot;: &quot;both&quot;,
-    &quot;status&quot;: &quot;initiating&quot;,
-    &quot;tm_create&quot;: &quot;2025-06-15 14:30:00.123456&quot;,
-    &quot;tm_update&quot;: &quot;2025-06-15 14:30:00.123456&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "reference_type": "call",
+    "reference_id": "12f8f1c9-a6c3-4f81-93db-ae445dcf188f",
+    "language": "en-US",
+    "provider": "elevenlabs",
+    "voice_id": "",
+    "direction": "both",
+    "status": "initiating",
+    "tm_create": "2025-06-15 14:30:00.123456",
+    "tm_update": "2025-06-15 14:30:00.123456",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
 <p>Poll until the session becomes <code class="docutils literal notranslate"><span class="pre">active</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;status&quot;: &quot;active&quot;,
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "status": "active",
     ...
 }
 </pre></div>
@@ -699,17 +699,17 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="send-text-to-speak">
 <h3>Send Text to Speak<a class="headerlink" href="#send-text-to-speak" title="Link to this heading">¶</a></h3>
 <p>Once the session is <code class="docutils literal notranslate"><span class="pre">active</span></code>, send text to be synthesized and played into the call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/say?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;text&quot;: &quot;Hello! This is your AI agent speaking. How can I help you today?&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/say?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "text": "Hello! This is your AI agent speaking. How can I help you today?"
+}'
 
 {
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;12f8f1c9-a6c3-4f81-93db-ae445dcf188f&quot;
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "status": "active",
+    "reference_type": "call",
+    "reference_id": "12f8f1c9-a6c3-4f81-93db-ae445dcf188f"
 }
 </pre></div>
 </div>
@@ -720,33 +720,33 @@ ensure at least one participant has joined before attaching TTS.</p>
 <p>Specify the <code class="docutils literal notranslate"><span class="pre">provider</span></code> field when creating a session to select a TTS engine. If omitted, ElevenLabs is used by default.</p>
 <p><strong>ElevenLabs (default):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;call-id&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
+    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;call-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
+    <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"elevenlabs"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>ElevenLabs provides high-quality neural voices with natural intonation. This is the default provider—if <code class="docutils literal notranslate"><span class="pre">provider</span></code> is omitted, ElevenLabs is used.</p>
 <p><strong>Google Cloud TTS:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;call-id&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
+    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;call-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
+    <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"gcp"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Google Cloud TTS offers wide language support with WaveNet and Neural2 voices.</p>
 <p><strong>Amazon Polly:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;call-id&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;aws&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
+    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;call-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
+    <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"aws"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -755,22 +755,22 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="select-a-voice">
 <h3>Select a Voice<a class="headerlink" href="#select-a-voice" title="Link to this heading">¶</a></h3>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">voice_id</span></code> field to choose a specific voice from the provider’s voice library.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;12f8f1c9-a6c3-4f81-93db-ae445dcf188f&quot;,
-    &quot;language&quot;: &quot;en-US&quot;,
-    &quot;provider&quot;: &quot;elevenlabs&quot;,
-    &quot;voice_id&quot;: &quot;21m00Tcm4TlvDq8ikWAM&quot;,
-    &quot;direction&quot;: &quot;both&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "reference_type": "call",
+    "reference_id": "12f8f1c9-a6c3-4f81-93db-ae445dcf188f",
+    "language": "en-US",
+    "provider": "elevenlabs",
+    "voice_id": "21m00Tcm4TlvDq8ikWAM",
+    "direction": "both"
+}'
 
 {
-    &quot;id&quot;: &quot;b2c3d4e5-f6a7-8901-bcde-f23456789012&quot;,
-    &quot;provider&quot;: &quot;elevenlabs&quot;,
-    &quot;voice_id&quot;: &quot;21m00Tcm4TlvDq8ikWAM&quot;,
-    &quot;status&quot;: &quot;initiating&quot;,
+    "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+    "provider": "elevenlabs",
+    "voice_id": "21m00Tcm4TlvDq8ikWAM",
+    "status": "initiating",
     ...
 }
 </pre></div>
@@ -783,21 +783,21 @@ ensure at least one participant has joined before attaching TTS.</p>
 <p><strong>Both directions (announcements):</strong></p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">&quot;direction&quot;:</span> <span class="pre">&quot;both&quot;</span></code> when both parties should hear the speech. Suitable for announcements, greetings, or AI agent conversations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Outgoing only (agent coaching):</strong></p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">&quot;direction&quot;:</span> <span class="pre">&quot;out&quot;</span></code> so only the local party (callee) hears the speech. The remote caller does not. Suitable for real-time agent coaching or whisper prompts.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Incoming only (IVR replacement):</strong></p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">&quot;direction&quot;:</span> <span class="pre">&quot;in&quot;</span></code> so only the remote caller hears the speech. The local party does not. Suitable for IVR-style prompts or one-sided announcements.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -805,13 +805,13 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="flush-the-speech-queue">
 <h3>Flush the Speech Queue<a class="headerlink" href="#flush-the-speech-queue" title="Link to this heading">¶</a></h3>
 <p>Clear queued text and stop the currently playing audio.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/flush?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/flush?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;12f8f1c9-a6c3-4f81-93db-ae445dcf188f&quot;
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "status": "active",
+    "reference_type": "call",
+    "reference_id": "12f8f1c9-a6c3-4f81-93db-ae445dcf188f"
 }
 </pre></div>
 </div>
@@ -820,28 +820,28 @@ ensure at least one participant has joined before attaching TTS.</p>
 <section id="attach-speaking-to-a-conference">
 <h3>Attach Speaking to a Conference<a class="headerlink" href="#attach-speaking-to-a-conference" title="Link to this heading">¶</a></h3>
 <p>Attach TTS to a conference so all participants hear the synthesized speech.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;reference_type&quot;: &quot;confbridge&quot;,
-    &quot;reference_id&quot;: &quot;c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f&quot;,
-    &quot;language&quot;: &quot;en-US&quot;,
-    &quot;provider&quot;: &quot;elevenlabs&quot;,
-    &quot;direction&quot;: &quot;both&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "reference_type": "confbridge",
+    "reference_id": "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f",
+    "language": "en-US",
+    "provider": "elevenlabs",
+    "direction": "both"
+}'
 
 {
-    &quot;id&quot;: &quot;d4e5f6a7-b8c9-0123-def4-567890123456&quot;,
-    &quot;reference_type&quot;: &quot;confbridge&quot;,
-    &quot;reference_id&quot;: &quot;c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f&quot;,
-    &quot;language&quot;: &quot;en-US&quot;,
-    &quot;provider&quot;: &quot;elevenlabs&quot;,
-    &quot;voice_id&quot;: &quot;&quot;,
-    &quot;direction&quot;: &quot;both&quot;,
-    &quot;status&quot;: &quot;initiating&quot;,
-    &quot;tm_create&quot;: &quot;2025-06-15 15:00:00.123456&quot;,
-    &quot;tm_update&quot;: &quot;2025-06-15 15:00:00.123456&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "id": "d4e5f6a7-b8c9-0123-def4-567890123456",
+    "reference_type": "confbridge",
+    "reference_id": "c0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f",
+    "language": "en-US",
+    "provider": "elevenlabs",
+    "voice_id": "",
+    "direction": "both",
+    "status": "initiating",
+    "tm_create": "2025-06-15 15:00:00.123456",
+    "tm_update": "2025-06-15 15:00:00.123456",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -851,17 +851,17 @@ ensure at least one participant has joined before attaching TTS.</p>
 <h3>Stop and Delete a Speaking Session<a class="headerlink" href="#stop-and-delete-a-speaking-session" title="Link to this heading">¶</a></h3>
 <p>When finished, stop the session first, then delete it.</p>
 <p><strong>Stop the session:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/stop?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890/stop?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;status&quot;: &quot;stopped&quot;,
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "status": "stopped",
     ...
 }
 </pre></div>
 </div>
 <p><strong>Delete the session:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/speakings/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 <p>Always stop a session before deleting it. If the call is hung up, the speaking session is automatically stopped, but you should still delete it to clean up resources.</p>
@@ -927,7 +927,7 @@ ensure at least one participant has joined before attaching TTS.</p>
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2026, VoIPBIN
+                Copyright &#169; 2026, VoIPBin
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -981,8 +981,8 @@ ensure at least one participant has joined before attaching TTS.</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

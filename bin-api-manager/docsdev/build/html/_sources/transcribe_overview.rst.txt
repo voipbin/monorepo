@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable (per minute of audio transcribed)
    * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/transcribes`` returns immediately with status ``progressing``. Transcripts are delivered asynchronously via webhook (``transcript_created`` events) or WebSocket subscription. Poll ``GET https://api.voipbin.net/v1.0/transcribes/{id}`` to check for ``done`` status when complete.
 
-VoIPBIN's Transcription API converts spoken audio from calls and conferences into text in real-time. Whether you need transcripts for compliance, searchable call logs, AI analysis, or accessibility, the Transcription API delivers accurate text as conversations happen.
+VoIPBin's Transcription API converts spoken audio from calls and conferences into text in real-time. Whether you need transcripts for compliance, searchable call logs, AI analysis, or accessibility, the Transcription API delivers accurate text as conversations happen.
 
 With the Transcription API you can:
 
@@ -22,7 +22,7 @@ With the Transcription API you can:
 
 How Transcription Works
 -----------------------
-When you start transcription, VoIPBIN captures audio from the call or conference, sends it to a speech-to-text (STT) engine, and delivers the resulting text to your application.
+When you start transcription, VoIPBin captures audio from the call or conference, sends it to a speech-to-text (STT) engine, and delivers the resulting text to your application.
 
 **Transcription Architecture**
 
@@ -93,7 +93,7 @@ Transcription runs continuously while active, generating transcript segments as 
 
 ::
 
-    Call Audio          VoIPBIN STT           Your App
+    Call Audio          VoIPBin STT           Your App
         |                    |                    |
         |====audio chunk====>|                    |
         |                    | process            |
@@ -113,7 +113,7 @@ Each transcript segment is delivered as soon as speech is recognized, enabling r
 
 Starting Transcription
 ----------------------
-VoIPBIN provides two methods to start transcription based on your use case.
+VoIPBin provides two methods to start transcription based on your use case.
 
 .. note:: **AI Implementation Hint**
 
@@ -125,7 +125,7 @@ Use ``transcribe_start`` and ``transcribe_stop`` actions in your call flow for a
 
 ::
 
-    Your Flow                    VoIPBIN                     Your App
+    Your Flow                    VoIPBin                     Your App
         |                           |                           |
         | transcribe_start action   |                           |
         +-------------------------->|                           |
@@ -209,7 +209,7 @@ Start transcription on an active call or conference programmatically.
    * - direction
      - (Optional) Which audio to transcribe: ``in``, ``out``, or ``both``. Defaults to ``both`` when omitted or empty. An invalid or unrecognized value also falls back to ``both`` rather than being rejected. The value is case-sensitive (use lowercase).
    * - provider
-     - (Optional) STT provider: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
+     - (Optional) STT provider: ``gcp`` or ``aws``. If omitted, VoIPBin selects the best available provider automatically.
 
 
 **When to Use Each Method**
@@ -228,11 +228,11 @@ Start transcription on an active call or conference programmatically.
 
 Receiving Transcripts
 ---------------------
-VoIPBIN delivers transcripts to your application via webhooks or WebSocket subscription.
+VoIPBin delivers transcripts to your application via webhooks or WebSocket subscription.
 
 **Webhook Event Types**
 
-VoIPBIN generates the following events during a transcription session:
+VoIPBin generates the following events during a transcription session:
 
 .. list-table::
    :header-rows: 1
@@ -257,7 +257,7 @@ Configure a webhook URL in your customer settings to receive ``transcript_create
 
 ::
 
-    VoIPBIN                           Your App
+    VoIPBin                           Your App
         |                                 |
         | POST /your-webhook-endpoint     |
         | {transcript_created event}      |
@@ -289,7 +289,7 @@ Subscribe to transcript events via WebSocket for real-time streaming.
 
 ::
 
-    Your App                          VoIPBIN
+    Your App                          VoIPBin
         |                                 |
         | WebSocket connect               |
         +-------------------------------->|
@@ -313,7 +313,7 @@ Subscribe to transcript events via WebSocket for real-time streaming.
      - Webhook
      - WebSocket
    * - Connection
-     - VoIPBIN initiates POST
+     - VoIPBin initiates POST
      - Your app maintains connection
    * - Latency
      - Higher (HTTP overhead)
@@ -331,14 +331,14 @@ Subscribe to transcript events via WebSocket for real-time streaming.
 
 Understanding Transcript Direction
 ----------------------------------
-Each transcript includes a ``direction`` field indicating whether the speech was incoming or outgoing relative to VoIPBIN.
+Each transcript includes a ``direction`` field indicating whether the speech was incoming or outgoing relative to VoIPBin.
 
 **Direction Detection**
 
 ::
 
     +----------+                             +---------+
-    |  Caller  |-----> direction: "in" ----->| VoIPBIN |
+    |  Caller  |-----> direction: "in" ----->| VoIPBin |
     |          |                             |         |
     |          |<---- direction: "out" <-----|         |
     +----------+                             +---------+
@@ -360,9 +360,9 @@ Each transcript includes a ``direction`` field indicating whether the speech was
    * - Direction
      - Meaning
    * - in
-     - Audio from the caller/remote party toward VoIPBIN
+     - Audio from the caller/remote party toward VoIPBin
    * - out
-     - Audio from VoIPBIN toward the caller/remote party
+     - Audio from VoIPBin toward the caller/remote party
 
 
 **Transcript Data Structure:**
@@ -412,13 +412,13 @@ To reconstruct a conversation, sort transcripts by ``tm_transcript``:
 ::
 
     Transcripts received (order of delivery):
-    [out] 00:00:05 "Welcome to VoIPBIN support"
+    [out] 00:00:05 "Welcome to VoIPBin support"
     [in]  00:00:12 "Hi, I have a billing question"
     [out] 00:00:18 "I'd be happy to help"
     [in]  00:00:08 "Hello?"
 
     Sorted by tm_transcript:
-    [out] 00:00:05 "Welcome to VoIPBIN support"
+    [out] 00:00:05 "Welcome to VoIPBin support"
     [in]  00:00:08 "Hello?"
     [in]  00:00:12 "Hi, I have a billing question"
     [out] 00:00:18 "I'd be happy to help"
@@ -487,7 +487,7 @@ Send transcripts to an AI system for real-time analysis.
 
 ::
 
-    VoIPBIN                Your App               AI Service
+    VoIPBin                Your App               AI Service
         |                      |                      |
         | transcript_created   |                      |
         +--------------------->|                      |
@@ -522,7 +522,7 @@ Combine recording and transcription for complete call documentation.
 
 Supported Languages
 -------------------
-VoIPBIN supports transcription in 70+ languages and regional variants. Specify the language using the ``language`` option (e.g., ``en-US``, ``ko-KR``).
+VoIPBin supports transcription in 70+ languages and regional variants. Specify the language using the ``language`` option (e.g., ``en-US``, ``ko-KR``).
 
 **Common Languages**
 
@@ -563,7 +563,7 @@ VoIPBIN supports transcription in 70+ languages and regional variants. Specify t
      - Russian (Russia)
 
 
-VoIPBIN supports 70+ languages including regional variants for Arabic, Spanish, English, and more. Contact support for the complete language list.
+VoIPBin supports 70+ languages including regional variants for Arabic, Spanish, English, and more. Contact support for the complete language list.
 
 To ensure optimal transcription results, choose the code that best matches your speaker's language and dialect.
 
