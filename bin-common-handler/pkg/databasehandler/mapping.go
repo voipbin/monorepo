@@ -181,6 +181,20 @@ func convertValueForDB(value interface{}, conversionType string) (interface{}, e
 		return value, nil
 	}
 
+	// Auto-detect: []byte (raw bytes for a blob/binary column, e.g. an
+	// encrypted secret) passes through unchanged rather than falling into
+	// the generic Slice case below, which would JSON-marshal it into a
+	// quoted base64 string (or, for a nil []byte, the literal 4-byte
+	// string "null") -- neither of which is what a blob column should
+	// ever contain. A nil []byte is SQL NULL, matching the "json"
+	// conversion type's nil handling above.
+	if b, isBytes := value.([]byte); isBytes {
+		if b == nil {
+			return nil, nil
+		}
+		return b, nil
+	}
+
 	// Auto-detect: complex types get JSON marshaled
 	rv := reflect.ValueOf(value)
 	// Handle pointer types - dereference and check the underlying type
