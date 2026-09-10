@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="conferencecall" href="conference_struct_conferencecall.html"><link rel="prev" title="Overview" href="conference_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Conference - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -642,32 +643,32 @@
 <section id="conference-struct-conference-conference">
 <span id="id1"></span><h2>Conference<a class="headerlink" href="#conference-struct-conference-conference" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{},</span>
-    <span class="s2">"timeout"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">"pre_flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"post_flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"conferencecall_ids"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;pre_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;post_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;conferencecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">"recording_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"recording_ids"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"transcribe_ids"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transcribe_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">"direct_hash"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_end"</span><span class="p">:</span> <span class="s2">"&lt;string or null&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"&lt;string or null&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"&lt;string or null&gt;"</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_end&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string or null&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string or null&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string or null&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -701,26 +702,26 @@
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"99accfb7-c0dd-4a54-997d-dd18af7bc280"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"conference"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"test conference"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"test conference for example."</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{},</span>
-    <span class="s2">"timeout"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="s2">"pre_flow_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"post_flow_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"conferencecall_ids"</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">"recording_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"recording_ids"</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"transcribe_ids"</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">"direct_hash"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"tm_end"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2022-02-03 06:08:56.672025"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2022-08-06 19:11:13.040418"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test conference&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test conference for example.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;pre_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;post_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;conferencecall_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transcribe_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_end&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 06:08:56.672025&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-08-06 19:11:13.040418&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -856,8 +857,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

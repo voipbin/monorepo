@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Websocket" href="websocket.html"><link rel="prev" title="Deployment Architecture" href="architecture_deployment.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Security Architecture - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -710,7 +711,7 @@
    <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="n">HS256</span> <span class="n">signed</span><span class="p">)</span>          <span class="o">|</span>
    <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
    <span class="o">|&lt;-----------------------+</span>                         <span class="o">|</span>
-   <span class="o">|</span> <span class="p">{</span> <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"eyJ..."</span> <span class="p">}</span>  <span class="o">|</span>                         <span class="o">|</span>
+   <span class="o">|</span> <span class="p">{</span> <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;eyJ...&quot;</span> <span class="p">}</span>  <span class="o">|</span>                         <span class="o">|</span>
    <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
    <span class="o">|</span>                        <span class="o">|</span>                         <span class="o">|</span>
    <span class="o">|</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span>          <span class="o">|</span>                         <span class="o">|</span>
@@ -735,26 +736,26 @@
 
 <span class="n">Header</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"alg"</span><span class="p">:</span> <span class="s2">"HS256"</span><span class="p">,</span>
-  <span class="s2">"typ"</span><span class="p">:</span> <span class="s2">"JWT"</span>
+  <span class="s2">&quot;alg&quot;</span><span class="p">:</span> <span class="s2">&quot;HS256&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;typ&quot;</span><span class="p">:</span> <span class="s2">&quot;JWT&quot;</span>
 <span class="p">}</span>
 
 <span class="n">Payload</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"uuid"</span><span class="p">,</span>      <span class="o">//</span> <span class="n">Customer</span> <span class="n">UUID</span>
-  <span class="s2">"agent_id"</span><span class="p">:</span> <span class="s2">"uuid"</span><span class="p">,</span>         <span class="o">//</span> <span class="n">Agent</span> <span class="n">UUID</span> <span class="p">(</span><span class="n">optional</span><span class="p">)</span>
-  <span class="s2">"permissions"</span><span class="p">:</span> <span class="p">[</span>            <span class="o">//</span> <span class="n">Permission</span> <span class="nb">list</span>
-    <span class="s2">"customer_admin"</span><span class="p">,</span>
-    <span class="s2">"call_create"</span><span class="p">,</span>
-    <span class="s2">"call_read"</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>      <span class="o">//</span> <span class="n">Customer</span> <span class="n">UUID</span>
+  <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>         <span class="o">//</span> <span class="n">Agent</span> <span class="n">UUID</span> <span class="p">(</span><span class="n">optional</span><span class="p">)</span>
+  <span class="s2">&quot;permissions&quot;</span><span class="p">:</span> <span class="p">[</span>            <span class="o">//</span> <span class="n">Permission</span> <span class="nb">list</span>
+    <span class="s2">&quot;customer_admin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_create&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_read&quot;</span>
   <span class="p">],</span>
-  <span class="s2">"iat"</span><span class="p">:</span> <span class="mi">1706000000</span><span class="p">,</span>          <span class="o">//</span> <span class="n">Issued</span> <span class="n">at</span>
-  <span class="s2">"exp"</span><span class="p">:</span> <span class="mi">1706003600</span>           <span class="o">//</span> <span class="n">Expires</span> <span class="p">(</span><span class="mi">1</span> <span class="n">hour</span><span class="p">)</span>
+  <span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="mi">1706000000</span><span class="p">,</span>          <span class="o">//</span> <span class="n">Issued</span> <span class="n">at</span>
+  <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="mi">1706003600</span>           <span class="o">//</span> <span class="n">Expires</span> <span class="p">(</span><span class="mi">1</span> <span class="n">hour</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="n">Signature</span><span class="p">:</span>
 <span class="n">HMACSHA256</span><span class="p">(</span>
-  <span class="n">base64UrlEncode</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"."</span> <span class="o">+</span>
+  <span class="n">base64UrlEncode</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span>
   <span class="n">base64UrlEncode</span><span class="p">(</span><span class="n">payload</span><span class="p">),</span>
   <span class="n">secret</span>
 <span class="p">)</span>
@@ -916,14 +917,14 @@ Request Arrives
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Protocol</span><span class="p">:</span>     <span class="n">TLS</span> <span class="mf">1.3</span> <span class="p">(</span><span class="n">minimum</span> <span class="n">TLS</span> <span class="mf">1.2</span><span class="p">)</span>  <span class="o">|</span>
 <span class="o">|</span> <span class="n">Cipher</span><span class="p">:</span>       <span class="n">ECDHE</span><span class="o">-</span><span class="n">RSA</span><span class="o">-</span><span class="n">AES256</span><span class="o">-</span><span class="n">GCM</span><span class="o">-</span><span class="n">SHA384</span><span class="o">|</span>
-<span class="o">|</span> <span class="n">Certificate</span><span class="p">:</span>  <span class="n">Let</span><span class="s1">'s Encrypt (auto-renew)|</span>
+<span class="o">|</span> <span class="n">Certificate</span><span class="p">:</span>  <span class="n">Let</span><span class="s1">&#39;s Encrypt (auto-renew)|</span>
 <span class="o">|</span> <span class="n">HSTS</span><span class="p">:</span>         <span class="n">Enabled</span> <span class="p">(</span><span class="nb">max</span><span class="o">-</span><span class="n">age</span><span class="o">=</span><span class="mi">31536000</span><span class="p">)</span> <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 
 <span class="n">SIP</span> <span class="n">TLS</span> <span class="p">(</span><span class="n">sip</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="p">:</span><span class="mi">5061</span><span class="p">):</span>
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Protocol</span><span class="p">:</span>     <span class="n">TLS</span> <span class="mf">1.2</span><span class="o">+</span>                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">Certificate</span><span class="p">:</span>  <span class="n">Let</span><span class="s1">'s Encrypt              |</span>
+<span class="o">|</span> <span class="n">Certificate</span><span class="p">:</span>  <span class="n">Let</span><span class="s1">&#39;s Encrypt              |</span>
 <span class="o">|</span> <span class="n">Client</span> <span class="n">Auth</span><span class="p">:</span>  <span class="n">Optional</span>                   <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 </pre></div>
@@ -1193,10 +1194,10 @@ Request Arrives
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Safe Query Pattern:
 
 // CORRECT - Parameterized
-query := sq.Select("*").
-    From("calls").
-    Where(sq.Eq{"customer_id": customerID}).
-    Where(sq.Eq{"id": callID})
+query := sq.Select(&quot;*&quot;).
+    From(&quot;calls&quot;).
+    Where(sq.Eq{&quot;customer_id&quot;: customerID}).
+    Where(sq.Eq{&quot;id&quot;: callID})
 
 // Generated SQL:
 // SELECT * FROM calls
@@ -1204,7 +1205,7 @@ query := sq.Select("*").
 // Parameters: [customerID, callID]
 
 // WRONG - String concatenation (NEVER DO THIS)
-// query := "SELECT * FROM calls WHERE id = '" + callID + "'"
+// query := &quot;SELECT * FROM calls WHERE id = &#39;&quot; + callID + &quot;&#39;&quot;
 </pre></div>
 </div>
 </section>
@@ -1252,8 +1253,8 @@ query := sq.Select("*").
 <span class="o">|</span> <span class="n">Body</span><span class="p">:</span> <span class="n">canonical</span> <span class="n">error</span> <span class="n">envelope</span> <span class="k">with</span>      <span class="o">|</span>
 <span class="o">|</span>   <span class="n">status</span><span class="o">=</span><span class="n">RESOURCE_EXHAUSTED</span>              <span class="o">|</span>
 <span class="o">|</span>   <span class="n">reason</span><span class="o">=</span><span class="n">RATE_LIMIT_EXCEEDED</span>             <span class="o">|</span>
-<span class="o">|</span>   <span class="n">details</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">limited_by</span> <span class="o">=</span> <span class="s2">"ip"</span> <span class="o">|</span>         <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">"customer"</span>                           <span class="o">|</span>
+<span class="o">|</span>   <span class="n">details</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">limited_by</span> <span class="o">=</span> <span class="s2">&quot;ip&quot;</span> <span class="o">|</span>         <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">&quot;customer&quot;</span>                           <span class="o">|</span>
 <span class="o">|</span> <span class="p">(</span><span class="n">see</span> <span class="n">restful_api_errors</span><span class="o">.</span><span class="n">rst</span><span class="p">)</span>             <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 </pre></div>
@@ -1324,19 +1325,19 @@ query := sq.Select("*").
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Audit</span> <span class="n">Log</span> <span class="n">Entry</span><span class="p">:</span>
 
 <span class="p">{</span>
-  <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-01-20T12:00:00.000Z"</span><span class="p">,</span>
-  <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"resource_created"</span><span class="p">,</span>
-  <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"uuid"</span><span class="p">,</span>
-  <span class="s2">"agent_id"</span><span class="p">:</span> <span class="s2">"uuid"</span><span class="p">,</span>
-  <span class="s2">"resource_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
-  <span class="s2">"resource_id"</span><span class="p">:</span> <span class="s2">"uuid"</span><span class="p">,</span>
-  <span class="s2">"action"</span><span class="p">:</span> <span class="s2">"create"</span><span class="p">,</span>
-  <span class="s2">"source_ip"</span><span class="p">:</span> <span class="s2">"192.168.1.100"</span><span class="p">,</span>
-  <span class="s2">"user_agent"</span><span class="p">:</span> <span class="s2">"VoIPBin-SDK/1.0"</span><span class="p">,</span>
-  <span class="s2">"request_id"</span><span class="p">:</span> <span class="s2">"uuid"</span><span class="p">,</span>
-  <span class="s2">"details"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">,</span>
-    <span class="s2">"destination"</span><span class="p">:</span> <span class="s2">"+15559876543"</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;resource_created&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;resource_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;create&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;source_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.1.100&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;user_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;VoIPBin-SDK/1.0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;request_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1599,8 +1600,8 @@ query := sq.Select("*").
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

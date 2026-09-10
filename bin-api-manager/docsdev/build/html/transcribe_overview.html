@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial" href="transcribe_tutorial.html"><link rel="prev" title="Transcribe" href="transcribe.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -778,30 +779,30 @@
 </div>
 <p><strong>Example flow with transcription:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"answer"</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_start"</span><span class="p">,</span>
-            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
-            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello, how can I help you today?"</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, how can I help you today?&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"connect"</span><span class="p">,</span>
-            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">}]</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">}]</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_stop"</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
         <span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
@@ -811,15 +812,15 @@
 <p><strong>Method 2: Via API (Interrupt Method)</strong></p>
 <p>Start transcription on an active call or conference programmatically.</p>
 <p><strong>Start transcription:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/transcribes?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "reference_type": "call",
-        "reference_id": "8c71bcb6-e7e7-4ed2-8aba-44bc2deda9a5",
-        "language": "en-US",
-        "direction": "both",
-        "provider": "gcp"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;reference_type&quot;: &quot;call&quot;,
+        &quot;reference_id&quot;: &quot;8c71bcb6-e7e7-4ed2-8aba-44bc2deda9a5&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;,
+        &quot;provider&quot;: &quot;gcp&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Parameters:</strong></p>
@@ -912,14 +913,14 @@
 </div>
 <p><strong>Webhook Payload:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello, this is transcribe test call."</span><span class="p">,</span>
-        <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01 00:00:08.991840"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-04-04 07:15:59.233415"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, this is transcribe test call.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-04 07:15:59.233415&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -977,17 +978,17 @@
 <p>Each transcript includes a <code class="docutils literal notranslate"><span class="pre">direction</span></code> field indicating whether the speech was incoming or outgoing relative to VoIPBin.</p>
 <p><strong>Direction Detection</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>                             <span class="o">+---------+</span>
-<span class="o">|</span>  <span class="n">Caller</span>  <span class="o">|-----&gt;</span> <span class="n">direction</span><span class="p">:</span> <span class="s2">"in"</span> <span class="o">-----&gt;|</span> <span class="n">VoIPBin</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Caller</span>  <span class="o">|-----&gt;</span> <span class="n">direction</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span> <span class="o">-----&gt;|</span> <span class="n">VoIPBin</span> <span class="o">|</span>
 <span class="o">|</span>          <span class="o">|</span>                             <span class="o">|</span>         <span class="o">|</span>
-<span class="o">|</span>          <span class="o">|&lt;----</span> <span class="n">direction</span><span class="p">:</span> <span class="s2">"out"</span> <span class="o">&lt;-----|</span>         <span class="o">|</span>
+<span class="o">|</span>          <span class="o">|&lt;----</span> <span class="n">direction</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span> <span class="o">&lt;-----|</span>         <span class="o">|</span>
 <span class="o">+----------+</span>                             <span class="o">+---------+</span>
 </pre></div>
 </div>
 <p><strong>Example Conversation:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="s2">"Hello, I need help with my account"</span>
-<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="s2">"Sure, I can help you with that"</span>
-<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="s2">"My account number is 12345"</span>
-<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="s2">"Let me look that up for you"</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="s2">&quot;Hello, I need help with my account&quot;</span>
+<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="s2">&quot;Sure, I can help you with that&quot;</span>
+<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="s2">&quot;My account number is 12345&quot;</span>
+<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="s2">&quot;Let me look that up for you&quot;</span>
 </pre></div>
 </div>
 <p><strong>Direction Values</strong></p>
@@ -1011,20 +1012,20 @@
 <p><strong>Transcript Data Structure:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
     <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"06af78f0-b063-48c0-b22d-d31a5af0aa88"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"bbf08426-3979-41bc-a544-5fc92c237848"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hi, good to see you. How are you today."</span><span class="p">,</span>
-        <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01 00:01:04.441160"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-04-01 07:22:07.229309"</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;06af78f0-b063-48c0-b22d-d31a5af0aa88&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, good to see you. How are you today.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:01:04.441160&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:22:07.229309&quot;</span>
     <span class="p">},</span>
     <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"3c95ea10-a5b7-4a68-aebf-ed1903baf110"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"bbf08426-3979-41bc-a544-5fc92c237848"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Welcome to the transcribe test scenario."</span><span class="p">,</span>
-        <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01 00:00:43.116830"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-04-01 07:17:27.208337"</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;3c95ea10-a5b7-4a68-aebf-ed1903baf110&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Welcome to the transcribe test scenario.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:43.116830&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:17:27.208337&quot;</span>
     <span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
@@ -1053,16 +1054,16 @@
 <p><strong>Combining Transcripts into Conversation</strong></p>
 <p>To reconstruct a conversation, sort transcripts by <code class="docutils literal notranslate"><span class="pre">tm_transcript</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Transcripts</span> <span class="n">received</span> <span class="p">(</span><span class="n">order</span> <span class="n">of</span> <span class="n">delivery</span><span class="p">):</span>
-<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">05</span> <span class="s2">"Welcome to VoIPBin support"</span>
-<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span> <span class="s2">"Hi, I have a billing question"</span>
-<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">18</span> <span class="s2">"I'd be happy to help"</span>
-<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">08</span> <span class="s2">"Hello?"</span>
+<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">05</span> <span class="s2">&quot;Welcome to VoIPBin support&quot;</span>
+<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span> <span class="s2">&quot;Hi, I have a billing question&quot;</span>
+<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">18</span> <span class="s2">&quot;I&#39;d be happy to help&quot;</span>
+<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">08</span> <span class="s2">&quot;Hello?&quot;</span>
 
 <span class="n">Sorted</span> <span class="n">by</span> <span class="n">tm_transcript</span><span class="p">:</span>
-<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">05</span> <span class="s2">"Welcome to VoIPBin support"</span>
-<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">08</span> <span class="s2">"Hello?"</span>
-<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span> <span class="s2">"Hi, I have a billing question"</span>
-<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">18</span> <span class="s2">"I'd be happy to help"</span>
+<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">05</span> <span class="s2">&quot;Welcome to VoIPBin support&quot;</span>
+<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">08</span> <span class="s2">&quot;Hello?&quot;</span>
+<span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span> <span class="s2">&quot;Hi, I have a billing question&quot;</span>
+<span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">18</span> <span class="s2">&quot;I&#39;d be happy to help&quot;</span>
 </pre></div>
 </div>
 <p><strong>Storing Transcripts</strong></p>
@@ -1083,7 +1084,7 @@
      <span class="n">v</span>
 <span class="o">+--------------------+</span>
 <span class="o">|</span> <span class="n">transcribe_start</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="n">language</span><span class="p">:</span> <span class="s2">"en-US"</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">language</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>  <span class="o">|</span>
 <span class="o">+--------+-----------+</span>
          <span class="o">|</span>
          <span class="n">v</span>
@@ -1134,13 +1135,13 @@
 <p><strong>Scenario 4: Compliance Recording with Transcription</strong></p>
 <p>Combine recording and transcription for complete call documentation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"answer"</span><span class="p">},</span>
-        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_start"</span><span class="p">},</span>
-        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_start"</span><span class="p">,</span> <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">}},</span>
-        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"connect"</span><span class="p">,</span> <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}},</span>
-        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_stop"</span><span class="p">},</span>
-        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_stop"</span><span class="p">}</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span> <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span> <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span><span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -1417,8 +1418,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

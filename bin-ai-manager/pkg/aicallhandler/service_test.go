@@ -524,6 +524,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 						},
 					},
 					aicall.MetaKeyAutoAuditEnabled: false,
+					aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 				},
 			},
 			expectMessageTexts: []string{

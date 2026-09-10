@@ -36,6 +36,7 @@ AI
         "smart_turn_enabled": <boolean>,
         "auto_aicall_audit_enabled": <boolean>,
         "tool_names": ["<string>"],
+        "mcp_server_ids": ["<string>"],
         "direct_hash": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
@@ -65,6 +66,7 @@ AI
 * ``smart_turn_enabled`` (Boolean, Optional): Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3 for more natural turn-taking. When ``true``, the VAD ``stop_secs`` parameter is automatically forced to ``0.2`` regardless of ``vad_config`` settings. Defaults to ``false``. See :ref:`Smart Turn <ai-struct-ai-smart_turn>`.
 * ``auto_aicall_audit_enabled`` (Boolean, Optional): When ``true``, any AICall that finishes while using this AI configuration automatically triggers an AICall audit. Defaults to ``false`` (opt-in).
 * ``tool_names`` (Array of String, Optional): List of enabled tool functions. Use ``["all"]`` to enable all tools, ``[]`` to disable all tools, or list specific tool names. **For** ``type=insight`` **AIs, only Insight tool names are permitted** (currently ``get_contact_interactions``, ``get_conversation_content``, ``get_related_cases``, ``get_case_notes``, ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, ``notify_agent``); ``["all"]`` is not valid for Insight AIs. **For** ``type=normal`` **AIs, any Normal tool name or** ``["all"]`` **is permitted; Insight-only tool names are rejected.** Mismatched combinations return ``400``. See :ref:`Tool Functions <ai-struct-tool>`.
+* ``mcp_server_ids`` (Array of UUID, Optional): List of customer-owned MCP (Model Context Protocol) server IDs whose tools are made available to this AI, in addition to ``tool_names``. Each ID must reference an :ref:`MCP Server <mcpserver-struct-mcpserver>` owned by the same customer; a cross-customer or nonexistent ID is rejected. Tools discovered from an active MCP server are namespaced as ``mcp_<first 8 hex chars of the server id>_<tool name>`` when presented to the LLM. Tools from a server whose ``status`` is not ``active`` are silently omitted rather than erroring. Defaults to ``[]``.
 * ``direct_hash`` (String): Hash for direct AI access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /ais/{id}/direct-hash-regenerate``.
 * ``tm_create`` (String, ISO 8601): Timestamp when the AI configuration was created.
 * ``tm_update`` (String, ISO 8601): Timestamp when the AI configuration was last updated.

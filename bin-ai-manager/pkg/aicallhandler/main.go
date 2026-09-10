@@ -27,6 +27,8 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/teamhandler"
@@ -148,6 +150,18 @@ type aicallHandler struct {
 	messageHandler     messagehandler.MessageHandler
 	participantHandler participanthandler.ParticipantHandler
 
+	// mcptoolHandler and mcpServerHandler back resolveTools/toolHandleMcpCall
+	// (design docs/plans/2026-09-11-mcp-tool-integration-design.md §9.1/§9.2).
+	mcptoolHandler   mcptoolhandler.McpToolHandler
+	mcpServerHandler mcpserverhandler.McpServerHandler
+
+	// toolNameResolver resolves the VoIPBin built-in tool list from an AI's
+	// ToolNames (pkg/toolhandler.ToolHandler.GetByNames, declared locally as
+	// toolNameResolver in mcp_tool.go to avoid an import cycle -- see that
+	// file's doc comment). Injected by the caller (cmd/ai-manager/main.go),
+	// which already constructs a toolhandler.ToolHandler for other purposes.
+	toolNameResolver toolNameResolver
+
 	// runListenStartHook is the injected seam ProcessListen's detached
 	// goroutine goes through (design §7 item 2: "runListenStart is detached, so
 	// assert on a seam ... never on wall-clock timing").
@@ -228,6 +242,9 @@ func NewAIcallHandler(
 	teamHandler teamhandler.TeamHandler,
 	messageHandler messagehandler.MessageHandler,
 	participantHandler participanthandler.ParticipantHandler,
+	mcptoolHandler mcptoolhandler.McpToolHandler,
+	mcpServerHandler mcpserverhandler.McpServerHandler,
+	toolNameResolverArg toolNameResolver,
 ) AIcallHandler {
 	return &aicallHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -240,6 +257,10 @@ func NewAIcallHandler(
 		teamHandler:        teamHandler,
 		messageHandler:     messageHandler,
 		participantHandler: participantHandler,
+
+		mcptoolHandler:   mcptoolHandler,
+		mcpServerHandler: mcpServerHandler,
+		toolNameResolver: toolNameResolverArg,
 	}
 }
 

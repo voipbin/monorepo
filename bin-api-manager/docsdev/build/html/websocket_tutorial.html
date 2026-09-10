@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Installation" href="self_hosting.html"><link rel="prev" title="Structures" href="websocket_struct.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -666,21 +667,21 @@
 <p>After connecting, send a subscription message to receive events for specific resources.</p>
 <p><strong>Subscription Message Format:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:&lt;your-customer-id&gt;:call:&lt;call-id&gt;"</span><span class="p">,</span>
-        <span class="s2">"customer_id:&lt;your-customer-id&gt;:activeflow:&lt;activeflow-id&gt;"</span><span class="p">,</span>
-        <span class="s2">"agent_id:&lt;your-agent-id&gt;:queue:&lt;queue-id&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:call:&lt;call-id&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:activeflow:&lt;activeflow-id&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;agent_id:&lt;your-agent-id&gt;:queue:&lt;queue-id&gt;&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example Subscription:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call"</span><span class="p">,</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:message"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:message&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -691,9 +692,9 @@
 <h3>Unsubscribe from Events<a class="headerlink" href="#unsubscribe-from-events" title="Link to this heading">¶</a></h3>
 <p>Stop receiving events for specific topics by sending an unsubscribe message.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"unsubscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -708,56 +709,56 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Handle incoming WebSocket messages"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle incoming WebSocket messages&quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-    <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span>
-    <span class="n">resource_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'data'</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+    <span class="n">resource_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Received event: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received event: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'call_updated'</span><span class="p">:</span>
-        <span class="n">call_id</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
-        <span class="n">status</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">'status'</span><span class="p">]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Call </span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2"> status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_updated&#39;</span><span class="p">:</span>
+        <span class="n">call_id</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2"> status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'message_created'</span><span class="p">:</span>
-        <span class="n">message_text</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">'text'</span><span class="p">]</span>
-        <span class="n">from_number</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">'source'</span><span class="p">][</span><span class="s1">'target'</span><span class="p">]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Message from </span><span class="si">{</span><span class="n">from_number</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">message_text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message_created&#39;</span><span class="p">:</span>
+        <span class="n">message_text</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
+        <span class="n">from_number</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Message from </span><span class="si">{</span><span class="n">from_number</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">message_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'activeflow_updated'</span><span class="p">:</span>
-        <span class="n">activeflow_id</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
-        <span class="n">current_action</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">'current_action'</span><span class="p">][</span><span class="s1">'type'</span><span class="p">]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Activeflow </span><span class="si">{</span><span class="n">activeflow_id</span><span class="si">}</span><span class="s2"> executing: </span><span class="si">{</span><span class="n">current_action</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;activeflow_updated&#39;</span><span class="p">:</span>
+        <span class="n">activeflow_id</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">current_action</span> <span class="o">=</span> <span class="n">resource_data</span><span class="p">[</span><span class="s1">&#39;current_action&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Activeflow </span><span class="si">{</span><span class="n">activeflow_id</span><span class="si">}</span><span class="s2"> executing: </span><span class="si">{</span><span class="n">current_action</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_error</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Handle WebSocket errors"""</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle WebSocket errors&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_close</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">close_status_code</span><span class="p">,</span> <span class="n">close_msg</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Handle WebSocket connection close"""</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection closed: </span><span class="si">{</span><span class="n">close_status_code</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">close_msg</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle WebSocket connection close&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection closed: </span><span class="si">{</span><span class="n">close_status_code</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">close_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Handle WebSocket connection open"""</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"WebSocket connection established"</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle WebSocket connection open&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WebSocket connection established&quot;</span><span class="p">)</span>
 
     <span class="c1"># Subscribe to events after connection opens</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-        <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call"</span><span class="p">,</span>
-            <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:message"</span><span class="p">,</span>
-            <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:activeflow"</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:message&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:activeflow&quot;</span>
         <span class="p">]</span>
     <span class="p">}</span>
     <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Subscribed to events"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to events&quot;</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="c1"># Replace with your actual token</span>
-    <span class="n">token</span> <span class="o">=</span> <span class="s2">"&lt;YOUR_AUTH_TOKEN&gt;"</span>
-    <span class="n">ws_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
+    <span class="n">ws_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="c1"># Create WebSocket connection</span>
     <span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
@@ -773,25 +774,25 @@
 </pre></div>
 </div>
 <p><strong>JavaScript (Browser) Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const token = '&lt;YOUR_AUTH_TOKEN&gt;';
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const token = &#39;&lt;YOUR_AUTH_TOKEN&gt;&#39;;
 const wsUrl = `wss://api.voipbin.net/v1.0/ws?token=${token}`;
 
 // Create WebSocket connection
 const ws = new WebSocket(wsUrl);
 
 ws.onopen = function(event) {
-    console.log('WebSocket connection established');
+    console.log(&#39;WebSocket connection established&#39;);
 
     // Subscribe to events
     const subscription = {
-        type: 'subscribe',
+        type: &#39;subscribe&#39;,
         topics: [
-            'customer_id:12345678-1234-1234-1234-123456789012:call',
-            'customer_id:12345678-1234-1234-1234-123456789012:message'
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:call&#39;,
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:message&#39;
         ]
     };
     ws.send(JSON.stringify(subscription));
-    console.log('Subscribed to events');
+    console.log(&#39;Subscribed to events&#39;);
 };
 
 ws.onmessage = function(event) {
@@ -801,30 +802,30 @@ ws.onmessage = function(event) {
     console.log(`Received event: ${eventType}`);
 
     switch(eventType) {
-        case 'call_updated':
+        case &#39;call_updated&#39;:
             handleCallStatus(data.data);
             break;
-        case 'message_created':
+        case &#39;message_created&#39;:
             handleMessageReceived(data.data);
             break;
-        case 'activeflow_updated':
+        case &#39;activeflow_updated&#39;:
             handleActiveflowUpdate(data.data);
             break;
         default:
-            console.log('Unknown event type:', eventType);
+            console.log(&#39;Unknown event type:&#39;, eventType);
     }
 };
 
 ws.onerror = function(error) {
-    console.error('WebSocket error:', error);
+    console.error(&#39;WebSocket error:&#39;, error);
 };
 
 ws.onclose = function(event) {
-    console.log('WebSocket connection closed:', event.code, event.reason);
+    console.log(&#39;WebSocket connection closed:&#39;, event.code, event.reason);
 
     // Implement reconnection logic if needed
     setTimeout(function() {
-        console.log('Reconnecting...');
+        console.log(&#39;Reconnecting...&#39;);
         // Recreate connection
     }, 5000);
 };
@@ -832,14 +833,14 @@ ws.onclose = function(event) {
 function handleCallStatus(callData) {
     console.log(`Call ${callData.id} status: ${callData.status}`);
     // Update UI
-    document.getElementById('call-status').textContent = callData.status;
+    document.getElementById(&#39;call-status&#39;).textContent = callData.status;
 }
 
 function handleMessageReceived(messageData) {
     console.log(`Message from ${messageData.source.target}: ${messageData.text}`);
     // Display message in UI
-    const messageList = document.getElementById('messages');
-    const messageElement = document.createElement('div');
+    const messageList = document.getElementById(&#39;messages&#39;);
+    const messageElement = document.createElement(&#39;div&#39;);
     messageElement.textContent = `${messageData.source.target}: ${messageData.text}`;
     messageList.appendChild(messageElement);
 }
@@ -852,31 +853,31 @@ function handleActiveflowUpdate(activeflowData) {
 </div>
 <p><strong>Node.js Example:</strong></p>
 <p>Using the <code class="docutils literal notranslate"><span class="pre">ws</span></code> library:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const WebSocket = require('ws');
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const WebSocket = require(&#39;ws&#39;);
 
-const token = '&lt;YOUR_AUTH_TOKEN&gt;';
+const token = &#39;&lt;YOUR_AUTH_TOKEN&gt;&#39;;
 const wsUrl = `wss://api.voipbin.net/v1.0/ws?token=${token}`;
 
 // Create WebSocket connection
 const ws = new WebSocket(wsUrl);
 
-ws.on('open', function() {
-    console.log('WebSocket connection established');
+ws.on(&#39;open&#39;, function() {
+    console.log(&#39;WebSocket connection established&#39;);
 
     // Subscribe to events
     const subscription = {
-        type: 'subscribe',
+        type: &#39;subscribe&#39;,
         topics: [
-            'customer_id:12345678-1234-1234-1234-123456789012:call',
-            'customer_id:12345678-1234-1234-1234-123456789012:message',
-            'customer_id:12345678-1234-1234-1234-123456789012:queue'
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:call&#39;,
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:message&#39;,
+            &#39;customer_id:12345678-1234-1234-1234-123456789012:queue&#39;
         ]
     };
     ws.send(JSON.stringify(subscription));
-    console.log('Subscribed to events');
+    console.log(&#39;Subscribed to events&#39;);
 });
 
-ws.on('message', function(data) {
+ws.on(&#39;message&#39;, function(data) {
     const message = JSON.parse(data);
     const eventType = message.type;
 
@@ -884,17 +885,17 @@ ws.on('message', function(data) {
 
     // Process events
     switch(eventType) {
-        case 'call_updated':
+        case &#39;call_updated&#39;:
             console.log(`Call ${message.data.id}: ${message.data.status}`);
             break;
 
-        case 'queuecall_created':
+        case &#39;queuecall_created&#39;:
             console.log(`Caller ${message.data.call_id} joined queue ${message.data.queue_id}`);
             // Notify agents
             notifyAgents(message.data);
             break;
 
-        case 'message_created':
+        case &#39;message_created&#39;:
             console.log(`Message: ${message.data.text}`);
             // Process message
             processIncomingMessage(message.data);
@@ -902,16 +903,16 @@ ws.on('message', function(data) {
     }
 });
 
-ws.on('error', function(error) {
-    console.error('WebSocket error:', error);
+ws.on(&#39;error&#39;, function(error) {
+    console.error(&#39;WebSocket error:&#39;, error);
 });
 
-ws.on('close', function(code, reason) {
+ws.on(&#39;close&#39;, function(code, reason) {
     console.log(`WebSocket closed: ${code} - ${reason}`);
 
     // Implement reconnection
     setTimeout(function() {
-        console.log('Reconnecting...');
+        console.log(&#39;Reconnecting...&#39;);
         // Recreate connection
     }, 5000);
 });
@@ -933,40 +934,40 @@ function processIncomingMessage(messageData) {
 <p>Topic matching is prefix-based (there is no <code class="docutils literal notranslate"><span class="pre">*</span></code> wildcard character): a subscribed topic matches every delivered event whose topic starts with it. Omit the trailing <code class="docutils literal notranslate"><span class="pre">resource_id</span></code> segment to match multiple resources of the same type.</p>
 <p><strong>Subscribe to all calls:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Subscribe to specific call:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Subscribe to multiple resource types:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call"</span><span class="p">,</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:message"</span><span class="p">,</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:conference"</span><span class="p">,</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:queue"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:message&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:conference&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:queue&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Agent-level subscription:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"agent_id:98765432-4321-4321-4321-210987654321:queue"</span><span class="p">,</span>
-        <span class="s2">"agent_id:98765432-4321-4321-4321-210987654321:call"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;agent_id:98765432-4321-4321-4321-210987654321:queue&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;agent_id:98765432-4321-4321-4321-210987654321:call&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -991,8 +992,8 @@ function processIncomingMessage(messageData) {
 <h3>Event Message Format<a class="headerlink" href="#event-message-format" title="Link to this heading">¶</a></h3>
 <p>All WebSocket events follow this structure – the exact same payload as the corresponding webhook (see <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Struct</span></a>), with no extra topic/timestamp envelope:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call_updated"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_updated&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">//</span> <span class="n">Event</span><span class="o">-</span><span class="n">specific</span> <span class="n">resource</span> <span class="n">data</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1010,16 +1011,16 @@ function processIncomingMessage(messageData) {
 <span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'call_updated'</span><span class="p">:</span>
-        <span class="n">call</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;call_updated&#39;</span><span class="p">:</span>
+        <span class="n">call</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">call</span><span class="p">[</span><span class="s1">'status'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'answered'</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Call </span><span class="si">{</span><span class="n">call</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2"> answered - Duration tracking started"</span><span class="p">)</span>
-            <span class="n">start_call_timer</span><span class="p">(</span><span class="n">call</span><span class="p">[</span><span class="s1">'id'</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;answered&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> answered - Duration tracking started&quot;</span><span class="p">)</span>
+            <span class="n">start_call_timer</span><span class="p">(</span><span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
 
-        <span class="k">elif</span> <span class="n">call</span><span class="p">[</span><span class="s1">'status'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'hangup'</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Call </span><span class="si">{</span><span class="n">call</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span><span class="si">}</span><span class="s2"> ended"</span><span class="p">)</span>
-            <span class="n">stop_call_timer</span><span class="p">(</span><span class="n">call</span><span class="p">[</span><span class="s1">'id'</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;hangup&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> ended&quot;</span><span class="p">)</span>
+            <span class="n">stop_call_timer</span><span class="p">(</span><span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
             <span class="n">calculate_call_metrics</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1029,14 +1030,14 @@ function processIncomingMessage(messageData) {
 ws.onmessage = function(event) {
     const data = JSON.parse(event.data);
 
-    if (data.type === 'queuecall_created') {
+    if (data.type === &#39;queuecall_created&#39;) {
         // Update queue count
-        updateQueueCount(data.data.queue_id, '+1');
+        updateQueueCount(data.data.queue_id, &#39;+1&#39;);
         // Show notification to agents
         notifyAgents(`New caller in queue`);
     }
 
-    if (data.type === 'agent_status_updated') {
+    if (data.type === &#39;agent_status_updated&#39;) {
         // Update agent availability display
         updateAgentStatus(data.data.agent_id, data.data.status);
     }
@@ -1046,10 +1047,10 @@ ws.onmessage = function(event) {
 <p><strong>Flow Execution Visualization:</strong></p>
 <p>Visualize flow execution in real-time:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Node.js example
-ws.on('message', function(data) {
+ws.on(&#39;message&#39;, function(data) {
     const message = JSON.parse(data);
 
-    if (message.type === 'activeflow_updated') {
+    if (message.type === &#39;activeflow_updated&#39;) {
         const activeflow = message.data;
 
         // Update flow diagram
@@ -1070,14 +1071,14 @@ ws.on('message', function(data) {
 <span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'message_created'</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;message_created&#39;</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
         <span class="c1"># Auto-reply logic</span>
-        <span class="k">if</span> <span class="s1">'help'</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">'text'</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;help&#39;</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
             <span class="n">send_auto_reply</span><span class="p">(</span>
-                <span class="n">to</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="s1">'source'</span><span class="p">][</span><span class="s1">'target'</span><span class="p">],</span>
-                <span class="n">text</span><span class="o">=</span><span class="s2">"Thanks for reaching out! Our team will respond soon. For urgent matters, please call us at +15551234567."</span>
+                <span class="n">to</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">],</span>
+                <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Thanks for reaching out! Our team will respond soon. For urgent matters, please call us at +15551234567.&quot;</span>
             <span class="p">)</span>
 </pre></div>
 </div>
@@ -1112,14 +1113,14 @@ ws.on('message', function(data) {
 <section id="connection-lifecycle">
 <h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading">¶</a></h3>
 <p><strong>1. Connect:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span> <span class="o">=</span> <span class="n">new</span> <span class="n">WebSocket</span><span class="p">(</span><span class="s1">'wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;'</span><span class="p">);</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span> <span class="o">=</span> <span class="n">new</span> <span class="n">WebSocket</span><span class="p">(</span><span class="s1">&#39;wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 <p><strong>2. Subscribe on Open:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">onopen</span> <span class="o">=</span> <span class="n">function</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">JSON</span><span class="o">.</span><span class="n">stringify</span><span class="p">({</span>
-        <span class="nb">type</span><span class="p">:</span> <span class="s1">'subscribe'</span><span class="p">,</span>
-        <span class="n">topics</span><span class="p">:</span> <span class="p">[</span><span class="s1">'customer_id:&lt;id&gt;:call'</span><span class="p">]</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="s1">&#39;subscribe&#39;</span><span class="p">,</span>
+        <span class="n">topics</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;customer_id:&lt;id&gt;:call&#39;</span><span class="p">]</span>
     <span class="p">}));</span>
 <span class="p">};</span>
 </pre></div>
@@ -1133,7 +1134,7 @@ ws.on('message', function(data) {
 </div>
 <p><strong>4. Handle Disconnection:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">onclose</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">'Disconnected'</span><span class="p">);</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Disconnected&#39;</span><span class="p">);</span>
     <span class="o">//</span> <span class="n">Implement</span> <span class="n">reconnection</span>
     <span class="n">setTimeout</span><span class="p">(</span><span class="n">reconnect</span><span class="p">,</span> <span class="mi">5000</span><span class="p">);</span>
 <span class="p">};</span>
@@ -1142,8 +1143,8 @@ ws.on('message', function(data) {
 <p><strong>5. Graceful Shutdown:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Unsubscribe</span> <span class="n">before</span> <span class="n">closing</span>
 <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">JSON</span><span class="o">.</span><span class="n">stringify</span><span class="p">({</span>
-    <span class="nb">type</span><span class="p">:</span> <span class="s1">'unsubscribe'</span><span class="p">,</span>
-    <span class="n">topics</span><span class="p">:</span> <span class="p">[</span><span class="s1">'customer_id:&lt;id&gt;:call'</span><span class="p">]</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="s1">&#39;unsubscribe&#39;</span><span class="p">,</span>
+    <span class="n">topics</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;customer_id:&lt;id&gt;:call&#39;</span><span class="p">]</span>
 <span class="p">}));</span>
 
 <span class="o">//</span> <span class="n">Close</span> <span class="n">connection</span>
@@ -1239,8 +1240,8 @@ ws.on('message', function(data) {
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="ProviderCall" href="providercall.html"><link rel="prev" title="Provider" href="provider_struct_provider.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -657,31 +658,31 @@
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code> validates your carrier API key, creates the carrier-side SIP trunk, and returns a ready-to-use VoIPBin provider record — all in one call. Requires <strong>ProjectSuperAdmin</strong> permission.</p>
 <p><strong>Supported carriers:</strong> <code class="docutils literal notranslate"><span class="pre">telnyx</span></code></p>
 <p>Request</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/providers/setup?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "carrier": "telnyx",
-        "name": "My Telnyx Trunk",
-        "detail": "Primary outbound Telnyx SIP trunk",
-        "credentials": {
-            "api_key": "KEY_01234567890abcdef"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/providers/setup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;carrier&quot;: &quot;telnyx&quot;,
+        &quot;name&quot;: &quot;My Telnyx Trunk&quot;,
+        &quot;detail&quot;: &quot;Primary outbound Telnyx SIP trunk&quot;,
+        &quot;credentials&quot;: {
+            &quot;api_key&quot;: &quot;KEY_01234567890abcdef&quot;
         }
-    }'
+    }&#39;
 </pre></div>
 </div>
 <p>Response (200 OK)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"4dbeabd6-f397-4375-95d2-a38411e07ed1"</span><span class="p">,</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sip"</span><span class="p">,</span>
-    <span class="s2">"hostname"</span><span class="p">:</span> <span class="s2">"sip.telnyx.com"</span><span class="p">,</span>
-    <span class="s2">"tech_prefix"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"tech_postfix"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"tech_headers"</span><span class="p">:</span> <span class="p">{},</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"My Telnyx Trunk"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Primary outbound Telnyx SIP trunk"</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-04-23T10:00:00.000000Z"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-04-23T10:00:00.000000Z"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"9999-01-01T00:00:00.000000Z"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;sip.telnyx.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_postfix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_headers&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My Telnyx Trunk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Primary outbound Telnyx SIP trunk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-23T10:00:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-23T10:00:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -694,26 +695,26 @@
 <section id="get-list-of-providers">
 <h3>Get list of providers<a class="headerlink" href="#get-list-of-providers" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "result": [
+    &quot;result&quot;: [
         {
-            "id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
-            "type": "sip",
-            "hostname": "sip.telnyx.com",
-            "tech_prefix": "",
-            "tech_postfix": "",
-            "tech_headers": {},
-            "name": "telnyx basic",
-            "detail": "telnyx basic",
-            "tm_create": "2022-10-22 16:16:16.874761",
-            "tm_update": "2022-10-24 04:53:14.171374",
-            "tm_delete": "9999-01-01 00:00:00.000000"
+            &quot;id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+            &quot;type&quot;: &quot;sip&quot;,
+            &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+            &quot;tech_prefix&quot;: &quot;&quot;,
+            &quot;tech_postfix&quot;: &quot;&quot;,
+            &quot;tech_headers&quot;: {},
+            &quot;name&quot;: &quot;telnyx basic&quot;,
+            &quot;detail&quot;: &quot;telnyx basic&quot;,
+            &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+            &quot;tm_update&quot;: &quot;2022-10-24 04:53:14.171374&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
         }
         ...
     ],
-    "next_page_token": "2022-10-22 16:16:16.874761"
+    &quot;next_page_token&quot;: &quot;2022-10-22 16:16:16.874761&quot;
 }
 </pre></div>
 </div>
@@ -721,20 +722,20 @@
 <section id="get-detail-of-provider">
 <h3>Get detail of provider<a class="headerlink" href="#get-detail-of-provider" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
-    "type": "sip",
-    "hostname": "sip.telnyx.com",
-    "tech_prefix": "",
-    "tech_postfix": "",
-    "tech_headers": {},
-    "name": "telnyx basic",
-    "detail": "telnyx basic",
-    "tm_create": "2022-10-22 16:16:16.874761",
-    "tm_update": "2022-10-24 04:53:14.171374",
-    "tm_delete": "9999-01-01 00:00:00.000000"
+    &quot;id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+    &quot;type&quot;: &quot;sip&quot;,
+    &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+    &quot;tech_prefix&quot;: &quot;&quot;,
+    &quot;tech_postfix&quot;: &quot;&quot;,
+    &quot;tech_headers&quot;: {},
+    &quot;name&quot;: &quot;telnyx basic&quot;,
+    &quot;detail&quot;: &quot;telnyx basic&quot;,
+    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
+    &quot;tm_update&quot;: &quot;2022-10-24 04:53:14.171374&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
@@ -744,33 +745,33 @@
 <p>The following example creates a provider without codec restrictions. VoIPBin will use its
 system-default codec list during SDP negotiation for calls through this provider.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "type": "sip",
-        "hostname": "test.com",
-        "tech_prefix": "",
-        "tech_postfix": "",
-        "tech_headers": {},
-        "name": "test domain",
-        "detail": "test domain creation"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;test.com&quot;,
+        &quot;tech_prefix&quot;: &quot;&quot;,
+        &quot;tech_postfix&quot;: &quot;&quot;,
+        &quot;tech_headers&quot;: {},
+        &quot;name&quot;: &quot;test domain&quot;,
+        &quot;detail&quot;: &quot;test domain creation&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>To create a provider with a specific codec restriction from the start, include <code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;</span></code> in
 the request body:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "type": "sip",
-        "hostname": "sip.example.com",
-        "tech_prefix": "",
-        "tech_postfix": "",
-        "tech_headers": {},
-        "name": "example carrier",
-        "detail": "carrier with G.711 codec restriction",
-        "codecs": "PCMU,PCMA"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;sip.example.com&quot;,
+        &quot;tech_prefix&quot;: &quot;&quot;,
+        &quot;tech_postfix&quot;: &quot;&quot;,
+        &quot;tech_headers&quot;: {},
+        &quot;name&quot;: &quot;example carrier&quot;,
+        &quot;detail&quot;: &quot;carrier with G.711 codec restriction&quot;,
+        &quot;codecs&quot;: &quot;PCMU,PCMA&quot;
+    }&#39;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -787,17 +788,17 @@ field. See the update example below.</p>
 <p>The following example updates all provider fields. Omit <code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;</span></code> or set it to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> to
 remove any existing codec restriction and revert to system-default negotiation.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "type": "sip",
-        "hostname": "sip.telnyx.com",
-        "tech_prefix": "",
-        "tech_postfix": "",
-        "tech_headers": {},
-        "name": "telnyx basic",
-        "detail": "telnyx basic"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+        &quot;tech_prefix&quot;: &quot;&quot;,
+        &quot;tech_postfix&quot;: &quot;&quot;,
+        &quot;tech_headers&quot;: {},
+        &quot;name&quot;: &quot;telnyx basic&quot;,
+        &quot;detail&quot;: &quot;telnyx basic&quot;
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -808,34 +809,34 @@ remove any existing codec restriction and revert to system-default negotiation.<
 negotiation for PSTN outbound calls through this provider. This is useful when a carrier
 only supports specific codecs.</p>
 <p>The following example restricts the provider to G.711 µ-law and G.711 A-law:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "type": "sip",
-        "hostname": "sip.telnyx.com",
-        "tech_prefix": "",
-        "tech_postfix": "",
-        "tech_headers": {},
-        "name": "telnyx basic",
-        "detail": "telnyx basic",
-        "codecs": "PCMU,PCMA"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+        &quot;tech_prefix&quot;: &quot;&quot;,
+        &quot;tech_postfix&quot;: &quot;&quot;,
+        &quot;tech_headers&quot;: {},
+        &quot;name&quot;: &quot;telnyx basic&quot;,
+        &quot;detail&quot;: &quot;telnyx basic&quot;,
+        &quot;codecs&quot;: &quot;PCMU,PCMA&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>To remove the restriction and revert to system-default codec negotiation, set <code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;</span></code>
 to an empty string:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "type": "sip",
-        "hostname": "sip.telnyx.com",
-        "tech_prefix": "",
-        "tech_postfix": "",
-        "tech_headers": {},
-        "name": "telnyx basic",
-        "detail": "telnyx basic",
-        "codecs": ""
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+        &quot;tech_prefix&quot;: &quot;&quot;,
+        &quot;tech_postfix&quot;: &quot;&quot;,
+        &quot;tech_headers&quot;: {},
+        &quot;name&quot;: &quot;telnyx basic&quot;,
+        &quot;detail&quot;: &quot;telnyx basic&quot;,
+        &quot;codecs&quot;: &quot;&quot;
+    }&#39;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -848,7 +849,7 @@ Leave <code class="docutils literal notranslate"><span class="pre">codecs</span>
 <section id="delete-provider">
 <h3>Delete provider<a class="headerlink" href="#delete-provider" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/providers/7efc9379-2d3e-4e54-9d36-23cff676a83e?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/providers/7efc9379-2d3e-4e54-9d36-23cff676a83e?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
@@ -938,8 +939,8 @@ Leave <code class="docutils literal notranslate"><span class="pre">codecs</span>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

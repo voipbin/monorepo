@@ -73,6 +73,12 @@ type Config struct {
 	AnalysisReasoningEffort string // AnalysisReasoningEffort is sent as reasoning_effort on the analysis gateway request ("none" disables Gemini thinking; empty omits the field).
 	AnalysisMaxInputBytes   int    // AnalysisMaxInputBytes caps the prompt+data byte size accepted by the analysis gateway.
 	AnalysisMaxOutputTokens int    // AnalysisMaxOutputTokens caps the output tokens of the analysis gateway (runaway guard).
+
+	// Customer-Configured MCP Tool Integration (docs/plans/
+	// 2026-09-11-mcp-tool-integration-design.md §6, §13).
+	McpSecretEncryptionKeys     string // Comma-separated "<version>:<base64-32-byte-key>" pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows.
+	McpToolsListCacheTTLSeconds int    // Redis cache TTL for a server's tools/list result.
+	McpToolCallTimeoutSeconds   int    // Bounded HTTP timeout for tools/call.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -123,6 +129,9 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("analysis_reasoning_effort", "none", "reasoning_effort for the analysis gateway (none disables Gemini thinking; empty omits the field)")
 	f.Int("analysis_max_input_bytes", 262144, "Max prompt+data bytes accepted by the analysis gateway")
 	f.Int("analysis_max_output_tokens", 16384, "Max output tokens for the analysis gateway (runaway guard)")
+	f.String("mcp_secret_encryption_keys", "", "Comma-separated <version>:<base64-32-byte-key> pairs for MCP server secret envelope encryption")
+	f.Int("mcp_tools_list_cache_ttl_seconds", 60, "Redis cache TTL (seconds) for an MCP server's tools/list result")
+	f.Int("mcp_tool_call_timeout_seconds", 10, "Bounded HTTP timeout (seconds) for an MCP tools/call request")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -162,6 +171,10 @@ func bindConfig(cmd *cobra.Command) error {
 		"analysis_reasoning_effort":  "ANALYSIS_REASONING_EFFORT",
 		"analysis_max_input_bytes":   "ANALYSIS_MAX_INPUT_BYTES",
 		"analysis_max_output_tokens": "ANALYSIS_MAX_OUTPUT_TOKENS",
+
+		"mcp_secret_encryption_keys":       "MCP_SECRET_ENCRYPTION_KEYS",
+		"mcp_tools_list_cache_ttl_seconds": "MCP_TOOLS_LIST_CACHE_TTL_SECONDS",
+		"mcp_tool_call_timeout_seconds":    "MCP_TOOL_CALL_TIMEOUT_SECONDS",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -228,6 +241,10 @@ func LoadGlobalConfig() {
 			AnalysisReasoningEffort: viper.GetString("analysis_reasoning_effort"),
 			AnalysisMaxInputBytes:   viper.GetInt("analysis_max_input_bytes"),
 			AnalysisMaxOutputTokens: viper.GetInt("analysis_max_output_tokens"),
+
+			McpSecretEncryptionKeys:     viper.GetString("mcp_secret_encryption_keys"),
+			McpToolsListCacheTTLSeconds: viper.GetInt("mcp_tools_list_cache_ttl_seconds"),
+			McpToolCallTimeoutSeconds:   viper.GetInt("mcp_tool_call_timeout_seconds"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

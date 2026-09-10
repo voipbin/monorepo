@@ -305,6 +305,45 @@ func (e AIManagerAIcallStatus) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerMcpServerAuthType.
+const (
+	AIManagerMcpServerAuthTypeApiKey AIManagerMcpServerAuthType = "api_key"
+	AIManagerMcpServerAuthTypeBearer AIManagerMcpServerAuthType = "bearer"
+	AIManagerMcpServerAuthTypeEmpty  AIManagerMcpServerAuthType = ""
+)
+
+// Valid indicates whether the value is a known member of the AIManagerMcpServerAuthType enum.
+func (e AIManagerMcpServerAuthType) Valid() bool {
+	switch e {
+	case AIManagerMcpServerAuthTypeApiKey:
+		return true
+	case AIManagerMcpServerAuthTypeBearer:
+		return true
+	case AIManagerMcpServerAuthTypeEmpty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AIManagerMcpServerStatus.
+const (
+	AIManagerMcpServerStatusActive   AIManagerMcpServerStatus = "active"
+	AIManagerMcpServerStatusDisabled AIManagerMcpServerStatus = "disabled"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerMcpServerStatus enum.
+func (e AIManagerMcpServerStatus) Valid() bool {
+	switch e {
+	case AIManagerMcpServerStatusActive:
+		return true
+	case AIManagerMcpServerStatusDisabled:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerMessageOrigin.
 const (
 	AIManagerMessageOriginEmpty          AIManagerMessageOrigin = ""
@@ -3455,6 +3494,66 @@ func (e GetConversationsJSONBodyType) Valid() bool {
 	}
 }
 
+// Defines values for PostMcpserversJSONBodyAuthType.
+const (
+	PostMcpserversJSONBodyAuthTypeApiKey PostMcpserversJSONBodyAuthType = "api_key"
+	PostMcpserversJSONBodyAuthTypeBearer PostMcpserversJSONBodyAuthType = "bearer"
+	PostMcpserversJSONBodyAuthTypeEmpty  PostMcpserversJSONBodyAuthType = ""
+)
+
+// Valid indicates whether the value is a known member of the PostMcpserversJSONBodyAuthType enum.
+func (e PostMcpserversJSONBodyAuthType) Valid() bool {
+	switch e {
+	case PostMcpserversJSONBodyAuthTypeApiKey:
+		return true
+	case PostMcpserversJSONBodyAuthTypeBearer:
+		return true
+	case PostMcpserversJSONBodyAuthTypeEmpty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PutMcpserversIdJSONBodyAuthType.
+const (
+	PutMcpserversIdJSONBodyAuthTypeApiKey PutMcpserversIdJSONBodyAuthType = "api_key"
+	PutMcpserversIdJSONBodyAuthTypeBearer PutMcpserversIdJSONBodyAuthType = "bearer"
+	PutMcpserversIdJSONBodyAuthTypeEmpty  PutMcpserversIdJSONBodyAuthType = ""
+)
+
+// Valid indicates whether the value is a known member of the PutMcpserversIdJSONBodyAuthType enum.
+func (e PutMcpserversIdJSONBodyAuthType) Valid() bool {
+	switch e {
+	case PutMcpserversIdJSONBodyAuthTypeApiKey:
+		return true
+	case PutMcpserversIdJSONBodyAuthTypeBearer:
+		return true
+	case PutMcpserversIdJSONBodyAuthTypeEmpty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PutMcpserversIdJSONBodyStatus.
+const (
+	PutMcpserversIdJSONBodyStatusActive   PutMcpserversIdJSONBodyStatus = "active"
+	PutMcpserversIdJSONBodyStatusDisabled PutMcpserversIdJSONBodyStatus = "disabled"
+)
+
+// Valid indicates whether the value is a known member of the PutMcpserversIdJSONBodyStatus enum.
+func (e PutMcpserversIdJSONBodyStatus) Valid() bool {
+	switch e {
+	case PutMcpserversIdJSONBodyStatusActive:
+		return true
+	case PutMcpserversIdJSONBodyStatusDisabled:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostProvidercallsJSONBodyAnonymous.
 const (
 	PostProvidercallsJSONBodyAnonymousAuto PostProvidercallsJSONBodyAnonymous = "auto"
@@ -3700,6 +3799,11 @@ type AIManagerAI struct {
 	// Example: false
 	IsInsightActive bool `json:"is_insight_active"`
 
+	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer, returned from the `id` field of the `POST /mcpservers` or `GET /mcpservers` response. The server's tools are merged into this AI's tool list, namespaced `mcp_<server_id_prefix>_<tool_name>`.
+	//
+	// Example: []
+	McpServerIds *[]string `json:"mcp_server_ids,omitempty"`
+
 	// Name Name of the AI.
 	//
 	// Example: Customer Support Bot
@@ -3743,7 +3847,7 @@ type AIManagerAI struct {
 	// Example: 2026-01-15T09:30:00.000000Z
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all available tools. See the Tool Functions documentation for detailed descriptions of each tool.
+	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool.
 	//
 	// Example: ["all"]
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
@@ -4100,6 +4204,79 @@ type AIManagerAIcallReferenceType string
 //
 // Example: progressing
 type AIManagerAIcallStatus string
+
+// AIManagerMcpServer A customer-registered remote MCP (Model Context Protocol) server. Excludes the stored secret entirely; `has_secret` indicates whether one is configured. Whitelist a server for an AI via that AI's `mcp_server_ids` field.
+type AIManagerMcpServer struct {
+	// ApiKeyHeader Header name used when auth_type is api_key.
+	//
+	// Example: X-API-Key
+	ApiKeyHeader *string `json:"api_key_header,omitempty"`
+
+	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header.
+	//
+	// Example: bearer
+	AuthType *AIManagerMcpServerAuthType `json:"auth_type,omitempty"`
+
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	//
+	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed description of the MCP server.
+	//
+	// Example: Exposes ticket lookup/creation tools to the LLM.
+	Detail *string `json:"detail,omitempty"`
+
+	// HasSecret Whether a bearer token / API key is configured. The secret value itself is never returned.
+	//
+	// Example: true
+	HasSecret bool `json:"has_secret"`
+
+	// Id The unique identifier of the MCP server.
+	//
+	// Example: 550e8400-e29b-41d4-a716-446655440000
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the MCP server.
+	//
+	// Example: Internal Ticketing System
+	Name *string `json:"name,omitempty"`
+
+	// Status disabled servers are excluded from tool list resolution and tool calls.
+	//
+	// Example: active
+	Status *AIManagerMcpServerStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the MCP server was registered.
+	//
+	// Example: 2026-01-15T09:30:00.000000Z
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the MCP server was deleted.
+	//
+	// Example: 2026-01-15T09:30:00.000000Z
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the MCP server was last updated.
+	//
+	// Example: 2026-01-15T09:30:00.000000Z
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Url Streamable-HTTP MCP endpoint.
+	//
+	// Example: https://mcp.example.com/mcp
+	Url *string `json:"url,omitempty"`
+}
+
+// AIManagerMcpServerAuthType How the outbound MCP call authenticates. Empty string sends no Authorization header.
+//
+// Example: bearer
+type AIManagerMcpServerAuthType string
+
+// AIManagerMcpServerStatus disabled servers are excluded from tool list resolution and tool calls.
+//
+// Example: active
+type AIManagerMcpServerStatus string
 
 // AIManagerMessage defines model for AIManagerMessage.
 type AIManagerMessage struct {
@@ -10309,7 +10486,12 @@ type PostAisJSONBody struct {
 	// Example: openai.gpt-5
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
-	Name        string                 `json:"name"`
+
+	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer. Returned from the `id` field of the `POST /mcpservers` response.
+	//
+	// Example: []
+	McpServerIds *[]string `json:"mcp_server_ids,omitempty"`
+	Name         string    `json:"name"`
 
 	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	Parameter map[string]interface{} `json:"parameter"`
@@ -10362,7 +10544,12 @@ type PutAisIdJSONBody struct {
 	// Example: openai.gpt-5
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
-	Name        string                 `json:"name"`
+
+	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer. Returned from the `id` field of the `POST /mcpservers` response.
+	//
+	// Example: []
+	McpServerIds *[]string `json:"mcp_server_ids,omitempty"`
+	Name         string    `json:"name"`
 
 	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	Parameter map[string]interface{} `json:"parameter"`
@@ -11502,6 +11689,76 @@ type PostGroupcallsJSONBody struct {
 	// Source Contains source or destination detail info.
 	Source CommonAddress `json:"source"`
 }
+
+// GetMcpserversParams defines parameters for GetMcpservers.
+type GetMcpserversParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostMcpserversJSONBody defines parameters for PostMcpservers.
+type PostMcpserversJSONBody struct {
+	// ApiKeyHeader Header name used when auth_type is api_key, e.g. X-API-Key. Ignored otherwise.
+	//
+	// Example: X-API-Key
+	ApiKeyHeader *string `json:"api_key_header,omitempty"`
+
+	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header.
+	//
+	// Example: bearer
+	AuthType *PostMcpserversJSONBodyAuthType `json:"auth_type,omitempty"`
+
+	// Detail Detailed description of the MCP server.
+	//
+	// Example: Exposes ticket lookup/creation tools to the LLM.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Name of the MCP server.
+	//
+	// Example: Internal Ticketing System
+	Name string `json:"name"`
+
+	// Secret Bearer token or API key value. Stored encrypted at rest; never returned in responses.
+	//
+	// Example: sk-live-...redacted...
+	Secret *string `json:"secret,omitempty"`
+
+	// Url Streamable-HTTP MCP endpoint. Must be https.
+	//
+	// Example: https://mcp.example.com/mcp
+	Url string `json:"url"`
+}
+
+// PostMcpserversJSONBodyAuthType defines parameters for PostMcpservers.
+type PostMcpserversJSONBodyAuthType string
+
+// PutMcpserversIdJSONBody defines parameters for PutMcpserversId.
+type PutMcpserversIdJSONBody struct {
+	ApiKeyHeader *string                          `json:"api_key_header,omitempty"`
+	AuthType     *PutMcpserversIdJSONBodyAuthType `json:"auth_type,omitempty"`
+	Detail       *string                          `json:"detail,omitempty"`
+	Name         *string                          `json:"name,omitempty"`
+
+	// Secret Omit this field to leave the existing secret unchanged. Send an empty string to clear it.
+	Secret *string `json:"secret,omitempty"`
+
+	// Status Set to disabled to exclude this server from ListTools/CallTool without deleting it.
+	//
+	// Example: active
+	Status *PutMcpserversIdJSONBodyStatus `json:"status,omitempty"`
+
+	// Url Streamable-HTTP MCP endpoint. Must be https.
+	Url *string `json:"url,omitempty"`
+}
+
+// PutMcpserversIdJSONBodyAuthType defines parameters for PutMcpserversId.
+type PutMcpserversIdJSONBodyAuthType string
+
+// PutMcpserversIdJSONBodyStatus defines parameters for PutMcpserversId.
+type PutMcpserversIdJSONBodyStatus string
 
 // GetMessagesParams defines parameters for GetMessages.
 type GetMessagesParams struct {
@@ -13297,6 +13554,12 @@ type PutFlowsIdJSONRequestBody PutFlowsIdJSONBody
 
 // PostGroupcallsJSONRequestBody defines body for PostGroupcalls for application/json ContentType.
 type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
+
+// PostMcpserversJSONRequestBody defines body for PostMcpservers for application/json ContentType.
+type PostMcpserversJSONRequestBody PostMcpserversJSONBody
+
+// PutMcpserversIdJSONRequestBody defines body for PutMcpserversId for application/json ContentType.
+type PutMcpserversIdJSONRequestBody PutMcpserversIdJSONBody
 
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody

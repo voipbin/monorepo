@@ -21,7 +21,7 @@ func Test_NewAIcallHandler_WiresCache(t *testing.T) {
 
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
-	h := NewAIcallHandler(nil, nil, nil, mockCache, nil, nil, nil, nil)
+	h := NewAIcallHandler(nil, nil, nil, mockCache, nil, nil, nil, nil, nil, nil, nil)
 
 	concrete, ok := h.(*aicallHandler)
 	if !ok {

@@ -17,6 +17,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
+	mcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
@@ -533,6 +534,78 @@ func (m *MockDBHandler) AIcallUpdateNoTouchTMUpdate(ctx context.Context, id uuid
 func (mr *MockDBHandlerMockRecorder) AIcallUpdateNoTouchTMUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateNoTouchTMUpdate", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateNoTouchTMUpdate), ctx, id, fields)
+}
+
+// McpServerCreate mocks base method.
+func (m_2 *MockDBHandler) McpServerCreate(ctx context.Context, m *mcpserver.McpServer) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "McpServerCreate", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// McpServerCreate indicates an expected call of McpServerCreate.
+func (mr *MockDBHandlerMockRecorder) McpServerCreate(ctx, m any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerCreate", reflect.TypeOf((*MockDBHandler)(nil).McpServerCreate), ctx, m)
+}
+
+// McpServerDelete mocks base method.
+func (m *MockDBHandler) McpServerDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// McpServerDelete indicates an expected call of McpServerDelete.
+func (mr *MockDBHandlerMockRecorder) McpServerDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerDelete", reflect.TypeOf((*MockDBHandler)(nil).McpServerDelete), ctx, id)
+}
+
+// McpServerGet mocks base method.
+func (m *MockDBHandler) McpServerGet(ctx context.Context, id uuid.UUID) (*mcpserver.McpServer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerGet", ctx, id)
+	ret0, _ := ret[0].(*mcpserver.McpServer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpServerGet indicates an expected call of McpServerGet.
+func (mr *MockDBHandlerMockRecorder) McpServerGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerGet", reflect.TypeOf((*MockDBHandler)(nil).McpServerGet), ctx, id)
+}
+
+// McpServerList mocks base method.
+func (m *MockDBHandler) McpServerList(ctx context.Context, size uint64, token string, filters map[mcpserver.Field]any) ([]*mcpserver.McpServer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerList", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*mcpserver.McpServer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpServerList indicates an expected call of McpServerList.
+func (mr *MockDBHandlerMockRecorder) McpServerList(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerList", reflect.TypeOf((*MockDBHandler)(nil).McpServerList), ctx, size, token, filters)
+}
+
+// McpServerUpdate mocks base method.
+func (m *MockDBHandler) McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[mcpserver.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// McpServerUpdate indicates an expected call of McpServerUpdate.
+func (mr *MockDBHandlerMockRecorder) McpServerUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerUpdate", reflect.TypeOf((*MockDBHandler)(nil).McpServerUpdate), ctx, id, fields)
 }
 
 // MessageAssistantReplyExists mocks base method.

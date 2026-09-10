@@ -15,6 +15,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/participant"
+	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
@@ -524,5 +525,94 @@ func Test_processV1AIsIDDirectHashRegenerate_errorMapping(t *testing.T) {
 				t.Fatalf("expected status %d, got %d", tt.expectStatus, res.StatusCode)
 			}
 		})
+	}
+}
+
+// Test_processV1AIsIDPut_McpServerIDsEmptyArrayClears pins the fix for a
+// bug found during PR review: a PUT body with "mcp_server_ids": []
+// unmarshals into a non-nil *[]uuid.UUID pointing at an empty slice --
+// distinct from the field being omitted (nil pointer, leave untouched) --
+// and must reach ValidateMcpServerIDs/UpdateMcpServerIDs with an empty
+// (not nil) []uuid.UUID, actually clearing the AI's whitelist.
+func Test_processV1AIsIDPut_McpServerIDsEmptyArrayClears(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+
+	h := &listenHandler{
+		sockHandler: mockSock,
+		aiHandler:   mockAI,
+	}
+
+	id := uuid.FromStringOrNil("de99e522-a770-11ed-a0ab-5b39ee2db203")
+	customerID := uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8")
+
+	req := &sock.Request{
+		URI:    "/v1/ais/" + id.String(),
+		Method: sock.RequestMethodPut,
+		Data:   []byte(`{"mcp_server_ids":[]}`),
+	}
+
+	preUpdate := &ai.AI{
+		Identity: identity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+	}
+
+	mockAI.EXPECT().Update(
+		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
+	).Return(preUpdate, nil)
+
+	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{}).Return(nil)
+	mockAI.EXPECT().UpdateMcpServerIDs(gomock.Any(), id, []uuid.UUID{}).Return(preUpdate, nil)
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if res.StatusCode != 200 {
+		t.Fatalf("expected status 200, got %d (body: %s)", res.StatusCode, res.Data)
+	}
+}
+
+// Test_processV1AIsIDPut_McpServerIDsOmittedLeavesUntouched is the
+// counterpart: omitting mcp_server_ids entirely must not call
+// ValidateMcpServerIDs/UpdateMcpServerIDs at all (gomock's strict
+// controller fails the test if either is called with no EXPECT() set).
+func Test_processV1AIsIDPut_McpServerIDsOmittedLeavesUntouched(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+
+	h := &listenHandler{
+		sockHandler: mockSock,
+		aiHandler:   mockAI,
+	}
+
+	id := uuid.FromStringOrNil("de99e522-a770-11ed-a0ab-5b39ee2db203")
+
+	req := &sock.Request{
+		URI:    "/v1/ais/" + id.String(),
+		Method: sock.RequestMethodPut,
+		Data:   []byte(`{"name":"renamed"}`),
+	}
+
+	mockAI.EXPECT().Update(
+		gomock.Any(), id, "renamed", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
+	).Return(&ai.AI{Identity: identity.Identity{ID: id}}, nil)
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if res.StatusCode != 200 {
+		t.Fatalf("expected status 200, got %d (body: %s)", res.StatusCode, res.Data)
 	}
 }

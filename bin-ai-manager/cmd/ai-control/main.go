@@ -483,8 +483,8 @@ func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	// the same logical stream, so both must dual publish or consumers would see gaps.
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
-	// For these operations, we don't need aiHandler, messageHandler, or participantHandler
-	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil, nil, nil), nil
+	// For these operations, we don't need aiHandler, messageHandler, participantHandler, mcptoolHandler, or mcpServerHandler
+	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil, nil, nil, nil, nil, nil), nil
 }
 
 func cmdAIcallGet() *cobra.Command {

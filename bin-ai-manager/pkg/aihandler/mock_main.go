@@ -147,3 +147,32 @@ func (mr *MockAIHandlerMockRecorder) Update(ctx, id, name, detail, aiType, engin
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAIHandler)(nil).Update), ctx, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 }
+
+// UpdateMcpServerIDs mocks base method.
+func (m *MockAIHandler) UpdateMcpServerIDs(ctx context.Context, id uuid.UUID, mcpServerIDs []uuid.UUID) (*ai.AI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMcpServerIDs", ctx, id, mcpServerIDs)
+	ret0, _ := ret[0].(*ai.AI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateMcpServerIDs indicates an expected call of UpdateMcpServerIDs.
+func (mr *MockAIHandlerMockRecorder) UpdateMcpServerIDs(ctx, id, mcpServerIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMcpServerIDs", reflect.TypeOf((*MockAIHandler)(nil).UpdateMcpServerIDs), ctx, id, mcpServerIDs)
+}
+
+// ValidateMcpServerIDs mocks base method.
+func (m *MockAIHandler) ValidateMcpServerIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateMcpServerIDs", ctx, customerID, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ValidateMcpServerIDs indicates an expected call of ValidateMcpServerIDs.
+func (mr *MockAIHandlerMockRecorder) ValidateMcpServerIDs(ctx, customerID, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateMcpServerIDs", reflect.TypeOf((*MockAIHandler)(nil).ValidateMcpServerIDs), ctx, customerID, ids)
+}

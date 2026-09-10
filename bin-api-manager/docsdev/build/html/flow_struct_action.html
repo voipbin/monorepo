@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial basic" href="flow_tutorial_basic.html"><link rel="prev" title="Flow" href="flow_struct_flow.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Action - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -642,13 +643,13 @@
 <section id="flow-struct-action-action">
 <span id="id1"></span><h2>Action<a class="headerlink" href="#flow-struct-action-action" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">},</span>
-    <span class="s2">"tm_execute"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;tm_execute&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -820,12 +821,12 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="parameters">
 <h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"ai_summary"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"on_end_flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ai_summary&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;on_end_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -844,11 +845,11 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id2">
 <h3>Parameters<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"ai_talk"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"assistance_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"assistance_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ai_talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;assistance_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;assistance_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -863,11 +864,11 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"ai_talk"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"assistance_type"</span><span class="p">:</span> <span class="s2">"ai"</span><span class="p">,</span>
-        <span class="s2">"assistance_id"</span><span class="p">:</span> <span class="s2">"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"</span><span class="p">,</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">300</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ai_talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;assistance_type&quot;</span><span class="p">:</span> <span class="s2">&quot;ai&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;assistance_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">300</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -880,10 +881,10 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id3">
 <h3>Parameters<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"ai_task"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"assistance_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"assistance_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ai_task&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;assistance_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;assistance_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -901,10 +902,10 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id4">
 <h3>Parameters<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"amd"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"machine_handle"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"async"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;amd&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;machine_handle&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;async&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -937,10 +938,10 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id5">
 <h3>Example<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"amd"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"machine_handle"</span><span class="p">:</span> <span class="s2">"hangup"</span><span class="p">,</span>
-        <span class="s2">"async"</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;amd&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;machine_handle&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;async&quot;</span><span class="p">:</span> <span class="n">true</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -953,7 +954,7 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id6">
 <h3>Parameters<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"answer"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -961,7 +962,7 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id7">
 <h3>Example<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"answer"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -973,7 +974,7 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id8">
 <h3>Parameters<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"beep"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;beep&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -981,7 +982,7 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id9">
 <h3>Example<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"beep"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;beep&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -993,7 +994,7 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id10">
 <h3>Parameters<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"block"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;block&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1001,7 +1002,7 @@ platform. Use <code class="docutils literal notranslate"><span class="pre">conne
 <section id="id11">
 <h3>Example<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"block"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;block&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1014,12 +1015,12 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 <section id="id12">
 <h3>Parameters<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"branch"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"variable"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"default_target_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"target_ids"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"&lt;string&gt;"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1034,13 +1035,13 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 <section id="id13">
 <h3>Example<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"branch"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"default_target_id"</span><span class="p">:</span> <span class="s2">"ed9705ca-c524-11ec-a3fb-8feb7731ad45"</span><span class="p">,</span>
-        <span class="s2">"target_ids"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"1"</span><span class="p">:</span> <span class="s2">"c3eb8e62-c524-11ec-94c5-abafec8af561"</span><span class="p">,</span>
-            <span class="s2">"2"</span><span class="p">:</span> <span class="s2">"dc87123e-c524-11ec-89c6-5fb18da14034"</span><span class="p">,</span>
-            <span class="s2">"3"</span><span class="p">:</span> <span class="s2">"e70fb030-c524-11ec-b657-ebec72f097ef"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1055,26 +1056,26 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 <section id="id14">
 <h3>Parameters<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="o">...</span>
         <span class="p">},</span>
-        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
                 <span class="o">...</span>
             <span class="p">},</span>
             <span class="o">...</span>
         <span class="p">],</span>
-        <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
-        <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+        <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
                 <span class="o">...</span>
             <span class="p">}</span>
         <span class="p">],</span>
-        <span class="s2">"chained"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"early_execution"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"anonymous"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+        <span class="s2">&quot;chained&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;early_execution&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1092,30 +1093,30 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 <section id="id15">
 <h3>Example<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"e34ab97a-c53a-4eb4-aebf-36767a528f00"</span><span class="p">,</span>
-    <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000001"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e34ab97a-c53a-4eb4-aebf-36767a528f00&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
         <span class="p">},</span>
-        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000002"</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000002&quot;</span>
             <span class="p">}</span>
         <span class="p">],</span>
-        <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
-                <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"hello, this is test message."</span><span class="p">,</span>
-                    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
                 <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">],</span>
-        <span class="s2">"chained"</span><span class="p">:</span> <span class="n">false</span>
+        <span class="s2">&quot;chained&quot;</span><span class="p">:</span> <span class="n">false</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1128,12 +1129,12 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 <section id="id16">
 <h3>Parameters<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"case_create"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"note"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"sync"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;case_create&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;note&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1156,9 +1157,9 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 <section id="id17">
 <h3>Parameters<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"confbridge_join"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"confbridge_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;confbridge_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;confbridge_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1177,11 +1178,11 @@ If the conditions are not met, the voipbin directs the call to a false_target_id
 <section id="id18">
 <h3>Parameters<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_call_digits"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"length"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_digits&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1195,10 +1196,10 @@ If the conditions are not met, the voipbin directs the call to a false_target_id
 <section id="id19">
 <h3>Example<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_call_digits"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"length"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-        <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"e3e50e6c-9c8b-11ec-8031-0384a8fcd1e2"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_digits&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e3e50e6c-9c8b-11ec-8031-0384a8fcd1e2&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1213,10 +1214,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id20">
 <h3>Parameters<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_call_status"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_status&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1229,10 +1230,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id21">
 <h3>Example<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_call_status"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>
-        <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"e3e50e6c-9c8b-11ec-8031-0384a8fcd1e2"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_status&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e3e50e6c-9c8b-11ec-8031-0384a8fcd1e2&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1246,21 +1247,21 @@ It checks the current time(UTC) and if it matched with condition then move to th
 <section id="id22">
 <h3>Parameters<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_datetime"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"condition"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_datetime&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
 
-        <span class="s2">"minute"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"hour"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"day"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"month"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"weekdays"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;minute&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;weekdays&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
             <span class="o">...</span>
         <span class="p">],</span>
 
 
-        <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1278,15 +1279,15 @@ It checks the current time(UTC) and if it matched with condition then move to th
 <section id="id23">
 <h3>Example<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_datetime"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"&gt;="</span><span class="p">,</span>
-        <span class="s2">"minute"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">"hour"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
-        <span class="s2">"day"</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-        <span class="s2">"month"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">"weekdays"</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"d08582ee-1b3d-11ed-a43e-9379f27c3f7f"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_datetime&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;minute&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;month&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;weekdays&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d08582ee-1b3d-11ed-a43e-9379f27c3f7f&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1300,15 +1301,15 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id24">
 <h3>Parameters<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_variable"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"variable"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"value_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"value_string"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"value_number"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"value_length"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_variable&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_string&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_number&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;value_length&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1326,13 +1327,13 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id25">
 <h3>Example<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_variable"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"condition"</span><span class="p">:</span> <span class="s2">"=="</span><span class="p">,</span>
-        <span class="s2">"variable"</span><span class="p">:</span> <span class="s2">"voipbin.call.source.target"</span><span class="p">,</span>
-        <span class="s2">"value_type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-        <span class="s2">"value_string"</span><span class="p">:</span> <span class="s2">"+821100000001"</span><span class="p">,</span>
-        <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"fb2f4e2a-b030-11ed-bddb-976af892f5a3"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_variable&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;==&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;variable&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin.call.source.target&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value_string&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;fb2f4e2a-b030-11ed-bddb-976af892f5a3&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1345,9 +1346,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id26">
 <h3>Parameters<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"conference_join"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"conference_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1359,9 +1360,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id27">
 <h3>Example<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"conference_join"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"conference_id"</span><span class="p">:</span> <span class="s2">"367e0e7a-3a8c-11eb-bb08-f3c3f059cfbe"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conference_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;367e0e7a-3a8c-11eb-bb08-f3c3f059cfbe&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1374,15 +1375,15 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id28">
 <h3>Parameters<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"connect"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
-        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="o">...</span>
         <span class="p">],</span>
-        <span class="s2">"early_media"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"relay_reason"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"anonymous"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+        <span class="s2">&quot;early_media&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;relay_reason&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1398,16 +1399,16 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id29">
 <h3>Example<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"connect"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+11111111111111"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+11111111111111&quot;</span>
         <span class="p">},</span>
-        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+222222222222222"</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+222222222222222&quot;</span>
             <span class="p">}</span>
         <span class="p">]</span>
     <span class="p">}</span>
@@ -1422,11 +1423,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id30">
 <h3>Parameters<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"conversation_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"conversation_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"sync"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;conversation_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1440,11 +1441,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id31">
 <h3>Example<a class="headerlink" href="#id31" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"conversation_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"conversation_id"</span><span class="p">:</span> <span class="s2">"b5ef5e64-f7ca-11ec-bbe9-9f74186a2a72"</span><span class="p">,</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"hello world, this is test message."</span><span class="p">,</span>
-        <span class="s2">"sync"</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;conversation_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b5ef5e64-f7ca-11ec-bbe9-9f74186a2a72&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello world, this is test message.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="n">false</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1457,11 +1458,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id32">
 <h3>Parameters<a class="headerlink" href="#id32" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"digits_receive"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"length"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1475,11 +1476,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id33">
 <h3>Example<a class="headerlink" href="#id33" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"digits_receive"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
-        <span class="s2">"length"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"#"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;#&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1492,11 +1493,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id34">
 <h3>Parameters<a class="headerlink" href="#id34" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"digits_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"digits"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"interval"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1510,11 +1511,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id35">
 <h3>Example<a class="headerlink" href="#id35" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"digits_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"digits"</span><span class="p">:</span> <span class="s2">"1234567890"</span><span class="p">,</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
-        <span class="s2">"interval"</span><span class="p">:</span> <span class="mi">500</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+        <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">500</span>
     <span class="p">}</span>
 <span class="p">},</span>
 </pre></div>
@@ -1527,9 +1528,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id36">
 <h3>Parameters<a class="headerlink" href="#id36" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"echo"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1541,9 +1542,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id37">
 <h3>Example<a class="headerlink" href="#id37" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"echo"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">30000</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;echo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">30000</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1556,17 +1557,17 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id38">
 <h3>Parameters<a class="headerlink" href="#id38" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"email_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;email_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
                 <span class="o">...</span>
             <span class="p">},</span>
             <span class="o">...</span>
         <span class="p">],</span>
-        <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"content"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"attachments"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
                 <span class="o">...</span>
             <span class="p">},</span>
@@ -1590,17 +1591,17 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id39">
 <h3>Parameters<a class="headerlink" href="#id39" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"external_media_start"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"external_host"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"encapsulation"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"transport"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"transport_data"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"connection_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"direction_listen"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"direction_speak"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"data"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;external_media_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;external_host&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;encapsulation&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transport&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transport_data&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;connection_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction_listen&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction_speak&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1624,7 +1625,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id40">
 <h3>Parameters<a class="headerlink" href="#id40" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"external_media_stop"</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;external_media_stop&quot;</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1636,10 +1637,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id41">
 <h3>Parameters<a class="headerlink" href="#id41" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"fetch"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"event_url"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"event_method"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;event_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1652,10 +1653,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id42">
 <h3>Example<a class="headerlink" href="#id42" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"fetch"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"event_method"</span><span class="p">:</span> <span class="s2">"POST"</span><span class="p">,</span>
-        <span class="s2">"event_url"</span><span class="p">:</span> <span class="s2">"https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;event_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhook.site/e47c9b40-662c-4d20-a288-6777360fa211&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1668,9 +1669,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id43">
 <h3>Parameters<a class="headerlink" href="#id43" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"fetch_flow"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1682,9 +1683,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id44">
 <h3>Example<a class="headerlink" href="#id44" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"fetch_flow"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"212a32a8-9529-11ec-8bf0-8b89df407b6e"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;fetch_flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;212a32a8-9529-11ec-8bf0-8b89df407b6e&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1697,10 +1698,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id45">
 <h3>Parameters<a class="headerlink" href="#id45" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"goto"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"target_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"loop_count"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1713,10 +1714,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id46">
 <h3>Example<a class="headerlink" href="#id46" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"goto"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"target_id"</span><span class="p">:</span> <span class="s2">"ca4ddd74-9c8d-11ec-818d-d7cf1487e8df"</span><span class="p">,</span>
-        <span class="s2">"loop_count"</span><span class="p">:</span> <span class="mi">2</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ca4ddd74-9c8d-11ec-818d-d7cf1487e8df&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">2</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1729,10 +1730,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id47">
 <h3>Parameters<a class="headerlink" href="#id47" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"hangup"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"reason"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1745,7 +1746,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id48">
 <h3>Example<a class="headerlink" href="#id48" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"hangup"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1757,18 +1758,18 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id49">
 <h3>Parameters<a class="headerlink" href="#id49" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"message_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="o">...</span>
         <span class="p">},</span>
-        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
                 <span class="o">...</span>
             <span class="p">},</span>
             <span class="o">...</span>
         <span class="p">],</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1786,7 +1787,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id50">
 <h3>Parameters<a class="headerlink" href="#id50" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"mute"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mute&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1794,7 +1795,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id51">
 <h3>Example<a class="headerlink" href="#id51" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"mute"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mute&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1806,10 +1807,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id52">
 <h3>Parameters<a class="headerlink" href="#id52" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"play"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"stream_urls"</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;stream_urls&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
             <span class="o">...</span>
         <span class="p">]</span>
     <span class="p">}</span>
@@ -1823,10 +1824,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id53">
 <h3>Example<a class="headerlink" href="#id53" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"play"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"stream_urls"</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">"https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;play&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;stream_urls&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;</span>
         <span class="p">]</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1840,9 +1841,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id54">
 <h3>Parameters<a class="headerlink" href="#id54" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"queue_join"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"queue_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1854,9 +1855,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id55">
 <h3>Example<a class="headerlink" href="#id55" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"queue_join"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"queue_id"</span><span class="p">:</span> <span class="s2">"99bf739a-932f-433c-b1bf-103d33d7e9bb"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queue_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1869,14 +1870,14 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id56">
 <h3>Parameters<a class="headerlink" href="#id56" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_start"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"end_of_silence"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"end_of_key"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"beep_start"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">"on_end_flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;end_of_silence&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;end_of_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;beep_start&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;on_end_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1893,9 +1894,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id57">
 <h3>Example<a class="headerlink" href="#id57" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_start"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"wav"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;wav&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1908,7 +1909,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id58">
 <h3>Parameters<a class="headerlink" href="#id58" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_stop"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1916,7 +1917,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id59">
 <h3>Example<a class="headerlink" href="#id59" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_stop"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1928,9 +1929,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id60">
 <h3>Parameters<a class="headerlink" href="#id60" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sleep"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sleep&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1946,9 +1947,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id61">
 <h3>Parameters<a class="headerlink" href="#id61" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"stream_echo"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream_echo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1960,9 +1961,9 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id62">
 <h3>Example<a class="headerlink" href="#id62" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"stream_echo"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">10000</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream_echo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1975,14 +1976,14 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id63">
 <h3>Parameters<a class="headerlink" href="#id63" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"voice_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"digits_handle"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"async"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;digits_handle&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;async&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2016,10 +2017,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id64">
 <h3>Example<a class="headerlink" href="#id64" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello. Welcome to voipbin. This is test message. Please enjoy the voipbin service. Thank you. Bye"</span><span class="p">,</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. Welcome to voipbin. This is test message. Please enjoy the voipbin service. Thank you. Bye&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2032,12 +2033,12 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id65">
 <h3>Parameters<a class="headerlink" href="#id65" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_recording"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"on_end_flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_recording&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;on_end_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2052,11 +2053,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id66">
 <h3>Example<a class="headerlink" href="#id66" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_recording"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
-        <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"gcp"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_recording&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2069,12 +2070,12 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id67">
 <h3>Parameters<a class="headerlink" href="#id67" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_start"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"on_end_flow_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;on_end_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2089,11 +2090,11 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id68">
 <h3>Example<a class="headerlink" href="#id68" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_start"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
-        <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"gcp"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2106,7 +2107,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id69">
 <h3>Parameters<a class="headerlink" href="#id69" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_stop"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -2114,7 +2115,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id70">
 <h3>Example<a class="headerlink" href="#id70" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_stop"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -2126,10 +2127,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id71">
 <h3>Parameters<a class="headerlink" href="#id71" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"variable_set"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"value"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2142,10 +2143,10 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id72">
 <h3>Example<a class="headerlink" href="#id72" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"variable_set"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"Provider name"</span><span class="p">,</span>
-        <span class="s2">"value"</span><span class="p">:</span> <span class="s2">"voipbin"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;Provider name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2158,13 +2159,13 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id73">
 <h3>Parameters<a class="headerlink" href="#id73" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"webhook_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"sync"</span><span class="p">:</span> <span class="n">boolean</span><span class="p">,</span>
-        <span class="s2">"uri"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"data_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-        <span class="s2">"data"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="n">boolean</span><span class="p">,</span>
+        <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2185,13 +2186,13 @@ It checks the call’s status and if it matched with condition then move to the 
 <section id="id74">
 <h3>Example<a class="headerlink" href="#id74" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"webhook_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"sync"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-        <span class="s2">"uri"</span><span class="p">:</span> <span class="s2">"https://test.com"</span><span class="p">,</span>
-        <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"POST"</span><span class="p">,</span>
-        <span class="s2">"data_type"</span><span class="p">:</span> <span class="s2">"application/json"</span><span class="p">,</span>
-        <span class="s2">"data"</span><span class="p">:</span> <span class="s2">"{</span><span class="se">\"</span><span class="s2">destination_number</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">$</span><span class="si">{voipbin.call.destination.target}</span><span class="se">\"</span><span class="s2">, </span><span class="se">\"</span><span class="s2">source_number</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">$</span><span class="si">{voipbin.call.source.target}</span><span class="se">\"</span><span class="s2">}"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;webhook_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;sync&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://test.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">destination_number</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{voipbin.call.destination.target}</span><span class="se">\&quot;</span><span class="s2">, </span><span class="se">\&quot;</span><span class="s2">source_number</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">$</span><span class="si">{voipbin.call.source.target}</span><span class="se">\&quot;</span><span class="s2">}&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -2476,8 +2477,8 @@ It checks the call’s status and if it matched with condition then move to the 
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

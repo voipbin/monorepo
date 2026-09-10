@@ -2531,6 +2531,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 						},
 					},
 					aicall.MetaKeyAutoAuditEnabled: false,
+					aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 				},
 			},
 			expectVariables: map[string]string{
@@ -2573,6 +2574,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 						},
 					},
 					aicall.MetaKeyAutoAuditEnabled: false,
+					aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 				},
 			},
 		},
@@ -2622,6 +2624,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 						},
 					},
 					aicall.MetaKeyAutoAuditEnabled: false,
+					aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 				},
 			},
 			expectVariables: map[string]string{
@@ -2656,6 +2659,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 						},
 					},
 					aicall.MetaKeyAutoAuditEnabled: false,
+					aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 				},
 			},
 		},
@@ -2705,6 +2709,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 						},
 					},
 					aicall.MetaKeyAutoAuditEnabled: false,
+					aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 				},
 			},
 			expectVariables: map[string]string{
@@ -2742,6 +2747,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 						},
 					},
 					aicall.MetaKeyAutoAuditEnabled: false,
+					aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 				},
 			},
 		},
@@ -5128,6 +5134,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 								Prompt:          "You are the case assistant.",
 							},
 						},
+						aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 					},
 				}).Return(nil)
 				// TMUpdate must NOT be bumped: a status-touching write here
@@ -5185,6 +5192,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 								Prompt:          "You are the case assistant.",
 							},
 						},
+						aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
 					},
 				}).Return(nil)
 				m.db.EXPECT().AIcallGet(ctx, existing.ID).Return(&aicall.AIcall{

@@ -57,6 +57,22 @@ const MetaKeyListenConversationID = "listen_conversation_id"
 // what a freshly created AIcall wants: all of its rows are newer than it.
 const MetaKeyInsightSessionStart = "insight_session_start"
 
+// MetaKeyMcpToolMap is the Metadata map key holding the mapping from a
+// namespaced MCP tool name (mcp_<8-hex-server-id-prefix>_<tool_name>) back to
+// the McpToolRef (server id + original tool name) it was resolved from, per
+// docs/plans/2026-09-11-mcp-tool-integration-design.md §9.1/§9.2. Written by
+// aicallHandler.resolveTools at every point an AIcall starts serving a
+// session (create or reuse) and read by toolHandleMcpCall to dispatch a
+// tool_call whose function name carries the mcp_ prefix.
+const MetaKeyMcpToolMap = "mcp_tool_map"
+
+// McpToolRef identifies one remote MCP server tool that a namespaced tool
+// name in MetaKeyMcpToolMap was resolved from.
+type McpToolRef struct {
+	ServerID uuid.UUID `json:"server_id"`
+	ToolName string    `json:"tool_name"`
+}
+
 // AIcall define
 type AIcall struct {
 	identity.Identity

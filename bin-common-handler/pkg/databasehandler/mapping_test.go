@@ -294,7 +294,7 @@ func TestPrepareFieldsFromStruct(t *testing.T) {
 		{
 			name: "handles embedded structs",
 			input: &struct {
-				testModel // Embedded struct
+				testModel        // Embedded struct
 				Extra     string `db:"extra"`
 			}{
 				testModel: testModel{
@@ -821,7 +821,7 @@ func TestConvertValueForDB(t *testing.T) {
 		name           string
 		value          interface{}
 		conversionType string
-		wantType       string // Expected type name
+		wantType       string      // Expected type name
 		wantValue      interface{} // Expected value for verification
 		wantErr        bool
 	}{
@@ -892,6 +892,21 @@ func TestConvertValueForDB(t *testing.T) {
 			wantValue:      []byte(`[1,2,3]`),
 			wantErr:        false,
 		},
+		// []byte (raw bytes, e.g. an encrypted blob column) passes through
+		// unchanged rather than being JSON-marshaled -- a regression found
+		// during the MCP tool integration PR review: without this case,
+		// convertValueForDB's generic reflect.Slice branch JSON-marshals a
+		// []byte into a quoted base64 string, and a nil []byte into the
+		// literal 4-byte string "null", neither of which belongs in a blob
+		// column.
+		{
+			name:           "non-nil []byte passes through unchanged, not JSON-marshaled",
+			value:          []byte{0x01, 0x02, 0x03, 0xff},
+			conversionType: "",
+			wantType:       "[]uint8",
+			wantValue:      []byte{0x01, 0x02, 0x03, 0xff},
+			wantErr:        false,
+		},
 		// Primitive passthroughs
 		{
 			name:           "string passthrough",
@@ -951,5 +966,21 @@ func TestConvertValueForDB(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestConvertValueForDB_NilByteSlice pins that a nil []byte (e.g. an unset
+// encrypted-secret blob column) converts to SQL NULL, not the literal
+// 4-byte string "null" -- kept as its own test rather than a table case in
+// TestConvertValueForDB because result is untyped nil here, and that
+// table's shared assertion body calls reflect.TypeOf(result).String()
+// unconditionally on err==nil, which panics on a nil interface.
+func TestConvertValueForDB_NilByteSlice(t *testing.T) {
+	result, err := convertValueForDB([]byte(nil), "")
+	if err != nil {
+		t.Fatalf("convertValueForDB() error = %v, want nil", err)
+	}
+	if result != nil {
+		t.Errorf("convertValueForDB() = %v, want nil (SQL NULL)", result)
 	}
 }

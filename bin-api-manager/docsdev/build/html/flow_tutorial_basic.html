@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial scenario" href="flow_tutorial_scenario.html"><link rel="prev" title="Action" href="flow_struct_action.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial basic - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -654,60 +655,60 @@
 <section id="get-list-of-flows">
 <h3>Get list of flows<a class="headerlink" href="#get-list-of-flows" title="Link to this heading">¶</a></h3>
 <p>Gets the list of registered flows.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "result": [
+    &quot;result&quot;: [
         {
-            "id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "type": "flow",
-            "name": "default flow",
-            "detail": "default flow for voipbin incoming calls",
-            "actions": [
+            &quot;id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;type&quot;: &quot;flow&quot;,
+            &quot;name&quot;: &quot;default flow&quot;,
+            &quot;detail&quot;: &quot;default flow for voipbin incoming calls&quot;,
+            &quot;actions&quot;: [
                 {
-                    "id": "b34aa8a4-0b30-11eb-8016-1f5bc75b1c04",
-                    "type": "play",
-                    "option": {
-                        "stream_urls": [
-                            "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
+                    &quot;id&quot;: &quot;b34aa8a4-0b30-11eb-8016-1f5bc75b1c04&quot;,
+                    &quot;type&quot;: &quot;play&quot;,
+                    &quot;option&quot;: {
+                        &quot;stream_urls&quot;: [
+                            &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
                         ]
                     }
                 },
                 {
-                    "id": "57a3dcd2-0b2b-11eb-94a6-a7129b64693c",
-                    "type": "play",
-                    "option": {
-                        "stream_urls": [
-                            "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
+                    &quot;id&quot;: &quot;57a3dcd2-0b2b-11eb-94a6-a7129b64693c&quot;,
+                    &quot;type&quot;: &quot;play&quot;,
+                    &quot;option&quot;: {
+                        &quot;stream_urls&quot;: [
+                            &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
                         ]
                     }
                 }
             ],
-            "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
-            "tm_create": "2020-10-11T01:00:00Z",
-            "tm_update": null,
-            "tm_delete": null
+            &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;tm_create&quot;: &quot;2020-10-11T01:00:00Z&quot;,
+            &quot;tm_update&quot;: null,
+            &quot;tm_delete&quot;: null
         },
         {
-            "id": "af9dae94-ef07-11ea-a101-8f52e568f39b",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "type": "flow",
-            "name": "test flow",
-            "detail": "manual flow test",
-            "actions": [
+            &quot;id&quot;: &quot;af9dae94-ef07-11ea-a101-8f52e568f39b&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;type&quot;: &quot;flow&quot;,
+            &quot;name&quot;: &quot;test flow&quot;,
+            &quot;detail&quot;: &quot;manual flow test&quot;,
+            &quot;actions&quot;: [
                 {
-                    "id": "00000000-0000-0000-0000-000000000000",
-                    "type": "echo"
+                    &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+                    &quot;type&quot;: &quot;echo&quot;
                 }
             ],
-            "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
-            "tm_create": "2020-09-04T23:53:14Z",
-            "tm_update": null,
-            "tm_delete": null
+            &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;tm_create&quot;: &quot;2020-09-04T23:53:14Z&quot;,
+            &quot;tm_update&quot;: null,
+            &quot;tm_delete&quot;: null
         }
     ],
-    "next_page_token": "2020-09-04T23:53:14Z"
+    &quot;next_page_token&quot;: &quot;2020-09-04T23:53:14Z&quot;
 }
 </pre></div>
 </div>
@@ -715,38 +716,38 @@
 <section id="get-detail-of-specified-flow">
 <h3>Get detail of specified flow<a class="headerlink" href="#get-detail-of-specified-flow" title="Link to this heading">¶</a></h3>
 <p>Gets the detail of registered flows.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "type": "flow",
-    "name": "default flow",
-    "detail": "default flow for voipbin incoming calls",
-    "actions": [
+    &quot;id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;flow&quot;,
+    &quot;name&quot;: &quot;default flow&quot;,
+    &quot;detail&quot;: &quot;default flow for voipbin incoming calls&quot;,
+    &quot;actions&quot;: [
         {
-            "id": "b34aa8a4-0b30-11eb-8016-1f5bc75b1c04",
-            "type": "play",
-            "option": {
-                "stream_urls": [
-                    "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
+            &quot;id&quot;: &quot;b34aa8a4-0b30-11eb-8016-1f5bc75b1c04&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_urls&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
                 ]
             }
         },
         {
-            "id": "57a3dcd2-0b2b-11eb-94a6-a7129b64693c",
-            "type": "play",
-            "option": {
-                "stream_urls": [
-                    "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
+            &quot;id&quot;: &quot;57a3dcd2-0b2b-11eb-94a6-a7129b64693c&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_urls&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
                 ]
             }
         }
     ],
-    "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
-    "tm_create": "2020-10-11T01:00:00Z",
-    "tm_update": null,
-    "tm_delete": null
+    &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;tm_create&quot;: &quot;2020-10-11T01:00:00Z&quot;,
+    &quot;tm_update&quot;: null,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -755,49 +756,49 @@
 <h3>Create a flow<a class="headerlink" href="#create-a-flow" title="Link to this heading">¶</a></h3>
 <p>Create a new flow for incoming call requests.
 When the call is incoming, this flow will answer the call first, then speak the welcome text.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "name": "test flow",
-    "detail": "test voipbin flow example",
-    "actions": [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;test flow&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example&quot;,
+    &quot;actions&quot;: [
         {
-            "type": "answer"
+            &quot;type&quot;: &quot;answer&quot;
         },
         {
-            "type": "talk",
-            "option": {
-                "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin'\''s service. thank you.",
-                "language": "en-US"
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;\&#39;&#39;s service. thank you.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
             }
         }
     ]
-}'
+}&#39;
 
 {
-    "id": "24013a0e-d15b-4b5e-9a96-04221a8c6a15",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "type": "flow",
-    "name": "test flow",
-    "detail": "test voipbin flow example",
-    "actions": [
+    &quot;id&quot;: &quot;24013a0e-d15b-4b5e-9a96-04221a8c6a15&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;flow&quot;,
+    &quot;name&quot;: &quot;test flow&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example&quot;,
+    &quot;actions&quot;: [
         {
-            "id": "9461bda1-54fd-4e27-ab04-4186c6f72830",
-            "type": "answer"
+            &quot;id&quot;: &quot;9461bda1-54fd-4e27-ab04-4186c6f72830&quot;,
+            &quot;type&quot;: &quot;answer&quot;
         },
         {
-            "id": "69af787e-f5fa-4a1b-9d12-f0b43b86dae6",
-            "type": "talk",
-            "option": {
-                "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                "language": "en-US"
+            &quot;id&quot;: &quot;69af787e-f5fa-4a1b-9d12-f0b43b86dae6&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;s service. thank you.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
             }
         }
     ],
-    "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
-    "tm_create": "2021-02-04T06:47:01Z",
-    "tm_update": null,
-    "tm_delete": null
+    &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;tm_create&quot;: &quot;2021-02-04T06:47:01Z&quot;,
+    &quot;tm_update&quot;: null,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -806,83 +807,83 @@ When the call is incoming, this flow will answer the call first, then speak the 
 <h3>Update the flow<a class="headerlink" href="#update-the-flow" title="Link to this heading">¶</a></h3>
 <p>Update an existing flow with the given information.
 This doesn’t affect existing calls. Flow changes will only affect new calls.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=&lt;YOUR_AUTH_TOKEN&gt;' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "name": "test flow update",
-    "detail": "test voipbin flow example update",
-    "actions": [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/flows/decc2634-0b2a-11eb-b38d-87a8f1051188?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;test flow update&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example update&quot;,
+    &quot;actions&quot;: [
         {
-            "type": "answer"
+            &quot;type&quot;: &quot;answer&quot;
         },
         {
-            "type": "talk",
-            "option": {
-                "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin'\''s service. thank you.",
-                "language": "en-US"
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;\&#39;&#39;s service. thank you.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
             }
         },
         {
-            "type": "play",
-            "option": {
-                "stream_urls": [
-                    "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_urls&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
                 ]
             }
         },
         {
-            "type": "play",
-            "option": {
-                "stream_urls": [
-                    "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_urls&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
                 ]
             }
         }
     ]
-}'
+}&#39;
 
 {
-    "id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "type": "flow",
-    "name": "test flow update",
-    "detail": "test voipbin flow example update",
-    "actions": [
+    &quot;id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;flow&quot;,
+    &quot;name&quot;: &quot;test flow update&quot;,
+    &quot;detail&quot;: &quot;test voipbin flow example update&quot;,
+    &quot;actions&quot;: [
         {
-            "id": "be682498-e57e-41e9-b210-a578f9c044c5",
-            "type": "answer"
+            &quot;id&quot;: &quot;be682498-e57e-41e9-b210-a578f9c044c5&quot;,
+            &quot;type&quot;: &quot;answer&quot;
         },
         {
-            "id": "6669bfdd-a7b0-45e6-9a8d-db6bb898159f",
-            "type": "talk",
-            "option": {
-                "text": "hello. welcome to voipbin. This is test message. Please enjoy the voipbin's service. thank you.",
-                "language": "en-US"
+            &quot;id&quot;: &quot;6669bfdd-a7b0-45e6-9a8d-db6bb898159f&quot;,
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;hello. welcome to voipbin. This is test message. Please enjoy the voipbin&#39;s service. thank you.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
             }
         },
         {
-            "id": "099b60c1-7b95-4d69-8cac-df11a992ee11",
-            "type": "play",
-            "option": {
-                "stream_urls": [
-                    "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
+            &quot;id&quot;: &quot;099b60c1-7b95-4d69-8cac-df11a992ee11&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_urls&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav&quot;
                 ]
             }
         },
         {
-            "id": "89fa5091-a192-4758-8a29-316776ead8fe",
-            "type": "play",
-            "option": {
-                "stream_urls": [
-                    "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
+            &quot;id&quot;: &quot;89fa5091-a192-4758-8a29-316776ead8fe&quot;,
+            &quot;type&quot;: &quot;play&quot;,
+            &quot;option&quot;: {
+                &quot;stream_urls&quot;: [
+                    &quot;https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav&quot;
                 ]
             }
         }
     ],
-    "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
-    "tm_create": "2020-10-11T01:00:00Z",
-    "tm_update": "2021-02-05T13:08:56Z",
-    "tm_delete": null
+    &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;tm_create&quot;: &quot;2020-10-11T01:00:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-05T13:08:56Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -891,7 +892,7 @@ This doesn’t affect existing calls. Flow changes will only affect new calls.</
 <h3>Delete the flow<a class="headerlink" href="#delete-the-flow" title="Link to this heading">¶</a></h3>
 <p>Delete an existing flow by its flow ID.
 This doesn’t affect existing calls. Flow changes will only affect new calls.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/flows/af9dae94-ef07-11ea-a101-8f52e568f39b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -982,8 +983,8 @@ This doesn’t affect existing calls. Flow changes will only affect new calls.</
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

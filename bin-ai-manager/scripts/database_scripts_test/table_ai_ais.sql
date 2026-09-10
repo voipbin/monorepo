@@ -32,6 +32,7 @@ create table ai_ais(
   is_insight_active  boolean not null default 0,   -- the customer's single active insight ai
 
   tool_names  json,           -- enabled tools for this AI
+  mcp_server_ids json,        -- customer-registered McpServer id whitelist
 
   current_prompt_history_id  binary(16),   -- current prompt history id
 

@@ -285,6 +285,7 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedSTTType,
 				tt.expectedSTTLanguage,
 				tt.expectedToolNames,
+				nil,   // mcpServerIDs
 				false, // autoAICallAuditEnabled
 			).Return(tt.responseAI, nil)
 
@@ -297,6 +298,123 @@ func Test_PostAis(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
 			}
 		})
+	}
+}
+
+// Test_PutAisId_McpServerIDsEmptyArrayClears pins the fix for a bug found
+// during PR review: a PUT body with "mcp_server_ids": [] must reach the
+// servicehandler as a non-nil pointer to an EMPTY slice (explicit clear
+// of the AI's MCP whitelist), not as a nil pointer (leave untouched) --
+// distinguishable from the field being omitted entirely, which IS nil.
+func Test_PutAisId_McpServerIDsEmptyArrayClears(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	id := uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88")
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	body := []byte(`{"mcp_server_ids":[]}`)
+	req, _ := http.NewRequest("PUT", "/ais/"+id.String(), bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	emptyIDs := []uuid.UUID{}
+	mockSvc.EXPECT().AIUpdate(
+		req.Context(),
+		agent,
+		id,
+		"",
+		"",
+		amai.Type(""),
+		amai.EngineModel(""),
+		map[string]any(nil),
+		"",
+		uuid.Nil,
+		"",
+		amai.TTSType(""),
+		"",
+		amai.STTType(""),
+		"",
+		[]amtool.ToolName(nil),
+		&emptyIDs,
+		false,
+	).Return(&amai.WebhookMessage{Identity: commonidentity.Identity{ID: id}}, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d (body: %s)", http.StatusOK, w.Code, w.Body.String())
+	}
+}
+
+// Test_PutAisId_McpServerIDsOmittedLeavesUntouched is the counterpart:
+// omitting the field entirely must pass a nil pointer through, not an
+// empty-but-non-nil one.
+func Test_PutAisId_McpServerIDsOmittedLeavesUntouched(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	id := uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88")
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	body := []byte(`{"name":"renamed"}`)
+	req, _ := http.NewRequest("PUT", "/ais/"+id.String(), bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	mockSvc.EXPECT().AIUpdate(
+		req.Context(),
+		agent,
+		id,
+		"renamed",
+		"",
+		amai.Type(""),
+		amai.EngineModel(""),
+		map[string]any(nil),
+		"",
+		uuid.Nil,
+		"",
+		amai.TTSType(""),
+		"",
+		amai.STTType(""),
+		"",
+		[]amtool.ToolName(nil),
+		(*[]uuid.UUID)(nil),
+		false,
+	).Return(&amai.WebhookMessage{Identity: commonidentity.Identity{ID: id}}, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d (body: %s)", http.StatusOK, w.Code, w.Body.String())
 	}
 }
 
@@ -782,6 +900,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedSTTType,
 				tt.expectedSTTLanguage,
 				tt.expectedToolNames,
+				nil,   // mcpServerIDs
 				false, // autoAICallAuditEnabled
 			).Return(tt.responseAI, nil)
 
