@@ -82,6 +82,12 @@ def tool_register(llm_service, pipecatcall_id: str, tool_names: List[str], tools
         # name + handler), bypassing RoutingLLMService — single-AI has no router.
         # Team pipelines register via RoutingLLMService.register_function instead.
         llm_service.register_function(tool_name, wrapper)
+        # Per-tool line (VOIP-1510): the aggregate summary line below names every
+        # tool too (run_llm_defaults is keyed by name), but an EXPLICIT per-tool
+        # confirmation is what a Loki grep for one specific tool_name needs to
+        # answer "was this tool actually registered on this pipecatcall's LLM
+        # service" without parsing the aggregate dict out of a longer message.
+        logger.debug(f"[{tool_name}] Registered on LLM service for pipecatcall {pipecatcall_id}.")
     logger.info(f"Registered {len(tool_names)} tools for pipecatcall {pipecatcall_id}. run_llm_defaults: {run_llm_defaults}")
 
 
@@ -100,7 +106,14 @@ async def tool_execute(tool_name: str, params: FunctionCallParams, pipecatcall_i
     """Generic executor for tool calls (connect, message_send, etc)."""
 
     args = params.arguments if isinstance(params.arguments, dict) else {}
-    logger.info(f"[{tool_name}] Executing. Args: {json.dumps(args, ensure_ascii=False)}")
+    # tool_call_id included (VOIP-1510): this is the ONLY field that correlates
+    # this log line with the RTVI llm-function-call-{started,in-progress,stopped}
+    # frames bin-pipecat-manager's Go side already logs (receiveMessageFrameMessage
+    # in pkg/pipecatcallhandler/runner.go) — those carry tool_call_id but never the
+    # function name, so without this line a failure that never reaches this point
+    # (i.e. never gets logged at all) is indistinguishable, from Loki alone, from
+    # one whose tool_call_id we simply can't tie back to a specific tool_name.
+    logger.info(f"[{tool_name}] Executing. tool_call_id={params.tool_call_id}, args: {json.dumps(args, ensure_ascii=False)}")
 
     should_run_llm = args.pop("run_llm", default_run_llm)
 
