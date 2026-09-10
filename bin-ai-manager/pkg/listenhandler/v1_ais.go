@@ -115,12 +115,12 @@ func (h *listenHandler) processV1AIsPost(ctx context.Context, m *sock.Request) (
 	}
 
 	if req.McpServerIDs != nil {
-		if err := h.aiHandler.ValidateMcpServerIDs(ctx, tmp.CustomerID, req.McpServerIDs); err != nil {
+		if err := h.aiHandler.ValidateMcpServerIDs(ctx, tmp.CustomerID, *req.McpServerIDs); err != nil {
 			log.Errorf("Could not validate mcp_server_ids. err: %v", err)
 			return errorResponse(err), nil
 		}
 
-		tmp, err = h.aiHandler.UpdateMcpServerIDs(ctx, tmp.ID, req.McpServerIDs)
+		tmp, err = h.aiHandler.UpdateMcpServerIDs(ctx, tmp.ID, *req.McpServerIDs)
 		if err != nil {
 			log.Errorf("Could not update ai mcp_server_ids. err: %v", err)
 			return errorResponse(err), nil
@@ -270,12 +270,12 @@ func (h *listenHandler) processV1AIsIDPut(ctx context.Context, m *sock.Request) 
 	}
 
 	if req.McpServerIDs != nil {
-		if err := h.aiHandler.ValidateMcpServerIDs(ctx, tmp.CustomerID, req.McpServerIDs); err != nil {
+		if err := h.aiHandler.ValidateMcpServerIDs(ctx, tmp.CustomerID, *req.McpServerIDs); err != nil {
 			log.Errorf("Could not validate mcp_server_ids. err: %v", err)
 			return errorResponse(err), nil
 		}
 
-		tmp, err = h.aiHandler.UpdateMcpServerIDs(ctx, tmp.ID, req.McpServerIDs)
+		tmp, err = h.aiHandler.UpdateMcpServerIDs(ctx, tmp.ID, *req.McpServerIDs)
 		if err != nil {
 			log.Errorf("Could not update ai mcp_server_ids. err: %v", err)
 			return errorResponse(err), nil

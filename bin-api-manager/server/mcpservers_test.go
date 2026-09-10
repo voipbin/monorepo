@@ -60,7 +60,7 @@ func Test_PostMcpservers(t *testing.T) {
 			expectedAuthType:     ammcpserver.AuthTypeBearer,
 			expectedAPIKeyHeader: "",
 			expectedSecret:       "test-secret",
-			expectedRes:          `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","name":"","url":"","has_secret":false}`,
+			expectedRes:          `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","has_secret":false,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -99,12 +99,49 @@ func Test_PostMcpservers(t *testing.T) {
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d (body: %s)", http.StatusOK, w.Code, w.Body.String())
 			}
+
+			if w.Body.String() != tt.expectedRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body.String())
+			}
 		})
 	}
 }
 
-func Test_GetMcpserversId(t *testing.T) {
+func Test_GetMcpservers(t *testing.T) {
 
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest("GET", "/mcpservers", nil)
+	mockSvc.EXPECT().McpServerGetsByCustomerID(req.Context(), agent, uint64(100), "").Return([]*ammcpserver.WebhookMessage{
+		{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88")}},
+	}, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d (body: %s)", http.StatusOK, w.Code, w.Body.String())
+	}
+}
+
+func Test_GetMcpserversId(t *testing.T) {
 	agent := auth.NewAgentIdentity(&amagent.Agent{
 		Identity: commonidentity.Identity{
 			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),

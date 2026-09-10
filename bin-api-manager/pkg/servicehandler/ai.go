@@ -49,7 +49,7 @@ func (h *serviceHandler) AICreate(
 	sttType amai.STTType,
 	sttLanguage string,
 	toolNames []amtool.ToolName,
-	mcpServerIDs []uuid.UUID,
+	mcpServerIDs *[]uuid.UUID,
 	autoAICallAuditEnabled bool,
 ) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {
@@ -355,7 +355,7 @@ func (h *serviceHandler) AIUpdate(
 	sttType amai.STTType,
 	sttLanguage string,
 	toolNames []amtool.ToolName,
-	mcpServerIDs []uuid.UUID,
+	mcpServerIDs *[]uuid.UUID,
 	autoAICallAuditEnabled bool,
 ) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {

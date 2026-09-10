@@ -31,7 +31,15 @@ type V1DataAIsPost struct {
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
-	McpServerIDs []uuid.UUID `json:"mcp_server_ids,omitempty"`
+	// McpServerIDs is a pointer to a slice (not a plain slice) so that
+	// mcp_server_ids:[] (explicit clear) is distinguishable from the field
+	// being absent (leave untouched) on decode -- json.Unmarshal leaves a
+	// nil *[]uuid.UUID nil when the key is missing, but allocates a
+	// pointer to an empty slice when the key is present as "[]". A plain
+	// []uuid.UUID cannot make this distinction on the ENCODE side (both
+	// nil and empty marshal identically under omitempty), which is the
+	// bug this type fixes end-to-end from bin-api-manager down to here.
+	McpServerIDs *[]uuid.UUID `json:"mcp_server_ids,omitempty"`
 
 	VADConfig        *ai.VADConfig `json:"vad_config,omitempty"`
 	SmartTurnEnabled bool          `json:"smart_turn_enabled,omitempty"`
@@ -62,7 +70,15 @@ type V1DataAIsIDPut struct {
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
-	McpServerIDs []uuid.UUID `json:"mcp_server_ids,omitempty"`
+	// McpServerIDs is a pointer to a slice (not a plain slice) so that
+	// mcp_server_ids:[] (explicit clear) is distinguishable from the field
+	// being absent (leave untouched) on decode -- json.Unmarshal leaves a
+	// nil *[]uuid.UUID nil when the key is missing, but allocates a
+	// pointer to an empty slice when the key is present as "[]". A plain
+	// []uuid.UUID cannot make this distinction on the ENCODE side (both
+	// nil and empty marshal identically under omitempty), which is the
+	// bug this type fixes end-to-end from bin-api-manager down to here.
+	McpServerIDs *[]uuid.UUID `json:"mcp_server_ids,omitempty"`
 
 	VADConfig        *ai.VADConfig `json:"vad_config,omitempty"`
 	SmartTurnEnabled bool          `json:"smart_turn_enabled,omitempty"`

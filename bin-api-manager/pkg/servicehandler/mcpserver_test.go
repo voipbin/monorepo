@@ -415,3 +415,42 @@ func Test_McpServerCreate_DirectAccessNotSupported(t *testing.T) {
 		t.Errorf("Wrong match. expect: nil, got: %v", res)
 	}
 }
+
+func Test_McpServerGetsByCustomerID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+	ctx := context.Background()
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mockReq.EXPECT().AIV1McpServerList(ctx, gomock.Any(), uint64(100), gomock.Any()).Return([]*ammcpserver.McpServer{
+		{
+			Identity: commonidentity.Identity{
+				ID:         uuid.FromStringOrNil("90c9bd58-0cb0-4e7a-b55a-cef9f1570b63"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+			},
+		},
+	}, nil)
+
+	res, err := h.McpServerGetsByCustomerID(ctx, agent, 100, "2020-09-20T03:23:20.995000Z")
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if len(res) != 1 {
+		t.Errorf("Wrong match. expect: 1 result, got: %d", len(res))
+	}
+}

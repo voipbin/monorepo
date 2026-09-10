@@ -301,7 +301,7 @@ type ServiceHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
-		mcpServerIDs []uuid.UUID,
+		mcpServerIDs *[]uuid.UUID,
 		autoAICallAuditEnabled bool,
 	) (*amai.WebhookMessage, error)
 	AIGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amai.WebhookMessage, error)
@@ -324,7 +324,7 @@ type ServiceHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
-		mcpServerIDs []uuid.UUID,
+		mcpServerIDs *[]uuid.UUID,
 		autoAICallAuditEnabled bool,
 	) (*amai.WebhookMessage, error)
 	AIActivateInsight(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error)

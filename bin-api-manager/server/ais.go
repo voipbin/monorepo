@@ -65,12 +65,19 @@ func (h *server) PostAis(c *gin.Context) {
 		aiType = amai.Type(*req.Type)
 	}
 
-	var mcpServerIDs []uuid.UUID
+	// mcpServerIDs stays *[]uuid.UUID (not []uuid.UUID) end to end: nil
+	// means the field was omitted from the request body (leave the AI's
+	// existing McpServerIDs whitelist untouched), a non-nil pointer to an
+	// EMPTY slice means the client explicitly sent "mcp_server_ids":[]
+	// (clear the whitelist). A plain []uuid.UUID cannot preserve this
+	// distinction downstream once re-marshaled with omitempty.
+	var mcpServerIDs *[]uuid.UUID
 	if req.McpServerIds != nil {
-		mcpServerIDs = make([]uuid.UUID, len(*req.McpServerIds))
+		ids := make([]uuid.UUID, len(*req.McpServerIds))
 		for i, id := range *req.McpServerIds {
-			mcpServerIDs[i] = uuid.FromStringOrNil(id)
+			ids[i] = uuid.FromStringOrNil(id)
 		}
+		mcpServerIDs = &ids
 	}
 
 	res, err := h.serviceHandler.AICreate(
@@ -277,12 +284,19 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		aiType = amai.Type(*req.Type)
 	}
 
-	var mcpServerIDs []uuid.UUID
+	// mcpServerIDs stays *[]uuid.UUID (not []uuid.UUID) end to end: nil
+	// means the field was omitted from the request body (leave the AI's
+	// existing McpServerIDs whitelist untouched), a non-nil pointer to an
+	// EMPTY slice means the client explicitly sent "mcp_server_ids":[]
+	// (clear the whitelist). A plain []uuid.UUID cannot preserve this
+	// distinction downstream once re-marshaled with omitempty.
+	var mcpServerIDs *[]uuid.UUID
 	if req.McpServerIds != nil {
-		mcpServerIDs = make([]uuid.UUID, len(*req.McpServerIds))
+		ids := make([]uuid.UUID, len(*req.McpServerIds))
 		for i, id := range *req.McpServerIds {
-			mcpServerIDs[i] = uuid.FromStringOrNil(id)
+			ids[i] = uuid.FromStringOrNil(id)
 		}
+		mcpServerIDs = &ids
 	}
 
 	res, err := h.serviceHandler.AIUpdate(

@@ -76,7 +76,7 @@ func (r *requestHandler) AIV1AICreate(
 	sttType amai.STTType,
 	sttLanguage string,
 	toolNames []amtool.ToolName,
-	mcpServerIDs []uuid.UUID,
+	mcpServerIDs *[]uuid.UUID,
 	autoAICallAuditEnabled bool,
 ) (*amai.AI, error) {
 	uri := "/v1/ais"
@@ -200,7 +200,7 @@ func (r *requestHandler) AIV1AIUpdate(
 	sttType amai.STTType,
 	sttLanguage string,
 	toolNames []amtool.ToolName,
-	mcpServerIDs []uuid.UUID,
+	mcpServerIDs *[]uuid.UUID,
 	autoAICallAuditEnabled bool,
 ) (*amai.AI, error) {
 	uri := fmt.Sprintf("/v1/ais/%s", aiID)
