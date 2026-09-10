@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
 	"monorepo/bin-ai-manager/pkg/analysishandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
@@ -62,6 +63,7 @@ type listenHandler struct {
 	teamHandler             teamhandler.TeamHandler
 	participantHandler      participanthandler.ParticipantHandler
 	analysisHandler         analysishandler.AnalysisHandler
+	mcpServerHandler        mcpserverhandler.McpServerHandler
 }
 
 var (
@@ -128,6 +130,11 @@ var (
 	regV1Teams                       = regexp.MustCompile("/v1/teams$")
 	regV1TeamsIDDirectHashRegenerate = regexp.MustCompile("/v1/teams/" + regUUID + "/direct-hash-regenerate$")
 	regV1TeamsID                     = regexp.MustCompile("/v1/teams/" + regUUID + "$")
+
+	// mcp_servers
+	regV1McpServersGet = regexp.MustCompile(`/v1/mcp_servers\?`)
+	regV1McpServers    = regexp.MustCompile("/v1/mcp_servers$")
+	regV1McpServersID  = regexp.MustCompile("/v1/mcp_servers/" + regUUID + "$")
 )
 
 var (
@@ -204,7 +211,19 @@ func NewListenHandler(
 	teamHandler teamhandler.TeamHandler,
 	participantHandler participanthandler.ParticipantHandler,
 	analysisHandler analysishandler.AnalysisHandler,
+
+	// mcpServerHandlers is variadic to remain backward-compatible with
+	// existing call sites while checkpoint 6 wires the /v1/mcp_servers
+	// routes; pass at most one McpServerHandler. Production wiring of the
+	// concrete handler into cmd/ai-manager/main.go's NewListenHandler call
+	// is out of this checkpoint's scope (see final report).
+	mcpServerHandlers ...mcpserverhandler.McpServerHandler,
 ) ListenHandler {
+	var mcpServerHandler mcpserverhandler.McpServerHandler
+	if len(mcpServerHandlers) > 0 {
+		mcpServerHandler = mcpServerHandlers[0]
+	}
+
 	h := &listenHandler{
 		sockHandler:   sockHandler,
 		queueListen:   queueListen,
@@ -223,6 +242,7 @@ func NewListenHandler(
 		teamHandler:             teamHandler,
 		participantHandler:      participantHandler,
 		analysisHandler:         analysisHandler,
+		mcpServerHandler:        mcpServerHandler,
 	}
 
 	return h
@@ -535,6 +555,34 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1TeamsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1TeamsIDDelete(ctx, m)
 		requestType = "/v1/teams/<team-id>"
+
+	////////////
+	// mcp_servers
+	////////////
+	// GET /mcp_servers
+	case regV1McpServersGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1McpServersGet(ctx, m)
+		requestType = "/v1/mcp_servers"
+
+	// POST /mcp_servers
+	case regV1McpServers.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1McpServersPost(ctx, m)
+		requestType = "/v1/mcp_servers"
+
+	// GET /mcp_servers/<mcp-server-id>
+	case regV1McpServersID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1McpServersIDGet(ctx, m)
+		requestType = "/v1/mcp_servers/<mcp-server-id>"
+
+	// PUT /mcp_servers/<mcp-server-id>
+	case regV1McpServersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1McpServersIDPut(ctx, m)
+		requestType = "/v1/mcp_servers/<mcp-server-id>"
+
+	// DELETE /mcp_servers/<mcp-server-id>
+	case regV1McpServersID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1McpServersIDDelete(ctx, m)
+		requestType = "/v1/mcp_servers/<mcp-server-id>"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

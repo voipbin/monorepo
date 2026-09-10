@@ -33,7 +33,8 @@ const (
 
 	FieldAutoAICallAuditEnabled Field = "auto_aicall_audit_enabled"
 
-	FieldToolNames Field = "tool_names"
+	FieldToolNames    Field = "tool_names"
+	FieldMcpServerIDs Field = "mcp_server_ids"
 
 	FieldDirectID   Field = "direct_id"
 	FieldDirectHash Field = "direct_hash"

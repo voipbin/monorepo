@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Timeline" href="timeline.html"><link rel="prev" title="RAG" href="rag_struct_rag.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -654,41 +655,41 @@
 <section id="step-1-create-a-rag-with-sources">
 <h3>Step 1: Create a RAG with Sources<a class="headerlink" href="#step-1-create-a-rag-with-sources" title="Link to this heading">¶</a></h3>
 <p>Create a new RAG knowledge base with initial document sources. You can provide uploaded files via <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> and/or web URLs via <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> at creation time.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/rags?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "name": "Product Documentation KB",
-        "description": "Knowledge base for product manuals, API docs, and FAQ articles",
-        "storage_file_ids": ["d4e5f6a7-b8c9-0123-defa-456789012345"],
-        "source_urls": ["https://docs.example.com/faq"]
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Product Documentation KB&quot;,
+        &quot;description&quot;: &quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;,
+        &quot;storage_file_ids&quot;: [&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;],
+        &quot;source_urls&quot;: [&quot;https://docs.example.com/faq&quot;]
+    }&#39;
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">rag_id</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Product Documentation KB"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Knowledge base for product manuals, API docs, and FAQ articles"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"processing"</span><span class="p">,</span>
-    <span class="s2">"sources"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">rag_id</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;processing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567891"</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Source</span> <span class="n">ID</span> <span class="k">for</span> <span class="n">the</span> <span class="n">uploaded</span> <span class="n">file</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"storage_file_id"</span><span class="p">:</span> <span class="s2">"d4e5f6a7-b8c9-0123-defa-456789012345"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"pending"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">""</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567891&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Source</span> <span class="n">ID</span> <span class="k">for</span> <span class="n">the</span> <span class="n">uploaded</span> <span class="n">file</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567892"</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Source</span> <span class="n">ID</span> <span class="k">for</span> <span class="n">the</span> <span class="n">URL</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"source_url"</span><span class="p">:</span> <span class="s2">"https://docs.example.com/faq"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"pending"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">""</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567892&quot;</span><span class="p">,</span>   <span class="o">//</span> <span class="n">Source</span> <span class="n">ID</span> <span class="k">for</span> <span class="n">the</span> <span class="n">URL</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -701,37 +702,37 @@
 <section id="step-2-list-rags">
 <h3>Step 2: List RAGs<a class="headerlink" href="#step-2-list-rags" title="Link to this heading">¶</a></h3>
 <p>Retrieve a paginated list of all RAG knowledge bases for the authenticated customer.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/rags?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/rags?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&#39;
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"next_page_token"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"result"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Product Documentation KB"</span><span class="p">,</span>
-            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Knowledge base for product manuals, API docs, and FAQ articles"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-            <span class="s2">"sources"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567891"</span><span class="p">,</span>
-                    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-                    <span class="s2">"storage_file_id"</span><span class="p">:</span> <span class="s2">"d4e5f6a7-b8c9-0123-defa-456789012345"</span><span class="p">,</span>
-                    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-                    <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">"42 chunks created"</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567891&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567892"</span><span class="p">,</span>
-                    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-                    <span class="s2">"source_url"</span><span class="p">:</span> <span class="s2">"https://docs.example.com/faq"</span><span class="p">,</span>
-                    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-                    <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">"15 chunks created"</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567892&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;15 chunks created&quot;</span>
                 <span class="p">}</span>
             <span class="p">],</span>
-            <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span><span class="p">,</span>
-            <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span>
         <span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
@@ -746,45 +747,45 @@
 <section id="step-3-add-more-sources-to-an-existing-rag">
 <h3>Step 3: Add More Sources to an Existing RAG<a class="headerlink" href="#step-3-add-more-sources-to-an-existing-rag" title="Link to this heading">¶</a></h3>
 <p>Add additional document sources to an existing RAG via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890/sources?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "source_urls": ["https://docs.example.com/getting-started"]
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890/sources?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source_urls&quot;: [&quot;https://docs.example.com/getting-started&quot;]
+    }&#39;
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Product Documentation KB"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Knowledge base for product manuals, API docs, and FAQ articles"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"processing"</span><span class="p">,</span>
-    <span class="s2">"sources"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;processing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567891"</span><span class="p">,</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"storage_file_id"</span><span class="p">:</span> <span class="s2">"d4e5f6a7-b8c9-0123-defa-456789012345"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">"42 chunks created"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567891&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567892"</span><span class="p">,</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"source_url"</span><span class="p">:</span> <span class="s2">"https://docs.example.com/faq"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">"15 chunks created"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567892&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/faq&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;15 chunks created&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567893"</span><span class="p">,</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"source_url"</span><span class="p">:</span> <span class="s2">"https://docs.example.com/getting-started"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"pending"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">""</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567893&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/getting-started&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:30:00.000000"</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:30:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -792,34 +793,34 @@
 <section id="step-4-remove-a-source-from-a-rag">
 <h3>Step 4: Remove a Source from a RAG<a class="headerlink" href="#step-4-remove-a-source-from-a-rag" title="Link to this heading">¶</a></h3>
 <p>Remove a single source (document) and its chunks from a RAG. Use the source <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) from the <code class="docutils literal notranslate"><span class="pre">sources</span></code> array in the <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags/{id}</span></code> response.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890/sources/f1a2b3c4-d5e6-7890-abcd-ef1234567892?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890/sources/f1a2b3c4-d5e6-7890-abcd-ef1234567892?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Response (updated RAG with the source removed):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Product Documentation KB"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Knowledge base for product manuals, API docs, and FAQ articles"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-    <span class="s2">"sources"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567891"</span><span class="p">,</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"storage_file_id"</span><span class="p">:</span> <span class="s2">"d4e5f6a7-b8c9-0123-defa-456789012345"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">"42 chunks created"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567891&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567893"</span><span class="p">,</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"source_url"</span><span class="p">:</span> <span class="s2">"https://docs.example.com/getting-started"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">"28 chunks created"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567893&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/getting-started&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;28 chunks created&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:40:00.000000"</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:40:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -832,34 +833,34 @@
 <section id="step-5-check-rag-status">
 <h3>Step 5: Check RAG Status<a class="headerlink" href="#step-5-check-rag-status" title="Link to this heading">¶</a></h3>
 <p>The RAG’s <code class="docutils literal notranslate"><span class="pre">status</span></code> field reflects the aggregate processing state of all its sources. Poll the RAG endpoint to check progress.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Response (all sources processed):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Product Documentation KB"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Knowledge base for product manuals, API docs, and FAQ articles"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-    <span class="s2">"sources"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Knowledge base for product manuals, API docs, and FAQ articles&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567891"</span><span class="p">,</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"storage_file_id"</span><span class="p">:</span> <span class="s2">"d4e5f6a7-b8c9-0123-defa-456789012345"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">"42 chunks created"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567891&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;storage_file_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-456789012345&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;42 chunks created&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1a2b3c4-d5e6-7890-abcd-ef1234567893"</span><span class="p">,</span>
-            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-            <span class="s2">"source_url"</span><span class="p">:</span> <span class="s2">"https://docs.example.com/getting-started"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">,</span>
-            <span class="s2">"status_message"</span><span class="p">:</span> <span class="s2">"28 chunks created"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1a2b3c4-d5e6-7890-abcd-ef1234567893&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://docs.example.com/getting-started&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status_message&quot;</span><span class="p">:</span> <span class="s2">&quot;28 chunks created&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:40:00.000000"</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:40:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -872,22 +873,22 @@
 <section id="step-6-update-rag">
 <h3>Step 6: Update RAG<a class="headerlink" href="#step-6-update-rag" title="Link to this heading">¶</a></h3>
 <p>Update the RAG’s name or description.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "name": "Product Documentation KB (v2)",
-        "description": "Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Product Documentation KB (v2)&quot;,
+        &quot;description&quot;: &quot;Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Product Documentation KB (v2)"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides"</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-03-15 10:00:00.000000"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB (v2)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 10:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -895,17 +896,17 @@
 <section id="step-7-delete-a-rag">
 <h3>Step 7: Delete a RAG<a class="headerlink" href="#step-7-delete-a-rag" title="Link to this heading">¶</a></h3>
 <p>Delete a RAG and all its documents. This is a cascade delete — all documents belonging to the RAG are deleted along with their vector database chunks.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/rags/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Product Documentation KB (v2)"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides"</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-03-15 09:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-03-15 10:00:00.000000"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Product Documentation KB (v2)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Updated knowledge base with product manuals, API docs, FAQ articles, and troubleshooting guides&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 09:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-03-15 10:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1075,8 +1076,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

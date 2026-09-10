@@ -63,6 +63,15 @@ type AIHandler interface {
 	) (*ai.AI, error)
 	ActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai.AI, error)
+
+	// ValidateMcpServerIDs checks that every id in ids refers to an
+	// existing McpServer row owned by customerID (IDOR guard). Callers
+	// MUST call this before UpdateMcpServerIDs whenever the ids come from
+	// an untrusted request body.
+	ValidateMcpServerIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) error
+
+	// UpdateMcpServerIDs persists the McpServerIDs whitelist onto the AI.
+	UpdateMcpServerIDs(ctx context.Context, id uuid.UUID, mcpServerIDs []uuid.UUID) (*ai.AI, error)
 }
 
 // aiHandler structure for service handle

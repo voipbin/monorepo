@@ -354,6 +354,14 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		}
 		res = tmp
 
+		// Refresh the MCP tool-name mapping on reuse too (design §9.1's "AIcall
+		// reuse and Metadata staleness" -- this reuse branch does not otherwise
+		// touch Metadata, so the write is a single new key, read-modify-write
+		// against whatever else may already be there).
+		if errMcp := h.refreshMcpToolMap(ctx, res, a); errMcp != nil {
+			log.Warnf("Could not refresh the mcp tool map on aicall reuse. aicall_id: %s, err: %v", res.ID, errMcp)
+		}
+
 		// For team-typed AIcalls, refresh the in-memory AIEngineModel so the new
 		// pipecat session uses the current member's engine. Falls back to StartMemberID
 		// if CurrentMemberID is stale (e.g., team config changed). Symmetric with the
@@ -1158,9 +1166,14 @@ func (h *aicallHandler) startAIcallByMessaging(
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
 	snapshots, autoAudit := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
+	_, mcpToolMap, errTools := h.resolveTools(ctx, a)
+	if errTools != nil {
+		log.Warnf("Could not resolve mcp tools, continuing with built-in tools only. err: %v", errTools)
+	}
 	metadata := map[string]any{
 		aicall.MetaKeyPromptSnapshots:  snapshots,
 		aicall.MetaKeyAutoAuditEnabled: autoAudit,
+		aicall.MetaKeyMcpToolMap:       mcpToolMap,
 	}
 	res, err := h.CreateByMessaging(ctx, id, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
 		pipecatcallID, currentMemberID, parameter, metadata)

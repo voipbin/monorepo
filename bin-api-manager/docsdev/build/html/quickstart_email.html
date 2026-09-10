@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Send an Email - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -655,49 +656,49 @@
 <section id="id1">
 <h3>Send an email<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <p>Send an email by providing the destination, subject, content, and attachments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/emails?token=&lt;your-token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "destinations": [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;destinations&quot;: [
             {
-                "type": "email",
-                "target": "recipient@example.com"
+                &quot;type&quot;: &quot;email&quot;,
+                &quot;target&quot;: &quot;recipient@example.com&quot;
             }
         ],
-        "subject": "Hello from VoIPBin",
-        "content": "This is a test email sent via the VoIPBin API.",
-        "attachments": []
-    }'
+        &quot;subject&quot;: &quot;Hello from VoIPBin&quot;,
+        &quot;content&quot;: &quot;This is a test email sent via the VoIPBin API.&quot;,
+        &quot;attachments&quot;: []
+    }&#39;
 </pre></div>
 </div>
 <p>To attach a call recording, replace the empty <code class="docutils literal notranslate"><span class="pre">attachments</span></code> array above with an entry like the following. The only supported attachment <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">recording</span></code>; <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is a recording ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"attachments"</span><span class="p">:</span> <span class="p">[</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">[</span>
     <span class="p">{</span>
-        <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"recording"</span><span class="p">,</span>
-        <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"e5f6a7b8-c9d0-1234-5678-90abcdef0123"</span>
+        <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e5f6a7b8-c9d0-1234-5678-90abcdef0123&quot;</span>
     <span class="p">}</span>
 <span class="p">]</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"1f25e6c9-6709-44d1-b93e-a5f1c5f80411"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
-    <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"email"</span><span class="p">,</span>
-        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"service@voipbin.net"</span><span class="p">,</span>
-        <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"voipbin service"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1f25e6c9-6709-44d1-b93e-a5f1c5f80411&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;service@voipbin.net&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;voipbin service&quot;</span>
     <span class="p">},</span>
-    <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"email"</span><span class="p">,</span>
-            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"recipient@example.com"</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;recipient@example.com&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"initiated"</span><span class="p">,</span>
-    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Hello from VoIPBin"</span><span class="p">,</span>
-    <span class="s2">"content"</span><span class="p">:</span> <span class="s2">"This is a test email sent via the VoIPBin API."</span><span class="p">,</span>
-    <span class="s2">"attachments"</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;initiated&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello from VoIPBin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;This is a test email sent via the VoIPBin API.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -806,8 +807,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

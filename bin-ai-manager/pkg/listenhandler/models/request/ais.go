@@ -31,6 +31,8 @@ type V1DataAIsPost struct {
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
+	McpServerIDs []uuid.UUID `json:"mcp_server_ids,omitempty"`
+
 	VADConfig        *ai.VADConfig `json:"vad_config,omitempty"`
 	SmartTurnEnabled bool          `json:"smart_turn_enabled,omitempty"`
 
@@ -59,6 +61,8 @@ type V1DataAIsIDPut struct {
 	STTLanguage string     `json:"stt_language,omitempty"`
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
+
+	McpServerIDs []uuid.UUID `json:"mcp_server_ids,omitempty"`
 
 	VADConfig        *ai.VADConfig `json:"vad_config,omitempty"`
 	SmartTurnEnabled bool          `json:"smart_turn_enabled,omitempty"`

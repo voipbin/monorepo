@@ -35,6 +35,8 @@ import (
 	"monorepo/bin-ai-manager/pkg/geminiaudithandler"
 	"monorepo/bin-ai-manager/pkg/geminiproposalhandler"
 	"monorepo/bin-ai-manager/pkg/listenhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/subscribehandler"
@@ -133,12 +135,23 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db)
 	teamHandler := teamhandler.NewTeamHandler(requestHandler, notifyHandler, db)
 
+	mcpServerHandler, err := mcpserverhandler.NewMcpServerHandler(notifyHandler, db, cfg.McpSecretEncryptionKeys)
+	if err != nil {
+		log.Errorf("Could not create mcp server handler. err: %v", err)
+		return err
+	}
+	mcptoolHandler, err := mcptoolhandler.NewMcpToolHandler(db, cfg.McpSecretEncryptionKeys, cfg.McpToolCallTimeoutSeconds)
+	if err != nil {
+		log.Errorf("Could not create mcp tool handler. err: %v", err)
+		return err
+	}
+
 	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(cfg.EngineKeyChatGPT)
 	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
 
 	participantHandler := participanthandler.New(db)
 	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler, participantHandler)
-	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, cache, aiHandler, teamHandler, messageHandler, participantHandler)
+	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, cache, aiHandler, teamHandler, messageHandler, participantHandler, mcptoolHandler, mcpServerHandler, toolhandler.NewToolHandler())
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
 	// Build a dedicated engine for the analysis gateway. The provider is
@@ -174,7 +187,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aipromptproposalHandler.SweepStaleProposals(context.Background())
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -227,6 +240,7 @@ func runListen(
 	teamHandler teamhandler.TeamHandler,
 	participantHandler participanthandler.ParticipantHandler,
 	analysisHandler analysishandler.AnalysisHandler,
+	mcpServerHandler mcpserverhandler.McpServerHandler,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	toolHandler := toolhandler.NewToolHandler()
@@ -247,6 +261,7 @@ func runListen(
 		teamHandler,
 		participantHandler,
 		analysisHandler,
+		mcpServerHandler,
 	)
 
 	// run

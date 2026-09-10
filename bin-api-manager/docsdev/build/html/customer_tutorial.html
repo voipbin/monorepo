@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Agent Console" href="service_agent.html"><link rel="prev" title="Customer" href="customer_struct_customer.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -654,33 +655,33 @@
 </div>
 <section id="get-list-of-customers">
 <h3>Get list of customers<a class="headerlink" href="#get-list-of-customers" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/customers?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/customers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "result": [
+    &quot;result&quot;: [
         {
-            "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "name": "Acme Corporation",
-            "detail": "Enterprise customer account",
-            "email": "admin@acme-corp.com",
-            "phone_number": "+15551234567",
-            "address": "123 Main St, San Francisco, CA 94105",
-            "webhook_method": "POST",
-            "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
-            "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
-            "metadata": {
-                "rtp_debug": false
+            &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;name&quot;: &quot;Acme Corporation&quot;,
+            &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+            &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+            &quot;phone_number&quot;: &quot;+15551234567&quot;,
+            &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+            &quot;webhook_method&quot;: &quot;POST&quot;,
+            &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+            &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+            &quot;metadata&quot;: {
+                &quot;rtp_debug&quot;: false
             },
-            "email_verified": true,
-            "status": "active",
-            "identity_verification_status": "verified",
-            "tm_deletion_scheduled": null,
-            "tm_create": "2024-01-15T10:30:00Z",
-            "tm_update": "2024-06-20T14:22:35Z",
-            "tm_delete": null
+            &quot;email_verified&quot;: true,
+            &quot;status&quot;: &quot;active&quot;,
+            &quot;identity_verification_status&quot;: &quot;verified&quot;,
+            &quot;tm_deletion_scheduled&quot;: null,
+            &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+            &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+            &quot;tm_delete&quot;: null
         }
     ],
-    "next_page_token": "2024-01-15T10:30:00Z"
+    &quot;next_page_token&quot;: &quot;2024-01-15T10:30:00Z&quot;
 }
 </pre></div>
 </div>
@@ -688,28 +689,28 @@
 <section id="get-detail-of-customer">
 <h3>Get detail of customer<a class="headerlink" href="#get-detail-of-customer" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "name": "Acme Corporation",
-    "detail": "Enterprise customer account",
-    "email": "admin@acme-corp.com",
-    "phone_number": "+15551234567",
-    "address": "123 Main St, San Francisco, CA 94105",
-    "webhook_method": "POST",
-    "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
-    "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
-    "metadata": {
-        "rtp_debug": false
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: false
     },
-    "email_verified": true,
-    "status": "active",
-    "identity_verification_status": "verified",
-    "tm_deletion_scheduled": null,
-    "tm_create": "2024-01-15T10:30:00Z",
-    "tm_update": "2024-06-20T14:22:35Z",
-    "tm_delete": null
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -718,36 +719,36 @@
 <h3>Create a new customer<a class="headerlink" href="#create-a-new-customer" title="Link to this heading">¶</a></h3>
 <p>Requires <code class="docutils literal notranslate"><span class="pre">ProjectSuperAdmin</span></code> permission. <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">email</span></code>, <code class="docutils literal notranslate"><span class="pre">phone_number</span></code>, <code class="docutils literal notranslate"><span class="pre">address</span></code>, <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code>, and <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> are all required. There is no <code class="docutils literal notranslate"><span class="pre">username</span></code>/<code class="docutils literal notranslate"><span class="pre">password</span></code> field on this endpoint – agent credentials are created separately via the Agent API (a guest agent with admin permission is auto-created for the new customer).</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/customers?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "name": "Test Company",
-        "detail": "Test customer account",
-        "email": "admin@test-company.com",
-        "phone_number": "",
-        "address": "",
-        "webhook_method": "POST",
-        "webhook_uri": "https://webhooks.test-company.com/voipbin"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/customers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;Test Company&quot;,
+        &quot;detail&quot;: &quot;Test customer account&quot;,
+        &quot;email&quot;: &quot;admin@test-company.com&quot;,
+        &quot;phone_number&quot;: &quot;&quot;,
+        &quot;address&quot;: &quot;&quot;,
+        &quot;webhook_method&quot;: &quot;POST&quot;,
+        &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;
+    }&#39;
 
 {
-    "id": "ff424526-f65d-483f-bc36-3b2357c6c6a9",
-    "name": "Test Company",
-    "detail": "Test customer account",
-    "email": "admin@test-company.com",
-    "phone_number": "",
-    "address": "",
-    "webhook_method": "POST",
-    "webhook_uri": "https://webhooks.test-company.com/voipbin",
-    "billing_account_id": "00000000-0000-0000-0000-000000000000",
-    "metadata": {},
-    "email_verified": false,
-    "status": "initial",
-    "identity_verification_status": "none",
-    "tm_deletion_scheduled": null,
-    "tm_create": "2024-03-10T15:57:08Z",
-    "tm_update": "2024-03-10T15:57:08Z",
-    "tm_delete": null
+    &quot;id&quot;: &quot;ff424526-f65d-483f-bc36-3b2357c6c6a9&quot;,
+    &quot;name&quot;: &quot;Test Company&quot;,
+    &quot;detail&quot;: &quot;Test customer account&quot;,
+    &quot;email&quot;: &quot;admin@test-company.com&quot;,
+    &quot;phone_number&quot;: &quot;&quot;,
+    &quot;address&quot;: &quot;&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;metadata&quot;: {},
+    &quot;email_verified&quot;: false,
+    &quot;status&quot;: &quot;initial&quot;,
+    &quot;identity_verification_status&quot;: &quot;none&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-03-10T15:57:08Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-03-10T15:57:08Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -760,26 +761,26 @@
 <p>Deleting a customer is a destructive operation that removes the customer account and all associated resources (agents, numbers, flows, etc.). This cannot be undone. The API returns the deleted customer object with <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> set to the deletion timestamp.</p>
 </div>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/customers/ff424526-f65d-483f-bc36-3b2357c6c6a9?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/customers/ff424526-f65d-483f-bc36-3b2357c6c6a9?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "ff424526-f65d-483f-bc36-3b2357c6c6a9",
-    "name": "Test Company",
-    "detail": "Test customer account",
-    "email": "admin@test-company.com",
-    "phone_number": "",
-    "address": "",
-    "webhook_method": "POST",
-    "webhook_uri": "https://webhooks.test-company.com/voipbin",
-    "billing_account_id": "00000000-0000-0000-0000-000000000000",
-    "metadata": {},
-    "email_verified": false,
-    "status": "deleted",
-    "identity_verification_status": "none",
-    "tm_deletion_scheduled": null,
-    "tm_create": "2024-03-10T15:57:08Z",
-    "tm_update": "2024-03-10T15:57:08Z",
-    "tm_delete": "2024-03-10T15:59:08Z"
+    &quot;id&quot;: &quot;ff424526-f65d-483f-bc36-3b2357c6c6a9&quot;,
+    &quot;name&quot;: &quot;Test Company&quot;,
+    &quot;detail&quot;: &quot;Test customer account&quot;,
+    &quot;email&quot;: &quot;admin@test-company.com&quot;,
+    &quot;phone_number&quot;: &quot;&quot;,
+    &quot;address&quot;: &quot;&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;metadata&quot;: {},
+    &quot;email_verified&quot;: false,
+    &quot;status&quot;: &quot;deleted&quot;,
+    &quot;identity_verification_status&quot;: &quot;none&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-03-10T15:57:08Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-03-10T15:57:08Z&quot;,
+    &quot;tm_delete&quot;: &quot;2024-03-10T15:59:08Z&quot;
 }
 </pre></div>
 </div>
@@ -794,32 +795,32 @@
 <p>To configure outbound codec preferences, use the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outbound_configs</span></code> endpoint instead of customer metadata.</p>
 </div>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer/metadata?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "rtp_debug": true
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer/metadata?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;rtp_debug&quot;: true
+    }&#39;
 
 {
-    "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "name": "Acme Corporation",
-    "detail": "Enterprise customer account",
-    "email": "admin@acme-corp.com",
-    "phone_number": "+15551234567",
-    "address": "123 Main St, San Francisco, CA 94105",
-    "webhook_method": "POST",
-    "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
-    "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
-    "metadata": {
-        "rtp_debug": true
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: true
     },
-    "email_verified": true,
-    "status": "active",
-    "identity_verification_status": "verified",
-    "tm_deletion_scheduled": null,
-    "tm_create": "2024-01-15T10:30:00Z",
-    "tm_update": "2024-06-20T14:22:35Z",
-    "tm_delete": null
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -828,32 +829,32 @@
 <h3>Update customer’s default billing account<a class="headerlink" href="#update-customer-s-default-billing-account" title="Link to this heading">¶</a></h3>
 <p>Change the default billing account used for your customer account. Requires <code class="docutils literal notranslate"><span class="pre">CustomerAdmin</span></code> permission. The billing account must exist and be validated before the update is applied.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer/billing_account_id?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "billing_account_id": "b8c9d0e1-f2a3-4567-8901-23456789abcd"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer/billing_account_id?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;billing_account_id&quot;: &quot;b8c9d0e1-f2a3-4567-8901-23456789abcd&quot;
+    }&#39;
 
 {
-    "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "name": "Acme Corporation",
-    "detail": "Enterprise customer account",
-    "email": "admin@acme-corp.com",
-    "phone_number": "+15551234567",
-    "address": "123 Main St, San Francisco, CA 94105",
-    "webhook_method": "POST",
-    "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
-    "billing_account_id": "b8c9d0e1-f2a3-4567-8901-23456789abcd",
-    "metadata": {
-        "rtp_debug": false
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;b8c9d0e1-f2a3-4567-8901-23456789abcd&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: false
     },
-    "email_verified": true,
-    "status": "active",
-    "identity_verification_status": "verified",
-    "tm_deletion_scheduled": null,
-    "tm_create": "2024-01-15T10:30:00Z",
-    "tm_update": "2024-06-20T14:31:00Z",
-    "tm_delete": null
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:31:00Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -862,41 +863,41 @@
 <h3>Admin-only customer operations<a class="headerlink" href="#admin-only-customer-operations" title="Link to this heading">¶</a></h3>
 <p>The following endpoints require <code class="docutils literal notranslate"><span class="pre">ProjectSuperAdmin</span></code> permission and are intended for platform operators, not regular customer accounts. They act on any customer by <code class="docutils literal notranslate"><span class="pre">id</span></code> (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>) and return the extended <code class="docutils literal notranslate"><span class="pre">CustomerAdmin</span></code> representation, which additionally includes <code class="docutils literal notranslate"><span class="pre">terms_agreed_version</span></code> and <code class="docutils literal notranslate"><span class="pre">terms_agreed_ip</span></code> (see <a class="reference internal" href="customer_struct_customer.html#customer-struct-customer"><span class="std std-ref">Customer Struct</span></a>).</p>
 <p><strong>Freeze a customer account (schedule deletion)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/freeze?token=&lt;YOUR_ADMIN_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/freeze?token=&lt;YOUR_ADMIN_TOKEN&gt;&#39;
 
 {
-    "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "status": "frozen",
-    "tm_deletion_scheduled": "2024-07-20T14:22:35Z",
-    "...": "..."
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;status&quot;: &quot;frozen&quot;,
+    &quot;tm_deletion_scheduled&quot;: &quot;2024-07-20T14:22:35Z&quot;,
+    &quot;...&quot;: &quot;...&quot;
 }
 </pre></div>
 </div>
 <p><strong>Recover a frozen customer account</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/recover?token=&lt;YOUR_ADMIN_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/recover?token=&lt;YOUR_ADMIN_TOKEN&gt;&#39;
 
 {
-    "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "status": "active",
-    "tm_deletion_scheduled": null,
-    "...": "..."
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;...&quot;: &quot;...&quot;
 }
 </pre></div>
 </div>
 <p><strong>Update a customer’s billing account ID (admin)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/billing_account_id?token=&lt;YOUR_ADMIN_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "billing_account_id": "b8c9d0e1-f2a3-4567-8901-23456789abcd"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/billing_account_id?token=&lt;YOUR_ADMIN_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;billing_account_id&quot;: &quot;b8c9d0e1-f2a3-4567-8901-23456789abcd&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Update a customer’s internal metadata (admin)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/metadata?token=&lt;YOUR_ADMIN_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "rtp_debug": true
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/metadata?token=&lt;YOUR_ADMIN_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;rtp_debug&quot;: true
+    }&#39;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -909,33 +910,33 @@
 <h3>Unregister account (schedule deletion)<a class="headerlink" href="#unregister-account-schedule-deletion" title="Link to this heading">¶</a></h3>
 <p>Request account deletion with a 30-day grace period. The account transitions to <code class="docutils literal notranslate"><span class="pre">frozen</span></code> status and a deletion date is scheduled.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/auth/unregister' \
-    --header 'Content-Type: application/json' \
-    --header 'Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;' \
-    --data-raw '{
-        "password": "yourPassword"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/auth/unregister&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --header &#39;Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --data-raw &#39;{
+        &quot;password&quot;: &quot;yourPassword&quot;
+    }&#39;
 
 {
-    "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "name": "Acme Corporation",
-    "detail": "Enterprise customer account",
-    "email": "admin@acme-corp.com",
-    "phone_number": "+15551234567",
-    "address": "123 Main St, San Francisco, CA 94105",
-    "webhook_method": "POST",
-    "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
-    "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
-    "metadata": {
-        "rtp_debug": false
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: false
     },
-    "email_verified": true,
-    "status": "frozen",
-    "identity_verification_status": "verified",
-    "tm_deletion_scheduled": "2024-07-20T14:22:35Z",
-    "tm_create": "2024-01-15T10:30:00Z",
-    "tm_update": "2024-06-20T14:22:35Z",
-    "tm_delete": null
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;frozen&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
+    &quot;tm_deletion_scheduled&quot;: &quot;2024-07-20T14:22:35Z&quot;,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -944,32 +945,32 @@
 <h3>Unregister account immediately<a class="headerlink" href="#unregister-account-immediately" title="Link to this heading">¶</a></h3>
 <p>Skip the 30-day grace period and permanently delete the account immediately. <code class="docutils literal notranslate"><span class="pre">password</span></code> and <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> are mutually exclusive – provide exactly one: <code class="docutils literal notranslate"><span class="pre">password</span></code> for password-based accounts, or <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> set to <code class="docutils literal notranslate"><span class="pre">&quot;DELETE&quot;</span></code> for SSO or API-key authenticated requests.</p>
 <p>Example (SSO / API-key authenticated request)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/auth/unregister' \
-    --header 'Content-Type: application/json' \
-    --header 'Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;' \
-    --data-raw '{
-        "confirmation_phrase": "DELETE",
-        "immediate": true
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/auth/unregister&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --header &#39;Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --data-raw &#39;{
+        &quot;confirmation_phrase&quot;: &quot;DELETE&quot;,
+        &quot;immediate&quot;: true
+    }&#39;
 
 {
-    "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "name": "",
-    "detail": "",
-    "email": "",
-    "phone_number": "",
-    "address": "",
-    "webhook_method": "",
-    "webhook_uri": "",
-    "billing_account_id": "00000000-0000-0000-0000-000000000000",
-    "metadata": {},
-    "email_verified": false,
-    "status": "deleted",
-    "identity_verification_status": "none",
-    "tm_deletion_scheduled": null,
-    "tm_create": "2024-01-15T10:30:00Z",
-    "tm_update": "2024-06-20T14:25:00Z",
-    "tm_delete": "2024-06-20T14:25:00Z"
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;&quot;,
+    &quot;detail&quot;: &quot;&quot;,
+    &quot;email&quot;: &quot;&quot;,
+    &quot;phone_number&quot;: &quot;&quot;,
+    &quot;address&quot;: &quot;&quot;,
+    &quot;webhook_method&quot;: &quot;&quot;,
+    &quot;webhook_uri&quot;: &quot;&quot;,
+    &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;metadata&quot;: {},
+    &quot;email_verified&quot;: false,
+    &quot;status&quot;: &quot;deleted&quot;,
+    &quot;identity_verification_status&quot;: &quot;none&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:25:00Z&quot;,
+    &quot;tm_delete&quot;: &quot;2024-06-20T14:25:00Z&quot;
 }
 </pre></div>
 </div>
@@ -983,29 +984,29 @@
 <h3>Cancel unregistration (recover account)<a class="headerlink" href="#cancel-unregistration-recover-account" title="Link to this heading">¶</a></h3>
 <p>During the 30-day grace period, cancel the scheduled deletion and restore the account to <code class="docutils literal notranslate"><span class="pre">active</span></code> status.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/auth/unregister' \
-    --header 'Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/auth/unregister&#39; \
+    --header &#39;Authorization: Bearer &lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "name": "Acme Corporation",
-    "detail": "Enterprise customer account",
-    "email": "admin@acme-corp.com",
-    "phone_number": "+15551234567",
-    "address": "123 Main St, San Francisco, CA 94105",
-    "webhook_method": "POST",
-    "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
-    "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
-    "metadata": {
-        "rtp_debug": false
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: false
     },
-    "email_verified": true,
-    "status": "active",
-    "identity_verification_status": "verified",
-    "tm_deletion_scheduled": null,
-    "tm_create": "2024-01-15T10:30:00Z",
-    "tm_update": "2024-06-20T14:30:00Z",
-    "tm_delete": null
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:30:00Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -1097,8 +1098,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

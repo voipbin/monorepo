@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Route" href="route.html"><link rel="prev" title="ProviderCall" href="providercall_struct_providercall.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -658,36 +659,36 @@
 <section id="place-a-providercall">
 <h3>Place a providercall<a class="headerlink" href="#place-a-providercall" title="Link to this heading">¶</a></h3>
 <p>The minimum required body is <code class="docutils literal notranslate"><span class="pre">provider_id</span></code> + at least one destination. <code class="docutils literal notranslate"><span class="pre">source</span></code> is strongly recommended (without it the call leaves with no caller ID, which most providers reject).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
-        "source": {
-            "type": "tel",
-            "target": "+14155551234"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+14155551234&quot;
         },
-        "destinations": [
+        &quot;destinations&quot;: [
             {
-                "type": "tel",
-                "target": "+821012345678"
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+821012345678&quot;
             }
         ],
-        "anonymous": "auto"
-    }'
+        &quot;anonymous&quot;: &quot;auto&quot;
+    }&#39;
 
 {
-    "id": "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f",
-    "customer_id": "6a93f71e-8b2d-4e5f-9a1c-2d3e4f5a6b7c",
-    "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
-    "flow_id": "00000000-0000-0000-0000-000000000000",
-    "source": {"type": "tel", "target": "+14155551234", "target_name": ""},
-    "destinations": [{"type": "tel", "target": "+821012345678", "target_name": ""}],
-    "anonymous": "auto",
-    "call_ids": ["9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345"],
-    "groupcall_ids": [],
-    "tm_create": "2026-04-21 23:15:00.000000",
-    "tm_update": "2026-04-21 23:15:00.000000",
-    "tm_delete": null
+    &quot;id&quot;: &quot;b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f&quot;,
+    &quot;customer_id&quot;: &quot;6a93f71e-8b2d-4e5f-9a1c-2d3e4f5a6b7c&quot;,
+    &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+    &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;source&quot;: {&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+14155551234&quot;, &quot;target_name&quot;: &quot;&quot;},
+    &quot;destinations&quot;: [{&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+821012345678&quot;, &quot;target_name&quot;: &quot;&quot;}],
+    &quot;anonymous&quot;: &quot;auto&quot;,
+    &quot;call_ids&quot;: [&quot;9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345&quot;],
+    &quot;groupcall_ids&quot;: [],
+    &quot;tm_create&quot;: &quot;2026-04-21 23:15:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2026-04-21 23:15:00.000000&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -696,40 +697,40 @@
 <section id="place-a-providercall-with-inline-actions">
 <h3>Place a providercall with inline actions<a class="headerlink" href="#place-a-providercall-with-inline-actions" title="Link to this heading">¶</a></h3>
 <p>If you want the call to execute a short post-answer sequence (e.g., play a TTS prompt and hang up), supply inline <code class="docutils literal notranslate"><span class="pre">actions</span></code> instead of a <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>. A temporary flow is created for you.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
-        "source": {"type": "tel", "target": "+14155551234"},
-        "destinations": [{"type": "tel", "target": "+821012345678"}],
-        "actions": [
-            {"type": "answer"},
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+        &quot;source&quot;: {&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+14155551234&quot;},
+        &quot;destinations&quot;: [{&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+821012345678&quot;}],
+        &quot;actions&quot;: [
+            {&quot;type&quot;: &quot;answer&quot;},
             {
-                "type": "talk",
-                "option": {
-                    "text": "This is a provider verification call.",
-                    "language": "en-US",
-                    "gender": "female"
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;This is a provider verification call.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;,
+                    &quot;gender&quot;: &quot;female&quot;
                 }
             },
-            {"type": "hangup"}
+            {&quot;type&quot;: &quot;hangup&quot;}
         ]
-    }'
+    }&#39;
 </pre></div>
 </div>
 </section>
 <section id="observe-call-outcome">
 <h3>Observe call outcome<a class="headerlink" href="#observe-call-outcome" title="Link to this heading">¶</a></h3>
 <p>The ProviderCall record is an audit summary — it does not update as the call progresses. Use the standard call API with each ID in <code class="docutils literal notranslate"><span class="pre">call_ids</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/calls/9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345",
-    "status": "progressing",
-    "hangup_reason": "",
-    "metadata": {
-        "route_provider_ids": ["4dbeabd6-f397-4375-95d2-a38411e07ed1"],
-        "skip_source_validation": true
+    &quot;id&quot;: &quot;9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;hangup_reason&quot;: &quot;&quot;,
+    &quot;metadata&quot;: {
+        &quot;route_provider_ids&quot;: [&quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;],
+        &quot;skip_source_validation&quot;: true
     },
     ...
 }
@@ -744,36 +745,36 @@
 <section id="get-list-of-providercalls">
 <h3>Get list of providercalls<a class="headerlink" href="#get-list-of-providercalls" title="Link to this heading">¶</a></h3>
 <p>Because this endpoint is gated by <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code> — a platform-level role — the list is <strong>cross-customer</strong>, not scoped to the authenticated admin’s own customer (this matches <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/providercalls/{id}</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/v1/providercalls/{id}</span></code>, which are also not customer-scoped). Optional <code class="docutils literal notranslate"><span class="pre">provider_id</span></code> filter narrows to a single provider.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;provider_id=4dbeabd6-f397-4375-95d2-a38411e07ed1'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;provider_id=4dbeabd6-f397-4375-95d2-a38411e07ed1&#39;
 
 {
-    "result": [
+    &quot;result&quot;: [
         {
-            "id": "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f",
-            "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
-            "call_ids": ["9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345"],
+            &quot;id&quot;: &quot;b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f&quot;,
+            &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+            &quot;call_ids&quot;: [&quot;9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345&quot;],
             ...
         }
     ],
-    "next_page_token": "2026-04-21 23:15:00.000000"
+    &quot;next_page_token&quot;: &quot;2026-04-21 23:15:00.000000&quot;
 }
 </pre></div>
 </div>
 </section>
 <section id="get-detail-of-a-providercall">
 <h3>Get detail of a providercall<a class="headerlink" href="#get-detail-of-a-providercall" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/providercalls/b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providercalls/b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="delete-soft-a-providercall">
 <h3>Delete (soft) a providercall<a class="headerlink" href="#delete-soft-a-providercall" title="Link to this heading">¶</a></h3>
 <p>Removes the audit record from list results. Does <strong>not</strong> affect the underlying Call records.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/providercalls/b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/providercalls/b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f",
-    "tm_delete": "2026-04-22 00:00:00.000000",
+    &quot;id&quot;: &quot;b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f&quot;,
+    &quot;tm_delete&quot;: &quot;2026-04-22 00:00:00.000000&quot;,
     ...
 }
 </pre></div>
@@ -900,8 +901,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

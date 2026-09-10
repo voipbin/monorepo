@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Outdial" href="outdial_struct_outdial.html"><link rel="prev" title="Outdial" href="outdial.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -750,37 +751,37 @@
 <h2>Managing Outdials<a class="headerlink" href="#managing-outdials" title="Link to this heading">¶</a></h2>
 <p>Create outdials and add targets via the API.</p>
 <p><strong>Create an Outdial</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/outdials?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "name": "January Leads",
-        "detail": "Sales leads for Q1 campaign"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/outdials?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;January Leads&quot;,
+        &quot;detail&quot;: &quot;Sales leads for Q1 campaign&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Add a Target to Outdial</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/outdials/&lt;outdial-id&gt;/targets?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "name": "John Smith",
-        "detail": "Sales lead",
-        "data": "",
-        "destination_0": {
-            "type": "tel",
-            "target": "+15551234567"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/outdials/&lt;outdial-id&gt;/targets?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;John Smith&quot;,
+        &quot;detail&quot;: &quot;Sales lead&quot;,
+        &quot;data&quot;: &quot;&quot;,
+        &quot;destination_0&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
         },
-        "destination_1": {
-            "type": "tel",
-            "target": "+15559876543"
+        &quot;destination_1&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;
         },
-        "destination_2": null,
-        "destination_3": null,
-        "destination_4": null
-    }'
+        &quot;destination_2&quot;: null,
+        &quot;destination_3&quot;: null,
+        &quot;destination_4&quot;: null
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Get Outdial Targets</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/outdials/&lt;outdial-id&gt;/targets?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/outdials/&lt;outdial-id&gt;/targets?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 </section>
@@ -862,33 +863,33 @@
 </div>
 <p><strong>Tel Target Example</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Phone target"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"destination_0"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15551234567"</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Phone target&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;destination_0&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
     <span class="p">},</span>
-    <span class="s2">"destination_1"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">"destination_2"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">"destination_3"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">"destination_4"</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">&quot;destination_1&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;destination_2&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;destination_3&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;destination_4&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>SIP Target Example</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"SIP target"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"destination_0"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sip"</span><span class="p">,</span>
-        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"sip:user@pbx.company.com"</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;SIP target&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;destination_0&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;sip:user@pbx.company.com&quot;</span>
     <span class="p">},</span>
-    <span class="s2">"destination_1"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">"destination_2"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">"destination_3"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">"destination_4"</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">&quot;destination_1&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;destination_2&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;destination_3&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;destination_4&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -897,7 +898,7 @@
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h2>
 <p><strong>Scenario 1: Sales Lead List</strong></p>
 <p>Import and manage a sales prospect list.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Create</span> <span class="n">outdial</span><span class="p">:</span> <span class="s2">"Q1 Sales Leads"</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Create</span> <span class="n">outdial</span><span class="p">:</span> <span class="s2">&quot;Q1 Sales Leads&quot;</span>
 
 <span class="mf">2.</span> <span class="n">Add</span> <span class="n">targets</span> <span class="n">one</span> <span class="n">by</span> <span class="n">one</span> <span class="p">(</span><span class="n">repeated</span> <span class="n">POST</span> <span class="o">/</span><span class="n">outdials</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">targets</span> <span class="n">calls</span><span class="p">):</span>
    <span class="o">+--------------------------------------------+</span>
@@ -919,8 +920,8 @@
 <p>Daily appointment reminder targets.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Daily</span> <span class="n">Process</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="mf">1.</span> <span class="n">Create</span> <span class="n">new</span> <span class="n">outdial</span> <span class="k">for</span> <span class="n">tomorrow</span><span class="s1">'s date  |</span>
-<span class="o">|</span>    <span class="s2">"Appointments 2024-01-16"</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.</span> <span class="n">Create</span> <span class="n">new</span> <span class="n">outdial</span> <span class="k">for</span> <span class="n">tomorrow</span><span class="s1">&#39;s date  |</span>
+<span class="o">|</span>    <span class="s2">&quot;Appointments 2024-01-16&quot;</span>               <span class="o">|</span>
 <span class="o">|</span>                                            <span class="o">|</span>
 <span class="o">|</span> <span class="mf">2.</span> <span class="n">Add</span> <span class="n">patients</span> <span class="k">with</span> <span class="n">appointments</span><span class="p">:</span>         <span class="o">|</span>
 <span class="o">|</span>    <span class="o">-</span> <span class="n">Each</span> <span class="n">target</span> <span class="n">gets</span> <span class="mi">2</span> <span class="n">retry</span> <span class="n">attempts</span>     <span class="o">|</span>
@@ -936,7 +937,7 @@
 <p>Critical notifications requiring high delivery.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Setup</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Outdial</span><span class="p">:</span> <span class="s2">"Emergency Contacts"</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Outdial</span><span class="p">:</span> <span class="s2">&quot;Emergency Contacts&quot;</span>              <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">All</span> <span class="n">employees</span><span class="o">/</span><span class="n">customers</span>                  <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">High</span> <span class="n">retry</span> <span class="n">count</span> <span class="p">(</span><span class="mi">5</span><span class="p">)</span>                     <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="n">Multiple</span> <span class="n">contact</span> <span class="n">methods</span> <span class="n">per</span> <span class="n">person</span>      <span class="o">|</span>
@@ -1121,8 +1122,8 @@ for import errors</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

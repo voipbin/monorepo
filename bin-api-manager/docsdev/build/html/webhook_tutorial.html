@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Direct Hash" href="direct_hash.html"><link rel="prev" title="Webhook" href="webhook_struct_webhook.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -655,12 +656,12 @@
 <section id="configure-webhook-endpoint">
 <h3>Configure Webhook Endpoint<a class="headerlink" href="#configure-webhook-endpoint" title="Link to this heading">¶</a></h3>
 <p>Set your webhook delivery URL and HTTP method by updating your customer profile. VoIPBin will send all event notifications to this URL.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "webhook_uri": "https://your-server.com/voipbin/webhook",
-        "webhook_method": "POST"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;webhook_uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
+        &quot;webhook_method&quot;: &quot;POST&quot;
+    }&#39;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -672,7 +673,7 @@
 <section id="verify-webhook-configuration">
 <h3>Verify Webhook Configuration<a class="headerlink" href="#verify-webhook-configuration" title="Link to this heading">¶</a></h3>
 <p>Retrieve your current customer profile to confirm the webhook settings.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Check the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> fields in the response to verify your configuration.</p>
@@ -680,12 +681,12 @@
 <section id="disable-webhooks">
 <h3>Disable Webhooks<a class="headerlink" href="#disable-webhooks" title="Link to this heading">¶</a></h3>
 <p>To stop receiving webhook notifications, set the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> to an empty string.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "webhook_uri": "",
-        "webhook_method": ""
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;webhook_uri&quot;: &quot;&quot;,
+        &quot;webhook_method&quot;: &quot;&quot;
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -751,42 +752,42 @@
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/voipbin/webhook'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/voipbin/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">voipbin_webhook</span><span class="p">():</span>
     <span class="c1"># Get the webhook payload</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
 
     <span class="c1"># Process different event types</span>
-    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'call_hangup'</span><span class="p">:</span>
-        <span class="n">call_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">][</span><span class="s1">'id'</span><span class="p">]</span>
-        <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">][</span><span class="s1">'hangup_reason'</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
+        <span class="n">call_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;hangup_reason&#39;</span><span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Call </span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2"> ended: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call </span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2"> ended: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Your business logic here</span>
         <span class="c1"># - Update CRM</span>
         <span class="c1"># - Send notifications</span>
         <span class="c1"># - Trigger workflows</span>
 
-    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'message_created'</span><span class="p">:</span>
-        <span class="n">message_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">][</span><span class="s1">'id'</span><span class="p">]</span>
-        <span class="n">from_number</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">][</span><span class="s1">'source'</span><span class="p">][</span><span class="s1">'target'</span><span class="p">]</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">][</span><span class="s1">'text'</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message_created&#39;</span><span class="p">:</span>
+        <span class="n">message_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">from_number</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Message from </span><span class="si">{</span><span class="n">from_number</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Message from </span><span class="si">{</span><span class="n">from_number</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Process the message</span>
         <span class="c1"># - Auto-reply</span>
         <span class="c1"># - Route to agent</span>
         <span class="c1"># - Store in database</span>
 
-    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'recording_updated'</span><span class="p">:</span>
-        <span class="n">recording_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">][</span><span class="s1">'id'</span><span class="p">]</span>
-        <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">][</span><span class="s1">'status'</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording_updated&#39;</span><span class="p">:</span>
+        <span class="n">recording_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Recording </span><span class="si">{</span><span class="n">recording_id</span><span class="si">}</span><span class="s2"> status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recording </span><span class="si">{</span><span class="n">recording_id</span><span class="si">}</span><span class="s2"> status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Handle recording</span>
         <span class="c1"># - Download and store</span>
@@ -794,32 +795,32 @@
         <span class="c1"># - Send to customer</span>
 
     <span class="c1"># Return 200 OK to acknowledge receipt</span>
-    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'received'</span><span class="p">}),</span> <span class="mi">200</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;received&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">'0.0.0.0'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Node.js (Express) Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const express = require('express');
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const express = require(&#39;express&#39;);
 const app = express();
 
 app.use(express.json());
 
-app.post('/voipbin/webhook', (req, res) =&gt; {
+app.post(&#39;/voipbin/webhook&#39;, (req, res) =&gt; {
     const payload = req.body;
     const eventType = payload.type;
 
     console.log(`Received event: ${eventType}`);
 
     switch(eventType) {
-        case 'call_hangup':
+        case &#39;call_hangup&#39;:
             handleCallHungup(payload.data);
             break;
-        case 'message_created':
+        case &#39;message_created&#39;:
             handleMessageCreated(payload.data);
             break;
-        case 'recording_updated':
+        case &#39;recording_updated&#39;:
             handleRecordingUpdated(payload.data);
             break;
         default:
@@ -827,7 +828,7 @@ app.post('/voipbin/webhook', (req, res) =&gt; {
     }
 
     // Acknowledge receipt
-    res.status(200).json({ status: 'received' });
+    res.status(200).json({ status: &#39;received&#39; });
 });
 
 function handleCallHungup(data) {
@@ -846,7 +847,7 @@ function handleRecordingUpdated(data) {
 }
 
 app.listen(5000, () =&gt; {
-    console.log('Webhook server listening on port 5000');
+    console.log(&#39;Webhook server listening on port 5000&#39;);
 });
 </pre></div>
 </div>
@@ -871,23 +872,23 @@ $ ngrok http 5000
 </div>
 <p><strong>Testing with curl:</strong></p>
 <p>Simulate a webhook event to test your endpoint:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'http://localhost:5000/voipbin/webhook' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "type": "call_hangup",
-        "data": {
-            "id": "test-call-id",
-            "hangup_reason": "normal",
-            "source": {
-                "type": "tel",
-                "target": "+15551234567"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;http://localhost:5000/voipbin/webhook&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;call_hangup&quot;,
+        &quot;data&quot;: {
+            &quot;id&quot;: &quot;test-call-id&quot;,
+            &quot;hangup_reason&quot;: &quot;normal&quot;,
+            &quot;source&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15551234567&quot;
             },
-            "destination": {
-                "type": "tel",
-                "target": "+15559876543"
+            &quot;destination&quot;: {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
             }
         }
-    }'
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -895,8 +896,8 @@ $ ngrok http 5000
 <h3>Webhook Payload Structure<a class="headerlink" href="#webhook-payload-structure" title="Link to this heading">¶</a></h3>
 <p>All webhook events follow this structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call_hangup"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hangup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">//</span> <span class="n">Event</span><span class="o">-</span><span class="n">specific</span> <span class="n">data</span>
         <span class="o">//</span> <span class="n">Structure</span> <span class="n">varies</span> <span class="n">by</span> <span class="n">event</span> <span class="nb">type</span>
     <span class="p">}</span>
@@ -939,41 +940,41 @@ $ ngrok http 5000
 <h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading">¶</a></h3>
 <p><strong>CRM Integration:</strong>
 Automatically update your CRM when calls end:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'call_hangup'</span><span class="p">:</span>
-    <span class="n">call_data</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
+    <span class="n">call_data</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
     <span class="c1"># Update CRM contact record</span>
     <span class="n">crm</span><span class="o">.</span><span class="n">update_contact</span><span class="p">(</span>
-        <span class="n">phone</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">'destination'</span><span class="p">][</span><span class="s1">'target'</span><span class="p">],</span>
-        <span class="n">last_call_date</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">'tm_hangup'</span><span class="p">],</span>
-        <span class="n">hangup_reason</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">'hangup_reason'</span><span class="p">]</span>
+        <span class="n">phone</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;destination&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">],</span>
+        <span class="n">last_call_date</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;tm_hangup&#39;</span><span class="p">],</span>
+        <span class="n">hangup_reason</span><span class="o">=</span><span class="n">call_data</span><span class="p">[</span><span class="s1">&#39;hangup_reason&#39;</span><span class="p">]</span>
     <span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Auto-Reply to Messages:</strong>
 Respond automatically to incoming messages:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'message_created'</span><span class="p">:</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
-    <span class="n">from_number</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">'source'</span><span class="p">][</span><span class="s1">'target'</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;message_created&#39;</span><span class="p">:</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+    <span class="n">from_number</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
 
     <span class="c1"># Send auto-reply</span>
     <span class="n">voipbin_api</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
         <span class="n">to</span><span class="o">=</span><span class="n">from_number</span><span class="p">,</span>
-        <span class="n">text</span><span class="o">=</span><span class="s2">"Thanks for your message! We'll respond soon."</span>
+        <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Thanks for your message! We&#39;ll respond soon.&quot;</span>
     <span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Recording Distribution:</strong>
 Email recordings to stakeholders when ready:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'recording_updated'</span><span class="p">:</span>
-    <span class="n">recording</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording_updated&#39;</span><span class="p">:</span>
+    <span class="n">recording</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">recording</span><span class="p">[</span><span class="s1">'status'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'ended'</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ended&#39;</span><span class="p">:</span>
         <span class="c1"># Send email with recording info</span>
         <span class="n">email</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
-            <span class="n">to</span><span class="o">=</span><span class="s1">'team@company.com'</span><span class="p">,</span>
-            <span class="n">subject</span><span class="o">=</span><span class="s1">'Call Recording Available'</span><span class="p">,</span>
-            <span class="n">body</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Recording ID: </span><span class="si">{</span><span class="n">recording</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span><span class="si">}</span><span class="s1">'</span>
+            <span class="n">to</span><span class="o">=</span><span class="s1">&#39;team@company.com&#39;</span><span class="p">,</span>
+            <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;Call Recording Available&#39;</span><span class="p">,</span>
+            <span class="n">body</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Recording ID: </span><span class="si">{</span><span class="n">recording</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="p">)</span>
 </pre></div>
 </div>
@@ -1065,8 +1066,8 @@ Email recordings to stakeholders when ready:</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

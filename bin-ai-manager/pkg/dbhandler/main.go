@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/aipromptproposal"
+	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/participant"
 	"monorepo/bin-ai-manager/models/summary"
@@ -76,6 +77,12 @@ type DBHandler interface {
 	TeamGet(ctx context.Context, id uuid.UUID) (*team.Team, error)
 	TeamList(ctx context.Context, size uint64, token string, filters map[team.Field]any) ([]*team.Team, error)
 	TeamUpdate(ctx context.Context, id uuid.UUID, fields map[team.Field]any) error
+
+	McpServerCreate(ctx context.Context, m *mcpserver.McpServer) error
+	McpServerGet(ctx context.Context, id uuid.UUID) (*mcpserver.McpServer, error)
+	McpServerList(ctx context.Context, size uint64, token string, filters map[mcpserver.Field]any) ([]*mcpserver.McpServer, error)
+	McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[mcpserver.Field]any) error
+	McpServerDelete(ctx context.Context, id uuid.UUID) error
 
 	// Participant
 	ParticipantCreate(ctx context.Context, aicallID uuid.UUID, aiID uuid.UUID) error

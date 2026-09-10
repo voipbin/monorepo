@@ -44,6 +44,8 @@ type WebhookMessage struct {
 
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
+	McpServerIDs []uuid.UUID `json:"mcp_server_ids,omitempty"`
+
 	DirectHash string `json:"direct_hash,omitempty"`
 
 	// timestamp
@@ -82,6 +84,8 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		AutoAICallAuditEnabled: h.AutoAICallAuditEnabled,
 
 		ToolNames: h.ToolNames,
+
+		McpServerIDs: h.McpServerIDs,
 
 		DirectHash: h.DirectHash,
 

@@ -87,6 +87,13 @@ type AI struct {
 	// ["all"] = all tools, ["connect_call", "send_email"] = specific tools, [] or nil = no tools
 	ToolNames []tool.ToolName `json:"tool_names,omitempty" db:"tool_names,json"`
 
+	// McpServerIDs is the customer's opt-in whitelist of their own
+	// registered McpServer rows (see models/mcpserver) whose remote tools
+	// this AI exposes to the LLM, namespaced at session start. Kept
+	// separate from the closed-enum ToolNames whitelist -- see
+	// docs/plans/2026-09-11-mcp-tool-integration-design.md §5.
+	McpServerIDs []uuid.UUID `json:"mcp_server_ids,omitempty" db:"mcp_server_ids,json"`
+
 	// direct hash
 	DirectID   uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"`
 	DirectHash string    `json:"direct_hash,omitempty" db:"direct_hash"`

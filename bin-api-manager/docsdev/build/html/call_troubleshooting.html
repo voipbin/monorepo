@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Conference" href="conference.html"><link rel="prev" title="Call Media and Codecs" href="call_media.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Call Troubleshooting - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -673,11 +674,11 @@ wss://api.voipbin.net/v1.0/ws?token=&lt;token&gt;
 
 Subscribe to all call events:
 {
-    "type": "subscribe",
-    "topics": ["customer_id:&lt;your-id&gt;:call:*"]
+    &quot;type&quot;: &quot;subscribe&quot;,
+    &quot;topics&quot;: [&quot;customer_id:&lt;your-id&gt;:call:*&quot;]
 }
 
-Events you'll receive:
+Events you&#39;ll receive:
 - call_created
 - call_ringing
 - call_progressing
@@ -695,19 +696,19 @@ Events you'll receive:
 
 <span class="n">Look</span> <span class="k">for</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"hangup"</span><span class="p">,</span>
-  <span class="s2">"hangup_reason"</span><span class="p">:</span> <span class="s2">"failed"</span><span class="p">,</span>
-  <span class="s2">"hangup_by"</span><span class="p">:</span> <span class="s2">"remote"</span>
-  <span class="o">//</span> <span class="s2">"tm_ringing"</span> <span class="ow">is</span> <span class="n">absent</span> <span class="o">--</span> <span class="n">the</span> <span class="n">destination</span> <span class="n">never</span> <span class="n">rang</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span>
+  <span class="o">//</span> <span class="s2">&quot;tm_ringing&quot;</span> <span class="ow">is</span> <span class="n">absent</span> <span class="o">--</span> <span class="n">the</span> <span class="n">destination</span> <span class="n">never</span> <span class="n">rang</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: Invalid Phone Number Format</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
-<span class="s2">"+1 555-123-4567"</span> <span class="p">(</span><span class="n">has</span> <span class="n">spaces</span><span class="o">/</span><span class="n">dashes</span><span class="p">)</span>
+<span class="s2">&quot;+1 555-123-4567&quot;</span> <span class="p">(</span><span class="n">has</span> <span class="n">spaces</span><span class="o">/</span><span class="n">dashes</span><span class="p">)</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="s2">"+15551234567"</span> <span class="p">(</span><span class="n">E</span><span class="mf">.164</span> <span class="nb">format</span><span class="p">,</span> <span class="n">digits</span> <span class="n">only</span> <span class="n">after</span> <span class="o">+</span><span class="p">)</span>
+<span class="s2">&quot;+15551234567&quot;</span> <span class="p">(</span><span class="n">E</span><span class="mf">.164</span> <span class="nb">format</span><span class="p">,</span> <span class="n">digits</span> <span class="n">only</span> <span class="n">after</span> <span class="o">+</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Cause 2: Number Not Provisioned or Invalid Type</strong></p>
@@ -717,8 +718,8 @@ Events you'll receive:
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">numbers</span>
 <span class="n">Verify</span> <span class="n">the</span> <span class="n">source</span> <span class="n">number</span> <span class="n">appears</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">response</span> <span class="k">with</span><span class="p">:</span>
-<span class="o">-</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">"normal"</span> <span class="p">(</span><span class="ow">not</span> <span class="s2">"virtual"</span><span class="p">)</span>
-<span class="o">-</span> <span class="n">status</span><span class="p">:</span> <span class="s2">"active"</span>
+<span class="o">-</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span> <span class="p">(</span><span class="ow">not</span> <span class="s2">&quot;virtual&quot;</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span>
 
 <span class="n">Fix</span><span class="p">:</span>
 <span class="n">Purchase</span> <span class="n">a</span> <span class="n">number</span> <span class="n">via</span> <span class="n">POST</span> <span class="o">/</span><span class="n">numbers</span> <span class="ow">or</span> <span class="n">use</span> <span class="n">a</span> <span class="n">normal</span><span class="p">,</span>
@@ -726,13 +727,13 @@ Events you'll receive:
 <span class="n">used</span> <span class="k">as</span> <span class="n">the</span> <span class="n">source</span> <span class="k">for</span> <span class="n">outgoing</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="o">.</span>
 
 <span class="n">If</span> <span class="n">the</span> <span class="n">source</span> <span class="n">fails</span> <span class="n">validation</span><span class="p">,</span> <span class="n">VoIPBin</span> <span class="n">falls</span> <span class="n">back</span> <span class="n">to</span> <span class="n">the</span>
-<span class="n">OutboundConfig</span><span class="s1">'s ``default_outgoing_source_number_id``. If</span>
+<span class="n">OutboundConfig</span><span class="s1">&#39;s ``default_outgoing_source_number_id``. If</span>
 <span class="n">that</span> <span class="n">field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">set</span> <span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">Nil</span><span class="p">),</span> <span class="n">the</span> <span class="n">call</span> <span class="ow">is</span> <span class="n">rejected</span><span class="o">.</span>
 
 <span class="n">To</span> <span class="n">configure</span> <span class="n">the</span> <span class="n">default</span> <span class="n">outgoing</span> <span class="n">source</span> <span class="n">number</span><span class="p">,</span> <span class="n">update</span>
 <span class="n">your</span> <span class="n">OutboundConfig</span><span class="p">:</span>
 <span class="n">PUT</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_config</span>
-<span class="p">{</span> <span class="s2">"default_outgoing_source_number_id"</span><span class="p">:</span> <span class="s2">"&lt;number-uuid&gt;"</span> <span class="p">}</span>
+<span class="p">{</span> <span class="s2">&quot;default_outgoing_source_number_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;number-uuid&gt;&quot;</span> <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Cause 3: Insufficient Balance</strong></p>
@@ -741,7 +742,7 @@ Events you'll receive:
 
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">billing</span><span class="o">-</span><span class="n">accounts</span>
-<span class="n">Check</span> <span class="n">that</span> <span class="n">balance</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">status</span> <span class="o">=</span> <span class="s2">"active"</span><span class="o">.</span>
+<span class="n">Check</span> <span class="n">that</span> <span class="n">balance</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;active&quot;</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
 <span class="n">Add</span> <span class="n">funds</span> <span class="n">to</span> <span class="n">your</span> <span class="n">account</span><span class="o">.</span>
@@ -769,14 +770,14 @@ Events you'll receive:
 
 <span class="n">Check</span> <span class="n">the</span> <span class="n">source</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">response</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"anonymous"</span><span class="p">,</span>
-    <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"Anonymous"</span>
+  <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;anonymous&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Anonymous&quot;</span>
   <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="n">If</span> <span class="n">target</span> <span class="ow">is</span> <span class="s2">"anonymous"</span><span class="p">,</span> <span class="n">the</span> <span class="n">call</span> <span class="n">leg</span> <span class="n">used</span> <span class="n">anonymous</span> <span class="n">caller</span> <span class="n">ID</span>
+<span class="n">If</span> <span class="n">target</span> <span class="ow">is</span> <span class="s2">&quot;anonymous&quot;</span><span class="p">,</span> <span class="n">the</span> <span class="n">call</span> <span class="n">leg</span> <span class="n">used</span> <span class="n">anonymous</span> <span class="n">caller</span> <span class="n">ID</span>
 <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">a</span> <span class="n">non</span><span class="o">-</span><span class="n">PSTN</span> <span class="n">leg</span> <span class="n">that</span> <span class="n">skipped</span> <span class="n">source</span> <span class="n">validation</span><span class="p">,</span> <span class="ow">or</span> <span class="n">a</span> <span class="n">PSTN</span>
 <span class="n">call</span> <span class="kn">from</span><span class="w"> </span><span class="nn">before</span> <span class="n">the</span> <span class="n">OutboundConfig</span> <span class="n">migration</span><span class="p">)</span><span class="o">.</span> <span class="n">For</span> <span class="n">new</span> <span class="n">PSTN</span> <span class="n">calls</span>
 <span class="k">with</span> <span class="n">no</span> <span class="n">valid</span> <span class="n">source</span> <span class="ow">and</span> <span class="n">no</span> <span class="n">OutboundConfig</span> <span class="n">default</span><span class="p">,</span> <span class="n">the</span> <span class="n">call</span> <span class="ow">is</span>
@@ -785,33 +786,33 @@ Events you'll receive:
 </div>
 <p><strong>Cause 1: Source Number Not in E.164 Format</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
-<span class="n">Source</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">start</span> <span class="k">with</span> <span class="s2">"+"</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="s2">"15551234567"</span><span class="p">)</span><span class="o">.</span>
+<span class="n">Source</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">start</span> <span class="k">with</span> <span class="s2">&quot;+&quot;</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="s2">&quot;15551234567&quot;</span><span class="p">)</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Always</span> <span class="n">use</span> <span class="n">E</span><span class="mf">.164</span> <span class="nb">format</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="o">.</span>
+<span class="n">Always</span> <span class="n">use</span> <span class="n">E</span><span class="mf">.164</span> <span class="nb">format</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="o">.</span>
 </pre></div>
 </div>
 <p><strong>Cause 2: Source is a Virtual Number</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
-<span class="n">Source</span> <span class="n">number</span> <span class="n">exists</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">account</span> <span class="n">but</span> <span class="n">has</span> <span class="nb">type</span> <span class="s2">"virtual"</span><span class="o">.</span>
-<span class="n">Only</span> <span class="s2">"normal"</span> <span class="nb">type</span> <span class="n">numbers</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span> <span class="k">as</span> <span class="n">source</span> <span class="k">for</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="o">.</span>
+<span class="n">Source</span> <span class="n">number</span> <span class="n">exists</span> <span class="ow">in</span> <span class="n">your</span> <span class="n">account</span> <span class="n">but</span> <span class="n">has</span> <span class="nb">type</span> <span class="s2">&quot;virtual&quot;</span><span class="o">.</span>
+<span class="n">Only</span> <span class="s2">&quot;normal&quot;</span> <span class="nb">type</span> <span class="n">numbers</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span> <span class="k">as</span> <span class="n">source</span> <span class="k">for</span> <span class="n">PSTN</span> <span class="n">calls</span><span class="o">.</span>
 
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">numbers</span>
-<span class="n">Find</span> <span class="n">the</span> <span class="n">number</span> <span class="ow">and</span> <span class="n">check</span> <span class="n">its</span> <span class="s2">"type"</span> <span class="n">field</span><span class="o">.</span>
+<span class="n">Find</span> <span class="n">the</span> <span class="n">number</span> <span class="ow">and</span> <span class="n">check</span> <span class="n">its</span> <span class="s2">&quot;type&quot;</span> <span class="n">field</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Use</span> <span class="n">a</span> <span class="n">number</span> <span class="k">with</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">"normal"</span> <span class="ow">and</span> <span class="n">status</span><span class="p">:</span> <span class="s2">"active"</span><span class="o">.</span>
+<span class="n">Use</span> <span class="n">a</span> <span class="n">number</span> <span class="k">with</span> <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span> <span class="ow">and</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="o">.</span>
 </pre></div>
 </div>
 <p><strong>Cause 3: Source Number Not Owned by Customer</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Problem</span><span class="p">:</span>
-<span class="n">The</span> <span class="n">E</span><span class="mf">.164</span> <span class="n">number</span> <span class="ow">is</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">customer</span><span class="s1">'s account or</span>
+<span class="n">The</span> <span class="n">E</span><span class="mf">.164</span> <span class="n">number</span> <span class="ow">is</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">customer</span><span class="s1">&#39;s account or</span>
 <span class="n">has</span> <span class="n">been</span> <span class="n">deleted</span><span class="o">.</span>
 
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">numbers</span>
-<span class="n">Verify</span> <span class="n">the</span> <span class="n">source</span> <span class="n">number</span> <span class="n">appears</span> <span class="k">with</span> <span class="n">status</span><span class="p">:</span> <span class="s2">"active"</span><span class="o">.</span>
+<span class="n">Verify</span> <span class="n">the</span> <span class="n">source</span> <span class="n">number</span> <span class="n">appears</span> <span class="k">with</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
 <span class="n">Purchase</span> <span class="n">the</span> <span class="n">number</span> <span class="n">via</span> <span class="n">POST</span> <span class="o">/</span><span class="n">numbers</span> <span class="ow">or</span> <span class="n">use</span> <span class="n">one</span>
@@ -819,7 +820,7 @@ Events you'll receive:
 </pre></div>
 </div>
 <p><strong>Cause 4: Default Number Fallback</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>If the source fails validation, VoIPBin checks the customer's
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>If the source fails validation, VoIPBin checks the customer&#39;s
 OutboundConfig for ``default_outgoing_source_number_id``.
 
 If set: The call uses that number as caller ID (after re-validation
@@ -831,7 +832,7 @@ If unset (uuid.Nil) or the validated number is no longer valid:
 To configure the default:
 PUT https://api.voipbin.net/v1.0/outbound_config
 {
-  "default_outgoing_source_number_id": "&lt;number-uuid&gt;"
+  &quot;default_outgoing_source_number_id&quot;: &quot;&lt;number-uuid&gt;&quot;
 }
 
 The number-uuid must be from GET /numbers (an active
@@ -850,19 +851,19 @@ later released or deactivated will fail.
 <h2>Call Rings But No Answer<a class="headerlink" href="#call-rings-but-no-answer" title="Link to this heading">¶</a></h2>
 <p><strong>Symptom:</strong> Call reaches <code class="docutils literal notranslate"><span class="pre">ringing</span></code> status, then hangs up. The <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> is <code class="docutils literal notranslate"><span class="pre">noanswer</span></code> or <code class="docutils literal notranslate"><span class="pre">dialout</span></code>.</p>
 <p><strong>Understanding the difference:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"noanswer"</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;noanswer&quot;</span><span class="p">:</span>
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">The</span> <span class="n">destination</span> <span class="n">phone</span> <span class="n">rang</span> <span class="n">until</span> <span class="n">the</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="n">destination</span><span class="s1">'s voicemail or timeout       |</span>
+<span class="o">|</span> <span class="n">destination</span><span class="s1">&#39;s voicemail or timeout       |</span>
 <span class="o">|</span> <span class="n">kicked</span> <span class="ow">in</span><span class="o">.</span>                               <span class="o">|</span>
 <span class="o">|</span>                                          <span class="o">|</span>
 <span class="o">|</span> <span class="n">Duration</span><span class="p">:</span> <span class="n">Typically</span> <span class="mi">30</span><span class="o">-</span><span class="mi">60</span> <span class="n">seconds</span>        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Cause</span><span class="p">:</span> <span class="n">Nobody</span> <span class="n">picked</span> <span class="n">up</span>                  <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 
-<span class="s2">"dialout"</span><span class="p">:</span>
+<span class="s2">&quot;dialout&quot;</span><span class="p">:</span>
 <span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="n">VoIPBin</span><span class="s1">'s dial timeout expired before    |</span>
+<span class="o">|</span> <span class="n">VoIPBin</span><span class="s1">&#39;s dial timeout expired before    |</span>
 <span class="o">|</span> <span class="n">the</span> <span class="n">call</span> <span class="n">was</span> <span class="n">answered</span><span class="o">.</span>                   <span class="o">|</span>
 <span class="o">|</span>                                          <span class="o">|</span>
 <span class="o">|</span> <span class="n">Duration</span><span class="p">:</span> <span class="n">Your</span> <span class="n">configured</span> <span class="n">timeout</span>        <span class="o">|</span>
@@ -883,8 +884,8 @@ later released or deactivated will fail.
 
 <span class="n">POST</span> <span class="o">/</span><span class="n">calls</span>
 <span class="p">{</span>
-  <span class="s2">"dial_timeout"</span><span class="p">:</span> <span class="mi">45000</span><span class="p">,</span>
-  <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="s2">&quot;dial_timeout&quot;</span><span class="p">:</span> <span class="mi">45000</span><span class="p">,</span>
+  <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
 <span class="p">}</span>
 
 <span class="n">Default</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="mi">30000</span> <span class="n">ms</span> <span class="p">(</span><span class="mi">30</span> <span class="n">seconds</span><span class="p">)</span><span class="o">.</span>
@@ -899,8 +900,8 @@ later released or deactivated will fail.
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
 <span class="n">Check</span> <span class="n">these</span> <span class="n">fields</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">status</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">"progressing"</span>
-<span class="o">-</span> <span class="n">mute_direction</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">""</span> <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="n">unmuted</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">status</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;progressing&quot;</span>
+<span class="o">-</span> <span class="n">mute_direction</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;&quot;</span> <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="n">unmuted</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: NAT/Firewall Issues (WebRTC)</strong></p>
@@ -933,7 +934,7 @@ later released or deactivated will fail.
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">"mute_direction"</span><span class="p">:</span> <span class="s2">"both"</span>
+  <span class="s2">&quot;mute_direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
 <span class="p">}</span>
 
 <span class="n">Fix</span> <span class="p">(</span><span class="n">unhold</span> <span class="n">the</span> <span class="n">call</span><span class="p">):</span>
@@ -957,9 +958,9 @@ later released or deactivated will fail.
 
 <span class="n">Look</span> <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">current_action</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"current_action"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
-    <span class="s2">"error"</span><span class="p">:</span> <span class="s2">"TTS service unavailable"</span>
+  <span class="s2">&quot;current_action&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;TTS service unavailable&quot;</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -994,16 +995,16 @@ later released or deactivated will fail.
 
 <span class="n">Example</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"branch"</span><span class="p">,</span>
-  <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"target_ids"</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">"1"</span><span class="p">:</span> <span class="s2">"nonexistent-id"</span>
+  <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;nonexistent-id&quot;</span>
     <span class="p">}</span>
   <span class="p">}</span>
 <span class="p">}</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Verify</span> <span class="nb">all</span> <span class="n">target_ids</span> <span class="n">match</span> <span class="n">an</span> <span class="n">action</span> <span class="s2">"id"</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">same</span> <span class="n">flow</span><span class="o">.</span>
+<span class="n">Verify</span> <span class="nb">all</span> <span class="n">target_ids</span> <span class="n">match</span> <span class="n">an</span> <span class="n">action</span> <span class="s2">&quot;id&quot;</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">same</span> <span class="n">flow</span><span class="o">.</span>
 <span class="n">Use</span> <span class="n">GET</span> <span class="o">/</span><span class="n">flows</span><span class="o">/</span><span class="p">{</span><span class="n">flow</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span> <span class="n">to</span> <span class="n">inspect</span> <span class="n">the</span> <span class="n">flow</span> <span class="n">definition</span><span class="o">.</span>
 </pre></div>
 </div>
@@ -1022,8 +1023,8 @@ later released or deactivated will fail.
 
 <span class="n">Check</span> <span class="n">the</span> <span class="n">webhook_method</span> <span class="ow">and</span> <span class="n">webhook_uri</span> <span class="n">fields</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"webhook_method"</span><span class="p">:</span> <span class="s2">"post"</span><span class="p">,</span>
-  <span class="s2">"webhook_uri"</span><span class="p">:</span> <span class="s2">"https://your-server.com/webhook"</span>
+  <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span>
 <span class="p">}</span>
 
 <span class="n">If</span> <span class="n">webhook_uri</span> <span class="ow">is</span> <span class="n">empty</span><span class="p">,</span> <span class="n">webhooks</span> <span class="n">are</span> <span class="ow">not</span> <span class="n">configured</span><span class="o">.</span>
@@ -1032,7 +1033,7 @@ later released or deactivated will fail.
 </div>
 <p><strong>Cause 1: Endpoint not accessible</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">Delivery</span> <span class="n">status</span> <span class="ow">is</span> <span class="s2">"failed"</span>
+<span class="o">-</span> <span class="n">Delivery</span> <span class="n">status</span> <span class="ow">is</span> <span class="s2">&quot;failed&quot;</span>
 <span class="o">-</span> <span class="n">Error</span> <span class="n">indicates</span> <span class="n">connection</span> <span class="n">refused</span> <span class="ow">or</span> <span class="n">timeout</span>
 
 <span class="n">Fix</span><span class="p">:</span>
@@ -1058,14 +1059,14 @@ later released or deactivated will fail.
 
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">customer</span>
-<span class="n">Check</span> <span class="n">that</span> <span class="n">webhook_method</span> <span class="ow">is</span> <span class="s2">"post"</span> <span class="ow">and</span> <span class="n">webhook_uri</span>
+<span class="n">Check</span> <span class="n">that</span> <span class="n">webhook_method</span> <span class="ow">is</span> <span class="s2">&quot;post&quot;</span> <span class="ow">and</span> <span class="n">webhook_uri</span>
 <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="n">your</span> <span class="n">endpoint</span> <span class="n">URL</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
 <span class="n">PUT</span> <span class="o">/</span><span class="n">customer</span>
 <span class="p">{</span>
-  <span class="s2">"webhook_method"</span><span class="p">:</span> <span class="s2">"post"</span><span class="p">,</span>
-  <span class="s2">"webhook_uri"</span><span class="p">:</span> <span class="s2">"https://your-server.com/webhook"</span>
+  <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1082,7 +1083,7 @@ later released or deactivated will fail.
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="n">Check</span> <span class="n">the</span> <span class="n">recording_ids</span> <span class="n">array</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"recording_ids"</span><span class="p">:</span> <span class="p">[]</span>
+  <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1197,13 +1198,13 @@ later released or deactivated will fail.
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Check</span> <span class="n">queue</span> <span class="n">status</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">"wait_queuecall_ids"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"uuid-1"</span><span class="p">,</span> <span class="s2">"uuid-2"</span><span class="p">],</span>
-  <span class="s2">"service_queuecall_ids"</span><span class="p">:</span> <span class="p">[]</span>
+  <span class="s2">&quot;wait_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;uuid-1&quot;</span><span class="p">,</span> <span class="s2">&quot;uuid-2&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;service_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[]</span>
 <span class="p">}</span>
 
 <span class="n">Check</span> <span class="n">agent</span> <span class="n">status</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">agents</span>
-<span class="n">Verify</span> <span class="n">agents</span> <span class="n">have</span> <span class="n">status</span><span class="p">:</span> <span class="s2">"available"</span>
+<span class="n">Verify</span> <span class="n">agents</span> <span class="n">have</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: No Available Agents</strong></p>
@@ -1212,13 +1213,13 @@ later released or deactivated will fail.
 <span class="o">-</span> <span class="n">wait_queuecall_ids</span> <span class="ow">is</span> <span class="n">growing</span>
 
 <span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">All</span> <span class="n">agents</span> <span class="ow">in</span> <span class="s2">"busy"</span> <span class="ow">or</span> <span class="s2">"offline"</span> <span class="n">status</span>
+<span class="o">-</span> <span class="n">All</span> <span class="n">agents</span> <span class="ow">in</span> <span class="s2">&quot;busy&quot;</span> <span class="ow">or</span> <span class="s2">&quot;offline&quot;</span> <span class="n">status</span>
 <span class="o">-</span> <span class="n">Agents</span> <span class="ow">not</span> <span class="n">logged</span> <span class="n">into</span> <span class="n">queue</span>
 <span class="o">-</span> <span class="n">Agent</span> <span class="n">status</span> <span class="ow">not</span> <span class="n">updated</span> <span class="n">after</span> <span class="n">previous</span> <span class="n">call</span>
 
 <span class="n">Fix</span><span class="p">:</span>
 <span class="n">Verify</span> <span class="n">agent</span> <span class="n">status</span> <span class="n">via</span> <span class="n">GET</span> <span class="o">/</span><span class="n">agents</span><span class="o">.</span>
-<span class="n">Ensure</span> <span class="n">agents</span> <span class="nb">set</span> <span class="n">their</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">"available"</span> <span class="n">after</span> <span class="n">calls</span><span class="o">.</span>
+<span class="n">Ensure</span> <span class="n">agents</span> <span class="nb">set</span> <span class="n">their</span> <span class="n">status</span> <span class="n">to</span> <span class="s2">&quot;available&quot;</span> <span class="n">after</span> <span class="n">calls</span><span class="o">.</span>
 </pre></div>
 </div>
 <p><strong>Cause 2: Calls Timing Out in Queue</strong></p>
@@ -1228,16 +1229,16 @@ later released or deactivated will fail.
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">"wait_timeout"</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
-  <span class="s2">"service_timeout"</span><span class="p">:</span> <span class="mi">60000</span>
+  <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
+  <span class="s2">&quot;service_timeout&quot;</span><span class="p">:</span> <span class="mi">60000</span>
 <span class="p">}</span>
 
 <span class="n">Fix</span><span class="p">:</span>
 <span class="n">Increase</span> <span class="n">wait_timeout</span> <span class="n">to</span> <span class="n">give</span> <span class="n">agents</span> <span class="n">more</span> <span class="n">time</span> <span class="n">to</span> <span class="n">answer</span><span class="p">:</span>
 <span class="n">PUT</span> <span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">"wait_timeout"</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
-  <span class="s2">"wait_flow_id"</span><span class="p">:</span> <span class="s2">"voicemail-flow-uuid"</span>
+  <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
+  <span class="s2">&quot;wait_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;voicemail-flow-uuid&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1391,8 +1392,8 @@ later released or deactivated will fail.
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

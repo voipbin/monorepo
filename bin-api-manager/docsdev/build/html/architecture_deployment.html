@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Security Architecture" href="architecture_security.html"><link rel="prev" title="Call Flow Sequences" href="architecture_sequences.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Deployment Architecture - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
@@ -737,11 +738,11 @@ manifests today only declare the metrics container port and do not define
         <span class="o">-</span> <span class="n">containerPort</span><span class="p">:</span> <span class="mi">2112</span>      <span class="c1"># Prometheus metrics</span>
         <span class="n">resources</span><span class="p">:</span>
           <span class="n">requests</span><span class="p">:</span>
-            <span class="n">memory</span><span class="p">:</span> <span class="s2">"256Mi"</span>
-            <span class="n">cpu</span><span class="p">:</span> <span class="s2">"100m"</span>
+            <span class="n">memory</span><span class="p">:</span> <span class="s2">&quot;256Mi&quot;</span>
+            <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;100m&quot;</span>
           <span class="n">limits</span><span class="p">:</span>
-            <span class="n">memory</span><span class="p">:</span> <span class="s2">"512Mi"</span>
-            <span class="n">cpu</span><span class="p">:</span> <span class="s2">"500m"</span>
+            <span class="n">memory</span><span class="p">:</span> <span class="s2">&quot;512Mi&quot;</span>
+            <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;500m&quot;</span>
         <span class="n">env</span><span class="p">:</span>
         <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">DATABASE_DSN</span>
           <span class="n">valueFrom</span><span class="p">:</span>
@@ -1456,8 +1457,8 @@ scaling beyond the fixed replica count is a manual operation (edit
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>
