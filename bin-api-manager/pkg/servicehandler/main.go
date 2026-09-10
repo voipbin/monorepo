@@ -30,11 +30,11 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amai "monorepo/bin-ai-manager/models/ai"
-	ammcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
+	ammcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
 	amsummary "monorepo/bin-ai-manager/models/summary"
