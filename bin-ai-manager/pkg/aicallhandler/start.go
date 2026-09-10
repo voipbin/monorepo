@@ -600,6 +600,36 @@ func (h *aicallHandler) startContactCaseTurn(ctx context.Context, log *logrus.En
 	}
 	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for contact_case aicall. aicall_id: %s", c.ID)
 
+	// Register the initial pipecatcall id as a genuine listen turn (VOIP-1510).
+	//
+	// The initial contact_case turn is, in substance, the first listen
+	// evaluation: it reads the conversation history and may decide to
+	// notify_agent. But unlike runListenTurnWithLines (listen.go), this path
+	// never registered its pipecatcall id in the listen-turn set, so
+	// ToolHandle's ListenTurnPipecatcallIDIsMember resolved listenTurn=false and
+	// toolHandleNotifyAgent rejected the call ("only usable while proactively
+	// monitoring a call"). The agent-facing churn signal on that first turn was
+	// therefore always dropped.
+	//
+	// pc.ID is the id startPipecatcall started from c.PipecatcallID; it is the
+	// same id the runner echoes back on this turn's tool calls, so registering
+	// it here makes IsMember true for them. The tool-call/result rows this turn
+	// writes then tag OriginListenInternal (replay-excluded, like any listen
+	// turn); the notify_agent OUTPUT row is tagged OriginProactive independently
+	// and stays in replay.
+	//
+	// Unlike listen.go, this is NOT a register-before-start abort point: the
+	// pipecatcall is already running. A registration failure only degrades this
+	// one turn's notify_agent to rejected (which a Redis outage would cause
+	// anyway, since the membership check itself degrades to false); it must not
+	// strand the turn. Log-and-continue, mirroring the terminate/status handling
+	// below.
+	ttl := time.Duration(config.Get().AIcallListenTurnPipecatcallIDTTLSeconds) * time.Second
+	if errAdd := h.cache.ListenTurnPipecatcallIDAdd(ctx, c.ID, pc.ID, ttl); errAdd != nil {
+		log.Warnf("Could not register the initial contact_case turn as a listen turn; notify_agent will be rejected on this turn only. aicall_id: %s, err: %v", c.ID, errAdd)
+		promListenTurnTotal.WithLabelValues(listenKindLabelUnknown, "initial_register_failed").Inc()
+	}
+
 	// note: the aicall is already committed at this point, so a failure to
 	// schedule termination does not undo any side effect and returning an
 	// error here would only strand the aicall at StatusInitiating. Log and
