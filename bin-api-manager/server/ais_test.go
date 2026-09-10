@@ -285,6 +285,7 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedSTTType,
 				tt.expectedSTTLanguage,
 				tt.expectedToolNames,
+				nil,   // mcpServerIDs
 				false, // autoAICallAuditEnabled
 			).Return(tt.responseAI, nil)
 
@@ -782,6 +783,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedSTTType,
 				tt.expectedSTTLanguage,
 				tt.expectedToolNames,
+				nil,   // mcpServerIDs
 				false, // autoAICallAuditEnabled
 			).Return(tt.responseAI, nil)
 

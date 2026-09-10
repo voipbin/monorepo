@@ -34,6 +34,7 @@ import (
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	amanalysis "monorepo/bin-ai-manager/models/analysis"
+	ammcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
 	amsummary "monorepo/bin-ai-manager/models/summary"
@@ -224,6 +225,7 @@ type RequestHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		mcpServerIDs []uuid.UUID,
 		autoAICallAuditEnabled bool,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
@@ -245,6 +247,7 @@ type RequestHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		mcpServerIDs []uuid.UUID,
 		autoAICallAuditEnabled bool,
 	) (*amai.AI, error)
 
@@ -359,6 +362,13 @@ type RequestHandler interface {
 	AIV1AIAuditList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaiaudit.Field]any) ([]*amaiaudit.AIAudit, error)
 	AIV1AIAuditGet(ctx context.Context, id uuid.UUID) (*amaiaudit.AIAudit, error)
 	AIV1AIAuditDelete(ctx context.Context, id uuid.UUID) (*amaiaudit.AIAudit, error)
+
+	// ai-manager mcpserver
+	AIV1McpServerList(ctx context.Context, pageToken string, pageSize uint64, filters map[ammcpserver.Field]any) ([]*ammcpserver.McpServer, error)
+	AIV1McpServerGet(ctx context.Context, id uuid.UUID) (*ammcpserver.McpServer, error)
+	AIV1McpServerCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, url string, authType ammcpserver.AuthType, apiKeyHeader string, secret string) (*ammcpserver.McpServer, error)
+	AIV1McpServerUpdate(ctx context.Context, id uuid.UUID, name string, detail string, url string, status ammcpserver.Status, authType ammcpserver.AuthType, apiKeyHeader string, secret *string) (*ammcpserver.McpServer, error)
+	AIV1McpServerDelete(ctx context.Context, id uuid.UUID) (*ammcpserver.McpServer, error)
 
 	// ai-manager aipromptproposal
 	AIV1AIPromptProposalCreate(ctx context.Context, customerID uuid.UUID, aiID uuid.UUID, auditIDs []uuid.UUID, language string) (*amaipromptproposal.AIPromptProposal, error)

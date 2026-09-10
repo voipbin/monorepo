@@ -30,6 +30,7 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amai "monorepo/bin-ai-manager/models/ai"
+	ammcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
@@ -300,6 +301,7 @@ type ServiceHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		mcpServerIDs []uuid.UUID,
 		autoAICallAuditEnabled bool,
 	) (*amai.WebhookMessage, error)
 	AIGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amai.WebhookMessage, error)
@@ -322,10 +324,38 @@ type ServiceHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		mcpServerIDs []uuid.UUID,
 		autoAICallAuditEnabled bool,
 	) (*amai.WebhookMessage, error)
 	AIActivateInsight(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error)
 	AIDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error)
+
+	// mcp server handlers
+	McpServerCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		name string,
+		detail string,
+		url string,
+		authType ammcpserver.AuthType,
+		apiKeyHeader string,
+		secret string,
+	) (*ammcpserver.WebhookMessage, error)
+	McpServerGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*ammcpserver.WebhookMessage, error)
+	McpServerGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammcpserver.WebhookMessage, error)
+	McpServerUpdate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		id uuid.UUID,
+		name string,
+		detail string,
+		url string,
+		status ammcpserver.Status,
+		authType ammcpserver.AuthType,
+		apiKeyHeader string,
+		secret *string,
+	) (*ammcpserver.WebhookMessage, error)
+	McpServerDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammcpserver.WebhookMessage, error)
 
 	// ai prompt history handlers
 	AIPromptHistoryGetsByAIID(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, size uint64, token string) ([]*amaiprompthistory.AIPromptHistory, error)

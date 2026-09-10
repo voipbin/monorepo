@@ -65,6 +65,14 @@ func (h *server) PostAis(c *gin.Context) {
 		aiType = amai.Type(*req.Type)
 	}
 
+	var mcpServerIDs []uuid.UUID
+	if req.McpServerIds != nil {
+		mcpServerIDs = make([]uuid.UUID, len(*req.McpServerIds))
+		for i, id := range *req.McpServerIds {
+			mcpServerIDs[i] = uuid.FromStringOrNil(id)
+		}
+	}
+
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
 		a,
@@ -81,6 +89,7 @@ func (h *server) PostAis(c *gin.Context) {
 		amai.STTType(req.SttType),
 		sttLanguage,
 		toolNames,
+		mcpServerIDs,
 		autoAICallAuditEnabled,
 	)
 	if err != nil {
@@ -268,6 +277,14 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		aiType = amai.Type(*req.Type)
 	}
 
+	var mcpServerIDs []uuid.UUID
+	if req.McpServerIds != nil {
+		mcpServerIDs = make([]uuid.UUID, len(*req.McpServerIds))
+		for i, id := range *req.McpServerIds {
+			mcpServerIDs[i] = uuid.FromStringOrNil(id)
+		}
+	}
+
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
 		a,
@@ -285,6 +302,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		amai.STTType(req.SttType),
 		sttLanguage,
 		toolNames,
+		mcpServerIDs,
 		autoAICallAuditEnabled,
 	)
 	if err != nil {

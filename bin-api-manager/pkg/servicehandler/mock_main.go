@@ -19,6 +19,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
+	mcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
@@ -190,18 +191,18 @@ func (mr *MockServiceHandlerMockRecorder) AIAuditGetsByCustomerID(ctx, a, size, 
 }
 
 // AICreate mocks base method.
-func (m *MockServiceHandler) AICreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AICreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs []uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AICreate", ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled)
+	ret := m.ctrl.Call(m, "AICreate", ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AICreate indicates an expected call of AICreate.
-func (mr *MockServiceHandlerMockRecorder) AICreate(ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AICreate(ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AICreate", reflect.TypeOf((*MockServiceHandler)(nil).AICreate), ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AICreate", reflect.TypeOf((*MockServiceHandler)(nil).AICreate), ctx, a, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 }
 
 // AIDelete mocks base method.
@@ -460,18 +461,18 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryGetsByCustomerID(ctx, a, size
 }
 
 // AIUpdate mocks base method.
-func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs []uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIUpdate", ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled)
+	ret := m.ctrl.Call(m, "AIUpdate", ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIUpdate indicates an expected call of AIUpdate.
-func (mr *MockServiceHandlerMockRecorder) AIUpdate(ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) AIUpdate(ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIUpdate", reflect.TypeOf((*MockServiceHandler)(nil).AIUpdate), ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIUpdate", reflect.TypeOf((*MockServiceHandler)(nil).AIUpdate), ctx, a, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 }
 
 // AIcallCreate mocks base method.
@@ -3177,6 +3178,81 @@ func (m *MockServiceHandler) InteractionList(ctx context.Context, a *auth.AuthId
 func (mr *MockServiceHandlerMockRecorder) InteractionList(ctx, a, size, token, peerType, peerTarget, contactID, addressID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockServiceHandler)(nil).InteractionList), ctx, a, size, token, peerType, peerTarget, contactID, addressID)
+}
+
+// McpServerCreate mocks base method.
+func (m *MockServiceHandler) McpServerCreate(ctx context.Context, a *auth.AuthIdentity, name, detail, url string, authType mcpserver.AuthType, apiKeyHeader, secret string) (*mcpserver.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerCreate", ctx, a, name, detail, url, authType, apiKeyHeader, secret)
+	ret0, _ := ret[0].(*mcpserver.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpServerCreate indicates an expected call of McpServerCreate.
+func (mr *MockServiceHandlerMockRecorder) McpServerCreate(ctx, a, name, detail, url, authType, apiKeyHeader, secret any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerCreate", reflect.TypeOf((*MockServiceHandler)(nil).McpServerCreate), ctx, a, name, detail, url, authType, apiKeyHeader, secret)
+}
+
+// McpServerDelete mocks base method.
+func (m *MockServiceHandler) McpServerDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*mcpserver.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerDelete", ctx, a, id)
+	ret0, _ := ret[0].(*mcpserver.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpServerDelete indicates an expected call of McpServerDelete.
+func (mr *MockServiceHandlerMockRecorder) McpServerDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerDelete", reflect.TypeOf((*MockServiceHandler)(nil).McpServerDelete), ctx, a, id)
+}
+
+// McpServerGet mocks base method.
+func (m *MockServiceHandler) McpServerGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*mcpserver.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerGet", ctx, a, id)
+	ret0, _ := ret[0].(*mcpserver.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpServerGet indicates an expected call of McpServerGet.
+func (mr *MockServiceHandlerMockRecorder) McpServerGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerGet", reflect.TypeOf((*MockServiceHandler)(nil).McpServerGet), ctx, a, id)
+}
+
+// McpServerGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) McpServerGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*mcpserver.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerGetsByCustomerID", ctx, a, size, token)
+	ret0, _ := ret[0].([]*mcpserver.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpServerGetsByCustomerID indicates an expected call of McpServerGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) McpServerGetsByCustomerID(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).McpServerGetsByCustomerID), ctx, a, size, token)
+}
+
+// McpServerUpdate mocks base method.
+func (m *MockServiceHandler) McpServerUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, url string, status mcpserver.Status, authType mcpserver.AuthType, apiKeyHeader string, secret *string) (*mcpserver.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerUpdate", ctx, a, id, name, detail, url, status, authType, apiKeyHeader, secret)
+	ret0, _ := ret[0].(*mcpserver.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpServerUpdate indicates an expected call of McpServerUpdate.
+func (mr *MockServiceHandlerMockRecorder) McpServerUpdate(ctx, a, id, name, detail, url, status, authType, apiKeyHeader, secret any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerUpdate", reflect.TypeOf((*MockServiceHandler)(nil).McpServerUpdate), ctx, a, id, name, detail, url, status, authType, apiKeyHeader, secret)
 }
 
 // MessageDelete mocks base method.

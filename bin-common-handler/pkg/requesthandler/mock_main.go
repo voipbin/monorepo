@@ -19,6 +19,7 @@ import (
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	analysis "monorepo/bin-ai-manager/models/analysis"
+	mcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
@@ -226,18 +227,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIAuditList(ctx, pageToken, pageSi
 }
 
 // AIV1AICreate mocks base method.
-func (m *MockRequestHandler) AIV1AICreate(ctx context.Context, customerID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, autoAICallAuditEnabled bool) (*ai.AI, error) {
+func (m *MockRequestHandler) AIV1AICreate(ctx context.Context, customerID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs []uuid.UUID, autoAICallAuditEnabled bool) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AICreate", ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled)
+	ret := m.ctrl.Call(m, "AIV1AICreate", ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AICreate indicates an expected call of AIV1AICreate.
-func (mr *MockRequestHandlerMockRecorder) AIV1AICreate(ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AICreate(ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AICreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AICreate), ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AICreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AICreate), ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 }
 
 // AIV1AIDelete mocks base method.
@@ -436,18 +437,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptProposalReject(ctx, custom
 }
 
 // AIV1AIUpdate mocks base method.
-func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, autoAICallAuditEnabled bool) (*ai.AI, error) {
+func (m *MockRequestHandler) AIV1AIUpdate(ctx context.Context, aiID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs []uuid.UUID, autoAICallAuditEnabled bool) (*ai.AI, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIUpdate", ctx, aiID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled)
+	ret := m.ctrl.Call(m, "AIV1AIUpdate", ctx, aiID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 	ret0, _ := ret[0].(*ai.AI)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIUpdate indicates an expected call of AIV1AIUpdate.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIUpdate(ctx, aiID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIUpdate(ctx, aiID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIUpdate), ctx, aiID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, autoAICallAuditEnabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIUpdate), ctx, aiID, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, mcpServerIDs, autoAICallAuditEnabled)
 }
 
 // AIV1AIcallDelete mocks base method.
@@ -597,6 +598,81 @@ func (m *MockRequestHandler) AIV1AIcallToolExecute(ctx context.Context, aicallID
 func (mr *MockRequestHandlerMockRecorder) AIV1AIcallToolExecute(ctx, aicallID, toolID, toolType, function, pipecatcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallToolExecute", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallToolExecute), ctx, aicallID, toolID, toolType, function, pipecatcallID)
+}
+
+// AIV1McpServerCreate mocks base method.
+func (m *MockRequestHandler) AIV1McpServerCreate(ctx context.Context, customerID uuid.UUID, name, detail, url string, authType mcpserver.AuthType, apiKeyHeader, secret string) (*mcpserver.McpServer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1McpServerCreate", ctx, customerID, name, detail, url, authType, apiKeyHeader, secret)
+	ret0, _ := ret[0].(*mcpserver.McpServer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1McpServerCreate indicates an expected call of AIV1McpServerCreate.
+func (mr *MockRequestHandlerMockRecorder) AIV1McpServerCreate(ctx, customerID, name, detail, url, authType, apiKeyHeader, secret any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1McpServerCreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1McpServerCreate), ctx, customerID, name, detail, url, authType, apiKeyHeader, secret)
+}
+
+// AIV1McpServerDelete mocks base method.
+func (m *MockRequestHandler) AIV1McpServerDelete(ctx context.Context, id uuid.UUID) (*mcpserver.McpServer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1McpServerDelete", ctx, id)
+	ret0, _ := ret[0].(*mcpserver.McpServer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1McpServerDelete indicates an expected call of AIV1McpServerDelete.
+func (mr *MockRequestHandlerMockRecorder) AIV1McpServerDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1McpServerDelete", reflect.TypeOf((*MockRequestHandler)(nil).AIV1McpServerDelete), ctx, id)
+}
+
+// AIV1McpServerGet mocks base method.
+func (m *MockRequestHandler) AIV1McpServerGet(ctx context.Context, id uuid.UUID) (*mcpserver.McpServer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1McpServerGet", ctx, id)
+	ret0, _ := ret[0].(*mcpserver.McpServer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1McpServerGet indicates an expected call of AIV1McpServerGet.
+func (mr *MockRequestHandlerMockRecorder) AIV1McpServerGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1McpServerGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1McpServerGet), ctx, id)
+}
+
+// AIV1McpServerList mocks base method.
+func (m *MockRequestHandler) AIV1McpServerList(ctx context.Context, pageToken string, pageSize uint64, filters map[mcpserver.Field]any) ([]*mcpserver.McpServer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1McpServerList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]*mcpserver.McpServer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1McpServerList indicates an expected call of AIV1McpServerList.
+func (mr *MockRequestHandlerMockRecorder) AIV1McpServerList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1McpServerList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1McpServerList), ctx, pageToken, pageSize, filters)
+}
+
+// AIV1McpServerUpdate mocks base method.
+func (m *MockRequestHandler) AIV1McpServerUpdate(ctx context.Context, id uuid.UUID, name, detail, url string, status mcpserver.Status, authType mcpserver.AuthType, apiKeyHeader string, secret *string) (*mcpserver.McpServer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1McpServerUpdate", ctx, id, name, detail, url, status, authType, apiKeyHeader, secret)
+	ret0, _ := ret[0].(*mcpserver.McpServer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1McpServerUpdate indicates an expected call of AIV1McpServerUpdate.
+func (mr *MockRequestHandlerMockRecorder) AIV1McpServerUpdate(ctx, id, name, detail, url, status, authType, apiKeyHeader, secret any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1McpServerUpdate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1McpServerUpdate), ctx, id, name, detail, url, status, authType, apiKeyHeader, secret)
 }
 
 // AIV1MessageDelete mocks base method.

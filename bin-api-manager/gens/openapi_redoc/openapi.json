@@ -2158,6 +2158,16 @@
                     },
                     "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
                   },
+                  "mcp_server_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "x-go-type": "string"
+                    },
+                    "description": "List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer. Returned from the `id` field of the `POST /mcpservers` response.",
+                    "example": []
+                  },
                   "auto_aicall_audit_enabled": {
                     "type": "boolean",
                     "description": "When true, any finished AICall involving this AI is audited automatically.",
@@ -2611,6 +2621,16 @@
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
                     "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
+                  },
+                  "mcp_server_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "x-go-type": "string"
+                    },
+                    "description": "List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer. Returned from the `id` field of the `POST /mcpservers` response.",
+                    "example": []
                   },
                   "auto_aicall_audit_enabled": {
                     "type": "boolean",
@@ -3084,6 +3104,323 @@
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/mcpservers/{id}": {
+      "get": {
+        "summary": "Get an MCP server by ID.",
+        "description": "Returns a single customer-registered MCP server record.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The MCP server ID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The MCP server record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerMcpServer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an MCP server.",
+        "description": "Updates an existing MCP server's details and returns the updated record. `secret` omitted leaves the existing encrypted secret untouched; `secret: \"\"` explicitly clears it; a non-empty `secret` re-encrypts and replaces it.\n",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The MCP server ID."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Streamable-HTTP MCP endpoint. Must be https."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "disabled"
+                    ],
+                    "description": "Set to disabled to exclude this server from ListTools/CallTool without deleting it.",
+                    "example": "active"
+                  },
+                  "auth_type": {
+                    "type": "string",
+                    "enum": [
+                      "",
+                      "bearer",
+                      "api_key"
+                    ]
+                  },
+                  "api_key_header": {
+                    "type": "string"
+                  },
+                  "secret": {
+                    "type": "string",
+                    "description": "Omit this field to leave the existing secret unchanged. Send an empty string to clear it."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Details of the updated MCP server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerMcpServer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an MCP server.",
+        "description": "Soft-deletes an MCP server record.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The MCP server ID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted MCP server record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerMcpServer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/mcpservers": {
+      "get": {
+        "summary": "Gets a list of MCP servers.",
+        "description": "Retrieves a paginated list of customer-registered MCP (Model Context Protocol) servers.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of MCP servers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/AIManagerMcpServer"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Register a new MCP server.",
+        "description": "Registers a remote Streamable-HTTP MCP server owned by the authenticated customer. Opt an AI in via the AI's `mcp_server_ids` field to expose the server's tools to that AI's sessions.\n",
+        "tags": [
+          "AI"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the MCP server.",
+                    "example": "Internal Ticketing System"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Detailed description of the MCP server.",
+                    "example": "Exposes ticket lookup/creation tools to the LLM."
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Streamable-HTTP MCP endpoint. Must be https.",
+                    "example": "https://mcp.example.com/mcp"
+                  },
+                  "auth_type": {
+                    "type": "string",
+                    "enum": [
+                      "",
+                      "bearer",
+                      "api_key"
+                    ],
+                    "description": "How the outbound MCP call authenticates. Empty string sends no Authorization header.",
+                    "example": "bearer"
+                  },
+                  "api_key_header": {
+                    "type": "string",
+                    "description": "Header name used when auth_type is api_key, e.g. X-API-Key. Ignored otherwise.",
+                    "example": "X-API-Key"
+                  },
+                  "secret": {
+                    "type": "string",
+                    "description": "Bearer token or API key value. Stored encrypted at rest; never returned in responses.",
+                    "example": "sk-live-...redacted..."
+                  }
+                },
+                "required": [
+                  "name",
+                  "url"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created MCP server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerMcpServer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -26322,10 +26659,20 @@
             "items": {
               "$ref": "#/components/schemas/AIManagerToolName"
             },
-            "description": "List of tool names enabled for this AI. Use `[\"all\"]` to enable all available tools. See the Tool Functions documentation for detailed descriptions of each tool.",
+            "description": "List of tool names enabled for this AI. Use `[\"all\"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool.",
             "example": [
               "all"
             ]
+          },
+          "mcp_server_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string"
+            },
+            "description": "List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer, returned from the `id` field of the `POST /mcpservers` or `GET /mcpservers` response. The server's tools are merged into this AI's tool list, namespaced `mcp_<server_id_prefix>_<tool_name>`.",
+            "example": []
           },
           "direct_hash": {
             "type": "string",
@@ -26356,6 +26703,95 @@
         },
         "required": [
           "is_insight_active"
+        ]
+      },
+      "AIManagerMcpServer": {
+        "type": "object",
+        "description": "A customer-registered remote MCP (Model Context Protocol) server. Excludes the stored secret entirely; `has_secret` indicates whether one is configured. Whitelist a server for an AI via that AI's `mcp_server_ids` field.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the MCP server.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the associated customer. Returned from the `GET /customers` response.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the MCP server.",
+            "example": "Internal Ticketing System"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Detailed description of the MCP server.",
+            "example": "Exposes ticket lookup/creation tools to the LLM."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Streamable-HTTP MCP endpoint.",
+            "example": "https://mcp.example.com/mcp"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "description": "disabled servers are excluded from tool list resolution and tool calls.",
+            "example": "active"
+          },
+          "auth_type": {
+            "type": "string",
+            "enum": [
+              "",
+              "bearer",
+              "api_key"
+            ],
+            "description": "How the outbound MCP call authenticates. Empty string sends no Authorization header.",
+            "example": "bearer"
+          },
+          "api_key_header": {
+            "type": "string",
+            "description": "Header name used when auth_type is api_key.",
+            "example": "X-API-Key"
+          },
+          "has_secret": {
+            "type": "boolean",
+            "description": "Whether a bearer token / API key is configured. The secret value itself is never returned.",
+            "example": true
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "Timestamp when the MCP server was registered.",
+            "example": "2026-01-15T09:30:00.000000Z"
+          },
+          "tm_update": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "Timestamp when the MCP server was last updated.",
+            "example": "2026-01-15T09:30:00.000000Z"
+          },
+          "tm_delete": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "Timestamp when the MCP server was deleted.",
+            "example": "2026-01-15T09:30:00.000000Z"
+          }
+        },
+        "required": [
+          "has_secret"
         ]
       },
       "AIManagerTeam": {

@@ -107,6 +107,7 @@ func Test_AICreate(t *testing.T) {
 				tt.sttType,
 				tt.sttLanguage,
 				nil,   // toolNames
+				nil,   // mcpServerIDs
 				false, // autoAICallAuditEnabled
 			).Return(tt.response, nil)
 
@@ -126,6 +127,7 @@ func Test_AICreate(t *testing.T) {
 				tt.sttType,
 				tt.sttLanguage,
 				nil,   // toolNames
+				nil,   // mcpServerIDs
 				false, // autoAICallAuditEnabled
 			)
 			if err != nil {

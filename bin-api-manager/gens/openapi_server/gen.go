@@ -313,6 +313,45 @@ func (e AIManagerAIcallStatus) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerMcpServerAuthType.
+const (
+	AIManagerMcpServerAuthTypeApiKey AIManagerMcpServerAuthType = "api_key"
+	AIManagerMcpServerAuthTypeBearer AIManagerMcpServerAuthType = "bearer"
+	AIManagerMcpServerAuthTypeEmpty  AIManagerMcpServerAuthType = ""
+)
+
+// Valid indicates whether the value is a known member of the AIManagerMcpServerAuthType enum.
+func (e AIManagerMcpServerAuthType) Valid() bool {
+	switch e {
+	case AIManagerMcpServerAuthTypeApiKey:
+		return true
+	case AIManagerMcpServerAuthTypeBearer:
+		return true
+	case AIManagerMcpServerAuthTypeEmpty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AIManagerMcpServerStatus.
+const (
+	AIManagerMcpServerStatusActive   AIManagerMcpServerStatus = "active"
+	AIManagerMcpServerStatusDisabled AIManagerMcpServerStatus = "disabled"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerMcpServerStatus enum.
+func (e AIManagerMcpServerStatus) Valid() bool {
+	switch e {
+	case AIManagerMcpServerStatusActive:
+		return true
+	case AIManagerMcpServerStatusDisabled:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerMessageOrigin.
 const (
 	AIManagerMessageOriginEmpty          AIManagerMessageOrigin = ""
@@ -3463,6 +3502,66 @@ func (e GetConversationsJSONBodyType) Valid() bool {
 	}
 }
 
+// Defines values for PostMcpserversJSONBodyAuthType.
+const (
+	PostMcpserversJSONBodyAuthTypeApiKey PostMcpserversJSONBodyAuthType = "api_key"
+	PostMcpserversJSONBodyAuthTypeBearer PostMcpserversJSONBodyAuthType = "bearer"
+	PostMcpserversJSONBodyAuthTypeEmpty  PostMcpserversJSONBodyAuthType = ""
+)
+
+// Valid indicates whether the value is a known member of the PostMcpserversJSONBodyAuthType enum.
+func (e PostMcpserversJSONBodyAuthType) Valid() bool {
+	switch e {
+	case PostMcpserversJSONBodyAuthTypeApiKey:
+		return true
+	case PostMcpserversJSONBodyAuthTypeBearer:
+		return true
+	case PostMcpserversJSONBodyAuthTypeEmpty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PutMcpserversIdJSONBodyAuthType.
+const (
+	ApiKey PutMcpserversIdJSONBodyAuthType = "api_key"
+	Bearer PutMcpserversIdJSONBodyAuthType = "bearer"
+	Empty  PutMcpserversIdJSONBodyAuthType = ""
+)
+
+// Valid indicates whether the value is a known member of the PutMcpserversIdJSONBodyAuthType enum.
+func (e PutMcpserversIdJSONBodyAuthType) Valid() bool {
+	switch e {
+	case ApiKey:
+		return true
+	case Bearer:
+		return true
+	case Empty:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PutMcpserversIdJSONBodyStatus.
+const (
+	PutMcpserversIdJSONBodyStatusActive   PutMcpserversIdJSONBodyStatus = "active"
+	PutMcpserversIdJSONBodyStatusDisabled PutMcpserversIdJSONBodyStatus = "disabled"
+)
+
+// Valid indicates whether the value is a known member of the PutMcpserversIdJSONBodyStatus enum.
+func (e PutMcpserversIdJSONBodyStatus) Valid() bool {
+	switch e {
+	case PutMcpserversIdJSONBodyStatusActive:
+		return true
+	case PutMcpserversIdJSONBodyStatusDisabled:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostProvidercallsJSONBodyAnonymous.
 const (
 	PostProvidercallsJSONBodyAnonymousAuto PostProvidercallsJSONBodyAnonymous = "auto"
@@ -3687,6 +3786,9 @@ type AIManagerAI struct {
 	// IsInsightActive Whether this is the customer's active Insight AI, i.e. the one the Case Insight Assistant panel auto-attaches to a case. Only meaningful when `type` is `insight`. A customer may hold any number of Insight AIs but at most one may be active. Newly created AIs are always inactive; use `POST /ais/{id}/activate_insight` to activate one. When no Insight AI is active, the most recently created one is used.
 	IsInsightActive bool `json:"is_insight_active"`
 
+	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer, returned from the `id` field of the `POST /mcpservers` or `GET /mcpservers` response. The server's tools are merged into this AI's tool list, namespaced `mcp_<server_id_prefix>_<tool_name>`.
+	McpServerIds *[]string `json:"mcp_server_ids,omitempty"`
+
 	// Name Name of the AI.
 	Name *string `json:"name,omitempty"`
 
@@ -3714,7 +3816,7 @@ type AIManagerAI struct {
 	// TmUpdate Timestamp when the AI was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all available tools. See the Tool Functions documentation for detailed descriptions of each tool.
+	// ToolNames List of tool names enabled for this AI. Use `["all"]` to enable all tools. See the Tool Functions documentation for detailed descriptions of each tool.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech provider type.
@@ -3936,6 +4038,51 @@ type AIManagerAIcallReferenceType string
 
 // AIManagerAIcallStatus Status of the ai call.
 type AIManagerAIcallStatus string
+
+// AIManagerMcpServer A customer-registered remote MCP (Model Context Protocol) server. Excludes the stored secret entirely; `has_secret` indicates whether one is configured. Whitelist a server for an AI via that AI's `mcp_server_ids` field.
+type AIManagerMcpServer struct {
+	// ApiKeyHeader Header name used when auth_type is api_key.
+	ApiKeyHeader *string `json:"api_key_header,omitempty"`
+
+	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header.
+	AuthType *AIManagerMcpServerAuthType `json:"auth_type,omitempty"`
+
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Detail Detailed description of the MCP server.
+	Detail *string `json:"detail,omitempty"`
+
+	// HasSecret Whether a bearer token / API key is configured. The secret value itself is never returned.
+	HasSecret bool `json:"has_secret"`
+
+	// Id The unique identifier of the MCP server.
+	Id *string `json:"id,omitempty"`
+
+	// Name Name of the MCP server.
+	Name *string `json:"name,omitempty"`
+
+	// Status disabled servers are excluded from tool list resolution and tool calls.
+	Status *AIManagerMcpServerStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the MCP server was registered.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the MCP server was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the MCP server was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// Url Streamable-HTTP MCP endpoint.
+	Url *string `json:"url,omitempty"`
+}
+
+// AIManagerMcpServerAuthType How the outbound MCP call authenticates. Empty string sends no Authorization header.
+type AIManagerMcpServerAuthType string
+
+// AIManagerMcpServerStatus disabled servers are excluded from tool list resolution and tool calls.
+type AIManagerMcpServerStatus string
 
 // AIManagerMessage defines model for AIManagerMessage.
 type AIManagerMessage struct {
@@ -8037,7 +8184,10 @@ type PostAisJSONBody struct {
 	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
-	Name        string                 `json:"name"`
+
+	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer. Returned from the `id` field of the `POST /mcpservers` response.
+	McpServerIds *[]string `json:"mcp_server_ids,omitempty"`
+	Name         string    `json:"name"`
 
 	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	Parameter map[string]interface{} `json:"parameter"`
@@ -8082,7 +8232,10 @@ type PutAisIdJSONBody struct {
 	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
-	Name        string                 `json:"name"`
+
+	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer. Returned from the `id` field of the `POST /mcpservers` response.
+	McpServerIds *[]string `json:"mcp_server_ids,omitempty"`
+	Name         string    `json:"name"`
 
 	// Parameter Data associated with the ai's engine, can be dynamic and vary based on the engine type.
 	Parameter map[string]interface{} `json:"parameter"`
@@ -9096,6 +9249,62 @@ type PostGroupcallsJSONBody struct {
 	// Source Contains source or destination detail info.
 	Source CommonAddress `json:"source"`
 }
+
+// GetMcpserversParams defines parameters for GetMcpservers.
+type GetMcpserversParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostMcpserversJSONBody defines parameters for PostMcpservers.
+type PostMcpserversJSONBody struct {
+	// ApiKeyHeader Header name used when auth_type is api_key, e.g. X-API-Key. Ignored otherwise.
+	ApiKeyHeader *string `json:"api_key_header,omitempty"`
+
+	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header.
+	AuthType *PostMcpserversJSONBodyAuthType `json:"auth_type,omitempty"`
+
+	// Detail Detailed description of the MCP server.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Name of the MCP server.
+	Name string `json:"name"`
+
+	// Secret Bearer token or API key value. Stored encrypted at rest; never returned in responses.
+	Secret *string `json:"secret,omitempty"`
+
+	// Url Streamable-HTTP MCP endpoint. Must be https.
+	Url string `json:"url"`
+}
+
+// PostMcpserversJSONBodyAuthType defines parameters for PostMcpservers.
+type PostMcpserversJSONBodyAuthType string
+
+// PutMcpserversIdJSONBody defines parameters for PutMcpserversId.
+type PutMcpserversIdJSONBody struct {
+	ApiKeyHeader *string                          `json:"api_key_header,omitempty"`
+	AuthType     *PutMcpserversIdJSONBodyAuthType `json:"auth_type,omitempty"`
+	Detail       *string                          `json:"detail,omitempty"`
+	Name         *string                          `json:"name,omitempty"`
+
+	// Secret Omit this field to leave the existing secret unchanged. Send an empty string to clear it.
+	Secret *string `json:"secret,omitempty"`
+
+	// Status Set to disabled to exclude this server from ListTools/CallTool without deleting it.
+	Status *PutMcpserversIdJSONBodyStatus `json:"status,omitempty"`
+
+	// Url Streamable-HTTP MCP endpoint. Must be https.
+	Url *string `json:"url,omitempty"`
+}
+
+// PutMcpserversIdJSONBodyAuthType defines parameters for PutMcpserversId.
+type PutMcpserversIdJSONBodyAuthType string
+
+// PutMcpserversIdJSONBodyStatus defines parameters for PutMcpserversId.
+type PutMcpserversIdJSONBodyStatus string
 
 // GetMessagesParams defines parameters for GetMessages.
 type GetMessagesParams struct {
@@ -10699,6 +10908,12 @@ type PutFlowsIdJSONRequestBody PutFlowsIdJSONBody
 // PostGroupcallsJSONRequestBody defines body for PostGroupcalls for application/json ContentType.
 type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
 
+// PostMcpserversJSONRequestBody defines body for PostMcpservers for application/json ContentType.
+type PostMcpserversJSONRequestBody PostMcpserversJSONBody
+
+// PutMcpserversIdJSONRequestBody defines body for PutMcpserversId for application/json ContentType.
+type PutMcpserversIdJSONRequestBody PutMcpserversIdJSONBody
+
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody
 
@@ -11553,6 +11768,21 @@ type ServerInterface interface {
 	// Hangup the groupcall
 	// (POST /groupcalls/{id}/hangup)
 	PostGroupcallsIdHangup(c *gin.Context, id string)
+	// Gets a list of MCP servers.
+	// (GET /mcpservers)
+	GetMcpservers(c *gin.Context, params GetMcpserversParams)
+	// Register a new MCP server.
+	// (POST /mcpservers)
+	PostMcpservers(c *gin.Context)
+	// Delete an MCP server.
+	// (DELETE /mcpservers/{id})
+	DeleteMcpserversId(c *gin.Context, id openapi_types.UUID)
+	// Get an MCP server by ID.
+	// (GET /mcpservers/{id})
+	GetMcpserversId(c *gin.Context, id openapi_types.UUID)
+	// Update an MCP server.
+	// (PUT /mcpservers/{id})
+	PutMcpserversId(c *gin.Context, id openapi_types.UUID)
 	// Get the logged-in agent
 	// (GET /me)
 	GetMe(c *gin.Context)
@@ -17471,6 +17701,129 @@ func (siw *ServerInterfaceWrapper) PostGroupcallsIdHangup(c *gin.Context) {
 	siw.Handler.PostGroupcallsIdHangup(c, id)
 }
 
+// GetMcpservers operation middleware
+func (siw *ServerInterfaceWrapper) GetMcpservers(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetMcpserversParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetMcpservers(c, params)
+}
+
+// PostMcpservers operation middleware
+func (siw *ServerInterfaceWrapper) PostMcpservers(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostMcpservers(c)
+}
+
+// DeleteMcpserversId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteMcpserversId(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteMcpserversId(c, id)
+}
+
+// GetMcpserversId operation middleware
+func (siw *ServerInterfaceWrapper) GetMcpserversId(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetMcpserversId(c, id)
+}
+
+// PutMcpserversId operation middleware
+func (siw *ServerInterfaceWrapper) PutMcpserversId(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutMcpserversId(c, id)
+}
+
 // GetMe operation middleware
 func (siw *ServerInterfaceWrapper) GetMe(c *gin.Context) {
 
@@ -23371,6 +23724,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/groupcalls/:id", wrapper.DeleteGroupcallsId)
 	router.GET(options.BaseURL+"/groupcalls/:id", wrapper.GetGroupcallsId)
 	router.POST(options.BaseURL+"/groupcalls/:id/hangup", wrapper.PostGroupcallsIdHangup)
+	router.GET(options.BaseURL+"/mcpservers", wrapper.GetMcpservers)
+	router.POST(options.BaseURL+"/mcpservers", wrapper.PostMcpservers)
+	router.DELETE(options.BaseURL+"/mcpservers/:id", wrapper.DeleteMcpserversId)
+	router.GET(options.BaseURL+"/mcpservers/:id", wrapper.GetMcpserversId)
+	router.PUT(options.BaseURL+"/mcpservers/:id", wrapper.PutMcpserversId)
 	router.GET(options.BaseURL+"/me", wrapper.GetMe)
 	router.GET(options.BaseURL+"/messages", wrapper.GetMessages)
 	router.POST(options.BaseURL+"/messages", wrapper.PostMessages)
@@ -40113,6 +40471,401 @@ func (response PostGroupcallsIdHangup503JSONResponse) VisitPostGroupcallsIdHangu
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversRequestObject struct {
+	Params GetMcpserversParams
+}
+
+type GetMcpserversResponseObject interface {
+	VisitGetMcpserversResponse(w http.ResponseWriter) error
+}
+
+type GetMcpservers200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string               `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerMcpServer `json:"result,omitempty"`
+}
+
+func (response GetMcpservers200JSONResponse) VisitGetMcpserversResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpservers401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetMcpservers401JSONResponse) VisitGetMcpserversResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpservers500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetMcpservers500JSONResponse) VisitGetMcpserversResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversRequestObject struct {
+	Body *PostMcpserversJSONRequestBody
+}
+
+type PostMcpserversResponseObject interface {
+	VisitPostMcpserversResponse(w http.ResponseWriter) error
+}
+
+type PostMcpservers200JSONResponse AIManagerMcpServer
+
+func (response PostMcpservers200JSONResponse) VisitPostMcpserversResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpservers400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostMcpservers400JSONResponse) VisitPostMcpserversResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpservers401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostMcpservers401JSONResponse) VisitPostMcpserversResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpservers500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostMcpservers500JSONResponse) VisitPostMcpserversResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteMcpserversIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteMcpserversIdResponseObject interface {
+	VisitDeleteMcpserversIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteMcpserversId200JSONResponse AIManagerMcpServer
+
+func (response DeleteMcpserversId200JSONResponse) VisitDeleteMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteMcpserversId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteMcpserversId400JSONResponse) VisitDeleteMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteMcpserversId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteMcpserversId401JSONResponse) VisitDeleteMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteMcpserversId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteMcpserversId403JSONResponse) VisitDeleteMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteMcpserversId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteMcpserversId404JSONResponse) VisitDeleteMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteMcpserversId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteMcpserversId500JSONResponse) VisitDeleteMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetMcpserversIdResponseObject interface {
+	VisitGetMcpserversIdResponse(w http.ResponseWriter) error
+}
+
+type GetMcpserversId200JSONResponse AIManagerMcpServer
+
+func (response GetMcpserversId200JSONResponse) VisitGetMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetMcpserversId400JSONResponse) VisitGetMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetMcpserversId401JSONResponse) VisitGetMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetMcpserversId403JSONResponse) VisitGetMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetMcpserversId404JSONResponse) VisitGetMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetMcpserversId500JSONResponse) VisitGetMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutMcpserversIdRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PutMcpserversIdJSONRequestBody
+}
+
+type PutMcpserversIdResponseObject interface {
+	VisitPutMcpserversIdResponse(w http.ResponseWriter) error
+}
+
+type PutMcpserversId200JSONResponse AIManagerMcpServer
+
+func (response PutMcpserversId200JSONResponse) VisitPutMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutMcpserversId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutMcpserversId400JSONResponse) VisitPutMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutMcpserversId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutMcpserversId401JSONResponse) VisitPutMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutMcpserversId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutMcpserversId403JSONResponse) VisitPutMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutMcpserversId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutMcpserversId404JSONResponse) VisitPutMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PutMcpserversId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutMcpserversId500JSONResponse) VisitPutMcpserversIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -58287,6 +59040,21 @@ type StrictServerInterface interface {
 	// Hangup the groupcall
 	// (POST /groupcalls/{id}/hangup)
 	PostGroupcallsIdHangup(ctx context.Context, request PostGroupcallsIdHangupRequestObject) (PostGroupcallsIdHangupResponseObject, error)
+	// Gets a list of MCP servers.
+	// (GET /mcpservers)
+	GetMcpservers(ctx context.Context, request GetMcpserversRequestObject) (GetMcpserversResponseObject, error)
+	// Register a new MCP server.
+	// (POST /mcpservers)
+	PostMcpservers(ctx context.Context, request PostMcpserversRequestObject) (PostMcpserversResponseObject, error)
+	// Delete an MCP server.
+	// (DELETE /mcpservers/{id})
+	DeleteMcpserversId(ctx context.Context, request DeleteMcpserversIdRequestObject) (DeleteMcpserversIdResponseObject, error)
+	// Get an MCP server by ID.
+	// (GET /mcpservers/{id})
+	GetMcpserversId(ctx context.Context, request GetMcpserversIdRequestObject) (GetMcpserversIdResponseObject, error)
+	// Update an MCP server.
+	// (PUT /mcpservers/{id})
+	PutMcpserversId(ctx context.Context, request PutMcpserversIdRequestObject) (PutMcpserversIdResponseObject, error)
 	// Get the logged-in agent
 	// (GET /me)
 	GetMe(ctx context.Context, request GetMeRequestObject) (GetMeResponseObject, error)
@@ -64646,6 +65414,148 @@ func (sh *strictHandler) PostGroupcallsIdHangup(ctx *gin.Context, id string) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PostGroupcallsIdHangupResponseObject); ok {
 		if err := validResponse.VisitPostGroupcallsIdHangupResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetMcpservers operation middleware
+func (sh *strictHandler) GetMcpservers(ctx *gin.Context, params GetMcpserversParams) {
+	var request GetMcpserversRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetMcpservers(ctx, request.(GetMcpserversRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetMcpservers")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetMcpserversResponseObject); ok {
+		if err := validResponse.VisitGetMcpserversResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostMcpservers operation middleware
+func (sh *strictHandler) PostMcpservers(ctx *gin.Context) {
+	var request PostMcpserversRequestObject
+
+	var body PostMcpserversJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostMcpservers(ctx, request.(PostMcpserversRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostMcpservers")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostMcpserversResponseObject); ok {
+		if err := validResponse.VisitPostMcpserversResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteMcpserversId operation middleware
+func (sh *strictHandler) DeleteMcpserversId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteMcpserversIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteMcpserversId(ctx, request.(DeleteMcpserversIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteMcpserversId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(DeleteMcpserversIdResponseObject); ok {
+		if err := validResponse.VisitDeleteMcpserversIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetMcpserversId operation middleware
+func (sh *strictHandler) GetMcpserversId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetMcpserversIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetMcpserversId(ctx, request.(GetMcpserversIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetMcpserversId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetMcpserversIdResponseObject); ok {
+		if err := validResponse.VisitGetMcpserversIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutMcpserversId operation middleware
+func (sh *strictHandler) PutMcpserversId(ctx *gin.Context, id openapi_types.UUID) {
+	var request PutMcpserversIdRequestObject
+
+	request.Id = id
+
+	var body PutMcpserversIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutMcpserversId(ctx, request.(PutMcpserversIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutMcpserversId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PutMcpserversIdResponseObject); ok {
+		if err := validResponse.VisitPutMcpserversIdResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

@@ -2181,9 +2181,21 @@ components:
           items:
             $ref: '#/components/schemas/AIManagerToolName'
           description: >-
-            List of tool names enabled for this AI. Use `["all"]` to enable all available tools.
+            List of tool names enabled for this AI. Use `["all"]` to enable all tools.
             See the Tool Functions documentation for detailed descriptions of each tool.
           example: ["all"]
+        mcp_server_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: >-
+            List of customer-registered MCP server IDs whitelisted for this AI. Each ID must
+            reference an MCP server owned by the same customer, returned from the `id` field of
+            the `POST /mcpservers` or `GET /mcpservers` response. The server's tools are merged
+            into this AI's tool list, namespaced `mcp_<server_id_prefix>_<tool_name>`.
+          example: []
         direct_hash:
           type: string
           description: "The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the \"direct.\" prefix is already included in the value, e.g. \"direct.a1b2c3d4e5f6\"). Returned from the resource's `direct_hash` field."
@@ -2212,6 +2224,78 @@ components:
         # on the wire. Marking it required keeps the generated client type a
         # plain bool and in sync with that decision.
         - is_insight_active
+
+    AIManagerMcpServer:
+      type: object
+      description: >-
+        A customer-registered remote MCP (Model Context Protocol) server.
+        Excludes the stored secret entirely; `has_secret` indicates whether
+        one is configured. Whitelist a server for an AI via that AI's
+        `mcp_server_ids` field.
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the MCP server.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        name:
+          type: string
+          description: Name of the MCP server.
+          example: "Internal Ticketing System"
+        detail:
+          type: string
+          description: Detailed description of the MCP server.
+          example: "Exposes ticket lookup/creation tools to the LLM."
+        url:
+          type: string
+          format: uri
+          description: "Streamable-HTTP MCP endpoint."
+          example: "https://mcp.example.com/mcp"
+        status:
+          type: string
+          enum: ["active", "disabled"]
+          description: "disabled servers are excluded from tool list resolution and tool calls."
+          example: "active"
+        auth_type:
+          type: string
+          enum: ["", "bearer", "api_key"]
+          description: "How the outbound MCP call authenticates. Empty string sends no Authorization header."
+          example: "bearer"
+        api_key_header:
+          type: string
+          description: "Header name used when auth_type is api_key."
+          example: "X-API-Key"
+        has_secret:
+          type: boolean
+          description: "Whether a bearer token / API key is configured. The secret value itself is never returned."
+          example: true
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the MCP server was registered.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the MCP server was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the MCP server was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
+      required:
+        - has_secret
 
     AIManagerTeam:
       type: object
@@ -8406,6 +8490,10 @@ paths:
     $ref: './paths/aiaudits/id.yaml'
   /aiaudits:
     $ref: './paths/aiaudits/main.yaml'
+  /mcpservers/{id}:
+    $ref: './paths/mcpservers/id.yaml'
+  /mcpservers:
+    $ref: './paths/mcpservers/main.yaml'
 
   /aipromptproposals/{id}:
     $ref: './paths/aipromptproposals/id.yaml'

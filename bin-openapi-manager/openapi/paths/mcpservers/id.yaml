@@ -1,0 +1,123 @@
+get:
+  summary: Get an MCP server by ID.
+  description: Returns a single customer-registered MCP server record.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The MCP server ID.
+  responses:
+    '200':
+      description: The MCP server record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerMcpServer'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+put:
+  summary: Update an MCP server.
+  description: >
+    Updates an existing MCP server's details and returns the updated record.
+    `secret` omitted leaves the existing encrypted secret untouched; `secret: ""` explicitly clears it;
+    a non-empty `secret` re-encrypts and replaces it.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The MCP server ID.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            detail:
+              type: string
+            url:
+              type: string
+              format: uri
+              description: "Streamable-HTTP MCP endpoint. Must be https."
+            status:
+              type: string
+              enum: ["active", "disabled"]
+              description: "Set to disabled to exclude this server from ListTools/CallTool without deleting it."
+              example: "active"
+            auth_type:
+              type: string
+              enum: ["", "bearer", "api_key"]
+            api_key_header:
+              type: string
+            secret:
+              type: string
+              description: "Omit this field to leave the existing secret unchanged. Send an empty string to clear it."
+  responses:
+    '200':
+      description: Details of the updated MCP server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerMcpServer'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Delete an MCP server.
+  description: Soft-deletes an MCP server record.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The MCP server ID.
+  responses:
+    '200':
+      description: The deleted MCP server record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerMcpServer'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
