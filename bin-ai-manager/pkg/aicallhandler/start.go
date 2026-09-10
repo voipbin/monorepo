@@ -627,6 +627,7 @@ func (h *aicallHandler) startContactCaseTurn(ctx context.Context, log *logrus.En
 	ttl := time.Duration(config.Get().AIcallListenTurnPipecatcallIDTTLSeconds) * time.Second
 	if errAdd := h.cache.ListenTurnPipecatcallIDAdd(ctx, c.ID, pc.ID, ttl); errAdd != nil {
 		log.Warnf("Could not register the initial contact_case turn as a listen turn; notify_agent will be rejected on this turn only. aicall_id: %s, err: %v", c.ID, errAdd)
+		promListenTurnTotal.WithLabelValues(string(listenKindConversation), "initial_register_failed").Inc()
 	}
 
 	// note: the aicall is already committed at this point, so a failure to

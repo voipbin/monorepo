@@ -137,7 +137,8 @@ RunListenTurn이 전담. 가장 크고 아키텍처적. design doc 재작업 수
      pipecatcall id를 echo). 따라서 `ListenTurnPipecatcallIDIsMember(c.ID, pipecatcallID)`가
      true가 된다. 이 "등록한 pc.ID == 도착 pipecatcallID" 연결이 옵션 A 정합성의 핵심이며,
      §6-3 단위테스트와 §7-2 라이브 검증이 이 전제의 어긋남을 포착한다.
-2. 등록 실패는 fatal 아님: 로그 Warn + 메트릭(promListenTurnTotal 또는 신규 카운터),
+2. 등록 실패는 fatal 아님: 로그 Warn +
+   `promListenTurnTotal{kind=conversation,result=initial_register_failed}` 증분,
    초기 턴은 계속 진행.
 3. 단위 테스트: startContactCaseTurn이 ListenTurnPipecatcallIDAdd를 pc.ID로 호출하는지
    (mock 기대), 등록 실패 시에도 aicall이 Progressing으로 진행하는지.
@@ -166,3 +167,4 @@ RunListenTurn이 전담. 가장 크고 아키텍처적. design doc 재작업 수
 | (이슈분석 2) | Issue | APPROVE | 옵션 A 타당성 확인, 2연속 |
 | 설계 1 | Design | REQUEST_CHANGES | §3 트레이드오프 미해결+과대평가. notify OUTPUT은 OriginProactive라 replay 보존. §2/§3 정정, 트레이드오프 확정, B1 스코프 결론, 검증 분리 요구 |
 | 설계 2 | Design | APPROVE | 3개 지적 코드 정합 해소 확인. 비차단 권고(pc.ID==도착 pipecatcallID 연결 명시) 반영 |
+| 코드 1 | Code | APPROVE | 빌드/vet/테스트 통과, 모든 호출경로 등록/degrade 반영, replay 불변성 커버. 비차단 관찰(등록실패 메트릭)→반영 |
