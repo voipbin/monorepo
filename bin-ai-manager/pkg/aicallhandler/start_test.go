@@ -4106,6 +4106,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("10000000-0007-11f0-aaaa-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, created.ID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
@@ -4226,6 +4227,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("30000000-0010-11f0-cccc-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
@@ -4429,6 +4431,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("70000000-0010-11f0-1111-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
@@ -4504,6 +4507,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("80000000-0010-11f0-2222-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
@@ -4612,6 +4616,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("91000000-0007-11f0-4444-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(fmt.Errorf("could not schedule termination"))
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
@@ -4627,6 +4632,68 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("91000000-0003-11f0-4444-000000000001"),
 				ReferenceType: aicall.ReferenceTypeContactCase,
 				ReferenceID:   uuid.FromStringOrNil("91000000-0004-11f0-4444-000000000001"),
+				Status:        aicall.StatusProgressing,
+			},
+		},
+		{
+			name: "create succeeds, pipecatcall starts, but listen-turn registration fails — still returns success (log-and-continue, VOIP-1510)",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("94000000-0001-11f0-7777-000000000001"),
+					CustomerID: uuid.FromStringOrNil("94000000-0002-11f0-7777-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("94000000-0001-11f0-7777-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("94000000-0003-11f0-7777-000000000001"),
+			referenceID:    uuid.FromStringOrNil("94000000-0004-11f0-7777-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("94000000-0005-11f0-7777-000000000001")
+				aicallID := uuid.FromStringOrNil("94000000-0006-11f0-7777-000000000001")
+				created := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         aicallID,
+						CustomerID: uuid.FromStringOrNil("94000000-0002-11f0-7777-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("94000000-0003-11f0-7777-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("94000000-0004-11f0-7777-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("94000000-0007-11f0-7777-000000000001")}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				// Registration fails, but the initial turn is already running: log-and-continue,
+				// do NOT strand the aicall. It must still advance to Progressing.
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(fmt.Errorf("redis unavailable"))
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, aicallID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, aicallID).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("94000000-0006-11f0-7777-000000000001"),
+					CustomerID: uuid.FromStringOrNil("94000000-0002-11f0-7777-000000000001"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("94000000-0003-11f0-7777-000000000001"),
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("94000000-0004-11f0-7777-000000000001"),
 				Status:        aicall.StatusProgressing,
 			},
 		},
@@ -4685,6 +4752,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existingInitiating.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("92000000-0008-11f0-5555-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, existingInitiating.PipecatcallID, existingInitiating.CustomerID, existingInitiating.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, existingInitiating.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, existingInitiating.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, existingInitiating.ID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressingResult := &aicall.AIcall{Identity: existingInitiating.Identity, ActiveflowID: existingInitiating.ActiveflowID, ReferenceType: existingInitiating.ReferenceType, ReferenceID: existingInitiating.ReferenceID, Status: aicall.StatusProgressing}
@@ -4770,6 +4838,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("55000000-000a-11f0-eeee-000000000001")}, HostID: "host2"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressing2 := &aicall.AIcall{Identity: created.Identity, Status: aicall.StatusProgressing}
@@ -4862,6 +4931,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("56000000-000a-11f0-eeee-000000000001")}, HostID: "host2"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressing2 := &aicall.AIcall{Identity: created.Identity, Status: aicall.StatusProgressing}
@@ -4955,6 +5025,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("93000000-000a-11f0-6666-000000000001")}, HostID: "host3"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, created.ID, responsePC.ID, gomock.Any()).Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				progressing2 := &aicall.AIcall{Identity: created.Identity, Status: aicall.StatusProgressing}
