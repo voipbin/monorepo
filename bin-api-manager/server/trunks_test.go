@@ -322,7 +322,7 @@ func Test_TrunksIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TrunkUpdateBasicInfo(req.Context(), tt.agent, tt.expectTrunkID, tt.expectName, tt.expectDetail, tt.expectAuthTypes, tt.expectUsername, tt.expectPassword, tt.expectAllowedIPs).Return(&rmtrunk.WebhookMessage{}, nil)
+			mockSvc.EXPECT().TrunkUpdateBasicInfo(req.Context(), tt.agent, tt.expectTrunkID, &tt.expectName, &tt.expectDetail, &tt.expectAuthTypes, &tt.expectUsername, &tt.expectPassword, &tt.expectAllowedIPs).Return(&rmtrunk.WebhookMessage{}, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -330,6 +330,82 @@ func Test_TrunksIDPUT(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_TrunksIDPUT_PartialUpdate pins the HTTP-layer pointer passthrough
+// for PUT /trunks/{id}: a request body with only one field must call
+// TrunkUpdateBasicInfo with only that field's pointer non-nil. This is
+// the layer PR #1291's own Round 1 review flagged as most likely to
+// silently regress (the dereference-to-zero-value bug lived here).
+func Test_TrunksIDPUT_PartialUpdate(t *testing.T) {
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	trunkID := uuid.FromStringOrNil("6019ea72-5589-11ee-8b45-13603ef0a2d4")
+
+	t.Run("name only -- every other pointer stays nil", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSvc := servicehandler.NewMockServiceHandler(mc)
+		h := &server{serviceHandler: mockSvc}
+
+		w := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(w)
+		r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+		openapi_server.RegisterHandlers(r, h)
+
+		reqBody := []byte(`{"name":"new name only"}`)
+		req, _ := http.NewRequest("PUT", "/trunks/6019ea72-5589-11ee-8b45-13603ef0a2d4", bytes.NewBuffer(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		expectName := "new name only"
+		mockSvc.EXPECT().TrunkUpdateBasicInfo(
+			req.Context(), agent, trunkID,
+			&expectName,
+			(*string)(nil),
+			(*[]rmsipauth.AuthType)(nil),
+			(*string)(nil),
+			(*string)(nil),
+			(*[]string)(nil),
+		).Return(&rmtrunk.WebhookMessage{}, nil)
+
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+		}
+	})
+
+	t.Run("empty body -- every pointer nil", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSvc := servicehandler.NewMockServiceHandler(mc)
+		h := &server{serviceHandler: mockSvc}
+
+		w := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(w)
+		r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+		openapi_server.RegisterHandlers(r, h)
+
+		reqBody := []byte(`{}`)
+		req, _ := http.NewRequest("PUT", "/trunks/6019ea72-5589-11ee-8b45-13603ef0a2d4", bytes.NewBuffer(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		mockSvc.EXPECT().TrunkUpdateBasicInfo(
+			req.Context(), agent, trunkID,
+			(*string)(nil), (*string)(nil), (*[]rmsipauth.AuthType)(nil),
+			(*string)(nil), (*string)(nil), (*[]string)(nil),
+		).Return(&rmtrunk.WebhookMessage{}, nil)
+
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+		}
+	})
 }
 
 func Test_trunksIDDELETE(t *testing.T) {

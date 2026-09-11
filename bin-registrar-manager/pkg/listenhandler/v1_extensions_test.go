@@ -282,6 +282,98 @@ func Test_processV1ExtensionsPut(t *testing.T) {
 	}
 }
 
+// Test_processV1ExtensionsIDPut_PartialUpdate is the regression test for
+// the full-replace-required PUT bug fixed in
+// docs/plans/2026-09-12-registrar-put-partial-update-phase1-design.md:
+// omitting a field must leave it unchanged, not silently wipe it.
+func Test_processV1ExtensionsIDPut_PartialUpdate(t *testing.T) {
+
+	extensionID := uuid.FromStringOrNil("6dc9dd22-6f4e-11eb-8059-2fe116db7a2b")
+
+	type test struct {
+		name string
+
+		request *sock.Request
+
+		// expectFields is the exact fields map the listenhandler must
+		// build from the request body; nil means Update must NOT be
+		// called at all (all-fields-omitted no-op case).
+		expectFields map[extension.Field]any
+	}
+
+	tests := []test{
+		{
+			name: "only name -- password/detail must NOT be in the fields map",
+			request: &sock.Request{
+				URI:      "/v1/extensions/6dc9dd22-6f4e-11eb-8059-2fe116db7a2b",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"new name only"}`),
+			},
+			expectFields: map[extension.Field]any{
+				extension.FieldName: "new name only",
+			},
+		},
+		{
+			// This is the direct regression test for the silent
+			// AstAuth-wipe bug: password-only must not also carry
+			// name/detail as empty strings into the fields map.
+			name: "only password -- direct regression for the silent AstAuth wipe bug",
+			request: &sock.Request{
+				URI:      "/v1/extensions/6dc9dd22-6f4e-11eb-8059-2fe116db7a2b",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"password":"new password only"}`),
+			},
+			expectFields: map[extension.Field]any{
+				extension.FieldPassword: "new password only",
+			},
+		},
+		{
+			name: "all fields omitted -- Update must not be called, Get must still be called",
+			request: &sock.Request{
+				URI:      "/v1/extensions/6dc9dd22-6f4e-11eb-8059-2fe116db7a2b",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+			expectFields: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockExtension := extensionhandler.NewMockExtensionHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:      mockSock,
+				reqHandler:       mockReq,
+				extensionHandler: mockExtension,
+			}
+
+			resExt := &extension.Extension{
+				Identity: commonidentity.Identity{ID: extensionID},
+			}
+
+			if tt.expectFields != nil {
+				mockExtension.EXPECT().Update(gomock.Any(), extensionID, tt.expectFields).Return(resExt, nil)
+			} else {
+				mockExtension.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			}
+			mockExtension.EXPECT().Get(gomock.Any(), extensionID).Return(resExt, nil)
+
+			if _, err := h.processRequest(tt.request); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func Test_processV1ExtensionsIDDelete(t *testing.T) {
 
 	type test struct {

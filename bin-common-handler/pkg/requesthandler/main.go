@@ -1285,7 +1285,7 @@ type RequestHandler interface {
 	RegistrarV1ExtensionDelete(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionGet(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 	RegistrarV1ExtensionList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmextension.Field]any) ([]rmextension.Extension, error)
-	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*rmextension.Extension, error)
+	RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password *string) (*rmextension.Extension, error)
 	RegistrarV1ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	RegistrarV1ExtensionDirectHashRegenerate(ctx context.Context, extensionID uuid.UUID) (*rmextension.Extension, error)
 
@@ -1295,7 +1295,7 @@ type RequestHandler interface {
 	RegistrarV1TrunkGet(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error)
 	RegistrarV1TrunkGetByDomainName(ctx context.Context, domainName string) (*rmtrunk.Trunk, error)
 	RegistrarV1TrunkDelete(ctx context.Context, trunkID uuid.UUID) (*rmtrunk.Trunk, error)
-	RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error)
+	RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name *string, detail *string, authTypes *[]rmsipauth.AuthType, username *string, password *string, allowedIPs *[]string) (*rmtrunk.Trunk, error)
 	RegistrarV1TrunkCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// route-manager dialroutes

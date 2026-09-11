@@ -311,7 +311,7 @@ func TestExtensionsIDPUT(t *testing.T) {
 			req, _ := http.NewRequest("PUT", "/extensions/"+tt.extensionID.String(), bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ExtensionUpdate(req.Context(), tt.agent, tt.extensionID, tt.expectName, tt.expectDetail, tt.expectPassword).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ExtensionUpdate(req.Context(), tt.agent, tt.extensionID, &tt.expectName, &tt.expectDetail, &tt.expectPassword).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -323,6 +323,80 @@ func TestExtensionsIDPUT(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestExtensionsIDPUT_PartialUpdate pins the HTTP-layer pointer
+// passthrough for PUT /extensions/{id}: a request body with only one
+// field must call ExtensionUpdate with only that field's pointer
+// non-nil. This is the layer PR #1291's own Round 1 review flagged as
+// most likely to silently regress (the dereference-to-zero-value bug
+// lived here).
+func TestExtensionsIDPUT_PartialUpdate(t *testing.T) {
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	extensionID := uuid.FromStringOrNil("67492c7a-6fb0-11eb-8b3f-d7eb268910df")
+	resExt := &rmextension.WebhookMessage{
+		Identity: commonidentity.Identity{ID: extensionID},
+	}
+
+	t.Run("password only -- direct regression for the silent AstAuth wipe bug", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSvc := servicehandler.NewMockServiceHandler(mc)
+		h := &server{serviceHandler: mockSvc}
+
+		w := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(w)
+		r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+		openapi_server.RegisterHandlers(r, h)
+
+		reqBody := []byte(`{"password":"new password only"}`)
+		req, _ := http.NewRequest("PUT", "/extensions/"+extensionID.String(), bytes.NewBuffer(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		expectPassword := "new password only"
+		mockSvc.EXPECT().ExtensionUpdate(
+			req.Context(), agent, extensionID,
+			(*string)(nil), (*string)(nil), &expectPassword,
+		).Return(resExt, nil)
+
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+		}
+	})
+
+	t.Run("empty body -- every pointer nil", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSvc := servicehandler.NewMockServiceHandler(mc)
+		h := &server{serviceHandler: mockSvc}
+
+		w := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(w)
+		r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+		openapi_server.RegisterHandlers(r, h)
+
+		reqBody := []byte(`{}`)
+		req, _ := http.NewRequest("PUT", "/extensions/"+extensionID.String(), bytes.NewBuffer(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		mockSvc.EXPECT().ExtensionUpdate(
+			req.Context(), agent, extensionID,
+			(*string)(nil), (*string)(nil), (*string)(nil),
+		).Return(resExt, nil)
+
+		r.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+		}
+	})
 }
 
 func TestExtensionsIDDELETE(t *testing.T) {

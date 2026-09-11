@@ -142,7 +142,12 @@ func (r *requestHandler) RegistrarV1TrunkDelete(ctx context.Context, trunkID uui
 // RegistrarV1TrunkUpdateBasicInfo sends a request to registrar-manager
 // to update the basic trunk info.
 // it returns updated trunk info if it succeed.
-func (r *requestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.Trunk, error) {
+//
+// Every field is a pointer: nil means "leave the existing value
+// unchanged". authTypes/allowedIPs are pointers-to-slices so nil
+// (omitted) is distinguishable from an explicit empty array. See
+// docs/plans/2026-09-12-registrar-put-partial-update-phase1-design.md.
+func (r *requestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name *string, detail *string, authTypes *[]rmsipauth.AuthType, username *string, password *string, allowedIPs *[]string) (*rmtrunk.Trunk, error) {
 	uri := fmt.Sprintf("/v1/trunks/%s", trunkID)
 
 	data := &rmrequest.V1DataTrunksIDPut{

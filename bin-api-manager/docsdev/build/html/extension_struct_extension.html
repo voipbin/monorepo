@@ -677,6 +677,11 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>Unlike other resources that use <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> as a sentinel for “not yet occurred” timestamps, extensions use an empty string (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>) for <code class="docutils literal notranslate"><span class="pre">tm_update</span></code> and <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> when the event has not occurred.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Extension Update Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/extensions/{id}</span></code> is a true partial update: <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, and <code class="docutils literal notranslate"><span class="pre">password</span></code> are all optional, and omitting a field leaves its current value unchanged. A full resend of every field is never required – for example, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">{&quot;name&quot;:</span> <span class="pre">&quot;new</span> <span class="pre">name&quot;}</span></code> renames the extension and leaves <code class="docutils literal notranslate"><span class="pre">detail</span></code>/<code class="docutils literal notranslate"><span class="pre">password</span></code> exactly as they were. This matters most for <code class="docutils literal notranslate"><span class="pre">password</span></code>: omitting it now safely preserves the extension’s existing SIP credential rather than resetting it, so a client only needs to send <code class="docutils literal notranslate"><span class="pre">password</span></code> when actually rotating the credential.</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p><strong>Call routing uses ``extension``, not ``name``</strong></p>

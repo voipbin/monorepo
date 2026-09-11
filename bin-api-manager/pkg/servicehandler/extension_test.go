@@ -166,8 +166,8 @@ func Test_ExtensionUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, tt.id).Return(tt.responseExtension, nil)
-			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extName, tt.detail, tt.password).Return(tt.responseExtension, nil)
-			res, err := h.ExtensionUpdate(ctx, tt.agent, tt.id, tt.extName, tt.detail, tt.password)
+			mockReq.EXPECT().RegistrarV1ExtensionUpdate(ctx, tt.id, &tt.extName, &tt.detail, &tt.password).Return(tt.responseExtension, nil)
+			res, err := h.ExtensionUpdate(ctx, tt.agent, tt.id, &tt.extName, &tt.detail, &tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

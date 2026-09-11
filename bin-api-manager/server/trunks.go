@@ -162,12 +162,16 @@ func (h *server) PutTrunksId(c *gin.Context, id string) {
 		return
 	}
 
-	authTyps := []rmsipauth.AuthType{}
-	for _, v := range req.AuthTypes {
-		authTyps = append(authTyps, rmsipauth.AuthType(v))
+	var authTypesPtr *[]rmsipauth.AuthType
+	if req.AuthTypes != nil {
+		authTyps := make([]rmsipauth.AuthType, 0, len(*req.AuthTypes))
+		for _, v := range *req.AuthTypes {
+			authTyps = append(authTyps, rmsipauth.AuthType(v))
+		}
+		authTypesPtr = &authTyps
 	}
 
-	res, err := h.serviceHandler.TrunkUpdateBasicInfo(c.Request.Context(), a, target, req.Name, req.Detail, authTyps, req.Username, req.Password, req.AllowedIps)
+	res, err := h.serviceHandler.TrunkUpdateBasicInfo(c.Request.Context(), a, target, req.Name, req.Detail, authTypesPtr, req.Username, req.Password, req.AllowedIps)
 	if err != nil {
 		log.Errorf("Could not update the trunk. err: %v", err)
 		abortWithServiceError(c, err)

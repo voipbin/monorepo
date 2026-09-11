@@ -718,7 +718,7 @@ type ServiceHandler interface {
 	ExtensionDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmextension.WebhookMessage, error)
-	ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
+	ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password *string) (*rmextension.WebhookMessage, error)
 	ExtensionDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*rmextension.WebhookMessage, error)
 	ExtensionProvisioningTokenCreate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ExtensionProvisioningToken, error)
 	ExtensionProvisioningXMLGet(ctx context.Context, token string) ([]byte, error)
@@ -1224,7 +1224,7 @@ type ServiceHandler interface {
 	TrunkDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmtrunk.WebhookMessage, error)
 	TrunkGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmtrunk.WebhookMessage, error)
 	TrunkList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmtrunk.WebhookMessage, error)
-	TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error)
+	TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name *string, detail *string, authTypes *[]rmsipauth.AuthType, username *string, password *string, allowedIPs *[]string) (*rmtrunk.WebhookMessage, error)
 
 	// timeline
 	AggregatedEventList(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, callID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error)

@@ -44,30 +44,35 @@ put:
       application/json:
         schema:
           type: object
+          description: >
+            Every field is optional. Omitting a field leaves its current
+            value unchanged; a full resend of every field is NOT required
+            to update a single field (e.g. PUT { "name": "new name" } only
+            renames the trunk and leaves auth_types/username/password/
+            allowed_ips exactly as they were).
           properties:
             name:
               type: string
+              description: "Omit to leave the current name unchanged."
             detail:
               type: string
+              description: "Omit to leave the current detail unchanged."
             auth_types:
               type: array
               items:
                 $ref: '#/components/schemas/RegistrarManagerAuthType'
+              description: "Omit to leave the current auth_types unchanged. NOTE: an explicit empty array is a valid value meaning no auth types, distinct from omitting the field."
             username:
               type: string
+              description: "Omit to leave the current username unchanged."
             password:
               type: string
+              description: "SIP trunk password. Omit to leave the current password unchanged. Sending an explicit value (including empty string) replaces it."
             allowed_ips:
               type: array
               items:
                 type: string
-          required:
-            - name
-            - detail
-            - auth_types
-            - username
-            - password
-            - allowed_ips
+              description: "IP allowlist for this trunk. Omit to leave the current allowed_ips unchanged. NOTE: an explicit empty array clears the allowlist, distinct from omitting the field -- verify this is the intended effect before sending an empty array."
   responses:
     '200':
       description: The updated trunk details.

@@ -201,7 +201,11 @@ func (h *serviceHandler) ExtensionList(ctx context.Context, a *auth.AuthIdentity
 
 // ExtesnionUpdate updates the extension info.
 // It returns updated extension if it succeed.
-func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error) {
+//
+// Every field is a pointer: nil means "leave the existing value
+// unchanged". See
+// docs/plans/2026-09-12-registrar-put-partial-update-phase1-design.md.
+func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password *string) (*rmextension.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "ExtensionUpdate",
 		"customer_id":  a.CustomerID,

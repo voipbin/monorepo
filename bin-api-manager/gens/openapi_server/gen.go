@@ -9184,9 +9184,14 @@ type PostExtensionsJSONBody struct {
 
 // PutExtensionsIdJSONBody defines parameters for PutExtensionsId.
 type PutExtensionsIdJSONBody struct {
-	Detail   string `json:"detail"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
+	// Detail Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
+
+	// Password SIP registration password. Omit to leave the current password unchanged. Sending an explicit value (including empty string) replaces it.
+	Password *string `json:"password,omitempty"`
 }
 
 // GetFlowsParams defines parameters for GetFlows.
@@ -10595,12 +10600,23 @@ type PostTrunksJSONBody struct {
 
 // PutTrunksIdJSONBody defines parameters for PutTrunksId.
 type PutTrunksIdJSONBody struct {
-	AllowedIps []string                   `json:"allowed_ips"`
-	AuthTypes  []RegistrarManagerAuthType `json:"auth_types"`
-	Detail     string                     `json:"detail"`
-	Name       string                     `json:"name"`
-	Password   string                     `json:"password"`
-	Username   string                     `json:"username"`
+	// AllowedIps IP allowlist for this trunk. Omit to leave the current allowed_ips unchanged. NOTE: an explicit empty array clears the allowlist, distinct from omitting the field -- verify this is the intended effect before sending an empty array.
+	AllowedIps *[]string `json:"allowed_ips,omitempty"`
+
+	// AuthTypes Omit to leave the current auth_types unchanged. NOTE: an explicit empty array is a valid value meaning no auth types, distinct from omitting the field.
+	AuthTypes *[]RegistrarManagerAuthType `json:"auth_types,omitempty"`
+
+	// Detail Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
+
+	// Password SIP trunk password. Omit to leave the current password unchanged. Sending an explicit value (including empty string) replaces it.
+	Password *string `json:"password,omitempty"`
+
+	// Username Omit to leave the current username unchanged.
+	Username *string `json:"username,omitempty"`
 }
 
 // GetWebchatMessagesParams defines parameters for GetWebchatMessages.

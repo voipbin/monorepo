@@ -414,7 +414,7 @@ func Test_RegistrarV1TrunkUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1TrunkUpdateBasicInfo(ctx, tt.trunkID, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs)
+			res, err := reqHandler.RegistrarV1TrunkUpdateBasicInfo(ctx, tt.trunkID, &tt.trunkName, &tt.detail, &tt.authTypes, &tt.username, &tt.password, &tt.allowedIPs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

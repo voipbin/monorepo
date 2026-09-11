@@ -94,7 +94,11 @@ func (r *requestHandler) RegistrarV1ExtensionDelete(ctx context.Context, extensi
 // RegistrarV1ExtensionUpdate sends a request to registrar-manager
 // to update the detail extension info.
 // it returns updated extension info if it succeed.
-func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name string, detail string, password string) (*rmextension.Extension, error) {
+//
+// Every field is a pointer: nil means "leave the existing value
+// unchanged". See
+// docs/plans/2026-09-12-registrar-put-partial-update-phase1-design.md.
+func (r *requestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name *string, detail *string, password *string) (*rmextension.Extension, error) {
 	uri := fmt.Sprintf("/v1/extensions/%s", id)
 
 	data := &rmrequest.V1DataExtensionsIDPut{

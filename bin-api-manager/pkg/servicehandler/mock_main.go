@@ -3015,7 +3015,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionProvisioningXMLGet(ctx, token
 }
 
 // ExtensionUpdate mocks base method.
-func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password string) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password *string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, a, id, name, detail, password)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
@@ -6305,7 +6305,7 @@ func (mr *MockServiceHandlerMockRecorder) TrunkList(ctx, a, size, token any) *go
 }
 
 // TrunkUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
+func (m *MockServiceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail *string, authTypes *[]sipauth.AuthType, username, password *string, allowedIPs *[]string) (*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkUpdateBasicInfo", ctx, a, id, name, detail, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.WebhookMessage)
