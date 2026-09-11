@@ -9,6 +9,38 @@ from pipecat.services.llm_service import FunctionCallParams
 from pipecat.frames.frames import FunctionCallResultProperties
 
 
+def register_missing_tool_logging(llm_service, pipecatcall_id: str):
+    """Log an ERROR when the LLM calls a tool not registered on this service (VOIP-1512).
+
+    pipecat's ``on_function_calls_started`` event fires just before dispatch, for
+    every function call the LLM emits -- including calls to tools that were never
+    registered. When a called tool is absent from ``service._functions``, pipecat
+    silently routes it to its terminal missing-function handler and only emits its
+    own WARNING; nothing reaches the agent or an operator. This promotes that case
+    to a structured ERROR we control (fixed ``[missing_tool]`` prefix), which an
+    Alloy ``stage.metrics`` stage turns into a Prometheus counter for alerting.
+
+    Anchored on the real pipecat ``LLMService`` instance (single-AI: the one
+    llm_service; team: each member service), NOT on ``tool_register`` -- the team
+    path never calls ``tool_register``, so anchoring there would leave team sessions
+    blind.
+
+    Membership is decided against ``service._functions`` -- the exact dict pipecat's
+    own dispatch checks (llm_service.py: ``function_name in self._functions.keys()``).
+    This runner never registers a ``None`` catch-all handler, so the absence of a
+    name from ``_functions`` is a genuine missing tool with no false positives.
+    """
+
+    @llm_service.event_handler("on_function_calls_started")
+    async def _on_function_calls_started(service, function_calls):
+        for fc in function_calls:
+            if fc.function_name not in service._functions:
+                logger.error(
+                    f"[missing_tool] LLM called unadvertised tool. "
+                    f"pipecatcall_id={pipecatcall_id} tool_name={fc.function_name}"
+                )
+
+
 def convert_to_openai_format(tools_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Convert tools from ai-manager format to OpenAI function calling format.

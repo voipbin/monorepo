@@ -181,3 +181,12 @@ pipecat은 hallucination 케이스를 `logger.warning`(1517)으로 이미 찍는
 | (이슈분석 2) | Issue | APPROVE | 정정 반영, 2연속 |
 | 설계 1 | Design | REQUEST_CHANGES | §3.2 치명 결함: 이벤트를 tool_register(single 전용)에 두면 team 미커버. §3.1a service._functions 판별 + §3.2 2지점 앵커링으로 재작성. 비차단 B(alert 3-annotation) 반영 |
 | 설계 2 | Design | APPROVE | Round 1 결함 해소 코드 검증. 비차단: §3.1a "1:1 동일"이 None catch-all 분기 누락(이 코드베이스 미사용)→정정 반영 |
+| 설계 3 | Design | APPROVE | §3.1a/§3.2를 실제 구현 코드(tools.py:37, run.py:260/640-644)와 재대조, 실제 pipecat 1.4.0 환경 pytest 4/4 PASS로 실동작 확인. Round 2에 이은 2연속 APPROVE로 설계 리뷰 게이트 통과 |
+
+**설계 리뷰 게이트: 통과** (Round 2, 3 연속 APPROVE). 코드는 이미 작성/실검증 완료 상태이므로, 다음 단계는 코드 리뷰 루프(최소 3회 + 2연속 APPROVE)로 진행한다.
+
+| 코드 1 | Code | APPROVE | pipecat 1.4.0 실소스(llm_service.py:1282) 대조, single/team 앵커링 정확, sys.modules 격리 안전, 150 passed(무관 기존 2건 실패 제외) |
+| 코드 2 | Code | APPROVE | private attr(_functions) 위험 수용 가능(탐지 전용, asyncio.create_task 격리), 중복등록 불가(Go 3개 호출지점 모두 1회성), 로그 포맷 §3.3과 바이트 일치, CI에 pytest 잡 자체가 비활성(VOIP-1356)이라 xdist 무관 |
+| 코드 3 | Code | APPROVE | 스코프 오인 없음(VOIP-1510 근본원인 미해결 오인 없음), PR1 단독 머지 가치 인정(트레이드오프 기 인지), git diff 의도치 않은 변경 없음, main과 병합충돌 없음. 3회 연속 APPROVE로 코드 리뷰 게이트 통과 |
+
+**코드 리뷰 게이트: 통과** (Round 1, 2, 3 연속 APPROVE, 최소 3회 요건 충족). 커밋/PR 생성 단계로 진행.

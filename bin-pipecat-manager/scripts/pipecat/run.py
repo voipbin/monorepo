@@ -42,7 +42,7 @@ from pipecat.transports.websocket.client import (
 )
 
 from message_filters import filter_valid_messages
-from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names
+from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names, register_missing_tool_logging
 from task import task_manager
 from routing_llm import RoutingLLMService
 from routing_tts import RoutingTTSService
@@ -256,6 +256,8 @@ async def init_single_ai_pipeline(
     try:
         # Register tools (after task_manager.add so cleanup-on-failure can unregister)
         tool_register(llm_service, id, tool_names, tools_data=tools_data)
+        # VOIP-1512: surface missing/unadvertised tool calls as a structured ERROR.
+        register_missing_tool_logging(llm_service, id)
 
         async def handle_disconnect_or_error(name, transport, error=None):
             logger.error(f"{name} WebSocket disconnected or errored: {error}. pipeline id={id}")
@@ -629,6 +631,14 @@ async def init_team_pipeline(
     logger.info(f"[TEAM][INIT] Created {len(llm_services)} LLM, {len(tts_services)} TTS, {len(stt_services)} STT services. pipeline id={id}")
     if not stt_type and not tts_type:
         logger.info(f"[TEAM][INIT] Text-only session; skipping per-member TTS/STT. pipeline id={id}")
+
+    # VOIP-1512: surface missing/unadvertised tool calls as a structured ERROR.
+    # Anchored on each member's real LLMService (the RoutingLLMService wrapper
+    # does not fire on_function_calls_started itself). tool_register is never
+    # called on the team path, so this is the only place team sessions get
+    # missing-tool visibility.
+    for _svc in llm_services.values():
+        register_missing_tool_logging(_svc, id)
 
     # --- Step 2: Create routing services ---
     routing_llm = RoutingLLMService(llm_services)
