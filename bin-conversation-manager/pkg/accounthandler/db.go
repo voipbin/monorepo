@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -15,6 +16,16 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
+)
+
+const (
+	// accountSetupTimeout is the receiver-side local deadline imposed on the
+	// account setup step (VOIP-1516). It must stay shorter than the sender's
+	// RPC wait budget (bin-common-handler/pkg/requesthandler
+	// ConversationV1AccountCreate uses 30s) so a slow external call (e.g.
+	// LINE webhook registration) fails fast here instead of racing past the
+	// sender's timeout and still completing AccountCreate below.
+	accountSetupTimeout = 20 * time.Second
 )
 
 // Create is handy function for creating a confbridge.
@@ -49,7 +60,22 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 	}
 
 	// setup the account
-	if errSetup := h.setup(ctx, ac); errSetup != nil {
+	//
+	// setupCtx imposes an explicit, receiver-side local deadline
+	// (VOIP-1516, accountSetupTimeout) shorter than the sender's RPC wait
+	// budget (bin-common-handler/pkg/requesthandler ConversationV1AccountCreate
+	// uses 30s). The account setup step (e.g. LINE webhook registration)
+	// makes a synchronous external HTTP call; without this deadline, the
+	// original ctx (context.Background(), no deadline -- see
+	// pkg/listenhandler/main.go processRequest) never cancels, so a slow
+	// external response can keep running past the sender's timeout and
+	// still complete AccountCreate/Get/PublishWebhookEvent below, creating
+	// a client-sees-failure/server-creates-anyway race. Failing fast here,
+	// before AccountCreate, closes that race.
+	setupCtx, cancel := context.WithTimeout(ctx, accountSetupTimeout)
+	defer cancel()
+
+	if errSetup := h.setup(setupCtx, ac); errSetup != nil {
 		log.Errorf("Could not setup the account. err: %v", errSetup)
 		return nil, errors.Wrap(errSetup, "could not setup the account")
 	}

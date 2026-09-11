@@ -6,6 +6,7 @@ import (
 	"fmt"
 	reflect "reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -93,7 +94,7 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockLine.EXPECT().Setup(ctx, tt.expectAccount).Return(nil)
+			mockLine.EXPECT().Setup(gomock.Any(), tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountCreate(ctx, tt.expectAccount).Return(nil)
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountCreated, tt.responseAccount)
@@ -107,6 +108,73 @@ func Test_Create(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseAccount, res)
 			}
 		})
+	}
+}
+
+func Test_Create_SetupTimeout(t *testing.T) {
+	// Verifies that when setup() (LINE webhook registration) exceeds the
+	// receiver-side local deadline, Create() fails fast and does NOT reach
+	// AccountCreate/Get/PublishWebhookEvent -- the race condition this fix
+	// (VOIP-1516) is designed to close.
+	customerID := uuid.FromStringOrNil("3b24255a-e60b-11ec-9815-5f679b51ac4d")
+	responseUUID := uuid.FromStringOrNil("4f187bba-fdf7-11ed-87b2-d7cc82900fb6")
+	expectAccount := &account.Account{
+		Identity: commonidentity.Identity{
+			ID:         responseUUID,
+			CustomerID: customerID,
+		},
+		Type:   account.TypeLine,
+		Name:   "test name",
+		Detail: "test detail",
+		Secret: "test secret",
+		Token:  "test token",
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockLine := linehandler.NewMockLineHandler(mc)
+	mockWhatsApp := whatsapphandler.NewMockWhatsAppHandler(mc)
+
+	h := accountHandler{
+		utilHandler:     mockUtil,
+		db:              mockDB,
+		reqHandler:      mockReq,
+		notifyHandler:   mockNotify,
+		lineHandler:     mockLine,
+		whatsappHandler: mockWhatsApp,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	// setup() is called with a derived, timed-out context and returns
+	// context.DeadlineExceeded, simulating a slow LINE API response.
+	mockLine.EXPECT().Setup(gomock.Any(), expectAccount).DoAndReturn(
+		func(setupCtx context.Context, _ *account.Account) error {
+			deadline, ok := setupCtx.Deadline()
+			if !ok {
+				t.Errorf("Wrong match. expect: setup ctx has a deadline, got: no deadline")
+			} else if remaining := time.Until(deadline); remaining > 20*time.Second || remaining < 19*time.Second {
+				t.Errorf("Wrong match. expect: setup ctx deadline ~20s, got: %v", remaining)
+			}
+			return context.DeadlineExceeded
+		},
+	)
+	// AccountCreate/Get/PublishWebhookEvent must NOT be called -- no
+	// mockDB/mockNotify expectations are set, so gomock will fail the test
+	// if Create() reaches them despite the setup() failure.
+
+	res, err := h.Create(ctx, customerID, account.TypeLine, "test name", "test detail", "test secret", "test token", uuid.Nil, json.RawMessage(nil))
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: ok")
+	}
+
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
 	}
 }
 
