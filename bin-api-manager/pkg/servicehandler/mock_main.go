@@ -3271,7 +3271,7 @@ func (mr *MockServiceHandlerMockRecorder) McpServerGetsByCustomerID(ctx, a, size
 }
 
 // McpServerUpdate mocks base method.
-func (m *MockServiceHandler) McpServerUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, url string, status mcpserver.Status, authType mcpserver.AuthType, apiKeyHeader string, secret *string) (*mcpserver.WebhookMessage, error) {
+func (m *MockServiceHandler) McpServerUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, url *string, status *mcpserver.Status, authType *mcpserver.AuthType, apiKeyHeader, secret *string) (*mcpserver.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "McpServerUpdate", ctx, a, id, name, detail, url, status, authType, apiKeyHeader, secret)
 	ret0, _ := ret[0].(*mcpserver.WebhookMessage)

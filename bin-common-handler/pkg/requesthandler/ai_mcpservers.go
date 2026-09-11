@@ -97,20 +97,23 @@ func (r *requestHandler) AIV1McpServerCreate(
 
 // AIV1McpServerUpdate sends a request to ai-manager to update an MCP server.
 //
-// secret is *string per design §10's PUT semantics: nil means "leave the
-// existing encrypted secret untouched", a non-nil pointer to "" means
-// "explicitly clear the secret", and a non-nil pointer to a value means
-// "re-encrypt and replace". SECURITY-CRITICAL: do not change this to a
+// Every field is a pointer per design §10's PUT semantics (extended to
+// all mutable fields in
+// docs/plans/2026-09-12-mcp-server-put-partial-update-design.md): nil
+// means "leave the existing value untouched", a non-nil pointer to ""
+// means "explicitly clear the secret" (secret only) or "set to the empty
+// string" (every other field), and a non-nil pointer to a value means
+// "set to this value". SECURITY-CRITICAL: do not change secret back to a
 // plain string.
 func (r *requestHandler) AIV1McpServerUpdate(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	url string,
-	status ammcpserver.Status,
-	authType ammcpserver.AuthType,
-	apiKeyHeader string,
+	name *string,
+	detail *string,
+	url *string,
+	status *ammcpserver.Status,
+	authType *ammcpserver.AuthType,
+	apiKeyHeader *string,
 	secret *string,
 ) (*ammcpserver.McpServer, error) {
 	uri := fmt.Sprintf("/v1/mcp_servers/%s", id.String())

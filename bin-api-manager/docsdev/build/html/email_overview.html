@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Email" href="email_struct_email.html"><link rel="prev" title="Email" href="email.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -770,7 +770,7 @@
    <span class="o">|</span>                           <span class="o">|</span> <span class="n">Process</span> <span class="ow">and</span> <span class="n">send</span>          <span class="o">|</span>
    <span class="o">|</span>                           <span class="o">+--------------------------&gt;|</span>
    <span class="o">|</span>  <span class="n">email_id</span>                 <span class="o">|</span>                           <span class="o">|</span>
-   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;initiated&quot;</span>      <span class="o">|</span>                           <span class="o">|</span>
+   <span class="o">|</span>  <span class="n">status</span><span class="p">:</span> <span class="s2">"initiated"</span>      <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">|&lt;--------------------------+</span>                           <span class="o">|</span>
    <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
    <span class="o">|</span> <span class="n">Webhook</span><span class="p">:</span> <span class="n">delivered</span>        <span class="o">|</span>   <span class="n">Email</span> <span class="ow">in</span> <span class="n">inbox</span>          <span class="o">|</span>
@@ -784,40 +784,40 @@
 <p>The sender (<code class="docutils literal notranslate"><span class="pre">source</span></code>) is always VoIPBin’s own platform address (<code class="docutils literal notranslate"><span class="pre">service&#64;voipbin.net</span></code>) – it is not configurable per request and there is no sender-domain verification step. Sending is gated instead on your customer account’s identity verification status; unverified customer accounts cannot send email. The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> field accepts an array of <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> objects with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">email</span></code>, not plain email strings. <code class="docutils literal notranslate"><span class="pre">content</span></code> is plain text only – there is no separate HTML body.</p>
 </div>
 <p><strong>Basic Email Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;destinations&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "destinations": [
             {
-                &quot;type&quot;: &quot;email&quot;,
-                &quot;target&quot;: &quot;customer@example.com&quot;
+                "type": "email",
+                "target": "customer@example.com"
             }
         ],
-        &quot;subject&quot;: &quot;Your Order Confirmation&quot;,
-        &quot;content&quot;: &quot;Thank you for your order #12345.&quot;
-    }&#39;
+        "subject": "Your Order Confirmation",
+        "content": "Thank you for your order #12345."
+    }'
 </pre></div>
 </div>
 <p><strong>Email with Attachment:</strong></p>
 <p>Attachments reference an existing VoIPBin resource by <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (for example a call recording) – you cannot upload arbitrary file content.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;destinations&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/emails?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "destinations": [
             {
-                &quot;type&quot;: &quot;email&quot;,
-                &quot;target&quot;: &quot;customer@example.com&quot;
+                "type": "email",
+                "target": "customer@example.com"
             }
         ],
-        &quot;subject&quot;: &quot;Your Call Recording&quot;,
-        &quot;content&quot;: &quot;Please find your call recording attached.&quot;,
-        &quot;attachments&quot;: [
+        "subject": "Your Call Recording",
+        "content": "Please find your call recording attached.",
+        "attachments": [
             {
-                &quot;reference_type&quot;: &quot;recording&quot;,
-                &quot;reference_id&quot;: &quot;1f25e6c9-6709-44d1-b93e-a5f1c5f80411&quot;
+                "reference_type": "recording",
+                "reference_id": "1f25e6c9-6709-44d1-b93e-a5f1c5f80411"
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 </section>
@@ -908,7 +908,7 @@
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
-<span class="n">Subject</span><span class="p">:</span> <span class="s2">&quot;Order #12345 Confirmed&quot;</span>
+<span class="n">Subject</span><span class="p">:</span> <span class="s2">"Order #12345 Confirmed"</span>
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">Customer</span> <span class="n">receives</span> <span class="n">confirmation</span>
@@ -926,7 +926,7 @@
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
-<span class="n">Subject</span><span class="p">:</span> <span class="s2">&quot;Reset Your Password&quot;</span>
+<span class="n">Subject</span><span class="p">:</span> <span class="s2">"Reset Your Password"</span>
 <span class="n">Content</span><span class="p">:</span> <span class="n">Link</span> <span class="k">with</span> <span class="n">token</span>
              <span class="o">|</span>
              <span class="n">v</span>
@@ -945,7 +945,7 @@
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>
-<span class="n">attachments</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording&quot;</span><span class="p">,</span> <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">}]</span>
+<span class="n">attachments</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"recording"</span><span class="p">,</span> <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;uuid&gt;"</span><span class="p">}]</span>
              <span class="o">|</span>
              <span class="n">v</span>
 <span class="n">Customer</span> <span class="n">receives</span> <span class="n">email</span> <span class="n">referencing</span> <span class="n">the</span> <span class="n">recording</span>
@@ -958,11 +958,11 @@
 <span class="o">|</span>                                          <span class="o">|</span>
 <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">emails</span>                             <span class="o">|</span>
 <span class="o">|</span> <span class="p">{</span>                                        <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>                      <span class="o">|</span>
-<span class="o">|</span>     <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">sub</span><span class="p">}</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>                      <span class="o">|</span>
+<span class="o">|</span>     <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"email"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="n">sub</span><span class="p">}</span>     <span class="o">|</span>
 <span class="o">|</span>   <span class="p">],</span>                                     <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;Weekly Newsletter&quot;</span><span class="p">,</span>        <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span>                       <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Weekly Newsletter"</span><span class="p">,</span>        <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"content"</span><span class="p">:</span> <span class="s2">"..."</span>                       <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                                        <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
                   <span class="o">|</span>
@@ -1129,8 +1129,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

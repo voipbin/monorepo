@@ -82,6 +82,9 @@ Endpoints
      - ``/service_agents/contact_cases/{id}/assign``
      - Assign the case to an owner agent (``owner_type`` is always ``"agent"``, fixed server-side).
    * - POST
+     - ``/service_agents/contact_cases/{id}/unassign``
+     - Clear the case's owner. Only the current owning agent may unassign themselves.
+   * - POST
      - ``/service_agents/contact_cases/{id}/close``
      - Close the case. ``closed_by_id`` is derived from the caller's own identity.
    * - GET
@@ -132,6 +135,14 @@ Assignment and closing are separate operations: assigning a case to an agent doe
         }'
 
 ``owner_id`` must reference an existing agent of the **same customer** as the caller. A cross-tenant or nonexistent agent ID and a nonexistent case ID both return the same ``404`` -- the API deliberately does not reveal which one failed.
+
+**Unassign a case**
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/<case-id>/unassign?token=<token>'
+
+Only the current owning agent may unassign themselves; there is no admin/manager bypass on this surface. Attempting to unassign a case owned by a different agent, or an already-unowned case, returns ``403 Forbidden`` -- not ``404``, since any agent of the customer may already view the case via ``GET``. Unassigning a ``closed`` case returns ``409 Conflict``, matching ``assign``'s behavior.
 
 **Close a case**
 
@@ -199,7 +210,7 @@ The note's ``author_type``/``author_id`` are always derived server-side from the
 
 Relationship to the Admin/Manager Case API
 ----------------------------------------------
-The same underlying Case resource is also exposed at the top level (``/contact_cases``, gated by admin/manager permission) -- see :ref:`Case Overview <contact-case-overview>`. That surface additionally supports ``POST /contact_cases/{id}/continue`` (reopen a closed case) and sending an outbound conversation message tied to the case, neither of which exists under ``/service_agents/contact_cases``. ``POST /service_agents/contact_cases/{id}/assign`` (owner assignment) also has a top-level equivalent, ``POST /contact_cases/{id}/assign`` (VOIP-1514), gated by admin/manager permission instead of ``PermissionAll``.
+The same underlying Case resource is also exposed at the top level (``/contact_cases``, gated by admin/manager permission) -- see :ref:`Case Overview <contact-case-overview>`. That surface additionally supports ``POST /contact_cases/{id}/continue`` (reopen a closed case) and sending an outbound conversation message tied to the case, neither of which exists under ``/service_agents/contact_cases``. ``POST /service_agents/contact_cases/{id}/assign`` (owner assignment) and ``POST /service_agents/contact_cases/{id}/unassign`` (owner removal) also have top-level equivalents, ``POST /contact_cases/{id}/assign`` (VOIP-1514) and ``POST /contact_cases/{id}/unassign`` (VOIP-1515), gated by admin/manager permission (or the owning agent, for unassign) instead of ``PermissionAll``.
 
 
 Related Documentation

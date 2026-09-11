@@ -116,42 +116,63 @@ func (h *mcpServerHandler) List(ctx context.Context, size uint64, token string, 
 	return res, nil
 }
 
-// Update updates the McpServer. secret follows design §10's PUT pointer
-// semantics: nil leaves the existing encrypted secret untouched, a pointer
-// to "" clears it, and a pointer to a non-empty value re-encrypts and
-// replaces it.
+// Update updates the McpServer. Every field below follows the same PUT
+// pointer semantics established for secret in design §10 MN2 and extended
+// to the other six fields in
+// docs/plans/2026-09-12-mcp-server-put-partial-update-design.md: nil
+// means "leave the existing value untouched", a non-nil pointer
+// (including one pointing at the zero value, e.g. auth_type: "" or
+// url: "") means "set to exactly this value, validate it as normal".
+// secret additionally treats a non-nil pointer to "" as "explicitly
+// clear" (distinct from "set to empty string" for the other string
+// fields, since an empty secret is a real clear operation, not a
+// validatable value) -- this asymmetry is intentional and pre-existing,
+// not something this change alters.
 func (h *mcpServerHandler) Update(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	url string,
-	status mcpserver.Status,
-	authType mcpserver.AuthType,
-	apiKeyHeader string,
+	name *string,
+	detail *string,
+	url *string,
+	status *mcpserver.Status,
+	authType *mcpserver.AuthType,
+	apiKeyHeader *string,
 	secret *string,
 ) (*mcpserver.McpServer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Update",
 	})
 
-	if err := ValidateURL(url); err != nil {
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_URL", err.Error()).Wrap(err)
+	if url != nil {
+		if err := ValidateURL(*url); err != nil {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_URL", err.Error()).Wrap(err)
+		}
 	}
-	if !status.IsValid() {
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_STATUS", "invalid status: "+string(status))
+	if status != nil && !status.IsValid() {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_STATUS", "invalid status: "+string(*status))
 	}
-	if !authType.IsValid() {
-		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_AUTH_TYPE", "invalid auth_type: "+string(authType))
+	if authType != nil && !authType.IsValid() {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_AUTH_TYPE", "invalid auth_type: "+string(*authType))
 	}
 
-	fields := map[mcpserver.Field]any{
-		mcpserver.FieldName:         name,
-		mcpserver.FieldDetail:       detail,
-		mcpserver.FieldURL:          url,
-		mcpserver.FieldStatus:       status,
-		mcpserver.FieldAuthType:     authType,
-		mcpserver.FieldAPIKeyHeader: apiKeyHeader,
+	fields := map[mcpserver.Field]any{}
+	if name != nil {
+		fields[mcpserver.FieldName] = *name
+	}
+	if detail != nil {
+		fields[mcpserver.FieldDetail] = *detail
+	}
+	if url != nil {
+		fields[mcpserver.FieldURL] = *url
+	}
+	if status != nil {
+		fields[mcpserver.FieldStatus] = *status
+	}
+	if authType != nil {
+		fields[mcpserver.FieldAuthType] = *authType
+	}
+	if apiKeyHeader != nil {
+		fields[mcpserver.FieldAPIKeyHeader] = *apiKeyHeader
 	}
 
 	if secret != nil {
@@ -168,6 +189,18 @@ func (h *mcpServerHandler) Update(
 			fields[mcpserver.FieldSecretNonce] = nonce
 			fields[mcpserver.FieldKeyVersion] = version
 		}
+	}
+
+	if len(fields) == 0 {
+		// A PUT with every field omitted (or only unchanged/invalid-nil
+		// pointers) is a client no-op, not a server error. Returning the
+		// current row (instead of erroring or issuing a zero-column
+		// UPDATE, which some SQL builders reject) matches List/Get's
+		// "always return current state" contract and avoids a special
+		// "PATCH-with-nothing-to-patch" error class nothing else in this
+		// API returns. Reuses Get's existing ErrNotFound -> cerrors.NotFound
+		// mapping rather than duplicating it.
+		return h.Get(ctx, id)
 	}
 
 	if err := h.db.McpServerUpdate(ctx, id, fields); err != nil {

@@ -127,21 +127,23 @@ func (h *serviceHandler) McpServerGet(ctx context.Context, a *auth.AuthIdentity,
 
 // McpServerUpdate updates an MCP server after checking ownership.
 //
-// secret is *string per design §10's PUT semantics: nil means "leave the
-// existing encrypted secret untouched", a non-nil pointer to "" means
-// "explicitly clear the secret", and a non-nil pointer to a value means
-// "re-encrypt and replace". SECURITY-CRITICAL: do not change this to a
-// plain string.
+// Every field is a pointer per design §10's PUT semantics (extended to
+// all mutable fields in
+// docs/plans/2026-09-12-mcp-server-put-partial-update-design.md): nil
+// means "leave the existing value untouched", a non-nil pointer to "" on
+// secret means "explicitly clear the secret", and a non-nil pointer to a
+// value means "set to this value". SECURITY-CRITICAL: do not change
+// secret back to a plain string.
 func (h *serviceHandler) McpServerUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	id uuid.UUID,
-	name string,
-	detail string,
-	url string,
-	status ammcpserver.Status,
-	authType ammcpserver.AuthType,
-	apiKeyHeader string,
+	name *string,
+	detail *string,
+	url *string,
+	status *ammcpserver.Status,
+	authType *ammcpserver.AuthType,
+	apiKeyHeader *string,
 	secret *string,
 ) (*ammcpserver.WebhookMessage, error) {
 	if a.IsDirect() {

@@ -32,9 +32,11 @@ get:
 put:
   summary: Update an MCP server.
   description: >
-    Updates an existing MCP server's details and returns the updated record.
-    `secret` omitted leaves the existing encrypted secret untouched; `secret: ""` explicitly clears it;
-    a non-empty `secret` re-encrypts and replaces it.
+    Every field is optional. Omitting a field leaves its current value
+    unchanged; a full resend of every field is NOT required to update a
+    single field (e.g. `PUT { "name": "new name" }` only renames the
+    server and leaves url/status/auth_type/api_key_header/secret exactly
+    as they were).
   tags:
     - AI
   parameters:
@@ -54,22 +56,26 @@ put:
           properties:
             name:
               type: string
+              description: "Omit to leave the current name unchanged."
             detail:
               type: string
+              description: "Omit to leave the current detail unchanged."
             url:
               type: string
               format: uri
-              description: "Streamable-HTTP MCP endpoint. Must be https."
+              description: "Streamable-HTTP MCP endpoint. Must be https. Omit to leave the current URL unchanged."
             status:
               type: string
               enum: ["active", "disabled"]
-              description: "Set to disabled to exclude this server from ListTools/CallTool without deleting it."
+              description: "Set to disabled to exclude this server from ListTools/CallTool without deleting it. Omit to leave the current status unchanged."
               example: "active"
             auth_type:
               type: string
               enum: ["", "bearer", "api_key"]
+              description: "Omit to leave the current auth_type unchanged. NOTE: an explicit empty string (\"\") is a valid value meaning no-auth, distinct from omitting the field."
             api_key_header:
               type: string
+              description: "Omit to leave the current api_key_header unchanged."
             secret:
               type: string
               description: "Omit this field to leave the existing secret unchanged. Send an empty string to clear it."

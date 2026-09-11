@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Flow Execution Internals" href="flow_execution_internals.html"><link rel="prev" title="Tutorial basic" href="flow_tutorial_basic.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial scenario - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -668,7 +668,7 @@
              <span class="n">Connect</span><span class="p">(</span><span class="n">Making</span> <span class="n">an</span> <span class="n">outgoing</span> <span class="n">call</span> <span class="k">for</span> <span class="n">forwarding</span><span class="p">)</span>
                  <span class="o">|</span>
                  <span class="o">|</span>
-             <span class="n">Condition</span> <span class="n">check</span><span class="p">(</span><span class="n">check</span> <span class="n">the</span> <span class="n">call</span><span class="s1">&#39;s status is Answered)</span>
+             <span class="n">Condition</span> <span class="n">check</span><span class="p">(</span><span class="n">check</span> <span class="n">the</span> <span class="n">call</span><span class="s1">'s status is Answered)</span>
                  <span class="o">|</span>
                  <span class="o">|</span>
     <span class="o">------------------------------</span>
@@ -692,70 +692,70 @@
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"connect"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15559876543"</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551112222&quot;</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15551112222"</span>
                     <span class="p">}</span>
                 <span class="p">]</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;3746e628-8cc1-4ff4-82fe-194b16b9a10e&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;condition_call_status&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;false_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cfe0e8ea-991c-11ec-b849-d7fc54168fd5&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"3746e628-8cc1-4ff4-82fe-194b16b9a10e"</span><span class="p">,</span>
+            <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"condition_call_status"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>
+                <span class="s2">"false_target_id"</span><span class="p">:</span> <span class="s2">"cfe0e8ea-991c-11ec-b849-d7fc54168fd5"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;58f859e9-92d8-4b46-8073-722b9c881ae0&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"58f859e9-92d8-4b46-8073-722b9c881ae0"</span><span class="p">,</span>
+            <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"hangup"</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;cfe0e8ea-991c-11ec-b849-d7fc54168fd5&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you for your calling. We are busy now. Please leave a message after tone.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"cfe0e8ea-991c-11ec-b849-d7fc54168fd5"</span><span class="p">,</span>
+            <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Thank you for your calling. We are busy now. Please leave a message after tone."</span><span class="p">,</span>
+                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0a9b6f38-ddcd-448b-80a1-ae47ac0e08aa&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;beep&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"0a9b6f38-ddcd-448b-80a1-ae47ac0e08aa"</span><span class="p">,</span>
+            <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"beep"</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ad969315-6ac4-4339-b300-566eb6352fea&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;beep_start&quot;</span><span class="p">:</span> <span class="n">true</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"ad969315-6ac4-4339-b300-566eb6352fea"</span><span class="p">,</span>
+            <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_start"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"beep_start"</span><span class="p">:</span> <span class="n">true</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;8abf3f9d-414c-4a15-aa94-02a799409f48&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sleep&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"8abf3f9d-414c-4a15-aa94-02a799409f48"</span><span class="p">,</span>
+            <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sleep"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">10000</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e4fc5d9e-9fa8-4b3e-ae77-b55b04c1f2d3&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"e4fc5d9e-9fa8-4b3e-ae77-b55b04c1f2d3"</span><span class="p">,</span>
+            <span class="s2">"next_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"hangup"</span>
         <span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
@@ -768,7 +768,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              <span class="n">Start</span>
                 <span class="o">|</span>
                 <span class="o">|</span>
-<span class="o">------------&gt;</span>  <span class="n">Talk</span><span class="p">(</span><span class="s2">&quot;Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;</span><span class="p">)</span>
+<span class="o">------------&gt;</span>  <span class="n">Talk</span><span class="p">(</span><span class="s2">"Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust"</span><span class="p">)</span>
 <span class="o">|</span>               <span class="o">|</span>
 <span class="o">|</span>               <span class="o">|</span>
 <span class="o">|</span>              <span class="n">Digit</span><span class="p">(</span><span class="n">DTMF</span><span class="p">)</span> <span class="n">receive</span>
@@ -776,7 +776,7 @@
 <span class="o">|</span>               <span class="o">|</span>
 <span class="o">|</span>       <span class="o">-----------------------------------------------</span>
 <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
-<span class="o">|</span>     <span class="n">default</span>      <span class="s2">&quot;1&quot;</span>              <span class="s2">&quot;2&quot;</span>              <span class="s2">&quot;3&quot;</span>
+<span class="o">|</span>     <span class="n">default</span>      <span class="s2">"1"</span>              <span class="s2">"2"</span>              <span class="s2">"3"</span>
 <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
 <span class="o">|</span>       <span class="o">|</span>          <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>        <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>        <span class="n">Talk</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
@@ -797,90 +797,90 @@
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"b8781e56-c524-11ec-889f-d37b0dbb7eb8"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello. This is branch test. Press 1 for show must go on. Press 2 for bohemian rhapsody. Press 3 for another one bites the dust"</span><span class="p">,</span>
+                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
-                <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">1</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"digits_receive"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+                <span class="s2">"length"</span><span class="p">:</span> <span class="mi">1</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;default_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target_ids&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"branch"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"default_target_id"</span><span class="p">:</span> <span class="s2">"ed9705ca-c524-11ec-a3fb-8feb7731ad45"</span><span class="p">,</span>
+                <span class="s2">"target_ids"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"1"</span><span class="p">:</span> <span class="s2">"c3eb8e62-c524-11ec-94c5-abafec8af561"</span><span class="p">,</span>
+                    <span class="s2">"2"</span><span class="p">:</span> <span class="s2">"dc87123e-c524-11ec-89c6-5fb18da14034"</span><span class="p">,</span>
+                    <span class="s2">"3"</span><span class="p">:</span> <span class="s2">"e70fb030-c524-11ec-b657-ebec72f097ef"</span>
                 <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3eb8e62-c524-11ec-94c5-abafec8af561&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"c3eb8e62-c524-11ec-94c5-abafec8af561"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Empty spaces, what are we living for? Abandoned places, I guess we know the score, on and on. Does anybody know what we are looking for? Another hero, another mindless crime. Behind the curtain, in the pantomime"</span><span class="p">,</span>
+                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"hangup"</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;dc87123e-c524-11ec-89c6-5fb18da14034&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he&#39;s dead. Mama, life had just begun, But now I&#39;ve gone and thrown it all away.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"dc87123e-c524-11ec-89c6-5fb18da14034"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Mama, Just killed a man. Put a gun against his head, pulled my trigger. Now he's dead. Mama, life had just begun, But now I've gone and thrown it all away."</span><span class="p">,</span>
+                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"hangup"</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e70fb030-c524-11ec-b657-ebec72f097ef&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Steve walks warily down the street. With his brim pulled way down low. Ain&#39;t no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"e70fb030-c524-11ec-b657-ebec72f097ef"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Steve walks warily down the street. With his brim pulled way down low. Ain't no sound but the sound of his feet. Machine guns ready to go. Are you ready hey are you ready for this?"</span><span class="p">,</span>
+                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"hangup"</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ed9705ca-c524-11ec-a3fb-8feb7731ad45&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;You didn&#39;t choose the correct number. Default selected.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"ed9705ca-c524-11ec-a3fb-8feb7731ad45"</span><span class="p">,</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"You didn't choose the correct number. Default selected."</span><span class="p">,</span>
+                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b8781e56-c524-11ec-889f-d37b0dbb7eb8&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"goto"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"target_id"</span><span class="p">:</span> <span class="s2">"b8781e56-c524-11ec-889f-d37b0dbb7eb8"</span><span class="p">,</span>
+                <span class="s2">"loop_count"</span><span class="p">:</span> <span class="mi">2</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Loop over. Hangup the call. Thank you, good bye.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Loop over. Hangup the call. Thank you, good bye."</span><span class="p">,</span>
+                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"hangup"</span>
         <span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
@@ -900,29 +900,29 @@
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"message_send"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000001"</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000002&quot;</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000002"</span>
                     <span class="p">},</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000003&quot;</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000003"</span>
                     <span class="p">},</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000004&quot;</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000004"</span>
                     <span class="p">}</span>
                 <span class="p">],</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"hello, this is test message."</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">]</span>
@@ -949,42 +949,42 @@
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_send&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"message_send"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000001"</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000002&quot;</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000002"</span>
                     <span class="p">}</span>
                 <span class="p">],</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"hello, this is test message."</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
+            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000001"</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000003&quot;</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                        <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+821100000003"</span>
                     <span class="p">}</span>
                 <span class="p">],</span>
-                <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;hello, this is test message.&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
+                        <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"hello, this is test message."</span><span class="p">,</span>
+                            <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
                         <span class="p">}</span>
                     <span class="p">}</span>
                 <span class="p">]</span>
@@ -1076,8 +1076,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

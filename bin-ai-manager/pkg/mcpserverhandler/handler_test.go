@@ -18,6 +18,11 @@ import (
 // &"value" for the secret parameter without a separate named var per case.
 func strPtr(s string) *string { return &s }
 
+// statusPtr / authTypePtr are the enum-field equivalents of strPtr, used by
+// the partial-update Update tests below.
+func statusPtr(s mcpserver.Status) *mcpserver.Status       { return &s }
+func authTypePtr(a mcpserver.AuthType) *mcpserver.AuthType { return &a }
+
 // newTestHandlerWithCrypto builds an *mcpServerHandler wired to real mocks
 // plus a real *SecretCrypto (not mocked -- this suite verifies the actual
 // encrypt/store/clear translation, which is the point of these tests).
@@ -102,7 +107,7 @@ func Test_Update_SecretPointerSemantics(t *testing.T) {
 			}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, mcpserver.EventTypeUpdated, gomock.Any())
 
-			_, err := h.Update(context.Background(), id, "name", "detail", "https://mcp.example.com/", mcpserver.StatusActive, mcpserver.AuthTypeNone, "", tt.secret)
+			_, err := h.Update(context.Background(), id, strPtr("name"), strPtr("detail"), strPtr("https://mcp.example.com/"), statusPtr(mcpserver.StatusActive), authTypePtr(mcpserver.AuthTypeNone), strPtr(""), tt.secret)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

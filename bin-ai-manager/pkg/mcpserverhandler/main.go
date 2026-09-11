@@ -38,12 +38,12 @@ type McpServerHandler interface {
 	Update(
 		ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
-		url string,
-		status mcpserver.Status,
-		authType mcpserver.AuthType,
-		apiKeyHeader string,
+		name *string,
+		detail *string,
+		url *string,
+		status *mcpserver.Status,
+		authType *mcpserver.AuthType,
+		apiKeyHeader *string,
 		secret *string,
 	) (*mcpserver.McpServer, error)
 	Delete(ctx context.Context, id uuid.UUID) (*mcpserver.McpServer, error)

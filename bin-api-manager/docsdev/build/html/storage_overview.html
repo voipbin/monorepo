@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Account" href="storage_struct_account.html"><link rel="prev" title="Storage" href="storage.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -710,43 +710,43 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> only accepts two multipart form fields: <code class="docutils literal notranslate"><span class="pre">file</span></code> (the binary content) and <code class="docutils literal notranslate"><span class="pre">type</span></code> (required, must currently be the literal string <code class="docutils literal notranslate"><span class="pre">rag</span></code>). Any other form field (e.g. <code class="docutils literal notranslate"><span class="pre">name</span></code>) is ignored – the resulting file record’s <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">detail</span></code> fields are always empty for files created through this endpoint. The maximum upload size is 30 MB. This endpoint requires <strong>CustomerAdmin</strong> or <strong>CustomerManager</strong> permission.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: multipart/form-data&#39; \
-    --form &#39;file=@/path/to/file.pdf&#39; \
-    --form &#39;type=rag&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;' \
+    --header 'Content-Type: multipart/form-data' \
+    --form 'file=@/path/to/file.pdf' \
+    --form 'type=rag'
 </pre></div>
 </div>
 <p><strong>Response:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;file-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-uuid-789&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;rag&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;file.pdf&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;filesize&quot;</span><span class="p">:</span> <span class="mi">102400</span><span class="p">,</span>
-    <span class="s2">&quot;uri_download&quot;</span><span class="p">:</span> <span class="s2">&quot;https://storage.googleapis.com/bucket-name/storage/file-uuid-123?X-Goog-Signature=...&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_download_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-16T10:30:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"file-uuid-123"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-uuid-456"</span><span class="p">,</span>
+    <span class="s2">"owner_type"</span><span class="p">:</span> <span class="s2">"agent"</span><span class="p">,</span>
+    <span class="s2">"owner_id"</span><span class="p">:</span> <span class="s2">"agent-uuid-789"</span><span class="p">,</span>
+    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"rag"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"filename"</span><span class="p">:</span> <span class="s2">"file.pdf"</span><span class="p">,</span>
+    <span class="s2">"filesize"</span><span class="p">:</span> <span class="mi">102400</span><span class="p">,</span>
+    <span class="s2">"uri_download"</span><span class="p">:</span> <span class="s2">"https://storage.googleapis.com/bucket-name/storage/file-uuid-123?X-Goog-Signature=..."</span><span class="p">,</span>
+    <span class="s2">"tm_download_expire"</span><span class="p">:</span> <span class="s2">"2024-01-16T10:30:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"9999-01-01 00:00:00.000000"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"9999-01-01 00:00:00.000000"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>List All Files</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Get File Details</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Download a File (Direct)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -L -X GET &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;/file?token=&lt;token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -L -X GET 'https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;/file?token=&lt;token&gt;' \
     --output downloaded_file.pdf
 </pre></div>
 </div>
@@ -763,7 +763,7 @@ Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Si
 </div>
 <p>The client follows the redirect and receives the file content directly from the storage backend.</p>
 <p><strong>Delete a File</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE 'https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 </section>
@@ -771,7 +771,7 @@ Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Si
 <h2>Service Agent File Download<a class="headerlink" href="#service-agent-file-download" title="Link to this heading">¶</a></h2>
 <p>Service agents have their own file storage scoped to the authenticated agent. Files uploaded via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/files</span></code> (e.g., talk attachments) can be downloaded using the same redirect pattern as storage files.</p>
 <p><strong>Download a Service Agent File</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -L -X GET &#39;https://api.voipbin.net/v1.0/service_agents/files/&lt;file-id&gt;/file?token=&lt;token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -L -X GET 'https://api.voipbin.net/v1.0/service_agents/files/&lt;file-id&gt;/file?token=&lt;token&gt;' \
     --output downloaded_file.pdf
 </pre></div>
 </div>
@@ -796,36 +796,36 @@ Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Si
 <p><strong>AI Implementation Hint</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_account</span></code> (singular) always returns the storage account of the currently authenticated customer – there is no <code class="docutils literal notranslate"><span class="pre">id</span></code> path parameter. It requires <strong>CustomerAdmin</strong> or <strong>CustomerManager</strong> permission. The response does not include an explicit <code class="docutils literal notranslate"><span class="pre">quota</span></code> field; the quota is a fixed platform default (currently 10 GB) applied server-side.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_account?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/storage_account?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Response:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;storage-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;total_file_count&quot;</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
-    <span class="s2">&quot;total_file_size&quot;</span><span class="p">:</span> <span class="mi">524288000</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-10T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"storage-uuid-123"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-uuid-456"</span><span class="p">,</span>
+    <span class="s2">"total_file_count"</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+    <span class="s2">"total_file_size"</span><span class="p">:</span> <span class="mi">524288000</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-01T00:00:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-10T00:00:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Storage Account Administration</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">storage_accounts</span></code> (plural) endpoints manage storage accounts across customers. List, create, and delete require <strong>ProjectSuperAdmin</strong> permission (platform operators only); getting a specific storage account by id only requires <strong>CustomerAdmin</strong> or <strong>CustomerManager</strong> on the account’s own customer.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># List storage accounts (ProjectSuperAdmin)
-$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_accounts?token=&lt;token&gt;&#39;
+$ curl -X GET 'https://api.voipbin.net/v1.0/storage_accounts?token=&lt;token&gt;'
 
 # Create a storage account for a customer (ProjectSuperAdmin)
-$ curl -X POST &#39;https://api.voipbin.net/v1.0/storage_accounts?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{&quot;customer_id&quot;: &quot;customer-uuid-456&quot;}&#39;
+$ curl -X POST 'https://api.voipbin.net/v1.0/storage_accounts?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{"customer_id": "customer-uuid-456"}'
 
 # Get a specific storage account by id (CustomerAdmin/CustomerManager of the owning customer)
-$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_accounts/&lt;storage-account-id&gt;?token=&lt;token&gt;&#39;
+$ curl -X GET 'https://api.voipbin.net/v1.0/storage_accounts/&lt;storage-account-id&gt;?token=&lt;token&gt;'
 
 # Delete a specific storage account by id (ProjectSuperAdmin)
-$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/storage_accounts/&lt;storage-account-id&gt;?token=&lt;token&gt;&#39;
+$ curl -X DELETE 'https://api.voipbin.net/v1.0/storage_accounts/&lt;storage-account-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Usage Breakdown</strong></p>
@@ -945,8 +945,8 @@ $ curl -X DELETE &#39;https://api.voipbin.net/v1.0/storage_accounts/&lt;storage-
 
 2. Access recording
    GET /storage_files?page_size=100
-   -&gt; List of files (filter client-side on the &quot;type&quot; or
-      &quot;reference_type&quot; field; the API does not support a
+   -&gt; List of files (filter client-side on the "type" or
+      "reference_type" field; the API does not support a
       server-side type/reference_type query filter)
 
 3. Download recording
@@ -970,8 +970,8 @@ $ curl -X DELETE &#39;https://api.voipbin.net/v1.0/storage_accounts/&lt;storage-
 
 2. Identify large/old files
    GET /storage_files?page_size=100
-   -&gt; List files and sort client-side by &quot;filesize&quot; or
-      &quot;tm_create&quot;; the API does not support server-side
+   -&gt; List files and sort client-side by "filesize" or
+      "tm_create"; the API does not support server-side
       sort/order query parameters
 
 3. Delete unnecessary files
@@ -1192,8 +1192,8 @@ be in use</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

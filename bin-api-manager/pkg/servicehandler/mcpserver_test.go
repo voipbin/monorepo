@@ -258,9 +258,9 @@ func Test_McpServerUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().AIV1McpServerGet(ctx, tt.id).Return(tt.getResponse, nil)
-			mockReq.EXPECT().AIV1McpServerUpdate(ctx, tt.id, "", "", "", ammcpserver.Status(""), ammcpserver.AuthType(""), "", tt.secret).Return(tt.updateResponse, nil)
+			mockReq.EXPECT().AIV1McpServerUpdate(ctx, tt.id, (*string)(nil), (*string)(nil), (*string)(nil), (*ammcpserver.Status)(nil), (*ammcpserver.AuthType)(nil), (*string)(nil), tt.secret).Return(tt.updateResponse, nil)
 
-			res, err := h.McpServerUpdate(ctx, tt.agent, tt.id, "", "", "", ammcpserver.Status(""), ammcpserver.AuthType(""), "", tt.secret)
+			res, err := h.McpServerUpdate(ctx, tt.agent, tt.id, nil, nil, nil, nil, nil, nil, tt.secret)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -306,7 +306,8 @@ func Test_McpServerUpdate_IDOR(t *testing.T) {
 	// fails the test if the update RPC is ever issued after the IDOR check
 	// should have short-circuited.
 
-	res, err := h.McpServerUpdate(ctx, agent, targetID, "new name", "", "", ammcpserver.Status(""), ammcpserver.AuthType(""), "", nil)
+	newName := "new name"
+	res, err := h.McpServerUpdate(ctx, agent, targetID, &newName, nil, nil, nil, nil, nil, nil)
 	if err == nil {
 		t.Errorf("Wrong match. expect: permission denied error, got: nil (res: %v)", res)
 	}

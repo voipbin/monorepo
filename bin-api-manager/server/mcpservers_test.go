@@ -204,21 +204,25 @@ func Test_PutMcpserversId_SecretOmitted(t *testing.T) {
 	})
 	openapi_server.RegisterHandlers(r, h)
 
-	// "secret" key is absent from the body entirely.
+	// "secret" key is absent from the body entirely, so is every other
+	// field except "name" -- pins that an omitted field reaches
+	// McpServerUpdate as a nil pointer (leave-unchanged), not the old
+	// zero-value-dereferenced behavior.
 	body := []byte(`{"name":"renamed"}`)
 	req, _ := http.NewRequest("PUT", "/mcpservers/"+id.String(), bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 
+	renamed := "renamed"
 	mockSvc.EXPECT().McpServerUpdate(
 		req.Context(),
 		agent,
 		id,
-		"renamed",
-		"",
-		"",
-		ammcpserver.Status(""),
-		ammcpserver.AuthType(""),
-		"",
+		&renamed,
+		(*string)(nil),
+		(*string)(nil),
+		(*ammcpserver.Status)(nil),
+		(*ammcpserver.AuthType)(nil),
+		(*string)(nil),
 		(*string)(nil),
 	).Return(&ammcpserver.WebhookMessage{Identity: commonidentity.Identity{ID: id}}, nil)
 
@@ -265,13 +269,72 @@ func Test_PutMcpserversId_SecretExplicitClear(t *testing.T) {
 		req.Context(),
 		agent,
 		id,
-		"",
-		"",
-		"",
-		ammcpserver.Status(""),
-		ammcpserver.AuthType(""),
-		"",
+		(*string)(nil),
+		(*string)(nil),
+		(*string)(nil),
+		(*ammcpserver.Status)(nil),
+		(*ammcpserver.AuthType)(nil),
+		(*string)(nil),
 		&emptySecret,
+	).Return(&ammcpserver.WebhookMessage{Identity: commonidentity.Identity{ID: id}}, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d (body: %s)", http.StatusOK, w.Code, w.Body.String())
+	}
+}
+
+// Test_PutMcpserversId_StatusOnlyRebuildsEnumPointer pins the one place
+// in this HTTP layer with a real type-conversion step: the
+// OpenAPI-generated local PutMcpserversIdJSONBodyStatus type must be
+// correctly rebuilt into *ammcpserver.Status (Go does not allow
+// converting *A to *B directly even when A/B share an underlying type),
+// and every other field must stay nil since only "status" was sent. This
+// is the HTTP-layer regression test the design's §7 flagged as missing --
+// a regression in PutMcpserversId's own dereference/type-rebuild logic
+// would not be caught by any lower-layer test, since every layer below
+// bin-api-manager only ever sees whatever this handler decided to pass
+// down.
+func Test_PutMcpserversId_StatusOnlyRebuildsEnumPointer(t *testing.T) {
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	id := uuid.FromStringOrNil("dbceb866-4506-4e86-9851-a82d4d3ced88")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	body := []byte(`{"status":"disabled"}`)
+	req, _ := http.NewRequest("PUT", "/mcpservers/"+id.String(), bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	wantStatus := ammcpserver.StatusDisabled
+	mockSvc.EXPECT().McpServerUpdate(
+		req.Context(),
+		agent,
+		id,
+		(*string)(nil),
+		(*string)(nil),
+		(*string)(nil),
+		&wantStatus,
+		(*ammcpserver.AuthType)(nil),
+		(*string)(nil),
+		(*string)(nil),
 	).Return(&ammcpserver.WebhookMessage{Identity: commonidentity.Identity{ID: id}}, nil)
 
 	r.ServeHTTP(w, req)
