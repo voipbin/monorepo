@@ -199,7 +199,7 @@ The note's ``author_type``/``author_id`` are always derived server-side from the
 
 Relationship to the Admin/Manager Case API
 ----------------------------------------------
-The same underlying Case resource is also exposed at the top level (``/contact_cases``, gated by admin/manager permission) -- see :ref:`Case Overview <contact-case-overview>`. That surface additionally supports ``POST /contact_cases/{id}/continue`` (reopen a closed case) and sending an outbound conversation message tied to the case, neither of which exists under ``/service_agents/contact_cases``. Conversely, ``POST /service_agents/contact_cases/{id}/assign`` (owner assignment) exists only on this Agent Console surface -- there is no top-level equivalent.
+The same underlying Case resource is also exposed at the top level (``/contact_cases``, gated by admin/manager permission) -- see :ref:`Case Overview <contact-case-overview>`. That surface additionally supports ``POST /contact_cases/{id}/continue`` (reopen a closed case) and sending an outbound conversation message tied to the case, neither of which exists under ``/service_agents/contact_cases``. ``POST /service_agents/contact_cases/{id}/assign`` (owner assignment) also has a top-level equivalent, ``POST /contact_cases/{id}/assign`` (VOIP-1514), gated by admin/manager permission instead of ``PermissionAll``.
 
 
 Related Documentation

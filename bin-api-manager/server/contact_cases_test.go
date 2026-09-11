@@ -599,3 +599,167 @@ func Test_PutContactCasesId_ServiceError(t *testing.T) {
 
 	assertErrorResponse(t, w, cerrors.StatusPermissionDenied, "PERMISSION_DENIED")
 }
+
+// Test_PostContactCasesIdAssign covers server.PostContactCasesIdAssign
+// (VOIP-1514): normal Admin/Manager assign, unauthenticated rejection,
+// invalid JSON body, invalid owner_id UUID format, and the servicehandler
+// error -> HTTP status mappings (permission denied -> 403, not found ->
+// 404, case closed -> 409).
+func Test_PostContactCasesIdAssign(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	ownerID := uuid.FromStringOrNil("f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6")
+
+	tests := []struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+		reqBody  string
+
+		responseCase  *cmkase.Case
+		responseErr   error
+		expectSvcCall bool
+		expectStatus  int
+	}{
+		{
+			name: "normal",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/assign",
+			reqBody:  `{"owner_id":"f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6"}`,
+
+			responseCase: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerID,
+				},
+			},
+			expectSvcCall: true,
+			expectStatus:  http.StatusOK,
+		},
+		{
+			name:         "unauthenticated",
+			agent:        nil,
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/assign",
+			reqBody:      `{"owner_id":"f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6"}`,
+			expectStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "invalid json body",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/assign",
+			reqBody:      `{invalid`,
+			expectStatus: http.StatusBadRequest,
+		},
+		{
+			name: "invalid owner_id format",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/assign",
+			reqBody:      `{"owner_id":"not-a-uuid"}`,
+			expectStatus: http.StatusBadRequest,
+		},
+		{
+			name: "servicehandler permission denied",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/assign",
+			reqBody:  `{"owner_id":"f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6"}`,
+
+			responseErr:   serviceerrors.ErrPermissionDenied,
+			expectSvcCall: true,
+			expectStatus:  http.StatusForbidden,
+		},
+		{
+			name: "servicehandler not found",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/assign",
+			reqBody:  `{"owner_id":"f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6"}`,
+
+			responseErr:   serviceerrors.ErrNotFound,
+			expectSvcCall: true,
+			expectStatus:  http.StatusNotFound,
+		},
+		{
+			name: "servicehandler case closed",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/assign",
+			reqBody:  `{"owner_id":"f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6"}`,
+
+			responseErr:   serviceerrors.ErrCaseClosed,
+			expectSvcCall: true,
+			expectStatus:  http.StatusConflict,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				if tt.agent != nil {
+					c.Set("auth_identity", tt.agent)
+				}
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBufferString(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			if tt.expectSvcCall {
+				mockSvc.EXPECT().
+					CaseAssign(req.Context(), tt.agent, caseID, ownerID).
+					Return(tt.responseCase, tt.responseErr)
+			}
+
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectStatus, w.Code, w.Body.String())
+			}
+		})
+	}
+}

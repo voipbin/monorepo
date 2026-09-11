@@ -689,6 +689,18 @@
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/close</span></code> closes an open case. <code class="docutils literal notranslate"><span class="pre">closed_by_id</span></code> is always derived server-side from the authenticated caller’s own agent identity — it cannot be forged by supplying an arbitrary agent ID. Closing an already-closed case is not an error: the response reflects the case’s actual persisted closed state (which may have been closed by a different agent).</p>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/continue</span></code> creates a new, open case that continues a previously closed one, linked via <code class="docutils literal notranslate"><span class="pre">previous_case_id</span></code>. This models a customer re-contacting about the same matter after their case was closed.</p>
 </section>
+<section id="assigning-a-case">
+<h2>Assigning a Case<a class="headerlink" href="#assigning-a-case" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/assign</span></code> lets an admin or manager reassign a case’s owner agent directly, without needing to sign in as the target agent. <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is always fixed to <code class="docutils literal notranslate"><span class="pre">&quot;agent&quot;</span></code> server-side (the request body only accepts <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>, matching the <code class="docutils literal notranslate"><span class="pre">/service_agents/contact_cases/{id}/assign</span></code> behavior below).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/assign?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;owner_id&quot;: &quot;2a2ec0ba-8004-11ec-aea5-439829c92a7c&quot;
+    }&#39;
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> must reference an existing agent of the <strong>same customer</strong> as the case. A cross-tenant or nonexistent agent ID and a nonexistent case ID both return the same <code class="docutils literal notranslate"><span class="pre">404</span></code> – the API deliberately does not reveal which one failed. Assigning a <code class="docutils literal notranslate"><span class="pre">closed</span></code> case returns <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code>; reopen it first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/continue</span></code>.</p>
+</section>
 <section id="filtering-and-listing">
 <h2>Filtering and Listing<a class="headerlink" href="#filtering-and-listing" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contact_cases</span></code> supports these optional filters (combinable):</p>
@@ -768,7 +780,7 @@
 </section>
 <section id="agent-facing-surface">
 <h2>Agent-Facing Surface<a class="headerlink" href="#agent-facing-surface" title="Link to this heading">¶</a></h2>
-<p>The same case management capabilities are also available under <code class="docutils literal notranslate"><span class="pre">/service_agents/contact_cases</span></code>, gated by regular agent permission rather than admin/manager. This surface additionally exposes <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/contact_cases/{id}/assign</span></code>, which assigns a case’s owner to a given agent (<code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is always fixed to <code class="docutils literal notranslate"><span class="pre">agent</span></code> server-side) — there is no equivalent top-level admin endpoint for assignment.</p>
+<p>The same case management capabilities are also available under <code class="docutils literal notranslate"><span class="pre">/service_agents/contact_cases</span></code>, gated by regular agent permission rather than admin/manager. This surface additionally exposes <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/contact_cases/{id}/assign</span></code>, which assigns a case’s owner to a given agent (<code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is always fixed to <code class="docutils literal notranslate"><span class="pre">agent</span></code> server-side); the top-level surface documented on this page provides the equivalent admin/manager-gated <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/assign</span></code> endpoint (see “Assigning a Case” above).</p>
 </section>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h2>
@@ -870,6 +882,7 @@
             <ul>
 <li><a class="reference internal" href="#">Case Overview</a><ul>
 <li><a class="reference internal" href="#case-lifecycle">Case Lifecycle</a></li>
+<li><a class="reference internal" href="#assigning-a-case">Assigning a Case</a></li>
 <li><a class="reference internal" href="#filtering-and-listing">Filtering and Listing</a></li>
 <li><a class="reference internal" href="#attaching-a-contact">Attaching a Contact</a></li>
 <li><a class="reference internal" href="#case-notes-internal-only">Case Notes (Internal Only)</a></li>

@@ -54,6 +54,22 @@ Case Lifecycle
 ``POST /contact_cases/{id}/continue`` creates a new, open case that continues a previously closed one, linked via ``previous_case_id``. This models a customer re-contacting about the same matter after their case was closed.
 
 
+Assigning a Case
+-----------------
+
+``POST /contact_cases/{id}/assign`` lets an admin or manager reassign a case's owner agent directly, without needing to sign in as the target agent. ``owner_type`` is always fixed to ``"agent"`` server-side (the request body only accepts ``owner_id``, matching the ``/service_agents/contact_cases/{id}/assign`` behavior below).
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/contact_cases/<case-id>/assign?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "owner_id": "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+        }'
+
+``owner_id`` must reference an existing agent of the **same customer** as the case. A cross-tenant or nonexistent agent ID and a nonexistent case ID both return the same ``404`` -- the API deliberately does not reveal which one failed. Assigning a ``closed`` case returns ``409 Conflict``; reopen it first via ``POST /contact_cases/{id}/continue``.
+
+
 Filtering and Listing
 ----------------------
 
@@ -135,7 +151,7 @@ The response is a :ref:`Message <conversation-struct-message-message>` object (t
 Agent-Facing Surface
 ----------------------
 
-The same case management capabilities are also available under ``/service_agents/contact_cases``, gated by regular agent permission rather than admin/manager. This surface additionally exposes ``POST /service_agents/contact_cases/{id}/assign``, which assigns a case's owner to a given agent (``owner_type`` is always fixed to ``agent`` server-side) — there is no equivalent top-level admin endpoint for assignment.
+The same case management capabilities are also available under ``/service_agents/contact_cases``, gated by regular agent permission rather than admin/manager. This surface additionally exposes ``POST /service_agents/contact_cases/{id}/assign``, which assigns a case's owner to a given agent (``owner_type`` is always fixed to ``agent`` server-side); the top-level surface documented on this page provides the equivalent admin/manager-gated ``POST /contact_cases/{id}/assign`` endpoint (see "Assigning a Case" above).
 
 
 Troubleshooting

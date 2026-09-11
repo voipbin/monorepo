@@ -1740,6 +1740,21 @@ func (mr *MockServiceHandlerMockRecorder) CampaigncallList(ctx, a, size, token a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallList", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallList), ctx, a, size, token)
 }
 
+// CaseAssign mocks base method.
+func (m *MockServiceHandler) CaseAssign(ctx context.Context, a *auth.AuthIdentity, id, ownerID uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseAssign", ctx, a, id, ownerID)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseAssign indicates an expected call of CaseAssign.
+func (mr *MockServiceHandlerMockRecorder) CaseAssign(ctx, a, id, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseAssign", reflect.TypeOf((*MockServiceHandler)(nil).CaseAssign), ctx, a, id, ownerID)
+}
+
 // CaseClose mocks base method.
 func (m *MockServiceHandler) CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()

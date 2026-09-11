@@ -11165,6 +11165,14 @@ type PutContactCasesIdJSONBody struct {
 	ContactId string `json:"contact_id"`
 }
 
+// PostContactCasesIdAssignJSONBody defines parameters for PostContactCasesIdAssign.
+type PostContactCasesIdAssignJSONBody struct {
+	// OwnerId The agent ID to assign as the case owner. The agent ID returned from the `GET /agents` response.
+	//
+	// Example: 2a2ec0ba-8004-11ec-aea5-439829c92a7c
+	OwnerId openapi_types.UUID `json:"owner_id"`
+}
+
 // PostContactCasesIdMessagesJSONBody defines parameters for PostContactCasesIdMessages.
 type PostContactCasesIdMessagesJSONBody struct {
 	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
@@ -13479,6 +13487,9 @@ type PostContactAddressesIdClaimJSONRequestBody PostContactAddressesIdClaimJSONB
 
 // PutContactCasesIdJSONRequestBody defines body for PutContactCasesId for application/json ContentType.
 type PutContactCasesIdJSONRequestBody PutContactCasesIdJSONBody
+
+// PostContactCasesIdAssignJSONRequestBody defines body for PostContactCasesIdAssign for application/json ContentType.
+type PostContactCasesIdAssignJSONRequestBody PostContactCasesIdAssignJSONBody
 
 // PostContactCasesIdMessagesJSONRequestBody defines body for PostContactCasesIdMessages for application/json ContentType.
 type PostContactCasesIdMessagesJSONRequestBody PostContactCasesIdMessagesJSONBody
