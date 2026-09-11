@@ -38,6 +38,21 @@ Route
 
    Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the route has not been deleted.
 
+.. note:: **AI Implementation Hint**
+
+   ``PUT /routes/{id}`` is a true partial update: every field (``name``,
+   ``detail``, ``provider_id``, ``priority``, ``target``) is optional, and
+   omitting a field leaves its current value unchanged. A full resend of
+   every field is never required -- for example,
+   ``PUT {"priority": 5}`` only changes the route's priority and leaves
+   ``provider_id``/``target`` exactly as they were. This matters most for
+   ``provider_id`` and ``target``: omitting them no longer silently
+   misroutes live outbound traffic. One exception worth calling out:
+   ``priority: 0`` is a valid, meaningful value (the highest possible
+   priority) and is distinct from omitting the ``priority`` field
+   entirely. A ``provider_id`` that is present but not a valid UUID is
+   rejected with a 400 error, not silently treated as omitted.
+
 Example
 +++++++
 

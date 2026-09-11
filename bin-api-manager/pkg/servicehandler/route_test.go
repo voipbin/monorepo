@@ -452,22 +452,22 @@ func Test_RouteUpdate(t *testing.T) {
 			mockReq.EXPECT().RouteV1RouteUpdate(
 				ctx,
 				tt.routeID,
-				tt.routeName,
-				tt.detail,
-				tt.providerID,
-				tt.priority,
-				tt.target,
+				&tt.routeName,
+				&tt.detail,
+				&tt.providerID,
+				&tt.priority,
+				&tt.target,
 			).Return(tt.responseRoute, nil)
 
 			res, err := h.RouteUpdate(
 				ctx,
 				tt.agent,
 				tt.routeID,
-				tt.routeName,
-				tt.detail,
-				tt.providerID,
-				tt.priority,
-				tt.target,
+				&tt.routeName,
+				&tt.detail,
+				&tt.providerID,
+				&tt.priority,
+				&tt.target,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

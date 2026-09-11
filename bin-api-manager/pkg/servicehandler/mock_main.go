@@ -4427,7 +4427,7 @@ func (mr *MockServiceHandlerMockRecorder) RouteList(ctx, a, size, token any) *go
 }
 
 // RouteUpdate mocks base method.
-func (m *MockServiceHandler) RouteUpdate(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockServiceHandler) RouteUpdate(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID, name, detail *string, providerID *uuid.UUID, priority *int, target *string) (*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteUpdate", ctx, a, routeID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)

@@ -420,7 +420,7 @@ func Test_Update(t *testing.T) {
 			mockDB.EXPECT().RouteGet(ctx, tt.id).Return(tt.responseRoute, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, route.EventTypeRouteUpdated, tt.responseRoute)
 
-			res, err := h.Update(ctx, tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target)
+			res, err := h.Update(ctx, tt.id, &tt.routeName, &tt.detail, &tt.providerID, &tt.priority, &tt.target)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -431,6 +431,92 @@ func Test_Update(t *testing.T) {
 		})
 	}
 }
+
+func Test_Update_PartialUpdate(t *testing.T) {
+
+	id := uuid.FromStringOrNil("76eec186-4663-11ed-b7b4-57471964d4f5")
+	providerID := uuid.FromStringOrNil("771ba87c-4663-11ed-bc0e-2ba6cb69d485")
+
+	tests := []struct {
+		name string
+
+		routeName  *string
+		detail     *string
+		providerID *uuid.UUID
+		priority   *int
+		target     *string
+
+		expectFields map[route.Field]any
+		expectUpdate bool
+	}{
+		{
+			name: "only name set, everything else omitted",
+
+			routeName:    stringPtr("name only"),
+			expectFields: map[route.Field]any{route.FieldName: "name only"},
+			expectUpdate: true,
+		},
+		{
+			name: "provider_id omitted, does not silently misroute",
+
+			routeName:    stringPtr("renamed"),
+			expectFields: map[route.Field]any{route.FieldName: "renamed"},
+			expectUpdate: true,
+		},
+		{
+			name: "priority explicitly pointer-to-zero-value is a real, meaningful value (highest priority)",
+
+			priority:     intPtr(0),
+			expectFields: map[route.Field]any{route.FieldPriority: 0},
+			expectUpdate: true,
+		},
+		{
+			name: "provider_id only",
+
+			providerID:   &providerID,
+			expectFields: map[route.Field]any{route.FieldProviderID: providerID},
+			expectUpdate: true,
+		},
+		{
+			name: "all fields omitted is a no-op, RouteUpdate is not called",
+
+			expectUpdate: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &routeHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+			responseRoute := &route.Route{ID: id}
+
+			if tt.expectUpdate {
+				mockDB.EXPECT().RouteUpdate(ctx, id, tt.expectFields).Return(nil)
+				mockDB.EXPECT().RouteGet(ctx, id).Return(responseRoute, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, route.EventTypeRouteUpdated, responseRoute)
+			} else {
+				mockDB.EXPECT().RouteGet(ctx, id).Return(responseRoute, nil)
+			}
+
+			_, err := h.Update(ctx, id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func stringPtr(s string) *string { return &s }
+func intPtr(i int) *int          { return &i }
 
 func Test_Get_Error(t *testing.T) {
 	mc := gomock.NewController(t)
@@ -583,7 +669,11 @@ func Test_Update_Error(t *testing.T) {
 
 	mockDB.EXPECT().RouteUpdate(ctx, id, gomock.Any()).Return(fmt.Errorf("database error"))
 
-	res, err := h.Update(ctx, id, "name", "detail", providerID, 1, "+82")
+	name := "name"
+	detail := "detail"
+	priority := 1
+	target := "+82"
+	res, err := h.Update(ctx, id, &name, &detail, &providerID, &priority, &target)
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -663,7 +753,11 @@ func Test_Update_GetError(t *testing.T) {
 	mockDB.EXPECT().RouteUpdate(ctx, id, gomock.Any()).Return(nil)
 	mockDB.EXPECT().RouteGet(ctx, id).Return(nil, fmt.Errorf("get error"))
 
-	res, err := h.Update(ctx, id, "name", "detail", providerID, 1, "+82")
+	name := "name"
+	detail := "detail"
+	priority := 1
+	target := "+82"
+	res, err := h.Update(ctx, id, &name, &detail, &providerID, &priority, &target)
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}

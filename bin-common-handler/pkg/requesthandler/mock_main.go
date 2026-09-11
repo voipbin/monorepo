@@ -6674,7 +6674,7 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1RouteList(ctx, pageToken, pageS
 }
 
 // RouteV1RouteUpdate mocks base method.
-func (m *MockRequestHandler) RouteV1RouteUpdate(ctx context.Context, routeID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockRequestHandler) RouteV1RouteUpdate(ctx context.Context, routeID uuid.UUID, name, detail *string, providerID *uuid.UUID, priority *int, target *string) (*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteV1RouteUpdate", ctx, routeID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)

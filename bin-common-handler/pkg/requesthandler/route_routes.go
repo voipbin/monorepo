@@ -95,14 +95,18 @@ func (r *requestHandler) RouteV1RouteDelete(ctx context.Context, routeID uuid.UU
 // RouteV1RouteUpdate sends a request to route-manager
 // to update the detail route info.
 // it returns updated route info if it succeed.
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched". See
+// docs/plans/2026-09-12-route-put-partial-update-phase3-design.md.
 func (r *requestHandler) RouteV1RouteUpdate(
 	ctx context.Context,
 	routeID uuid.UUID,
-	name string,
-	detail string,
-	providerID uuid.UUID,
-	priority int,
-	target string,
+	name *string,
+	detail *string,
+	providerID *uuid.UUID,
+	priority *int,
+	target *string,
 ) (*rmroute.Route, error) {
 	uri := fmt.Sprintf("/v1/routes/%s", routeID)
 

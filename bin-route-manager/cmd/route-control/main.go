@@ -331,14 +331,21 @@ func runRouteUpdate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("target is required")
 	}
 
+	// Every value below is wrapped in a pointer unconditionally, preserving
+	// this CLI's current all-fields-required, all-fields-sent behavior.
+	// See docs/plans/2026-09-12-route-put-partial-update-phase3-design.md
+	// §3 step 11.
+	detail := viper.GetString("detail")
+	priority := viper.GetInt("priority")
+
 	res, err := handler.Update(
 		context.Background(),
 		routeID,
-		name,
-		viper.GetString("detail"),
-		providerID,
-		viper.GetInt("priority"),
-		target,
+		&name,
+		&detail,
+		&providerID,
+		&priority,
+		&target,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update route")

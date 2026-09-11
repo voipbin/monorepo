@@ -1356,11 +1356,11 @@ type RequestHandler interface {
 	RouteV1RouteUpdate(
 		ctx context.Context,
 		routeID uuid.UUID,
-		name string,
-		detail string,
-		providerID uuid.UUID,
-		priority int,
-		target string,
+		name *string,
+		detail *string,
+		providerID *uuid.UUID,
+		priority *int,
+		target *string,
 	) (*rmroute.Route, error)
 	RouteV1RouteList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmroute.Field]any) ([]rmroute.Route, error)
 

@@ -323,7 +323,7 @@ func Test_v1RoutesIDPut(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().Update(gomock.Any(), tt.id, tt.routeName, tt.detail, tt.providerID, tt.priority, tt.target).Return(tt.responseRoute, nil)
+			mockRoute.EXPECT().Update(gomock.Any(), tt.id, &tt.routeName, &tt.detail, &tt.providerID, &tt.priority, &tt.target).Return(tt.responseRoute, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
