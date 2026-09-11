@@ -226,10 +226,15 @@ the database.
 
 ## 7. OAuth flow
 
+**Revised in Round 2** (see §7a's Layer 2 correction): the public
+callback is now a thin, no-side-effect redirect relay; the actual token
+exchange moved to an authenticated endpoint (`/oauth/complete`) called
+by square-admin after the browser returns.
+
 ```
-Customer (square-admin)      api-manager (public)      ai-manager      Vendor AS
+Customer (square-admin)      api-manager                ai-manager      Vendor AS
         |                          |                        |             |
-1. POST /mcpservers/oauth/start    |                        |             |
+1. POST /mcpservers/oauth/start (authenticated, JWT)         |             |
    { vendor: "github" }            |                        |             |
         |------------------------->|                        |             |
         |                          | 2. generate state+PKCE,|             |
@@ -238,31 +243,63 @@ Customer (square-admin)      api-manager (public)      ai-manager      Vendor AS
         |                          |                        | insert      |
         |                          |                        | ai_mcp_     |
         |                          |                        | oauth_states|
+        |                          |                        | (customer_id|
+        |                          |                        |  from JWT)  |
         |                          |<-----------------------|             |
-        |  { authorize_url }       |                        |             |
+        |  { authorize_url,        |                        |             |
+        |    link_token }          |                        |             |
         |<-------------------------|                        |             |
-2b. Browser redirects to authorize_url (GitHub/Linear consent screen)     |
+1b. square-admin stores link_token in sessionStorage,                     |
+    then does a full-page redirect to authorize_url                      |
         |------------------------------------------------------------->  |
-                                                       3. Customer authorizes
+                                                       2. Customer authorizes
         |  <-- redirect: GET /mcpservers/oauth/callback?code=...&state=...|
         |<-------------------------------------------------------------  |
         |                          |                        |             |
-        |                     4. GET /mcpservers/oauth/callback           |
-        |                          | (public, unauthenticated -- the      |
-        |                          |  `state` param IS the auth, per §7a) |
-        |                          | 5. RPC AIV1McpOAuthCallback           |
+        |                    3. GET /mcpservers/oauth/callback (PUBLIC)   |
+        |                       thin relay -- validates `state` EXISTS   |
+        |                       in ai_mcp_oauth_states (no customer_id   |
+        |                       check here, no token exchange, no DB    |
+        |                       write beyond confirming existence)      |
+        |                          |                        |             |
+        |  4. 302 redirect to admin.voipbin.net/#/resources/mcpservers/  |
+        |     oauth-return?state=...&code=...                            |
+        |<-------------------------|                        |             |
+        |                          |                        |             |
+5. oauth-return page: read state from URL, compare against              |
+   sessionStorage's link_token (client-side fast-fail, §7a)             |
+        |                          |                        |             |
+        | 6. POST /mcpservers/oauth/complete (authenticated, JWT)         |
+        |    { state, code }       |                        |             |
+        |------------------------->|                        |             |
+        |                          | 7. RPC AIV1McpOAuthComplete           |
         |                          |----------------------->|             |
-        |                          |                        | 6. validate |
+        |                          |                        | 8. lookup   |
         |                          |                        |    state,   |
-        |                          |                        |    POST     |
+        |                          |                        |    verify   |
+        |                          |                        |    row.     |
+        |                          |                        |    Customer |
+        |                          |                        |    ID ==    |
+        |                          |                        |    JWT's    |
+        |                          |                        |    customer |
+        |                          |                        |    _id      |
+        |                          |                        |    (§7a's   |
+        |                          |                        |    REAL     |
+        |                          |                        |    security |
+        |                          |                        |    boundary)|
+        |                          |                        | 9. delete   |
+        |                          |                        |    state row|
+        |                          |                        |    (single- |
+        |                          |                        |    use)     |
+        |                          |                        | 10. POST    |
         |                          |                        |    token    |
         |                          |                        |    endpoint |
         |                          |                        |------------>|
-        |                          |                        | 7. access + |
+        |                          |                        | 11. access +|
         |                          |                        |    refresh  |
         |                          |                        |    token    |
         |                          |                        |<------------|
-        |                          |                        | 8. encrypt, |
+        |                          |                        | 12. encrypt,|
         |                          |                        |    upsert   |
         |                          |                        |    McpServer|
         |                          |                        |    (create  |
@@ -270,11 +307,9 @@ Customer (square-admin)      api-manager (public)      ai-manager      Vendor AS
         |                          |                        |    update if|
         |                          |                        |    reconnect)|
         |                          |<-----------------------|             |
-        |  9. 302 redirect to      |                        |             |
-        |     admin.voipbin.net/#  |                        |             |
-        |     /resources/mcpservers/                        |             |
-        |     <id>?oauth=success   |                        |             |
+        |  { mcp_server: {...} }   |                        |             |
         |<-------------------------|                        |             |
+13. square-admin navigates to the returned server's detail page          |
 ```
 
 ### 7a. Why the callback is public but still safe
@@ -303,32 +338,94 @@ style "account-linking hijack" that layer (1) alone does not cover
   single-use, time-bounded, server-generated token in the URL, not a
   JWT) -- no new authentication pattern, reusing an established one
 
-**Layer 2 -- a browser-bound linking cookie** (defends against
-account-linking hijack): `state` alone binds the authorization to a
-`customer_id`, but says nothing about WHICH BROWSER is completing the
-flow. Without this second layer, an attacker could call `POST
+**Layer 2 -- a browser-bound linking token, NOT a cookie** (defends
+against account-linking hijack): `state` alone binds the authorization
+to a `customer_id`, but says nothing about WHICH BROWSER is completing
+the flow. Without this second layer, an attacker could call `POST
 /mcpservers/oauth/start` under their OWN VoIPBin session (getting back an
 `authorize_url` whose `state` is bound to the attacker's `customer_id`),
 then trick a victim into opening that URL and approving vendor consent
 with the VICTIM's GitHub/Linear account -- the callback would then
 silently attach the victim's vendor account to the attacker's VoIPBin
 McpServer row. This is the exact "OAuth login CSRF" pattern RFC 6749
-§10.12 warns about. Mitigation: step 2 additionally sets a short-lived
-(10-minute), `HttpOnly`, `Secure`, `SameSite=Lax` cookie
-(`mcp_oauth_link=<state>`) on the `POST /mcpservers/oauth/start`
-response, scoped to `api.voipbin.net`. The callback handler (step 4-6)
-requires the incoming request's `mcp_oauth_link` cookie to match the
-`state` query parameter byte-for-byte; a mismatch or missing cookie
-fails the callback the same way an expired/consumed state does ("state
-not found or already used" -- not a more specific error, so as not to
-help an attacker distinguish "wrong cookie" from "expired state").
-Because the cookie is set when `/mcpservers/oauth/start` responds (in
-the SAME browser tab the customer is using, before any redirect to the
-vendor), and the vendor's own redirect back to
-`/mcpservers/oauth/callback` is same-site to `api.voipbin.net`, the
-cookie survives the round trip through the vendor's consent screen
-exactly the way any `SameSite=Lax` cookie survives a top-level
-GET-redirect navigation.
+§10.12 warns about.
+
+**Round 2 design review finding, corrected here:** the first revision of
+this design proposed a `Set-Cookie` on the `/mcpservers/oauth/start`
+response. That does not work with this API's actual deployment: `square-
+admin` (`admin.voipbin.net`) calls `api-manager` (`api.voipbin.net`) as a
+genuine cross-origin fetch (confirmed: `square-admin`'s API client uses
+`https://api.voipbin.net` as its base URL, a different origin from where
+the app is served), and `cmd/api-manager/main.go`'s global CORS config
+is `AllowCredentials: false` with `AllowOrigins: ["*"]`. A cross-origin
+fetch cannot both set/send cookies AND use a wildcard origin -- the
+browser silently drops the `Set-Cookie` (or the fetch itself is blocked)
+unless CORS is reconfigured to `AllowCredentials: true` with a specific
+(non-wildcard) origin. Opening credentialed CORS for this one new
+feature is not worth widening the *entire* API's CORS surface (every
+other endpoint would gain a cookie-based credential path it doesn't need
+today, an unrelated regression in blast radius for the sake of one
+flow). Instead:
+
+- `POST /mcpservers/oauth/start` returns the linking token in the
+  **response body**, not a cookie: `{ authorize_url: string, link_token:
+  string }` (`link_token` is the same value as `state`, just also
+  surfaced to the JS caller instead of stashed in a cookie the browser
+  manages).
+- square-admin stores `link_token` in `sessionStorage` (tab-scoped,
+  cleared on tab close -- appropriately short-lived for a flow that
+  completes in the same tab within minutes) keyed by `mcp_oauth_link`,
+  then does the full-page redirect to `authorize_url`.
+- On return, the vendor's redirect lands on
+  `/mcpservers/oauth/callback` (api-manager, public, §10), which does
+  NOT check a cookie -- it only validates `state` against
+  `ai_mcp_oauth_states` (Layer 1) and immediately 302-redirects to
+  `admin.voipbin.net/#/resources/mcpservers/oauth-return?state=<state>`
+  (or `mcp_server_id=<id>` on success) WITHOUT completing the token
+  exchange itself.
+- **The actual Layer 2 check happens on a NEW square-admin-triggered
+  call**, not in the public callback: the `oauth-return` page reads
+  `state` from the URL, reads its own `link_token` back out of
+  `sessionStorage`, and if they match, calls a new AUTHENTICATED
+  endpoint `POST /mcpservers/oauth/complete { state }` (v1.0 group, JWT
+  auth like every other authenticated endpoint -- no CORS change needed,
+  this is the exact same auth model every other `POST` in this API
+  already uses). **The real security boundary is server-side, not the
+  sessionStorage check**: `AIV1McpOAuthComplete`'s ai-manager handler
+  MUST look up `ai_mcp_oauth_states` by `state` and verify
+  `row.CustomerID == <the JWT-authenticated caller's customer_id>`
+  before proceeding -- rejecting with the same generic "state not found
+  or already used" on mismatch (not a more specific error, §7a Layer 1's
+  existing anti-enumeration posture). This single check is what actually
+  defeats the hijack even in the worst case (victim never sees
+  square-admin's sessionStorage at all, e.g. they only ever interact
+  with the raw `authorize_url` link an attacker sent them): the attacker
+  generated `state` bound to THEIR OWN `customer_id`, so the only
+  account that can ever successfully call `/oauth/complete` for that
+  `state` is one authenticated as the attacker -- a victim who is not
+  simultaneously logged into VoIPBin as the attacker structurally cannot
+  complete it, regardless of which browser/tab clicks through the vendor
+  consent screen. The `sessionStorage` `link_token` check is then a
+  UX-layer improvement on top (fails fast, client-side, with a clearer
+  message than a 403 from the server), not the actual trust boundary.
+  On success, `/oauth/complete` performs the actual token exchange (§7
+  steps 6-8, moved here from the public callback) and returns the
+  created/updated McpServer. If `sessionStorage` has no matching
+  `link_token` (different browser, different tab, or an attacker who
+  never had it), the frontend never calls `/oauth/complete` and the flow
+  simply fails client-side with "this authorization wasn't started in
+  this browser" -- the server-side `ai_mcp_oauth_states` row is still
+  there but nothing ever claims it, and it expires normally per
+  `tm_expire` (§5).
+- This reframing means `GET /mcpservers/oauth/callback` becomes a THIN,
+  public, no-side-effect redirect relay (it never touches vendor token
+  endpoints or the database beyond a read to confirm the `state` exists,
+  moved to `/oauth/complete`) -- and the actual sensitive work (§7 steps
+  6-8: exchanging `code` for tokens, encrypting, writing McpServer) now
+  happens on an authenticated endpoint that inherently proves "this is
+  the same customer session that clicked the catalog card", without any
+  new cookie/CORS surface. §5, §7 (flow diagram), §9, §10, §12 below are
+  updated to reflect this split.
 
 ### 7b. PKCE
 
@@ -419,27 +516,30 @@ function rather than introducing a new scheduled job for 2 vendors.
   design review finding, IDOR): when `mcp_server_id` is present,
   `AIV1McpOAuthStart`'s ai-manager-side handler MUST first
   `McpServerGet(mcp_server_id)` and verify `res.CustomerID ==
-  <the authenticated caller's customer_id passed in the RPC>`, returning
-  `cerrors.NotFound` (the existing `MCP_SERVER_NOT_FOUND`, matching
-  `Get`/`Update`/`Delete`'s existing not-found response for
-  cross-customer access -- do not leak "found but not yours" via a
-  different error) before creating the state row.** Without this check,
-  any authenticated customer could pass another customer's
-  `mcp_server_id` and overwrite that row's OAuth connection with their
-  own vendor account on callback -- a cross-customer data corruption /
-  DoS, not merely an access-control gap, since the row's owner would then
-  silently lose their own connection. This mirrors the ownership check
-  every other `mcpserverhandler`/`servicehandler` method already performs
-  by construction (the `id` a customer can reference is scoped through
-  `McpServerGetsByCustomerID`-style listing) -- OAuth start is the one new
-  entrypoint that accepts a bare `mcp_server_id` without that scoping, so
-  it must do the check explicitly. When present and owned, step 2's state
-  row carries that ID (§5's `mcp_server_id` column), and step 8's
-  callback does `McpServerUpdate` on the existing row instead of
-  `McpServerCreate` -- same name/URL/vendor, fresh tokens. This is the
-  only way `auth_type: oauth` rows get their tokens replaced; there is no
-  "PUT new access token" path (consistent with §4's "only the OAuth
-  endpoints can produce an oauth-authenticated row").
+  customerID` (the JWT-authenticated caller's customer_id, the same
+  parameter `AIV1McpServerCreate`/`Update` already take -- see §10 for
+  `AIV1McpOAuthStart`'s exact signature), returning `cerrors.NotFound`
+  (the existing `MCP_SERVER_NOT_FOUND`, matching `Get`/`Update`/
+  `Delete`'s existing not-found response for cross-customer access -- do
+  not leak "found but not yours" via a different error) before creating
+  the state row.** Without this check, any authenticated customer could
+  pass another customer's `mcp_server_id` and overwrite that row's OAuth
+  connection with their own vendor account on callback -- a
+  cross-customer data corruption / DoS, not merely an access-control
+  gap, since the row's owner would then silently lose their own
+  connection. This mirrors the ownership check every other
+  `mcpserverhandler`/`servicehandler` method already performs by
+  construction (the `id` a customer can reference is scoped through
+  `McpServerGetsByCustomerID`-style listing) -- OAuth start is the one
+  new entrypoint that accepts a bare `mcp_server_id` without that
+  scoping, so it must do the check explicitly. When present and owned,
+  the state row carries that ID (§5's `mcp_server_id` column), and
+  `AIV1McpOAuthComplete` (§7 step 7-12) does `McpServerUpdate` on the
+  existing row instead of `McpServerCreate` -- same name/URL/vendor,
+  fresh tokens. This is the only way `auth_type: oauth` rows get their
+  tokens replaced; there is no "PUT new access token" path (consistent
+  with §4's "only the OAuth endpoints can produce an oauth-authenticated
+  row").
 - Changing `oauth_vendor` on an existing row is not supported (§4) --
   the customer deletes and re-adds instead. Two vendors, low value in
   supporting an in-place vendor swap that would need to re-derive
@@ -447,23 +547,38 @@ function rather than introducing a new scheduled job for 2 vendors.
 
 ## 10. api-manager: new endpoints
 
+**Revised in Round 2**: three endpoints instead of two (§7a's Layer 2
+correction split the old single callback into a thin public relay plus
+an authenticated completion call).
+
 `bin-api-manager/server/mcpservers_oauth.go` (new file, same package/
 conventions as `mcpservers.go`):
 
 ```
-POST /mcpservers/oauth/start      (authenticated, v1.0 group)
+POST /mcpservers/oauth/start      (authenticated, v1.0 group, JWT)
   body: { vendor: "github"|"linear", mcp_server_id?: uuid }
-  -> { authorize_url: string }, Set-Cookie: mcp_oauth_link=<state>
-     (§7a Layer 2)
+  -> { authorize_url: string, link_token: string }
+     (link_token == state, §7a Layer 2 -- returned in the body, NOT a
+     cookie, to avoid the credentialed-CORS problem Round 2 caught)
 
 GET  /mcpservers/oauth/callback   (PUBLIC, registered next to
                                     /auth/password-reset in main.go --
                                     same public-with-token-security
-                                    pattern, §7a)
+                                    pattern, §7a Layer 1)
   query: ?code=...&state=...  (or ?error=... on vendor-side denial)
-  -> 302 redirect to admin.voipbin.net with a query param indicating
-     success/failure (no response body a browser would render; this is
-     purely a redirect target)
+  -> thin relay: confirms `state` exists in ai_mcp_oauth_states (does
+     NOT delete it, does NOT exchange the code, does NOT touch McpServer
+     -- that all happens in /oauth/complete below), then 302 redirects
+     to admin.voipbin.net/#/resources/mcpservers/oauth-return?state=...
+     &code=... (or &error=... passthrough)
+
+POST /mcpservers/oauth/complete   (authenticated, v1.0 group, JWT)
+  body: { state: string, code: string }
+  -> { mcp_server: {...} } on success. This is where the REAL security
+     boundary lives (§7a): AIV1McpOAuthComplete's handler verifies the
+     state row's customer_id matches the JWT's customer_id before doing
+     anything else, then performs the token exchange, encrypts, and
+     creates/updates the McpServer row (§7 steps 8-12).
 ```
 
 **Rate limiting (Round 1 design review finding):** every existing public
@@ -471,30 +586,47 @@ route group in `cmd/api-manager/main.go` has a dedicated
 `middleware.RateLimit(...)` -- `auth` (`auth_public`), `provisioning`
 (`provisioning_public`). `GET /mcpservers/oauth/callback` MUST follow the
 same convention: registered in its own `app.Group("/mcpservers/oauth")`
-(or added to the existing `auth` group's pattern) with a new
-`mcp_oauth_callback_public` rate limit config flag
+with a new `mcp_oauth_callback_public` rate limit config flag
 (`RateLimitMcpOAuthCallbackPublicRPS`/`...Burst`, same naming shape as
-`RateLimitAuthPublicRPS`/`...Burst`), NOT left unprotected -- an
-unthrottled public endpoint that triggers a DB write + an outbound HTTP
-call to a vendor token endpoint (step 6 in §7) is a resource-exhaustion
-vector otherwise. `POST /mcpservers/oauth/start` is authenticated and
-already covered by the existing `v1.0` group's `CustomerRateLimit`
-(§10's route registration puts it in that group, not a new one) -- no
-additional rate-limit config needed for the start endpoint specifically.
+`RateLimitAuthPublicRPS`/`...Burst`), NOT left unprotected. `POST
+/mcpservers/oauth/start` and `POST /mcpservers/oauth/complete` are both
+authenticated and already covered by the existing `v1.0` group's
+`CustomerRateLimit` -- no additional rate-limit config needed for
+either.
 
-Both are added to `bin-openapi-manager/openapi/paths/mcpservers/` (new
-`oauth_start.yaml`, `oauth_callback.yaml`) and regenerate both
+Both public and authenticated routes are added to
+`bin-openapi-manager/openapi/paths/mcpservers/` (new `oauth_start.yaml`,
+`oauth_callback.yaml`, `oauth_complete.yaml`) and regenerate both
 `bin-api-manager/gens/openapi_server/gen.go` AND
 `bin-openapi-manager/gens/models/gen.go` together (the exact drift this
 monorepo's CI caught during the PUT partial-update PR #1291 -- noted
 here explicitly so implementation doesn't repeat that CI failure).
 
-`POST /mcpservers/oauth/start` RPCs `AIV1McpOAuthStart` (new method on
-`bin-common-handler/pkg/requesthandler`, following the existing
-`AIV1McpServerUpdate` etc. naming/signature convention). The callback
-RPCs `AIV1McpOAuthCallback`. Both are internal-only RPCs -- api-manager
-is still the only public HTTP surface; nothing here creates a second
-public entrypoint into ai-manager.
+RPC signatures (`bin-common-handler/pkg/requesthandler`, following the
+existing `AIV1McpServerCreate`/`AIV1McpServerUpdate` naming/parameter
+convention -- explicit here per a Round 2 review request for the same
+level of concreteness §4/§8 already have):
+
+```go
+// AIV1McpOAuthStart generates a state+PKCE pair and, when mcpServerID is
+// non-nil, verifies customerID owns that row (§9) before persisting the
+// state. Returns the vendor's authorize_url and the link_token (== state,
+// §7a Layer 2) for the caller to store client-side.
+AIV1McpOAuthStart(ctx context.Context, customerID uuid.UUID, vendor string, mcpServerID *uuid.UUID) (authorizeURL string, linkToken string, err error)
+
+// AIV1McpOAuthComplete verifies the state row's CustomerID matches
+// customerID (§7a's real security boundary), exchanges code for tokens,
+// encrypts them, and creates/updates the McpServer row (§7 steps 8-12).
+AIV1McpOAuthComplete(ctx context.Context, customerID uuid.UUID, state string, code string) (*mcpserver.McpServer, error)
+```
+
+Both are internal-only RPCs -- api-manager is still the only public HTTP
+surface; nothing here creates a second public entrypoint into
+ai-manager. `GET /mcpservers/oauth/callback`'s thin relay does not need
+its own RPC at all -- a direct `dbhandler`-style existence check
+(reusing `ai-manager`'s existing internal DB access pattern via a very
+small `AIV1McpOAuthStateExists(ctx, state string) (bool, error)` RPC) is
+sufficient, since it performs no mutation.
 
 ## 11. square-admin: "Connect with GitHub/Linear" UX
 
@@ -524,18 +656,26 @@ form) from `oauth` (new):
 
 Clicking an `authFlow: 'oauth'` card does NOT pre-fill the manual form
 (there is nothing to pre-fill -- no URL/secret the customer types) --
-instead it immediately calls `POST /mcpservers/oauth/start` and redirects
-the browser to the returned `authorize_url`. On return
-(`?oauth=success&id=<uuid>` per §10), square-admin navigates straight to
-that server's detail page. On `?oauth=error=...`, an `ActionFeedback`
-error banner surfaces the vendor's denial reason.
+instead it immediately calls `POST /mcpservers/oauth/start`, stores the
+returned `link_token` in `sessionStorage` (§7a Layer 2), and redirects
+the browser to the returned `authorize_url`. A new route,
+`/resources/mcpservers/oauth-return`, handles the vendor's return trip
+(§7 steps 4-6): it reads `state`/`code` (or `error`) from the URL,
+compares `state` against the stored `link_token` (client-side fast-fail
+per §7a), and on a match calls `POST /mcpservers/oauth/complete { state,
+code }`. On success, it navigates to the returned server's detail page.
+On a `link_token` mismatch or `POST /oauth/complete` failure, an
+`ActionFeedback` error banner surfaces on that same route (not a
+redirect loop back to the catalog -- the customer stays on
+`oauth-return` and sees the failure with a way back to the MCP servers
+list).
 
 The MCP server detail page (`mcpservers_detail.js`) gains an
 `oauth_vendor`-aware view: when `auth_type === 'oauth'`, it shows
 "Connected to GitHub" (or Linear) with a "Reconnect" button (calls
-`POST /mcpservers/oauth/start` with this server's ID, §9) instead of the
-existing secret/api_key_header edit fields, which do not apply to oauth
-rows.
+`POST /mcpservers/oauth/start` with this server's ID, §9, reusing the
+same `oauth-return` route/flow above) instead of the existing
+secret/api_key_header edit fields, which do not apply to oauth rows.
 
 GitHub and Linear brand icons follow the exact same self-hosting
 precedent as PR #470's Context7/Firecrawl/Apify/DeepWiki icons --
@@ -557,16 +697,29 @@ established during that PR's review loop).
   monorepo (e.g. `bin-customer-manager`'s email-verify tokens) and adding
   envelope encryption to a 10-minute-lived, single-use value is not a
   meaningful security improvement, just extra code.
-- The OAuth `state` parameter is never logged (existing `truncateForError`
-  precedent in `mcptoolhandler/client.go` already caps/redacts response
-  bodies; the callback handler must apply the same discipline to the
-  `code`/`state` query params in its own log lines -- an implementation
-  checklist item, not a design change).
-- `/mcpservers/oauth/callback` is added to `runListenHTTP`'s access-log
-  `SkipPaths` in `bin-api-manager/cmd/api-manager/main.go` (same
-  treatment as `/provisioning/extension`, §2's existing precedent) --
-  the `code` query param is a genuine one-time secret and must not reach
-  stdout/access logs.
+- The OAuth `state`/`code` parameters are never logged. **Revised in
+  Round 2**: since the token exchange (and the `code` value) moved to
+  `POST /mcpservers/oauth/complete` (an authenticated JSON body, not a
+  query string -- request bodies are not written to gin's access log the
+  way query strings are), the public `GET /mcpservers/oauth/callback`'s
+  exposure is now limited to `state`/`code` appearing in its OWN query
+  string and in the 302 `Location` header it emits (both access-logged
+  by default). This is still sensitive enough to warrant the same
+  `SkipPaths` treatment as `/provisioning/extension` (below) -- `code`
+  is a one-time authorization code, and while it alone cannot be
+  exchanged without PKCE's `code_verifier` (which never leaves
+  `ai_mcp_oauth_states`), it should not be gratuitously logged anyway.
+  `POST /mcpservers/oauth/complete`'s handler must still apply the
+  existing `truncateForError`-style discipline (`mcptoolhandler/
+  client.go` precedent) to its own error-path log lines, since a logged
+  error message containing the raw `code` would defeat the point.
+- `/mcpservers/oauth/start`, `/mcpservers/oauth/callback`, and
+  `/mcpservers/oauth/complete` are all added to `runListenHTTP`'s
+  access-log `SkipPaths` in `bin-api-manager/cmd/api-manager/main.go`
+  (same treatment as `/provisioning/extension`, §2's existing
+  precedent) -- covering all three keeps the policy uniform across the
+  whole OAuth flow rather than relying on the body-vs-query-string
+  distinction alone to protect `/complete`.
 - Vendor app `client_secret`s (GitHub/Linear) are VoIPBin-owned
   cross-cutting secrets, not per-customer data -- provisioned via SOPS +
   komodo/k8s secret per `voipbin-k8s-secret-management` convention, never
@@ -650,3 +803,38 @@ fixed in this revision) plus 2 minor/non-blocking notes (also addressed):
   explicitly called out in §7b as a mandatory pre-"done" smoke test for
   implementation, with a documented fallback (switch to a GitHub App
   registration) if it turns out to be required.
+
+## 16. Round 2 design review disposition
+
+Independent adversarial review re-confirmed all 6 Round 1 fixes against
+actual code (RPC signatures, DB migration file, rate-limit middleware,
+config naming -- all matched), then found 1 new BLOCKING issue introduced
+by Round 1's own fix, plus 1 minor completeness gap:
+
+- **[FIXED, blocking]** Round 1's Layer 2 mitigation (a `Set-Cookie` on
+  `/mcpservers/oauth/start`) does not work with this API's actual
+  deployment: square-admin calls api-manager cross-origin, and
+  `main.go`'s global CORS is `AllowCredentials: false` + wildcard
+  origin, which is fundamentally incompatible with cookie-based
+  auth/linking without either breaking the flow outright or forcing a
+  much larger CORS regression (credentialed CORS API-wide). **Redesigned
+  §7/§7a/§9/§10/§11/§12**: the linking value moves from a cookie to a
+  response-body `link_token` stored client-side in `sessionStorage`; the
+  public callback becomes a thin, no-mutation redirect relay; the actual
+  token exchange and (critically) the REAL security check --
+  `state.CustomerID == JWT customer_id` -- move to a new AUTHENTICATED
+  endpoint, `POST /mcpservers/oauth/complete`, which needs no CORS
+  changes at all (same JWT auth model as every other authenticated
+  endpoint in this API). This also has a side benefit noted during the
+  fix: the security boundary is now structurally simpler to reason about
+  (an authenticated ownership check on a server-generated token) than a
+  client-supplied cookie ever was.
+- **[FIXED, minor]** §9's ownership-check description referenced
+  "the authenticated caller's customer_id passed in the RPC" without
+  showing the actual parameter; §10 now includes explicit Go signatures
+  for `AIV1McpOAuthStart`/`AIV1McpOAuthComplete`, matching the
+  concreteness already present in §4/§8's code blocks.
+- Reconnect ownership-check logic itself, DB schema, and rate-limiting
+  additions from Round 1 were independently re-verified against the
+  actual codebase this round and confirmed unchanged/correct -- no
+  further changes needed there.
