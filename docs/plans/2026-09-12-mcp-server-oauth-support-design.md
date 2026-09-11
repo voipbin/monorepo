@@ -25,11 +25,15 @@ without an OAuth flow VoIPBin drives on their behalf.
   Rejected: (a) customer-supplied client_id/secret (spreads OAuth app
   registration burden onto every customer, worse UX, was explicitly the
   UX problem this whole catalog effort is solving), (b) Dynamic Client
-  Registration only (GitHub and Linear's *interactive* flow uses DCR, but
-  a DCR-only implementation would silently fail for any vendor that
-  doesn't support DCR -- narrower future coverage for no simplification
-  today, since both pilot vendors need real per-vendor app credentials
-  regardless per §3).
+  Registration only (Linear's *interactive* setup flow, per its own docs,
+  uses DCR; GitHub does not support DCR for its classic OAuth Apps flow
+  -- confirmed via GitHub's public MCP-server host-integration
+  discussion. Since GitHub alone rules out a DCR-only approach for this
+  pilot, and Linear also works fine with a pre-registered app, a
+  DCR-only implementation would additionally underserve any future
+  vendor that doesn't support DCR -- narrower future coverage for no
+  simplification today, since both pilot vendors need real per-vendor
+  app credentials regardless per §3).
 - **Pilot vendors: GitHub + Linear.** Both allow self-service OAuth app
   creation in their own developer console with no review/approval wait,
   unlike e.g. Notion (public integration listing review) or HubSpot (app
@@ -128,16 +132,22 @@ GitHub" / "Connected to Linear" without a secondary GET.
 
 Added to `ai_mcp_servers` (all nullable, no backfill needed -- every
 existing row is `auth_type IN ('', 'bearer', 'api_key')` and none of the
-new columns apply):
+new columns apply). Types match the EXACT existing `secret_ciphertext`/
+`secret_nonce` column types in this table
+(`bin-dbscheme-manager/bin-manager/main/versions/9b0ad37e0360_ai_mcp_servers_create_table.py`)
+rather than introducing a different convention: `blob` for ciphertext
+(unbounded, matches `secret_ciphertext blob`), `binary(12)` for the nonce
+(AES-GCM's nonce is always exactly 12 bytes -- both existing and new
+nonce columns are fixed-size, not `VARBINARY`):
 
 ```sql
 ALTER TABLE ai_mcp_servers
-  ADD COLUMN oauth_vendor              VARCHAR(64)  NULL,
-  ADD COLUMN access_token_ciphertext   VARBINARY(512) NULL,
-  ADD COLUMN access_token_nonce        VARBINARY(32)  NULL,
-  ADD COLUMN access_token_expires_at   DATETIME(6)    NULL,
-  ADD COLUMN refresh_token_ciphertext  VARBINARY(512) NULL,
-  ADD COLUMN refresh_token_nonce       VARBINARY(32)  NULL;
+  ADD COLUMN oauth_vendor              VARCHAR(64)   NULL,
+  ADD COLUMN access_token_ciphertext   BLOB          NULL,
+  ADD COLUMN access_token_nonce        BINARY(12)    NULL,
+  ADD COLUMN access_token_expires_at   DATETIME(6)   NULL,
+  ADD COLUMN refresh_token_ciphertext  BLOB          NULL,
+  ADD COLUMN refresh_token_nonce       BINARY(12)    NULL;
 ```
 
 A separate new table, `ai_mcp_oauth_states`, holds short-lived CSRF/PKCE
@@ -271,7 +281,12 @@ Customer (square-admin)      api-manager (public)      ai-manager      Vendor AS
 
 `GET /mcpservers/oauth/callback` cannot carry a JWT (the browser redirect
 comes straight from github.com/linear.app, no way to attach VoIPBin
-auth headers). Its security is the OAuth `state` parameter, which is:
+auth headers). Its security has TWO independent layers -- (1) defends
+against callback forgery/replay, (2) defends against a session-fixation
+style "account-linking hijack" that layer (1) alone does not cover
+(Round 1 design review finding, RFC 6749 §10.12's exact warning class):
+
+**Layer 1 -- the `state` parameter** (defends against forgery/replay):
 
 - generated server-side in step 2 (crypto-random, 32 bytes, base64url --
   same RNG already used for `mcpserverhandler`'s secret nonces)
@@ -288,14 +303,58 @@ auth headers). Its security is the OAuth `state` parameter, which is:
   single-use, time-bounded, server-generated token in the URL, not a
   JWT) -- no new authentication pattern, reusing an established one
 
+**Layer 2 -- a browser-bound linking cookie** (defends against
+account-linking hijack): `state` alone binds the authorization to a
+`customer_id`, but says nothing about WHICH BROWSER is completing the
+flow. Without this second layer, an attacker could call `POST
+/mcpservers/oauth/start` under their OWN VoIPBin session (getting back an
+`authorize_url` whose `state` is bound to the attacker's `customer_id`),
+then trick a victim into opening that URL and approving vendor consent
+with the VICTIM's GitHub/Linear account -- the callback would then
+silently attach the victim's vendor account to the attacker's VoIPBin
+McpServer row. This is the exact "OAuth login CSRF" pattern RFC 6749
+§10.12 warns about. Mitigation: step 2 additionally sets a short-lived
+(10-minute), `HttpOnly`, `Secure`, `SameSite=Lax` cookie
+(`mcp_oauth_link=<state>`) on the `POST /mcpservers/oauth/start`
+response, scoped to `api.voipbin.net`. The callback handler (step 4-6)
+requires the incoming request's `mcp_oauth_link` cookie to match the
+`state` query parameter byte-for-byte; a mismatch or missing cookie
+fails the callback the same way an expired/consumed state does ("state
+not found or already used" -- not a more specific error, so as not to
+help an attacker distinguish "wrong cookie" from "expired state").
+Because the cookie is set when `/mcpservers/oauth/start` responds (in
+the SAME browser tab the customer is using, before any redirect to the
+vendor), and the vendor's own redirect back to
+`/mcpservers/oauth/callback` is same-site to `api.voipbin.net`, the
+cookie survives the round trip through the vendor's consent screen
+exactly the way any `SameSite=Lax` cookie survives a top-level
+GET-redirect navigation.
+
 ### 7b. PKCE
 
 VoIPBin generates `code_verifier` (43-128 char random string) and
-`code_challenge` (`base64url(sha256(code_verifier))`) at step 2 for
-*every* vendor, regardless of whether that vendor's docs say PKCE is
-required (§3 table) -- sending an unused `code_challenge` is harmless
-per the OAuth 2.1 spec and keeps `mcpoauthhandler`'s flow code
-vendor-uniform rather than branching per-vendor on this one flag.
+`code_challenge = base64url(sha256(code_verifier))` at step 2 for EVERY
+vendor, using the `S256` method exclusively (never `plain`) -- both
+GitHub (where `code_challenge` is "strongly recommended", `S256`-only:
+GitHub's own OAuth docs do not support the `plain` transform) and Linear
+(where PKCE is a stated requirement) accept `S256`, so there is no
+vendor branch needed on this. Sending an unused `code_challenge` to a
+vendor that does not require it is harmless per the OAuth 2.1 spec and
+keeps `mcpoauthhandler`'s flow code vendor-uniform.
+
+**Open implementation risk, not a design blocker** (flagged during
+Round 1 review): whether GitHub's OFFICIAL remote MCP server
+(`api.githubcopilot.com/mcp/`) actually accepts a classic-OAuth-App
+`gho_*` access token as its Bearer credential was not independently
+confirmed against GitHub's own docs during this design -- available
+search results only confirmed PAT / GitHub-App-user-token usage
+examples for that specific server. Implementation MUST smoke-test this
+with a real GitHub OAuth App token against the real
+`api.githubcopilot.com/mcp/` endpoint before considering the GitHub pilot
+done; if it turns out that server requires a GitHub App (not an OAuth
+App) token, §6's GitHub `vendorConfig` needs to switch from an OAuth App
+to a GitHub App registration (same DB/crypto/flow shape either way, only
+the app-registration type and resulting token prefix changes).
 
 ## 8. Outbound MCP calls: token refresh
 
@@ -328,6 +387,20 @@ case mcpserver.AuthTypeOAuth:
    failure and, on the square-admin MCP server detail page, `HasSecret:
    true` but an `access_token_expires_at` in the past -- §10 surfaces a
    "Reconnect" action for exactly this state.
+5. **Refresh-call failure (Round 1 review, minor/non-blocking):** if
+   step 3's POST to the vendor's token endpoint itself fails (e.g. the
+   vendor has revoked the refresh token server-side, `invalid_grant`),
+   `GetValidAccessToken` returns an error for this call -- it does
+   NOT clear the stored refresh token or mark the row unrefreshable, so
+   the very next tool call (which may happen moments later, e.g. a
+   multi-turn AIcall) re-attempts the same doomed refresh. For 2 pilot
+   vendors at expected-low tool-call volume this is not a design
+   blocker, but implementation should add a short in-memory failure
+   backoff (skip re-attempting a refresh for e.g. 60s after an
+   `invalid_grant`-class failure on the same server ID) to avoid
+   hammering the vendor's token endpoint during an active conversation
+   with a stale connection -- a bounded, local optimization, not a new
+   subsystem.
 
 This refresh happens synchronously inline on the calling goroutine (the
 same one already calling `doJSONRPCRequest`) -- no separate background
@@ -342,7 +415,25 @@ function rather than introducing a new scheduled job for 2 vendors.
   unchanged (soft-delete, same as any other server) -- no new endpoint.
 - **Reconnect** (e.g. the customer revoked access on GitHub's side, or
   the refresh token was itself revoked): `POST /mcpservers/oauth/start`
-  accepts an optional `mcp_server_id` field. When present, step 2's state
+  accepts an optional `mcp_server_id` field. **Ownership check (Round 1
+  design review finding, IDOR): when `mcp_server_id` is present,
+  `AIV1McpOAuthStart`'s ai-manager-side handler MUST first
+  `McpServerGet(mcp_server_id)` and verify `res.CustomerID ==
+  <the authenticated caller's customer_id passed in the RPC>`, returning
+  `cerrors.NotFound` (the existing `MCP_SERVER_NOT_FOUND`, matching
+  `Get`/`Update`/`Delete`'s existing not-found response for
+  cross-customer access -- do not leak "found but not yours" via a
+  different error) before creating the state row.** Without this check,
+  any authenticated customer could pass another customer's
+  `mcp_server_id` and overwrite that row's OAuth connection with their
+  own vendor account on callback -- a cross-customer data corruption /
+  DoS, not merely an access-control gap, since the row's owner would then
+  silently lose their own connection. This mirrors the ownership check
+  every other `mcpserverhandler`/`servicehandler` method already performs
+  by construction (the `id` a customer can reference is scoped through
+  `McpServerGetsByCustomerID`-style listing) -- OAuth start is the one new
+  entrypoint that accepts a bare `mcp_server_id` without that scoping, so
+  it must do the check explicitly. When present and owned, step 2's state
   row carries that ID (§5's `mcp_server_id` column), and step 8's
   callback does `McpServerUpdate` on the existing row instead of
   `McpServerCreate` -- same name/URL/vendor, fresh tokens. This is the
@@ -362,7 +453,8 @@ conventions as `mcpservers.go`):
 ```
 POST /mcpservers/oauth/start      (authenticated, v1.0 group)
   body: { vendor: "github"|"linear", mcp_server_id?: uuid }
-  -> { authorize_url: string }
+  -> { authorize_url: string }, Set-Cookie: mcp_oauth_link=<state>
+     (§7a Layer 2)
 
 GET  /mcpservers/oauth/callback   (PUBLIC, registered next to
                                     /auth/password-reset in main.go --
@@ -373,6 +465,22 @@ GET  /mcpservers/oauth/callback   (PUBLIC, registered next to
      success/failure (no response body a browser would render; this is
      purely a redirect target)
 ```
+
+**Rate limiting (Round 1 design review finding):** every existing public
+route group in `cmd/api-manager/main.go` has a dedicated
+`middleware.RateLimit(...)` -- `auth` (`auth_public`), `provisioning`
+(`provisioning_public`). `GET /mcpservers/oauth/callback` MUST follow the
+same convention: registered in its own `app.Group("/mcpservers/oauth")`
+(or added to the existing `auth` group's pattern) with a new
+`mcp_oauth_callback_public` rate limit config flag
+(`RateLimitMcpOAuthCallbackPublicRPS`/`...Burst`, same naming shape as
+`RateLimitAuthPublicRPS`/`...Burst`), NOT left unprotected -- an
+unthrottled public endpoint that triggers a DB write + an outbound HTTP
+call to a vendor token endpoint (step 6 in §7) is a resource-exhaustion
+vector otherwise. `POST /mcpservers/oauth/start` is authenticated and
+already covered by the existing `v1.0` group's `CustomerRateLimit`
+(§10's route registration puts it in that group, not a new one) -- no
+additional rate-limit config needed for the start endpoint specifically.
 
 Both are added to `bin-openapi-manager/openapi/paths/mcpservers/` (new
 `oauth_start.yaml`, `oauth_callback.yaml`) and regenerate both
@@ -498,3 +606,47 @@ established during that PR's review loop).
   detail; if this monorepo has no existing generic "sweep expired rows"
   cron, implementation should confirm the mechanism during, not defer
   indefinitely.
+
+## 15. Round 1 design review disposition
+
+Independent adversarial review found 4 items requiring changes (all
+fixed in this revision) plus 2 minor/non-blocking notes (also addressed):
+
+- **[FIXED, security-critical]** §7a lacked a defense against OAuth
+  "account-linking hijack" (RFC 6749 §10.12): the `state` param alone
+  binds to `customer_id` but not to a specific browser, letting an
+  attacker share their own `authorize_url` with a victim. Added Layer 2:
+  a `SameSite=Lax`/`HttpOnly`/`Secure` linking cookie set at
+  `/mcpservers/oauth/start` and re-checked at the callback.
+- **[FIXED, security-critical]** §9's reconnect path accepted a bare
+  `mcp_server_id` with no ownership check -- an IDOR letting any customer
+  hijack another customer's MCP server row's OAuth connection. Added an
+  explicit `McpServerGet` + `CustomerID` match requirement before
+  creating the state row.
+- **[FIXED]** §10 omitted rate limiting for the new public callback
+  endpoint, breaking this monorepo's existing convention (every public
+  route group has one). Added `mcp_oauth_callback_public` rate limit
+  config, matching `auth_public`/`provisioning_public`'s naming.
+- **[FIXED]** §5's DB column types (`VARBINARY(512)`/`VARBINARY(32)`)
+  did not match the ACTUAL existing `secret_ciphertext blob` /
+  `secret_nonce binary(12)` columns in `ai_mcp_servers` (verified against
+  the real Alembic migration file). Corrected to `blob`/`binary(12)`.
+- **[FIXED, minor]** §2's claim that "GitHub and Linear's interactive
+  flow uses DCR" was imprecise -- GitHub does not support DCR at all;
+  only Linear does. Corrected the reasoning to not overstate GitHub's
+  DCR support while keeping the same conclusion (pre-registered apps for
+  both, since GitHub requires it either way).
+- **[FIXED, minor]** §8 did not address refresh-call failure caching --
+  a failed refresh (e.g. vendor-revoked refresh token) would be
+  re-attempted on every subsequent tool call with no backoff. Added a
+  note that implementation should add a short in-memory failure backoff.
+- **[NOTED, not fixed -- flagged as an open implementation risk in §7b]**
+  whether GitHub's official remote MCP server actually accepts a
+  classic-OAuth-App token was not independently confirmed by the
+  reviewer's available search results (only PAT/GitHub-App-user-token
+  usage examples were found). This is a factual question that can only
+  be resolved by an actual smoke test against the live endpoint with a
+  real registered OAuth App -- not resolvable via further research, and
+  explicitly called out in §7b as a mandatory pre-"done" smoke test for
+  implementation, with a documented fallback (switch to a GitHub App
+  registration) if it turns out to be required.
