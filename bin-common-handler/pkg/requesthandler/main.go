@@ -367,7 +367,7 @@ type RequestHandler interface {
 	AIV1McpServerList(ctx context.Context, pageToken string, pageSize uint64, filters map[ammcpserver.Field]any) ([]*ammcpserver.McpServer, error)
 	AIV1McpServerGet(ctx context.Context, id uuid.UUID) (*ammcpserver.McpServer, error)
 	AIV1McpServerCreate(ctx context.Context, customerID uuid.UUID, name string, detail string, url string, authType ammcpserver.AuthType, apiKeyHeader string, secret string) (*ammcpserver.McpServer, error)
-	AIV1McpServerUpdate(ctx context.Context, id uuid.UUID, name string, detail string, url string, status ammcpserver.Status, authType ammcpserver.AuthType, apiKeyHeader string, secret *string) (*ammcpserver.McpServer, error)
+	AIV1McpServerUpdate(ctx context.Context, id uuid.UUID, name *string, detail *string, url *string, status *ammcpserver.Status, authType *ammcpserver.AuthType, apiKeyHeader *string, secret *string) (*ammcpserver.McpServer, error)
 	AIV1McpServerDelete(ctx context.Context, id uuid.UUID) (*ammcpserver.McpServer, error)
 
 	// ai-manager aipromptproposal

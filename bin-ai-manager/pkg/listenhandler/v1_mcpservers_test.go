@@ -389,15 +389,15 @@ func Test_processV1McpServersIDPut(t *testing.T) {
 
 		responseMcpServer *mcpserver.McpServer
 
-		expectID            uuid.UUID
-		expectName          string
-		expectDetail        string
-		expectURL           string
-		expectStatus        mcpserver.Status
-		expectAuthType      mcpserver.AuthType
-		expectAPIKeyHeader  string
-		expectSecret        *string
-		expectRes           *sock.Response
+		expectID           uuid.UUID
+		expectName         *string
+		expectDetail       *string
+		expectURL          *string
+		expectStatus       *mcpserver.Status
+		expectAuthType     *mcpserver.AuthType
+		expectAPIKeyHeader *string
+		expectSecret       *string
+		expectRes          *sock.Response
 	}{
 		{
 			name: "normal - secret provided",
@@ -415,12 +415,12 @@ func Test_processV1McpServersIDPut(t *testing.T) {
 			},
 
 			expectID:           uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
-			expectName:         "updated mcp server",
-			expectDetail:       "updated detail",
-			expectURL:          "https://mcp.example.com",
-			expectStatus:       mcpserver.StatusActive,
-			expectAuthType:     mcpserver.AuthTypeAPIKey,
-			expectAPIKeyHeader: "X-API-Key",
+			expectName:         strPtr("updated mcp server"),
+			expectDetail:       strPtr("updated detail"),
+			expectURL:          strPtr("https://mcp.example.com"),
+			expectStatus:       statusPtr(mcpserver.StatusActive),
+			expectAuthType:     authTypePtr(mcpserver.AuthTypeAPIKey),
+			expectAPIKeyHeader: strPtr("X-API-Key"),
 			expectSecret:       strPtr("new-secret"),
 
 			expectRes: &sock.Response{
@@ -430,7 +430,7 @@ func Test_processV1McpServersIDPut(t *testing.T) {
 			},
 		},
 		{
-			name: "normal - secret omitted means nil pointer (unchanged)",
+			name: "normal - secret and api_key_header omitted means nil pointers (unchanged)",
 			request: &sock.Request{
 				URI:      "/v1/mcp_servers/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
 				Method:   sock.RequestMethodPut,
@@ -445,12 +445,47 @@ func Test_processV1McpServersIDPut(t *testing.T) {
 			},
 
 			expectID:           uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
-			expectName:         "updated mcp server",
-			expectDetail:       "updated detail",
-			expectURL:          "https://mcp.example.com",
-			expectStatus:       mcpserver.StatusActive,
-			expectAuthType:     mcpserver.AuthTypeBearer,
-			expectAPIKeyHeader: "",
+			expectName:         strPtr("updated mcp server"),
+			expectDetail:       strPtr("updated detail"),
+			expectURL:          strPtr("https://mcp.example.com"),
+			expectStatus:       statusPtr(mcpserver.StatusActive),
+			expectAuthType:     authTypePtr(mcpserver.AuthTypeBearer),
+			expectAPIKeyHeader: nil,
+			expectSecret:       nil,
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"fa4d3b6a-f82f-11ed-9176-d32f5705e10c","customer_id":"00000000-0000-0000-0000-000000000000","has_secret":false,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			// Pins the design fix end to end at the listenhandler layer:
+			// a PUT body with only "name" must reach mcpServerHandler.Update
+			// with every other pointer nil, not zero-valued -- the
+			// regression this whole design closes (see
+			// docs/plans/2026-09-12-mcp-server-put-partial-update-design.md).
+			name: "partial update - only name provided, every other field stays nil",
+			request: &sock.Request{
+				URI:      "/v1/mcp_servers/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"renamed only"}`),
+			},
+
+			responseMcpServer: &mcpserver.McpServer{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
+				},
+			},
+
+			expectID:           uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
+			expectName:         strPtr("renamed only"),
+			expectDetail:       nil,
+			expectURL:          nil,
+			expectStatus:       nil,
+			expectAuthType:     nil,
+			expectAPIKeyHeader: nil,
 			expectSecret:       nil,
 
 			expectRes: &sock.Response{
@@ -641,4 +676,12 @@ func Test_processV1McpServersIDDelete_error(t *testing.T) {
 
 func strPtr(s string) *string {
 	return &s
+}
+
+func statusPtr(s mcpserver.Status) *mcpserver.Status {
+	return &s
+}
+
+func authTypePtr(a mcpserver.AuthType) *mcpserver.AuthType {
+	return &a
 }

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Variable" href="variable.html"><link rel="prev" title="Activeflow" href="activeflow_struct_activeflow.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -655,42 +655,42 @@
 <section id="create-activeflow">
 <h3>Create activeflow<a class="headerlink" href="#create-activeflow" title="Link to this heading">¶</a></h3>
 <p>Create an activeflow directly, either from an existing flow (<code class="docutils literal notranslate"><span class="pre">flow_id</span></code>) or from an inline <code class="docutils literal notranslate"><span class="pre">actions</span></code> array. You can also seed initial variables and register a per-activeflow webhook destination.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/activeflows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;flow_id&quot;: &quot;93993ae1-0408-4639-ad5f-1288aa8d4325&quot;,
-        &quot;variables&quot;: {
-            &quot;campaign_id&quot;: &quot;summer-2026&quot;,
-            &quot;customer_name&quot;: &quot;Jane Doe&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/activeflows?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "flow_id": "93993ae1-0408-4639-ad5f-1288aa8d4325",
+        "variables": {
+            "campaign_id": "summer-2026",
+            "customer_name": "Jane Doe"
         },
-        &quot;webhook_uri&quot;: &quot;https://example.com/webhooks/activeflow&quot;,
-        &quot;webhook_method&quot;: &quot;POST&quot;
-    }&#39;
+        "webhook_uri": "https://example.com/webhooks/activeflow",
+        "webhook_method": "POST"
+    }'
 
 {
-    &quot;id&quot;: &quot;6f18ae1c-ddf8-413b-9572-ad30574604ef&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;flow_id&quot;: &quot;93993ae1-0408-4639-ad5f-1288aa8d4325&quot;,
-    &quot;status&quot;: &quot;running&quot;,
-    &quot;reference_type&quot;: &quot;api&quot;,
-    &quot;reference_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;reference_activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;webhook_uri&quot;: &quot;https://example.com/webhooks/activeflow&quot;,
-    &quot;webhook_method&quot;: &quot;POST&quot;,
-    &quot;current_action&quot;: {
-        &quot;id&quot;: &quot;93ebcadb-ecae-4291-8d49-ca81a926b8b3&quot;,
-        &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;talk&quot;,
-        &quot;option&quot;: {
-            &quot;text&quot;: &quot;Hello, Jane Doe.&quot;
+    "id": "6f18ae1c-ddf8-413b-9572-ad30574604ef",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "flow_id": "93993ae1-0408-4639-ad5f-1288aa8d4325",
+    "status": "running",
+    "reference_type": "api",
+    "reference_id": "00000000-0000-0000-0000-000000000000",
+    "reference_activeflow_id": "00000000-0000-0000-0000-000000000000",
+    "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+    "webhook_uri": "https://example.com/webhooks/activeflow",
+    "webhook_method": "POST",
+    "current_action": {
+        "id": "93ebcadb-ecae-4291-8d49-ca81a926b8b3",
+        "next_id": "00000000-0000-0000-0000-000000000000",
+        "type": "talk",
+        "option": {
+            "text": "Hello, Jane Doe."
         }
     },
-    &quot;forward_action_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;executed_actions&quot;: [],
-    &quot;tm_create&quot;: &quot;2026-01-15T09:30:00Z&quot;,
-    &quot;tm_update&quot;: &quot;2026-01-15T09:30:00Z&quot;,
-    &quot;tm_delete&quot;: null
+    "forward_action_id": "00000000-0000-0000-0000-000000000000",
+    "executed_actions": [],
+    "tm_create": "2026-01-15T09:30:00Z",
+    "tm_update": "2026-01-15T09:30:00Z",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -699,37 +699,37 @@
 <section id="get-activeflow-list">
 <h3>Get activeflow list<a class="headerlink" href="#get-activeflow-list" title="Link to this heading">¶</a></h3>
 <p>Getting a list of activeflows.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/activeflows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/activeflows?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;6f18ae1c-ddf8-413b-9572-ad30574604ef&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;flow_id&quot;: &quot;93993ae1-0408-4639-ad5f-1288aa8d4325&quot;,
-            &quot;status&quot;: &quot;ended&quot;,
-            &quot;reference_type&quot;: &quot;call&quot;,
-            &quot;reference_id&quot;: &quot;fd581a20-2606-47fd-a7e8-6bba7c294170&quot;,
-            &quot;reference_activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;current_action&quot;: {
-                &quot;id&quot;: &quot;93ebcadb-ecae-4291-8d49-ca81a926b8b3&quot;,
-                &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-                &quot;type&quot;: &quot;digits_receive&quot;,
-                &quot;option&quot;: {
-                    &quot;length&quot;: 1,
-                    &quot;duration&quot;: 5000
+            "id": "6f18ae1c-ddf8-413b-9572-ad30574604ef",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "flow_id": "93993ae1-0408-4639-ad5f-1288aa8d4325",
+            "status": "ended",
+            "reference_type": "call",
+            "reference_id": "fd581a20-2606-47fd-a7e8-6bba7c294170",
+            "reference_activeflow_id": "00000000-0000-0000-0000-000000000000",
+            "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+            "current_action": {
+                "id": "93ebcadb-ecae-4291-8d49-ca81a926b8b3",
+                "next_id": "00000000-0000-0000-0000-000000000000",
+                "type": "digits_receive",
+                "option": {
+                    "length": 1,
+                    "duration": 5000
                 }
             },
-            &quot;forward_action_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;executed_actions&quot;: [],
-            &quot;tm_create&quot;: &quot;2023-04-06T14:53:12Z&quot;,
-            &quot;tm_update&quot;: &quot;2023-04-06T14:54:24Z&quot;,
-            &quot;tm_delete&quot;: null
+            "forward_action_id": "00000000-0000-0000-0000-000000000000",
+            "executed_actions": [],
+            "tm_create": "2023-04-06T14:53:12Z",
+            "tm_update": "2023-04-06T14:54:24Z",
+            "tm_delete": null
         },
         ...
     ],
-    &quot;next_page_token&quot;: &quot;2023-04-02T13:43:30Z&quot;
+    "next_page_token": "2023-04-02T13:43:30Z"
 }
 </pre></div>
 </div>
@@ -737,31 +737,31 @@
 <section id="get-activeflow-details">
 <h3>Get activeflow details<a class="headerlink" href="#get-activeflow-details" title="Link to this heading">¶</a></h3>
 <p>Getting the details of a specific activeflow by its ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/activeflows/6f18ae1c-ddf8-413b-9572-ad30574604ef?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/activeflows/6f18ae1c-ddf8-413b-9572-ad30574604ef?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;6f18ae1c-ddf8-413b-9572-ad30574604ef&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;flow_id&quot;: &quot;93993ae1-0408-4639-ad5f-1288aa8d4325&quot;,
-    &quot;status&quot;: &quot;running&quot;,
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;fd581a20-2606-47fd-a7e8-6bba7c294170&quot;,
-    &quot;reference_activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;current_action&quot;: {
-        &quot;id&quot;: &quot;93ebcadb-ecae-4291-8d49-ca81a926b8b3&quot;,
-        &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;digits_receive&quot;,
-        &quot;option&quot;: {
-            &quot;length&quot;: 1,
-            &quot;duration&quot;: 5000
+    "id": "6f18ae1c-ddf8-413b-9572-ad30574604ef",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "flow_id": "93993ae1-0408-4639-ad5f-1288aa8d4325",
+    "status": "running",
+    "reference_type": "call",
+    "reference_id": "fd581a20-2606-47fd-a7e8-6bba7c294170",
+    "reference_activeflow_id": "00000000-0000-0000-0000-000000000000",
+    "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+    "current_action": {
+        "id": "93ebcadb-ecae-4291-8d49-ca81a926b8b3",
+        "next_id": "00000000-0000-0000-0000-000000000000",
+        "type": "digits_receive",
+        "option": {
+            "length": 1,
+            "duration": 5000
         }
     },
-    &quot;forward_action_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;executed_actions&quot;: [],
-    &quot;tm_create&quot;: &quot;2023-04-06T14:53:12Z&quot;,
-    &quot;tm_update&quot;: &quot;2023-04-06T14:54:24Z&quot;,
-    &quot;tm_delete&quot;: null
+    "forward_action_id": "00000000-0000-0000-0000-000000000000",
+    "executed_actions": [],
+    "tm_create": "2023-04-06T14:53:12Z",
+    "tm_update": "2023-04-06T14:54:24Z",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -769,32 +769,32 @@
 <section id="stop-activeflow">
 <h3>Stop activeflow<a class="headerlink" href="#stop-activeflow" title="Link to this heading">¶</a></h3>
 <p>Stop the activeflow.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/activeflows/1cb0566c-6aa5-45fd-beb7-e71a968075ea/stop?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/activeflows/1cb0566c-6aa5-45fd-beb7-e71a968075ea/stop?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;1cb0566c-6aa5-45fd-beb7-e71a968075ea&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;flow_id&quot;: &quot;93993ae1-0408-4639-ad5f-1288aa8d4325&quot;,
-    &quot;status&quot;: &quot;ended&quot;,
-    &quot;reference_type&quot;: &quot;call&quot;,
-    &quot;reference_id&quot;: &quot;cd40b5f5-dafc-43e6-9b70-38edc1155a0f&quot;,
-    &quot;reference_activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;on_complete_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;current_action&quot;: {
-        &quot;id&quot;: &quot;f9720d64-a8a8-11ed-8853-3f29a447aac1&quot;,
-        &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;talk&quot;,
-        &quot;option&quot;: {
-            &quot;text&quot;: &quot;Hello. Welcome to the VoIPBin service. Please select a service. For simple talk, press 1. For simple transcribe, press 2. For queue join, press 3. For voicemail, press 4. For conference, press 5. For chatbot talk, press 6. To contact support, press 0.&quot;,
-            &quot;language&quot;: &quot;en-US&quot;,
-            &quot;digits_handle&quot;: &quot;next&quot;
+    "id": "1cb0566c-6aa5-45fd-beb7-e71a968075ea",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "flow_id": "93993ae1-0408-4639-ad5f-1288aa8d4325",
+    "status": "ended",
+    "reference_type": "call",
+    "reference_id": "cd40b5f5-dafc-43e6-9b70-38edc1155a0f",
+    "reference_activeflow_id": "00000000-0000-0000-0000-000000000000",
+    "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+    "current_action": {
+        "id": "f9720d64-a8a8-11ed-8853-3f29a447aac1",
+        "next_id": "00000000-0000-0000-0000-000000000000",
+        "type": "talk",
+        "option": {
+            "text": "Hello. Welcome to the VoIPBin service. Please select a service. For simple talk, press 1. For simple transcribe, press 2. For queue join, press 3. For voicemail, press 4. For conference, press 5. For chatbot talk, press 6. To contact support, press 0.",
+            "language": "en-US",
+            "digits_handle": "next"
         }
     },
-    &quot;forward_action_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;executed_actions&quot;: [],
-    &quot;tm_create&quot;: &quot;2023-04-07T17:23:33Z&quot;,
-    &quot;tm_update&quot;: &quot;2023-04-07T17:23:52Z&quot;,
-    &quot;tm_delete&quot;: null
+    "forward_action_id": "00000000-0000-0000-0000-000000000000",
+    "executed_actions": [],
+    "tm_create": "2023-04-07T17:23:33Z",
+    "tm_update": "2023-04-07T17:23:52Z",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -802,7 +802,7 @@
 <section id="delete-activeflow">
 <h3>Delete activeflow<a class="headerlink" href="#delete-activeflow" title="Link to this heading">¶</a></h3>
 <p>Delete an activeflow by its ID. This removes the activeflow record; it does not stop a still-running activeflow (use the stop endpoint above for that first).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/activeflows/1cb0566c-6aa5-45fd-beb7-e71a968075ea?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/activeflows/1cb0566c-6aa5-45fd-beb7-e71a968075ea?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 -&gt; 204 No Content
 </pre></div>
@@ -890,8 +890,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

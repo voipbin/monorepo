@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Extension" href="extension.html"><link rel="prev" title="Route" href="route_struct_route.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -656,24 +656,24 @@
 <section id="get-list-of-routes">
 <h3>Get list of routes<a class="headerlink" href="#get-list-of-routes" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/routes?customer_id=00000000-0000-0000-0000-000000000001&amp;token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/routes?customer_id=00000000-0000-0000-0000-000000000001&amp;token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;491b6858-5357-11ed-b753-8fd49cd36340&quot;,
-            &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;,
-            &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-            &quot;priority&quot;: 1,
-            &quot;target&quot;: &quot;all&quot;,
-            &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-            &quot;tm_update&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+            "id": "491b6858-5357-11ed-b753-8fd49cd36340",
+            "customer_id": "00000000-0000-0000-0000-000000000001",
+            "name": "",
+            "detail": "",
+            "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+            "priority": 1,
+            "target": "all",
+            "tm_create": "2022-10-22 16:16:16.874761",
+            "tm_update": "2022-10-22 16:16:16.874761",
+            "tm_delete": "9999-01-01 00:00:00.000000"
         }
     ],
-    &quot;next_page_token&quot;: &quot;2022-10-22 16:16:16.874761&quot;
+    "next_page_token": "2022-10-22 16:16:16.874761"
 }
 </pre></div>
 </div>
@@ -681,19 +681,19 @@
 <section id="get-detail-of-route">
 <h3>Get detail of route<a class="headerlink" href="#get-detail-of-route" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/routes/dccfd81b-5f11-4c49-8e3f-70730ef1a4d3?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/routes/dccfd81b-5f11-4c49-8e3f-70730ef1a4d3?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;dccfd81b-5f11-4c49-8e3f-70730ef1a4d3&quot;,
-    &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-    &quot;priority&quot;: 1,
-    &quot;target&quot;: &quot;+82&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-26 11:41:18.124909&quot;,
-    &quot;tm_update&quot;: &quot;2022-10-29 14:50:33.477405&quot;,
-    &quot;tm_delete&quot;: &quot;2022-10-29 14:50:33.477405&quot;
+    "id": "dccfd81b-5f11-4c49-8e3f-70730ef1a4d3",
+    "customer_id": "00000000-0000-0000-0000-000000000001",
+    "name": "",
+    "detail": "",
+    "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+    "priority": 1,
+    "target": "+82",
+    "tm_create": "2022-10-26 11:41:18.124909",
+    "tm_update": "2022-10-29 14:50:33.477405",
+    "tm_delete": "2022-10-29 14:50:33.477405"
 }
 </pre></div>
 </div>
@@ -701,28 +701,28 @@
 <section id="create-a-new-route">
 <h3>Create a new route<a class="headerlink" href="#create-a-new-route" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/routes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-    &quot;priority&quot;: 1,
-    &quot;target&quot;: &quot;+82&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/routes?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "customer_id": "00000000-0000-0000-0000-000000000001",
+    "name": "",
+    "detail": "",
+    "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+    "priority": 1,
+    "target": "+82"
+}'
 
 {
-    &quot;id&quot;: &quot;b972b61c-59d2-4217-8fbb-a32304be5c3b&quot;,
-    &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-    &quot;priority&quot;: 1,
-    &quot;target&quot;: &quot;+82&quot;,
-    &quot;tm_create&quot;: &quot;2022-11-02 15:36:32.174346&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "id": "b972b61c-59d2-4217-8fbb-a32304be5c3b",
+    "customer_id": "00000000-0000-0000-0000-000000000001",
+    "name": "",
+    "detail": "",
+    "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+    "priority": 1,
+    "target": "+82",
+    "tm_create": "2022-11-02 15:36:32.174346",
+    "tm_update": "9999-01-01 00:00:00.000000",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -730,27 +730,27 @@
 <section id="update-route">
 <h3>Update route<a class="headerlink" href="#update-route" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;&quot;,
-        &quot;detail&quot;: &quot;&quot;,
-        &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-        &quot;priority&quot;: 2,
-        &quot;target&quot;: &quot;+82&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "",
+        "detail": "",
+        "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+        "priority": 2,
+        "target": "+82"
+    }'
 
 {
-    &quot;id&quot;: &quot;b972b61c-59d2-4217-8fbb-a32304be5c3b&quot;,
-    &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-    &quot;priority&quot;: 2,
-    &quot;target&quot;: &quot;+82&quot;,
-    &quot;tm_create&quot;: &quot;2022-11-02 15:36:32.174346&quot;,
-    &quot;tm_update&quot;: &quot;2022-11-02 15:43:09.190169&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "id": "b972b61c-59d2-4217-8fbb-a32304be5c3b",
+    "customer_id": "00000000-0000-0000-0000-000000000001",
+    "name": "",
+    "detail": "",
+    "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+    "priority": 2,
+    "target": "+82",
+    "tm_create": "2022-11-02 15:36:32.174346",
+    "tm_update": "2022-11-02 15:43:09.190169",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -758,19 +758,19 @@
 <section id="delete-route">
 <h3>Delete route<a class="headerlink" href="#delete-route" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;b972b61c-59d2-4217-8fbb-a32304be5c3b&quot;,
-    &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
-    &quot;priority&quot;: 1,
-    &quot;target&quot;: &quot;+82&quot;,
-    &quot;tm_create&quot;: &quot;2022-11-02 15:36:32.174346&quot;,
-    &quot;tm_update&quot;: &quot;2022-11-02 15:44:09.686612&quot;,
-    &quot;tm_delete&quot;: &quot;2022-11-02 15:44:09.686612&quot;
+    "id": "b972b61c-59d2-4217-8fbb-a32304be5c3b",
+    "customer_id": "00000000-0000-0000-0000-000000000001",
+    "name": "",
+    "detail": "",
+    "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+    "priority": 1,
+    "target": "+82",
+    "tm_create": "2022-11-02 15:36:32.174346",
+    "tm_update": "2022-11-02 15:44:09.686612",
+    "tm_delete": "2022-11-02 15:44:09.686612"
 }
 </pre></div>
 </div>
@@ -857,8 +857,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

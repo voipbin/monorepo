@@ -44,6 +44,10 @@ MCP Server
 
 .. note:: **MCP Server Implementation Hint**
 
+   ``PUT /mcp_servers/{id}`` is a true partial update: every field (``name``, ``detail``, ``url``, ``status``, ``auth_type``, ``api_key_header``, in addition to ``secret`` above) is optional, and omitting a field leaves its current value unchanged. A full resend of every field is never required -- for example, ``PUT {"name": "new name"}`` renames the server and leaves everything else (including ``url``, ``status``, and ``auth_type``) exactly as it was. One exception worth calling out: ``auth_type: ""`` is a valid, meaningful value (no authentication) and is distinct from omitting the ``auth_type`` field entirely -- sending the empty string explicitly sets no-auth, while omitting the field preserves whatever ``auth_type`` the server already had.
+
+.. note:: **MCP Server Implementation Hint**
+
    A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the MCP server has not been deleted and is still active. This sentinel value is used across all VoIPBin resources to represent "not yet occurred."
 
 Example

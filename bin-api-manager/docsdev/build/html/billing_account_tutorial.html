@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Struct" href="billing_account_struct.html"><link rel="prev" title="Overview" href="billing_account_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -659,50 +659,50 @@
 <p>Check your billing account balance before initiating calls or sending messages to ensure sufficient funds.</p>
 <p><strong>Get Billing Account:</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">/billing_account</span></code> endpoint (singular, no ID) auto-resolves the billing account from your authenticated session.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_account?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_account?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;Primary Account&quot;,
-    &quot;detail&quot;: &quot;Main billing account&quot;,
-    &quot;plan_type&quot;: &quot;free&quot;,
-    &quot;plan_status&quot;: &quot;active&quot;,
-    &quot;balance_credit&quot;: 69772630,
-    &quot;balance_token&quot;: 70,
-    &quot;payment_type&quot;: &quot;&quot;,
-    &quot;payment_method&quot;: &quot;&quot;,
-    &quot;tm_last_topup&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_next_topup&quot;: &quot;2024-02-01T00:00:00Z&quot;,
-    &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;,
-    &quot;tm_delete&quot;: null
+    "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "Primary Account",
+    "detail": "Main billing account",
+    "plan_type": "free",
+    "plan_status": "active",
+    "balance_credit": 69772630,
+    "balance_token": 70,
+    "payment_type": "",
+    "payment_method": "",
+    "tm_last_topup": "2024-01-01T00:00:00Z",
+    "tm_next_topup": "2024-02-01T00:00:00Z",
+    "tm_create": "2024-01-01T00:00:00Z",
+    "tm_update": "2024-01-15T10:30:00Z",
+    "tm_delete": null
 }
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> field is in micros (69772630 = $69.77). The <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> field is the current token count. The <code class="docutils literal notranslate"><span class="pre">plan_status</span></code> field indicates whether the subscription is <code class="docutils literal notranslate"><span class="pre">active</span></code> or <code class="docutils literal notranslate"><span class="pre">canceling</span></code>.</p>
 <p><strong>List All Billing Accounts (Project Admin Only):</strong></p>
 <p>This endpoint uses the admin-only <code class="docutils literal notranslate"><span class="pre">/billing_accounts</span></code> (plural) path and requires project super admin permissions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_accounts?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_accounts?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;name&quot;: &quot;Primary Account&quot;,
-            &quot;detail&quot;: &quot;Main billing account&quot;,
-            &quot;plan_type&quot;: &quot;free&quot;,
-            &quot;plan_status&quot;: &quot;active&quot;,
-            &quot;balance_credit&quot;: 69772630,
-            &quot;balance_token&quot;: 70,
-            &quot;payment_type&quot;: &quot;&quot;,
-            &quot;payment_method&quot;: &quot;&quot;,
-            &quot;tm_last_topup&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-            &quot;tm_next_topup&quot;: &quot;2024-02-01T00:00:00Z&quot;,
-            &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-            &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;,
-            &quot;tm_delete&quot;: null
+            "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "name": "Primary Account",
+            "detail": "Main billing account",
+            "plan_type": "free",
+            "plan_status": "active",
+            "balance_credit": 69772630,
+            "balance_token": 70,
+            "payment_type": "",
+            "payment_method": "",
+            "tm_last_topup": "2024-01-01T00:00:00Z",
+            "tm_next_topup": "2024-02-01T00:00:00Z",
+            "tm_create": "2024-01-01T00:00:00Z",
+            "tm_update": "2024-01-15T10:30:00Z",
+            "tm_delete": null
         }
     ]
 }
@@ -717,29 +717,29 @@
 <section id="update-billing-account-basic-info">
 <h3>Update Billing Account Basic Info<a class="headerlink" href="#update-billing-account-basic-info" title="Link to this heading">¶</a></h3>
 <p>Update the display name and detail of your billing account. Requires <code class="docutils literal notranslate"><span class="pre">CustomerAdmin</span></code> permission.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/billing_account?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;Production Account&quot;,
-        &quot;detail&quot;: &quot;Main billing account for production services&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/billing_account?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "Production Account",
+        "detail": "Main billing account for production services"
+    }'
 
 {
-    &quot;id&quot;: &quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;Production Account&quot;,
-    &quot;detail&quot;: &quot;Main billing account for production services&quot;,
-    &quot;plan_type&quot;: &quot;free&quot;,
-    &quot;plan_status&quot;: &quot;active&quot;,
-    &quot;balance_credit&quot;: 69772630,
-    &quot;balance_token&quot;: 70,
-    &quot;payment_type&quot;: &quot;&quot;,
-    &quot;payment_method&quot;: &quot;&quot;,
-    &quot;tm_last_topup&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_next_topup&quot;: &quot;2024-02-01T00:00:00Z&quot;,
-    &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-15T10:35:00Z&quot;,
-    &quot;tm_delete&quot;: null
+    "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "Production Account",
+    "detail": "Main billing account for production services",
+    "plan_type": "free",
+    "plan_status": "active",
+    "balance_credit": 69772630,
+    "balance_token": 70,
+    "payment_type": "",
+    "payment_method": "",
+    "tm_last_topup": "2024-01-01T00:00:00Z",
+    "tm_next_topup": "2024-02-01T00:00:00Z",
+    "tm_create": "2024-01-01T00:00:00Z",
+    "tm_update": "2024-01-15T10:35:00Z",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -747,29 +747,29 @@
 <section id="update-billing-account-payment-info">
 <h3>Update Billing Account Payment Info<a class="headerlink" href="#update-billing-account-payment-info" title="Link to this heading">¶</a></h3>
 <p>Update the payment type and method recorded for your billing account. Requires <code class="docutils literal notranslate"><span class="pre">CustomerAdmin</span></code> permission.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/billing_account/payment_info?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;payment_type&quot;: &quot;prepaid&quot;,
-        &quot;payment_method&quot;: &quot;credit card&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/billing_account/payment_info?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "payment_type": "prepaid",
+        "payment_method": "credit card"
+    }'
 
 {
-    &quot;id&quot;: &quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;Primary Account&quot;,
-    &quot;detail&quot;: &quot;Main billing account&quot;,
-    &quot;plan_type&quot;: &quot;free&quot;,
-    &quot;plan_status&quot;: &quot;active&quot;,
-    &quot;balance_credit&quot;: 69772630,
-    &quot;balance_token&quot;: 70,
-    &quot;payment_type&quot;: &quot;prepaid&quot;,
-    &quot;payment_method&quot;: &quot;credit card&quot;,
-    &quot;tm_last_topup&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_next_topup&quot;: &quot;2024-02-01T00:00:00Z&quot;,
-    &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-15T10:36:00Z&quot;,
-    &quot;tm_delete&quot;: null
+    "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "name": "Primary Account",
+    "detail": "Main billing account",
+    "plan_type": "free",
+    "plan_status": "active",
+    "balance_credit": 69772630,
+    "balance_token": 70,
+    "payment_type": "prepaid",
+    "payment_method": "credit card",
+    "tm_last_topup": "2024-01-01T00:00:00Z",
+    "tm_next_topup": "2024-02-01T00:00:00Z",
+    "tm_create": "2024-01-01T00:00:00Z",
+    "tm_update": "2024-01-15T10:36:00Z",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -777,10 +777,10 @@
 <section id="create-a-paddle-customer-portal-session">
 <h3>Create a Paddle Customer Portal Session<a class="headerlink" href="#create-a-paddle-customer-portal-session" title="Link to this heading">¶</a></h3>
 <p>Generate a Paddle Customer Portal URL so the customer can manage their own subscription (update card, view invoices, cancel plan). Requires <code class="docutils literal notranslate"><span class="pre">CustomerAdmin</span></code> permission and an active Paddle subscription already linked to the billing account.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/billing_account/paddle_portal_session?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/billing_account/paddle_portal_session?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;url&quot;: &quot;https://customer-portal.paddle.com/cpl_session_abc123&quot;
+    "url": "https://customer-portal.paddle.com/cpl_session_abc123"
 }
 </pre></div>
 </div>
@@ -793,15 +793,15 @@
 <section id="admin-get-and-update-a-specific-billing-account">
 <h3>Admin: Get and Update a Specific Billing Account<a class="headerlink" href="#admin-get-and-update-a-specific-billing-account" title="Link to this heading">¶</a></h3>
 <p>Project super admins can retrieve or update any billing account by ID using the plural <code class="docutils literal notranslate"><span class="pre">/billing_accounts</span></code> path.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_accounts/62918cd8-0cd7-11ee-8571-b738bed3a5c4?token=&lt;YOUR_ADMIN_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_accounts/62918cd8-0cd7-11ee-8571-b738bed3a5c4?token=&lt;YOUR_ADMIN_TOKEN&gt;'
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/billing_accounts/62918cd8-0cd7-11ee-8571-b738bed3a5c4?token=&lt;YOUR_ADMIN_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;Renamed Account&quot;,
-        &quot;detail&quot;: &quot;Updated by admin&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/billing_accounts/62918cd8-0cd7-11ee-8571-b738bed3a5c4?token=&lt;YOUR_ADMIN_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "Renamed Account",
+        "detail": "Updated by admin"
+    }'
 </pre></div>
 </div>
 <p>Admins can also update another customer’s payment info via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/billing_accounts/{id}/payment_info</span></code> with the same <code class="docutils literal notranslate"><span class="pre">payment_type</span></code>/<code class="docutils literal notranslate"><span class="pre">payment_method</span></code> body shown above.</p>
@@ -842,59 +842,59 @@ Credit cost: 10 x $0.01 = $0.10
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">check_balance_and_call</span><span class="p">(</span><span class="n">call_duration_minutes</span><span class="p">,</span> <span class="n">call_type</span><span class="o">=</span><span class="s2">&quot;vn&quot;</span><span class="p">):</span>
-    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://api.voipbin.net/v1.0&quot;</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span><span class="p">}</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_balance_and_call</span><span class="p">(</span><span class="n">call_duration_minutes</span><span class="p">,</span> <span class="n">call_type</span><span class="o">=</span><span class="s2">"vn"</span><span class="p">):</span>
+    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">"https://api.voipbin.net/v1.0"</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"token"</span><span class="p">:</span> <span class="s2">"&lt;YOUR_AUTH_TOKEN&gt;"</span><span class="p">}</span>
 
     <span class="c1"># Get billing account (auto-resolved from authenticated session)</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/billing_account&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/billing_account"</span><span class="p">,</span>
         <span class="n">params</span><span class="o">=</span><span class="n">params</span>
     <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 
-    <span class="n">balance_credit</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;balance_credit&#39;</span><span class="p">]</span>  <span class="c1"># int64 micros</span>
-    <span class="n">balance_token</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;balance_token&#39;</span><span class="p">]</span>     <span class="c1"># int64 token count</span>
+    <span class="n">balance_credit</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">'balance_credit'</span><span class="p">]</span>  <span class="c1"># int64 micros</span>
+    <span class="n">balance_token</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">'balance_token'</span><span class="p">]</span>     <span class="c1"># int64 token count</span>
     <span class="n">duration</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">call_duration_minutes</span><span class="p">)</span>  <span class="c1"># ceiling-rounded</span>
 
-    <span class="k">if</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">&quot;vn&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">"vn"</span><span class="p">:</span>
         <span class="c1"># VN call: check tokens first, then credit for overflow</span>
         <span class="n">tokens_needed</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="mi">1</span>  <span class="c1"># 1 token per minute</span>
         <span class="k">if</span> <span class="n">balance_token</span> <span class="o">&gt;=</span> <span class="n">tokens_needed</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VN call covered by tokens: </span><span class="si">{</span><span class="n">tokens_needed</span><span class="si">}</span><span class="s2"> tokens&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"VN call covered by tokens: </span><span class="si">{</span><span class="n">tokens_needed</span><span class="si">}</span><span class="s2"> tokens"</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="c1"># Tokens insufficient — estimate credit overflow</span>
         <span class="n">overflow_minutes</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">-</span> <span class="n">balance_token</span>
         <span class="n">estimated_cost_micros</span> <span class="o">=</span> <span class="n">overflow_minutes</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># 1,000 micros/min</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VN call overflow: </span><span class="si">{</span><span class="n">overflow_minutes</span><span class="si">}</span><span class="s2"> min x 1,000 = </span><span class="si">{</span><span class="n">estimated_cost_micros</span><span class="si">}</span><span class="s2"> micros&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"VN call overflow: </span><span class="si">{</span><span class="n">overflow_minutes</span><span class="si">}</span><span class="s2"> min x 1,000 = </span><span class="si">{</span><span class="n">estimated_cost_micros</span><span class="si">}</span><span class="s2"> micros"</span><span class="p">)</span>
         <span class="n">can_proceed</span> <span class="o">=</span> <span class="n">balance_credit</span> <span class="o">&gt;=</span> <span class="n">estimated_cost_micros</span>
 
-    <span class="k">elif</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">&quot;pstn&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">call_type</span> <span class="o">==</span> <span class="s2">"pstn"</span><span class="p">:</span>
         <span class="c1"># PSTN call: always credit</span>
         <span class="n">estimated_cost_micros</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="mi">10000</span>  <span class="c1"># 10,000 micros/min</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PSTN call cost: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> min x 10,000 = </span><span class="si">{</span><span class="n">estimated_cost_micros</span><span class="si">}</span><span class="s2"> micros&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PSTN call cost: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> min x 10,000 = </span><span class="si">{</span><span class="n">estimated_cost_micros</span><span class="si">}</span><span class="s2"> micros"</span><span class="p">)</span>
         <span class="n">can_proceed</span> <span class="o">=</span> <span class="n">balance_credit</span> <span class="o">&gt;=</span> <span class="n">estimated_cost_micros</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">can_proceed</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Insufficient credit: </span><span class="si">{</span><span class="n">balance_credit</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">balance_credit</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Insufficient credit: </span><span class="si">{</span><span class="n">balance_credit</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">balance_credit</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Balance OK: </span><span class="si">{</span><span class="n">balance_credit</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">balance_credit</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Balance OK: </span><span class="si">{</span><span class="n">balance_credit</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">balance_credit</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">True</span>
 
 <span class="c1"># Check for a 10 minute VN call</span>
-<span class="n">check_balance_and_call</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;vn&quot;</span><span class="p">)</span>
+<span class="n">check_balance_and_call</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s2">"vn"</span><span class="p">)</span>
 
 <span class="c1"># Check for a 5 minute PSTN call</span>
-<span class="n">check_balance_and_call</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;pstn&quot;</span><span class="p">)</span>
+<span class="n">check_balance_and_call</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s2">"pstn"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Node.js Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const axios = require(&#39;axios&#39;);
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const axios = require('axios');
 
-async function checkBalanceAndCall(callDurationMinutes, callType = &#39;vn&#39;) {
+async function checkBalanceAndCall(callDurationMinutes, callType = 'vn') {
     try {
-        const baseUrl = &#39;https://api.voipbin.net/v1.0&#39;;
-        const params = { token: &#39;&lt;YOUR_AUTH_TOKEN&gt;&#39; };
+        const baseUrl = 'https://api.voipbin.net/v1.0';
+        const params = { token: '&lt;YOUR_AUTH_TOKEN&gt;' };
 
         // Get billing account (auto-resolved from authenticated session)
         const accountResponse = await axios.get(
@@ -909,7 +909,7 @@ async function checkBalanceAndCall(callDurationMinutes, callType = &#39;vn&#39;)
 
         let canProceed = false;
 
-        if (callType === &#39;vn&#39;) {
+        if (callType === 'vn') {
             // VN call: check tokens first, then credit for overflow
             const tokensNeeded = duration * 1;  // 1 token per minute
             if (balanceToken &gt;= tokensNeeded) {
@@ -920,7 +920,7 @@ async function checkBalanceAndCall(callDurationMinutes, callType = &#39;vn&#39;)
             const estimatedCostMicros = overflowMinutes * 1000;  // 1,000 micros/min
             console.log(`VN call overflow: ${overflowMinutes} min x 1,000 = ${estimatedCostMicros} micros`);
             canProceed = balanceCredit &gt;= estimatedCostMicros;
-        } else if (callType === &#39;pstn&#39;) {
+        } else if (callType === 'pstn') {
             // PSTN call: always credit
             const estimatedCostMicros = duration * 10000;  // 10,000 micros/min
             console.log(`PSTN call cost: ${duration} min x 10,000 = ${estimatedCostMicros} micros`);
@@ -936,13 +936,13 @@ async function checkBalanceAndCall(callDurationMinutes, callType = &#39;vn&#39;)
         return true;
 
     } catch (error) {
-        console.error(&#39;Error:&#39;, error.message);
+        console.error('Error:', error.message);
         return null;
     }
 }
 
 // Check for a 10 minute VN call
-checkBalanceAndCall(10, &#39;vn&#39;);
+checkBalanceAndCall(10, 'vn');
 </pre></div>
 </div>
 </section>
@@ -950,32 +950,32 @@ checkBalanceAndCall(10, &#39;vn&#39;);
 <h3>Monitor Balance with Webhooks<a class="headerlink" href="#monitor-balance-with-webhooks" title="Link to this heading">¶</a></h3>
 <p>Set up webhooks to receive notifications when billing account state changes. You can implement client-side low balance alerts by checking the balance in the webhook payload.</p>
 <p><strong>Create Webhook for Billing Events:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;Balance Monitoring Webhook&quot;,
-        &quot;uri&quot;: &quot;https://your-server.com/webhook/billing&quot;,
-        &quot;method&quot;: &quot;POST&quot;,
-        &quot;event_types&quot;: [
-            &quot;account_updated&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "Balance Monitoring Webhook",
+        "uri": "https://your-server.com/webhook/billing",
+        "method": "POST",
+        "event_types": [
+            "account_updated"
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <p><strong>Webhook Payload Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">webhook</span><span class="o">/</span><span class="n">billing</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;account_updated&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;62918cd8-0cd7-11ee-8571-b738bed3a5c4&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Primary Account&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;plan_status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;balance_credit&quot;</span><span class="p">:</span> <span class="mi">15500000</span><span class="p">,</span>
-        <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">20</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"account_updated"</span><span class="p">,</span>
+    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"62918cd8-0cd7-11ee-8571-b738bed3a5c4"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Primary Account"</span><span class="p">,</span>
+        <span class="s2">"plan_type"</span><span class="p">:</span> <span class="s2">"free"</span><span class="p">,</span>
+        <span class="s2">"plan_status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
+        <span class="s2">"balance_credit"</span><span class="p">:</span> <span class="mi">15500000</span><span class="p">,</span>
+        <span class="s2">"balance_token"</span><span class="p">:</span> <span class="mi">20</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -988,28 +988,28 @@ checkBalanceAndCall(10, &#39;vn&#39;);
 
 <span class="n">LOW_BALANCE_THRESHOLD_MICROS</span> <span class="o">=</span> <span class="mi">20_000_000</span>  <span class="c1"># $20.00 in micros</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook/billing&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/webhook/billing'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">billing_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
-    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'event_type'</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;account_updated&#39;</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
-        <span class="n">balance_credit</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;balance_credit&#39;</span><span class="p">]</span>  <span class="c1"># int64 micros</span>
-        <span class="n">balance_token</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;balance_token&#39;</span><span class="p">]</span>     <span class="c1"># int64 token count</span>
-        <span class="n">account_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'account_updated'</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
+        <span class="n">balance_credit</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'balance_credit'</span><span class="p">]</span>  <span class="c1"># int64 micros</span>
+        <span class="n">balance_token</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'balance_token'</span><span class="p">]</span>     <span class="c1"># int64 token count</span>
+        <span class="n">account_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
 
         <span class="c1"># Check if credit balance is low</span>
         <span class="k">if</span> <span class="n">balance_credit</span> <span class="o">&lt;</span> <span class="n">LOW_BALANCE_THRESHOLD_MICROS</span><span class="p">:</span>
             <span class="n">send_low_balance_alert</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance_credit</span><span class="p">,</span> <span class="n">balance_token</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;received&#39;</span><span class="p">}),</span> <span class="mi">200</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'received'</span><span class="p">}),</span> <span class="mi">200</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">send_low_balance_alert</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">balance_credit</span><span class="p">,</span> <span class="n">balance_token</span><span class="p">):</span>
     <span class="n">balance_usd</span> <span class="o">=</span> <span class="n">balance_credit</span> <span class="o">/</span> <span class="mi">1_000_000</span>
     <span class="n">threshold_usd</span> <span class="o">=</span> <span class="n">LOW_BALANCE_THRESHOLD_MICROS</span> <span class="o">/</span> <span class="mi">1_000_000</span>
-    <span class="n">subject</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Low Balance Alert: $</span><span class="si">{</span><span class="n">balance_usd</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">body</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">subject</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Low Balance Alert: $</span><span class="si">{</span><span class="n">balance_usd</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">    Your billing account credit balance is low.</span>
 
 <span class="s2">    Account ID: </span><span class="si">{</span><span class="n">account_id</span><span class="si">}</span>
@@ -1021,8 +1021,8 @@ checkBalanceAndCall(10, &#39;vn&#39;);
 <span class="s2">    working as long as monthly tokens are available. Credit balance</span>
 <span class="s2">    is needed for PSTN calls, SMS, email, number purchases, and</span>
 <span class="s2">    token overflow.</span>
-<span class="s2">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sending low balance alert: </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="s2">    """</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sending low balance alert: </span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1030,7 +1030,7 @@ checkBalanceAndCall(10, &#39;vn&#39;);
 <h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading">¶</a></h3>
 <p><strong>1. Pre-Campaign Cost Estimation:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">estimate_campaign_cost</span><span class="p">(</span><span class="n">pstn_calls</span><span class="p">,</span> <span class="n">pstn_avg_minutes</span><span class="p">,</span> <span class="n">sms_count</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate campaign credit cost in micros (1 USD = 1,000,000 micros).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Estimate campaign credit cost in micros (1 USD = 1,000,000 micros)."""</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
     <span class="c1"># PSTN calls: always credit (10,000 micros/min outgoing)</span>
@@ -1043,9 +1043,9 @@ checkBalanceAndCall(10, &#39;vn&#39;);
     <span class="n">total_micros</span> <span class="o">=</span> <span class="n">pstn_credit_micros</span> <span class="o">+</span> <span class="n">sms_credit_micros</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">&#39;pstn_credit_micros&#39;</span><span class="p">:</span> <span class="n">pstn_credit_micros</span><span class="p">,</span>
-        <span class="s1">&#39;sms_credit_micros&#39;</span><span class="p">:</span> <span class="n">sms_credit_micros</span><span class="p">,</span>
-        <span class="s1">&#39;total_credit_micros&#39;</span><span class="p">:</span> <span class="n">total_micros</span>
+        <span class="s1">'pstn_credit_micros'</span><span class="p">:</span> <span class="n">pstn_credit_micros</span><span class="p">,</span>
+        <span class="s1">'sms_credit_micros'</span><span class="p">:</span> <span class="n">sms_credit_micros</span><span class="p">,</span>
+        <span class="s1">'total_credit_micros'</span><span class="p">:</span> <span class="n">total_micros</span>
     <span class="p">}</span>
 
 <span class="c1"># Example: mixed campaign</span>
@@ -1053,18 +1053,18 @@ checkBalanceAndCall(10, &#39;vn&#39;);
     <span class="n">pstn_calls</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">pstn_avg_minutes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">sms_count</span><span class="o">=</span><span class="mi">200</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PSTN credit: </span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;pstn_credit_micros&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;pstn_credit_micros&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SMS credit: </span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;sms_credit_micros&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;sms_credit_micros&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total credit needed: </span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;total_credit_micros&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">&#39;total_credit_micros&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PSTN credit: </span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">'pstn_credit_micros'</span><span class="p">]</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">'pstn_credit_micros'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SMS credit: </span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">'sms_credit_micros'</span><span class="p">]</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">'sms_credit_micros'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total credit needed: </span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">'total_credit_micros'</span><span class="p">]</span><span class="si">}</span><span class="s2"> micros ($</span><span class="si">{</span><span class="n">costs</span><span class="p">[</span><span class="s1">'total_credit_micros'</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>2. Plan Tier Comparison:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="p">,</span> <span class="n">monthly_tts_minutes</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recommend the plan tier with the least overflow credit cost.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Recommend the plan tier with the least overflow credit cost."""</span>
     <span class="n">plans</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;free&#39;</span><span class="p">:</span>         <span class="p">{</span><span class="s1">&#39;tokens&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
-        <span class="s1">&#39;basic&#39;</span><span class="p">:</span>        <span class="p">{</span><span class="s1">&#39;tokens&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
-        <span class="s1">&#39;professional&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;tokens&#39;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">},</span>
+        <span class="s1">'free'</span><span class="p">:</span>         <span class="p">{</span><span class="s1">'tokens'</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
+        <span class="s1">'basic'</span><span class="p">:</span>        <span class="p">{</span><span class="s1">'tokens'</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+        <span class="s1">'professional'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'tokens'</span><span class="p">:</span> <span class="mi">10000</span><span class="p">},</span>
     <span class="p">}</span>
 
     <span class="k">for</span> <span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span> <span class="ow">in</span> <span class="n">plans</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1072,19 +1072,19 @@ checkBalanceAndCall(10, &#39;vn&#39;);
         <span class="n">tts_tokens</span> <span class="o">=</span> <span class="n">monthly_tts_minutes</span> <span class="o">*</span> <span class="mi">3</span>  <span class="c1"># 3 tokens per minute</span>
         <span class="n">total_tokens</span> <span class="o">=</span> <span class="n">vn_tokens</span> <span class="o">+</span> <span class="n">tts_tokens</span>
 
-        <span class="k">if</span> <span class="n">total_tokens</span> <span class="o">&lt;=</span> <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">total_tokens</span> <span class="o">&lt;=</span> <span class="n">plan</span><span class="p">[</span><span class="s1">'tokens'</span><span class="p">]:</span>
             <span class="n">overflow_micros</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># When tokens run out, remaining usage overflows to credit.</span>
-            <span class="n">overflow_tokens</span> <span class="o">=</span> <span class="n">total_tokens</span> <span class="o">-</span> <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]</span>
+            <span class="n">overflow_tokens</span> <span class="o">=</span> <span class="n">total_tokens</span> <span class="o">-</span> <span class="n">plan</span><span class="p">[</span><span class="s1">'tokens'</span><span class="p">]</span>
             <span class="n">vn_ratio</span> <span class="o">=</span> <span class="n">vn_tokens</span> <span class="o">/</span> <span class="n">total_tokens</span> <span class="k">if</span> <span class="n">total_tokens</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
             <span class="n">overflow_vn_micros</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">overflow_tokens</span> <span class="o">*</span> <span class="n">vn_ratio</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
             <span class="n">overflow_tts_micros</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">overflow_tokens</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">vn_ratio</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">30000</span>
             <span class="n">overflow_micros</span> <span class="o">=</span> <span class="n">overflow_vn_micros</span> <span class="o">+</span> <span class="n">overflow_tts_micros</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">plan_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">plan</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> tokens, &quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;need </span><span class="si">{</span><span class="n">total_tokens</span><span class="si">}</span><span class="s2">, overflow: </span><span class="si">{</span><span class="n">overflow_micros</span><span class="si">}</span><span class="s2"> micros &quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;($</span><span class="si">{</span><span class="n">overflow_micros</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">plan_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">plan</span><span class="p">[</span><span class="s1">'tokens'</span><span class="p">]</span><span class="si">}</span><span class="s2"> tokens, "</span>
+              <span class="sa">f</span><span class="s2">"need </span><span class="si">{</span><span class="n">total_tokens</span><span class="si">}</span><span class="s2">, overflow: </span><span class="si">{</span><span class="n">overflow_micros</span><span class="si">}</span><span class="s2"> micros "</span>
+              <span class="sa">f</span><span class="s2">"($</span><span class="si">{</span><span class="n">overflow_micros</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1_000_000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
 <span class="n">recommend_plan</span><span class="p">(</span><span class="n">monthly_vn_minutes</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">monthly_tts_minutes</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
@@ -1130,7 +1130,7 @@ checkBalanceAndCall(10, &#39;vn&#39;);
 </div>
 <p><strong>2. Before Operations:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Determine service type</span>
-<span class="k">if</span> <span class="n">service_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pstn_call&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">]:</span>
+<span class="k">if</span> <span class="n">service_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'pstn_call'</span><span class="p">,</span> <span class="s1">'number'</span><span class="p">]:</span>
     <span class="c1"># Always check credit balance</span>
     <span class="n">check_credit_balance</span><span class="p">()</span>
 </pre></div>
@@ -1256,8 +1256,8 @@ checkBalanceAndCall(10, &#39;vn&#39;);
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

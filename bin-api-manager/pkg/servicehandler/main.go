@@ -347,12 +347,12 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		id uuid.UUID,
-		name string,
-		detail string,
-		url string,
-		status ammcpserver.Status,
-		authType ammcpserver.AuthType,
-		apiKeyHeader string,
+		name *string,
+		detail *string,
+		url *string,
+		status *ammcpserver.Status,
+		authType *ammcpserver.AuthType,
+		apiKeyHeader *string,
 		secret *string,
 	) (*ammcpserver.WebhookMessage, error)
 	McpServerDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammcpserver.WebhookMessage, error)

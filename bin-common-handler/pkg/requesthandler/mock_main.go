@@ -661,7 +661,7 @@ func (mr *MockRequestHandlerMockRecorder) AIV1McpServerList(ctx, pageToken, page
 }
 
 // AIV1McpServerUpdate mocks base method.
-func (m *MockRequestHandler) AIV1McpServerUpdate(ctx context.Context, id uuid.UUID, name, detail, url string, status mcpserver.Status, authType mcpserver.AuthType, apiKeyHeader string, secret *string) (*mcpserver.McpServer, error) {
+func (m *MockRequestHandler) AIV1McpServerUpdate(ctx context.Context, id uuid.UUID, name, detail, url *string, status *mcpserver.Status, authType *mcpserver.AuthType, apiKeyHeader, secret *string) (*mcpserver.McpServer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1McpServerUpdate", ctx, id, name, detail, url, status, authType, apiKeyHeader, secret)
 	ret0, _ := ret[0].(*mcpserver.McpServer)

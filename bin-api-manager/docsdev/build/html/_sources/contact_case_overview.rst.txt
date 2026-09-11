@@ -69,6 +69,20 @@ Assigning a Case
 
 ``owner_id`` must reference an existing agent of the **same customer** as the case. A cross-tenant or nonexistent agent ID and a nonexistent case ID both return the same ``404`` -- the API deliberately does not reveal which one failed. Assigning a ``closed`` case returns ``409 Conflict``; reopen it first via ``POST /contact_cases/{id}/continue``.
 
+See also "Unassigning a Case" below for removing an owner without assigning a new one.
+
+
+Unassigning a Case
+-------------------
+
+``POST /contact_cases/{id}/unassign`` clears a case's owner. Admin and manager callers may unassign any case; the owning agent may unassign themselves. There is no request body.
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/contact_cases/<case-id>/unassign?token=<YOUR_AUTH_TOKEN>'
+
+A caller who is neither an admin/manager nor the current owner gets ``403 Forbidden``. Unassigning a ``closed`` case returns ``409 Conflict``, matching ``assign``'s behavior -- a case's owner is never cleared by closing it, since ``/continue``'s authorization for re-opening a closed case depends on knowing who owned it.
+
 
 Filtering and Listing
 ----------------------
@@ -151,7 +165,7 @@ The response is a :ref:`Message <conversation-struct-message-message>` object (t
 Agent-Facing Surface
 ----------------------
 
-The same case management capabilities are also available under ``/service_agents/contact_cases``, gated by regular agent permission rather than admin/manager. This surface additionally exposes ``POST /service_agents/contact_cases/{id}/assign``, which assigns a case's owner to a given agent (``owner_type`` is always fixed to ``agent`` server-side); the top-level surface documented on this page provides the equivalent admin/manager-gated ``POST /contact_cases/{id}/assign`` endpoint (see "Assigning a Case" above).
+The same case management capabilities are also available under ``/service_agents/contact_cases``, gated by regular agent permission rather than admin/manager. This surface additionally exposes ``POST /service_agents/contact_cases/{id}/assign`` and ``POST /service_agents/contact_cases/{id}/unassign``, which assign or clear a case's owner agent (``owner_type`` is always fixed to ``agent`` server-side on assign); the top-level surface documented on this page provides the equivalent admin/manager-gated ``POST /contact_cases/{id}/assign`` and ``POST /contact_cases/{id}/unassign`` endpoints (see "Assigning a Case" above).
 
 
 Troubleshooting

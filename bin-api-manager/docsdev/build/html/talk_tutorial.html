@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Conversation" href="conversation.html"><link rel="prev" title="Participant" href="talk_struct_participant.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -657,20 +657,20 @@
 <section id="create-a-talk">
 <h3>Create a Talk<a class="headerlink" href="#create-a-talk" title="Link to this heading">¶</a></h3>
 <p>Create a new talk conversation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;type&quot;: &quot;group&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "type": "group"
+}'
 
 {
-    &quot;id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;type&quot;: &quot;group&quot;,
-    &quot;member_count&quot;: 1,
-    &quot;tm_create&quot;: &quot;2024-01-17 10:30:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-17 10:30:00.000000&quot;,
-    &quot;tm_delete&quot;: null
+    "id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "type": "group",
+    "member_count": 1,
+    "tm_create": "2024-01-17 10:30:00.000000",
+    "tm_update": "2024-01-17 10:30:00.000000",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -678,20 +678,20 @@
 <section id="add-participants">
 <h3>Add Participants<a class="headerlink" href="#add-participants" title="Link to this heading">¶</a></h3>
 <p>Add agents to the talk:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813/participants?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;owner_type&quot;: &quot;agent&quot;,
-    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813/participants?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "owner_type": "agent",
+    "owner_id": "47fe0b7c-7333-46cf-8b23-61e14e62490a"
+}'
 
 {
-    &quot;id&quot;: &quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;owner_type&quot;: &quot;agent&quot;,
-    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
-    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;tm_joined&quot;: &quot;2024-01-17 10:31:00.000000&quot;
+    "id": "f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "owner_type": "agent",
+    "owner_id": "47fe0b7c-7333-46cf-8b23-61e14e62490a",
+    "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "tm_joined": "2024-01-17 10:31:00.000000"
 }
 </pre></div>
 </div>
@@ -699,29 +699,29 @@
 <section id="send-a-message">
 <h3>Send a Message<a class="headerlink" href="#send-a-message" title="Link to this heading">¶</a></h3>
 <p>Send a message to the talk:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;text&quot;: &quot;Hello team! Let&#39;\&#39;&#39;s discuss the new feature.&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "type": "normal",
+    "text": "Hello team! Let'\''s discuss the new feature."
+}'
 
 {
-    &quot;id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;owner_type&quot;: &quot;agent&quot;,
-    &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
-    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;text&quot;: &quot;Hello team! Let&#39;s discuss the new feature.&quot;,
-    &quot;medias&quot;: [],
-    &quot;metadata&quot;: {
-        &quot;reactions&quot;: []
+    "id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "owner_type": "agent",
+    "owner_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+    "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "type": "normal",
+    "text": "Hello team! Let's discuss the new feature.",
+    "medias": [],
+    "metadata": {
+        "reactions": []
     },
-    &quot;tm_create&quot;: &quot;2024-01-17 10:32:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-17 10:32:00.000000&quot;,
-    &quot;tm_delete&quot;: null
+    "tm_create": "2024-01-17 10:32:00.000000",
+    "tm_update": "2024-01-17 10:32:00.000000",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -729,31 +729,31 @@
 <section id="reply-to-a-message-threading">
 <h3>Reply to a Message (Threading)<a class="headerlink" href="#reply-to-a-message-threading" title="Link to this heading">¶</a></h3>
 <p>Reply to an existing message by specifying the parent_id:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;parent_id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;text&quot;: &quot;Great idea! I&#39;\&#39;&#39;ll start working on the requirements.&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "parent_id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
+    "type": "normal",
+    "text": "Great idea! I'\''ll start working on the requirements."
+}'
 
 {
-    &quot;id&quot;: &quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;owner_type&quot;: &quot;agent&quot;,
-    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
-    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;parent_id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;text&quot;: &quot;Great idea! I&#39;ll start working on the requirements.&quot;,
-    &quot;medias&quot;: [],
-    &quot;metadata&quot;: {
-        &quot;reactions&quot;: []
+    "id": "b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "owner_type": "agent",
+    "owner_id": "47fe0b7c-7333-46cf-8b23-61e14e62490a",
+    "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "parent_id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
+    "type": "normal",
+    "text": "Great idea! I'll start working on the requirements.",
+    "medias": [],
+    "metadata": {
+        "reactions": []
     },
-    &quot;tm_create&quot;: &quot;2024-01-17 10:33:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-17 10:33:00.000000&quot;,
-    &quot;tm_delete&quot;: null
+    "tm_create": "2024-01-17 10:33:00.000000",
+    "tm_update": "2024-01-17 10:33:00.000000",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -761,35 +761,35 @@
 <section id="add-a-reaction">
 <h3>Add a Reaction<a class="headerlink" href="#add-a-reaction" title="Link to this heading">¶</a></h3>
 <p>Add an emoji reaction to a message:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages/b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d/reactions?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;emoji&quot;: &quot;thumbsup&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages/b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d/reactions?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "emoji": "thumbsup"
+}'
 
 {
-    &quot;id&quot;: &quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;owner_type&quot;: &quot;agent&quot;,
-    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
-    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;parent_id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;text&quot;: &quot;Great idea! I&#39;ll start working on the requirements.&quot;,
-    &quot;medias&quot;: [],
-    &quot;metadata&quot;: {
-        &quot;reactions&quot;: [
+    "id": "b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "owner_type": "agent",
+    "owner_id": "47fe0b7c-7333-46cf-8b23-61e14e62490a",
+    "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "parent_id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
+    "type": "normal",
+    "text": "Great idea! I'll start working on the requirements.",
+    "medias": [],
+    "metadata": {
+        "reactions": [
             {
-                &quot;emoji&quot;: &quot;thumbsup&quot;,
-                &quot;owner_type&quot;: &quot;agent&quot;,
-                &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
-                &quot;tm_create&quot;: &quot;2024-01-17 10:34:00.000000&quot;
+                "emoji": "thumbsup",
+                "owner_type": "agent",
+                "owner_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+                "tm_create": "2024-01-17 10:34:00.000000"
             }
         ]
     },
-    &quot;tm_create&quot;: &quot;2024-01-17 10:33:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-17 10:34:00.000000&quot;,
-    &quot;tm_delete&quot;: null
+    "tm_create": "2024-01-17 10:33:00.000000",
+    "tm_update": "2024-01-17 10:34:00.000000",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -797,52 +797,52 @@
 <section id="list-messages">
 <h3>List Messages<a class="headerlink" href="#list-messages" title="Link to this heading">¶</a></h3>
 <p>Retrieve messages from a talk with pagination:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?page_size=50&amp;token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/service_agents/talk_messages?page_size=50&amp;token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;owner_type&quot;: &quot;agent&quot;,
-            &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
-            &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-            &quot;type&quot;: &quot;normal&quot;,
-            &quot;text&quot;: &quot;Hello team! Let&#39;s discuss the new feature.&quot;,
-            &quot;medias&quot;: [],
-            &quot;metadata&quot;: {
-                &quot;reactions&quot;: []
+            "id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "owner_type": "agent",
+            "owner_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+            "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+            "type": "normal",
+            "text": "Hello team! Let's discuss the new feature.",
+            "medias": [],
+            "metadata": {
+                "reactions": []
             },
-            &quot;tm_create&quot;: &quot;2024-01-17 10:32:00.000000&quot;,
-            &quot;tm_update&quot;: &quot;2024-01-17 10:32:00.000000&quot;,
-            &quot;tm_delete&quot;: null
+            "tm_create": "2024-01-17 10:32:00.000000",
+            "tm_update": "2024-01-17 10:32:00.000000",
+            "tm_delete": null
         },
         {
-            &quot;id&quot;: &quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;owner_type&quot;: &quot;agent&quot;,
-            &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
-            &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-            &quot;parent_id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
-            &quot;type&quot;: &quot;normal&quot;,
-            &quot;text&quot;: &quot;Great idea! I&#39;ll start working on the requirements.&quot;,
-            &quot;medias&quot;: [],
-            &quot;metadata&quot;: {
-                &quot;reactions&quot;: [
+            "id": "b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "owner_type": "agent",
+            "owner_id": "47fe0b7c-7333-46cf-8b23-61e14e62490a",
+            "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+            "parent_id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
+            "type": "normal",
+            "text": "Great idea! I'll start working on the requirements.",
+            "medias": [],
+            "metadata": {
+                "reactions": [
                     {
-                        &quot;emoji&quot;: &quot;thumbsup&quot;,
-                        &quot;owner_type&quot;: &quot;agent&quot;,
-                        &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
-                        &quot;tm_create&quot;: &quot;2024-01-17 10:34:00.000000&quot;
+                        "emoji": "thumbsup",
+                        "owner_type": "agent",
+                        "owner_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+                        "tm_create": "2024-01-17 10:34:00.000000"
                     }
                 ]
             },
-            &quot;tm_create&quot;: &quot;2024-01-17 10:33:00.000000&quot;,
-            &quot;tm_update&quot;: &quot;2024-01-17 10:34:00.000000&quot;,
-            &quot;tm_delete&quot;: null
+            "tm_create": "2024-01-17 10:33:00.000000",
+            "tm_update": "2024-01-17 10:34:00.000000",
+            "tm_delete": null
         }
     ],
-    &quot;next_page_token&quot;: &quot;2024-01-17 10:33:00.000000&quot;
+    "next_page_token": "2024-01-17 10:33:00.000000"
 }
 </pre></div>
 </div>
@@ -850,15 +850,15 @@
 <section id="remove-a-participant">
 <h3>Remove a Participant<a class="headerlink" href="#remove-a-participant" title="Link to this heading">¶</a></h3>
 <p>Remove a participant from the talk:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813/participants/f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813/participants/f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;owner_type&quot;: &quot;agent&quot;,
-    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
-    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;tm_joined&quot;: &quot;2024-01-17 10:31:00.000000&quot;
+    "id": "f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "owner_type": "agent",
+    "owner_id": "47fe0b7c-7333-46cf-8b23-61e14e62490a",
+    "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "tm_joined": "2024-01-17 10:31:00.000000"
 }
 </pre></div>
 </div>
@@ -866,16 +866,16 @@
 <section id="delete-a-talk">
 <h3>Delete a Talk<a class="headerlink" href="#delete-a-talk" title="Link to this heading">¶</a></h3>
 <p>Delete a talk (soft delete):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;type&quot;: &quot;group&quot;,
-    &quot;member_count&quot;: 1,
-    &quot;tm_create&quot;: &quot;2024-01-17 10:30:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-17 10:35:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;2024-01-17 10:35:00.000000&quot;
+    "id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "type": "group",
+    "member_count": 1,
+    "tm_create": "2024-01-17 10:30:00.000000",
+    "tm_update": "2024-01-17 10:35:00.000000",
+    "tm_delete": "2024-01-17 10:35:00.000000"
 }
 </pre></div>
 </div>
@@ -965,8 +965,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

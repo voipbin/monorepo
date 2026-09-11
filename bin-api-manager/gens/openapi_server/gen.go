@@ -9291,18 +9291,25 @@ type PostMcpserversJSONBodyAuthType string
 
 // PutMcpserversIdJSONBody defines parameters for PutMcpserversId.
 type PutMcpserversIdJSONBody struct {
-	ApiKeyHeader *string                          `json:"api_key_header,omitempty"`
-	AuthType     *PutMcpserversIdJSONBodyAuthType `json:"auth_type,omitempty"`
-	Detail       *string                          `json:"detail,omitempty"`
-	Name         *string                          `json:"name,omitempty"`
+	// ApiKeyHeader Omit to leave the current api_key_header unchanged.
+	ApiKeyHeader *string `json:"api_key_header,omitempty"`
+
+	// AuthType Omit to leave the current auth_type unchanged. NOTE: an explicit empty string ("") is a valid value meaning no-auth, distinct from omitting the field.
+	AuthType *PutMcpserversIdJSONBodyAuthType `json:"auth_type,omitempty"`
+
+	// Detail Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
 
 	// Secret Omit this field to leave the existing secret unchanged. Send an empty string to clear it.
 	Secret *string `json:"secret,omitempty"`
 
-	// Status Set to disabled to exclude this server from ListTools/CallTool without deleting it.
+	// Status Set to disabled to exclude this server from ListTools/CallTool without deleting it. Omit to leave the current status unchanged.
 	Status *PutMcpserversIdJSONBodyStatus `json:"status,omitempty"`
 
-	// Url Streamable-HTTP MCP endpoint. Must be https.
+	// Url Streamable-HTTP MCP endpoint. Must be https. Omit to leave the current URL unchanged.
 	Url *string `json:"url,omitempty"`
 }
 

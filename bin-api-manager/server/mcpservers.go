@@ -168,39 +168,27 @@ func (h *server) PutMcpserversId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	name := ""
-	if req.Name != nil {
-		name = *req.Name
-	}
-
-	detail := ""
-	if req.Detail != nil {
-		detail = *req.Detail
-	}
-
-	url := ""
-	if req.Url != nil {
-		url = *req.Url
-	}
-
-	status := ammcpserver.Status("")
+	// Every field is a true partial-update pointer per design §10 MN2,
+	// extended to all mutable fields in
+	// docs/plans/2026-09-12-mcp-server-put-partial-update-design.md: pass
+	// the OpenAPI-generated *string/*enum pointers straight through --
+	// nil means "leave the existing value untouched". Do NOT dereference
+	// to a zero-value default here (that was the bug this design fixed:
+	// it silently wiped name/detail/api_key_header, 400'd on omitted
+	// url/status, and silently disabled auth on omitted auth_type).
+	var statusPtr *ammcpserver.Status
 	if req.Status != nil {
-		status = ammcpserver.Status(*req.Status)
+		v := ammcpserver.Status(*req.Status)
+		statusPtr = &v
 	}
 
-	authType := ammcpserver.AuthTypeNone
+	var authTypePtr *ammcpserver.AuthType
 	if req.AuthType != nil {
-		authType = ammcpserver.AuthType(*req.AuthType)
+		v := ammcpserver.AuthType(*req.AuthType)
+		authTypePtr = &v
 	}
 
-	apiKeyHeader := ""
-	if req.ApiKeyHeader != nil {
-		apiKeyHeader = *req.ApiKeyHeader
-	}
-
-	// Secret stays *string per design §10's PUT semantics: nil means "leave
-	// the existing encrypted secret untouched". Do not default it to "".
-	res, err := h.serviceHandler.McpServerUpdate(c.Request.Context(), a, target, name, detail, url, status, authType, apiKeyHeader, req.Secret)
+	res, err := h.serviceHandler.McpServerUpdate(c.Request.Context(), a, target, req.Name, req.Detail, req.Url, statusPtr, authTypePtr, req.ApiKeyHeader, req.Secret)
 	if err != nil {
 		log.Errorf("Could not update the MCP server. err: %v", err)
 		abortWithServiceError(c, err)
