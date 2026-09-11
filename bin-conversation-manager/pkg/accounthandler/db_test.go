@@ -158,8 +158,8 @@ func Test_Create_SetupTimeout(t *testing.T) {
 			deadline, ok := setupCtx.Deadline()
 			if !ok {
 				t.Errorf("Wrong match. expect: setup ctx has a deadline, got: no deadline")
-			} else if time.Until(deadline) > 20*time.Second {
-				t.Errorf("Wrong match. expect: setup ctx deadline <= 20s, got: %v", time.Until(deadline))
+			} else if remaining := time.Until(deadline); remaining > 20*time.Second || remaining < 19*time.Second {
+				t.Errorf("Wrong match. expect: setup ctx deadline ~20s, got: %v", remaining)
 			}
 			return context.DeadlineExceeded
 		},
