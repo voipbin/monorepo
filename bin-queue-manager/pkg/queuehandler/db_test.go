@@ -258,13 +258,141 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			res, err := h.UpdateBasicInfo(
 				ctx,
 				tt.queueID,
-				tt.queueName,
-				tt.detail,
-				tt.routingMethod,
-				tt.tagIDs,
-				tt.waitFlowID,
-				tt.waitTimeout,
-				tt.serviceTimeout,
+				&tt.queueName,
+				&tt.detail,
+				&tt.routingMethod,
+				&tt.tagIDs,
+				&tt.waitFlowID,
+				&tt.waitTimeout,
+				&tt.serviceTimeout,
+			)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.responseQueue, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseQueue, res)
+			}
+		})
+	}
+}
+
+// Test_UpdateBasicInfo_PartialUpdate verifies the nil-means-unchanged
+// pointer contract established by the platform-wide PUT partial-update
+// migration (Phase 4a). Each subtest sets exactly one field (or none) and
+// asserts the built fields map contains only the fields that were
+// actually set.
+func Test_UpdateBasicInfo_PartialUpdate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		queueID uuid.UUID
+
+		setName           *string
+		setDetail         *string
+		setRoutingMethod  *queue.RoutingMethod
+		setTagIDs         *[]uuid.UUID
+		setWaitFlowID     *uuid.UUID
+		setWaitTimeout    *int
+		setServiceTimeout *int
+
+		expectFields  map[queue.Field]any
+		expectNoOp    bool
+		responseQueue *queue.Queue
+	}{
+		{
+			name:    "name only",
+			queueID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+			setName: func() *string { v := "new name"; return &v }(),
+			expectFields: map[queue.Field]any{
+				queue.FieldName: "new name",
+			},
+			responseQueue: &queue.Queue{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+				},
+			},
+		},
+		{
+			name:              "wait_timeout zero is a real value, not omission",
+			queueID:           uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+			setWaitTimeout:    func() *int { v := 0; return &v }(),
+			setServiceTimeout: func() *int { v := 0; return &v }(),
+			expectFields: map[queue.Field]any{
+				queue.FieldWaitTimeout:    0,
+				queue.FieldServiceTimeout: 0,
+			},
+			responseQueue: &queue.Queue{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+				},
+			},
+		},
+		{
+			name:    "tag_ids explicit empty slice clears tags",
+			queueID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+			setTagIDs: func() *[]uuid.UUID {
+				v := []uuid.UUID{}
+				return &v
+			}(),
+			expectFields: map[queue.Field]any{
+				queue.FieldTagIDs: []uuid.UUID{},
+			},
+			responseQueue: &queue.Queue{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+				},
+			},
+		},
+		{
+			name:       "all omitted is a no-op",
+			queueID:    uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+			expectNoOp: true,
+			responseQueue: &queue.Queue{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eabefeea-d25b-11ec-b0bd-a33d2b140e8f"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queueHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			if tt.expectNoOp {
+				mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+				mockDB.EXPECT().QueueUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			} else {
+				mockDB.EXPECT().QueueUpdate(ctx, tt.queueID, tt.expectFields).Return(nil)
+				mockDB.EXPECT().QueueGet(ctx, tt.queueID).Return(tt.responseQueue, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueUpdated, tt.responseQueue)
+			}
+
+			res, err := h.UpdateBasicInfo(
+				ctx,
+				tt.queueID,
+				tt.setName,
+				tt.setDetail,
+				tt.setRoutingMethod,
+				tt.setTagIDs,
+				tt.setWaitFlowID,
+				tt.setWaitTimeout,
+				tt.setServiceTimeout,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

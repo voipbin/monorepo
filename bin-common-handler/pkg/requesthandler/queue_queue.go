@@ -132,16 +132,19 @@ func (r *requestHandler) QueueV1QueueDelete(ctx context.Context, queueID uuid.UU
 }
 
 // QueueV1QueueUpdate sends the request to update the queue.
+// All fields are pointers: nil means "leave unchanged", a non-nil
+// pointer means "set to this value" (including a pointer to a zero
+// value, which is meaningful for wait_timeout/service_timeout).
 func (r *requestHandler) QueueV1QueueUpdate(
 	ctx context.Context,
 	queueID uuid.UUID,
-	name string,
-	detail string,
-	routingMethod qmqueue.RoutingMethod,
-	tagIDs []uuid.UUID,
-	waitFlowID uuid.UUID,
-	waitTimeout int,
-	serviceTimeout int,
+	name *string,
+	detail *string,
+	routingMethod *qmqueue.RoutingMethod,
+	tagIDs *[]uuid.UUID,
+	waitFlowID *uuid.UUID,
+	waitTimeout *int,
+	serviceTimeout *int,
 ) (*qmqueue.Queue, error) {
 	uri := fmt.Sprintf("/v1/queues/%s", queueID)
 

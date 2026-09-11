@@ -907,13 +907,13 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		queueID uuid.UUID,
-		name string,
-		detail string,
-		routingMethod qmqueue.RoutingMethod,
-		tagIDs []uuid.UUID,
-		waitFlowID uuid.UUID,
-		timeoutWait int,
-		timeoutService int,
+		name *string,
+		detail *string,
+		routingMethod *qmqueue.RoutingMethod,
+		tagIDs *[]uuid.UUID,
+		waitFlowID *uuid.UUID,
+		timeoutWait *int,
+		timeoutService *int,
 	) (*qmqueue.WebhookMessage, error)
 
 	// webchat handlers

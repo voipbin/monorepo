@@ -1242,13 +1242,13 @@ type RequestHandler interface {
 	QueueV1QueueUpdate(
 		ctx context.Context,
 		queueID uuid.UUID,
-		name string,
-		detail string,
-		routingMethod qmqueue.RoutingMethod,
-		tagIDs []uuid.UUID,
-		waitFlowID uuid.UUID,
-		waitTimeout int,
-		serviceTimeout int,
+		name *string,
+		detail *string,
+		routingMethod *qmqueue.RoutingMethod,
+		tagIDs *[]uuid.UUID,
+		waitFlowID *uuid.UUID,
+		waitTimeout *int,
+		serviceTimeout *int,
 	) (*qmqueue.Queue, error)
 	QueueV1QueueUpdateTagIDs(ctx context.Context, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.Queue, error)
 	QueueV1QueueUpdateRoutingMethod(ctx context.Context, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.Queue, error)
