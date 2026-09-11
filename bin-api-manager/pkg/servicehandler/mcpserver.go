@@ -189,3 +189,58 @@ func (h *serviceHandler) McpServerDelete(ctx context.Context, a *auth.AuthIdenti
 
 	return res.ConvertWebhookMessage(), nil
 }
+
+// McpOAuthStart starts the vendor OAuth flow for the authenticated
+// customer. If mcpServerID is non-nil (reconnect), ownership is verified
+// at the ai-manager layer (design §9); a caller-side ownership check is
+// deliberately not duplicated here.
+func (h *serviceHandler) McpOAuthStart(ctx context.Context, a *auth.AuthIdentity, vendor string, mcpServerID *uuid.UUID) (string, string, error) {
+	if a.IsDirect() {
+		return "", "", serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return "", "", serviceerrors.ErrPermissionDenied
+	}
+
+	authorizeURL, linkToken, err := h.reqHandler.AIV1McpOAuthStart(ctx, a.CustomerID, vendor, mcpServerID)
+	if err != nil {
+		return "", "", errors.Wrapf(err, "could not start mcp oauth flow")
+	}
+
+	return authorizeURL, linkToken, nil
+}
+
+// McpOAuthCallback is the PUBLIC (unauthenticated) thin existence check
+// backing GET /mcpservers/oauth/callback's redirect relay (design §7a
+// Layer 1). It never mutates anything.
+func (h *serviceHandler) McpOAuthCallback(ctx context.Context, state string) (bool, error) {
+	exists, err := h.reqHandler.AIV1McpOAuthCallback(ctx, state)
+	if err != nil {
+		return false, errors.Wrapf(err, "could not check mcp oauth callback state")
+	}
+
+	return exists, nil
+}
+
+// McpOAuthComplete completes the OAuth flow for the authenticated
+// customer. The real security boundary (state row's customer_id must
+// match the JWT-authenticated caller) is enforced at the ai-manager
+// layer (design §7a); this layer only needs the standard
+// permission/direct-access checks.
+func (h *serviceHandler) McpOAuthComplete(ctx context.Context, a *auth.AuthIdentity, state string, code string) (*ammcpserver.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	res, err := h.reqHandler.AIV1McpOAuthComplete(ctx, a.CustomerID, state, code)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not complete mcp oauth flow")
+	}
+
+	return res.ConvertWebhookMessage(), nil
+}

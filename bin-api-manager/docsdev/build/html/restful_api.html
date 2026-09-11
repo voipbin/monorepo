@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Error Reason Codes" href="restful_api_errors.html"><link rel="prev" title="SDK(Software Development Kit)" href="sdk.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>RESTful API(Application Programming Interface) - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -683,16 +683,16 @@
 <p>All API responses return JSON with consistent structure:</p>
 <p>Success Response (2xx):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"resource-id"</span><span class="p">,</span>
-    <span class="s2">"field1"</span><span class="p">:</span> <span class="s2">"value1"</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;resource-id&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;field1&quot;</span><span class="p">:</span> <span class="s2">&quot;value1&quot;</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>List Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{
-    "result": [...],
-    "next_page_token": "token-for-next-page"   // Pass as ?page_token= to get the next page
+    &quot;result&quot;: [...],
+    &quot;next_page_token&quot;: &quot;token-for-next-page&quot;   // Pass as ?page_token= to get the next page
 }
 </pre></div>
 </div>
@@ -784,11 +784,11 @@ envelope shape returned by all <code class="docutils literal notranslate"><span 
 </div>
 <p>All errors emitted by <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/...</span></code> carry the same envelope shape:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PERMISSION_DENIED"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BILLING_ACCESS_DENIED"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"You do not have permission to access this billing account."</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"request_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"req_01HXYZ..."</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PERMISSION_DENIED&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BILLING_ACCESS_DENIED&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You do not have permission to access this billing account.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;req_01HXYZ...&quot;</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -965,8 +965,8 @@ envelope shape returned by all <code class="docutils literal notranslate"><span 
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

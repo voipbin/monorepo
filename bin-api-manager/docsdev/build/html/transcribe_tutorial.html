@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Transcribe" href="transcribe_struct.html"><link rel="prev" title="Overview" href="transcribe_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -658,38 +658,38 @@
 <h3>Start Transcription with Flow Action<a class="headerlink" href="#start-transcription-with-flow-action" title="Link to this heading">¶</a></h3>
 <p>The easiest way to enable transcription is by adding a <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action to your call flow. This automatically begins transcription when the call reaches that action.</p>
 <p><strong>Create Call with Automatic Transcription:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "source": {
-            "type": "tel",
-            "target": "+15551234567"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
         },
-        "destinations": [
+        &quot;destinations&quot;: [
             {
-                "type": "tel",
-                "target": "+15559876543"
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
             }
         ],
-        "actions": [
+        &quot;actions&quot;: [
             {
-                "type": "answer"
+                &quot;type&quot;: &quot;answer&quot;
             },
             {
-                "type": "transcribe_start",
-                "option": {
-                    "language": "en-US"
+                &quot;type&quot;: &quot;transcribe_start&quot;,
+                &quot;option&quot;: {
+                    &quot;language&quot;: &quot;en-US&quot;
                 }
             },
             {
-                "type": "talk",
-                "option": {
-                    "text": "This call is being transcribed for quality assurance",
-                    "language": "en-US"
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;This call is being transcribed for quality assurance&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
                 }
             }
         ]
-    }'
+    }&#39;
 </pre></div>
 </div>
 <p>Transcription starts when the call reaches the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action and continues until the call ends.</p>
@@ -710,49 +710,49 @@
 <p>On the recording path specifically, supplying <code class="docutils literal notranslate"><span class="pre">id</span></code> when a transcribe already exists for that recording/language is <strong>always</strong> a conflict (<code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">TRANSCRIBE_ALREADY_EXISTS_DIFFERENT_ID</span></code>) — unlike the no-<code class="docutils literal notranslate"><span class="pre">id</span></code> case, which keeps today’s behavior of returning the existing transcribe.</p>
 </div>
 <p><strong>Transcribe an Active Call:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "reference_type": "call",
-        "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "language": "en-US",
-        "direction": "both"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;reference_type&quot;: &quot;call&quot;,
+        &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
+    }&#39;
 
 {
-    "id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-    "customer_id": "12345678-1234-1234-1234-123456789012",
-    "reference_type": "call",
-    "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "language": "en-US",
-    "direction": "both",
-    "status": "progressing",
-    "tm_create": "2026-01-20 12:00:00.000000",
-    "tm_update": "2026-01-20 12:00:00.000000",
-    "tm_delete": "9999-01-01 00:00:00.000000"
+    &quot;id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+    &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+    &quot;reference_type&quot;: &quot;call&quot;,
+    &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;language&quot;: &quot;en-US&quot;,
+    &quot;direction&quot;: &quot;both&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
 <p><strong>Transcribe a Conference:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "reference_type": "confbridge",
-        "reference_id": "c1d2e3f4-a5b6-7890-cdef-123456789abc",
-        "language": "en-US",
-        "direction": "both"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;reference_type&quot;: &quot;confbridge&quot;,
+        &quot;reference_id&quot;: &quot;c1d2e3f4-a5b6-7890-cdef-123456789abc&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Transcribe a Recording:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "reference_type": "recording",
-        "reference_id": "r1s2t3u4-v5w6-x789-yz01-234567890def",
-        "language": "en-US",
-        "direction": "both"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;reference_type&quot;: &quot;recording&quot;,
+        &quot;reference_id&quot;: &quot;r1s2t3u4-v5w6-x789-yz01-234567890def&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -760,45 +760,45 @@
 <h3>Get Transcription Results<a class="headerlink" href="#get-transcription-results" title="Link to this heading">¶</a></h3>
 <p>Retrieve transcription data after the transcription completes or during real-time transcription.</p>
 <p><strong>Get Transcription by ID:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/transcribes/8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/transcribes/8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-    "customer_id": "12345678-1234-1234-1234-123456789012",
-    "reference_type": "call",
-    "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "language": "en-US",
-    "direction": "both",
-    "status": "done",
-    "tm_create": "2026-01-20 12:00:00.000000",
-    "tm_update": "2026-01-20 12:05:00.000000",
-    "tm_delete": "9999-01-01 00:00:00.000000"
+    &quot;id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+    &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+    &quot;reference_type&quot;: &quot;call&quot;,
+    &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;language&quot;: &quot;en-US&quot;,
+    &quot;direction&quot;: &quot;both&quot;,
+    &quot;status&quot;: &quot;done&quot;,
+    &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2026-01-20 12:05:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
 <p><strong>Get Transcripts (Text Results):</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/transcripts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;transcribe_id=8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/transcripts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;transcribe_id=8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&#39;
 
 {
-    "result": [
+    &quot;result&quot;: [
         {
-            "id": "06af78f0-b063-48c0-b22d-d31a5af0aa88",
-            "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-            "direction": "in",
-            "message": "Hi, good to see you. How are you today?",
-            "tm_transcript": "0001-01-01T00:01:04.44116Z",
-            "tm_create": "2024-04-01T07:22:07.229309Z"
+            &quot;id&quot;: &quot;06af78f0-b063-48c0-b22d-d31a5af0aa88&quot;,
+            &quot;transcribe_id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+            &quot;direction&quot;: &quot;in&quot;,
+            &quot;message&quot;: &quot;Hi, good to see you. How are you today?&quot;,
+            &quot;tm_transcript&quot;: &quot;0001-01-01T00:01:04.44116Z&quot;,
+            &quot;tm_create&quot;: &quot;2024-04-01T07:22:07.229309Z&quot;
         },
         {
-            "id": "3c95ea10-a5b7-4a68-aebf-ed1903baf110",
-            "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-            "direction": "out",
-            "message": "Welcome to the transcribe test. All your voice will be transcribed.",
-            "tm_transcript": "0001-01-01T00:00:43.11683Z",
-            "tm_create": "2024-04-01T07:17:27.208337Z"
+            &quot;id&quot;: &quot;3c95ea10-a5b7-4a68-aebf-ed1903baf110&quot;,
+            &quot;transcribe_id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+            &quot;direction&quot;: &quot;out&quot;,
+            &quot;message&quot;: &quot;Welcome to the transcribe test. All your voice will be transcribed.&quot;,
+            &quot;tm_transcript&quot;: &quot;0001-01-01T00:00:43.11683Z&quot;,
+            &quot;tm_create&quot;: &quot;2024-04-01T07:17:27.208337Z&quot;
         }
     ],
-    "next_page_token": "2024-04-01T07:17:27.208337Z"
+    &quot;next_page_token&quot;: &quot;2024-04-01T07:17:27.208337Z&quot;
 }
 </pre></div>
 </div>
@@ -807,7 +807,7 @@ lines per call. For longer transcripts, pass the <code class="docutils literal n
 response as <code class="docutils literal notranslate"><span class="pre">page_token</span></code> to fetch the next (older) page. The final page returns an
 empty <code class="docutils literal notranslate"><span class="pre">result</span></code>; stop when it is empty (<code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> is still set on the last
 non-empty page).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/transcripts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;transcribe_id=8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&amp;page_size=100&amp;page_token=2024-04-01T07:17:27.208337Z'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/transcripts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;transcribe_id=8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&amp;page_size=100&amp;page_token=2024-04-01T07:17:27.208337Z&#39;
 </pre></div>
 </div>
 <p><strong>Find All Transcribes for a Call:</strong></p>
@@ -824,24 +824,24 @@ multiple languages are captured, or multiple sessions if transcription was
 stopped and started again. This filter always returns a list — do not
 assume a single result.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;reference_type=call&amp;reference_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;reference_type=call&amp;reference_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890&#39;
 
 {
-    "result": [
+    &quot;result&quot;: [
         {
-            "id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
-            "customer_id": "12345678-1234-1234-1234-123456789012",
-            "reference_type": "call",
-            "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "language": "en-US",
-            "direction": "both",
-            "status": "done",
-            "tm_create": "2026-01-20 12:00:00.000000",
-            "tm_update": "2026-01-20 12:05:00.000000",
-            "tm_delete": "9999-01-01 00:00:00.000000"
+            &quot;id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
+            &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+            &quot;reference_type&quot;: &quot;call&quot;,
+            &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+            &quot;language&quot;: &quot;en-US&quot;,
+            &quot;direction&quot;: &quot;both&quot;,
+            &quot;status&quot;: &quot;done&quot;,
+            &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
+            &quot;tm_update&quot;: &quot;2026-01-20 12:05:00.000000&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
         }
     ],
-    "next_page_token": ""
+    &quot;next_page_token&quot;: &quot;&quot;
 }
 </pre></div>
 </div>
@@ -853,8 +853,8 @@ call yet.</p>
 <p>VoIPBin distinguishes between incoming and outgoing audio:</p>
 <p><strong>Direction: “in”</strong> - Audio from the customer/caller to VoIPBin</p>
 <p><strong>Direction: “out”</strong> - Audio from VoIPBin to the customer/caller</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span>  <span class="o">-----</span><span class="s2">"in"</span><span class="o">------&gt;</span>  <span class="n">VoIPBin</span>
-         <span class="o">&lt;----</span><span class="s2">"out"</span><span class="o">-------</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span>  <span class="o">-----</span><span class="s2">&quot;in&quot;</span><span class="o">------&gt;</span>  <span class="n">VoIPBin</span>
+         <span class="o">&lt;----</span><span class="s2">&quot;out&quot;</span><span class="o">-------</span>
 </pre></div>
 </div>
 <p>This helps identify who said what in the conversation:
@@ -871,10 +871,10 @@ call yet.</p>
 <p><strong>2. Subscribe to Transcription Events:</strong></p>
 <p>Topics follow the pattern <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;your-customer-id&gt;:&lt;resource&gt;:&lt;resource-id&gt;</span></code> and are matched by <strong>prefix</strong>. Transcribe session events (<code class="docutils literal notranslate"><span class="pre">transcribe_created</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe_progressing</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe_done</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe_deleted</span></code>) are published under the <code class="docutils literal notranslate"><span class="pre">transcribe</span></code> resource, while individual transcript segments (<code class="docutils literal notranslate"><span class="pre">transcript_created</span></code>, <code class="docutils literal notranslate"><span class="pre">transcript_deleted</span></code>) are published under the <code class="docutils literal notranslate"><span class="pre">transcript</span></code> resource. To receive transcript segments in real time, subscribe to the <code class="docutils literal notranslate"><span class="pre">transcript</span></code> resource. Subscribe by prefix (omit the trailing resource ID) to receive events for all resources of that type under your customer account.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:transcript:"</span><span class="p">,</span>
-        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:transcribe:"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcript:&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcribe:&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -886,14 +886,14 @@ call yet.</p>
 <p><strong>3. Receive Real-Time Transcripts:</strong></p>
 <p>Real-time events delivered over the WebSocket use the same envelope as webhooks: a <code class="docutils literal notranslate"><span class="pre">type</span></code> field (the event type) and a <code class="docutils literal notranslate"><span class="pre">data</span></code> field (the resource payload).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello, this is a transcribe test call."</span><span class="p">,</span>
-        <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01 00:00:08.991840"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-04-04 07:15:59.233415"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, this is a transcribe test call.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-04 07:15:59.233415&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -905,12 +905,12 @@ call yet.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'transcript_created'</span><span class="p">:</span>
-        <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'direction'</span><span class="p">]</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Process transcription in real-time</span>
         <span class="c1"># - Display in UI</span>
@@ -920,17 +920,17 @@ call yet.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
     <span class="c1"># Subscribe to transcription events (prefix match, no wildcard)</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-        <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:transcript:"</span><span class="p">,</span>
-            <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:transcribe:"</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcript:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcribe:&quot;</span>
         <span class="p">]</span>
     <span class="p">}</span>
     <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Subscribed to transcription events"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to transcription events&quot;</span><span class="p">)</span>
 
-<span class="n">token</span> <span class="o">=</span> <span class="s2">"&lt;YOUR_AUTH_TOKEN&gt;"</span>
-<span class="n">ws_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">"</span>
+<span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
+<span class="n">ws_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
 
 <span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
     <span class="n">ws_url</span><span class="p">,</span>
@@ -947,12 +947,12 @@ call yet.</p>
 <p>Webhooks are configured at the <strong>customer account level</strong>, not as separate resources. There is no <code class="docutils literal notranslate"><span class="pre">/webhooks</span></code> CRUD endpoint. You set a single delivery URL on your customer profile, and VoIPBin sends <strong>all</strong> event types (including transcribe and transcript events) to that URL. For the full configuration guide, see <a class="reference internal" href="webhook_tutorial.html#webhook-tutorial"><span class="std std-ref">Webhook Tutorial</span></a>.</p>
 <p><strong>1. Configure Your Webhook Endpoint:</strong></p>
 <p>Set the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> on your customer profile.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "webhook_uri": "https://your-server.com/voipbin/webhook",
-        "webhook_method": "POST"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;webhook_uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
+        &quot;webhook_method&quot;: &quot;POST&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>2. Transcription-Related Event Types:</strong></p>
@@ -991,14 +991,14 @@ call yet.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">voipbin</span><span class="o">/</span><span class="n">webhook</span>
 
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"I need help with my account"</span><span class="p">,</span>
-        <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01 00:00:15.500000"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-04-04 07:16:05.100000"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;I need help with my account&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:15.500000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-04 07:16:05.100000&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1009,16 +1009,16 @@ call yet.</p>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/voipbin/webhook'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/voipbin/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">transcription_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
-    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'transcript_created'</span><span class="p">:</span>
-        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
-        <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'transcribe_id'</span><span class="p">]</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'direction'</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">]</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span>
 
         <span class="c1"># Store transcript in database</span>
         <span class="n">store_transcript</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
@@ -1028,10 +1028,10 @@ call yet.</p>
         <span class="n">keywords</span> <span class="o">=</span> <span class="n">extract_keywords</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
         <span class="c1"># Trigger actions based on content</span>
-        <span class="k">if</span> <span class="s1">'urgent'</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;urgent&#39;</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
             <span class="n">alert_supervisor</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'received'</span><span class="p">}),</span> <span class="mi">200</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;received&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 </pre></div>
 </div>
 </section>
@@ -1049,9 +1049,9 @@ call yet.</p>
 - <code class="docutils literal notranslate"><span class="pre">zh-CN</span></code> - Chinese (Simplified)</p>
 <p><strong>Example with Different Language:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_start"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"ja-JP"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;ja-JP&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1081,10 +1081,10 @@ call yet.</p>
 
     <span class="c1"># Create formatted record</span>
     <span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">'call_id'</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
-        <span class="s1">'date'</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
-        <span class="s1">'full_transcript'</span><span class="p">:</span> <span class="n">format_transcript</span><span class="p">(</span><span class="n">transcripts</span><span class="p">),</span>
-        <span class="s1">'participants'</span><span class="p">:</span> <span class="n">get_participants</span><span class="p">(</span><span class="n">call_id</span><span class="p">)</span>
+        <span class="s1">&#39;call_id&#39;</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
+        <span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="s1">&#39;full_transcript&#39;</span><span class="p">:</span> <span class="n">format_transcript</span><span class="p">(</span><span class="n">transcripts</span><span class="p">),</span>
+        <span class="s1">&#39;participants&#39;</span><span class="p">:</span> <span class="n">get_participants</span><span class="p">(</span><span class="n">call_id</span><span class="p">)</span>
     <span class="p">}</span>
 
     <span class="c1"># Store in compliance database</span>
@@ -1095,13 +1095,13 @@ call yet.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Help agents during calls</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">on_real_time_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
     <span class="c1"># Detect customer questions</span>
-    <span class="k">if</span> <span class="n">is_question</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="n">is_question</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]):</span>
         <span class="c1"># Suggest answers to agent</span>
-        <span class="n">answers</span> <span class="o">=</span> <span class="n">knowledge_base</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">])</span>
+        <span class="n">answers</span> <span class="o">=</span> <span class="n">knowledge_base</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">])</span>
         <span class="n">display_to_agent</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
 
     <span class="c1"># Detect customer frustration</span>
-    <span class="k">if</span> <span class="n">detect_frustration</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="n">detect_frustration</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]):</span>
         <span class="n">suggest_supervisor_escalation</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -1111,7 +1111,7 @@ call yet.</p>
     <span class="n">transcripts</span> <span class="o">=</span> <span class="n">get_all_transcripts</span><span class="p">(</span><span class="n">transcribe_id</span><span class="p">)</span>
 
     <span class="c1"># Combine all transcripts</span>
-    <span class="n">full_text</span> <span class="o">=</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transcripts</span><span class="p">])</span>
+    <span class="n">full_text</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transcripts</span><span class="p">])</span>
 
     <span class="c1"># Generate summary using AI</span>
     <span class="n">summary</span> <span class="o">=</span> <span class="n">ai_summarize</span><span class="p">(</span><span class="n">full_text</span><span class="p">)</span>
@@ -1121,38 +1121,38 @@ call yet.</p>
     <span class="n">topics</span> <span class="o">=</span> <span class="n">extract_topics</span><span class="p">(</span><span class="n">full_text</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">'summary'</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
-        <span class="s1">'action_items'</span><span class="p">:</span> <span class="n">action_items</span><span class="p">,</span>
-        <span class="s1">'topics'</span><span class="p">:</span> <span class="n">topics</span>
+        <span class="s1">&#39;summary&#39;</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
+        <span class="s1">&#39;action_items&#39;</span><span class="p">:</span> <span class="n">action_items</span><span class="p">,</span>
+        <span class="s1">&#39;topics&#39;</span><span class="p">:</span> <span class="n">topics</span>
     <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>5. Keyword Detection and Alerting:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Monitor for important keywords</span>
-<span class="n">ALERT_KEYWORDS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'urgent'</span><span class="p">,</span> <span class="s1">'emergency'</span><span class="p">,</span> <span class="s1">'cancel'</span><span class="p">,</span> <span class="s1">'complaint'</span><span class="p">,</span> <span class="s1">'lawsuit'</span><span class="p">]</span>
+<span class="n">ALERT_KEYWORDS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;urgent&#39;</span><span class="p">,</span> <span class="s1">&#39;emergency&#39;</span><span class="p">,</span> <span class="s1">&#39;cancel&#39;</span><span class="p">,</span> <span class="s1">&#39;complaint&#39;</span><span class="p">,</span> <span class="s1">&#39;lawsuit&#39;</span><span class="p">]</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">ALERT_KEYWORDS</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
             <span class="c1"># Send immediate alert</span>
             <span class="n">send_alert</span><span class="p">(</span>
-                <span class="n">transcribe_id</span><span class="o">=</span><span class="n">transcript</span><span class="p">[</span><span class="s1">'transcribe_id'</span><span class="p">],</span>
+                <span class="n">transcribe_id</span><span class="o">=</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">],</span>
                 <span class="n">keyword</span><span class="o">=</span><span class="n">keyword</span><span class="p">,</span>
                 <span class="n">context</span><span class="o">=</span><span class="n">message</span>
             <span class="p">)</span>
 
             <span class="c1"># Escalate to supervisor</span>
-            <span class="n">escalate_call</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">'transcribe_id'</span><span class="p">])</span>
+            <span class="n">escalate_call</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p><strong>6. Multi-Language Customer Support:</strong></p>
 <p>VoIPBin does not auto-detect the spoken language. The <code class="docutils literal notranslate"><span class="pre">language</span></code> parameter is required, so determine the language out of band (for example, from the customer’s account profile, IVR menu selection, or the dialed number) and pass the corresponding BCP47 code when starting transcription.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Transcribe in the customer's known language</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Transcribe in the customer&#39;s known language</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start_multilingual_transcription</span><span class="p">(</span><span class="n">call_id</span><span class="p">,</span> <span class="n">customer</span><span class="p">):</span>
     <span class="c1"># Resolve language from your own data (profile, IVR selection, etc.)</span>
-    <span class="n">language</span> <span class="o">=</span> <span class="n">customer</span><span class="o">.</span><span class="n">preferred_language</span>  <span class="c1"># e.g. "es-ES", "ko-KR"</span>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">customer</span><span class="o">.</span><span class="n">preferred_language</span>  <span class="c1"># e.g. &quot;es-ES&quot;, &quot;ko-KR&quot;</span>
 
     <span class="c1"># Start transcription in the resolved language</span>
     <span class="n">start_transcribe</span><span class="p">(</span>
@@ -1196,7 +1196,7 @@ call yet.</p>
 </pre></div>
 </div>
 <p><strong>2. Active Transcription:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: "progressing"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: &quot;progressing&quot;
 → Transcripts being generated in real-time
 </pre></div>
 </div>
@@ -1207,7 +1207,7 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </pre></div>
 </div>
 <p><strong>4. Completion:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: "done"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: &quot;done&quot;
 → All transcripts available via API
 </pre></div>
 </div>
@@ -1321,8 +1321,8 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

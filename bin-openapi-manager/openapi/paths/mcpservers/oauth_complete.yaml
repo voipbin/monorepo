@@ -1,0 +1,42 @@
+post:
+  summary: Complete the vendor OAuth flow for an MCP server connection.
+  description: >
+    Verifies the state/link_token belongs to the authenticated customer,
+    exchanges the vendor authorization code for tokens, encrypts them at
+    rest, and creates (or updates, for a reconnect) the customer's
+    McpServer row.
+  tags:
+    - AI
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            state:
+              type: string
+              description: The link_token returned by POST /mcpservers/oauth/start.
+              example: "9f2c1e7a4b3d4f5e8a9b0c1d2e3f4a5b"
+            code:
+              type: string
+              description: The vendor authorization code from the GET /mcpservers/oauth/callback redirect.
+              example: "8a3b1c9d0e2f"
+          required:
+            - state
+            - code
+  responses:
+    '200':
+      description: The connected MCP server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerMcpServer'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

@@ -20,6 +20,13 @@ const (
 	FieldSecretNonce      Field = "secret_nonce"
 	FieldKeyVersion       Field = "key_version"
 
+	FieldOAuthVendor            Field = "oauth_vendor"
+	FieldAccessTokenCiphertext  Field = "access_token_ciphertext"
+	FieldAccessTokenNonce       Field = "access_token_nonce"
+	FieldAccessTokenExpiresAt   Field = "access_token_expires_at"
+	FieldRefreshTokenCiphertext Field = "refresh_token_ciphertext"
+	FieldRefreshTokenNonce      Field = "refresh_token_nonce"
+
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"

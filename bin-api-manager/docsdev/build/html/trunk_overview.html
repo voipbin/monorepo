@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Trunking" href="trunk_overview_trunking.html"><link rel="prev" title="Trunk" href="trunk.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -746,79 +746,79 @@ inbound calls</p></td>
 <h2>Managing Trunks<a class="headerlink" href="#managing-trunks" title="Link to this heading">¶</a></h2>
 <p>Trunks are managed through the <code class="docutils literal notranslate"><span class="pre">/v1.0/trunks</span></code> endpoints.</p>
 <p><strong>Get list of trunks</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/trunks?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/trunks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "result": [
+    &quot;result&quot;: [
         {
-            "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "name": "Primary Carrier",
-            "detail": "Main PSTN trunk for outbound calls",
-            "domain_name": "carrier.example.com",
-            "auth_types": ["basic"],
-            "username": "trunk_user",
-            "password": "trunk_pass",
-            "allowed_ips": [],
-            "tm_create": "2024-03-01T10:00:00.000000Z",
-            "tm_update": "2024-03-01T10:00:00.000000Z",
-            "tm_delete": "9999-01-01T00:00:00.000000Z"
+            &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;name&quot;: &quot;Primary Carrier&quot;,
+            &quot;detail&quot;: &quot;Main PSTN trunk for outbound calls&quot;,
+            &quot;domain_name&quot;: &quot;carrier.example.com&quot;,
+            &quot;auth_types&quot;: [&quot;basic&quot;],
+            &quot;username&quot;: &quot;trunk_user&quot;,
+            &quot;password&quot;: &quot;trunk_pass&quot;,
+            &quot;allowed_ips&quot;: [],
+            &quot;tm_create&quot;: &quot;2024-03-01T10:00:00.000000Z&quot;,
+            &quot;tm_update&quot;: &quot;2024-03-01T10:00:00.000000Z&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01T00:00:00.000000Z&quot;
         }
     ],
-    "next_page_token": "2024-03-01T10:00:00.000000Z"
+    &quot;next_page_token&quot;: &quot;2024-03-01T10:00:00.000000Z&quot;
 }
 </pre></div>
 </div>
 <p><strong>Get trunk detail</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p><strong>Create a trunk</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">domain_name</span></code>, <code class="docutils literal notranslate"><span class="pre">auth_types</span></code>, <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>, and <code class="docutils literal notranslate"><span class="pre">allowed_ips</span></code> are all required.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/trunks?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "name": "Primary Carrier",
-        "detail": "Main PSTN trunk for outbound calls",
-        "domain_name": "carrier.example.com",
-        "auth_types": ["basic"],
-        "username": "trunk_user",
-        "password": "trunk_pass",
-        "allowed_ips": []
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/trunks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;Primary Carrier&quot;,
+        &quot;detail&quot;: &quot;Main PSTN trunk for outbound calls&quot;,
+        &quot;domain_name&quot;: &quot;carrier.example.com&quot;,
+        &quot;auth_types&quot;: [&quot;basic&quot;],
+        &quot;username&quot;: &quot;trunk_user&quot;,
+        &quot;password&quot;: &quot;trunk_pass&quot;,
+        &quot;allowed_ips&quot;: []
+    }&#39;
 
 {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "name": "Primary Carrier",
-    "detail": "Main PSTN trunk for outbound calls",
-    "domain_name": "carrier.example.com",
-    "auth_types": ["basic"],
-    "username": "trunk_user",
-    "password": "trunk_pass",
-    "allowed_ips": [],
-    "tm_create": "2024-03-01T10:00:00.000000Z",
-    "tm_update": "",
-    "tm_delete": ""
+    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Primary Carrier&quot;,
+    &quot;detail&quot;: &quot;Main PSTN trunk for outbound calls&quot;,
+    &quot;domain_name&quot;: &quot;carrier.example.com&quot;,
+    &quot;auth_types&quot;: [&quot;basic&quot;],
+    &quot;username&quot;: &quot;trunk_user&quot;,
+    &quot;password&quot;: &quot;trunk_pass&quot;,
+    &quot;allowed_ips&quot;: [],
+    &quot;tm_create&quot;: &quot;2024-03-01T10:00:00.000000Z&quot;,
+    &quot;tm_update&quot;: &quot;&quot;,
+    &quot;tm_delete&quot;: &quot;&quot;
 }
 </pre></div>
 </div>
 <p><strong>Update a trunk</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">auth_types</span></code>, <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>, and <code class="docutils literal notranslate"><span class="pre">allowed_ips</span></code> are all required. The <code class="docutils literal notranslate"><span class="pre">domain_name</span></code> cannot be changed after creation.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "name": "Primary Carrier (updated)",
-        "detail": "Main PSTN trunk for outbound calls",
-        "auth_types": ["basic", "ip"],
-        "username": "trunk_user",
-        "password": "trunk_pass",
-        "allowed_ips": ["203.0.113.1", "203.0.113.2"]
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;name&quot;: &quot;Primary Carrier (updated)&quot;,
+        &quot;detail&quot;: &quot;Main PSTN trunk for outbound calls&quot;,
+        &quot;auth_types&quot;: [&quot;basic&quot;, &quot;ip&quot;],
+        &quot;username&quot;: &quot;trunk_user&quot;,
+        &quot;password&quot;: &quot;trunk_pass&quot;,
+        &quot;allowed_ips&quot;: [&quot;203.0.113.1&quot;, &quot;203.0.113.2&quot;]
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Delete a trunk</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
@@ -828,9 +828,9 @@ inbound calls</p></td>
 <p>Point an on-premise PBX at VoIPBin using a username and password.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Configuration</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Trunk</span><span class="p">:</span> <span class="s2">"Office PBX"</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Trunk</span><span class="p">:</span> <span class="s2">&quot;Office PBX&quot;</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">domain_name</span><span class="p">:</span> <span class="n">office</span><span class="o">-</span><span class="n">pbx</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span>        <span class="o">|</span>
-<span class="o">|</span> <span class="n">auth_types</span><span class="p">:</span> <span class="p">[</span><span class="s2">"basic"</span><span class="p">]</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">auth_types</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;basic&quot;</span><span class="p">]</span>                      <span class="o">|</span>
 <span class="o">|</span> <span class="n">username</span> <span class="o">/</span> <span class="n">password</span><span class="p">:</span> <span class="n">PBX</span> <span class="n">SIP</span> <span class="n">credentials</span>   <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
@@ -847,10 +847,10 @@ inbound calls</p></td>
 <p>Allow a device with a known static IP to place calls without credentials.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Configuration</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Trunk</span><span class="p">:</span> <span class="s2">"Static Gateway"</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Trunk</span><span class="p">:</span> <span class="s2">&quot;Static Gateway&quot;</span>                    <span class="o">|</span>
 <span class="o">|</span> <span class="n">domain_name</span><span class="p">:</span> <span class="n">gateway</span><span class="o">.</span><span class="n">example</span><span class="o">.</span><span class="n">com</span>           <span class="o">|</span>
-<span class="o">|</span> <span class="n">auth_types</span><span class="p">:</span> <span class="p">[</span><span class="s2">"ip"</span><span class="p">]</span>                         <span class="o">|</span>
-<span class="o">|</span> <span class="n">allowed_ips</span><span class="p">:</span> <span class="p">[</span><span class="s2">"203.0.113.10"</span><span class="p">]</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">auth_types</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ip&quot;</span><span class="p">]</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">allowed_ips</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;203.0.113.10&quot;</span><span class="p">]</span>              <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
@@ -858,10 +858,10 @@ inbound calls</p></td>
 <p>Enable basic and IP-based authentication on the same trunk at once, so either method authorizes the call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Configuration</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Trunk</span><span class="p">:</span> <span class="s2">"Hybrid Trunk"</span>                      <span class="o">|</span>
-<span class="o">|</span> <span class="n">auth_types</span><span class="p">:</span> <span class="p">[</span><span class="s2">"basic"</span><span class="p">,</span> <span class="s2">"ip"</span><span class="p">]</span>                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Trunk</span><span class="p">:</span> <span class="s2">&quot;Hybrid Trunk&quot;</span>                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">auth_types</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;basic&quot;</span><span class="p">,</span> <span class="s2">&quot;ip&quot;</span><span class="p">]</span>                <span class="o">|</span>
 <span class="o">|</span> <span class="n">username</span> <span class="o">/</span> <span class="n">password</span><span class="p">:</span> <span class="nb">set</span>                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">allowed_ips</span><span class="p">:</span> <span class="p">[</span><span class="s2">"203.0.113.1"</span><span class="p">]</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">allowed_ips</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;203.0.113.1&quot;</span><span class="p">]</span>               <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
@@ -1008,8 +1008,8 @@ endpoints can send/receive media</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

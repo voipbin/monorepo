@@ -1,0 +1,32 @@
+get:
+  summary: Vendor OAuth callback relay (public, unauthenticated).
+  description: >
+    The redirect_uri registered with the GitHub/Linear OAuth apps. Not
+    called directly by API clients -- the vendor's authorization server
+    redirects the user's browser here after consent. Relays the browser
+    onward with the vendor's `code`/`state` query parameters preserved so
+    the client application can complete the flow via
+    POST /mcpservers/oauth/complete. Deliberately unauthenticated: the
+    browser arriving here has not sent any VoIPbin credentials.
+  tags:
+    - AI
+  parameters:
+    - name: code
+      in: query
+      required: false
+      schema:
+        type: string
+      description: The vendor authorization code (absent if the user denied consent).
+    - name: state
+      in: query
+      required: true
+      schema:
+        type: string
+      description: The opaque state/link_token from POST /mcpservers/oauth/start.
+  responses:
+    '302':
+      description: Redirects the browser to the client application's configured landing page.
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '500':
+      $ref: '#/components/responses/InternalError'

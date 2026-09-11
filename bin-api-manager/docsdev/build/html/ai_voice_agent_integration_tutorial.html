@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="RAG" href="rag.html"><link rel="prev" title="Overview" href="ai_voice_agent_integration_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -659,42 +659,42 @@
 <h3>Step 1: Create an Outbound Call<a class="headerlink" href="#step-1-create-an-outbound-call" title="Link to this heading">¶</a></h3>
 <p>Create a call to the destination. The call must be answered before starting STT/TTS.</p>
 <p><strong>Request:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "source": {
-            "type": "tel",
-            "target": "+15551234567"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
         },
-        "destinations": [
+        &quot;destinations&quot;: [
             {
-                "type": "tel",
-                "target": "+15559876543"
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
             }
         ],
-        "flow_id": "00000000-0000-0000-0000-000000000000"
-    }'
+        &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Response (200 OK):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"calls"</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">"groupcalls"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"c1d2e3f4-a5b6-7890-cdef-123456789012"</span><span class="p">,</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>
-            <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15551234567"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c1d2e3f4-a5b6-7890-cdef-123456789012&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
             <span class="p">},</span>
-            <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-                    <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15559876543"</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
                 <span class="p">}</span>
             <span class="p">],</span>
-            <span class="s2">"call_ids"</span><span class="p">:</span> <span class="p">[</span>
-                <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span>
+            <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
             <span class="p">],</span>
             <span class="o">...</span>
         <span class="p">}</span>
@@ -708,28 +708,28 @@
 <h3>Step 2: Start Transcription<a class="headerlink" href="#step-2-start-transcription" title="Link to this heading">¶</a></h3>
 <p>Once the call is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, start a transcription session.</p>
 <p><strong>Request:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "reference_type": "call",
-        "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "language": "en-US",
-        "direction": "both"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;reference_type&quot;: &quot;call&quot;,
+        &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Response (200 OK):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"</span><span class="p">,</span>
-    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
-    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>
-    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
-    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-01-15T09:30:00.000000Z"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-01-15T09:30:00.000000Z"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -739,32 +739,32 @@
 <h3>Step 3: Create a Speaking Session<a class="headerlink" href="#step-3-create-a-speaking-session" title="Link to this heading">¶</a></h3>
 <p>Create a speaking session on the same call so you can inject TTS audio.</p>
 <p><strong>Request:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "reference_type": "call",
-        "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "language": "en-US",
-        "provider": "elevenlabs",
-        "voice_id": "21m00Tcm4TlvDq8ikWAM",
-        "direction": "both"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;reference_type&quot;: &quot;call&quot;,
+        &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;provider&quot;: &quot;elevenlabs&quot;,
+        &quot;voice_id&quot;: &quot;21m00Tcm4TlvDq8ikWAM&quot;,
+        &quot;direction&quot;: &quot;both&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Response (201 Created):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"b2c3d4e5-f6a7-8901-bcde-f12345678901"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"</span><span class="p">,</span>
-    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
-    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
-    <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"elevenlabs"</span><span class="p">,</span>
-    <span class="s2">"voice_id"</span><span class="p">:</span> <span class="s2">"21m00Tcm4TlvDq8ikWAM"</span><span class="p">,</span>
-    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"initiating"</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-01-15T09:30:01.000000Z"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-01-15T09:30:01.000000Z"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;21m00Tcm4TlvDq8ikWAM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;initiating&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:01.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:01.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -774,17 +774,17 @@
 <h3>Step 4: Send an Initial Greeting<a class="headerlink" href="#step-4-send-an-initial-greeting" title="Link to this heading">¶</a></h3>
 <p>Once the speaking session is <code class="docutils literal notranslate"><span class="pre">active</span></code>, send an initial greeting to the caller.</p>
 <p><strong>Request:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/speakings/b2c3d4e5-f6a7-8901-bcde-f12345678901/say?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "text": "Hello, thank you for calling. How can I help you today?"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/speakings/b2c3d4e5-f6a7-8901-bcde-f12345678901/say?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;text&quot;: &quot;Hello, thank you for calling. How can I help you today?&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Response (200 OK):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"b2c3d4e5-f6a7-8901-bcde-f12345678901"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -796,14 +796,14 @@
 <p>When the caller responds, VoIPBin delivers a <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> event to your webhook URL.</p>
 <p><strong>Webhook Payload:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hi, I need help with my account balance."</span><span class="p">,</span>
-        <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01 00:00:08.991840"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-01-15T09:30:15.000000Z"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, I need help with my account balance.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:15.000000Z&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -813,65 +813,65 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="n">VOIPBIN_TOKEN</span> <span class="o">=</span> <span class="s2">"&lt;YOUR_AUTH_TOKEN&gt;"</span>
-<span class="n">TRANSCRIBE_ID</span> <span class="o">=</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span>
-<span class="n">SPEAKING_ID</span> <span class="o">=</span> <span class="s2">"b2c3d4e5-f6a7-8901-bcde-f12345678901"</span>
+<span class="n">VOIPBIN_TOKEN</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
+<span class="n">TRANSCRIBE_ID</span> <span class="o">=</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span>
+<span class="n">SPEAKING_ID</span> <span class="o">=</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/webhook'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'transcript_created'</span><span class="p">:</span>
-        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
-        <span class="c1"># Only process caller's speech (direction: "in")</span>
-        <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'direction'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'in'</span><span class="p">:</span>
-            <span class="n">caller_text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span>
+        <span class="c1"># Only process caller&#39;s speech (direction: &quot;in&quot;)</span>
+        <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;in&#39;</span><span class="p">:</span>
+            <span class="n">caller_text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
 
             <span class="c1"># Send to your LLM</span>
             <span class="n">ai_response</span> <span class="o">=</span> <span class="n">call_your_llm</span><span class="p">(</span><span class="n">caller_text</span><span class="p">)</span>
 
             <span class="c1"># Send AI response back to the call via Speaking API</span>
             <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">'https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
-                <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">'text'</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
+                <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
             <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'ok'</span><span class="p">}),</span> <span class="mi">200</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">call_your_llm</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
     <span class="c1"># Replace with your actual LLM call</span>
     <span class="c1"># e.g., OpenAI, Anthropic, local model, etc.</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">"I understand you need help with: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;I understand you need help with: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span>
 </pre></div>
 </div>
 </section>
 <section id="step-6-handle-interruptions">
 <h3>Step 6: Handle Interruptions<a class="headerlink" href="#step-6-handle-interruptions" title="Link to this heading">¶</a></h3>
 <p>If the caller speaks while TTS is playing, you receive a new <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> event. Flush the current playback before sending the new response.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/webhook'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'transcript_created'</span><span class="p">:</span>
-        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'direction'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'in'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;in&#39;</span><span class="p">:</span>
             <span class="c1"># Flush current TTS playback</span>
             <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">'https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/flush?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">'</span>
+                <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/flush?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
             <span class="p">)</span>
 
             <span class="c1"># Process and respond</span>
-            <span class="n">ai_response</span> <span class="o">=</span> <span class="n">call_your_llm</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">])</span>
+            <span class="n">ai_response</span> <span class="o">=</span> <span class="n">call_your_llm</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">])</span>
             <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">'https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
-                <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">'text'</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
+                <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
             <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'ok'</span><span class="p">}),</span> <span class="mi">200</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 </pre></div>
 </div>
 </section>
@@ -879,17 +879,17 @@
 <h3>Step 7: Clean Up on Call End<a class="headerlink" href="#step-7-clean-up-on-call-end" title="Link to this heading">¶</a></h3>
 <p>When the call ends, stop the transcription and speaking sessions to release resources.</p>
 <p>Listen for the <code class="docutils literal notranslate"><span class="pre">call_hangup</span></code> webhook event and clean up:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'call_hangup'</span><span class="p">:</span>
-    <span class="n">call_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">][</span><span class="s1">'id'</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
+    <span class="n">call_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
 
     <span class="c1"># Stop transcription</span>
     <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">'https://api.voipbin.net/v1.0/transcribes/</span><span class="si">{</span><span class="n">TRANSCRIBE_ID</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">'</span>
+        <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/transcribes/</span><span class="si">{</span><span class="n">TRANSCRIBE_ID</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
     <span class="p">)</span>
 
     <span class="c1"># Stop speaking</span>
     <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">'https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">'</span>
+        <span class="sa">f</span><span class="s1">&#39;https://api.voipbin.net/v1.0/speakings/</span><span class="si">{</span><span class="n">SPEAKING_ID</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">VOIPBIN_TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -908,117 +908,117 @@
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="n">VOIPBIN_BASE</span> <span class="o">=</span> <span class="s2">"https://api.voipbin.net/v1.0"</span>
-<span class="n">TOKEN</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"VOIPBIN_TOKEN"</span><span class="p">)</span>
+<span class="n">VOIPBIN_BASE</span> <span class="o">=</span> <span class="s2">&quot;https://api.voipbin.net/v1.0&quot;</span>
+<span class="n">TOKEN</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;VOIPBIN_TOKEN&quot;</span><span class="p">)</span>
 
 <span class="c1"># Store session IDs per call (in production, use a database)</span>
 <span class="n">call_sessions</span> <span class="o">=</span> <span class="p">{}</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/webhook'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
-    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'call_progressing'</span><span class="p">:</span>
-        <span class="n">handle_call_progressing</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_progressing&#39;</span><span class="p">:</span>
+        <span class="n">handle_call_progressing</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
 
-    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'transcript_created'</span><span class="p">:</span>
-        <span class="n">handle_transcript</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+        <span class="n">handle_transcript</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
 
-    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">'call_hangup'</span><span class="p">:</span>
-        <span class="n">handle_call_hangup</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
+        <span class="n">handle_call_hangup</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'ok'</span><span class="p">}),</span> <span class="mi">200</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_call_progressing</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Call answered — start transcription and speaking."""</span>
-    <span class="n">call_id</span> <span class="o">=</span> <span class="n">call</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call answered — start transcription and speaking.&quot;&quot;&quot;</span>
+    <span class="n">call_id</span> <span class="o">=</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
 
     <span class="c1"># Start transcription</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/transcribes?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/transcribes?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
         <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-            <span class="s1">'reference_type'</span><span class="p">:</span> <span class="s1">'call'</span><span class="p">,</span>
-            <span class="s1">'reference_id'</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
-            <span class="s1">'language'</span><span class="p">:</span> <span class="s1">'en-US'</span><span class="p">,</span>
-            <span class="s1">'direction'</span><span class="p">:</span> <span class="s1">'both'</span>
+            <span class="s1">&#39;reference_type&#39;</span><span class="p">:</span> <span class="s1">&#39;call&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;reference_id&#39;</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
+            <span class="s1">&#39;language&#39;</span><span class="p">:</span> <span class="s1">&#39;en-US&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;direction&#39;</span><span class="p">:</span> <span class="s1">&#39;both&#39;</span>
         <span class="p">}</span>
     <span class="p">)</span>
-    <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">'id'</span><span class="p">]</span>
+    <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
 
     <span class="c1"># Create speaking session</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
         <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-            <span class="s1">'reference_type'</span><span class="p">:</span> <span class="s1">'call'</span><span class="p">,</span>
-            <span class="s1">'reference_id'</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
-            <span class="s1">'language'</span><span class="p">:</span> <span class="s1">'en-US'</span><span class="p">,</span>
-            <span class="s1">'provider'</span><span class="p">:</span> <span class="s1">'elevenlabs'</span><span class="p">,</span>
-            <span class="s1">'direction'</span><span class="p">:</span> <span class="s1">'both'</span>
+            <span class="s1">&#39;reference_type&#39;</span><span class="p">:</span> <span class="s1">&#39;call&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;reference_id&#39;</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
+            <span class="s1">&#39;language&#39;</span><span class="p">:</span> <span class="s1">&#39;en-US&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;provider&#39;</span><span class="p">:</span> <span class="s1">&#39;elevenlabs&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;direction&#39;</span><span class="p">:</span> <span class="s1">&#39;both&#39;</span>
         <span class="p">}</span>
     <span class="p">)</span>
-    <span class="n">speaking_id</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">'id'</span><span class="p">]</span>
+    <span class="n">speaking_id</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
 
     <span class="n">call_sessions</span><span class="p">[</span><span class="n">call_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">'transcribe_id'</span><span class="p">:</span> <span class="n">transcribe_id</span><span class="p">,</span>
-        <span class="s1">'speaking_id'</span><span class="p">:</span> <span class="n">speaking_id</span>
+        <span class="s1">&#39;transcribe_id&#39;</span><span class="p">:</span> <span class="n">transcribe_id</span><span class="p">,</span>
+        <span class="s1">&#39;speaking_id&#39;</span><span class="p">:</span> <span class="n">speaking_id</span>
     <span class="p">}</span>
 
     <span class="c1"># Send initial greeting (after short delay for session to become active)</span>
     <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
-        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">'text'</span><span class="p">:</span> <span class="s1">'Hello, how can I help you today?'</span><span class="p">}</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39;Hello, how can I help you today?&#39;</span><span class="p">}</span>
     <span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Process caller speech and respond."""</span>
-    <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'direction'</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">'in'</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process caller speech and respond.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;in&#39;</span><span class="p">:</span>
         <span class="k">return</span>
 
     <span class="c1"># Find the speaking session for this transcribe</span>
-    <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">'transcribe_id'</span><span class="p">]</span>
+    <span class="n">transcribe_id</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">]</span>
     <span class="n">session</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">call_sessions</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s1">'transcribe_id'</span><span class="p">]</span> <span class="o">==</span> <span class="n">transcribe_id</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">call_sessions</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;transcribe_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">transcribe_id</span><span class="p">),</span>
         <span class="kc">None</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="p">:</span>
         <span class="k">return</span>
 
-    <span class="n">speaking_id</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="s1">'speaking_id'</span><span class="p">]</span>
+    <span class="n">speaking_id</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="s1">&#39;speaking_id&#39;</span><span class="p">]</span>
 
     <span class="c1"># Flush any current playback</span>
     <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/flush?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">'</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/flush?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
     <span class="p">)</span>
 
     <span class="c1"># Generate AI response</span>
-    <span class="n">ai_response</span> <span class="o">=</span> <span class="n">call_your_llm</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">'message'</span><span class="p">])</span>
+    <span class="n">ai_response</span> <span class="o">=</span> <span class="n">call_your_llm</span><span class="p">(</span><span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">])</span>
 
     <span class="c1"># Send response to caller</span>
     <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
-        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">'text'</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">speaking_id</span><span class="si">}</span><span class="s1">/say?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
     <span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_call_hangup</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Clean up sessions when call ends."""</span>
-    <span class="n">call_id</span> <span class="o">=</span> <span class="n">call</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean up sessions when call ends.&quot;&quot;&quot;</span>
+    <span class="n">call_id</span> <span class="o">=</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
     <span class="n">session</span> <span class="o">=</span> <span class="n">call_sessions</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">call_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">session</span><span class="p">:</span>
         <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/transcribes/</span><span class="si">{</span><span class="n">session</span><span class="p">[</span><span class="s2">"transcribe_id"</span><span class="p">]</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">'</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/transcribes/</span><span class="si">{</span><span class="n">session</span><span class="p">[</span><span class="s2">&quot;transcribe_id&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="p">)</span>
         <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">session</span><span class="p">[</span><span class="s2">"speaking_id"</span><span class="p">]</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">'</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">session</span><span class="p">[</span><span class="s2">&quot;speaking_id&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">call_your_llm</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Replace with your actual LLM integration."""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Replace with your actual LLM integration.&quot;&quot;&quot;</span>
     <span class="c1"># Example: OpenAI, Anthropic, local model, etc.</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">"I understand you said: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">. Let me help you with that."</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;I understand you said: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">. Let me help you with that.&quot;</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">'0.0.0.0'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1107,8 +1107,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

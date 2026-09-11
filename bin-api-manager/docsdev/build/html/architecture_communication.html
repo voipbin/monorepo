@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Data Architecture" href="architecture_data.html"><link rel="prev" title="Backend Microservices" href="architecture_backend.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Inter-Service Communication - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -731,31 +731,31 @@
 <p>RPC messages use a standardized JSON format:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Request</span> <span class="n">Message</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"message_id"</span><span class="p">:</span> <span class="s2">"uuid-v4"</span><span class="p">,</span>
-  <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-01-20T12:00:00.000Z"</span><span class="p">,</span>
-  <span class="s2">"route"</span><span class="p">:</span> <span class="s2">"/v1/calls"</span><span class="p">,</span>
-  <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"POST"</span><span class="p">,</span>
-  <span class="s2">"headers"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-123"</span><span class="p">,</span>
-    <span class="s2">"agent_id"</span><span class="p">:</span> <span class="s2">"agent-456"</span>
+  <span class="s2">&quot;message_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid-v4&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="s2">&quot;/v1/calls&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;headers&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-456&quot;</span>
   <span class="p">},</span>
-  <span class="s2">"body"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">},</span>
-    <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+15559876543"</span><span class="p">}]</span>
+  <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">}]</span>
   <span class="p">}</span>
 <span class="p">}</span>
 
 <span class="n">Response</span> <span class="n">Message</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"message_id"</span><span class="p">:</span> <span class="s2">"uuid-v4"</span><span class="p">,</span>
-  <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-01-20T12:00:01.000Z"</span><span class="p">,</span>
-  <span class="s2">"status_code"</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
-  <span class="s2">"body"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"call-789"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ringing"</span><span class="p">,</span>
+  <span class="s2">&quot;message_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid-v4&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:01.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;status_code&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+  <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span><span class="p">,</span>
     <span class="o">...</span>
   <span class="p">},</span>
-  <span class="s2">"error"</span><span class="p">:</span> <span class="n">null</span>
+  <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -886,17 +886,17 @@
 <p><strong>Event Message Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Message</span> <span class="n">Format</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">"event_id"</span><span class="p">:</span> <span class="s2">"uuid-v4"</span><span class="p">,</span>
-  <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"call.created"</span><span class="p">,</span>
-  <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-01-20T12:00:00.000Z"</span><span class="p">,</span>
-  <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-123"</span><span class="p">,</span>
-  <span class="s2">"resource_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
-  <span class="s2">"resource_id"</span><span class="p">:</span> <span class="s2">"call-789"</span><span class="p">,</span>
-  <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"call-789"</span><span class="p">,</span>
-    <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">,</span>
-    <span class="s2">"destination"</span><span class="p">:</span> <span class="s2">"+15559876543"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ringing"</span><span class="p">,</span>
+  <span class="s2">&quot;event_id&quot;</span><span class="p">:</span> <span class="s2">&quot;uuid-v4&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.created&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-123&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;resource_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-789&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-789&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span><span class="p">,</span>
     <span class="o">...</span>
   <span class="p">}</span>
 <span class="p">}</span>
@@ -1036,8 +1036,8 @@ RabbitMQ instead)</p></li>
      <span class="o">&lt;&lt;---------------------+</span>                       <span class="o">|</span>
      <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
      <span class="o">|</span>  <span class="mf">4.</span> <span class="n">Subscribe</span>        <span class="o">|</span>                       <span class="o">|</span>
-     <span class="o">|</span>  <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span><span class="s2">"subscribe"</span><span class="p">,</span><span class="o">|</span>                       <span class="o">|</span>
-     <span class="o">|</span>   <span class="s2">"topics"</span><span class="p">:[</span><span class="s2">"..."</span><span class="p">]}</span>  <span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>  <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;subscribe&quot;</span><span class="p">,</span><span class="o">|</span>                       <span class="o">|</span>
+     <span class="o">|</span>   <span class="s2">&quot;topics&quot;</span><span class="p">:[</span><span class="s2">&quot;...&quot;</span><span class="p">]}</span>  <span class="o">|</span>                       <span class="o">|</span>
      <span class="o">+---------------------&gt;&gt;</span>                       <span class="o">|</span>
      <span class="o">|</span>                      <span class="o">|</span>  <span class="mf">5.</span> <span class="n">Register</span>          <span class="o">|</span>
      <span class="o">|</span>                      <span class="o">|</span>     <span class="n">subscription</span>      <span class="o">|</span>
@@ -1048,8 +1048,8 @@ RabbitMQ instead)</p></li>
      <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
      <span class="o">|</span>  <span class="mf">7.</span> <span class="n">Push</span> <span class="n">to</span> <span class="n">Client</span>   <span class="o">|</span>                       <span class="o">|</span>
      <span class="o">&lt;&lt;---------------------+</span>                       <span class="o">|</span>
-     <span class="o">|</span>  <span class="p">{</span><span class="s2">"event"</span><span class="p">:</span><span class="s2">"call.     |                       |</span>
-     <span class="o">|</span>   <span class="n">created</span><span class="s2">",...}      |                       |</span>
+     <span class="o">|</span>  <span class="p">{</span><span class="s2">&quot;event&quot;</span><span class="p">:</span><span class="s2">&quot;call.     |                       |</span>
+     <span class="o">|</span>   <span class="n">created</span><span class="s2">&quot;,...}      |                       |</span>
      <span class="o">|</span>                      <span class="o">|</span>                       <span class="o">|</span>
 </pre></div>
 </div>
@@ -1322,7 +1322,7 @@ Max: 7 attempts, ~1 minute total
 <span class="n">o</span> <span class="n">Service</span> <span class="n">temporarily</span> <span class="n">unavailable</span>
 <span class="o">-&gt;</span> <span class="n">Retry</span> <span class="k">with</span> <span class="n">exponential</span> <span class="n">backoff</span>
 
-<span class="n">Permanent</span> <span class="n">Errors</span> <span class="p">(</span><span class="n">Don</span><span class="s1">'t Retry):</span>
+<span class="n">Permanent</span> <span class="n">Errors</span> <span class="p">(</span><span class="n">Don</span><span class="s1">&#39;t Retry):</span>
 <span class="n">o</span> <span class="n">Invalid</span> <span class="n">data</span> <span class="nb">format</span>
 <span class="n">o</span> <span class="n">Resource</span> <span class="ow">not</span> <span class="n">found</span>
 <span class="n">o</span> <span class="n">Permission</span> <span class="n">denied</span>
@@ -1558,8 +1558,8 @@ Max: 7 attempts, ~1 minute total
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

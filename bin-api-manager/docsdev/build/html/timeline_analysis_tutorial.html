@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Timeline analysis" href="timeline_analysis_struct_timeline_analysis.html"><link rel="prev" title="Overview" href="timeline_analysis_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -655,19 +655,19 @@
 <section id="trigger-an-analysis">
 <h3>Trigger an Analysis<a class="headerlink" href="#trigger-an-analysis" title="Link to this heading">¶</a></h3>
 <p>Start an analysis for an ended activeflow. The request returns immediately with status <code class="docutils literal notranslate"><span class="pre">progressing</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/timeline-analyses?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "activeflow_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/timeline-analyses?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;activeflow_id&quot;: &quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;
+    }&#39;
 
 {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "customer_id": "12345678-1234-1234-1234-123456789012",
-    "activeflow_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-    "status": "progressing",
-    "tm_create": "2026-01-20T12:00:00.000000Z",
-    "tm_update": null
+    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+    &quot;activeflow_id&quot;: &quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;tm_create&quot;: &quot;2026-01-20T12:00:00.000000Z&quot;,
+    &quot;tm_update&quot;: null
 }
 </pre></div>
 </div>
@@ -676,40 +676,40 @@
 <section id="poll-for-the-result">
 <h3>Poll for the Result<a class="headerlink" href="#poll-for-the-result" title="Link to this heading">¶</a></h3>
 <p>Poll the analysis by ID until <code class="docutils literal notranslate"><span class="pre">status</span></code> becomes <code class="docutils literal notranslate"><span class="pre">completed</span></code> or <code class="docutils literal notranslate"><span class="pre">failed</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/timeline-analyses/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/timeline-analyses/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "customer_id": "12345678-1234-1234-1234-123456789012",
-    "activeflow_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-    "status": "completed",
-    "result": {
-        "version": 1,
-        "overall_status": "warning",
-        "input_reduced": false,
-        "resources_used": [
-            {"type": "call", "count": 2},
-            {"type": "transcribe", "count": 1}
+    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
+    &quot;activeflow_id&quot;: &quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;,
+    &quot;status&quot;: &quot;completed&quot;,
+    &quot;result&quot;: {
+        &quot;version&quot;: 1,
+        &quot;overall_status&quot;: &quot;warning&quot;,
+        &quot;input_reduced&quot;: false,
+        &quot;resources_used&quot;: [
+            {&quot;type&quot;: &quot;call&quot;, &quot;count&quot;: 2},
+            {&quot;type&quot;: &quot;transcribe&quot;, &quot;count&quot;: 1}
         ],
-        "narrative": "Two inbound calls were answered and transcribed; one call's media quality degraded mid-conversation.",
-        "issues": [
+        &quot;narrative&quot;: &quot;Two inbound calls were answered and transcribed; one call&#39;s media quality degraded mid-conversation.&quot;,
+        &quot;issues&quot;: [
             {
-                "severity": "warning",
-                "area": "media",
-                "summary": "Call media quality (MOS) degraded to 2.8.",
-                "evidence": [
+                &quot;severity&quot;: &quot;warning&quot;,
+                &quot;area&quot;: &quot;media&quot;,
+                &quot;summary&quot;: &quot;Call media quality (MOS) degraded to 2.8.&quot;,
+                &quot;evidence&quot;: [
                     {
-                        "evidence_index": 42,
-                        "event_type": "call_hangup",
-                        "timestamp": "2026-01-20T12:05:12.000000Z",
-                        "resource_id": "c3d4e5f6-a7b8-9012-cdef-123456789012"
+                        &quot;evidence_index&quot;: 42,
+                        &quot;event_type&quot;: &quot;call_hangup&quot;,
+                        &quot;timestamp&quot;: &quot;2026-01-20T12:05:12.000000Z&quot;,
+                        &quot;resource_id&quot;: &quot;c3d4e5f6-a7b8-9012-cdef-123456789012&quot;
                     }
                 ]
             }
         ]
     },
-    "tm_create": "2026-01-20T12:00:00.000000Z",
-    "tm_update": "2026-01-20T12:00:20.000000Z"
+    &quot;tm_create&quot;: &quot;2026-01-20T12:00:00.000000Z&quot;,
+    &quot;tm_update&quot;: &quot;2026-01-20T12:00:20.000000Z&quot;
 }
 </pre></div>
 </div>
@@ -717,19 +717,19 @@
 <section id="list-analyses">
 <h3>List Analyses<a class="headerlink" href="#list-analyses" title="Link to this heading">¶</a></h3>
 <p>List the analyses for your customer account, optionally filtered by <code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> or <code class="docutils literal notranslate"><span class="pre">status</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/timeline-analyses?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/timeline-analyses?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&#39;
 </pre></div>
 </div>
 </section>
 <section id="re-analyze">
 <h3>Re-analyze<a class="headerlink" href="#re-analyze" title="Link to this heading">¶</a></h3>
 <p>Re-run the analysis for an activeflow. The previous verdict is discarded and replaced in place by the new run.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/timeline-analyses?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "activeflow_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-        "reanalyze": true
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/timeline-analyses?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;activeflow_id&quot;: &quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;,
+        &quot;reanalyze&quot;: true
+    }&#39;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -740,7 +740,7 @@
 <section id="delete-an-analysis">
 <h3>Delete an Analysis<a class="headerlink" href="#delete-an-analysis" title="Link to this heading">¶</a></h3>
 <p>Permanently delete an analysis you no longer need. This is a hard delete: the record is removed and cannot be recovered. The analyzed activeflow and its timeline events are not affected, and the activeflow can be analyzed again afterward.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/timeline-analyses/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/timeline-analyses/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 </section>
@@ -826,8 +826,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>
