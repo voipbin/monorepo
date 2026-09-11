@@ -64,10 +64,18 @@ if errSetup := h.setup(setupCtx, ac); errSetup != nil {
 ## 6. 테스트 계획
 
 - 기존 유닛 테스트(`pkg/accounthandler/db_test.go`)에 `setup()` 호출이 타임아웃되는 경로(context deadline exceeded를 반환하는 mock)에 대한 케이스 추가.
+- 주의: `db_test.go:96`의 기존 `Test_Create` 정상 경로 mock 기대값 `mockLine.EXPECT().Setup(ctx, tt.expectAccount).Return(nil)`은 `ctx`를 정확 매칭하고 있다. 이번 수정으로 `Create()` 내부에서 `setup()`에 전달되는 값이 (원래 `ctx`가 아니라) 새로 파생된 `setupCtx`로 바뀌므로, 이 기존 기대값도 `ctx` 정확 매칭에서 `gomock.Any()`(또는 파생 ctx를 인식하는 매처)로 함께 완화해야 한다. 새 타임아웃 케이스 추가와 별개로 기존 테스트도 손봐야 함을 구현 시 놓치지 않는다.
 - `go test ./...`, `golangci-lint`는 표준 검증 워크플로우로 실행.
 - api-validator 회귀 테스트는 실제 LINE API 호출을 포함하므로 이번 PR로 직접 재현 검증은 어렵다(외부 의존). 코드 레벨 유닛 테스트로 타임아웃 동작을 검증하고, 배포 후 api-validator 정기 실행에서 재발 여부를 모니터링한다.
 
 ## 7. 리스크
 
-- 20초 로컬 타임아웃이 정상 LINE 응답 시간보다 지나치게 짧을 경우 정상 요청도 실패시킬 수 있다. 다만 기존에도 60초 안에 실패하던 경로이므로, 20초는 정상 케이스(수 초)에 영향 없고 비정상 지연 케이스만 더 빨리 차단한다.
+- 20초 로컬 타임아웃이 정상 LINE 응답 시간보다 지나치게 짧을 경우 정상 요청도 실패시킬 수 있다. 다만 기존에도 60초 안에 실패하던 경로이므로, 20초는 정상 케이스(수 초로 추정 — 실측 p99 데이터는 없으며 이는 확인된 사실이 아니라 가정임을 명시한다)에 영향 없고 비정상 지연 케이스만 더 빨리 차단한다는 것이 설계의 전제다.
 - 추후 실제 LINE API 응답 지연 분포 데이터가 쌓이면 20초 값을 재조정할 수 있다(현재는 발신측 30초 예산 대비 안전 마진 기준의 추정치).
+
+## 8. 검증 이력
+
+- Round 1 (delegate_task fresh reviewer): APPROVE. Non-blocking 지적 2건 반영: (a) WhatsApp "부가 이득" 주장 정정(ctx 미사용이므로 영향 없음이 정확), (b) "발신측 30초 예산을 쓴다" 표현을 "원래 ctx는 context.Background()로 데드라인이 없으며, 이번에 처음 명시적 데드라인을 부여하는 것"으로 정정. 두 지적 모두 반영 후 재커밋.
+- Round 2 (delegate_task fresh reviewer): APPROVE. Round 1 수정 사항의 self-consistency를 문서 전체(§2/§4.1/§5/§7)에서 "30초"/"예산" 전체 용례 재검증. 모두 일관됨 확인.
+- Round 3 (delegate_task fresh reviewer, 다른 시선 — §3/§6/§7 집중, §4 재점검): APPROVE. §3의 "전역 30개 서비스" 주장을 grep으로 재확인(정확히 30개 전부 해당, 오히려 과소 서술). §6 테스트 계획의 실현 가능성을 db_test.go 직접 열람으로 확인(기계적으로 가능하나 기존 Test_Create의 ctx 정확매칭 기대값이 setupCtx 도입 후 gomock.Any()로 완화되어야 함을 지적 — §6에 반영). §7의 "수 초 이내" 표현이 실측 데이터 없는 가정임을 명확히 하도록 권고 — §7에 반영.
+- **연속 2회 APPROVE(Round 2, Round 3) + 최소 3라운드 요건 충족 — 설계 리뷰 루프 종료.**
