@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -724,5 +725,292 @@ func Test_CaseUpdateContact_DetachToNil(t *testing.T) {
 	}
 	if res != expectRes {
 		t.Errorf("Expected result %v, got: %v", expectRes, res)
+	}
+}
+
+// Test_CaseAssign covers the Admin/Manager top-level case owner assign
+// endpoint (VOIP-1514). Mirrors Test_ServiceAgentCaseAssign's table
+// structure but with Admin/Manager/plain-agent/direct-access identities
+// instead of a single agent-permission identity, plus the cross-tenant
+// case scenario.
+func Test_CaseAssign(t *testing.T) {
+	type test struct {
+		name string
+
+		agent   *auth.AuthIdentity
+		caseID  uuid.UUID
+		ownerID uuid.UUID
+
+		expectCaseGetErr error
+		responseCaseGet  *cmkase.Case
+
+		expectAgentGetCall bool
+		responseAgentGet   *amagent.Agent
+		responseAgentErr   error
+
+		expectAssignCall   bool
+		responseCaseAssign *cmkase.Case
+
+		expectErr   bool
+		expectErrIs error
+	}
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	otherCustomerID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	adminID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	caseID := uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb")
+	ownerID := uuid.FromStringOrNil("f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6")
+
+	tests := []test{
+		{
+			name: "admin permission, valid same-customer owner",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID:  caseID,
+			ownerID: ownerID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+
+			expectAgentGetCall: true,
+			responseAgentGet: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         ownerID,
+					CustomerID: customerID,
+				},
+			},
+
+			expectAssignCall: true,
+			responseCaseAssign: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerID,
+				},
+			},
+		},
+		{
+			name: "manager permission, valid same-customer owner",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerManager,
+			}),
+			caseID:  caseID,
+			ownerID: ownerID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+
+			expectAgentGetCall: true,
+			responseAgentGet: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         ownerID,
+					CustomerID: customerID,
+				},
+			},
+
+			expectAssignCall: true,
+			responseCaseAssign: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerID,
+				},
+			},
+		},
+		{
+			// A plain agent (not Admin/Manager) must be rejected on the
+			// top-level endpoint -- ContactV1CaseGet is still called
+			// first (caseGet precedes hasPermission in this group), but
+			// neither AgentV1AgentGet nor ContactV1CaseAssign may fire.
+			name: "plain agent permission is denied",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			caseID:  caseID,
+			ownerID: ownerID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+
+			expectAgentGetCall: false,
+			expectAssignCall:   false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrPermissionDenied,
+		},
+		{
+			// Case is closed -- ErrCaseClosed, no owner lookup, no
+			// assign RPC.
+			name: "case is closed",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID:  caseID,
+			ownerID: ownerID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusClosed,
+			},
+
+			expectAgentGetCall: false,
+			expectAssignCall:   false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrCaseClosed,
+		},
+		{
+			// Owner agent belongs to a different customer -- collapses
+			// to ErrNotFound (anti-enumeration), matching
+			// ServiceAgentCaseAssign's behavior.
+			name: "owner agent belongs to a different customer",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID:  caseID,
+			ownerID: ownerID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+
+			expectAgentGetCall: true,
+			responseAgentGet: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         ownerID,
+					CustomerID: otherCustomerID,
+				},
+			},
+
+			expectAssignCall: false,
+			expectErr:        true,
+			expectErrIs:      serviceerrors.ErrNotFound,
+		},
+		{
+			// Case lookup itself fails (case does not exist) -- the
+			// error propagates as-is; no permission check, no owner
+			// lookup, no assign RPC.
+			name: "case does not exist",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID:  caseID,
+			ownerID: ownerID,
+
+			expectCaseGetErr: serviceerrors.ErrNotFound,
+
+			expectAgentGetCall: false,
+			expectAssignCall:   false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrNotFound,
+		},
+		{
+			// Cross-tenant case: the caller's own a.CustomerID is used
+			// for ContactV1CaseGet (caseGet), which already
+			// tenant-filters on the contact-manager side -- a
+			// cross-tenant case ID resolves to ErrNotFound at the
+			// caseGet step itself, never reaching hasPermission (design
+			// §9, round-3 review).
+			name: "cross-tenant case resolves to not found at caseGet",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID:  caseID,
+			ownerID: ownerID,
+
+			expectCaseGetErr: serviceerrors.ErrNotFound,
+
+			expectAgentGetCall: false,
+			expectAssignCall:   false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			if tt.expectCaseGetErr != nil {
+				mockReq.EXPECT().ContactV1CaseGet(ctx, tt.agent.CustomerID, tt.caseID).Return(nil, tt.expectCaseGetErr)
+			} else {
+				mockReq.EXPECT().ContactV1CaseGet(ctx, tt.agent.CustomerID, tt.caseID).Return(tt.responseCaseGet, nil)
+			}
+
+			if tt.expectAgentGetCall {
+				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.ownerID).Return(tt.responseAgentGet, tt.responseAgentErr)
+			}
+			if tt.expectAssignCall {
+				mockReq.EXPECT().ContactV1CaseAssign(ctx, tt.agent.CustomerID, tt.caseID, tt.ownerID).Return(tt.responseCaseAssign, nil)
+			}
+
+			res, err := h.CaseAssign(ctx, tt.agent, tt.caseID, tt.ownerID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				}
+				if tt.expectErrIs != nil && err != tt.expectErrIs {
+					t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErrIs, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if reflect.DeepEqual(res, tt.responseCaseAssign) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseCaseAssign, res)
+			}
+		})
 	}
 }

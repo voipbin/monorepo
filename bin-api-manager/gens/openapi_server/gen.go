@@ -8782,6 +8782,12 @@ type PutContactCasesIdJSONBody struct {
 	ContactId string `json:"contact_id"`
 }
 
+// PostContactCasesIdAssignJSONBody defines parameters for PostContactCasesIdAssign.
+type PostContactCasesIdAssignJSONBody struct {
+	// OwnerId The agent ID to assign as the case owner. The agent ID returned from the `GET /agents` response.
+	OwnerId openapi_types.UUID `json:"owner_id"`
+}
+
 // PostContactCasesIdMessagesJSONBody defines parameters for PostContactCasesIdMessages.
 type PostContactCasesIdMessagesJSONBody struct {
 	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
@@ -10833,6 +10839,9 @@ type PostContactAddressesIdClaimJSONRequestBody PostContactAddressesIdClaimJSONB
 // PutContactCasesIdJSONRequestBody defines body for PutContactCasesId for application/json ContentType.
 type PutContactCasesIdJSONRequestBody PutContactCasesIdJSONBody
 
+// PostContactCasesIdAssignJSONRequestBody defines body for PostContactCasesIdAssign for application/json ContentType.
+type PostContactCasesIdAssignJSONRequestBody PostContactCasesIdAssignJSONBody
+
 // PostContactCasesIdMessagesJSONRequestBody defines body for PostContactCasesIdMessages for application/json ContentType.
 type PostContactCasesIdMessagesJSONRequestBody PostContactCasesIdMessagesJSONBody
 
@@ -11573,6 +11582,9 @@ type ServerInterface interface {
 	// Attach or detach a case's contact
 	// (PUT /contact_cases/{id})
 	PutContactCasesId(c *gin.Context, id openapi_types.UUID)
+	// Assign the case to an owner agent
+	// (POST /contact_cases/{id}/assign)
+	PostContactCasesIdAssign(c *gin.Context, id openapi_types.UUID)
 	// Close a case
 	// (POST /contact_cases/{id}/close)
 	PostContactCasesIdClose(c *gin.Context, id openapi_types.UUID)
@@ -15977,6 +15989,31 @@ func (siw *ServerInterfaceWrapper) PutContactCasesId(c *gin.Context) {
 	}
 
 	siw.Handler.PutContactCasesId(c, id)
+}
+
+// PostContactCasesIdAssign operation middleware
+func (siw *ServerInterfaceWrapper) PostContactCasesIdAssign(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactCasesIdAssign(c, id)
 }
 
 // PostContactCasesIdClose operation middleware
@@ -23659,6 +23696,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/contact_cases/unresolved", wrapper.GetContactCasesUnresolved)
 	router.GET(options.BaseURL+"/contact_cases/:id", wrapper.GetContactCasesId)
 	router.PUT(options.BaseURL+"/contact_cases/:id", wrapper.PutContactCasesId)
+	router.POST(options.BaseURL+"/contact_cases/:id/assign", wrapper.PostContactCasesIdAssign)
 	router.POST(options.BaseURL+"/contact_cases/:id/close", wrapper.PostContactCasesIdClose)
 	router.POST(options.BaseURL+"/contact_cases/:id/continue", wrapper.PostContactCasesIdContinue)
 	router.POST(options.BaseURL+"/contact_cases/:id/messages", wrapper.PostContactCasesIdMessages)
@@ -34989,6 +35027,99 @@ func (response PutContactCasesId404JSONResponse) VisitPutContactCasesIdResponse(
 type PutContactCasesId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PutContactCasesId500JSONResponse) VisitPutContactCasesIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdAssignRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostContactCasesIdAssignJSONRequestBody
+}
+
+type PostContactCasesIdAssignResponseObject interface {
+	VisitPostContactCasesIdAssignResponse(w http.ResponseWriter) error
+}
+
+type PostContactCasesIdAssign200JSONResponse ContactManagerCase
+
+func (response PostContactCasesIdAssign200JSONResponse) VisitPostContactCasesIdAssignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdAssign400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactCasesIdAssign400JSONResponse) VisitPostContactCasesIdAssignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdAssign401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactCasesIdAssign401JSONResponse) VisitPostContactCasesIdAssignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdAssign403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactCasesIdAssign403JSONResponse) VisitPostContactCasesIdAssignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdAssign404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactCasesIdAssign404JSONResponse) VisitPostContactCasesIdAssignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdAssign500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactCasesIdAssign500JSONResponse) VisitPostContactCasesIdAssignResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -58845,6 +58976,9 @@ type StrictServerInterface interface {
 	// Attach or detach a case's contact
 	// (PUT /contact_cases/{id})
 	PutContactCasesId(ctx context.Context, request PutContactCasesIdRequestObject) (PutContactCasesIdResponseObject, error)
+	// Assign the case to an owner agent
+	// (POST /contact_cases/{id}/assign)
+	PostContactCasesIdAssign(ctx context.Context, request PostContactCasesIdAssignRequestObject) (PostContactCasesIdAssignResponseObject, error)
 	// Close a case
 	// (POST /contact_cases/{id}/close)
 	PostContactCasesIdClose(ctx context.Context, request PostContactCasesIdCloseRequestObject) (PostContactCasesIdCloseResponseObject, error)
@@ -63560,6 +63694,39 @@ func (sh *strictHandler) PutContactCasesId(ctx *gin.Context, id openapi_types.UU
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PutContactCasesIdResponseObject); ok {
 		if err := validResponse.VisitPutContactCasesIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactCasesIdAssign operation middleware
+func (sh *strictHandler) PostContactCasesIdAssign(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactCasesIdAssignRequestObject
+
+	request.Id = id
+
+	var body PostContactCasesIdAssignJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactCasesIdAssign(ctx, request.(PostContactCasesIdAssignRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactCasesIdAssign")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostContactCasesIdAssignResponseObject); ok {
+		if err := validResponse.VisitPostContactCasesIdAssignResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

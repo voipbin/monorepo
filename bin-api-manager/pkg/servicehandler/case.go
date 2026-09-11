@@ -147,6 +147,55 @@ func (h *serviceHandler) CaseGet(ctx context.Context, a *auth.AuthIdentity, id u
 	return res, nil
 }
 
+// CaseAssign assigns the case of the given id to the given owner agent
+// for an Admin/Manager caller (VOIP-1514). Mirrors
+// ServiceAgentCaseAssign's logic (case lookup, closed-case guard, owner
+// agent tenant validation, RPC call) but gates on
+// PermissionCustomerAdmin|PermissionCustomerManager instead of
+// PermissionAll, matching CaseClose/CaseUpdateContact's top-level
+// permission pattern.
+func (h *serviceHandler) CaseAssign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, ownerID uuid.UUID) (*cmkase.Case, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CaseAssign",
+		"customer_id": a.CustomerID,
+		"case_id":     id,
+		"owner_id":    ownerID,
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	c, err := h.caseGet(ctx, a.CustomerID, id)
+	if err != nil {
+		log.Errorf("Could not get the case info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	if c.Status == cmkase.StatusClosed {
+		log.Infof("Case is closed, status: %s", c.Status)
+		return nil, serviceerrors.ErrCaseClosed
+	}
+
+	owner, err := h.reqHandler.AgentV1AgentGet(ctx, ownerID)
+	if err != nil || owner.CustomerID != a.CustomerID {
+		log.Infof("Could not validate the owner agent. err: %v", err)
+		return nil, serviceerrors.ErrNotFound
+	}
+
+	res, err := h.reqHandler.ContactV1CaseAssign(ctx, a.CustomerID, id, ownerID)
+	if err != nil {
+		log.Errorf("Could not assign case. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // CaseClose closes an open case (design §5.1). closed_by_id is derived
 // server-side from the authenticated caller's own agent identity
 // (a.AgentID()) -- matching CaseContinue's pattern below -- rather than

@@ -179,6 +179,49 @@ func (h *server) PostContactCasesIdClose(c *gin.Context, id openapi_types.UUID) 
 	c.JSON(200, res)
 }
 
+// PostContactCasesIdAssign handles POST /contact_cases/{id}/assign (VOIP-1514):
+// Admin/Manager assigns a case's owner agent.
+func (h *server) PostContactCasesIdAssign(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostContactCasesIdAssign",
+		"request_address": c.ClientIP(),
+		"id":              id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithField("customer_id", a.CustomerID)
+
+	caseID := uuid.UUID(id)
+
+	var req openapi_server.PostContactCasesIdAssignJSONRequestBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind request body. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
+		return
+	}
+
+	ownerID, err := uuid.FromString(req.OwnerId.String())
+	if err != nil {
+		log.Errorf("Invalid owner ID format. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_OWNER_ID", "The provided owner_id is not a valid UUID.").Wrap(err))
+		return
+	}
+
+	res, err := h.serviceHandler.CaseAssign(c.Request.Context(), a, caseID, ownerID)
+	if err != nil {
+		log.Errorf("Could not assign case. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // PutContactCasesId handles PUT /contact_cases/{id} (VOIP-1253):
 // attaches or detaches a case's contact. contact_id="" in the request
 // body clears the attribution -- converted to uuid.Nil HERE, at the

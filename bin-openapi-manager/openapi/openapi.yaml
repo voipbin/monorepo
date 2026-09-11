@@ -8675,6 +8675,8 @@ paths:
     $ref: './paths/contact_cases/id.yaml'
   /contact_cases/{id}/close:
     $ref: './paths/contact_cases/id_close.yaml'
+  /contact_cases/{id}/assign:
+    $ref: './paths/contact_cases/id_assign.yaml'
   /contact_cases/{id}/continue:
     $ref: './paths/contact_cases/id_continue.yaml'
   /contact_cases/{id}/notes:
