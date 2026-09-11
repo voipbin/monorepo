@@ -252,7 +252,7 @@ Customer (square-admin)      api-manager                ai-manager      Vendor A
 1b. square-admin stores link_token in sessionStorage,                     |
     then does a full-page redirect to authorize_url                      |
         |------------------------------------------------------------->  |
-                                                       2. Customer authorizes
+                                                       2b. Customer authorizes
         |  <-- redirect: GET /mcpservers/oauth/callback?code=...&state=...|
         |<-------------------------------------------------------------  |
         |                          |                        |             |
