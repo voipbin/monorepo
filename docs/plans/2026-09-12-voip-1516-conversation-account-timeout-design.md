@@ -79,3 +79,9 @@ if errSetup := h.setup(setupCtx, ac); errSetup != nil {
 - Round 2 (delegate_task fresh reviewer): APPROVE. Round 1 수정 사항의 self-consistency를 문서 전체(§2/§4.1/§5/§7)에서 "30초"/"예산" 전체 용례 재검증. 모두 일관됨 확인.
 - Round 3 (delegate_task fresh reviewer, 다른 시선 — §3/§6/§7 집중, §4 재점검): APPROVE. §3의 "전역 30개 서비스" 주장을 grep으로 재확인(정확히 30개 전부 해당, 오히려 과소 서술). §6 테스트 계획의 실현 가능성을 db_test.go 직접 열람으로 확인(기계적으로 가능하나 기존 Test_Create의 ctx 정확매칭 기대값이 setupCtx 도입 후 gomock.Any()로 완화되어야 함을 지적 — §6에 반영). §7의 "수 초 이내" 표현이 실측 데이터 없는 가정임을 명확히 하도록 권고 — §7에 반영.
 - **연속 2회 APPROVE(Round 2, Round 3) + 최소 3라운드 요건 충족 — 설계 리뷰 루프 종료.**
+
+## 9. 후속 사항 (PR #1296 코드 리뷰 루프 Round 3에서 발견, 2026-09-12)
+
+`accountHandler.Update()`(`db.go:158` 부근, `h.setup(ctx, res)`)도 이번에 `Create()`에서 고친 것과 동일한 무기한 ctx → LINE 동기 호출 패턴을 갖고 있다. Update의 경우 `AccountUpdate`/`Get`이 `setup()` 호출보다 먼저 실행되므로(Create처럼 "클라이언트는 실패로 보는데 서버에 없던 레코드가 뒤늦게 생성된다"는 팬텀 생성 경쟁상태는 아니지만), RPC 워커가 무기한 대기할 수 있고 `PublishWebhookEvent`가 호출자가 포기한 뒤 뒤늦게 발행될 수 있는 위험은 동일하다.
+
+§3의 스코프 결정(관측된 실패 신호가 있는 경로만 수정)에 따라 이번 PR에서는 다루지 않는다. Update 경로에서 실제 503/타임아웃이 관측된 적은 없다. 후속 티켓 **VOIP-1517**에 추적한다.
