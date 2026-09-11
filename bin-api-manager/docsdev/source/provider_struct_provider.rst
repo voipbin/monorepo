@@ -50,6 +50,18 @@ Provider
 
    Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the provider has not been deleted.
 
+.. note:: **AI Implementation Hint**
+
+   ``PUT /providers/{id}`` treats all body fields as optional, including
+   ``codecs``. Omitting a field leaves its current value unchanged; there
+   is no need to resend the full object. Sending an explicit empty string
+   for ``codecs`` (``""``) clears codecs back to server-default
+   negotiation, distinct from omitting the field. Changing ``hostname``
+   still resets ``health_status`` to ``unknown`` and ``health_checked_at``
+   to ``null``, exactly as before. A request body that omits every field
+   is a no-op and returns the provider unchanged without publishing a
+   ``provider_updated`` event.
+
 Example
 +++++++
 

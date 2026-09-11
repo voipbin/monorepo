@@ -863,14 +863,14 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		providerID uuid.UUID,
-		providerType rmprovider.Type,
-		hostname string,
-		techPrefix string,
-		techPostfix string,
-		techHeaders map[string]string,
-		name string,
-		detail string,
-		codecs string,
+		providerType *rmprovider.Type,
+		hostname *string,
+		techPrefix *string,
+		techPostfix *string,
+		techHeaders *map[string]string,
+		name *string,
+		detail *string,
+		codecs *string,
 	) (*rmprovider.WebhookMessage, error)
 
 	// providercall handlers

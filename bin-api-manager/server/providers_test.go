@@ -442,7 +442,7 @@ func Test_providersIDPut(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().ProviderUpdate(req.Context(), tt.agent, tt.expectProviderID, tt.expectProviderType, tt.expectHostname, tt.expectTechPrefix, tt.expectTechPostfix, tt.expectTechHeaders, tt.expectName, tt.expectDetail, "").Return(tt.responseProvider, nil)
+			mockSvc.EXPECT().ProviderUpdate(req.Context(), tt.agent, tt.expectProviderID, &tt.expectProviderType, &tt.expectHostname, &tt.expectTechPrefix, &tt.expectTechPostfix, &tt.expectTechHeaders, &tt.expectName, &tt.expectDetail, nil).Return(tt.responseProvider, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

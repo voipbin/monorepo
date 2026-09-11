@@ -97,18 +97,20 @@ func (r *requestHandler) RouteV1ProviderDelete(ctx context.Context, providerID u
 
 // RouteV1ProviderUpdate sends a request to route-manager
 // to update the detail provider info.
+// All fields except providerID are pointers: nil means "leave unchanged",
+// a non-nil pointer means "set to this value".
 // it returns updated provider info if it succeed.
 func (r *requestHandler) RouteV1ProviderUpdate(
 	ctx context.Context,
 	providerID uuid.UUID,
-	providerType rmprovider.Type,
-	hostname string,
-	techPrefix string,
-	techPostfix string,
-	techHeaders map[string]string,
-	name string,
-	detail string,
-	codecs string,
+	providerType *rmprovider.Type,
+	hostname *string,
+	techPrefix *string,
+	techPostfix *string,
+	techHeaders *map[string]string,
+	name *string,
+	detail *string,
+	codecs *string,
 ) (*rmprovider.Provider, error) {
 	uri := fmt.Sprintf("/v1/providers/%s", providerID)
 

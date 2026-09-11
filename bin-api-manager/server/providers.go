@@ -275,34 +275,39 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 		return
 	}
 
-	techHeaders := map[string]string{}
-	for key, value := range req.TechHeaders {
-		strValue, ok := value.(string)
-		if !ok {
-			log.Errorf("Invalid type for tech header value. key: %s, value: %v", key, value)
-			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "tech_headers values must be strings."))
-			return
+	var techHeadersPtr *map[string]string
+	if req.TechHeaders != nil {
+		techHeaders := map[string]string{}
+		for key, value := range *req.TechHeaders {
+			strValue, ok := value.(string)
+			if !ok {
+				log.Errorf("Invalid type for tech header value. key: %s, value: %v", key, value)
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "tech_headers values must be strings."))
+				return
+			}
+			techHeaders[key] = strValue
 		}
-		techHeaders[key] = strValue
+		techHeadersPtr = &techHeaders
 	}
 
-	codecs := ""
-	if req.Codecs != nil {
-		codecs = *req.Codecs
+	var typePtr *rmprovider.Type
+	if req.Type != nil {
+		v := rmprovider.Type(*req.Type)
+		typePtr = &v
 	}
 
 	res, err := h.serviceHandler.ProviderUpdate(
 		c.Request.Context(),
 		a,
 		target,
-		rmprovider.Type(req.Type),
+		typePtr,
 		req.Hostname,
 		req.TechPrefix,
 		req.TechPostfix,
-		techHeaders,
+		techHeadersPtr,
 		req.Name,
 		req.Detail,
-		codecs,
+		req.Codecs,
 	)
 	if err != nil {
 		log.Errorf("Could not update the provider. err: %v", err)

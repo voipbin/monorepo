@@ -12097,22 +12097,32 @@ type PostProvidersJSONBody struct {
 
 // PutProvidersIdJSONBody defines parameters for PutProvidersId.
 type PutProvidersIdJSONBody struct {
-	// Codecs Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA"). Empty means server-default negotiation. Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
+	// Codecs Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA"). Omit to leave the current codecs unchanged. An explicit empty string ("") clears codecs back to server-default negotiation. Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
 	//
 	//
 	// Example: PCMU,PCMA
-	Codecs      *string                `json:"codecs,omitempty"`
-	Detail      string                 `json:"detail"`
-	Hostname    string                 `json:"hostname"`
-	Name        string                 `json:"name"`
-	TechHeaders map[string]interface{} `json:"tech_headers"`
-	TechPostfix string                 `json:"tech_postfix"`
-	TechPrefix  string                 `json:"tech_prefix"`
+	Codecs *string `json:"codecs,omitempty"`
 
-	// Type Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
-	//
-	// Example: sip
-	Type RouteManagerProviderType `json:"type"`
+	// Detail Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
+
+	// Hostname Omit to leave the current hostname unchanged.
+	Hostname *string `json:"hostname,omitempty"`
+
+	// Name Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
+
+	// TechHeaders Omit to leave the current tech_headers unchanged.
+	TechHeaders *map[string]interface{} `json:"tech_headers,omitempty"`
+
+	// TechPostfix Omit to leave the current tech_postfix unchanged.
+	TechPostfix *string `json:"tech_postfix,omitempty"`
+
+	// TechPrefix Omit to leave the current tech_prefix unchanged.
+	TechPrefix *string `json:"tech_prefix,omitempty"`
+
+	// Type Omit to leave the current type unchanged.
+	Type *RouteManagerProviderType `json:"type,omitempty"`
 }
 
 // GetProvisioningExtensionParams defines parameters for GetProvisioningExtension.
