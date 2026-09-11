@@ -196,6 +196,54 @@ func (h *serviceHandler) CaseAssign(ctx context.Context, a *auth.AuthIdentity, i
 	return res, nil
 }
 
+// CaseUnassign clears the case's owner for an Admin/Manager caller, or for
+// the agent who currently owns the case (VOIP-1515). Mirrors CaseAssign's
+// check ordering exactly: caseGet -> permission/owning-agent decision ->
+// closed-case guard -> RPC call. The closed-case guard is copied verbatim
+// from CaseAssign to protect the load-bearing Owner invariant documented in
+// kase.go (Owner is never cleared by closing a case, since CaseContinue's
+// authorization for re-opening a closed case depends on it).
+func (h *serviceHandler) CaseUnassign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CaseUnassign",
+		"customer_id": a.CustomerID,
+		"case_id":     id,
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	c, err := h.caseGet(ctx, a.CustomerID, id)
+	if err != nil {
+		log.Errorf("Could not get the case info. err: %v", err)
+		return nil, err
+	}
+
+	isAdminOrManager := h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager)
+	isOwningAgent := a.IsAgent() && a.Agent != nil &&
+		c.OwnerType == commonidentity.OwnerTypeAgent &&
+		c.OwnerID == a.Agent.ID
+
+	if !isAdminOrManager && !isOwningAgent {
+		log.Info("Caller has no permission to unassign the case.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	if c.Status == cmkase.StatusClosed {
+		log.Infof("Case is closed, status: %s", c.Status)
+		return nil, serviceerrors.ErrCaseClosed
+	}
+
+	res, err := h.reqHandler.ContactV1CaseUnassign(ctx, a.CustomerID, id)
+	if err != nil {
+		log.Errorf("Could not unassign the case. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // CaseClose closes an open case (design §5.1). closed_by_id is derived
 // server-side from the authenticated caller's own agent identity
 // (a.AgentID()) -- matching CaseContinue's pattern below -- rather than

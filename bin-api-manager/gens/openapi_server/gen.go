@@ -11603,6 +11603,9 @@ type ServerInterface interface {
 	// Delete a case note
 	// (DELETE /contact_cases/{id}/notes/{note_id})
 	DeleteContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID)
+	// Unassign the case
+	// (POST /contact_cases/{id}/unassign)
+	PostContactCasesIdUnassign(c *gin.Context, id openapi_types.UUID)
 	// List interactions
 	// (GET /contact_interactions)
 	GetContactInteractions(c *gin.Context, params GetContactInteractionsParams)
@@ -12095,6 +12098,9 @@ type ServerInterface interface {
 	// Delete a case note
 	// (DELETE /service_agents/contact_cases/{id}/notes/{note_id})
 	DeleteServiceAgentsContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID)
+	// Unassign the case
+	// (POST /service_agents/contact_cases/{id}/unassign)
+	PostServiceAgentsContactCasesIdUnassign(c *gin.Context, id openapi_types.UUID)
 	// List interactions
 	// (GET /service_agents/contact_interactions)
 	GetServiceAgentsContactInteractions(c *gin.Context, params GetServiceAgentsContactInteractionsParams)
@@ -16173,6 +16179,31 @@ func (siw *ServerInterfaceWrapper) DeleteContactCasesIdNotesNoteId(c *gin.Contex
 	}
 
 	siw.Handler.DeleteContactCasesIdNotesNoteId(c, id, noteId)
+}
+
+// PostContactCasesIdUnassign operation middleware
+func (siw *ServerInterfaceWrapper) PostContactCasesIdUnassign(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactCasesIdUnassign(c, id)
 }
 
 // GetContactInteractions operation middleware
@@ -20462,6 +20493,31 @@ func (siw *ServerInterfaceWrapper) DeleteServiceAgentsContactCasesIdNotesNoteId(
 	siw.Handler.DeleteServiceAgentsContactCasesIdNotesNoteId(c, id, noteId)
 }
 
+// PostServiceAgentsContactCasesIdUnassign operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsContactCasesIdUnassign(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsContactCasesIdUnassign(c, id)
+}
+
 // GetServiceAgentsContactInteractions operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsContactInteractions(c *gin.Context) {
 
@@ -23703,6 +23759,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/contact_cases/:id/notes", wrapper.GetContactCasesIdNotes)
 	router.POST(options.BaseURL+"/contact_cases/:id/notes", wrapper.PostContactCasesIdNotes)
 	router.DELETE(options.BaseURL+"/contact_cases/:id/notes/:note_id", wrapper.DeleteContactCasesIdNotesNoteId)
+	router.POST(options.BaseURL+"/contact_cases/:id/unassign", wrapper.PostContactCasesIdUnassign)
 	router.GET(options.BaseURL+"/contact_interactions", wrapper.GetContactInteractions)
 	router.GET(options.BaseURL+"/contact_peer_events", wrapper.GetContactPeerEvents)
 	router.GET(options.BaseURL+"/contacts", wrapper.GetContacts)
@@ -23867,6 +23924,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/service_agents/contact_cases/:id/notes", wrapper.GetServiceAgentsContactCasesIdNotes)
 	router.POST(options.BaseURL+"/service_agents/contact_cases/:id/notes", wrapper.PostServiceAgentsContactCasesIdNotes)
 	router.DELETE(options.BaseURL+"/service_agents/contact_cases/:id/notes/:note_id", wrapper.DeleteServiceAgentsContactCasesIdNotesNoteId)
+	router.POST(options.BaseURL+"/service_agents/contact_cases/:id/unassign", wrapper.PostServiceAgentsContactCasesIdUnassign)
 	router.GET(options.BaseURL+"/service_agents/contact_interactions", wrapper.GetServiceAgentsContactInteractions)
 	router.GET(options.BaseURL+"/service_agents/contact_peer_events", wrapper.GetServiceAgentsContactPeerEvents)
 	router.GET(options.BaseURL+"/service_agents/contacts", wrapper.GetServiceAgentsContacts)
@@ -35689,6 +35747,98 @@ func (response DeleteContactCasesIdNotesNoteId404JSONResponse) VisitDeleteContac
 type DeleteContactCasesIdNotesNoteId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response DeleteContactCasesIdNotesNoteId500JSONResponse) VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdUnassignRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostContactCasesIdUnassignResponseObject interface {
+	VisitPostContactCasesIdUnassignResponse(w http.ResponseWriter) error
+}
+
+type PostContactCasesIdUnassign200JSONResponse ContactManagerCase
+
+func (response PostContactCasesIdUnassign200JSONResponse) VisitPostContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdUnassign400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactCasesIdUnassign400JSONResponse) VisitPostContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdUnassign401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactCasesIdUnassign401JSONResponse) VisitPostContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdUnassign403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactCasesIdUnassign403JSONResponse) VisitPostContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdUnassign404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactCasesIdUnassign404JSONResponse) VisitPostContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostContactCasesIdUnassign500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactCasesIdUnassign500JSONResponse) VisitPostContactCasesIdUnassignResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -49290,6 +49440,98 @@ func (response DeleteServiceAgentsContactCasesIdNotesNoteId500JSONResponse) Visi
 	return err
 }
 
+type PostServiceAgentsContactCasesIdUnassignRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostServiceAgentsContactCasesIdUnassignResponseObject interface {
+	VisitPostServiceAgentsContactCasesIdUnassignResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsContactCasesIdUnassign200JSONResponse ContactManagerCase
+
+func (response PostServiceAgentsContactCasesIdUnassign200JSONResponse) VisitPostServiceAgentsContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsContactCasesIdUnassign400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsContactCasesIdUnassign400JSONResponse) VisitPostServiceAgentsContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsContactCasesIdUnassign401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsContactCasesIdUnassign401JSONResponse) VisitPostServiceAgentsContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsContactCasesIdUnassign403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsContactCasesIdUnassign403JSONResponse) VisitPostServiceAgentsContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsContactCasesIdUnassign404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsContactCasesIdUnassign404JSONResponse) VisitPostServiceAgentsContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsContactCasesIdUnassign500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsContactCasesIdUnassign500JSONResponse) VisitPostServiceAgentsContactCasesIdUnassignResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsContactInteractionsRequestObject struct {
 	Params GetServiceAgentsContactInteractionsParams
 }
@@ -58997,6 +59239,9 @@ type StrictServerInterface interface {
 	// Delete a case note
 	// (DELETE /contact_cases/{id}/notes/{note_id})
 	DeleteContactCasesIdNotesNoteId(ctx context.Context, request DeleteContactCasesIdNotesNoteIdRequestObject) (DeleteContactCasesIdNotesNoteIdResponseObject, error)
+	// Unassign the case
+	// (POST /contact_cases/{id}/unassign)
+	PostContactCasesIdUnassign(ctx context.Context, request PostContactCasesIdUnassignRequestObject) (PostContactCasesIdUnassignResponseObject, error)
 	// List interactions
 	// (GET /contact_interactions)
 	GetContactInteractions(ctx context.Context, request GetContactInteractionsRequestObject) (GetContactInteractionsResponseObject, error)
@@ -59489,6 +59734,9 @@ type StrictServerInterface interface {
 	// Delete a case note
 	// (DELETE /service_agents/contact_cases/{id}/notes/{note_id})
 	DeleteServiceAgentsContactCasesIdNotesNoteId(ctx context.Context, request DeleteServiceAgentsContactCasesIdNotesNoteIdRequestObject) (DeleteServiceAgentsContactCasesIdNotesNoteIdResponseObject, error)
+	// Unassign the case
+	// (POST /service_agents/contact_cases/{id}/unassign)
+	PostServiceAgentsContactCasesIdUnassign(ctx context.Context, request PostServiceAgentsContactCasesIdUnassignRequestObject) (PostServiceAgentsContactCasesIdUnassignResponseObject, error)
 	// List interactions
 	// (GET /service_agents/contact_interactions)
 	GetServiceAgentsContactInteractions(ctx context.Context, request GetServiceAgentsContactInteractionsRequestObject) (GetServiceAgentsContactInteractionsResponseObject, error)
@@ -63898,6 +64146,32 @@ func (sh *strictHandler) DeleteContactCasesIdNotesNoteId(ctx *gin.Context, id op
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(DeleteContactCasesIdNotesNoteIdResponseObject); ok {
 		if err := validResponse.VisitDeleteContactCasesIdNotesNoteIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactCasesIdUnassign operation middleware
+func (sh *strictHandler) PostContactCasesIdUnassign(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactCasesIdUnassignRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactCasesIdUnassign(ctx, request.(PostContactCasesIdUnassignRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactCasesIdUnassign")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostContactCasesIdUnassignResponseObject); ok {
+		if err := validResponse.VisitPostContactCasesIdUnassignResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {
@@ -68603,6 +68877,32 @@ func (sh *strictHandler) DeleteServiceAgentsContactCasesIdNotesNoteId(ctx *gin.C
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(DeleteServiceAgentsContactCasesIdNotesNoteIdResponseObject); ok {
 		if err := validResponse.VisitDeleteServiceAgentsContactCasesIdNotesNoteIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsContactCasesIdUnassign operation middleware
+func (sh *strictHandler) PostServiceAgentsContactCasesIdUnassign(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostServiceAgentsContactCasesIdUnassignRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsContactCasesIdUnassign(ctx, request.(PostServiceAgentsContactCasesIdUnassignRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsContactCasesIdUnassign")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostServiceAgentsContactCasesIdUnassignResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsContactCasesIdUnassignResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

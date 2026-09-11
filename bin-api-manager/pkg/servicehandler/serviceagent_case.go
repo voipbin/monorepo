@@ -137,6 +137,50 @@ func (h *serviceHandler) ServiceAgentCaseAssign(ctx context.Context, a *auth.Aut
 	return res, nil
 }
 
+// ServiceAgentCaseUnassign clears the case's owner for the agent who
+// currently owns the case (VOIP-1515). "Not my case" returns
+// ErrPermissionDenied (403), not ErrNotFound (404) -- ServiceAgentCaseGet
+// already lets any authenticated agent of the tenant view any case, so
+// case existence/visibility is not sensitive on this surface; a 404 would
+// be misleading once the caller has already fetched the case.
+func (h *serviceHandler) ServiceAgentCaseUnassign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ServiceAgentCaseUnassign",
+		"customer_id": a.CustomerID,
+		"case_id":     id,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	c, err := h.caseGet(ctx, a.CustomerID, id)
+	if err != nil {
+		log.Errorf("Could not get the case info. err: %v", err)
+		return nil, err
+	}
+
+	if c.Status == cmkase.StatusClosed {
+		log.Infof("Case is closed, status: %s", c.Status)
+		return nil, serviceerrors.ErrCaseClosed
+	}
+
+	isOwningAgent := c.OwnerType == commonidentity.OwnerTypeAgent && c.OwnerID == a.AgentID()
+	if !isOwningAgent {
+		log.Info("Agent is not the case owner.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	res, err := h.reqHandler.ContactV1CaseUnassign(ctx, a.CustomerID, id)
+	if err != nil {
+		log.Errorf("Could not unassign the case. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // ServiceAgentCaseUpdateContact attaches or detaches a case's contact for a
 // service-agent caller. contactID == uuid.Nil clears the attribution.
 // Cross-tenant contact_id rejection is enforced at the contact-manager

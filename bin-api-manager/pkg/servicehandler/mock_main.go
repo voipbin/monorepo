@@ -1891,6 +1891,21 @@ func (mr *MockServiceHandlerMockRecorder) CaseNoteList(ctx, a, caseID any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteList", reflect.TypeOf((*MockServiceHandler)(nil).CaseNoteList), ctx, a, caseID)
 }
 
+// CaseUnassign mocks base method.
+func (m *MockServiceHandler) CaseUnassign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseUnassign", ctx, a, id)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseUnassign indicates an expected call of CaseUnassign.
+func (mr *MockServiceHandlerMockRecorder) CaseUnassign(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUnassign", reflect.TypeOf((*MockServiceHandler)(nil).CaseUnassign), ctx, a, id)
+}
+
 // CaseUpdateContact mocks base method.
 func (m *MockServiceHandler) CaseUpdateContact(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()
@@ -4694,6 +4709,21 @@ func (m *MockServiceHandler) ServiceAgentCaseNoteList(ctx context.Context, a *au
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseNoteList(ctx, a, caseID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseNoteList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseNoteList), ctx, a, caseID)
+}
+
+// ServiceAgentCaseUnassign mocks base method.
+func (m *MockServiceHandler) ServiceAgentCaseUnassign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCaseUnassign", ctx, a, id)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCaseUnassign indicates an expected call of ServiceAgentCaseUnassign.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseUnassign(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseUnassign", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseUnassign), ctx, a, id)
 }
 
 // ServiceAgentCaseUpdateContact mocks base method.

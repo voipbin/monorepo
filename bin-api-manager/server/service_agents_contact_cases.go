@@ -169,6 +169,40 @@ func (h *server) PostServiceAgentsContactCasesIdAssign(c *gin.Context, id openap
 	c.JSON(200, res)
 }
 
+// PostServiceAgentsContactCasesIdUnassign handles POST /service_agents/contact_cases/{id}/unassign
+func (h *server) PostServiceAgentsContactCasesIdUnassign(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostServiceAgentsContactCasesIdUnassign",
+		"request_address": c.ClientIP,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid case ID format. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentCaseUnassign(c.Request.Context(), a, target)
+	if err != nil {
+		log.Errorf("Could not unassign the case. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // PutServiceAgentsContactCasesId handles PUT /service_agents/contact_cases/{id}
 func (h *server) PutServiceAgentsContactCasesId(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{

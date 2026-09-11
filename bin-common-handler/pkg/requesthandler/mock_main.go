@@ -3795,6 +3795,21 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1CaseTagRemove(ctx, customerID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseTagRemove", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseTagRemove), ctx, customerID, caseID, tagID)
 }
 
+// ContactV1CaseUnassign mocks base method.
+func (m *MockRequestHandler) ContactV1CaseUnassign(ctx context.Context, customerID, id uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1CaseUnassign", ctx, customerID, id)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1CaseUnassign indicates an expected call of ContactV1CaseUnassign.
+func (mr *MockRequestHandlerMockRecorder) ContactV1CaseUnassign(ctx, customerID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseUnassign", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseUnassign), ctx, customerID, id)
+}
+
 // ContactV1CaseUpdateContact mocks base method.
 func (m *MockRequestHandler) ContactV1CaseUpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()

@@ -8677,6 +8677,8 @@ paths:
     $ref: './paths/contact_cases/id_close.yaml'
   /contact_cases/{id}/assign:
     $ref: './paths/contact_cases/id_assign.yaml'
+  /contact_cases/{id}/unassign:
+    $ref: './paths/contact_cases/id_unassign.yaml'
   /contact_cases/{id}/continue:
     $ref: './paths/contact_cases/id_continue.yaml'
   /contact_cases/{id}/notes:
@@ -8880,6 +8882,8 @@ paths:
     $ref: './paths/service_agents/contact_cases_id_close.yaml'
   /service_agents/contact_cases/{id}/assign:
     $ref: './paths/service_agents/contact_cases_id_assign.yaml'
+  /service_agents/contact_cases/{id}/unassign:
+    $ref: './paths/service_agents/contact_cases_id_unassign.yaml'
   /service_agents/contact_cases/{id}/notes:
     $ref: './paths/service_agents/contact_cases_id_notes.yaml'
   /service_agents/contact_cases/{id}/notes/{note_id}:

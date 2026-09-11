@@ -15,8 +15,8 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cmkase "monorepo/bin-contact-manager/models/kase"
 
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -753,6 +753,115 @@ func Test_PostContactCasesIdAssign(t *testing.T) {
 			if tt.expectSvcCall {
 				mockSvc.EXPECT().
 					CaseAssign(req.Context(), tt.agent, caseID, ownerID).
+					Return(tt.responseCase, tt.responseErr)
+			}
+
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectStatus, w.Code, w.Body.String())
+			}
+		})
+	}
+}
+
+// Test_PostContactCasesIdUnassign covers §8.3 item 1-4: success, missing
+// auth identity, permission-denied mapping, not-found mapping.
+func Test_PostContactCasesIdUnassign(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+
+	tests := []struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+
+		responseCase  *cmkase.Case
+		responseErr   error
+		expectSvcCall bool
+		expectStatus  int
+	}{
+		{
+			name: "normal",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/unassign",
+
+			responseCase: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+			},
+			expectSvcCall: true,
+			expectStatus:  http.StatusOK,
+		},
+		{
+			name:         "unauthenticated",
+			agent:        nil,
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/unassign",
+			expectStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "servicehandler permission denied",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/unassign",
+
+			responseErr:   serviceerrors.ErrPermissionDenied,
+			expectSvcCall: true,
+			expectStatus:  http.StatusForbidden,
+		},
+		{
+			name: "servicehandler not found",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/unassign",
+
+			responseErr:   serviceerrors.ErrNotFound,
+			expectSvcCall: true,
+			expectStatus:  http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				if tt.agent != nil {
+					c.Set("auth_identity", tt.agent)
+				}
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			if tt.expectSvcCall {
+				mockSvc.EXPECT().
+					CaseUnassign(req.Context(), tt.agent, caseID).
 					Return(tt.responseCase, tt.responseErr)
 			}
 
