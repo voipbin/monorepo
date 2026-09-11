@@ -68,7 +68,13 @@ func (h *server) PutCustomer(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerSelfUpdate(c.Request.Context(), a, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, cmcustomer.WebhookMethod(req.WebhookMethod), req.WebhookUri)
+	var webhookMethodPtr *cmcustomer.WebhookMethod
+	if req.WebhookMethod != nil {
+		v := cmcustomer.WebhookMethod(*req.WebhookMethod)
+		webhookMethodPtr = &v
+	}
+
+	res, err := h.serviceHandler.CustomerSelfUpdate(c.Request.Context(), a, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, webhookMethodPtr, req.WebhookUri)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		abortWithServiceError(c, err)

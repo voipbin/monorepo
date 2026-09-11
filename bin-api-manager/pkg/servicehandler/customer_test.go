@@ -712,9 +712,9 @@ func Test_CustomerUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.id).Return(tt.responseCustomers, nil)
-			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomers, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.id, &tt.customerName, &tt.detail, &tt.email, &tt.phoneNumber, &tt.address, &tt.webhookMethod, &tt.webhookURI).Return(tt.responseCustomers, nil)
 
-			res, err := h.CustomerUpdate(ctx, tt.agent, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			res, err := h.CustomerUpdate(ctx, tt.agent, tt.id, &tt.customerName, &tt.detail, &tt.email, &tt.phoneNumber, &tt.address, &tt.webhookMethod, &tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -784,9 +784,9 @@ func Test_CustomerSelfUpdate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.agent.CustomerID, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CustomerV1CustomerUpdate(ctx, tt.agent.CustomerID, &tt.customerName, &tt.detail, &tt.email, &tt.phoneNumber, &tt.address, &tt.webhookMethod, &tt.webhookURI).Return(tt.responseCustomer, nil)
 
-			res, err := h.CustomerSelfUpdate(ctx, tt.agent, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			res, err := h.CustomerSelfUpdate(ctx, tt.agent, &tt.customerName, &tt.detail, &tt.email, &tt.phoneNumber, &tt.address, &tt.webhookMethod, &tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -160,16 +160,22 @@ func (h *customerHandler) dbDelete(ctx context.Context, id uuid.UUID) (*customer
 }
 
 // UpdateBasicInfo updates the customer's basic info.
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched", a non-nil pointer (including one pointing at the zero
+// value, e.g. webhook_method: "" or webhook_uri: "") means "set to
+// exactly this value". See
+// docs/plans/2026-09-12-customer-put-partial-update-phase2-design.md.
 func (h *customerHandler) UpdateBasicInfo(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	email string,
-	phoneNumber string,
-	address string,
-	webhookMethod customer.WebhookMethod,
-	webhookURI string,
+	name *string,
+	detail *string,
+	email *string,
+	phoneNumber *string,
+	address *string,
+	webhookMethod *customer.WebhookMethod,
+	webhookURI *string,
 ) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "UpdateBasicInfo",
@@ -177,14 +183,34 @@ func (h *customerHandler) UpdateBasicInfo(
 	})
 	log.Debug("Updating the customer's basic info.")
 
-	fields := map[customer.Field]any{
-		customer.FieldName:          name,
-		customer.FieldDetail:        detail,
-		customer.FieldEmail:         email,
-		customer.FieldPhoneNumber:   phoneNumber,
-		customer.FieldAddress:       address,
-		customer.FieldWebhookMethod: webhookMethod,
-		customer.FieldWebhookURI:    webhookURI,
+	fields := map[customer.Field]any{}
+	if name != nil {
+		fields[customer.FieldName] = *name
+	}
+	if detail != nil {
+		fields[customer.FieldDetail] = *detail
+	}
+	if email != nil {
+		fields[customer.FieldEmail] = *email
+	}
+	if phoneNumber != nil {
+		fields[customer.FieldPhoneNumber] = *phoneNumber
+	}
+	if address != nil {
+		fields[customer.FieldAddress] = *address
+	}
+	if webhookMethod != nil {
+		fields[customer.FieldWebhookMethod] = *webhookMethod
+	}
+	if webhookURI != nil {
+		fields[customer.FieldWebhookURI] = *webhookURI
+	}
+
+	if len(fields) == 0 {
+		// A PUT with every field omitted is a client no-op, not a server
+		// error. Reuse Get's existing ErrNotFound -> cerrors.NotFound
+		// mapping instead of duplicating it here.
+		return h.Get(ctx, id)
 	}
 
 	if err := h.db.CustomerUpdate(ctx, id, fields); err != nil {

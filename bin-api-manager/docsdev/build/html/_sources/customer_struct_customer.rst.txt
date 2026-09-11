@@ -72,6 +72,22 @@ Customer
 
    The ``identity_verification_status`` field gates PSTN operations. Only customers with ``verified`` status can purchase non-virtual phone numbers or make outbound PSTN calls. New customers default to ``none`` and must complete identity verification before using PSTN services. Existing customers at the time of this feature launch were grandfathered to ``verified``.
 
+.. note:: **AI Implementation Hint**
+
+   ``PUT https://api.voipbin.net/v1.0/customer`` and
+   ``PUT https://api.voipbin.net/v1.0/customers/{id}`` are true partial
+   updates: every field (``name``, ``detail``, ``email``, ``phone_number``,
+   ``address``, ``webhook_method``, ``webhook_uri``) is optional, and
+   omitting a field leaves its current value unchanged. A full resend of
+   every field is never required -- for example,
+   ``PUT {"name": "new name"}`` renames the customer and leaves everything
+   else (including ``webhook_uri``) exactly as it was. One exception worth
+   calling out: ``webhook_method: ""`` and ``webhook_uri: ""`` are valid,
+   meaningful values (no webhook method / no webhook target, disabling
+   webhook delivery) and are distinct from omitting the field entirely --
+   sending an explicit empty string clears the value, while omitting the
+   field preserves whatever value the customer already had.
+
 Admin-Only Fields
 +++++++++++++++++
 

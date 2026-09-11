@@ -190,16 +190,29 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
+	// Every value below is wrapped in a pointer unconditionally, preserving
+	// this CLI's current all-fields-sent behavior. See
+	// docs/plans/2026-09-12-customer-put-partial-update-phase2-design.md §3
+	// step 11: flag-changed detection (to actually take advantage of
+	// partial-update semantics from the CLI) is deferred as a follow-up,
+	// not part of this fix.
+	name := viper.GetString("name")
+	detail := viper.GetString("detail")
+	phoneNumber := viper.GetString("phone-number")
+	address := viper.GetString("address")
+	webhookMethod := customer.WebhookMethod(viper.GetString("webhook-method"))
+	webhookURI := viper.GetString("webhook-uri")
+
 	res, err := handler.UpdateBasicInfo(
 		context.Background(),
 		targetID,
-		viper.GetString("name"),
-		viper.GetString("detail"),
-		email,
-		viper.GetString("phone-number"),
-		viper.GetString("address"),
-		customer.WebhookMethod(viper.GetString("webhook-method")),
-		viper.GetString("webhook-uri"),
+		&name,
+		&detail,
+		&email,
+		&phoneNumber,
+		&address,
+		&webhookMethod,
+		&webhookURI,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update customer")

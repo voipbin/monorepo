@@ -121,16 +121,20 @@ func (r *requestHandler) CustomerV1CustomerDelete(ctx context.Context, id uuid.U
 
 // CustomerV1CustomerUpdate sends a request to customer-manager
 // to update the detail customer info.
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched". See
+// docs/plans/2026-09-12-customer-put-partial-update-phase2-design.md.
 func (r *requestHandler) CustomerV1CustomerUpdate(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	email string,
-	phoneNumber string,
-	address string,
-	webhookMethod cscustomer.WebhookMethod,
-	webhookURI string,
+	name *string,
+	detail *string,
+	email *string,
+	phoneNumber *string,
+	address *string,
+	webhookMethod *cscustomer.WebhookMethod,
+	webhookURI *string,
 ) (*cscustomer.Customer, error) {
 	uri := fmt.Sprintf("/v1/customers/%s", id)
 

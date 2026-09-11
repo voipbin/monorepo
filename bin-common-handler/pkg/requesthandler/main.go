@@ -801,13 +801,13 @@ type RequestHandler interface {
 	CustomerV1CustomerUpdate(
 		ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
-		email string,
-		phoneNumber string,
-		address string,
-		webhookMethod cscustomer.WebhookMethod,
-		webhookURI string,
+		name *string,
+		detail *string,
+		email *string,
+		phoneNumber *string,
+		address *string,
+		webhookMethod *cscustomer.WebhookMethod,
+		webhookURI *string,
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerUpdateMetadata(ctx context.Context, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error)

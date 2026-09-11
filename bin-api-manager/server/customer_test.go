@@ -90,6 +90,62 @@ func Test_customerGET(t *testing.T) {
 	}
 }
 
+func Test_customerPut_NameOnly(t *testing.T) {
+	// Regression test for the PUT /customer partial-update fix
+	// (docs/plans/2026-09-12-customer-put-partial-update-phase2-design.md):
+	// a name-only PUT body must pass name non-nil and every other pointer
+	// nil down to the service handler, not silently wipe the omitted
+	// fields (webhook_uri in particular).
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("4afd144c-c451-11ef-a8d8-6fd67202355e"),
+			CustomerID: uuid.FromStringOrNil("4b7dcc68-c451-11ef-a289-33cbfe065115"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	reqBody := []byte(`{"name":"new name only"}`)
+	req, _ := http.NewRequest(http.MethodPut, "/customer", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	expectName := "new name only"
+	responseCustomer := &cscustomer.WebhookMessage{
+		ID: uuid.FromStringOrNil("4b7dcc68-c451-11ef-a289-33cbfe065115"),
+	}
+
+	mockSvc.EXPECT().CustomerSelfUpdate(
+		req.Context(), agent,
+		&expectName,
+		(*string)(nil),
+		(*string)(nil),
+		(*string)(nil),
+		(*string)(nil),
+		(*cscustomer.WebhookMethod)(nil),
+		(*string)(nil),
+	).Return(responseCustomer, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+}
+
 func Test_customerPut(t *testing.T) {
 
 	tests := []struct {
@@ -159,7 +215,7 @@ func Test_customerPut(t *testing.T) {
 			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerSelfUpdate(req.Context(), tt.agent, tt.expectecName, tt.expectedDetail, tt.expectedEmail, tt.expectedPhoneNumber, tt.expectedAddress, tt.expectedWebhookMethod, tt.expectedWebhookURI).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerSelfUpdate(req.Context(), tt.agent, &tt.expectecName, &tt.expectedDetail, &tt.expectedEmail, &tt.expectedPhoneNumber, &tt.expectedAddress, &tt.expectedWebhookMethod, &tt.expectedWebhookURI).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

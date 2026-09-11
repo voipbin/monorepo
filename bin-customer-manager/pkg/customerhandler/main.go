@@ -37,13 +37,13 @@ type CustomerHandler interface {
 	UpdateBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
-		email string,
-		phoneNumber string,
-		address string,
-		webhookMethod customer.WebhookMethod,
-		webhookURI string,
+		name *string,
+		detail *string,
+		email *string,
+		phoneNumber *string,
+		address *string,
+		webhookMethod *customer.WebhookMethod,
+		webhookURI *string,
 	) (*customer.Customer, error)
 	Recover(ctx context.Context, id uuid.UUID) (*customer.Customer, error)
 	UpdateBillingAccountID(ctx context.Context, id uuid.UUID, billingAccountID uuid.UUID) (*customer.Customer, error)

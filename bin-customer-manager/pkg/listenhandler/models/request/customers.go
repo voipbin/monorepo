@@ -24,14 +24,19 @@ type V1DataCustomersPost struct {
 // V1DataCustomersIDPut is
 // v1 data type request struct for
 // /v1/customers/<customer-id> PUT
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched", matching the OpenAPI-layer contract this DTO carries over
+// the RabbitMQ hop. See
+// docs/plans/2026-09-12-customer-put-partial-update-phase2-design.md.
 type V1DataCustomersIDPut struct {
-	Name          string                 `json:"name,omitempty"`
-	Detail        string                 `json:"detail,omitempty"`
-	Email         string                 `json:"email,omitempty"`
-	PhoneNumber   string                 `json:"phone_number,omitempty"`
-	Address       string                 `json:"address,omitempty"`
-	WebhookMethod customer.WebhookMethod `json:"webhook_method,omitempty"`
-	WebhookURI    string                 `json:"webhook_uri,omitempty"`
+	Name          *string                 `json:"name,omitempty"`
+	Detail        *string                 `json:"detail,omitempty"`
+	Email         *string                 `json:"email,omitempty"`
+	PhoneNumber   *string                 `json:"phone_number,omitempty"`
+	Address       *string                 `json:"address,omitempty"`
+	WebhookMethod *customer.WebhookMethod `json:"webhook_method,omitempty"`
+	WebhookURI    *string                 `json:"webhook_uri,omitempty"`
 }
 
 // V1DataCustomersIDBillingAccountIDPut is
