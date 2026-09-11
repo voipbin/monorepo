@@ -2,6 +2,7 @@ package aihandler
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -9,6 +10,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -90,6 +92,19 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 			}
 			if !tt.wantError && err != nil {
 				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.wantError {
+				// Must be a typed *cerrors.VoipbinError so listenhandler's
+				// errorResponse() maps it to HTTP 400, not an opaque 500 for
+				// what is a client-input mistake (invalid/cross-customer
+				// mcp_server_id).
+				var ve *cerrors.VoipbinError
+				if !errors.As(err, &ve) {
+					t.Fatalf("expected a *cerrors.VoipbinError, got %T: %v", err, err)
+				}
+				if ve.Status != cerrors.StatusInvalidArgument {
+					t.Fatalf("expected StatusInvalidArgument, got %v", ve.Status)
+				}
 			}
 		})
 	}

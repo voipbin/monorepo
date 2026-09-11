@@ -2,17 +2,23 @@ package aihandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	"monorepo/bin-ai-manager/models/ai"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // ValidateMcpServerIDs checks that every id in ids refers to an existing
-// McpServer row owned by customerID. Returns an error naming the first
-// non-existent or cross-customer id it finds.
+// McpServer row owned by customerID. Returns a *cerrors.VoipbinError
+// (InvalidArgument, surfaced as HTTP 400) naming the first non-existent or
+// cross-customer id it finds -- listenhandler's errorResponse() only maps
+// *cerrors.VoipbinError to a non-500 status, so a plain error here would
+// otherwise reach the customer as an opaque 500 for a client-input mistake
+// (mirrors the existing ai.ValidateToolNames -> cerrors.InvalidArgument
+// pattern in chatbot.go).
 //
 // Lives in pkg/aihandler (has db access), not models/ai, mirroring why
 // ai.ValidateToolNames itself takes no ctx/db today -- see
@@ -21,7 +27,11 @@ func (h *aiHandler) ValidateMcpServerIDs(ctx context.Context, customerID uuid.UU
 	for _, id := range ids {
 		srv, err := h.db.McpServerGet(ctx, id)
 		if err != nil || srv == nil || srv.CustomerID != customerID {
-			return fmt.Errorf("mcp_server_id %s is not accessible", id)
+			return cerrors.InvalidArgument(
+				commonoutline.ServiceNameAIManager,
+				"INVALID_MCP_SERVER_ID",
+				"mcp_server_id "+id.String()+" is not accessible",
+			)
 		}
 	}
 

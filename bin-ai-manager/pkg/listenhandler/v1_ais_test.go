@@ -19,6 +19,8 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 func Test_processV1AIsGet(t *testing.T) {
@@ -614,5 +616,58 @@ func Test_processV1AIsIDPut_McpServerIDsOmittedLeavesUntouched(t *testing.T) {
 	}
 	if res.StatusCode != 200 {
 		t.Fatalf("expected status 200, got %d (body: %s)", res.StatusCode, res.Data)
+	}
+}
+
+// Test_processV1AIsIDPut_McpServerIDsInvalidReturns400 pins the fix for a
+// bug found during CPO review: ValidateMcpServerIDs used to return a plain
+// fmt.Errorf, which errorResponse() (only maps *cerrors.VoipbinError to a
+// non-500 status) turned into an opaque 500 for what is a client-input
+// mistake (an invalid or cross-customer mcp_server_id). It must now surface
+// as 400.
+func Test_processV1AIsIDPut_McpServerIDsInvalidReturns400(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+
+	h := &listenHandler{
+		sockHandler: mockSock,
+		aiHandler:   mockAI,
+	}
+
+	id := uuid.FromStringOrNil("de99e522-a770-11ed-a0ab-5b39ee2db203")
+	customerID := uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8")
+	invalidServerID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+
+	req := &sock.Request{
+		URI:    "/v1/ais/" + id.String(),
+		Method: sock.RequestMethodPut,
+		Data:   []byte(`{"mcp_server_ids":["` + invalidServerID.String() + `"]}`),
+	}
+
+	preUpdate := &ai.AI{
+		Identity: identity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+	}
+
+	mockAI.EXPECT().Update(
+		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
+	).Return(preUpdate, nil)
+
+	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{invalidServerID}).Return(
+		cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_ID", "mcp_server_id "+invalidServerID.String()+" is not accessible"),
+	)
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Fatalf("expected status 400, got %d (body: %s)", res.StatusCode, res.Data)
 	}
 }
