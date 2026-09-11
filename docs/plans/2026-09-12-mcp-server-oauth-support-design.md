@@ -1,6 +1,6 @@
 # MCP server OAuth 2.1 support (GitHub + Linear pilot)
 
-Status: DRAFT (Round 0)
+Status: APPROVED (5-round design review, 2 consecutive APPROVE at R4/R5) -- 대표님 승인 2026-09-12. Implementation continues in this same PR/branch per 대표님's standing instruction (design and implementation are no longer split into separate PRs).
 Author: CPO design, per 대표님 "1번가자" (vendor-fixed OAuth catalog, GitHub +
 Linear pilot, api-manager owns the public callback)
 Depends on: docs/plans/2026-09-11-mcp-tool-integration-design.md (bearer/
