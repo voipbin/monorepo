@@ -42,6 +42,10 @@ Trunk
 
    A trunk can support multiple authentication types simultaneously (e.g., both ``basic`` and ``ip``). When creating a trunk with IP-based authentication, provide the ``allowed_ips`` array. When creating with basic authentication, provide ``username`` and ``password``.
 
+.. note:: **Trunk Update Hint**
+
+   ``PUT /trunks/{id}`` is a true partial update: every field (``name``, ``detail``, ``auth_types``, ``username``, ``password``, ``allowed_ips``) is optional, and omitting a field leaves its current value unchanged. A full resend of every field is never required -- for example, ``PUT {"name": "new name"}`` renames the trunk and leaves everything else (including ``password`` and ``allowed_ips``) exactly as it was. One exception worth calling out: an explicit empty array for ``auth_types`` or ``allowed_ips`` (e.g. ``"allowed_ips": []``) is a valid value meaning "clear this list" and is distinct from omitting the field entirely, which preserves the current list.
+
 .. _trunk-struct-trunk-auth-types:
 
 Auth Types

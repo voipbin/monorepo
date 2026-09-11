@@ -273,6 +273,111 @@ func Test_processV1TrunksIDPut(t *testing.T) {
 	}
 }
 
+// Test_processV1TrunksIDPut_PartialUpdate is the regression test for the
+// full-replace-required PUT bug fixed in
+// docs/plans/2026-09-12-registrar-put-partial-update-phase1-design.md:
+// omitting a field must leave it unchanged, not silently wipe it (or,
+// for auth_types/allowed_ips, must be distinguishable from an explicit
+// empty array clearing the value).
+func Test_processV1TrunksIDPut_PartialUpdate(t *testing.T) {
+
+	trunkID := uuid.FromStringOrNil("a3e97272-5232-11ee-acd9-bbb3933eed48")
+
+	type test struct {
+		name string
+
+		request *sock.Request
+
+		// expectFields is the exact fields map the listenhandler must
+		// build; nil means Update must NOT be called at all.
+		expectFields map[trunk.Field]any
+	}
+
+	tests := []test{
+		{
+			name: "only name -- password/allowed_ips must NOT be in the fields map",
+			request: &sock.Request{
+				URI:      "/v1/trunks/a3e97272-5232-11ee-acd9-bbb3933eed48",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"new name only"}`),
+			},
+			expectFields: map[trunk.Field]any{
+				trunk.FieldName: "new name only",
+			},
+		},
+		{
+			// Direct regression test for the silent trunk-auth wipe bug.
+			name: "only password -- direct regression for the silent trunk auth wipe bug",
+			request: &sock.Request{
+				URI:      "/v1/trunks/a3e97272-5232-11ee-acd9-bbb3933eed48",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"password":"new password only"}`),
+			},
+			expectFields: map[trunk.Field]any{
+				trunk.FieldPassword: "new password only",
+			},
+		},
+		{
+			// Explicit empty array must be a real "clear the allowlist"
+			// value, distinguishable from omitting the field entirely.
+			name: "explicit empty allowed_ips array -- must clear, distinct from omission",
+			request: &sock.Request{
+				URI:      "/v1/trunks/a3e97272-5232-11ee-acd9-bbb3933eed48",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"allowed_ips":[]}`),
+			},
+			expectFields: map[trunk.Field]any{
+				trunk.FieldAllowedIPs: []string{},
+			},
+		},
+		{
+			name: "all fields omitted -- Update must not be called, Get must still be called",
+			request: &sock.Request{
+				URI:      "/v1/trunks/a3e97272-5232-11ee-acd9-bbb3933eed48",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+			expectFields: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockTrunk := trunkhandler.NewMockTrunkHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:  mockSock,
+				reqHandler:   mockReq,
+				trunkHandler: mockTrunk,
+			}
+
+			resTrunk := &trunk.Trunk{
+				Identity: commonidentity.Identity{ID: trunkID},
+			}
+
+			if tt.expectFields != nil {
+				mockTrunk.EXPECT().Update(gomock.Any(), trunkID, tt.expectFields).Return(resTrunk, nil)
+			} else {
+				mockTrunk.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				mockTrunk.EXPECT().Get(gomock.Any(), trunkID).Return(resTrunk, nil)
+			}
+
+			if _, err := h.processRequest(tt.request); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
 func Test_processV1TrunksIDGet(t *testing.T) {
 
 	type test struct {

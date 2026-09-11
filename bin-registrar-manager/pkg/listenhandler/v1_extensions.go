@@ -122,15 +122,22 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *sock.Re
 		return simpleResponse(400), nil
 	}
 
-	fields := map[extension.Field]any{
-		extension.FieldName:     req.Name,
-		extension.FieldDetail:   req.Detail,
-		extension.FieldPassword: req.Password,
+	fields := map[extension.Field]any{}
+	if req.Name != nil {
+		fields[extension.FieldName] = *req.Name
+	}
+	if req.Detail != nil {
+		fields[extension.FieldDetail] = *req.Detail
+	}
+	if req.Password != nil {
+		fields[extension.FieldPassword] = *req.Password
 	}
 
-	if _, err := h.extensionHandler.Update(ctx, extensionID, fields); err != nil {
-		log.Errorf("Could not update the extension info. err: %v", err)
-		return nil, err
+	if len(fields) > 0 {
+		if _, err := h.extensionHandler.Update(ctx, extensionID, fields); err != nil {
+			log.Errorf("Could not update the extension info. err: %v", err)
+			return nil, err
+		}
 	}
 
 	// re-fetch the extension to get updated info

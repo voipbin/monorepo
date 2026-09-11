@@ -386,8 +386,8 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().RegistrarV1TrunkGet(ctx, tt.id).Return(tt.responseTrunk, nil)
-			mockReq.EXPECT().RegistrarV1TrunkUpdateBasicInfo(ctx, tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs).Return(tt.responseTrunk, nil)
-			res, err := h.TrunkUpdateBasicInfo(ctx, tt.agent, tt.id, tt.trunkName, tt.detail, tt.authTypes, tt.username, tt.password, tt.allowedIPs)
+			mockReq.EXPECT().RegistrarV1TrunkUpdateBasicInfo(ctx, tt.id, &tt.trunkName, &tt.detail, &tt.authTypes, &tt.username, &tt.password, &tt.allowedIPs).Return(tt.responseTrunk, nil)
+			res, err := h.TrunkUpdateBasicInfo(ctx, tt.agent, tt.id, &tt.trunkName, &tt.detail, &tt.authTypes, &tt.username, &tt.password, &tt.allowedIPs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

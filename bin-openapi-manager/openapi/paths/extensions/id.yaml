@@ -46,17 +46,22 @@ put:
       application/json:
         schema:
           type: object
+          description: >
+            Every field is optional. Omitting a field leaves its current
+            value unchanged; a full resend of every field is NOT required
+            to update a single field (e.g. PUT { "name": "new name" } only
+            renames the extension and leaves detail/password exactly as
+            they were).
           properties:
             name:
               type: string
+              description: "Omit to leave the current name unchanged."
             detail:
               type: string
+              description: "Omit to leave the current detail unchanged."
             password:
               type: string
-          required:
-            - name
-            - detail
-            - password
+              description: "SIP registration password. Omit to leave the current password unchanged. Sending an explicit value (including empty string) replaces it."
   responses:
     '200':
       description: The updated extension.

@@ -179,7 +179,12 @@ func (h *serviceHandler) TrunkList(ctx context.Context, a *auth.AuthIdentity, si
 
 // TrunkUpdateBasicInfo updates the trunk info.
 // It returns updated trunk if it succeed.
-func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
+//
+// Every field is a pointer: nil means "leave the existing value
+// unchanged". authTypes/allowedIPs are pointers-to-slices so nil
+// (omitted) is distinguishable from an explicit empty array. See
+// docs/plans/2026-09-12-registrar-put-partial-update-phase1-design.md.
+func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name *string, detail *string, authTypes *[]rmsipauth.AuthType, username *string, password *string, allowedIPs *[]string) (*rmtrunk.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}

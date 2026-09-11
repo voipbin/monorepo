@@ -171,19 +171,36 @@ func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	fields := map[trunk.Field]any{
-		trunk.FieldName:       reqData.Name,
-		trunk.FieldDetail:     reqData.Detail,
-		trunk.FieldAuthTypes:  reqData.Authtypes,
-		trunk.FieldUsername:   reqData.Username,
-		trunk.FieldPassword:   reqData.Password,
-		trunk.FieldAllowedIPs: reqData.AllowedIPs,
+	fields := map[trunk.Field]any{}
+	if reqData.Name != nil {
+		fields[trunk.FieldName] = *reqData.Name
+	}
+	if reqData.Detail != nil {
+		fields[trunk.FieldDetail] = *reqData.Detail
+	}
+	if reqData.Authtypes != nil {
+		fields[trunk.FieldAuthTypes] = *reqData.Authtypes
+	}
+	if reqData.Username != nil {
+		fields[trunk.FieldUsername] = *reqData.Username
+	}
+	if reqData.Password != nil {
+		fields[trunk.FieldPassword] = *reqData.Password
+	}
+	if reqData.AllowedIPs != nil {
+		fields[trunk.FieldAllowedIPs] = *reqData.AllowedIPs
 	}
 
-	tmp, err := h.trunkHandler.Update(ctx, id, fields)
-	if err != nil {
-		log.Errorf("Could not update trunk info. err: %v", err)
-		return errorResponse(err), nil
+	var tmp *trunk.Trunk
+	var err2 error
+	if len(fields) > 0 {
+		tmp, err2 = h.trunkHandler.Update(ctx, id, fields)
+	} else {
+		tmp, err2 = h.trunkHandler.Get(ctx, id)
+	}
+	if err2 != nil {
+		log.Errorf("Could not update trunk info. err: %v", err2)
+		return errorResponse(err2), nil
 	}
 
 	data, err := json.Marshal(tmp)

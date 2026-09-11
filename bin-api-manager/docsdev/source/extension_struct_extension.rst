@@ -42,6 +42,10 @@ Extension
 
    Unlike other resources that use ``9999-01-01 00:00:00.000000`` as a sentinel for "not yet occurred" timestamps, extensions use an empty string (``""``) for ``tm_update`` and ``tm_delete`` when the event has not occurred.
 
+.. note:: **Extension Update Hint**
+
+   ``PUT /extensions/{id}`` is a true partial update: ``name``, ``detail``, and ``password`` are all optional, and omitting a field leaves its current value unchanged. A full resend of every field is never required -- for example, ``PUT {"name": "new name"}`` renames the extension and leaves ``detail``/``password`` exactly as they were. This matters most for ``password``: omitting it now safely preserves the extension's existing SIP credential rather than resetting it, so a client only needs to send ``password`` when actually rotating the credential.
+
 .. warning:: **Call routing uses ``extension``, not ``name``**
 
    When dialing an extension via ``POST /calls`` with ``destination.type: "extension"``, set ``destination.target_name`` to the extension's ``extension`` (username) field, **not** its ``name`` (display label) field. The two are independent and often differ (e.g. ``name: "jay-home"`` vs. ``extension: "jay1"``). Routing is matched strictly against ``extension``; if ``target_name`` does not match any registered extension's ``extension`` value, the call request fails with an error rather than silently ringing nothing.

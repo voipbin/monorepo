@@ -27,14 +27,20 @@ type V1DataTrunksPost struct {
 // V1DataTrunksIDPut is
 // v1 data type request struct for
 // /v1/trunks/{id} PUT
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched", matching the OpenAPI-layer contract. Authtypes/AllowedIPs
+// are pointers-to-slices so nil (omitted) is distinguishable from an
+// explicit empty array (a legitimate "clear this list" value). See
+// docs/plans/2026-09-12-registrar-put-partial-update-phase1-design.md.
 type V1DataTrunksIDPut struct {
-	Name   string `json:"name,omitempty"`
-	Detail string `json:"detail,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	Detail *string `json:"detail,omitempty"`
 
-	Authtypes []sipauth.AuthType `json:"auth_types,omitempty"`
+	Authtypes *[]sipauth.AuthType `json:"auth_types,omitempty"`
 
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+	Username *string `json:"username,omitempty"`
+	Password *string `json:"password,omitempty"`
 
-	AllowedIPs []string `json:"allowed_ips,omitempty"`
+	AllowedIPs *[]string `json:"allowed_ips,omitempty"`
 }

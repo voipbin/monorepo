@@ -6329,7 +6329,7 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1ExtensionList(ctx, pageToke
 }
 
 // RegistrarV1ExtensionUpdate mocks base method.
-func (m *MockRequestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password string) (*extension.Extension, error) {
+func (m *MockRequestHandler) RegistrarV1ExtensionUpdate(ctx context.Context, id uuid.UUID, name, detail, password *string) (*extension.Extension, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegistrarV1ExtensionUpdate", ctx, id, name, detail, password)
 	ret0, _ := ret[0].(*extension.Extension)
@@ -6434,7 +6434,7 @@ func (mr *MockRequestHandlerMockRecorder) RegistrarV1TrunkList(ctx, pageToken, p
 }
 
 // RegistrarV1TrunkUpdateBasicInfo mocks base method.
-func (m *MockRequestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.Trunk, error) {
+func (m *MockRequestHandler) RegistrarV1TrunkUpdateBasicInfo(ctx context.Context, trunkID uuid.UUID, name, detail *string, authTypes *[]sipauth.AuthType, username, password *string, allowedIPs *[]string) (*trunk.Trunk, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegistrarV1TrunkUpdateBasicInfo", ctx, trunkID, name, detail, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.Trunk)

@@ -3160,7 +3160,7 @@
       },
       "put": {
         "summary": "Update an MCP server.",
-        "description": "Updates an existing MCP server's details and returns the updated record. `secret` omitted leaves the existing encrypted secret untouched; `secret: \"\"` explicitly clears it; a non-empty `secret` re-encrypts and replaces it.\n",
+        "description": "Every field is optional. Omitting a field leaves its current value unchanged; a full resend of every field is NOT required to update a single field (e.g. `PUT { \"name\": \"new name\" }` only renames the server and leaves url/status/auth_type/api_key_header/secret exactly as they were).\n",
         "tags": [
           "AI"
         ],
@@ -3184,15 +3184,17 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current name unchanged."
                   },
                   "detail": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current detail unchanged."
                   },
                   "url": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Streamable-HTTP MCP endpoint. Must be https."
+                    "description": "Streamable-HTTP MCP endpoint. Must be https. Omit to leave the current URL unchanged."
                   },
                   "status": {
                     "type": "string",
@@ -3200,7 +3202,7 @@
                       "active",
                       "disabled"
                     ],
-                    "description": "Set to disabled to exclude this server from ListTools/CallTool without deleting it.",
+                    "description": "Set to disabled to exclude this server from ListTools/CallTool without deleting it. Omit to leave the current status unchanged.",
                     "example": "active"
                   },
                   "auth_type": {
@@ -3209,10 +3211,12 @@
                       "",
                       "bearer",
                       "api_key"
-                    ]
+                    ],
+                    "description": "Omit to leave the current auth_type unchanged. NOTE: an explicit empty string (\"\") is a valid value meaning no-auth, distinct from omitting the field."
                   },
                   "api_key_header": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current api_key_header unchanged."
                   },
                   "secret": {
                     "type": "string",
@@ -12307,22 +12311,21 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "description": "Every field is optional. Omitting a field leaves its current value unchanged; a full resend of every field is NOT required to update a single field (e.g. PUT { \"name\": \"new name\" } only renames the extension and leaves detail/password exactly as they were).\n",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current name unchanged."
                   },
                   "detail": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current detail unchanged."
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "SIP registration password. Omit to leave the current password unchanged. Sending an explicit value (including empty string) replaces it."
                   }
-                },
-                "required": [
-                  "name",
-                  "detail",
-                  "password"
-                ]
+                }
               }
             }
           }
@@ -23639,40 +23642,39 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "description": "Every field is optional. Omitting a field leaves its current value unchanged; a full resend of every field is NOT required to update a single field (e.g. PUT { \"name\": \"new name\" } only renames the trunk and leaves auth_types/username/password/ allowed_ips exactly as they were).\n",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current name unchanged."
                   },
                   "detail": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current detail unchanged."
                   },
                   "auth_types": {
                     "type": "array",
                     "items": {
                       "$ref": "#/components/schemas/RegistrarManagerAuthType"
-                    }
+                    },
+                    "description": "Omit to leave the current auth_types unchanged. NOTE: an explicit empty array is a valid value meaning no auth types, distinct from omitting the field."
                   },
                   "username": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current username unchanged."
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "SIP trunk password. Omit to leave the current password unchanged. Sending an explicit value (including empty string) replaces it."
                   },
                   "allowed_ips": {
                     "type": "array",
                     "items": {
                       "type": "string"
-                    }
+                    },
+                    "description": "IP allowlist for this trunk. Omit to leave the current allowed_ips unchanged. NOTE: an explicit empty array clears the allowlist, distinct from omitting the field -- verify this is the intended effect before sending an empty array."
                   }
-                },
-                "required": [
-                  "name",
-                  "detail",
-                  "auth_types",
-                  "username",
-                  "password",
-                  "allowed_ips"
-                ]
+                }
               }
             }
           }

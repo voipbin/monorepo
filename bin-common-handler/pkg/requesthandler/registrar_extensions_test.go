@@ -153,7 +153,7 @@ func Test_RegistrarExtensionUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RegistrarV1ExtensionUpdate(ctx, tt.id, tt.extensionName, tt.detail, tt.password)
+			res, err := reqHandler.RegistrarV1ExtensionUpdate(ctx, tt.id, &tt.extensionName, &tt.detail, &tt.password)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

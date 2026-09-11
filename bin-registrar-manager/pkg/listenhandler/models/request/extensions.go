@@ -20,10 +20,14 @@ type V1DataExtensionsPost struct {
 // V1DataExtensionsIDPut is
 // v1 data type request struct for
 // /v1/extensions/{id} PUT
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched", matching the OpenAPI-layer contract. See
+// docs/plans/2026-09-12-registrar-put-partial-update-phase1-design.md.
 type V1DataExtensionsIDPut struct {
-	Name     string `json:"name"`
-	Detail   string `json:"detail"`
-	Password string `json:"password"`
+	Name     *string `json:"name,omitempty"`
+	Detail   *string `json:"detail,omitempty"`
+	Password *string `json:"password,omitempty"`
 }
 
 // V1DataExtensionsExtensionExtensionGet is
