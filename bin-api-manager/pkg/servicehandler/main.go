@@ -995,11 +995,11 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		routeID uuid.UUID,
-		name string,
-		detail string,
-		providerID uuid.UUID,
-		priority int,
-		target string,
+		name *string,
+		detail *string,
+		providerID *uuid.UUID,
+		priority *int,
+		target *string,
 	) (*rmroute.Route, error)
 
 	// service_agent agent

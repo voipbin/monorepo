@@ -133,7 +133,7 @@ func (mr *MockRouteHandlerMockRecorder) ListByTarget(ctx, customerID, target any
 }
 
 // Update mocks base method.
-func (m *MockRouteHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockRouteHandler) Update(ctx context.Context, id uuid.UUID, name, detail *string, providerID *uuid.UUID, priority *int, target *string) (*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)

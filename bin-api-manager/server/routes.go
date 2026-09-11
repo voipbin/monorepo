@@ -201,7 +201,16 @@ func (h *server) PutRoutesId(c *gin.Context, id string) {
 		return
 	}
 
-	providerID := uuid.FromStringOrNil(req.ProviderId)
+	var providerIDPtr *uuid.UUID
+	if req.ProviderId != nil {
+		parsedProviderID, errParse := uuid.FromString(*req.ProviderId)
+		if errParse != nil {
+			log.Errorf("Could not parse provider_id. err: %v", errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "provider_id is not a valid UUID."))
+			return
+		}
+		providerIDPtr = &parsedProviderID
+	}
 
 	res, err := h.serviceHandler.RouteUpdate(
 		c.Request.Context(),
@@ -209,7 +218,7 @@ func (h *server) PutRoutesId(c *gin.Context, id string) {
 		target,
 		req.Name,
 		req.Detail,
-		providerID,
+		providerIDPtr,
 		req.Priority,
 		req.Target,
 	)

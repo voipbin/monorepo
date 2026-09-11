@@ -12282,20 +12282,20 @@ type PostRoutesJSONBody struct {
 
 // PutRoutesIdJSONBody defines parameters for PutRoutesId.
 type PutRoutesIdJSONBody struct {
-	// Detail The detail information of the route.
-	Detail string `json:"detail"`
+	// Detail Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// Name The name of the route.
-	Name string `json:"name"`
+	// Name Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
 
-	// Priority The priority of the route.
-	Priority int `json:"priority"`
+	// Priority Omit to leave the current priority unchanged. Lower values are higher priority; 0 is a valid, meaningful value distinct from omission.
+	Priority *int `json:"priority,omitempty"`
 
-	// ProviderId The provider ID for the route.
-	ProviderId string `json:"provider_id"`
+	// ProviderId Omit to leave the current provider_id unchanged. If present, must be a valid UUID referencing an existing provider.
+	ProviderId *string `json:"provider_id,omitempty"`
 
-	// Target The target of the route.
-	Target string `json:"target"`
+	// Target Omit to leave the current target unchanged.
+	Target *string `json:"target,omitempty"`
 }
 
 // GetServiceAgentsAgentsParams defines parameters for GetServiceAgentsAgents.

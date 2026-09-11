@@ -447,6 +447,97 @@ func Test_routesIDDelete(t *testing.T) {
 	}
 }
 
+func Test_routesIDPut_NameOnly(t *testing.T) {
+	// Regression test for the PUT /routes/{id} partial-update fix
+	// (docs/plans/2026-09-12-route-put-partial-update-phase3-design.md):
+	// a name-only PUT body must pass name non-nil and every other
+	// pointer nil down to the service handler, not silently misroute
+	// live traffic by wiping provider_id/target.
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	routeID := uuid.FromStringOrNil("cd2b8926-5167-11ed-a158-ffb3472a3a4d")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	reqBody := []byte(`{"name":"new name only"}`)
+	req, _ := http.NewRequest("PUT", "/routes/"+routeID.String(), bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	expectName := "new name only"
+	responseRoute := &rmroute.Route{ID: routeID}
+
+	mockSvc.EXPECT().RouteUpdate(
+		req.Context(), agent, routeID,
+		&expectName,
+		(*string)(nil),
+		(*uuid.UUID)(nil),
+		(*int)(nil),
+		(*string)(nil),
+	).Return(responseRoute, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+}
+
+func Test_routesIDPut_MalformedProviderID(t *testing.T) {
+	// Regression test for §3.1 of the Phase 3 design doc: a present but
+	// unparseable provider_id must be rejected with 400, not silently
+	// collapsed to uuid.Nil and treated as omitted/unchanged.
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	routeID := uuid.FromStringOrNil("cd2b8926-5167-11ed-a158-ffb3472a3a4d")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	reqBody := []byte(`{"provider_id":"not-a-uuid"}`)
+	req, _ := http.NewRequest("PUT", "/routes/"+routeID.String(), bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	// mockSvc.RouteUpdate is deliberately NOT set up -- Times(0) via no
+	// EXPECT() at all, so an unexpected call fails the test.
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+	}
+}
+
 func Test_routesIDPut(t *testing.T) {
 
 	tests := []struct {
@@ -516,11 +607,11 @@ func Test_routesIDPut(t *testing.T) {
 				req.Context(),
 				tt.agent,
 				tt.expectRouteID,
-				tt.expectName,
-				tt.expectDetail,
-				tt.expectProviderID,
-				tt.expectPriority,
-				tt.expectTarget,
+				&tt.expectName,
+				&tt.expectDetail,
+				&tt.expectProviderID,
+				&tt.expectPriority,
+				&tt.expectTarget,
 			).Return(tt.responseRoute, nil)
 
 			r.ServeHTTP(w, req)

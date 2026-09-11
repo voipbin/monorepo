@@ -183,7 +183,12 @@ func (h *routeHandler) Delete(ctx context.Context, id uuid.UUID) (*route.Route, 
 }
 
 // Update updates the route and return the updated route
-func (h *routeHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched", a non-nil pointer (including one pointing at the zero
+// value, e.g. priority: 0) means "set to exactly this value". See
+// docs/plans/2026-09-12-route-put-partial-update-phase3-design.md.
+func (h *routeHandler) Update(ctx context.Context, id uuid.UUID, name *string, detail *string, providerID *uuid.UUID, priority *int, target *string) (*route.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "Update",
 		"route_id": id,
@@ -197,12 +202,28 @@ func (h *routeHandler) Update(ctx context.Context, id uuid.UUID, name string, de
 		"target":      target,
 	}).Debug("Updating the route.")
 
-	fields := map[route.Field]any{
-		route.FieldName:       name,
-		route.FieldDetail:     detail,
-		route.FieldProviderID: providerID,
-		route.FieldPriority:   priority,
-		route.FieldTarget:     target,
+	fields := map[route.Field]any{}
+	if name != nil {
+		fields[route.FieldName] = *name
+	}
+	if detail != nil {
+		fields[route.FieldDetail] = *detail
+	}
+	if providerID != nil {
+		fields[route.FieldProviderID] = *providerID
+	}
+	if priority != nil {
+		fields[route.FieldPriority] = *priority
+	}
+	if target != nil {
+		fields[route.FieldTarget] = *target
+	}
+
+	if len(fields) == 0 {
+		// A PUT with every field omitted is a client no-op, not a server
+		// error. Reuse Get's existing ErrNotFound -> cerrors.NotFound
+		// mapping instead of duplicating it here.
+		return h.Get(ctx, id)
 	}
 
 	if errUpdate := h.db.RouteUpdate(ctx, id, fields); errUpdate != nil {

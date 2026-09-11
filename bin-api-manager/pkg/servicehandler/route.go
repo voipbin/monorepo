@@ -238,15 +238,19 @@ func (h *serviceHandler) RouteDelete(ctx context.Context, a *auth.AuthIdentity, 
 // RouteUpdate sends a request to route-manager
 // to updating the route.
 // it returns error if it failed.
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched". See
+// docs/plans/2026-09-12-route-put-partial-update-phase3-design.md.
 func (h *serviceHandler) RouteUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	routeID uuid.UUID,
-	name string,
-	detail string,
-	providerID uuid.UUID,
-	priority int,
-	target string,
+	name *string,
+	detail *string,
+	providerID *uuid.UUID,
+	priority *int,
+	target *string,
 ) (*rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RouteUpdate",

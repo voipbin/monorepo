@@ -673,6 +673,22 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the route has not been deleted.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/routes/{id}</span></code> is a true partial update: every field (<code class="docutils literal notranslate"><span class="pre">name</span></code>,
+<code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">provider_id</span></code>, <code class="docutils literal notranslate"><span class="pre">priority</span></code>, <code class="docutils literal notranslate"><span class="pre">target</span></code>) is optional, and
+omitting a field leaves its current value unchanged. A full resend of
+every field is never required – for example,
+<code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">{&quot;priority&quot;:</span> <span class="pre">5}</span></code> only changes the route’s priority and leaves
+<code class="docutils literal notranslate"><span class="pre">provider_id</span></code>/<code class="docutils literal notranslate"><span class="pre">target</span></code> exactly as they were. This matters most for
+<code class="docutils literal notranslate"><span class="pre">provider_id</span></code> and <code class="docutils literal notranslate"><span class="pre">target</span></code>: omitting them no longer silently
+misroutes live outbound traffic. One exception worth calling out:
+<code class="docutils literal notranslate"><span class="pre">priority:</span> <span class="pre">0</span></code> is a valid, meaningful value (the highest possible
+priority) and is distinct from omitting the <code class="docutils literal notranslate"><span class="pre">priority</span></code> field
+entirely. A <code class="docutils literal notranslate"><span class="pre">provider_id</span></code> that is present but not a valid UUID is
+rejected with a 400 error, not silently treated as omitted.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
