@@ -173,7 +173,7 @@ CREATE TABLE ai_mcp_oauth_states (
 No `customer_id`/`mcp_server_id` foreign keys enforced at the DB layer
 (matches this monorepo's existing convention of app-layer referential
 integrity for `ai_*` tables). A row is deleted the moment it's consumed
-(§7 step 5) or, failing that, by a periodic sweep of `tm_expire < now()`
+(§7 step 9) or, failing that, by a periodic sweep of `tm_expire < now()`
 (reuses the existing generic expired-row cleanup pattern already present
 for other short-lived state in this monorepo -- see
 `references/existing-service-reconnaissance.md` convention notes; exact
@@ -327,10 +327,15 @@ style "account-linking hijack" that layer (1) alone does not cover
   same RNG already used for `mcpserverhandler`'s secret nonces)
 - bound to `customer_id` in `ai_mcp_oauth_states` at generation time (not
   trusted from the callback request itself)
-- single-use: the callback handler deletes the row in the same
-  transaction it reads it (step 6), so a replayed callback request
-  (browser back-button, retried redirect) fails with "state not found or
-  already used" rather than silently reusing a stale authorization code
+- single-use: the `/oauth/complete` handler deletes the row immediately
+  after the ownership check succeeds (diagram step 9), BEFORE the token
+  exchange -- never the public callback, which per §10 is a strictly
+  read-only existence check with no mutation. A replayed callback
+  request (browser back-button, retried redirect) simply re-confirms
+  existence and re-redirects; it is the SECOND `/oauth/complete` call
+  for the same `state` (whether from a genuine retry or a replay
+  attempt) that fails with "state not found or already used", because
+  the first successful call already deleted the row.
 - time-bounded: `tm_expire` (10 minutes, matching typical OAuth
   authorization-code lifetimes) rejects stale flows
 - this is the exact same trust model `POST /auth/password-reset` already
@@ -409,7 +414,7 @@ flow). Instead:
   UX-layer improvement on top (fails fast, client-side, with a clearer
   message than a 403 from the server), not the actual trust boundary.
   On success, `/oauth/complete` performs the actual token exchange (§7
-  steps 6-8, moved here from the public callback) and returns the
+  steps 9-12, moved here from the public callback) and returns the
   created/updated McpServer. If `sessionStorage` has no matching
   `link_token` (different browser, different tab, or an attacker who
   never had it), the frontend never calls `/oauth/complete` and the flow
@@ -570,7 +575,19 @@ GET  /mcpservers/oauth/callback   (PUBLIC, registered next to
      NOT delete it, does NOT exchange the code, does NOT touch McpServer
      -- that all happens in /oauth/complete below), then 302 redirects
      to admin.voipbin.net/#/resources/mcpservers/oauth-return?state=...
-     &code=... (or &error=... passthrough)
+     &code=... (or &error=... passthrough). If `state` does NOT exist
+     (expired, already consumed by a prior /oauth/complete call, or
+     simply invalid), the relay still 302-redirects to the same
+     `oauth-return` route but WITHOUT `code` -- e.g.
+     `?state=...&error=invalid_state` -- rather than rendering its own
+     error page (this endpoint has no UI of its own; `oauth-return`
+     owns all user-facing error presentation, consistent with the
+     vendor-denial `?error=...` passthrough case already handled the
+     same way). `oauth-return` then shows the SAME generic "this
+     authorization wasn't started in this browser (or already
+     completed/expired)" message it would show for any other Layer 2
+     mismatch (§7a) -- not a more specific one, for the same
+     anti-enumeration reason Layer 1 already avoids specific errors.
 
 POST /mcpservers/oauth/complete   (authenticated, v1.0 group, JWT)
   body: { state: string, code: string }
@@ -578,7 +595,8 @@ POST /mcpservers/oauth/complete   (authenticated, v1.0 group, JWT)
      boundary lives (§7a): AIV1McpOAuthComplete's handler verifies the
      state row's customer_id matches the JWT's customer_id before doing
      anything else, then performs the token exchange, encrypts, and
-     creates/updates the McpServer row (§7 steps 8-12).
+     creates/updates the McpServer row (§7 steps 9-12: delete state row,
+     exchange code, encrypt, upsert).
 ```
 
 **Rate limiting (Round 1 design review finding):** every existing public
@@ -616,7 +634,7 @@ AIV1McpOAuthStart(ctx context.Context, customerID uuid.UUID, vendor string, mcpS
 
 // AIV1McpOAuthComplete verifies the state row's CustomerID matches
 // customerID (§7a's real security boundary), exchanges code for tokens,
-// encrypts them, and creates/updates the McpServer row (§7 steps 8-12).
+// encrypts them, and creates/updates the McpServer row (§7 steps 9-12).
 AIV1McpOAuthComplete(ctx context.Context, customerID uuid.UUID, state string, code string) (*mcpserver.McpServer, error)
 ```
 
@@ -661,6 +679,12 @@ returned `link_token` in `sessionStorage` (§7a Layer 2), and redirects
 the browser to the returned `authorize_url`. A new route,
 `/resources/mcpservers/oauth-return`, handles the vendor's return trip
 (§7 steps 4-6): it reads `state`/`code` (or `error`) from the URL,
+**immediately calls `history.replaceState()` to strip `code`/`state`
+from the visible URL/browser history** (Round 3 review recommendation --
+`code` is a one-time authorization code; while PKCE means it cannot be
+exchanged without the server-side `code_verifier`, minimizing where it
+sits in plaintext, e.g. shoulder-surfable address bars or browser
+history sync, is a defense-in-depth improvement with no cost), then
 compares `state` against the stored `link_token` (client-side fast-fail
 per §7a), and on a match calls `POST /mcpservers/oauth/complete { state,
 code }`. On success, it navigates to the returned server's detail page.
@@ -838,3 +862,36 @@ by Round 1's own fix, plus 1 minor completeness gap:
   additions from Round 1 were independently re-verified against the
   actual codebase this round and confirmed unchanged/correct -- no
   further changes needed there.
+
+## 17. Round 3 design review disposition
+
+Independent adversarial review confirmed the 3-endpoint architecture
+itself (thin public relay + authenticated `/oauth/complete` doing the
+real ownership check) is sound, but found that Round 2's rewrite left
+ONE paragraph in §7a's "Layer 1" section un-updated from the original
+(Round 0) design, where the callback itself deleted the state row --
+directly contradicting Round 2's own "callback is a no-mutation relay"
+contract, plus inconsistent step numbers scattered across §5/§7a/§10:
+
+- **[FIXED]** §7a Layer 1's "the callback handler deletes the row..."
+  sentence was stale Round-0 text. Corrected to explicitly state
+  `/oauth/complete` deletes the row (diagram step 9), never the public
+  callback, and clarified that a replayed CALLBACK request is harmless
+  (read-only) while a replayed COMPLETE request is what actually gets
+  rejected.
+- **[FIXED]** Three inconsistent step-number references to the
+  delete/exchange block (§5's "step 5", §7a's "steps 6-8", §10/RPC
+  comment's "steps 8-12") unified to "step 9" (delete) / "steps 9-12"
+  (delete, exchange, encrypt, upsert) throughout.
+- **[FIXED, minor]** §11 now specifies that the `oauth-return` page
+  calls `history.replaceState()` to strip `code`/`state` from the
+  visible URL immediately on load, reducing where the one-time
+  authorization code sits in plaintext (address bar, browser history).
+- **[FIXED, minor]** §10's `GET /mcpservers/oauth/callback` entry now
+  specifies its behavior when `state` does not exist (expired/already
+  consumed/invalid): redirects to `oauth-return` with a generic
+  `error=invalid_state` rather than rendering its own error UI, and
+  `oauth-return` shows the same generic message it already uses for a
+  `sessionStorage` `link_token` mismatch -- no new error-handling
+  surface, and no information disclosure about WHY the state was
+  rejected.
