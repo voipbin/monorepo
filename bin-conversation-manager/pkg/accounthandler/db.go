@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -49,7 +50,22 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 	}
 
 	// setup the account
-	if errSetup := h.setup(ctx, ac); errSetup != nil {
+	//
+	// setupCtx imposes an explicit, receiver-side local deadline
+	// (VOIP-1516) shorter than the sender's RPC wait budget
+	// (bin-common-handler/pkg/requesthandler ConversationV1AccountCreate
+	// uses 30s). The account setup step (e.g. LINE webhook registration)
+	// makes a synchronous external HTTP call; without this deadline, the
+	// original ctx (context.Background(), no deadline -- see
+	// pkg/listenhandler/main.go processRequest) never cancels, so a slow
+	// external response can keep running past the sender's timeout and
+	// still complete AccountCreate/Get/PublishWebhookEvent below, creating
+	// a client-sees-failure/server-creates-anyway race. Failing fast here,
+	// before AccountCreate, closes that race.
+	setupCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
+	defer cancel()
+
+	if errSetup := h.setup(setupCtx, ac); errSetup != nil {
 		log.Errorf("Could not setup the account. err: %v", errSetup)
 		return nil, errors.Wrap(errSetup, "could not setup the account")
 	}
