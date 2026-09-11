@@ -709,6 +709,23 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field determines what operations are allowed on the account. Only <code class="docutils literal notranslate"><span class="pre">active</span></code> accounts can create resources and make calls. A <code class="docutils literal notranslate"><span class="pre">frozen</span></code> account has deletion scheduled but can be recovered by cancelling unregistration before the grace period expires. A <code class="docutils literal notranslate"><span class="pre">deleted</span></code> account cannot be recovered – all PII has been anonymized and all resources cascade-deleted. The <code class="docutils literal notranslate"><span class="pre">tm_deletion_scheduled</span></code> field is only set when <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">frozen</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">identity_verification_status</span></code> field gates PSTN operations. Only customers with <code class="docutils literal notranslate"><span class="pre">verified</span></code> status can purchase non-virtual phone numbers or make outbound PSTN calls. New customers default to <code class="docutils literal notranslate"><span class="pre">none</span></code> and must complete identity verification before using PSTN services. Existing customers at the time of this feature launch were grandfathered to <code class="docutils literal notranslate"><span class="pre">verified</span></code>.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> and
+<code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customers/{id}</span></code> are true partial
+updates: every field (<code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">email</span></code>, <code class="docutils literal notranslate"><span class="pre">phone_number</span></code>,
+<code class="docutils literal notranslate"><span class="pre">address</span></code>, <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code>, <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code>) is optional, and
+omitting a field leaves its current value unchanged. A full resend of
+every field is never required – for example,
+<code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">{&quot;name&quot;:</span> <span class="pre">&quot;new</span> <span class="pre">name&quot;}</span></code> renames the customer and leaves everything
+else (including <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code>) exactly as it was. One exception worth
+calling out: <code class="docutils literal notranslate"><span class="pre">webhook_method:</span> <span class="pre">&quot;&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_uri:</span> <span class="pre">&quot;&quot;</span></code> are valid,
+meaningful values (no webhook method / no webhook target, disabling
+webhook delivery) and are distinct from omitting the field entirely –
+sending an explicit empty string clears the value, while omitting the
+field preserves whatever value the customer already had.</p>
+</div>
 <section id="admin-only-fields">
 <h3>Admin-Only Fields<a class="headerlink" href="#admin-only-fields" title="Link to this heading">¶</a></h3>
 <p>The admin-only <code class="docutils literal notranslate"><span class="pre">/customers</span></code> (plural) endpoints – which require <code class="docutils literal notranslate"><span class="pre">ProjectSuperAdmin</span></code> permission – return an extended representation that includes two additional fields not present in the regular <code class="docutils literal notranslate"><span class="pre">/customer</span></code> (singular) response:</p>

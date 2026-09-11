@@ -4545,7 +4545,7 @@ func (mr *MockRequestHandlerMockRecorder) CustomerV1CustomerSignup(ctx, name, de
 }
 
 // CustomerV1CustomerUpdate mocks base method.
-func (m *MockRequestHandler) CustomerV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail, arg4, phoneNumber, arg6 string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
+func (m *MockRequestHandler) CustomerV1CustomerUpdate(ctx context.Context, id uuid.UUID, name, detail, arg4, phoneNumber, arg6 *string, webhookMethod *customer.WebhookMethod, webhookURI *string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerV1CustomerUpdate", ctx, id, name, detail, arg4, phoneNumber, arg6, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.Customer)

@@ -23,7 +23,12 @@ put:
   tags:
     - Customer
   requestBody:
-    description: Customer update payload
+    description: >
+      Customer update payload. Every field is optional. Omitting a field
+      leaves its current value unchanged; a full resend of every field is
+      NOT required to update a single field (e.g. PUT { "name": "new name" }
+      only renames the customer and leaves email/phone_number/address/
+      webhook_method/webhook_uri exactly as they were).
     required: true
     content:
       application/json:
@@ -32,32 +37,33 @@ put:
           properties:
             name:
               type: string
-              description: The new name of the customer.
+              description: The new name of the customer. Omit to leave the current name unchanged.
             detail:
               type: string
-              description: Additional details about the customer.
+              description: Additional details about the customer. Omit to leave the current detail unchanged.
             email:
               type: string
-              description: The customer's email address.
+              description: The customer's email address. Omit to leave the current email unchanged.
             phone_number:
               type: string
-              description: The customer's phone number.
+              description: The customer's phone number. Omit to leave the current phone number unchanged.
             address:
               type: string
-              description: The customer's address.
+              description: The customer's address. Omit to leave the current address unchanged.
             webhook_method:
-              $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
+              allOf:
+                - $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
+              description: >
+                Omit to leave the current webhook_method unchanged. NOTE: an
+                explicit empty string ("") is a valid value meaning no
+                webhook method, distinct from omitting the field.
             webhook_uri:
               type: string
-              description: Webhook URI.
-          required:
-            - name
-            - detail
-            - email
-            - phone_number
-            - address
-            - webhook_method
-            - webhook_uri
+              description: >
+                Webhook URI. Omit to leave the current webhook_uri
+                unchanged. NOTE: an explicit empty string ("") is a valid
+                value meaning no webhook target (disables webhook
+                delivery), distinct from omitting the field.
   responses:
     '200':
       description: The updated customer information.

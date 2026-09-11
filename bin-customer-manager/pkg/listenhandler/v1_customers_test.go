@@ -398,7 +398,7 @@ func Test_processV1CustomersIDPut(t *testing.T) {
 				customerHandler: mockCustomer,
 			}
 
-			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
+			mockCustomer.EXPECT().UpdateBasicInfo(gomock.Any(), tt.id, &tt.userName, &tt.detail, &tt.email, &tt.phoneNumber, &tt.address, &tt.webhookMethod, &tt.webhookURI).Return(tt.responseCustomer, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

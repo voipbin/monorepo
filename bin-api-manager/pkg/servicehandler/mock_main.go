@@ -2745,7 +2745,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfRecover(ctx, a any) *gomoc
 }
 
 // CustomerSelfUpdate mocks base method.
-func (m *MockServiceHandler) CustomerSelfUpdate(ctx context.Context, a *auth.AuthIdentity, name, detail, arg4, phoneNumber, arg6 string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfUpdate(ctx context.Context, a *auth.AuthIdentity, name, detail, arg4, phoneNumber, arg6 *string, webhookMethod *customer.WebhookMethod, webhookURI *string) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfUpdate", ctx, a, name, detail, arg4, phoneNumber, arg6, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -2805,7 +2805,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSignup(ctx, name, detail, arg3
 }
 
 // CustomerUpdate mocks base method.
-func (m *MockServiceHandler) CustomerUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, arg5, phoneNumber, arg7 string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, arg5, phoneNumber, arg7 *string, webhookMethod *customer.WebhookMethod, webhookURI *string) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerUpdate", ctx, a, id, name, detail, arg5, phoneNumber, arg7, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.WebhookMessage)

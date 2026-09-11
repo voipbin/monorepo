@@ -262,17 +262,21 @@ func (h *serviceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity,
 // CustomerUpdate sends a request to customer-manager
 // to update the customer's basic info.
 // Requires ProjectSuperAdmin permission.
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched". See
+// docs/plans/2026-09-12-customer-put-partial-update-phase2-design.md.
 func (h *serviceHandler) CustomerUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	id uuid.UUID,
-	name string,
-	detail string,
-	email string,
-	phoneNumber string,
-	address string,
-	webhookMethod cscustomer.WebhookMethod,
-	webhookURI string,
+	name *string,
+	detail *string,
+	email *string,
+	phoneNumber *string,
+	address *string,
+	webhookMethod *cscustomer.WebhookMethod,
+	webhookURI *string,
 ) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "CustomerUpdate",
@@ -315,16 +319,20 @@ func (h *serviceHandler) CustomerUpdate(
 
 // CustomerSelfUpdate updates the authenticated agent's own customer info.
 // Requires CustomerAdmin permission.
+//
+// Every field is a pointer: nil means "leave the existing value
+// untouched". See
+// docs/plans/2026-09-12-customer-put-partial-update-phase2-design.md.
 func (h *serviceHandler) CustomerSelfUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
-	name string,
-	detail string,
-	email string,
-	phoneNumber string,
-	address string,
-	webhookMethod cscustomer.WebhookMethod,
-	webhookURI string,
+	name *string,
+	detail *string,
+	email *string,
+	phoneNumber *string,
+	address *string,
+	webhookMethod *cscustomer.WebhookMethod,
+	webhookURI *string,
 ) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerSelfUpdate",

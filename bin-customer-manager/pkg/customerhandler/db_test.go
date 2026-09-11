@@ -300,17 +300,109 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, gomock.Any()).Return(nil)
+			expectFields := map[customer.Field]any{
+				customer.FieldName:          tt.customerName,
+				customer.FieldDetail:        tt.detail,
+				customer.FieldEmail:         tt.email,
+				customer.FieldPhoneNumber:   tt.phoneNumber,
+				customer.FieldAddress:       tt.address,
+				customer.FieldWebhookMethod: tt.webhookMethod,
+				customer.FieldWebhookURI:    tt.webhookURI,
+			}
+
+			mockDB.EXPECT().CustomerUpdate(gomock.Any(), tt.id, expectFields).Return(nil)
 			mockDB.EXPECT().CustomerGet(gomock.Any(), gomock.Any()).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
 
-			_, err := h.UpdateBasicInfo(ctx, tt.id, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			_, err := h.UpdateBasicInfo(ctx, tt.id, &tt.customerName, &tt.detail, &tt.email, &tt.phoneNumber, &tt.address, &tt.webhookMethod, &tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 		})
 	}
 }
+
+func Test_UpdateBasicInfo_PartialUpdate(t *testing.T) {
+
+	id := uuid.FromStringOrNil("c106fa66-7cb7-11ec-b438-1320d9493dee")
+
+	tests := []struct {
+		name string
+
+		nameVal       *string
+		detail        *string
+		email         *string
+		phoneNumber   *string
+		address       *string
+		webhookMethod *customer.WebhookMethod
+		webhookURI    *string
+
+		expectFields map[customer.Field]any
+		expectUpdate bool
+	}{
+		{
+			name: "only name set, everything else omitted",
+
+			nameVal:      strPtr("name only"),
+			expectFields: map[customer.Field]any{customer.FieldName: "name only"},
+			expectUpdate: true,
+		},
+		{
+			name: "webhook_uri omitted, does not wipe it",
+
+			nameVal:      strPtr("renamed"),
+			expectFields: map[customer.Field]any{customer.FieldName: "renamed"},
+			expectUpdate: true,
+		},
+		{
+			name: "webhook_method explicitly pointer-to-zero-value is a real value, not omission",
+
+			webhookMethod: webhookMethodPtr(customer.WebhookMethodNone),
+			expectFields:  map[customer.Field]any{customer.FieldWebhookMethod: customer.WebhookMethod(customer.WebhookMethodNone)},
+			expectUpdate:  true,
+		},
+		{
+			name: "all fields omitted is a no-op, CustomerUpdate is not called",
+
+			expectUpdate: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &customerHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			if tt.expectUpdate {
+				mockDB.EXPECT().CustomerUpdate(gomock.Any(), id, tt.expectFields).Return(nil)
+				mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{}, nil)
+				mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerUpdated, gomock.Any()).Return()
+			} else {
+				mockDB.EXPECT().CustomerGet(gomock.Any(), id).Return(&customer.Customer{}, nil)
+			}
+
+			_, err := h.UpdateBasicInfo(ctx, id, tt.nameVal, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			if err != nil {
+				t.Errorf("Wrong match. expect:ok, got:%v", err)
+			}
+		})
+	}
+}
+
+func strPtr(s string) *string                                           { return &s }
+func webhookMethodPtr(m customer.WebhookMethod) *customer.WebhookMethod { return &m }
 
 func Test_UpdateBillingAccountID(t *testing.T) {
 

@@ -41,29 +41,42 @@ put:
       application/json:
         schema:
           type: object
+          description: >
+            Every field is optional. Omitting a field leaves its current
+            value unchanged; a full resend of every field is NOT required
+            to update a single field (e.g. PUT { "name": "new name" } only
+            renames the customer and leaves email/phone_number/address/
+            webhook_method/webhook_uri exactly as they were).
           properties:
             name:
               type: string
+              description: Omit to leave the current name unchanged.
             detail:
               type: string
+              description: Omit to leave the current detail unchanged.
             email:
               type: string
+              description: Omit to leave the current email unchanged.
             phone_number:
               type: string
+              description: Omit to leave the current phone number unchanged.
             address:
               type: string
+              description: Omit to leave the current address unchanged.
             webhook_method:
-              $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
+              allOf:
+                - $ref: '#/components/schemas/CustomerManagerCustomerWebhookMethod'
+              description: >
+                Omit to leave the current webhook_method unchanged. NOTE:
+                an explicit empty string ("") is a valid value meaning no
+                webhook method, distinct from omitting the field.
             webhook_uri:
               type: string
-          required:
-            - name
-            - detail
-            - email
-            - phone_number
-            - address
-            - webhook_method
-            - webhook_uri
+              description: >
+                Omit to leave the current webhook_uri unchanged. NOTE: an
+                explicit empty string ("") is a valid value meaning no
+                webhook target (disables webhook delivery), distinct from
+                omitting the field.
   responses:
     '200':
       content:

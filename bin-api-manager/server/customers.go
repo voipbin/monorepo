@@ -195,7 +195,13 @@ func (h *server) PutCustomersId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerUpdate(c.Request.Context(), a, target, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, cucustomer.WebhookMethod(req.WebhookMethod), req.WebhookUri)
+	var webhookMethodPtr *cucustomer.WebhookMethod
+	if req.WebhookMethod != nil {
+		v := cucustomer.WebhookMethod(*req.WebhookMethod)
+		webhookMethodPtr = &v
+	}
+
+	res, err := h.serviceHandler.CustomerUpdate(c.Request.Context(), a, target, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, webhookMethodPtr, req.WebhookUri)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		abortWithServiceError(c, err)

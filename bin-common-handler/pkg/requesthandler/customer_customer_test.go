@@ -367,7 +367,7 @@ func Test_CustomerV1CustomerUpdateBasicInfo(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CustomerV1CustomerUpdate(ctx, tt.id, tt.userName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
+			res, err := reqHandler.CustomerV1CustomerUpdate(ctx, tt.id, &tt.userName, &tt.detail, &tt.email, &tt.phoneNumber, &tt.address, &tt.webhookMethod, &tt.webhookURI)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

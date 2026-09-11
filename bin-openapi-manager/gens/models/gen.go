@@ -11493,28 +11493,26 @@ type PostConversationsIdMessagesJSONBody struct {
 
 // PutCustomerJSONBody defines parameters for PutCustomer.
 type PutCustomerJSONBody struct {
-	// Address The customer's address.
-	Address string `json:"address"`
+	// Address The customer's address. Omit to leave the current address unchanged.
+	Address *string `json:"address,omitempty"`
 
-	// Detail Additional details about the customer.
-	Detail string `json:"detail"`
+	// Detail Additional details about the customer. Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// Email The customer's email address.
-	Email string `json:"email"`
+	// Email The customer's email address. Omit to leave the current email unchanged.
+	Email *string `json:"email,omitempty"`
 
-	// Name The new name of the customer.
-	Name string `json:"name"`
+	// Name The new name of the customer. Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
 
-	// PhoneNumber The customer's phone number.
-	PhoneNumber string `json:"phone_number"`
+	// PhoneNumber The customer's phone number. Omit to leave the current phone number unchanged.
+	PhoneNumber *string `json:"phone_number,omitempty"`
 
-	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
-	//
-	// Example: POST
-	WebhookMethod CustomerManagerCustomerWebhookMethod `json:"webhook_method"`
+	// WebhookMethod Omit to leave the current webhook_method unchanged. NOTE: an explicit empty string ("") is a valid value meaning no webhook method, distinct from omitting the field.
+	WebhookMethod *CustomerManagerCustomerWebhookMethod `json:"webhook_method,omitempty"`
 
-	// WebhookUri Webhook URI.
-	WebhookUri string `json:"webhook_uri"`
+	// WebhookUri Webhook URI. Omit to leave the current webhook_uri unchanged. NOTE: an explicit empty string ("") is a valid value meaning no webhook target (disables webhook delivery), distinct from omitting the field.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
 // PutCustomerBillingAccountIdJSONBody defines parameters for PutCustomerBillingAccountId.
@@ -11559,17 +11557,26 @@ type PostCustomersJSONBody struct {
 
 // PutCustomersIdJSONBody defines parameters for PutCustomersId.
 type PutCustomersIdJSONBody struct {
-	Address     string `json:"address"`
-	Detail      string `json:"detail"`
-	Email       string `json:"email"`
-	Name        string `json:"name"`
-	PhoneNumber string `json:"phone_number"`
+	// Address Omit to leave the current address unchanged.
+	Address *string `json:"address,omitempty"`
 
-	// WebhookMethod The HTTP method used for webhook (e.g., POST, GET, PUT, DELETE).
-	//
-	// Example: POST
-	WebhookMethod CustomerManagerCustomerWebhookMethod `json:"webhook_method"`
-	WebhookUri    string                               `json:"webhook_uri"`
+	// Detail Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
+
+	// Email Omit to leave the current email unchanged.
+	Email *string `json:"email,omitempty"`
+
+	// Name Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
+
+	// PhoneNumber Omit to leave the current phone number unchanged.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// WebhookMethod Omit to leave the current webhook_method unchanged. NOTE: an explicit empty string ("") is a valid value meaning no webhook method, distinct from omitting the field.
+	WebhookMethod *CustomerManagerCustomerWebhookMethod `json:"webhook_method,omitempty"`
+
+	// WebhookUri Omit to leave the current webhook_uri unchanged. NOTE: an explicit empty string ("") is a valid value meaning no webhook target (disables webhook delivery), distinct from omitting the field.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
 // PutCustomersIdBillingAccountIdJSONBody defines parameters for PutCustomersIdBillingAccountId.

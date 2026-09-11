@@ -222,7 +222,7 @@ func (mr *MockCustomerHandlerMockRecorder) Signup(ctx, name, detail, email, phon
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockCustomerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
+func (m *MockCustomerHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail, email, phoneNumber, address *string, webhookMethod *customer.WebhookMethod, webhookURI *string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.Customer)
