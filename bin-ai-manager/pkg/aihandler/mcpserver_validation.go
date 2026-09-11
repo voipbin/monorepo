@@ -2,11 +2,13 @@ package aihandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 )
@@ -20,13 +22,32 @@ import (
 // (mirrors the existing ai.ValidateToolNames -> cerrors.InvalidArgument
 // pattern in chatbot.go).
 //
+// A genuine infra failure from McpServerGet (query build/exec/scan error,
+// as opposed to dbhandler.ErrNotFound) is deliberately NOT mapped to 400
+// here -- it is returned as-is so errorResponse() falls through to 500,
+// matching the dbhandler.ErrNotFound-vs-other-error split ActivateInsight
+// already established in db.go. Collapsing both into 400 would mislabel
+// real DB outages as client mistakes and hide them from 5xx alerting.
+//
 // Lives in pkg/aihandler (has db access), not models/ai, mirroring why
 // ai.ValidateToolNames itself takes no ctx/db today -- see
 // docs/plans/2026-09-11-mcp-tool-integration-design.md §5.
 func (h *aiHandler) ValidateMcpServerIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) error {
 	for _, id := range ids {
 		srv, err := h.db.McpServerGet(ctx, id)
-		if err != nil || srv == nil || srv.CustomerID != customerID {
+		if err != nil {
+			if stderrors.Is(err, dbhandler.ErrNotFound) {
+				return cerrors.InvalidArgument(
+					commonoutline.ServiceNameAIManager,
+					"INVALID_MCP_SERVER_ID",
+					"mcp_server_id "+id.String()+" is not accessible",
+				).Wrap(err)
+			}
+
+			return errors.Wrapf(err, "could not get mcp server %s", id)
+		}
+
+		if srv == nil || srv.CustomerID != customerID {
 			return cerrors.InvalidArgument(
 				commonoutline.ServiceNameAIManager,
 				"INVALID_MCP_SERVER_ID",
