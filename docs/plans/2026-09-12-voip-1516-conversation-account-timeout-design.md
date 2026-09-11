@@ -46,6 +46,7 @@ if errSetup := h.setup(setupCtx, ac); errSetup != nil {
 - 효과: LINE 응답이 20초를 넘기면 `setupCtx`가 먼저 취소되어 `lineHandler.Setup`이 즉시 에러를 반환하고, `AccountCreate` DB insert 이전 단계에서 실패로 종료된다. **DB insert 이전에 실패하므로 "클라이언트는 실패로 보는데 서버는 계정을 생성한다"는 경쟁 상태가 원천적으로 제거된다.**
 - 발신측 30초 vs 수신측 20초 여유(10초)는 RabbitMQ 큐잉/네트워크 왕복 지연을 감안한 버퍼다.
 - wire 프로토콜 변경 불필요 (Round 2/3 리뷰로 확인됨).
+- 주의: 원래 `ctx`는 `context.Background()`이며 애초에 데드라인이 없다. "발신측 30초 예산을 상속받아 20초로 줄인다"는 것이 아니라, **원래 무기한이던 것에 처음으로 명시적 데드라인을 새로 부여**하는 것이다.
 
 ### 4.2 채택하지 않는 대안
 
@@ -56,8 +57,9 @@ if errSetup := h.setup(setupCtx, ac); errSetup != nil {
 
 - 변경 파일: `bin-conversation-manager/pkg/accounthandler/db.go` (Create 함수만).
 - `lineHandler.Setup`/`Teardown`, LINE SDK 호출부는 변경 없음 — ctx가 이미 파라미터로 전달되므로 상위에서 데드라인을 씌우는 것만으로 하위 전체에 자동 적용됨(Go `context.WithTimeout`의 자식 ctx 취소 전파 표준 동작).
-- `account.TypeWhatsApp`(`whatsappHandler.Setup`)도 동일 `setup()` 함수를 경유하므로 동일한 타임아웃 보호를 받는다(부가 이득, 별도 대응 불필요).
+- `account.TypeWhatsApp`(`whatsappHandler.Setup`, `pkg/whatsapphandler/setup.go:12`)는 시그니처가 `Setup(_ context.Context, ac *account.Account) error`로 **ctx를 아예 사용하지 않는다**(provider_data 로컬 검증만 수행, 외부 API 호출 없음). 따라서 이번 수정의 영향을 받지 않는다 — "부가 이득" 주장은 정정한다: 영향 없음이 정확한 서술이다.
 - `account.TypeSMS`는 `setup()`에서 no-op이므로 영향 없음.
+- **원래 `ctx`(발신측에서 전달된 것처럼 보이지만 실제로는 `pkg/listenhandler/main.go:183`에서 생성된 `context.Background()`, 즉 데드라인이 전혀 없는 컨텍스트)를 `AccountCreate`/`Get`/`PublishWebhookEvent`(58, 63, 68행)에는 그대로 사용한다.** §2에서 "발신측 30초 예산을 쓴다"는 표현은 부정확했으므로 정정한다 — 정확히는 "원래 ctx(무기한, 데드라인 없음)를 그대로 사용하며, 이 구간은 순수 로컬 DB/이벤트 처리이므로 외부 API처럼 무한 대기할 위험이 없다"는 것이 근거다.
 
 ## 6. 테스트 계획
 
