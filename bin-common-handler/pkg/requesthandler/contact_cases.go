@@ -274,6 +274,45 @@ func (r *requestHandler) ContactV1CaseAssign(
 	return &res, nil
 }
 
+// ContactV1CaseUnassign clears a case's owner in contact-manager
+// (VOIP-1515 §3). It reuses the same wire route and DTO as
+// ContactV1CaseAssign (/v1/cases/{id}/assign, V1DataCasesIDAssign), but
+// populates OwnerType with the empty-string sentinel
+// commonidentity.OwnerTypeNone and OwnerID with uuid.Nil instead of an
+// agent owner -- do NOT reuse ContactV1CaseAssign directly for this,
+// since that function hardcodes OwnerType to "agent" and would corrupt
+// the row into a "ghost owner" (owner_type=agent, owner_id=nil) instead
+// of the correct fully-unowned state (owner_type="", owner_id=nil).
+func (r *requestHandler) ContactV1CaseUnassign(
+	ctx context.Context,
+	customerID, id uuid.UUID,
+) (*cmkase.Case, error) {
+	uri := fmt.Sprintf("/v1/cases/%s/assign", id)
+
+	data := &cmrequest.V1DataCasesIDAssign{
+		CustomerID: customerID,
+		OwnerType:  string(commonidentity.OwnerTypeNone),
+		OwnerID:    uuid.Nil,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodPost, "contact/cases/<id>/assign", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cmkase.Case
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // ContactV1CaseContinue creates a new, open case that continues a
 // previously closed case in contact-manager.
 func (r *requestHandler) ContactV1CaseContinue(

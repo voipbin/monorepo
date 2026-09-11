@@ -1014,3 +1014,343 @@ func Test_CaseAssign(t *testing.T) {
 		})
 	}
 }
+
+// Test_CaseUnassign covers the design VOIP-1515 §8.1 table for the
+// top-level CaseUnassign, including the ErrCaseClosed guard (item 9) and
+// the caseGet -> permission -> closed-case check ordering regression
+// (item 10: a non-admin, non-owning caller on a closed case must get
+// ErrPermissionDenied, not ErrCaseClosed).
+func Test_CaseUnassign(t *testing.T) {
+	type test struct {
+		name string
+
+		agent  *auth.AuthIdentity
+		caseID uuid.UUID
+
+		expectCaseGetErr error
+		responseCaseGet  *cmkase.Case
+
+		expectUnassignCall   bool
+		responseCaseUnassign *cmkase.Case
+
+		expectErr   bool
+		expectErrIs error
+	}
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	adminID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	ownerAgentID := uuid.FromStringOrNil("f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6")
+	otherAgentID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001")
+	caseID := uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb")
+
+	tests := []test{
+		{
+			// 1. Admin unassigns a case owned by someone else.
+			name: "admin unassigns a case owned by someone else",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID: caseID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerAgentID,
+				},
+			},
+
+			expectUnassignCall: true,
+			responseCaseUnassign: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+		},
+		{
+			// 2. Manager unassigns a case owned by someone else.
+			name: "manager unassigns a case owned by someone else",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerManager,
+			}),
+			caseID: caseID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerAgentID,
+				},
+			},
+
+			expectUnassignCall: true,
+			responseCaseUnassign: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+		},
+		{
+			// 3. Owning agent self-unassigns.
+			name: "owning agent self-unassigns",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         ownerAgentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			caseID: caseID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerAgentID,
+				},
+			},
+
+			expectUnassignCall: true,
+			responseCaseUnassign: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+		},
+		{
+			// 4. Non-owning agent (no admin/manager permission) attempts
+			// unassign -> ErrPermissionDenied, RPC never called.
+			name: "non-owning agent attempts unassign",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         otherAgentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			caseID: caseID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerAgentID,
+				},
+			},
+
+			expectUnassignCall: false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrPermissionDenied,
+		},
+		{
+			// 5. Agent with no permission at all attempts unassign on an
+			// unowned case -> ErrPermissionDenied.
+			name: "no-permission agent on an unowned case",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         otherAgentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			caseID: caseID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+
+			expectUnassignCall: false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrPermissionDenied,
+		},
+		{
+			// 8. Unassigning an already-unowned case as admin/manager is a
+			// no-op success.
+			name: "admin unassigns an already-unowned case (idempotent no-op)",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID: caseID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+
+			expectUnassignCall: true,
+			responseCaseUnassign: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusOpen,
+			},
+		},
+		{
+			// 9. Closed case as admin -> ErrCaseClosed, caseGet is called
+			// but ContactV1CaseUnassign is never called.
+			name: "closed case as admin returns ErrCaseClosed",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID: caseID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusClosed,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerAgentID,
+				},
+			},
+
+			expectUnassignCall: false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrCaseClosed,
+		},
+		{
+			// 10. Non-admin, non-owning agent attempts unassign on a
+			// CLOSED case -> ErrPermissionDenied, NOT ErrCaseClosed. This
+			// is the check-ordering regression test: permission is
+			// evaluated before the closed-case guard.
+			name: "non-admin non-owner on closed case returns ErrPermissionDenied not ErrCaseClosed",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         otherAgentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			caseID: caseID,
+
+			responseCaseGet: &cmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				Status:     cmkase.StatusClosed,
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   ownerAgentID,
+				},
+			},
+
+			expectUnassignCall: false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrPermissionDenied,
+		},
+		{
+			// 7. Cross-tenant / nonexistent case id -> caseGet returns
+			// ErrNotFound (propagated), permission check never reached.
+			name: "case does not exist propagates caseGet error",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         adminID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			caseID: caseID,
+
+			expectCaseGetErr: serviceerrors.ErrNotFound,
+
+			expectUnassignCall: false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			if tt.expectCaseGetErr != nil {
+				mockReq.EXPECT().ContactV1CaseGet(ctx, tt.agent.CustomerID, tt.caseID).Return(nil, tt.expectCaseGetErr)
+			} else {
+				mockReq.EXPECT().ContactV1CaseGet(ctx, tt.agent.CustomerID, tt.caseID).Return(tt.responseCaseGet, nil)
+			}
+
+			if tt.expectUnassignCall {
+				mockReq.EXPECT().ContactV1CaseUnassign(ctx, tt.agent.CustomerID, tt.caseID).Return(tt.responseCaseUnassign, nil)
+			}
+
+			res, err := h.CaseUnassign(ctx, tt.agent, tt.caseID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				}
+				if tt.expectErrIs != nil && err != tt.expectErrIs {
+					t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErrIs, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if reflect.DeepEqual(res, tt.responseCaseUnassign) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseCaseUnassign, res)
+			}
+		})
+	}
+
+	t.Run("direct access is not supported", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockDB := dbhandler.NewMockDBHandler(mc)
+
+		h := &serviceHandler{
+			reqHandler: mockReq,
+			dbHandler:  mockDB,
+		}
+		ctx := context.Background()
+
+		a := auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID})
+
+		// No ContactV1CaseGet/ContactV1CaseUnassign EXPECT() set -- gomock
+		// fails the test if any downstream call fires for a direct-access
+		// caller.
+		_, err := h.CaseUnassign(ctx, a, caseID)
+		if err == nil {
+			t.Errorf("Expected error but got none")
+		}
+		if err != serviceerrors.ErrDirectAccessNotSupported {
+			t.Errorf("Wrong error. expect: %v, got: %v", serviceerrors.ErrDirectAccessNotSupported, err)
+		}
+	})
+}

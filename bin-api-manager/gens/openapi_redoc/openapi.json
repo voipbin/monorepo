@@ -10245,6 +10245,55 @@
         }
       }
     },
+    "/contact_cases/{id}/unassign": {
+      "post": {
+        "summary": "Unassign the case",
+        "description": "Removes the current owner from the case. Admin and manager callers may unassign any\ncase. The owning agent may unassign themselves. Returns 403 if the caller is neither\nan admin/manager nor the current owner.\n",
+        "tags": [
+          "Case"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the case. Returned from the `GET /contact_cases` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The case after unassignment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCase"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/contact_cases/{id}/continue": {
       "post": {
         "summary": "Continue a closed case",
@@ -18531,6 +18580,55 @@
         "responses": {
           "200": {
             "description": "The case after assignment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCase"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/contact_cases/{id}/unassign": {
+      "post": {
+        "summary": "Unassign the case",
+        "description": "Removes the current owner from the case. The owning agent may unassign themselves.\nReturns 403 if the caller is not the current owner of the case.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The case after unassignment.",
             "content": {
               "application/json": {
                 "schema": {

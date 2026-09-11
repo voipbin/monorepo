@@ -222,6 +222,37 @@ func (h *server) PostContactCasesIdAssign(c *gin.Context, id openapi_types.UUID)
 	c.JSON(200, res)
 }
 
+// PostContactCasesIdUnassign handles POST /contact_cases/{id}/unassign
+// (VOIP-1515): Admin/Manager or the current owning agent unassigns the
+// case's owner. There is no request body to bind, matching
+// PostContactCasesIdClose's pattern.
+func (h *server) PostContactCasesIdUnassign(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostContactCasesIdUnassign",
+		"request_address": c.ClientIP(),
+		"id":              id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithField("customer_id", a.CustomerID)
+
+	caseID := uuid.UUID(id)
+
+	res, err := h.serviceHandler.CaseUnassign(c.Request.Context(), a, caseID)
+	if err != nil {
+		log.Errorf("Could not unassign case. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // PutContactCasesId handles PUT /contact_cases/{id} (VOIP-1253):
 // attaches or detaches a case's contact. contact_id="" in the request
 // body clears the attribution -- converted to uuid.Nil HERE, at the

@@ -5,6 +5,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	cmkase "monorepo/bin-contact-manager/models/kase"
@@ -216,9 +217,9 @@ func Test_contactCasesIDAssignPOST(t *testing.T) {
 		reqQuery string
 		reqBody  string
 
-		responseCase   *cmkase.Case
-		expectCaseID   uuid.UUID
-		expectOwnerID  uuid.UUID
+		responseCase  *cmkase.Case
+		expectCaseID  uuid.UUID
+		expectOwnerID uuid.UUID
 	}{
 		{
 			name: "normal",
@@ -269,6 +270,82 @@ func Test_contactCasesIDAssignPOST(t *testing.T) {
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d, body: %s", http.StatusOK, w.Code, w.Body.String())
+			}
+		})
+	}
+}
+
+func Test_contactCasesIDUnassignPOST(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+
+		responseCase *cmkase.Case
+		responseErr  error
+		expectCaseID uuid.UUID
+		expectStatus int
+	}{
+		{
+			name: "normal",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contact_cases/e66d1da0-3ed7-11ef-9208-4bcc069917a1/unassign",
+
+			responseCase: &cmkase.Case{
+				ID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			},
+
+			expectCaseID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			expectStatus: http.StatusOK,
+		},
+		{
+			name: "servicehandler permission denied",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contact_cases/e66d1da0-3ed7-11ef-9208-4bcc069917a1/unassign",
+
+			responseErr:  serviceerrors.ErrPermissionDenied,
+			expectCaseID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			expectStatus: http.StatusForbidden,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ServiceAgentCaseUnassign(req.Context(), tt.agent, tt.expectCaseID).Return(tt.responseCase, tt.responseErr)
+
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d, body: %s", tt.expectStatus, w.Code, w.Body.String())
 			}
 		})
 	}

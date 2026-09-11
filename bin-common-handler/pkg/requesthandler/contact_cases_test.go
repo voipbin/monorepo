@@ -524,6 +524,77 @@ func Test_ContactV1CaseAssign(t *testing.T) {
 	}
 }
 
+// Test_ContactV1CaseUnassign verifies ContactV1CaseUnassign's constructed
+// wire request body (VOIP-1515 §8.4). Pins down that owner_type is
+// empty-string, not "agent" -- reusing ContactV1CaseAssign's hardcoded
+// "agent" for unassign would silently corrupt the row into a "ghost
+// owner" (owner_type=agent, owner_id=nil) instead of the correct
+// fully-unowned state.
+func Test_ContactV1CaseUnassign(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		id         uuid.UUID
+
+		expectTarget  string
+		expectRequest *sock.Request
+		response      *sock.Response
+
+		expectRes *cmkase.Case
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+			id:         uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+
+			expectTarget: "bin-manager.contact-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/cases/5623e25e-2c74-11ee-87a6-bfa8ae34077f/assign",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data: []byte(
+					`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000"}`,
+				),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f"}`),
+			},
+			expectRes: &cmkase.Case{
+				ID: uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ContactV1CaseUnassign(ctx, tt.customerID, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_ContactV1CaseContinue(t *testing.T) {
 	tests := []struct {
 		name string
