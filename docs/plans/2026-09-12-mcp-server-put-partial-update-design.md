@@ -90,13 +90,8 @@ plain values and then re-inflated into a full field map. Layers touched:
   below; it is accepted, not something this fix needs to also patch in the
   frontend.**
 - `POST /mcpservers` (create) -- create has no "existing value to preserve"
-  concept; every field is either provided or defaults per `mcpserverhandler.Create`'s
-  existing logic (`status` defaults to `Active` if empty, `authType`
-  defaults to `AuthTypeNone` if the pointer... wait, `POST`'s DTO
-  (`V1DataMcpServersPost`) is NOT a pointer today -- but that is correct for
-  Create, where there is no prior value to distinguish "omitted" from
-  "default"; explicitly confirming this is NOT a bug for Create, only for
-  Update, in §3 below.
+  concept; every field is either provided by the caller or takes its
+  from-scratch default (see §3 for the full argument).
 - `mcp_server_ids` on `PUT /ais/:id` (the AI-to-McpServer whitelist
   association) -- that field already has correct tri-state semantics
   (`*[]uuid.UUID`, confirmed live via
@@ -124,16 +119,17 @@ and saving sends a body that OMITS `api_key_header` entirely.
 This is a real, observable behavior change, but it is **functionally inert
 and accepted, not a defect this PR needs to also fix in the frontend**:
 `api_key_header` is only ever read/used when `auth_type == api_key`
-(confirmed: `mcpserverhandler` only sends the API-key header when
-`AuthType == AuthTypeAPIKey`); once `auth_type` is `bearer`/`none`, a
-stale `api_key_header` value sitting in the row is inert dead data with no
-behavioral effect, and it gets correctly overwritten the next time the
-customer switches back to `api_key` and provides a header name. Fixing
-this cosmetically (having the frontend send an explicit `api_key_header:
-""` whenever `auth_type` changes away from `api_key`) is a trivial,
-independent frontend follow-up -- noted here so a reviewer doesn't have to
-re-derive it, but deliberately NOT bundled into this backend-only PR (see
-§2's scope: no `square-admin` code changes in this fix).
+(confirmed: `mcptoolhandler/client.go`'s `buildAuthHeader` only reads
+`m.APIKeyHeader` inside `case mcpserver.AuthTypeAPIKey`, lines 79-88); once
+`auth_type` is `bearer`/`none`, a stale `api_key_header` value sitting in
+the row is inert dead data with no behavioral effect, and it gets
+correctly overwritten the next time the customer switches back to
+`api_key` and provides a header name. Fixing this cosmetically (having the
+frontend send an explicit `api_key_header: ""` whenever `auth_type`
+changes away from `api_key`) is a trivial, independent frontend
+follow-up -- noted here so a reviewer doesn't have to re-derive it, but
+deliberately NOT bundled into this backend-only PR (see §2's scope: no
+`square-admin` code changes in this fix).
 
 ## 3. Why POST (Create) does not need the same fix
 
@@ -448,6 +444,12 @@ covering the other six fields:
 
 Also update `id.yaml`'s `description` field per §5 above in the same
 commit (both files describe the same contract; they must not drift).
+Insertion point in the current file: after the existing `secret` note
+(lines 41-43) and before the pre-existing `tm_delete` sentinel note (lines
+45-47) -- i.e. the new note becomes the second of what will be three
+consecutive "MCP Server Implementation Hint" notes, keeping all
+write-semantics guidance (secret, then the other six fields) grouped
+together ahead of the unrelated `tm_delete` note.
 Per this monorepo's standing RST workflow (`CLAUDE.md`), after editing the
 `.rst` source: clean rebuild (`cd bin-api-manager/docsdev && rm -rf build
 && python3 -m sphinx -M html source build`), then `git add -f
@@ -533,7 +535,16 @@ closes the gap Round 1 review flagged):** this is where the
 dereference-to-zero-value pattern originally lived (§4.2) and where a
 regression could silently reintroduce it without tripping any test below
 this layer, since every layer below `bin-api-manager` only ever sees
-whatever `PutMcpserversId` decided to pass down. Add at minimum:
+whatever `PutMcpserversId` decided to pass down. The signature change in
+§4.2 breaks compilation of this file's TWO existing PUT tests
+(`Test_PutMcpserversId_SecretOmitted`, `Test_PutMcpserversId_SecretExplicitClear`)
+-- their `mockSvc.EXPECT().McpServerUpdate(...)` calls currently pass plain
+`name`/`detail`/`url`/`status`/`authType`/`apiKeyHeader` values that no
+longer match the new pointer-typed signature; update both to pass pointers
+(they can keep asserting the same behavior, just with `&value` instead of
+`value` for the five now-pointer arguments -- these two tests don't
+exercise the omission path, so they don't need new assertions, only a
+type-correct call). Add at minimum two NEW cases beyond that mechanical fix:
 - a PUT request with a JSON body containing only `{"name": "new name"}`
   -> asserts `serviceHandler.McpServerUpdate` (via its gomock) is called
   with `name` non-nil and every other pointer argument nil -- pins the
@@ -584,3 +595,24 @@ verified byte-accurate except finding #1's function name), OpenAPI
 `len(fields) == 0` -> `Get()` / `ErrNotFound` mapping reuse, POST-out-of-scope
 conclusion (only the prose needed cleanup, not the conclusion), and overall
 scope boundaries (no missing/extra services beyond the RST gap above).
+
+## 10. Round 2 review disposition
+
+Independent review (`deleg_6f9e7815`) verdict: REQUEST CHANGES. A fresh
+pass (not anchored to Round 1's disposition table) found the same
+mid-draft-sentence-fragment defect pattern recurring in a spot Round 1's
+fix missed, plus one new factual mis-attribution introduced by Round 1's
+own fix:
+
+| # | Finding | Severity | Fix location |
+|---|---|---|---|
+| 1 | §2's "Out of scope: POST" bullet still contained the same leftover mid-draft fragment Round 1 fixed in §3 ("...defaults to `AuthTypeNone` if the pointer... wait, `POST`'s DTO ... is NOT a pointer today") -- Round 1's fix rewrote §3 but missed this duplicate copy in §2 | MAJOR (accuracy/professionalism, same class as Round 1 finding #2) | §2's bullet shortened to a one-line summary that defers to §3 for the full argument, eliminating the duplicate prose entirely (single source of truth) |
+| 2 | New §2.1 (added in the Round 1 fix) mis-attributed the API-key-header-only-used-for-`api_key` logic to `mcpserverhandler`; it actually lives in `mcptoolhandler/client.go`'s `buildAuthHeader` (`case mcpserver.AuthTypeAPIKey`, lines 79-88) | MAJOR (factual error introduced by the Round 1 fix itself) | §2.1 citation corrected to name the right package/function/line range |
+| 3 | §5.1's RST note snippet didn't state where the new note is inserted relative to the pre-existing `tm_delete` sentinel note, leaving insertion order ambiguous for an implementer | MINOR | §5.1 now states the new note goes between the existing `secret` note and the existing `tm_delete` note |
+| 4 | §7's HTTP-layer test subsection didn't flag that the §4.2 signature change breaks compilation of the file's two PRE-EXISTING PUT tests (`Test_PutMcpserversId_SecretOmitted`, `Test_PutMcpserversId_SecretExplicitClear`, confirmed present at `mcpservers_test.go:183,235`), not just add new ones | MINOR | §7 now explicitly calls out updating both existing tests' mock call sites to the new pointer types, ahead of the two new test cases |
+
+Not changed (reviewer confirmed correct): all five Round 1 fixes other
+than the §2 duplicate fragment (§3's own rewrite, the RST-scope addition,
+the general shape of the new HTTP-layer test cases) were verified
+byte-accurate against current code. Document-wide section cross-references
+and terminology were checked and found consistent.
