@@ -38,6 +38,7 @@ func Test_Update_PartialFields(t *testing.T) {
 		fieldStatus *mcpserver.Status
 		fieldAuth   *mcpserver.AuthType
 		fieldAPIKey *string
+		fieldSecret *string
 
 		wantKeys []mcpserver.Field
 	}{
@@ -65,9 +66,10 @@ func Test_Update_PartialFields(t *testing.T) {
 			wantKeys:  []mcpserver.Field{mcpserver.FieldAuthType},
 		},
 		{
-			name:     "url nil alongside secret set -> secret-only rotation succeeds without resending url (the original bug report's literal repro case)",
-			fieldURL: nil,
-			wantKeys: []mcpserver.Field{mcpserver.FieldSecretCiphertext, mcpserver.FieldSecretNonce, mcpserver.FieldKeyVersion},
+			name:        "url nil alongside secret set -> secret-only rotation succeeds without resending url (the original bug report's literal repro case)",
+			fieldURL:    nil,
+			fieldSecret: strPtr("«redacted:new-secret»"),
+			wantKeys:    []mcpserver.Field{mcpserver.FieldSecretCiphertext, mcpserver.FieldSecretNonce, mcpserver.FieldKeyVersion},
 		},
 	}
 
@@ -93,12 +95,7 @@ func Test_Update_PartialFields(t *testing.T) {
 			}, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, mcpserver.EventTypeUpdated, gomock.Any())
 
-			var secret *string
-			if tt.name == "url nil alongside secret set -> secret-only rotation succeeds without resending url (the original bug report's literal repro case)" {
-				secret = strPtr("«redacted:new-secret»")
-			}
-
-			_, err := h.Update(context.Background(), id, tt.fieldName, tt.fieldDetail, tt.fieldURL, tt.fieldStatus, tt.fieldAuth, tt.fieldAPIKey, secret)
+			_, err := h.Update(context.Background(), id, tt.fieldName, tt.fieldDetail, tt.fieldURL, tt.fieldStatus, tt.fieldAuth, tt.fieldAPIKey, tt.fieldSecret)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
