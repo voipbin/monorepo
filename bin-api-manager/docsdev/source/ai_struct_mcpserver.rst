@@ -19,6 +19,7 @@ MCP Server
         "status": "<string>",
         "auth_type": "<string>",
         "api_key_header": "<string>",
+        "oauth_vendor": "<string>",
         "has_secret": <boolean>,
         "tm_create": "<string>",
         "tm_update": "<string>",
@@ -31,9 +32,10 @@ MCP Server
 * ``detail`` (String, Optional): A description of the MCP server's purpose.
 * ``url`` (String, Required): The MCP server's Streamable-HTTP endpoint. **Must be** ``https://`` **only** — plain ``http://`` URLs are rejected. The URL is also validated against private/loopback/link-local/multicast address ranges (including IPv4-mapped IPv6 forms) both before persisting and again at the moment of every outbound connection, to prevent the server from being used to reach internal infrastructure.
 * ``status`` (enum string, Optional): The server's lifecycle state. See :ref:`Status <mcpserver-struct-mcpserver-status>`. Defaults to ``active``.
-* ``auth_type`` (enum string, Optional): How outbound MCP calls authenticate against this server. See :ref:`Auth Type <mcpserver-struct-mcpserver-auth_type>`. Defaults to no authentication.
+* ``auth_type`` (enum string, Optional): How outbound MCP calls authenticate against this server. See :ref:`Auth Type <mcpserver-struct-mcpserver-auth_type>`. Defaults to no authentication. ``oauth`` is set implicitly by completing ``POST /mcpservers/oauth/complete`` -- it can never be set directly via ``POST``/``PUT`` with a customer-supplied secret.
 * ``api_key_header`` (String, Optional): The HTTP header name used to send the secret when ``auth_type`` is ``api_key`` (e.g., ``"X-API-Key"``). Ignored for other auth types.
-* ``has_secret`` (Boolean): Whether a secret (bearer token or API key) is currently stored for this server. The secret itself is never returned in any response.
+* ``oauth_vendor`` (enum string): Which OAuth vendor this server is connected to (``github`` or ``linear``). Only set when ``auth_type`` is ``oauth``; empty otherwise.
+* ``has_secret`` (Boolean): Whether a secret (bearer token, API key, or OAuth access token) is currently stored for this server. The secret/token value itself is never returned in any response.
 * ``tm_create`` (String, ISO 8601): Timestamp when the MCP server was registered.
 * ``tm_update`` (String, ISO 8601): Timestamp when the MCP server was last updated.
 * ``tm_delete`` (String, ISO 8601): Timestamp when the MCP server was deleted, if applicable.
@@ -95,4 +97,5 @@ Type             Description
 (empty)          No ``Authorization`` header is sent.
 bearer           Sends ``Authorization: Bearer <secret>``.
 api_key          Sends the secret under the header named by ``api_key_header`` (e.g., ``X-API-Key: <secret>``).
+oauth            Sends ``Authorization: Bearer <access_token>`` using an OAuth 2.1 access token obtained via ``POST /mcpservers/oauth/start`` and ``POST /mcpservers/oauth/complete``. The access token is transparently refreshed when it expires, if the connected vendor issued a refresh token. Never set directly by the customer -- only by completing the OAuth flow. See :ref:`oauth_vendor <mcpserver-struct-mcpserver-mcpserver>` for which vendor a server is connected to.
 ================ =======================================

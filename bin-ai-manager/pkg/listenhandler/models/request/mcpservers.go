@@ -38,3 +38,27 @@ type V1DataMcpServersIDPut struct {
 	APIKeyHeader *string             `json:"api_key_header,omitempty"`
 	Secret       *string             `json:"secret,omitempty"`
 }
+
+// V1DataMcpServersOAuthStartPost is the v1 request struct for
+// /v1/mcp_servers/oauth/start POST -- backs AIV1McpOAuthStart. See
+// docs/plans/2026-09-12-mcp-server-oauth-support-design.md §10.
+type V1DataMcpServersOAuthStartPost struct {
+	CustomerID  uuid.UUID  `json:"customer_id,omitempty"`
+	Vendor      string     `json:"vendor,omitempty"`
+	McpServerID *uuid.UUID `json:"mcp_server_id,omitempty"`
+}
+
+// V1DataMcpServersOAuthCallbackGet is the v1 request struct for
+// /v1/mcp_servers/oauth/callback GET -- backs the thin existence-check
+// RPC behind the public callback relay (design §7a, §10).
+type V1DataMcpServersOAuthCallbackGet struct {
+	State string `json:"state,omitempty"`
+}
+
+// V1DataMcpServersOAuthCompletePost is the v1 request struct for
+// /v1/mcp_servers/oauth/complete POST -- backs AIV1McpOAuthComplete.
+type V1DataMcpServersOAuthCompletePost struct {
+	CustomerID uuid.UUID `json:"customer_id,omitempty"`
+	State      string    `json:"state,omitempty"`
+	Code       string    `json:"code,omitempty"`
+}

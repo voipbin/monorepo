@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Number" href="number_struct_number.html"><link rel="prev" title="Number" href="number.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -755,36 +755,36 @@
 <p>Normal number provisioning requires a real provider purchase and costs money. For development and testing, use virtual numbers (<code class="docutils literal notranslate"><span class="pre">type=virtual</span></code>) which are free and instantly available. Search with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/available_numbers?type=virtual</span></code> and provision with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code> using a <code class="docutils literal notranslate"><span class="pre">+899</span></code> prefixed number.</p>
 </div>
 <p><strong>Step 1: Search Available Numbers</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/available_numbers?token=&lt;token&gt;&amp;country_code=US'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/available_numbers?token=&lt;token&gt;&amp;country_code=US&#39;
 </pre></div>
 </div>
 <p><strong>Response:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"result"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"number"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">,</span>
-            <span class="s2">"country"</span><span class="p">:</span> <span class="s2">"US"</span><span class="p">,</span>
-            <span class="s2">"region"</span><span class="p">:</span> <span class="s2">"California"</span><span class="p">,</span>
-            <span class="s2">"postal_code"</span><span class="p">:</span> <span class="s2">"94103"</span><span class="p">,</span>
-            <span class="s2">"features"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"voice"</span><span class="p">,</span> <span class="s2">"sms"</span><span class="p">]</span>
+            <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="s2">&quot;California&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;postal_code&quot;</span><span class="p">:</span> <span class="s2">&quot;94103&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;voice&quot;</span><span class="p">,</span> <span class="s2">&quot;sms&quot;</span><span class="p">]</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"number"</span><span class="p">:</span> <span class="s2">"+15551234568"</span><span class="p">,</span>
-            <span class="s2">"country"</span><span class="p">:</span> <span class="s2">"US"</span><span class="p">,</span>
-            <span class="s2">"region"</span><span class="p">:</span> <span class="s2">"California"</span><span class="p">,</span>
-            <span class="s2">"postal_code"</span><span class="p">:</span> <span class="s2">"90001"</span><span class="p">,</span>
-            <span class="s2">"features"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"voice"</span><span class="p">,</span> <span class="s2">"sms"</span><span class="p">,</span> <span class="s2">"mms"</span><span class="p">]</span>
+            <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234568&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="s2">&quot;California&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;postal_code&quot;</span><span class="p">:</span> <span class="s2">&quot;90001&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;voice&quot;</span><span class="p">,</span> <span class="s2">&quot;sms&quot;</span><span class="p">,</span> <span class="s2">&quot;mms&quot;</span><span class="p">]</span>
         <span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Step 2: Provision the Number</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/numbers?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "number": "+15551234567"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/numbers?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;number&quot;: &quot;+15551234567&quot;
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -799,7 +799,7 @@
 <span class="n">Number</span><span class="p">:</span> <span class="o">+</span><span class="mi">15551234567</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span>                                                                       <span class="o">|</span>
-<span class="o">|</span>  <span class="n">call_flow_id</span><span class="p">:</span> <span class="s2">"flow-abc-123"</span>                                        <span class="o">|</span>
+<span class="o">|</span>  <span class="n">call_flow_id</span><span class="p">:</span> <span class="s2">&quot;flow-abc-123&quot;</span>                                        <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+---------------------------+</span>                                        <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span> <span class="n">Inbound</span> <span class="n">Call</span> <span class="n">Flow</span>         <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span> <span class="mf">1.</span> <span class="n">Play</span> <span class="n">greeting</span>          <span class="o">|</span>                                        <span class="o">|</span>
@@ -807,7 +807,7 @@
 <span class="o">|</span>  <span class="o">|</span> <span class="mf">3.</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">queue</span>         <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+---------------------------+</span>                                        <span class="o">|</span>
 <span class="o">|</span>                                                                       <span class="o">|</span>
-<span class="o">|</span>  <span class="n">message_flow_id</span><span class="p">:</span> <span class="s2">"flow-xyz-789"</span>                                     <span class="o">|</span>
+<span class="o">|</span>  <span class="n">message_flow_id</span><span class="p">:</span> <span class="s2">&quot;flow-xyz-789&quot;</span>                                     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+---------------------------+</span>                                        <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span> <span class="n">Inbound</span> <span class="n">Message</span> <span class="n">Flow</span>      <span class="o">|</span>                                        <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span> <span class="mf">1.</span> <span class="n">Parse</span> <span class="n">keywords</span>         <span class="o">|</span>                                        <span class="o">|</span>
@@ -825,12 +825,12 @@
 <p>A <code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code> or <code class="docutils literal notranslate"><span class="pre">message_flow_id</span></code> set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> means no flow is assigned. Inbound calls or messages to a number without an assigned flow will not be handled. Always create a flow via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/flows</span></code> first, then assign it to the number via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/numbers/{id}/flow_ids</span></code>.</p>
 </div>
 <p><strong>Configure Flows</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/numbers/&lt;number-id&gt;/flow_ids?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "call_flow_id": "flow-abc-123",
-        "message_flow_id": "flow-xyz-789"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/numbers/&lt;number-id&gt;/flow_ids?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;call_flow_id&quot;: &quot;flow-abc-123&quot;,
+        &quot;message_flow_id&quot;: &quot;flow-xyz-789&quot;
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -948,7 +948,7 @@
    GET /available_numbers?country_code=US
 
 2. Provision the number
-   POST /numbers { "number": "+18005551234" }
+   POST /numbers { &quot;number&quot;: &quot;+18005551234&quot; }
 
 3. Create IVR flow
    - Greeting message
@@ -956,12 +956,12 @@
    - Route to appropriate queue
 
 4. Assign flow to number
-   PUT /numbers/{id}/flow_ids { "call_flow_id": "...", "message_flow_id": "00000000-0000-0000-0000-000000000000" }
+   PUT /numbers/{id}/flow_ids { &quot;call_flow_id&quot;: &quot;...&quot;, &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot; }
 
 Result:
 +--------------------------------------------+
 | Caller dials 1-800-555-1234               |
-| -&gt; Hears: "Welcome to Company X..."        |
+| -&gt; Hears: &quot;Welcome to Company X...&quot;        |
 | -&gt; Press 1 for Sales                       |
 | -&gt; Connected to sales queue                |
 +--------------------------------------------+
@@ -970,7 +970,7 @@ Result:
 <p><strong>Scenario 2: SMS Auto-Responder</strong></p>
 <p>Configure automatic SMS responses.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Provision</span> <span class="n">local</span> <span class="n">number</span> <span class="k">for</span> <span class="n">SMS</span>
-   <span class="n">POST</span> <span class="o">/</span><span class="n">numbers</span> <span class="p">{</span> <span class="s2">"number"</span><span class="p">:</span> <span class="s2">"+15551234567"</span> <span class="p">}</span>
+   <span class="n">POST</span> <span class="o">/</span><span class="n">numbers</span> <span class="p">{</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span> <span class="p">}</span>
 
 <span class="mf">2.</span> <span class="n">Create</span> <span class="n">message</span> <span class="n">flow</span>
    <span class="o">-</span> <span class="n">Check</span> <span class="k">for</span> <span class="n">keywords</span> <span class="p">(</span><span class="n">HOURS</span><span class="p">,</span> <span class="n">HELP</span><span class="p">,</span> <span class="n">STOP</span><span class="p">)</span>
@@ -978,12 +978,12 @@ Result:
    <span class="o">-</span> <span class="n">Forward</span> <span class="n">unknown</span> <span class="n">messages</span> <span class="n">to</span> <span class="n">agent</span>
 
 <span class="mf">3.</span> <span class="n">Assign</span> <span class="n">message</span> <span class="n">flow</span>
-   <span class="n">PUT</span> <span class="o">/</span><span class="n">numbers</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">flow_ids</span> <span class="p">{</span> <span class="s2">"call_flow_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span> <span class="s2">"message_flow_id"</span><span class="p">:</span> <span class="s2">"..."</span> <span class="p">}</span>
+   <span class="n">PUT</span> <span class="o">/</span><span class="n">numbers</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">flow_ids</span> <span class="p">{</span> <span class="s2">&quot;call_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span> <span class="s2">&quot;message_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span> <span class="p">}</span>
 
 <span class="n">Result</span><span class="p">:</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Customer</span> <span class="n">texts</span> <span class="s2">"HOURS"</span>                     <span class="o">|</span>
-<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Auto</span><span class="o">-</span><span class="n">reply</span><span class="p">:</span> <span class="s2">"We're open Mon-Fri 9-5"</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Customer</span> <span class="n">texts</span> <span class="s2">&quot;HOURS&quot;</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Auto</span><span class="o">-</span><span class="n">reply</span><span class="p">:</span> <span class="s2">&quot;We&#39;re open Mon-Fri 9-5&quot;</span>    <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 </pre></div>
 </div>
@@ -993,10 +993,10 @@ Result:
    GET https://api.voipbin.net/v1.0/available_numbers?type=virtual&amp;page_size=5
 
 2. Provision the virtual number
-   POST /numbers { "number": "+899100000001" }
+   POST /numbers { &quot;number&quot;: &quot;+899100000001&quot; }
 
 3. Assign a call flow for testing
-   PUT /numbers/{id}/flow_ids { "call_flow_id": "...", "message_flow_id": "00000000-0000-0000-0000-000000000000" }
+   PUT /numbers/{id}/flow_ids { &quot;call_flow_id&quot;: &quot;...&quot;, &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot; }
 
 Result:
 +--------------------------------------------+
@@ -1179,8 +1179,8 @@ Result:
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

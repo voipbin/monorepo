@@ -21,6 +21,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/analysishandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-ai-manager/pkg/mcpoauthhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
@@ -64,6 +65,7 @@ type listenHandler struct {
 	participantHandler      participanthandler.ParticipantHandler
 	analysisHandler         analysishandler.AnalysisHandler
 	mcpServerHandler        mcpserverhandler.McpServerHandler
+	mcpOAuthHandler         mcpoauthhandler.McpOAuthHandler
 }
 
 var (
@@ -132,9 +134,12 @@ var (
 	regV1TeamsID                     = regexp.MustCompile("/v1/teams/" + regUUID + "$")
 
 	// mcp_servers
-	regV1McpServersGet = regexp.MustCompile(`/v1/mcp_servers\?`)
-	regV1McpServers    = regexp.MustCompile("/v1/mcp_servers$")
-	regV1McpServersID  = regexp.MustCompile("/v1/mcp_servers/" + regUUID + "$")
+	regV1McpServersGet             = regexp.MustCompile(`/v1/mcp_servers\?`)
+	regV1McpServers                = regexp.MustCompile("/v1/mcp_servers$")
+	regV1McpServersOAuthStart      = regexp.MustCompile("/v1/mcp_servers/oauth/start$")
+	regV1McpServersOAuthCallback   = regexp.MustCompile(`/v1/mcp_servers/oauth/callback\?`)
+	regV1McpServersOAuthComplete   = regexp.MustCompile("/v1/mcp_servers/oauth/complete$")
+	regV1McpServersID              = regexp.MustCompile("/v1/mcp_servers/" + regUUID + "$")
 )
 
 var (
@@ -211,19 +216,9 @@ func NewListenHandler(
 	teamHandler teamhandler.TeamHandler,
 	participantHandler participanthandler.ParticipantHandler,
 	analysisHandler analysishandler.AnalysisHandler,
-
-	// mcpServerHandlers is variadic to remain backward-compatible with
-	// existing call sites while checkpoint 6 wires the /v1/mcp_servers
-	// routes; pass at most one McpServerHandler. Production wiring of the
-	// concrete handler into cmd/ai-manager/main.go's NewListenHandler call
-	// is out of this checkpoint's scope (see final report).
-	mcpServerHandlers ...mcpserverhandler.McpServerHandler,
+	mcpServerHandler mcpserverhandler.McpServerHandler,
+	mcpOAuthHandler mcpoauthhandler.McpOAuthHandler,
 ) ListenHandler {
-	var mcpServerHandler mcpserverhandler.McpServerHandler
-	if len(mcpServerHandlers) > 0 {
-		mcpServerHandler = mcpServerHandlers[0]
-	}
-
 	h := &listenHandler{
 		sockHandler:   sockHandler,
 		queueListen:   queueListen,
@@ -243,6 +238,7 @@ func NewListenHandler(
 		participantHandler:      participantHandler,
 		analysisHandler:         analysisHandler,
 		mcpServerHandler:        mcpServerHandler,
+		mcpOAuthHandler:         mcpOAuthHandler,
 	}
 
 	return h
@@ -563,6 +559,21 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1McpServersGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1McpServersGet(ctx, m)
 		requestType = "/v1/mcp_servers"
+
+	// POST /mcp_servers/oauth/start
+	case regV1McpServersOAuthStart.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1McpServersOAuthStartPost(ctx, m)
+		requestType = "/v1/mcp_servers/oauth/start"
+
+	// GET /mcp_servers/oauth/callback
+	case regV1McpServersOAuthCallback.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1McpServersOAuthCallbackGet(ctx, m)
+		requestType = "/v1/mcp_servers/oauth/callback"
+
+	// POST /mcp_servers/oauth/complete
+	case regV1McpServersOAuthComplete.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1McpServersOAuthCompletePost(ctx, m)
+		requestType = "/v1/mcp_servers/oauth/complete"
 
 	// POST /mcp_servers
 	case regV1McpServers.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

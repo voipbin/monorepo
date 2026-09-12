@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="AIPromptHistory" href="ai_struct_aiprompthistory.html"><link rel="prev" title="AI" href="ai_struct_ai.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>MCP Server - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -643,18 +643,19 @@
 <section id="mcpserver-struct-mcpserver-mcpserver">
 <span id="id1"></span><h2>MCP Server<a class="headerlink" href="#mcpserver-struct-mcpserver-mcpserver" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"auth_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"api_key_header"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"has_secret"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;auth_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;api_key_header&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;oauth_vendor&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;has_secret&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -665,9 +666,10 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): A description of the MCP server’s purpose.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">url</span></code> (String, Required): The MCP server’s Streamable-HTTP endpoint. <strong>Must be</strong> <code class="docutils literal notranslate"><span class="pre">https://</span></code> <strong>only</strong> — plain <code class="docutils literal notranslate"><span class="pre">http://</span></code> URLs are rejected. The URL is also validated against private/loopback/link-local/multicast address ranges (including IPv4-mapped IPv6 forms) both before persisting and again at the moment of every outbound connection, to prevent the server from being used to reach internal infrastructure.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string, Optional): The server’s lifecycle state. See <a class="reference internal" href="#mcpserver-struct-mcpserver-status"><span class="std std-ref">Status</span></a>. Defaults to <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">auth_type</span></code> (enum string, Optional): How outbound MCP calls authenticate against this server. See <a class="reference internal" href="#mcpserver-struct-mcpserver-auth-type"><span class="std std-ref">Auth Type</span></a>. Defaults to no authentication.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">auth_type</span></code> (enum string, Optional): How outbound MCP calls authenticate against this server. See <a class="reference internal" href="#mcpserver-struct-mcpserver-auth-type"><span class="std std-ref">Auth Type</span></a>. Defaults to no authentication. <code class="docutils literal notranslate"><span class="pre">oauth</span></code> is set implicitly by completing <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers/oauth/complete</span></code> – it can never be set directly via <code class="docutils literal notranslate"><span class="pre">POST</span></code>/<code class="docutils literal notranslate"><span class="pre">PUT</span></code> with a customer-supplied secret.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">api_key_header</span></code> (String, Optional): The HTTP header name used to send the secret when <code class="docutils literal notranslate"><span class="pre">auth_type</span></code> is <code class="docutils literal notranslate"><span class="pre">api_key</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;X-API-Key&quot;</span></code>). Ignored for other auth types.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">has_secret</span></code> (Boolean): Whether a secret (bearer token or API key) is currently stored for this server. The secret itself is never returned in any response.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">oauth_vendor</span></code> (enum string): Which OAuth vendor this server is connected to (<code class="docutils literal notranslate"><span class="pre">github</span></code> or <code class="docutils literal notranslate"><span class="pre">linear</span></code>). Only set when <code class="docutils literal notranslate"><span class="pre">auth_type</span></code> is <code class="docutils literal notranslate"><span class="pre">oauth</span></code>; empty otherwise.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">has_secret</span></code> (Boolean): Whether a secret (bearer token, API key, or OAuth access token) is currently stored for this server. The secret/token value itself is never returned in any response.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the MCP server was registered.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the MCP server was last updated.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the MCP server was deleted, if applicable.</p></li>
@@ -690,18 +692,18 @@
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"b1a2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Internal Ticketing MCP"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Exposes ticket lookup/create tools to AI assistants"</span><span class="p">,</span>
-    <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"https://mcp.internal.example.com/"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
-    <span class="s2">"auth_type"</span><span class="p">:</span> <span class="s2">"bearer"</span><span class="p">,</span>
-    <span class="s2">"api_key_header"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"has_secret"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-09-11 03:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"9999-01-01 00:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"9999-01-01 00:00:00.000000"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b1a2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Internal Ticketing MCP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Exposes ticket lookup/create tools to AI assistants&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://mcp.internal.example.com/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;auth_type&quot;</span><span class="p">:</span> <span class="s2">&quot;bearer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;api_key_header&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;has_secret&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-09-11 03:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -747,6 +749,9 @@
 </tr>
 <tr class="row-even"><td><p>api_key</p></td>
 <td><p>Sends the secret under the header named by <code class="docutils literal notranslate"><span class="pre">api_key_header</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">X-API-Key:</span> <span class="pre">&lt;secret&gt;</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p>oauth</p></td>
+<td><p>Sends <code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Bearer</span> <span class="pre">&lt;access_token&gt;</span></code> using an OAuth 2.1 access token obtained via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers/oauth/start</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers/oauth/complete</span></code>. The access token is transparently refreshed when it expires, if the connected vendor issued a refresh token. Never set directly by the customer – only by completing the OAuth flow. See <a class="reference internal" href="#mcpserver-struct-mcpserver-mcpserver"><span class="std std-ref">oauth_vendor</span></a> for which vendor a server is connected to.</p></td>
 </tr>
 </tbody>
 </table>
@@ -831,8 +836,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

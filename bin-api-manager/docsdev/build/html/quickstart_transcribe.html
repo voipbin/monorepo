@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Transcribe - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -656,74 +656,74 @@
 <section id="step-1-create-a-transcription-flow">
 <h3>Step 1: Create a transcription flow<a class="headerlink" href="#step-1-create-a-transcription-flow" title="Link to this heading">¶</a></h3>
 <p>Create a flow that answers the call, starts transcription, speaks a greeting, and then pauses for 30 seconds. The <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action begins real-time speech-to-text; all subsequent audio (both TTS output and caller speech) is transcribed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/flows?token=&lt;your-token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "name": "quickstart transcribe flow",
-        "detail": "Answer, start transcription, speak greeting, pause 30s",
-        "actions": [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/flows?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;quickstart transcribe flow&quot;,
+        &quot;detail&quot;: &quot;Answer, start transcription, speak greeting, pause 30s&quot;,
+        &quot;actions&quot;: [
             {
-                "type": "answer"
+                &quot;type&quot;: &quot;answer&quot;
             },
             {
-                "type": "transcribe_start",
-                "option": {
-                    "language": "en-US"
+                &quot;type&quot;: &quot;transcribe_start&quot;,
+                &quot;option&quot;: {
+                    &quot;language&quot;: &quot;en-US&quot;
                 }
             },
             {
-                "type": "talk",
-                "option": {
-                    "text": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
-                    "language": "en-US"
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
                 }
             },
             {
-                "type": "sleep",
-                "option": {
-                    "duration": 30000
+                &quot;type&quot;: &quot;sleep&quot;,
+                &quot;option&quot;: {
+                    &quot;duration&quot;: 30000
                 }
             }
         ]
-    }'
+    }&#39;
 </pre></div>
 </div>
 <p>The response includes the created flow with a server-generated <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID). Save this — you will need it in the next step:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"quickstart transcribe flow"</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Answer, start transcription, speak greeting, pause 30s"</span><span class="p">,</span>
-    <span class="s2">"actions"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;quickstart transcribe flow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Answer, start transcription, speak greeting, pause 30s&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-0001-0000-0000-000000000001"</span><span class="p">,</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"answer"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-0001-0000-0000-000000000001&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-0001-0000-0000-000000000002"</span><span class="p">,</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_start"</span><span class="p">,</span>
-            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-0001-0000-0000-000000000002&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-0001-0000-0000-000000000003"</span><span class="p">,</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
-            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now."</span><span class="p">,</span>
-                <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-0001-0000-0000-000000000003&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-0001-0000-0000-000000000004"</span><span class="p">,</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"sleep"</span><span class="p">,</span>
-            <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">30000</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-0001-0000-0000-000000000004&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sleep&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">30000</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-18 10:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">""</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -739,49 +739,49 @@
 <h3>Step 2: Create a virtual number and assign the flow<a class="headerlink" href="#step-2-create-a-virtual-number-and-assign-the-flow" title="Link to this heading">¶</a></h3>
 <p>Create a virtual number (free, <code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) and assign the transcription flow to handle inbound calls.</p>
 <p><strong>Create the virtual number:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/numbers?token=&lt;your-token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "number": "+899100000001"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/numbers?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;number&quot;: &quot;+899100000001&quot;
+    }&#39;
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"</span><span class="p">,</span>
-    <span class="s2">"number"</span><span class="p">:</span> <span class="s2">"+899100000001"</span><span class="p">,</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"virtual"</span><span class="p">,</span>
-    <span class="s2">"call_flow_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"message_flow_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
-    <span class="s2">"t38_enabled"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">"emergency_enabled"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-18 10:01:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">""</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+899100000001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;virtual&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;t38_enabled&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;emergency_enabled&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:01:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Save the number’s <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) from the response.</p>
 <p><strong>Assign the flow to the number:</strong></p>
 <p>Update the number’s <code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code> to point to the flow you created in Step 1. Replace <code class="docutils literal notranslate"><span class="pre">&lt;number-id&gt;</span></code> with the <code class="docutils literal notranslate"><span class="pre">id</span></code> from the response above, and <code class="docutils literal notranslate"><span class="pre">&lt;flow-id&gt;</span></code> with the flow <code class="docutils literal notranslate"><span class="pre">id</span></code> from Step 1:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT 'https://api.voipbin.net/v1.0/numbers/&lt;number-id&gt;?token=&lt;your-token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "call_flow_id": "&lt;flow-id&gt;"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT &#39;https://api.voipbin.net/v1.0/numbers/&lt;number-id&gt;?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;call_flow_id&quot;: &quot;&lt;flow-id&gt;&quot;
+    }&#39;
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"</span><span class="p">,</span>
-    <span class="s2">"number"</span><span class="p">:</span> <span class="s2">"+899100000001"</span><span class="p">,</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"virtual"</span><span class="p">,</span>
-    <span class="s2">"call_flow_id"</span><span class="p">:</span> <span class="s2">"b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90"</span><span class="p">,</span>
-    <span class="s2">"message_flow_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+899100000001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;virtual&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -802,9 +802,9 @@
 </div>
 <p><strong>Send a subscription message</strong> after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:*"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:*&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -814,29 +814,29 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
-<span class="n">token</span> <span class="o">=</span> <span class="s2">"&lt;your-token&gt;"</span>
-<span class="n">customer_id</span> <span class="o">=</span> <span class="s2">"&lt;your-customer-id&gt;"</span>
+<span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-token&gt;&quot;</span>
+<span class="n">customer_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-customer-id&gt;&quot;</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"event_type"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"transcript_created"</span><span class="p">:</span>
-        <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s2">"direction"</span><span class="p">]</span>  <span class="c1"># "in" = caller, "out" = VoIPBin TTS</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s2">"message"</span><span class="p">]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">:</span>
+        <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s2">&quot;direction&quot;</span><span class="p">]</span>  <span class="c1"># &quot;in&quot; = caller, &quot;out&quot; = VoIPBin TTS</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-        <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">"customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:transcribe:*"</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:transcribe:*&quot;</span>
         <span class="p">]</span>
     <span class="p">}</span>
     <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Subscribed to transcribe events. Waiting for transcripts..."</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subscribed to transcribe events. Waiting for transcripts...&quot;</span><span class="p">)</span>
 
 <span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">"wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="sa">f</span><span class="s2">&quot;wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="n">on_open</span><span class="o">=</span><span class="n">on_open</span><span class="p">,</span>
     <span class="n">on_message</span><span class="o">=</span><span class="n">on_message</span>
 <span class="p">)</span>
@@ -847,41 +847,41 @@
 <section id="step-4-make-a-call-to-the-virtual-number">
 <h3>Step 4: Make a call to the virtual number<a class="headerlink" href="#step-4-make-a-call-to-the-virtual-number" title="Link to this heading">¶</a></h3>
 <p>With the WebSocket connected, make an outbound call to the virtual number. The call’s destination is the virtual number you created; the source is any number owned by your account. In this quickstart scenario, the TTS greeting will generate <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code> transcripts. To also see <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code> transcripts (caller speech), you would need a SIP or WebRTC client connected to the call.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "source": {
-            "type": "tel",
-            "target": "&lt;your-source-number&gt;"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;&lt;your-source-number&gt;&quot;
         },
-        "destinations": [
+        &quot;destinations&quot;: [
             {
-                "type": "tel",
-                "target": "+899100000001"
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+899100000001&quot;
             }
         ]
-    }'
+    }&#39;
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"calls"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"c7d8e9f0-a1b2-3c4d-5e6f-7a8b9c0d1e2f"</span><span class="p">,</span>
-            <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90"</span><span class="p">,</span>
-            <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;your-source-number&gt;"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c7d8e9f0-a1b2-3c4d-5e6f-7a8b9c0d1e2f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
             <span class="p">},</span>
-            <span class="s2">"destination"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
-                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+899100000001"</span>
+            <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+899100000001&quot;</span>
             <span class="p">},</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"dialing"</span><span class="p">,</span>
-            <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"outgoing"</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
             <span class="o">...</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"groupcalls"</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -897,16 +897,16 @@
 <p>Within seconds of the call being answered, the WebSocket begins delivering <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events. The TTS greeting appears first (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code>), followed by any speech from the caller (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code>).</p>
 <p><strong>Example WebSocket event:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-02-18T10:02:05.000000Z"</span><span class="p">,</span>
-    <span class="s2">"topic"</span><span class="p">:</span> <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now."</span><span class="p">,</span>
-        <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01 00:00:08.991840"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-18 10:02:05.233415"</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:05.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:02:05.233415&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -928,12 +928,12 @@
 <section id="receive-events-via-webhook-alternative">
 <h3>Receive events via webhook (alternative)<a class="headerlink" href="#receive-events-via-webhook-alternative" title="Link to this heading">¶</a></h3>
 <p>Instead of WebSocket, you can receive transcription events via your customer webhook. Configure a webhook URI on your customer account — VoIPBin sends HTTP POST requests for <strong>all</strong> events associated with your account, including transcription events:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT 'https://api.voipbin.net/v1.0/customer?token=&lt;your-token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "webhook_method": "POST",
-        "webhook_uri": "https://your-server.com/webhook"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;your-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;webhook_method&quot;: &quot;POST&quot;,
+        &quot;webhook_uri&quot;: &quot;https://your-server.com/webhook&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>Once configured, transcription events (along with all other account events) are delivered to your <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> as HTTP POST requests. There is no per-event-type filtering — your endpoint receives all events and must filter by <code class="docutils literal notranslate"><span class="pre">event_type</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code>).</p>
@@ -941,16 +941,16 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">webhook</span>
 
 <span class="p">{</span>
-    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
-    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-02-18T10:02:05.000000Z"</span><span class="p">,</span>
-    <span class="s2">"topic"</span><span class="p">:</span> <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
-        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
-        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hi, this is a test of the transcription feature."</span><span class="p">,</span>
-        <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01 00:00:15.500000"</span><span class="p">,</span>
-        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-18 10:02:10.100000"</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:05.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, this is a test of the transcription feature.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:15.500000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18 10:02:10.100000&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -964,29 +964,29 @@
 <section id="step-6-verify-transcription-results">
 <h3>Step 6: Verify transcription results<a class="headerlink" href="#step-6-verify-transcription-results" title="Link to this heading">¶</a></h3>
 <p>After the call ends, you can retrieve the full transcript via the API. Use the <code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID) from the WebSocket or webhook events. In this flow-based scenario, no <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code> call is made directly — the <code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> is generated internally when the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action executes and is surfaced only via events. If you did not capture it from an event, you can also find it via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes?resource_id=&lt;call-id&gt;</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET 'https://api.voipbin.net/v1.0/transcripts?token=&lt;your-token&gt;&amp;transcribe_id=&lt;transcribe-id&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET &#39;https://api.voipbin.net/v1.0/transcripts?token=&lt;your-token&gt;&amp;transcribe_id=&lt;transcribe-id&gt;&#39;
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"result"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"06af78f0-b063-48c0-b22d-d31a5af0aa88"</span><span class="p">,</span>
-            <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-            <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
-            <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hi, this is a test of the transcription feature."</span><span class="p">,</span>
-            <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01T00:00:15.5Z"</span><span class="p">,</span>
-            <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-18T10:02:10.1Z"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;06af78f0-b063-48c0-b22d-d31a5af0aa88&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, this is a test of the transcription feature.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01T00:00:15.5Z&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:10.1Z&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"3c95ea10-a5b7-4a68-aebf-ed1903baf110"</span><span class="p">,</span>
-            <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
-            <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
-            <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now."</span><span class="p">,</span>
-            <span class="s2">"tm_transcript"</span><span class="p">:</span> <span class="s2">"0001-01-01T00:00:08.99184Z"</span><span class="p">,</span>
-            <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-18T10:02:05.233415Z"</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;3c95ea10-a5b7-4a68-aebf-ed1903baf110&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01T00:00:08.99184Z&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:05.233415Z&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">"next_page_token"</span><span class="p">:</span> <span class="s2">"2026-02-18T10:02:05.233415Z"</span>
+    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-18T10:02:05.233415Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1097,8 +1097,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

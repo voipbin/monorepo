@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Queue" href="queue.html"><link rel="prev" title="conferencecall" href="conference_struct_conferencecall.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -659,33 +659,33 @@
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "result": [
+    &quot;result&quot;: [
         {
-            "id": "17039950-eab0-421d-a5f5-05acd1ac6801",
-            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-            "type": "conference",
-            "status": "progressing",
-            "name": "team standup",
-            "detail": "Daily standup conference",
-            "pre_flow_id": "00000000-0000-0000-0000-000000000000",
-            "post_flow_id": "00000000-0000-0000-0000-000000000000",
-            "conferencecall_ids": [],
-            "recording_id": "00000000-0000-0000-0000-000000000000",
-            "recording_ids": [],
-            "transcribe_id": "00000000-0000-0000-0000-000000000000",
-            "transcribe_ids": [],
-            "direct_hash": "",
-            "tm_end": null,
-            "tm_create": "2021-02-04 02:55:39.659316",
-            "tm_update": "2021-02-04 02:56:07.525985",
-            "tm_delete": null
+            &quot;id&quot;: &quot;17039950-eab0-421d-a5f5-05acd1ac6801&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;type&quot;: &quot;conference&quot;,
+            &quot;status&quot;: &quot;progressing&quot;,
+            &quot;name&quot;: &quot;team standup&quot;,
+            &quot;detail&quot;: &quot;Daily standup conference&quot;,
+            &quot;pre_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;post_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;conferencecall_ids&quot;: [],
+            &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;recording_ids&quot;: [],
+            &quot;transcribe_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;transcribe_ids&quot;: [],
+            &quot;direct_hash&quot;: &quot;&quot;,
+            &quot;tm_end&quot;: null,
+            &quot;tm_create&quot;: &quot;2021-02-04 02:55:39.659316&quot;,
+            &quot;tm_update&quot;: &quot;2021-02-04 02:56:07.525985&quot;,
+            &quot;tm_delete&quot;: null
         },
         ...
     ],
-    "next_page_token": "2021-02-03 09:33:58.077756"
+    &quot;next_page_token&quot;: &quot;2021-02-03 09:33:58.077756&quot;
 }
 </pre></div>
 </div>
@@ -695,27 +695,27 @@
 </section>
 <section id="id1">
 <h2>Example<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/conferences/0e7112d7-6ddc-47ea-bba5-223a3a55ff79?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences/0e7112d7-6ddc-47ea-bba5-223a3a55ff79?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "0e7112d7-6ddc-47ea-bba5-223a3a55ff79",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "type": "conference",
-    "status": "progressing",
-    "name": "team standup",
-    "detail": "Daily standup conference",
-    "pre_flow_id": "00000000-0000-0000-0000-000000000000",
-    "post_flow_id": "00000000-0000-0000-0000-000000000000",
-    "conferencecall_ids": [],
-    "recording_id": "00000000-0000-0000-0000-000000000000",
-    "recording_ids": [],
-    "transcribe_id": "00000000-0000-0000-0000-000000000000",
-    "transcribe_ids": [],
-    "direct_hash": "",
-    "tm_end": null,
-    "tm_create": "2021-02-03 10:44:42.163464",
-    "tm_update": "2021-02-03 10:52:08.488301",
-    "tm_delete": null
+    &quot;id&quot;: &quot;0e7112d7-6ddc-47ea-bba5-223a3a55ff79&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;conference&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;name&quot;: &quot;team standup&quot;,
+    &quot;detail&quot;: &quot;Daily standup conference&quot;,
+    &quot;pre_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;post_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;conferencecall_ids&quot;: [],
+    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;recording_ids&quot;: [],
+    &quot;transcribe_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;transcribe_ids&quot;: [],
+    &quot;direct_hash&quot;: &quot;&quot;,
+    &quot;tm_end&quot;: null,
+    &quot;tm_create&quot;: &quot;2021-02-03 10:44:42.163464&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-03 10:52:08.488301&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -725,33 +725,33 @@
 </section>
 <section id="id2">
 <h2>Example<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "type": "conference",
-        "name": "test conference",
-        "detail": "test conference for example"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;conference&quot;,
+        &quot;name&quot;: &quot;test conference&quot;,
+        &quot;detail&quot;: &quot;test conference for example&quot;
+    }&#39;
 
 {
-    "id": "85252d7b-777b-4580-9420-4df8c6adfc30",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "type": "conference",
-    "status": "starting",
-    "name": "test conference",
-    "detail": "test conference for example",
-    "pre_flow_id": "00000000-0000-0000-0000-000000000000",
-    "post_flow_id": "00000000-0000-0000-0000-000000000000",
-    "conferencecall_ids": [],
-    "recording_id": "00000000-0000-0000-0000-000000000000",
-    "recording_ids": [],
-    "transcribe_id": "00000000-0000-0000-0000-000000000000",
-    "transcribe_ids": [],
-    "direct_hash": "",
-    "tm_end": null,
-    "tm_create": "2021-02-04 03:05:57.710583",
-    "tm_update": "2021-02-04 03:05:57.710583",
-    "tm_delete": null
+    &quot;id&quot;: &quot;85252d7b-777b-4580-9420-4df8c6adfc30&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;conference&quot;,
+    &quot;status&quot;: &quot;starting&quot;,
+    &quot;name&quot;: &quot;test conference&quot;,
+    &quot;detail&quot;: &quot;test conference for example&quot;,
+    &quot;pre_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;post_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;conferencecall_ids&quot;: [],
+    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;recording_ids&quot;: [],
+    &quot;transcribe_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;transcribe_ids&quot;: [],
+    &quot;direct_hash&quot;: &quot;&quot;,
+    &quot;tm_end&quot;: null,
+    &quot;tm_create&quot;: &quot;2021-02-04 03:05:57.710583&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-04 03:05:57.710583&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -766,37 +766,37 @@
 </section>
 <section id="id3">
 <h2>Example<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/conferences/85252d7b-777b-4580-9420-4df8c6adfc30?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "name": "test conference (renamed)",
-        "detail": "updated conference detail",
-        "data": {},
-        "timeout": 3600,
-        "pre_flow_id": "00000000-0000-0000-0000-000000000000",
-        "post_flow_id": "00000000-0000-0000-0000-000000000000"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/conferences/85252d7b-777b-4580-9420-4df8c6adfc30?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;name&quot;: &quot;test conference (renamed)&quot;,
+        &quot;detail&quot;: &quot;updated conference detail&quot;,
+        &quot;data&quot;: {},
+        &quot;timeout&quot;: 3600,
+        &quot;pre_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;post_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;
+    }&#39;
 
 {
-    "id": "85252d7b-777b-4580-9420-4df8c6adfc30",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "type": "conference",
-    "status": "progressing",
-    "name": "test conference (renamed)",
-    "detail": "updated conference detail",
-    "timeout": 3600,
-    "pre_flow_id": "00000000-0000-0000-0000-000000000000",
-    "post_flow_id": "00000000-0000-0000-0000-000000000000",
-    "conferencecall_ids": [],
-    "recording_id": "00000000-0000-0000-0000-000000000000",
-    "recording_ids": [],
-    "transcribe_id": "00000000-0000-0000-0000-000000000000",
-    "transcribe_ids": [],
-    "direct_hash": "",
-    "tm_end": null,
-    "tm_create": "2021-02-04 03:05:57.710583",
-    "tm_update": "2021-02-04 03:07:12.881204",
-    "tm_delete": null
+    &quot;id&quot;: &quot;85252d7b-777b-4580-9420-4df8c6adfc30&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;conference&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;name&quot;: &quot;test conference (renamed)&quot;,
+    &quot;detail&quot;: &quot;updated conference detail&quot;,
+    &quot;timeout&quot;: 3600,
+    &quot;pre_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;post_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;conferencecall_ids&quot;: [],
+    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;recording_ids&quot;: [],
+    &quot;transcribe_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;transcribe_ids&quot;: [],
+    &quot;direct_hash&quot;: &quot;&quot;,
+    &quot;tm_end&quot;: null,
+    &quot;tm_create&quot;: &quot;2021-02-04 03:05:57.710583&quot;,
+    &quot;tm_update&quot;: &quot;2021-02-04 03:07:12.881204&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -811,45 +811,45 @@
 </section>
 <section id="id4">
 <h2>Example<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/conferencecalls/4833755c-f5d0-4bf2-a101-7d3a7e5e586f?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/conferencecalls/4833755c-f5d0-4bf2-a101-7d3a7e5e586f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "4833755c-f5d0-4bf2-a101-7d3a7e5e586f",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "conference_id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",
-    "reference_type": "call",
-    "reference_id": "153c2866-ade0-4a55-a5a7-027e463d9207",
-    "status": "leaving",
-    "tm_create": "2022-08-09 03:53:49.142446",
-    "tm_update": "2022-08-09 03:54:10.035297",
-    "tm_delete": null
+    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,
+    &quot;reference_type&quot;: &quot;call&quot;,
+    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,
+    &quot;status&quot;: &quot;leaving&quot;,
+    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,
+    &quot;tm_update&quot;: &quot;2022-08-09 03:54:10.035297&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
 <section id="regenerate-direct-conference-hash">
 <h3>Regenerate direct conference hash<a class="headerlink" href="#regenerate-direct-conference-hash" title="Link to this heading">¶</a></h3>
 <p>Regenerate the direct hash for a conference. This invalidates the previous SIP URI and creates a new one. If the conference has no existing direct hash, one is created automatically.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/conferences/99accfb7-c0dd-4a54-997d-dd18af7bc280/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/conferences/99accfb7-c0dd-4a54-997d-dd18af7bc280/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    "id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",
-    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-    "type": "conference",
-    "status": "progressing",
-    "name": "test conference",
-    "detail": "test conference for example.",
-    "pre_flow_id": "00000000-0000-0000-0000-000000000000",
-    "post_flow_id": "00000000-0000-0000-0000-000000000000",
-    "conferencecall_ids": [],
-    "recording_id": "00000000-0000-0000-0000-000000000000",
-    "recording_ids": [],
-    "transcribe_id": "00000000-0000-0000-0000-000000000000",
-    "transcribe_ids": [],
-    "direct_hash": "b3c4d5e6f7a8",
-    "tm_end": null,
-    "tm_create": "2022-02-03 06:08:56.672025",
-    "tm_update": "2022-08-06 19:11:13.040418",
-    "tm_delete": null
+    &quot;id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;conference&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;name&quot;: &quot;test conference&quot;,
+    &quot;detail&quot;: &quot;test conference for example.&quot;,
+    &quot;pre_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;post_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;conferencecall_ids&quot;: [],
+    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;recording_ids&quot;: [],
+    &quot;transcribe_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;transcribe_ids&quot;: [],
+    &quot;direct_hash&quot;: &quot;b3c4d5e6f7a8&quot;,
+    &quot;tm_end&quot;: null,
+    &quot;tm_create&quot;: &quot;2022-02-03 06:08:56.672025&quot;,
+    &quot;tm_update&quot;: &quot;2022-08-06 19:11:13.040418&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -995,8 +995,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial" href="ai_voice_agent_integration_tutorial.html"><link rel="prev" title="AI Voice Agent Integration" href="ai_voice_agent_integration.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -672,7 +672,7 @@
                                            <span class="o">|</span>                  <span class="o">|</span>
                                 <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="n">transcript_created</span>     <span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="n">POST</span>
                                     <span class="n">webhook</span><span class="o">/</span><span class="n">WS</span>            <span class="o">/</span><span class="n">speakings</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">say</span>
-                                <span class="p">[</span><span class="n">caller</span><span class="s1">'s speech as text]  [AI response text]</span>
+                                <span class="p">[</span><span class="n">caller</span><span class="s1">&#39;s speech as text]  [AI response text]</span>
                                            <span class="o">|</span>                  <span class="o">|</span>
                                            <span class="n">v</span>                  <span class="o">|</span>
                                        <span class="o">+----------------------------+</span>
@@ -914,10 +914,10 @@
 <p>WebSocket maintains a persistent connection for instant event delivery. Connect to <code class="docutils literal notranslate"><span class="pre">wss://api.voipbin.net/v1.0/ws?token=&lt;token&gt;</span></code> using the same JWT or access key token used for REST API calls. After connecting, send a subscribe message to start receiving events.</p>
 <p>Subscribe to transcription and call events for your customer:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
-    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcription:*"</span><span class="p">,</span>
-        <span class="s2">"customer_id:&lt;your-customer-id&gt;:call:*"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:transcription:*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:&lt;your-customer-id&gt;:call:*&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -994,9 +994,9 @@
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">AI</span> <span class="n">Backend</span>                <span class="n">VoIPBin</span>                    <span class="n">Caller</span>
      <span class="o">|</span>                            <span class="o">|</span>                         <span class="o">|</span>
-     <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">say</span> <span class="s2">"Let me check"</span>   <span class="o">|</span>                         <span class="o">|</span>
+     <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">say</span> <span class="s2">&quot;Let me check&quot;</span>   <span class="o">|</span>                         <span class="o">|</span>
      <span class="o">+---------------------------&gt;|</span> <span class="n">Playing</span> <span class="n">TTS</span> <span class="n">audio</span><span class="o">...</span>    <span class="o">|</span>
-     <span class="o">|</span>                            <span class="o">|&lt;---</span><span class="s2">"Wait, cancel that"</span><span class="o">--|</span>
+     <span class="o">|</span>                            <span class="o">|&lt;---</span><span class="s2">&quot;Wait, cancel that&quot;</span><span class="o">--|</span>
      <span class="o">|</span>                            <span class="o">|</span>                         <span class="o">|</span>
      <span class="o">|</span> <span class="n">transcript_created</span>         <span class="o">|</span>                         <span class="o">|</span>
      <span class="o">|&lt;---------------------------|</span> <span class="p">(</span><span class="n">caller</span> <span class="n">interrupted</span><span class="p">)</span>    <span class="o">|</span>
@@ -1004,7 +1004,7 @@
      <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">flush</span>                <span class="o">|</span>                         <span class="o">|</span>
      <span class="o">+---------------------------&gt;|</span> <span class="n">Stops</span> <span class="n">TTS</span> <span class="n">playback</span>      <span class="o">|</span>
      <span class="o">|</span>                            <span class="o">|</span>                         <span class="o">|</span>
-     <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">say</span> <span class="s2">"Sure, what..."</span>  <span class="o">|</span>                         <span class="o">|</span>
+     <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">say</span> <span class="s2">&quot;Sure, what...&quot;</span>  <span class="o">|</span>                         <span class="o">|</span>
      <span class="o">+---------------------------&gt;|</span> <span class="n">Playing</span> <span class="n">new</span> <span class="n">TTS</span> <span class="n">audio</span>   <span class="o">|</span>
      <span class="o">|</span>                            <span class="o">|</span>                         <span class="o">|</span>
 </pre></div>
@@ -1224,8 +1224,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -231,7 +231,19 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 	// structured log line to preserve observability for the skipped paths.
 	app := gin.New()
 	app.Use(gin.LoggerWithConfig(gin.LoggerConfig{
-		SkipPaths: []string{"/provisioning/extension", "/v1.0/provisioning/extension"},
+		SkipPaths: []string{
+			"/provisioning/extension", "/v1.0/provisioning/extension",
+			// MCP server OAuth vendor callback relay: the query string
+			// carries the vendor's one-time authorization `code` and
+			// our `state` token (design
+			// docs/plans/2026-09-12-mcp-server-oauth-support-design.md
+			// §12) -- must never reach stdout. /start and /complete
+			// pass their equivalents in the JSON body (never logged by
+			// gin's access logger regardless), but are skipped too for
+			// defense-in-depth and consistency with the design doc.
+			"/mcpservers/oauth/callback", "/v1.0/mcpservers/oauth/callback",
+			"/v1.0/mcpservers/oauth/start", "/v1.0/mcpservers/oauth/complete",
+		},
 	}))
 	app.Use(gin.Recovery())
 	app.Use(middleware.RequestID()) // NEW — tag every request with a correlation ID first.
@@ -285,6 +297,29 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 	provisioning.Use(middleware.RateLimit("provisioning_public", cfg.RateLimitProvisioningPublicRPS, cfg.RateLimitProvisioningPublicBurst))
 	provisioning.GET("/extension", service.GetProvisioningExtension)
 
+	appServer := server.NewServer(serviceHandler)
+
+	// Public (unauthenticated) MCP server OAuth vendor callback relay.
+	// GET /mcpservers/oauth/callback is the redirect_uri registered with
+	// GitHub/Linear's OAuth apps -- the vendor's authorization server
+	// redirects the user's browser here, unauthenticated, after consent
+	// (design docs/plans/2026-09-12-mcp-server-oauth-support-design.md
+	// §7a Layer 1, §10). It is registered in its own rate-limit group,
+	// same public-with-token-security pattern as /provisioning/extension
+	// and /auth/password-reset above.
+	mcpOAuth := app.Group("/mcpservers/oauth")
+	mcpOAuth.Use(middleware.RateLimit("mcp_oauth_public", cfg.RateLimitMcpOAuthPublicRPS, cfg.RateLimitMcpOAuthPublicBurst))
+	mcpOAuth.GET("/callback", func(c *gin.Context) {
+		var codePtr *string
+		if code := c.Query("code"); code != "" {
+			codePtr = &code
+		}
+		appServer.GetMcpserversOauthCallback(c, openapi_server.GetMcpserversOauthCallbackParams{
+			Code:  codePtr,
+			State: c.Query("state"),
+		})
+	})
+
 	// register basic services
 	app.GET("/ping", service.GetPing)
 	auth := app.Group("/auth")
@@ -316,8 +351,6 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 	// it must have one. DirectResourceScope is registered on v1.0 only and does
 	// not apply here, which is intended -- this route has no path parameter.
 	authProtected.POST("/boot/refresh", service.PostBootRefresh)
-
-	appServer := server.NewServer(serviceHandler)
 
 	customerRateLimitConfig := middleware.CustomerRateLimitConfig{
 		CustomerRPS:   cfg.RateLimitCustomerV1RPS,

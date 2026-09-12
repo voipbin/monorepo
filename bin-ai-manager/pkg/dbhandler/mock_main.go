@@ -17,6 +17,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
+	mcpoauthstate "monorepo/bin-ai-manager/models/mcpoauthstate"
 	mcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
@@ -534,6 +535,64 @@ func (m *MockDBHandler) AIcallUpdateNoTouchTMUpdate(ctx context.Context, id uuid
 func (mr *MockDBHandlerMockRecorder) AIcallUpdateNoTouchTMUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateNoTouchTMUpdate", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateNoTouchTMUpdate), ctx, id, fields)
+}
+
+// McpOAuthStateCreate mocks base method.
+func (m *MockDBHandler) McpOAuthStateCreate(ctx context.Context, s *mcpoauthstate.McpOAuthState) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpOAuthStateCreate", ctx, s)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// McpOAuthStateCreate indicates an expected call of McpOAuthStateCreate.
+func (mr *MockDBHandlerMockRecorder) McpOAuthStateCreate(ctx, s any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpOAuthStateCreate", reflect.TypeOf((*MockDBHandler)(nil).McpOAuthStateCreate), ctx, s)
+}
+
+// McpOAuthStateDelete mocks base method.
+func (m *MockDBHandler) McpOAuthStateDelete(ctx context.Context, state string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpOAuthStateDelete", ctx, state)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// McpOAuthStateDelete indicates an expected call of McpOAuthStateDelete.
+func (mr *MockDBHandlerMockRecorder) McpOAuthStateDelete(ctx, state any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpOAuthStateDelete", reflect.TypeOf((*MockDBHandler)(nil).McpOAuthStateDelete), ctx, state)
+}
+
+// McpOAuthStateDeleteExpired mocks base method.
+func (m *MockDBHandler) McpOAuthStateDeleteExpired(ctx context.Context, now string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpOAuthStateDeleteExpired", ctx, now)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpOAuthStateDeleteExpired indicates an expected call of McpOAuthStateDeleteExpired.
+func (mr *MockDBHandlerMockRecorder) McpOAuthStateDeleteExpired(ctx, now any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpOAuthStateDeleteExpired", reflect.TypeOf((*MockDBHandler)(nil).McpOAuthStateDeleteExpired), ctx, now)
+}
+
+// McpOAuthStateGet mocks base method.
+func (m *MockDBHandler) McpOAuthStateGet(ctx context.Context, state string) (*mcpoauthstate.McpOAuthState, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpOAuthStateGet", ctx, state)
+	ret0, _ := ret[0].(*mcpoauthstate.McpOAuthState)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpOAuthStateGet indicates an expected call of McpOAuthStateGet.
+func (mr *MockDBHandlerMockRecorder) McpOAuthStateGet(ctx, state any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpOAuthStateGet", reflect.TypeOf((*MockDBHandler)(nil).McpOAuthStateGet), ctx, state)
 }
 
 // McpServerCreate mocks base method.

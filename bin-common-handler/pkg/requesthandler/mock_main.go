@@ -600,6 +600,52 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallToolExecute(ctx, aicallID, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallToolExecute", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallToolExecute), ctx, aicallID, toolID, toolType, function, pipecatcallID)
 }
 
+// AIV1McpOAuthCallback mocks base method.
+func (m *MockRequestHandler) AIV1McpOAuthCallback(ctx context.Context, state string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1McpOAuthCallback", ctx, state)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1McpOAuthCallback indicates an expected call of AIV1McpOAuthCallback.
+func (mr *MockRequestHandlerMockRecorder) AIV1McpOAuthCallback(ctx, state any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1McpOAuthCallback", reflect.TypeOf((*MockRequestHandler)(nil).AIV1McpOAuthCallback), ctx, state)
+}
+
+// AIV1McpOAuthComplete mocks base method.
+func (m *MockRequestHandler) AIV1McpOAuthComplete(ctx context.Context, customerID uuid.UUID, state, code string) (*mcpserver.McpServer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1McpOAuthComplete", ctx, customerID, state, code)
+	ret0, _ := ret[0].(*mcpserver.McpServer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1McpOAuthComplete indicates an expected call of AIV1McpOAuthComplete.
+func (mr *MockRequestHandlerMockRecorder) AIV1McpOAuthComplete(ctx, customerID, state, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1McpOAuthComplete", reflect.TypeOf((*MockRequestHandler)(nil).AIV1McpOAuthComplete), ctx, customerID, state, code)
+}
+
+// AIV1McpOAuthStart mocks base method.
+func (m *MockRequestHandler) AIV1McpOAuthStart(ctx context.Context, customerID uuid.UUID, vendor string, mcpServerID *uuid.UUID) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1McpOAuthStart", ctx, customerID, vendor, mcpServerID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// AIV1McpOAuthStart indicates an expected call of AIV1McpOAuthStart.
+func (mr *MockRequestHandlerMockRecorder) AIV1McpOAuthStart(ctx, customerID, vendor, mcpServerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1McpOAuthStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1McpOAuthStart), ctx, customerID, vendor, mcpServerID)
+}
+
 // AIV1McpServerCreate mocks base method.
 func (m *MockRequestHandler) AIV1McpServerCreate(ctx context.Context, customerID uuid.UUID, name, detail, url string, authType mcpserver.AuthType, apiKeyHeader, secret string) (*mcpserver.McpServer, error) {
 	m.ctrl.T.Helper()

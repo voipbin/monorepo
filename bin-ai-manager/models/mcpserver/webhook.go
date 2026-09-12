@@ -23,6 +23,11 @@ type WebhookMessage struct {
 	AuthType     AuthType `json:"auth_type,omitempty"`
 	APIKeyHeader string   `json:"api_key_header,omitempty"`
 
+	// OAuthVendor is exposed (never the tokens) so callers can render
+	// "Connected to GitHub" / "Connected to Linear" without a secondary
+	// GET -- see design §4.
+	OAuthVendor string `json:"oauth_vendor,omitempty"`
+
 	HasSecret bool `json:"has_secret"`
 
 	TMCreate *time.Time `json:"tm_create"`
@@ -44,6 +49,8 @@ func (h *McpServer) ConvertWebhookMessage() *WebhookMessage {
 
 		AuthType:     h.AuthType,
 		APIKeyHeader: h.APIKeyHeader,
+
+		OAuthVendor: h.OAuthVendor,
 
 		HasSecret: h.HasSecret,
 
