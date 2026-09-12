@@ -692,6 +692,7 @@
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the number has not been deleted.</p>
+<p>On <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/numbers/{id}</span></code> and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/numbers/{id}/flow_id</span></code>, all body fields (<code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code>, <code class="docutils literal notranslate"><span class="pre">message_flow_id</span></code>, and for the former also <code class="docutils literal notranslate"><span class="pre">name</span></code>/<code class="docutils literal notranslate"><span class="pre">detail</span></code>) are optional; omitting a field leaves its current value unchanged.</p>
 </div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>

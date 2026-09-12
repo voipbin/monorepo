@@ -3467,7 +3467,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberRenew(ctx, a, tmRenew any) *gomo
 }
 
 // NumberUpdate mocks base method.
-func (m *MockServiceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID, messageFlowID *uuid.UUID, name, detail *string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberUpdate", ctx, a, id, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.WebhookMessage)
@@ -3482,7 +3482,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberUpdate(ctx, a, id, callFlowID, m
 }
 
 // NumberUpdateFlowIDs mocks base method.
-func (m *MockServiceHandler) NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id, callFlowID, messageFlowID uuid.UUID) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID, messageFlowID *uuid.UUID) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberUpdateFlowIDs", ctx, a, id, callFlowID, messageFlowID)
 	ret0, _ := ret[0].(*number.WebhookMessage)

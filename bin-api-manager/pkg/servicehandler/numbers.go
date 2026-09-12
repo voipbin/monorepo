@@ -215,7 +215,7 @@ func (h *serviceHandler) NumberDelete(ctx context.Context, a *auth.AuthIdentity,
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID *uuid.UUID, messageFlowID *uuid.UUID, name *string, detail *string) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "NumberUpdate",
 		"username":        a.DisplayName(),
@@ -241,13 +241,13 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity,
 	}
 
 	// check call flow
-	if callFlowID != uuid.Nil && !h.numberVerifyFlow(ctx, a, callFlowID) {
+	if callFlowID != nil && *callFlowID != uuid.Nil && !h.numberVerifyFlow(ctx, a, *callFlowID) {
 		log.Errorf("Could not verify call flow")
 		return nil, fmt.Errorf("%w: could not verify call flow", serviceerrors.ErrInternal)
 	}
 
 	// check message flow
-	if messageFlowID != uuid.Nil && !h.numberVerifyFlow(ctx, a, messageFlowID) {
+	if messageFlowID != nil && *messageFlowID != uuid.Nil && !h.numberVerifyFlow(ctx, a, *messageFlowID) {
 		log.Errorf("Could not verify message flow")
 		return nil, fmt.Errorf("%w: could not verify message flow", serviceerrors.ErrInternal)
 	}
@@ -266,7 +266,7 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity,
 // NumberUpdate handles number create request.
 // It sends a request to the number-manager to create a new number.
 // it returns created number information if it succeed.
-func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error) {
+func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID *uuid.UUID, messageFlowID *uuid.UUID) (*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberUpdateFlowIDs",
 		"customer_id": a.CustomerID,

@@ -13659,18 +13659,14 @@
                 "type": "object",
                 "properties": {
                   "call_flow_id": {
-                    "description": "The ID of the updated call flow.",
+                    "description": "The ID of the updated call flow. Omit to leave unchanged.",
                     "type": "string"
                   },
                   "message_flow_id": {
-                    "description": "The ID of the updated message flow.",
+                    "description": "The ID of the updated message flow. Omit to leave unchanged.",
                     "type": "string"
                   }
-                },
-                "required": [
-                  "call_flow_id",
-                  "message_flow_id"
-                ]
+                }
               }
             }
           }
@@ -13819,28 +13815,22 @@
                 "type": "object",
                 "properties": {
                   "call_flow_id": {
-                    "description": "The ID of the updated call flow.",
+                    "description": "The ID of the updated call flow. Omit to leave unchanged.",
                     "type": "string"
                   },
                   "message_flow_id": {
-                    "description": "The ID of the updated message flow.",
+                    "description": "The ID of the updated message flow. Omit to leave unchanged.",
                     "type": "string"
                   },
                   "name": {
-                    "description": "The updated name of the number.",
+                    "description": "The updated name of the number. Omit to leave unchanged.",
                     "type": "string"
                   },
                   "detail": {
-                    "description": "Updated details for the number.",
+                    "description": "Updated details for the number. Omit to leave unchanged.",
                     "type": "string"
                   }
-                },
-                "required": [
-                  "call_flow_id",
-                  "message_flow_id",
-                  "name",
-                  "detail"
-                ]
+                }
               }
             }
           }

@@ -152,14 +152,27 @@ func (h *listenHandler) processV1NumbersIDPut(ctx context.Context, m *sock.Reque
 
 	log.Debugf("Executing processV1NumbersIDPut. number: %s", id)
 
-	fields := map[number.Field]any{
-		number.FieldCallFlowID:    req.CallFlowID,
-		number.FieldMessageFlowID: req.MessageFlowID,
-		number.FieldName:          req.Name,
-		number.FieldDetail:        req.Detail,
+	fields := map[number.Field]any{}
+	if req.CallFlowID != nil {
+		fields[number.FieldCallFlowID] = *req.CallFlowID
+	}
+	if req.MessageFlowID != nil {
+		fields[number.FieldMessageFlowID] = *req.MessageFlowID
+	}
+	if req.Name != nil {
+		fields[number.FieldName] = *req.Name
+	}
+	if req.Detail != nil {
+		fields[number.FieldDetail] = *req.Detail
 	}
 
-	num, err := h.numberHandler.Update(ctx, id, fields)
+	var num *number.Number
+	var err error
+	if len(fields) == 0 {
+		num, err = h.numberHandler.Get(ctx, id)
+	} else {
+		num, err = h.numberHandler.Update(ctx, id, fields)
+	}
 	if err != nil {
 		log.Debugf("Could not update the number. number: %s, err: %v", id, err)
 		return errorResponse(err), nil
@@ -253,15 +266,24 @@ func (h *listenHandler) processV1NumbersIDFlowIDsPut(ctx context.Context, m *soc
 
 	log.Debugf("Executing processV1NumbersIDFlowIDsPut. number: %s", id)
 
-	fields := map[number.Field]any{
-		number.FieldCallFlowID:    req.CallFlowID,
-		number.FieldMessageFlowID: req.MessageFlowID,
+	fields := map[number.Field]any{}
+	if req.CallFlowID != nil {
+		fields[number.FieldCallFlowID] = *req.CallFlowID
+	}
+	if req.MessageFlowID != nil {
+		fields[number.FieldMessageFlowID] = *req.MessageFlowID
 	}
 
-	num, err := h.numberHandler.Update(ctx, id, fields)
-	if err != nil {
-		log.Debugf("Could not update the number's flow_id. number_id: %s, err: %v", id, err)
-		return errorResponse(err), nil
+	var num *number.Number
+	var errUpdate error
+	if len(fields) == 0 {
+		num, errUpdate = h.numberHandler.Get(ctx, id)
+	} else {
+		num, errUpdate = h.numberHandler.Update(ctx, id, fields)
+	}
+	if errUpdate != nil {
+		log.Debugf("Could not update the number's flow_id. number_id: %s, err: %v", id, errUpdate)
+		return errorResponse(errUpdate), nil
 	}
 
 	data, err := json.Marshal(num)

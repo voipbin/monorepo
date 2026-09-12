@@ -5378,7 +5378,7 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberRenewByTmRenew(ctx, tmRe
 }
 
 // NumberV1NumberUpdate mocks base method.
-func (m *MockRequestHandler) NumberV1NumberUpdate(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.Number, error) {
+func (m *MockRequestHandler) NumberV1NumberUpdate(ctx context.Context, id uuid.UUID, callFlowID, messageFlowID *uuid.UUID, name, detail *string) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberV1NumberUpdate", ctx, id, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.Number)
@@ -5393,7 +5393,7 @@ func (mr *MockRequestHandlerMockRecorder) NumberV1NumberUpdate(ctx, id, callFlow
 }
 
 // NumberV1NumberUpdateFlowID mocks base method.
-func (m *MockRequestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id, callFlowID, messageFlowID uuid.UUID) (*number.Number, error) {
+func (m *MockRequestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID, messageFlowID *uuid.UUID) (*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberV1NumberUpdateFlowID", ctx, id, callFlowID, messageFlowID)
 	ret0, _ := ret[0].(*number.Number)

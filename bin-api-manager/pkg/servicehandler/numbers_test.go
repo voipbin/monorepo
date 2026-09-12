@@ -394,15 +394,18 @@ func Test_NumberDelete(t *testing.T) {
 
 func Test_NumberUpdate(t *testing.T) {
 
+	strPtrNumSvc := func(s string) *string { return &s }
+	uuidPtrNumSvc := func(u uuid.UUID) *uuid.UUID { return &u }
+
 	type test struct {
 		name  string
 		agent *auth.AuthIdentity
 
 		id            uuid.UUID
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
-		numberName    string
-		detail        string
+		callFlowID    *uuid.UUID
+		messageFlowID *uuid.UUID
+		numberName    *string
+		detail        *string
 
 		responseGet         *nmnumber.Number
 		responseFlowCall    *fmflow.Flow
@@ -422,10 +425,10 @@ func Test_NumberUpdate(t *testing.T) {
 			}),
 
 			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-			uuid.FromStringOrNil("72001c3a-2ca2-11ee-96c3-4730286893af"),
-			uuid.FromStringOrNil("7240534a-2ca2-11ee-bb9a-8f1c5dafa508"),
-			"update name",
-			"update detail",
+			uuidPtrNumSvc(uuid.FromStringOrNil("72001c3a-2ca2-11ee-96c3-4730286893af")),
+			uuidPtrNumSvc(uuid.FromStringOrNil("7240534a-2ca2-11ee-bb9a-8f1c5dafa508")),
+			strPtrNumSvc("update name"),
+			strPtrNumSvc("update detail"),
 
 			&nmnumber.Number{
 				Identity: commonidentity.Identity{
@@ -486,8 +489,8 @@ func Test_NumberUpdate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().NumberV1NumberGet(ctx, tt.id).Return(tt.responseGet, nil)
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.callFlowID).Return(tt.responseFlowCall, nil)
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.messageFlowID).Return(tt.responseFlowMessage, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, *tt.callFlowID).Return(tt.responseFlowCall, nil)
+			mockReq.EXPECT().FlowV1FlowGet(ctx, *tt.messageFlowID).Return(tt.responseFlowMessage, nil)
 			mockReq.EXPECT().NumberV1NumberUpdate(ctx, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail).Return(tt.responseUpdate, nil)
 
 			res, err := h.NumberUpdate(ctx, tt.agent, tt.id, tt.callFlowID, tt.messageFlowID, tt.numberName, tt.detail)
@@ -504,15 +507,18 @@ func Test_NumberUpdate(t *testing.T) {
 
 func Test_NumberUpdateError(t *testing.T) {
 
+	strPtrNumSvc := func(s string) *string { return &s }
+	uuidPtrNumSvc := func(u uuid.UUID) *uuid.UUID { return &u }
+
 	type test struct {
 		name  string
 		agent *auth.AuthIdentity
 
 		id            uuid.UUID
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
-		numberName    string
-		detail        string
+		callFlowID    *uuid.UUID
+		messageFlowID *uuid.UUID
+		numberName    *string
+		detail        *string
 
 		responseGet *nmnumber.Number
 	}
@@ -529,10 +535,10 @@ func Test_NumberUpdateError(t *testing.T) {
 			}),
 
 			uuid.FromStringOrNil("7c718a8e-7c5d-11eb-8d3d-63ea567a6da9"),
-			uuid.FromStringOrNil("bfa09172-2ca2-11ee-88a7-775c33dab2a6"),
-			uuid.FromStringOrNil("bfd41d3a-2ca2-11ee-8663-1713f43b6555"),
-			"update name",
-			"update detail",
+			uuidPtrNumSvc(uuid.FromStringOrNil("bfa09172-2ca2-11ee-88a7-775c33dab2a6")),
+			uuidPtrNumSvc(uuid.FromStringOrNil("bfd41d3a-2ca2-11ee-8663-1713f43b6555")),
+			strPtrNumSvc("update name"),
+			strPtrNumSvc("update detail"),
 
 			&nmnumber.Number{
 				Identity: commonidentity.Identity{

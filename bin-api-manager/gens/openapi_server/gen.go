@@ -9479,26 +9479,26 @@ type PostNumbersRenewJSONBody struct {
 
 // PutNumbersIdJSONBody defines parameters for PutNumbersId.
 type PutNumbersIdJSONBody struct {
-	// CallFlowId The ID of the updated call flow.
-	CallFlowId string `json:"call_flow_id"`
+	// CallFlowId The ID of the updated call flow. Omit to leave unchanged.
+	CallFlowId *string `json:"call_flow_id,omitempty"`
 
-	// Detail Updated details for the number.
-	Detail string `json:"detail"`
+	// Detail Updated details for the number. Omit to leave unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// MessageFlowId The ID of the updated message flow.
-	MessageFlowId string `json:"message_flow_id"`
+	// MessageFlowId The ID of the updated message flow. Omit to leave unchanged.
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
 
-	// Name The updated name of the number.
-	Name string `json:"name"`
+	// Name The updated name of the number. Omit to leave unchanged.
+	Name *string `json:"name,omitempty"`
 }
 
 // PutNumbersIdFlowIdsJSONBody defines parameters for PutNumbersIdFlowIds.
 type PutNumbersIdFlowIdsJSONBody struct {
-	// CallFlowId The ID of the updated call flow.
-	CallFlowId string `json:"call_flow_id"`
+	// CallFlowId The ID of the updated call flow. Omit to leave unchanged.
+	CallFlowId *string `json:"call_flow_id,omitempty"`
 
-	// MessageFlowId The ID of the updated message flow.
-	MessageFlowId string `json:"message_flow_id"`
+	// MessageFlowId The ID of the updated message flow. Omit to leave unchanged.
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
 }
 
 // GetOutboundConfigsParams defines parameters for GetOutboundConfigs.

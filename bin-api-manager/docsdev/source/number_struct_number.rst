@@ -57,6 +57,8 @@ Number
 
    Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the number has not been deleted.
 
+   On ``PUT /numbers/{id}`` and ``PUT /numbers/{id}/flow_id``, all body fields (``call_flow_id``, ``message_flow_id``, and for the former also ``name``/``detail``) are optional; omitting a field leaves its current value unchanged.
+
 Example
 +++++++
 

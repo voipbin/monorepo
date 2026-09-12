@@ -783,8 +783,8 @@ type ServiceHandler interface {
 	NumberGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*nmnumber.WebhookMessage, error)
 	NumberDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*nmnumber.WebhookMessage, error)
-	NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)
-	NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
+	NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID *uuid.UUID, messageFlowID *uuid.UUID, name *string, detail *string) (*nmnumber.WebhookMessage, error)
+	NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID *uuid.UUID, messageFlowID *uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, metadata nmnumber.Metadata) (*nmnumber.WebhookMessage, error)
 	NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*nmnumber.WebhookMessage, error)
 
