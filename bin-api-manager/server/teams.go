@@ -208,12 +208,26 @@ func (h *server) PutTeamsId(c *gin.Context, id string) {
 		return
 	}
 
-	startMemberID := uuid.FromStringOrNil(req.StartMemberId)
-	members := convertOpenAPIMembers(req.Members)
+	var startMemberID *uuid.UUID
+	if req.StartMemberId != nil {
+		if *req.StartMemberId == "" {
+			parsed := uuid.Nil
+			startMemberID = &parsed
+		} else {
+			parsed, errParse := uuid.FromString(*req.StartMemberId)
+			if errParse != nil {
+				log.Errorf("Could not parse the start_member_id. err: %v", errParse)
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_START_MEMBER_ID", "The provided start_member_id is not a valid UUID.").Wrap(errParse))
+				return
+			}
+			startMemberID = &parsed
+		}
+	}
 
-	var parameter map[string]any
-	if req.Parameter != nil {
-		parameter = *req.Parameter
+	var members *[]amteam.Member
+	if req.Members != nil {
+		m := convertOpenAPIMembers(*req.Members)
+		members = &m
 	}
 
 	res, err := h.serviceHandler.TeamUpdate(
@@ -224,7 +238,7 @@ func (h *server) PutTeamsId(c *gin.Context, id string) {
 		req.Detail,
 		startMemberID,
 		members,
-		parameter,
+		req.Parameter,
 	)
 	if err != nil {
 		log.Errorf("Could not update the team. err: %v", err)

@@ -153,28 +153,59 @@ func (h *teamHandler) Delete(ctx context.Context, id uuid.UUID) (*team.Team, err
 }
 
 // Update updates the team.
-func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error) {
+func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name *string, detail *string, startMemberID *uuid.UUID, members *[]team.Member, parameter *map[string]any) (*team.Team, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Update",
 	})
 
-	// Validate team structure (rules 1-5, 7-11)
-	if err := validateTeam(startMemberID, members); err != nil {
-		return nil, errors.Wrap(err, "validation failed")
+	fields := map[team.Field]any{}
+
+	if startMemberID != nil || members != nil {
+		current, err := h.Get(ctx, id)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not get current team for validation")
+		}
+
+		effectiveStartMemberID := current.StartMemberID
+		if startMemberID != nil {
+			effectiveStartMemberID = *startMemberID
+		}
+		effectiveMembers := current.Members
+		if members != nil {
+			effectiveMembers = *members
+		}
+
+		// Validate team structure (rules 1-5, 7-11)
+		if err := validateTeam(effectiveStartMemberID, effectiveMembers); err != nil {
+			return nil, errors.Wrap(err, "validation failed")
+		}
+
+		// Rule 6: Verify each member's AIID references an existing AI.
+		// Insight-typed AIs (VOIP-1234 §6 v4 item4) are excluded from team membership.
+		if err := h.validateNoInsightMembers(ctx, effectiveMembers); err != nil {
+			return nil, err
+		}
+
+		if startMemberID != nil {
+			fields[team.FieldStartMemberID] = *startMemberID
+		}
+		if members != nil {
+			fields[team.FieldMembers] = *members
+		}
 	}
 
-	// Rule 6: Verify each member's AIID references an existing AI.
-	// Insight-typed AIs (VOIP-1234 §6 v4 item4) are excluded from team membership.
-	if err := h.validateNoInsightMembers(ctx, members); err != nil {
-		return nil, err
+	if name != nil {
+		fields[team.FieldName] = *name
+	}
+	if detail != nil {
+		fields[team.FieldDetail] = *detail
+	}
+	if parameter != nil {
+		fields[team.FieldParameter] = *parameter
 	}
 
-	fields := map[team.Field]any{
-		team.FieldName:          name,
-		team.FieldDetail:        detail,
-		team.FieldStartMemberID: startMemberID,
-		team.FieldMembers:       members,
-		team.FieldParameter:     parameter,
+	if len(fields) == 0 {
+		return h.Get(ctx, id)
 	}
 
 	if err := h.db.TeamUpdate(ctx, id, fields); err != nil {

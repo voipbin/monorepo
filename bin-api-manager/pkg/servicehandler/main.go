@@ -371,7 +371,7 @@ type ServiceHandler interface {
 	TeamGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amteam.WebhookMessage, error)
 	TeamGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amteam.WebhookMessage, error)
 	TeamDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amteam.WebhookMessage, error)
-	TeamUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name string, detail string, startMemberID uuid.UUID, members []amteam.Member, parameter map[string]any) (*amteam.WebhookMessage, error)
+	TeamUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name *string, detail *string, startMemberID *uuid.UUID, members *[]amteam.Member, parameter *map[string]any) (*amteam.WebhookMessage, error)
 	TeamDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, teamID uuid.UUID) (*amteam.WebhookMessage, error)
 
 	// aicall handlers

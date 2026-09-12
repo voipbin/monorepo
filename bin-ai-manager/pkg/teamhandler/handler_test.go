@@ -2,6 +2,7 @@ package teamhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	reflect "reflect"
 	"testing"
@@ -9,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -262,9 +264,14 @@ func Test_Update_insight_member_rejected(t *testing.T) {
 
 	// VOIP-1234 §6 v4 item4: same rejection applies to Update, so an existing
 	// team cannot be edited to admit an Insight-typed AI either.
+	mockDB.EXPECT().TeamGet(ctx, teamID).Return(&team.Team{
+		Identity: identity.Identity{ID: teamID},
+	}, nil)
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{Type: ai.TypeInsight}, nil)
 
-	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members, nil)
+	name := "test"
+	detail := "detail"
+	_, err := h.Update(ctx, teamID, &name, &detail, &memberA, &members, nil)
 	if err == nil {
 		t.Error("Expected error for Insight-typed AI member, got nil")
 	}
@@ -458,28 +465,116 @@ func Test_Update(t *testing.T) {
 		{ID: memberB, Name: "B", AIID: aiB},
 	}
 
+	strPtr := func(v string) *string { return &v }
+
 	tests := []struct {
 		name          string
 		id            uuid.UUID
-		teamName      string
-		detail        string
-		startMemberID uuid.UUID
-		members       []team.Member
+		teamName      *string
+		detail        *string
+		startMemberID *uuid.UUID
+		members       *[]team.Member
+
+		currentTeam *team.Team
+
+		expectAIGets    bool
+		expectGetCalls  int
+		expectNoUpdate  bool
+		expectValidFail bool
 
 		responseTeam *team.Team
 	}{
 		{
-			name:          "normal",
+			name:          "normal, all fields set",
 			id:            teamID,
-			teamName:      "updated team",
-			detail:        "updated detail",
-			startMemberID: memberA,
-			members:       members,
+			teamName:      strPtr("updated team"),
+			detail:        strPtr("updated detail"),
+			startMemberID: &memberA,
+			members:       &members,
+
+			expectAIGets: true,
 
 			responseTeam: &team.Team{
 				Identity: identity.Identity{
 					ID: teamID,
 				},
+			},
+		},
+		{
+			name:     "name only, all other fields omitted",
+			id:       teamID,
+			teamName: strPtr("renamed"),
+
+			responseTeam: &team.Team{
+				Identity: identity.Identity{
+					ID: teamID,
+				},
+			},
+		},
+		{
+			name: "all fields omitted, no-op",
+			id:   teamID,
+
+			expectNoUpdate: true,
+
+			responseTeam: &team.Team{
+				Identity: identity.Identity{
+					ID: teamID,
+				},
+			},
+		},
+		{
+			name:          "start_member_id only, validated against existing members",
+			id:            teamID,
+			startMemberID: &memberB,
+
+			currentTeam: &team.Team{
+				Identity:      identity.Identity{ID: teamID},
+				StartMemberID: memberA,
+				Members:       members,
+			},
+			expectAIGets: true,
+
+			responseTeam: &team.Team{
+				Identity: identity.Identity{
+					ID: teamID,
+				},
+			},
+		},
+		{
+			// design doc §4 item 9: start_member_id omitted, members provided,
+			// and the *existing* start_member_id IS present in the new
+			// members list -- success.
+			name:    "members only, existing start_member_id present in new members",
+			id:      teamID,
+			members: &members,
+
+			currentTeam: &team.Team{
+				Identity:      identity.Identity{ID: teamID},
+				StartMemberID: memberA,
+				Members:       []team.Member{{ID: memberB, Name: "old-only-b", AIID: aiB}},
+			},
+			expectAIGets: true,
+
+			responseTeam: &team.Team{
+				Identity: identity.Identity{
+					ID: teamID,
+				},
+			},
+		},
+		{
+			// design doc §4 item 9: start_member_id omitted, members provided,
+			// and the *existing* start_member_id is NOT present in the new
+			// members list -- expect a validation error.
+			name:            "members only, existing start_member_id absent from new members",
+			id:              teamID,
+			members:         &[]team.Member{{ID: memberB, Name: "B", AIID: aiB}},
+			expectValidFail: true,
+
+			currentTeam: &team.Team{
+				Identity:      identity.Identity{ID: teamID},
+				StartMemberID: memberA,
+				Members:       members,
 			},
 		},
 	}
@@ -503,11 +598,42 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
-			mockDB.EXPECT().AIGet(ctx, aiB).Return(&ai.AI{}, nil)
-			mockDB.EXPECT().TeamUpdate(ctx, tt.id, gomock.Any()).Return(nil)
-			mockDB.EXPECT().TeamGet(ctx, tt.id).Return(tt.responseTeam, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTeam.CustomerID, team.EventTypeUpdated, tt.responseTeam)
+			if tt.currentTeam != nil {
+				mockDB.EXPECT().TeamGet(ctx, tt.id).Return(tt.currentTeam, nil)
+			} else if tt.startMemberID != nil || tt.members != nil {
+				// merged-validation Get, triggered whenever either coupled
+				// field is being changed and no explicit currentTeam fixture
+				// was supplied for this case.
+				mockDB.EXPECT().TeamGet(ctx, tt.id).Return(&team.Team{
+					Identity:      identity.Identity{ID: tt.id},
+					StartMemberID: memberA,
+					Members:       members,
+				}, nil)
+			}
+
+			if tt.expectValidFail {
+				// Validation must fail before any AIGet/TeamUpdate/TeamGet
+				// (post-write) call; no additional mocks needed here.
+				_, err := h.Update(ctx, tt.id, tt.teamName, tt.detail, tt.startMemberID, tt.members, nil)
+				if err == nil {
+					t.Error("Expected validation error, got nil")
+				}
+				return
+			}
+
+			if tt.expectAIGets {
+				mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
+				mockDB.EXPECT().AIGet(ctx, aiB).Return(&ai.AI{}, nil)
+			}
+
+			if tt.expectNoUpdate {
+				mockDB.EXPECT().TeamUpdate(ctx, tt.id, gomock.Any()).Times(0)
+				mockDB.EXPECT().TeamGet(ctx, tt.id).Return(tt.responseTeam, nil)
+			} else {
+				mockDB.EXPECT().TeamUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+				mockDB.EXPECT().TeamGet(ctx, tt.id).Return(tt.responseTeam, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTeam.CustomerID, team.EventTypeUpdated, tt.responseTeam)
+			}
 
 			res, err := h.Update(ctx, tt.id, tt.teamName, tt.detail, tt.startMemberID, tt.members, nil)
 			if err != nil {
@@ -671,7 +797,14 @@ func Test_Update_validation_failure(t *testing.T) {
 	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
 
 	// Empty members — should fail validation before any DB call
-	_, err := h.Update(ctx, teamID, "test", "detail", uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), []team.Member{}, nil)
+	name := "test"
+	detail := "detail"
+	memberID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	emptyMembers := []team.Member{}
+	mockDB.EXPECT().TeamGet(ctx, teamID).Return(&team.Team{
+		Identity: identity.Identity{ID: teamID},
+	}, nil)
+	_, err := h.Update(ctx, teamID, &name, &detail, &memberID, &emptyMembers, nil)
 	if err == nil {
 		t.Error("Expected error for empty members, got nil")
 	}
@@ -703,9 +836,14 @@ func Test_Update_ai_not_found(t *testing.T) {
 		{ID: memberA, Name: "A", AIID: aiA},
 	}
 
+	mockDB.EXPECT().TeamGet(ctx, teamID).Return(&team.Team{
+		Identity: identity.Identity{ID: teamID},
+	}, nil)
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(nil, fmt.Errorf("not found"))
 
-	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members, nil)
+	name := "test"
+	detail := "detail"
+	_, err := h.Update(ctx, teamID, &name, &detail, &memberA, &members, nil)
 	if err == nil {
 		t.Error("Expected error for non-existent AI, got nil")
 	}
@@ -737,10 +875,15 @@ func Test_Update_db_error(t *testing.T) {
 		{ID: memberA, Name: "A", AIID: aiA},
 	}
 
+	mockDB.EXPECT().TeamGet(ctx, teamID).Return(&team.Team{
+		Identity: identity.Identity{ID: teamID},
+	}, nil)
 	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{}, nil)
 	mockDB.EXPECT().TeamUpdate(ctx, teamID, gomock.Any()).Return(fmt.Errorf("db error"))
 
-	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members, nil)
+	name := "test"
+	detail := "detail"
+	_, err := h.Update(ctx, teamID, &name, &detail, &memberA, &members, nil)
 	if err == nil {
 		t.Error("Expected error for db update failure, got nil")
 	}
@@ -821,5 +964,97 @@ func Test_Create_db_get_error(t *testing.T) {
 	_, err := h.Create(ctx, customerID, "test", "detail", memberA, members, nil)
 	if err == nil {
 		t.Error("Expected error for db get failure after create, got nil")
+	}
+}
+
+// Test_Update_NotFoundDuringMergedValidation pins the behavior that a
+// dbhandler.ErrNotFound surfaced by the merged-validation Get (triggered
+// whenever start_member_id or members is being changed) propagates as a
+// typed *cerrors.VoipbinError with Status=StatusNotFound and
+// Reason="TEAM_NOT_FOUND", exercising the exact
+// errors.Wrap(err, "could not get current team for validation") line in
+// teamHandler.Update -- not merely that *some* error is returned. This
+// verifies the unwrap-transparency of github.com/pkg/errors.Wrap (its
+// withMessage/withStack wrappers implement Unwrap(), so errors.As can walk
+// through them to find the underlying *cerrors.VoipbinError set by
+// teamHandler.Get).
+func Test_Update_NotFoundDuringMergedValidation(t *testing.T) {
+	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+	memberA := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+
+	// startMemberID is non-nil, so Update must trigger the merged-validation
+	// Get; simulate the team having been deleted concurrently.
+	mockDB.EXPECT().TeamGet(ctx, teamID).Return(nil, dbhandler.ErrNotFound)
+
+	_, err := h.Update(ctx, teamID, nil, nil, &memberA, nil, nil)
+	if err == nil {
+		t.Fatal("Expected error for not-found during merged validation, got nil")
+	}
+
+	var voipbinErr *cerrors.VoipbinError
+	if !stderrors.As(err, &voipbinErr) {
+		t.Fatalf("Expected error to unwrap to *cerrors.VoipbinError, got: %v (%T)", err, err)
+	}
+	if voipbinErr.Status != cerrors.StatusNotFound {
+		t.Errorf("Wrong status.\nexpect: %v\ngot: %v", cerrors.StatusNotFound, voipbinErr.Status)
+	}
+	if voipbinErr.Reason != "TEAM_NOT_FOUND" {
+		t.Errorf("Wrong reason.\nexpect: %v\ngot: %v", "TEAM_NOT_FOUND", voipbinErr.Reason)
+	}
+}
+
+// Test_Update_StartMemberIDOnly_EmptyStoredMembers pins the intentional
+// "confusing 400" behavior documented in the Phase 6b design doc §3: a
+// start_member_id-only PUT can still fail validation if the team's
+// currently-stored members is empty, since validateTeam's rule 10 runs
+// against the merged (existing members + new start_member_id) state, not
+// just the request body.
+func Test_Update_StartMemberIDOnly_EmptyStoredMembers(t *testing.T) {
+	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+	memberA := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+
+	// Currently-stored members is empty.
+	mockDB.EXPECT().TeamGet(ctx, teamID).Return(&team.Team{
+		Identity: identity.Identity{ID: teamID},
+		Members:  []team.Member{},
+	}, nil)
+
+	_, err := h.Update(ctx, teamID, nil, nil, &memberA, nil, nil)
+	if err == nil {
+		t.Error("Expected validation error for start_member_id-only update against empty stored members, got nil")
 	}
 }

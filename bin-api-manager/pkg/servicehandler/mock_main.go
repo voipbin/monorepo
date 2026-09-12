@@ -6065,7 +6065,7 @@ func (mr *MockServiceHandlerMockRecorder) TeamGetsByCustomerID(ctx, a, size, tok
 }
 
 // TeamUpdate mocks base method.
-func (m *MockServiceHandler) TeamUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail *string, startMemberID *uuid.UUID, members *[]team.Member, parameter *map[string]any) (*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TeamUpdate", ctx, a, id, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.WebhookMessage)
