@@ -58,7 +58,13 @@ delete:
 
 put:
   summary: Update the queue details
-  description: Updates the details of the queue identified by the given ID.
+  description: >
+    Updates the details of the queue identified by the given ID. All body
+    fields are optional; omitted fields keep their current value
+    unchanged. Explicitly sending an empty value (e.g. `tag_ids: []`)
+    clears/resets that field. `wait_timeout: 0` / `service_timeout: 0`
+    are real, meaningful values (disable auto-timeout), distinct from
+    omitting the field.
   tags:
     - Queue
   parameters:
@@ -76,29 +82,37 @@ put:
           properties:
             name:
               type: string
+              description: "Omit to leave the current name unchanged."
             detail:
               type: string
+              description: "Omit to leave the current detail unchanged."
             routing_method:
-              $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
+              allOf:
+                - $ref: '#/components/schemas/QueueManagerQueueRoutingMethod'
+              description: "Omit to leave the current routing method unchanged."
             tag_ids:
               type: array
               items:
                 type: string
+              description: >
+                Omit to leave the current tags unchanged. An explicit empty
+                array ([]) clears all tags.
             wait_flow_id:
               type: string
-              description: "Flow ID for the wait queue."
+              description: >
+                Flow ID for the wait queue. Omit to leave the current
+                wait flow unchanged.
             wait_timeout:
               type: integer
+              description: >
+                Omit to leave the current wait timeout unchanged. 0 is a
+                real value meaning "no auto-timeout", distinct from omission.
             service_timeout:
               type: integer
-          required:
-            - name
-            - detail
-            - routing_method
-            - tag_ids
-            - wait_flow_id
-            - wait_timeout
-            - service_timeout
+              description: >
+                Omit to leave the current service timeout unchanged. 0 is
+                a real value meaning "no auto-timeout", distinct from
+                omission.
   responses:
     '200':
       description: The updated queue details.

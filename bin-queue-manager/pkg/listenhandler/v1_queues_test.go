@@ -455,13 +455,13 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 			mockQueue.EXPECT().UpdateBasicInfo(
 				gomock.Any(),
 				tt.expectedID,
-				tt.expectedName,
-				tt.expectedDetail,
-				tt.expectedRoutingMethod,
-				tt.expectedTagIDs,
-				tt.expectedWaitFlowID,
-				tt.expectedWaitTimeout,
-				tt.expectedServiceTimeout,
+				&tt.expectedName,
+				&tt.expectedDetail,
+				&tt.expectedRoutingMethod,
+				&tt.expectedTagIDs,
+				&tt.expectedWaitFlowID,
+				&tt.expectedWaitTimeout,
+				&tt.expectedServiceTimeout,
 			).Return(tt.responseQueue, nil)
 
 			res, err := h.processRequest(tt.request)

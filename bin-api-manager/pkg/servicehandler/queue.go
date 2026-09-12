@@ -205,29 +205,25 @@ func (h *serviceHandler) QueueDelete(ctx context.Context, a *auth.AuthIdentity, 
 
 // QueueUpdate sends a request to queue-manager
 // to updating the queue.
+// All fields except queueID are pointers: nil means "leave unchanged",
+// a non-nil pointer means "set to this value".
 // it returns error if it failed.
 func (h *serviceHandler) QueueUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	queueID uuid.UUID,
-	name string,
-	detail string,
-	routingMethod qmqueue.RoutingMethod,
-	tagIDs []uuid.UUID,
-	waitFlowID uuid.UUID,
-	timeoutWait int,
-	serviceTimeout int,
+	name *string,
+	detail *string,
+	routingMethod *qmqueue.RoutingMethod,
+	tagIDs *[]uuid.UUID,
+	waitFlowID *uuid.UUID,
+	timeoutWait *int,
+	serviceTimeout *int,
 ) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "QueueUpdate",
-		"customer_id":     a.CustomerID,
-		"username":        a.DisplayName(),
-		"name":            name,
-		"detail":          detail,
-		"routing_method":  routingMethod,
-		"wait_flow_id":    waitFlowID,
-		"wait_timeout":    timeoutWait,
-		"service_timeout": serviceTimeout,
+		"func":         "QueueUpdate",
+		"customer_id":  a.CustomerID,
+		"username":     a.DisplayName(),
 	})
 
 	if a.IsDirect() {

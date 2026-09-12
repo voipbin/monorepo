@@ -199,14 +199,39 @@ func (h *server) PutQueuesId(c *gin.Context, id string) {
 		return
 	}
 
-	tagIDs := []uuid.UUID{}
-	for _, v := range req.TagIds {
-		tagIDs = append(tagIDs, uuid.FromStringOrNil(v))
+	var routingMethodPtr *qmqueue.RoutingMethod
+	if req.RoutingMethod != nil {
+		v := qmqueue.RoutingMethod(*req.RoutingMethod)
+		routingMethodPtr = &v
 	}
 
-	waitFlowID := uuid.FromStringOrNil(req.WaitFlowId)
+	var tagIDsPtr *[]uuid.UUID
+	if req.TagIds != nil {
+		tagIDs := make([]uuid.UUID, 0, len(*req.TagIds))
+		for _, v := range *req.TagIds {
+			parsed, errParse := uuid.FromString(v)
+			if errParse != nil {
+				log.Errorf("Could not parse the tag id. tag_id: %s, err: %v", v, errParse)
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_TAG_ID", "One of the provided tag_ids is not a valid UUID.").Wrap(errParse))
+				return
+			}
+			tagIDs = append(tagIDs, parsed)
+		}
+		tagIDsPtr = &tagIDs
+	}
 
-	res, err := h.serviceHandler.QueueUpdate(c.Request.Context(), a, target, req.Name, req.Detail, qmqueue.RoutingMethod(req.RoutingMethod), tagIDs, waitFlowID, req.WaitTimeout, req.ServiceTimeout)
+	var waitFlowIDPtr *uuid.UUID
+	if req.WaitFlowId != nil {
+		parsed, errParse := uuid.FromString(*req.WaitFlowId)
+		if errParse != nil {
+			log.Errorf("Could not parse the wait_flow_id. wait_flow_id: %s, err: %v", *req.WaitFlowId, errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_WAIT_FLOW_ID", "The provided wait_flow_id is not a valid UUID.").Wrap(errParse))
+			return
+		}
+		waitFlowIDPtr = &parsed
+	}
+
+	res, err := h.serviceHandler.QueueUpdate(c.Request.Context(), a, target, req.Name, req.Detail, routingMethodPtr, tagIDsPtr, waitFlowIDPtr, req.WaitTimeout, req.ServiceTimeout)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		abortWithServiceError(c, err)

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial" href="websocket_tutorial.html"><link rel="prev" title="Overview" href="websocket_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Structures - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -659,8 +659,8 @@
 <span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="p">(</span><span class="n">unwrapped</span> <span class="n">webhook</span> <span class="n">payload</span><span class="p">)</span> <span class="o">|</span> <span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">event</span> <span class="n">notification</span><span class="o">.</span> <span class="n">Pushed</span> <span class="k">as</span> <span class="o">|</span>
 <span class="o">|</span>                             <span class="o">|</span> <span class="n">the</span> <span class="n">raw</span> <span class="n">resource</span> <span class="n">payload</span> <span class="k">with</span> <span class="n">no</span>        <span class="o">|</span>
-<span class="o">|</span>                             <span class="o">|</span> <span class="n">envelope</span> <span class="o">--</span> <span class="n">see</span> <span class="s2">&quot;Event Message          |</span>
-<span class="o">|</span>                             <span class="o">|</span> <span class="n">Structure</span><span class="s2">&quot; below.                       |</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="n">envelope</span> <span class="o">--</span> <span class="n">see</span> <span class="s2">"Event Message          |</span>
+<span class="o">|</span>                             <span class="o">|</span> <span class="n">Structure</span><span class="s2">" below.                       |</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 </pre></div>
 </div>
@@ -675,10 +675,10 @@
 <p>Send a subscribe message to receive events for specific topics.</p>
 <p><strong>Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;&lt;topic-pattern-1&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;&lt;topic-pattern-2&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"&lt;topic-pattern-1&gt;"</span><span class="p">,</span>
+        <span class="s2">"&lt;topic-pattern-2&gt;"</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">]</span>
 <span class="p">}</span>
@@ -691,39 +691,39 @@
 </ul>
 <p><strong>Example: Subscribe to all calls</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call"</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example: Subscribe to multiple resource types</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:message&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:activeflow&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call"</span><span class="p">,</span>
+        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:message"</span><span class="p">,</span>
+        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:activeflow"</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example: Subscribe to specific resource</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example: Agent-level subscription</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;agent_id:98765432-4321-4321-4321-210987654321:queue&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;agent_id:98765432-4321-4321-4321-210987654321:call&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"agent_id:98765432-4321-4321-4321-210987654321:queue"</span><span class="p">,</span>
+        <span class="s2">"agent_id:98765432-4321-4321-4321-210987654321:call"</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -734,10 +734,10 @@
 <p>Send an unsubscribe message to stop receiving events for specific topics.</p>
 <p><strong>Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;&lt;topic-pattern-1&gt;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;&lt;topic-pattern-2&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"unsubscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"&lt;topic-pattern-1&gt;"</span><span class="p">,</span>
+        <span class="s2">"&lt;topic-pattern-2&gt;"</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">]</span>
 <span class="p">}</span>
@@ -750,18 +750,18 @@
 </ul>
 <p><strong>Example: Unsubscribe from calls</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"unsubscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call"</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Example: Unsubscribe from specific resource</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"unsubscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -866,8 +866,8 @@
 </ul>
 <p><strong>Wrapped structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;event-type&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"&lt;event-type&gt;"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">//</span> <span class="n">Resource</span><span class="o">-</span><span class="n">specific</span> <span class="n">payload</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">the</span> <span class="n">Call</span> <span class="n">struct</span> <span class="k">for</span> <span class="n">call_</span><span class="o">*</span> <span class="n">events</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -896,26 +896,26 @@
 <p><strong>Call Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">call_created</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;5371e9db-d035-4db6-a8d6-0994d33e744e&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ringing&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;incoming&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-11 00:23:53.636000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call_created"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"5371e9db-d035-4db6-a8d6-0994d33e744e"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ringing"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"incoming"</span><span class="p">,</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2022-04-11 00:23:53.636000"</span><span class="p">,</span>
+        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"9999-01-01 00:00:00.000000"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
 <span class="o">//</span> <span class="n">call_hangup</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hangup&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;5371e9db-d035-4db6-a8d6-0994d33e744e&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;terminated&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-11 00:25:10.000000&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call_hangup"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"5371e9db-d035-4db6-a8d6-0994d33e744e"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"terminated"</span><span class="p">,</span>
+        <span class="s2">"hangup_by"</span><span class="p">:</span> <span class="s2">"remote"</span><span class="p">,</span>
+        <span class="s2">"hangup_reason"</span><span class="p">:</span> <span class="s2">"normal"</span><span class="p">,</span>
+        <span class="s2">"tm_hangup"</span><span class="p">:</span> <span class="s2">"2022-04-11 00:25:10.000000"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -923,11 +923,11 @@
 <p><strong>Activeflow Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">activeflow_updated</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;activeflow_updated&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;flow789&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15 10:30:00.000000&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"activeflow_updated"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"flow789"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -935,13 +935,13 @@
 <p><strong>Queue Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">queuecall_created</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall789&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;queue789&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call456&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15 10:30:00.000000&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"queuecall_created"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"queuecall789"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+        <span class="s2">"queue_id"</span><span class="p">:</span> <span class="s2">"queue789"</span><span class="p">,</span>
+        <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"call456"</span><span class="p">,</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -949,12 +949,12 @@
 <p><strong>Agent Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">agent_status_updated</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent_status_updated&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent123&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15 10:30:00.000000&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"agent_status_updated"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"agent123"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"available"</span><span class="p">,</span>
+        <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15 10:30:00.000000"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -962,13 +962,13 @@
 <p><strong>Talk (Chat) Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">chatmessage_created</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;chatmessage_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello team!&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"chatmessage_created"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+        <span class="s2">"chat_id"</span><span class="p">:</span> <span class="s2">"e8b2e976-f043-44c8-bb89-e214e225e813"</span><span class="p">,</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello team!"</span><span class="p">,</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-17 10:32:00.000000"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -987,20 +987,20 @@
     <span class="n">const</span> <span class="n">message</span> <span class="o">=</span> <span class="n">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
 
     <span class="n">switch</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">case</span> <span class="s1">&#39;call_created&#39;</span><span class="p">:</span>
-        <span class="k">case</span> <span class="s1">&#39;call_ringing&#39;</span><span class="p">:</span>
-        <span class="k">case</span> <span class="s1">&#39;call_progressing&#39;</span><span class="p">:</span>
-        <span class="k">case</span> <span class="s1">&#39;call_updated&#39;</span><span class="p">:</span>
-        <span class="k">case</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s1">'call_created'</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s1">'call_ringing'</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s1">'call_progressing'</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s1">'call_updated'</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s1">'call_hangup'</span><span class="p">:</span>
             <span class="n">handleCallEvent</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
             <span class="k">break</span><span class="p">;</span>
 
-        <span class="k">case</span> <span class="s1">&#39;message_created&#39;</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s1">'message_created'</span><span class="p">:</span>
             <span class="n">handleMessage</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
             <span class="k">break</span><span class="p">;</span>
 
         <span class="n">default</span><span class="p">:</span>
-            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Received:&#39;</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
+            <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">'Received:'</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">data</span><span class="p">);</span>
     <span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
@@ -1009,16 +1009,16 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">raw_message</span><span class="p">):</span>
     <span class="n">message</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">raw_message</span><span class="p">)</span>
 
-    <span class="n">msg_type</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+    <span class="n">msg_type</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">msg_type</span> <span class="ow">and</span> <span class="n">msg_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;call_&#39;</span><span class="p">):</span>
-        <span class="n">handle_call_event</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">msg_type</span> <span class="ow">and</span> <span class="n">msg_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'call_'</span><span class="p">):</span>
+        <span class="n">handle_call_event</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
 
-    <span class="k">elif</span> <span class="n">msg_type</span> <span class="o">==</span> <span class="s1">&#39;message_created&#39;</span><span class="p">:</span>
-        <span class="n">handle_message</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">msg_type</span> <span class="o">==</span> <span class="s1">'message_created'</span><span class="p">:</span>
+        <span class="n">handle_message</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Received: </span><span class="si">{</span><span class="n">msg_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Received: </span><span class="si">{</span><span class="n">msg_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1115,8 +1115,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

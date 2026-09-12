@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Structures" href="service_agent_case_struct.html"><link rel="prev" title="Overview" href="service_agent_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Case Management - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -750,11 +750,11 @@
 <section id="listing-and-viewing-cases">
 <h2>Listing and Viewing Cases<a class="headerlink" href="#listing-and-viewing-cases" title="Link to this heading">¶</a></h2>
 <p><strong>List cases</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases?page_size=50&amp;token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases?page_size=50&amp;token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Get a case</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -767,38 +767,38 @@
 <h2>Assigning and Closing<a class="headerlink" href="#assigning-and-closing" title="Link to this heading">¶</a></h2>
 <p>Assignment and closing are separate operations: assigning a case to an agent does not close it, and closing a case does not require it to have an owner.</p>
 <p><strong>Assign a case to an agent</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/assign?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;owner_id&quot;: &quot;&lt;agent-id&gt;&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/assign?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "owner_id": "&lt;agent-id&gt;"
+    }'
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> must reference an existing agent of the <strong>same customer</strong> as the caller. A cross-tenant or nonexistent agent ID and a nonexistent case ID both return the same <code class="docutils literal notranslate"><span class="pre">404</span></code> – the API deliberately does not reveal which one failed.</p>
 <p><strong>Unassign a case</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/unassign?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/unassign?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p>Only the current owning agent may unassign themselves; there is no admin/manager bypass on this surface. Attempting to unassign a case owned by a different agent, or an already-unowned case, returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code> – not <code class="docutils literal notranslate"><span class="pre">404</span></code>, since any agent of the customer may already view the case via <code class="docutils literal notranslate"><span class="pre">GET</span></code>. Unassigning a <code class="docutils literal notranslate"><span class="pre">closed</span></code> case returns <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code>, matching <code class="docutils literal notranslate"><span class="pre">assign</span></code>’s behavior.</p>
 <p><strong>Close a case</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/close?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/close?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code>/<code class="docutils literal notranslate"><span class="pre">closed_by_id</span></code> are always derived from the caller’s own authenticated agent identity – the request body carries no fields, so a case can never be closed “as” another agent.</p>
 <p><strong>Attach or detach the case’s Contact</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;contact_id&quot;: &quot;&lt;contact-id&gt;&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "contact_id": "&lt;contact-id&gt;"
+    }'
 </pre></div>
 </div>
 <p>Send an empty string for <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> to detach:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;contact_id&quot;: &quot;&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "contact_id": ""
+    }'
 </pre></div>
 </div>
 <p>Every attach/detach is recorded as a <code class="docutils literal notranslate"><span class="pre">case_contact_attributed</span></code>/<code class="docutils literal notranslate"><span class="pre">case_contact_detached</span></code> audit event, queryable via bin-timeline-manager.</p>
@@ -807,20 +807,20 @@
 <h2>Case Notes<a class="headerlink" href="#case-notes" title="Link to this heading">¶</a></h2>
 <p>Notes are an <strong>internal, agent-facing annotation</strong> on a Case – free-text scratchpad entries like “called back, no answer” that help agents hand a case off to each other. Notes are physically and transport-isolated from customer-facing data: they never appear in any customer webhook, in <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contact_cases</span></code> (the admin/manager surface), or in any other customer-visible response.</p>
 <p><strong>List notes</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/notes?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/notes?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Create a note</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/notes?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;text&quot;: &quot;Called the customer back, no answer.&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/notes?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "text": "Called the customer back, no answer."
+    }'
 </pre></div>
 </div>
 <p>The note’s <code class="docutils literal notranslate"><span class="pre">author_type</span></code>/<code class="docutils literal notranslate"><span class="pre">author_id</span></code> are always derived server-side from the caller’s authenticated agent identity – there is no way to author a note as another agent or as the system through this endpoint.</p>
 <p><strong>Delete a note</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/notes/&lt;note-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/notes/&lt;note-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -922,8 +922,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

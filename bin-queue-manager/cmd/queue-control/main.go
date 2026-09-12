@@ -323,16 +323,24 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 
 	waitFlowID := uuid.FromStringOrNil(viper.GetString("wait-flow-id"))
 
+	detail := viper.GetString("detail")
+	routingMethod := queue.RoutingMethod(viper.GetString("routing-method"))
+	waitTimeout := viper.GetInt("wait-timeout")
+	serviceTimeout := viper.GetInt("service-timeout")
+
+	// Phase 4a: queue-control preserves current all-fields-sent behavior;
+	// every value is wrapped in a pointer unconditionally (no flag-changed
+	// detection). See docs/plans/2026-09-12-queue-put-partial-update-phase4a-design.md.
 	res, err := handler.UpdateBasicInfo(
 		context.Background(),
 		queueID,
-		name,
-		viper.GetString("detail"),
-		queue.RoutingMethod(viper.GetString("routing-method")),
-		tagIDs,
-		waitFlowID,
-		viper.GetInt("wait-timeout"),
-		viper.GetInt("service-timeout"),
+		&name,
+		&detail,
+		&routingMethod,
+		&tagIDs,
+		&waitFlowID,
+		&waitTimeout,
+		&serviceTimeout,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update queue")
