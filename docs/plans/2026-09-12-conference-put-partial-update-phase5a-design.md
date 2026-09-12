@@ -138,16 +138,42 @@ Per roadmap §3's established pattern, applied to this chain:
     a conference's custom data on every CLI update. This is the same
     risk class this doc already calls out for the HTTP API's `data: {}`
     vs `data: nil` distinction (§3 item 1) and must not be reintroduced
-    at the CLI layer. Resolution: `runUpdate` must be changed to build
-    its fields conditionally, mirroring the flag-based conditional
-    construction already used by this monorepo's `number-control` CLI
-    (`cmd/number-control/main.go`, e.g. `if viper.IsSet("name") { ... }`)
-    -- only pass a non-nil `data` pointer when an explicit `--data` flag
-    was provided by the operator, and only pass non-nil flow-ID pointers
-    when the corresponding flag was provided, not unconditionally on
-    every invocation. This is a genuine (small) behavior change to the
-    CLI's flag-parsing, not a pure pointer-wrap, and must be implemented
-    and tested as such.
+    at the CLI layer.
+
+    **Confirmed scope (Round 2 review found the original wording
+    understated this)**: `cmdUpdate()` (`main.go:327-333`) today has
+    **no `--data` flag at all** -- for either `create` or `update`. This
+    is therefore not a pure "gate an existing flag" fix; it requires
+    **adding a new `--data` flag** to `cmdUpdate()`, of type string
+    (JSON-encoded object, consistent with how this CLI already handles
+    other JSON-shaped inputs elsewhere in the monorepo), parsed via
+    `json.Unmarshal` into `map[string]any` with a clear error message on
+    malformed JSON (returned before calling `Update`, not silently
+    ignored). The resolution is:
+    - Register a new `--data` string flag on `cmdUpdate()` (default:
+      unset/empty string, not `"{}"`, so it round-trips correctly through
+      `viper.IsSet("data")`).
+    - Build `fields` conditionally per flag, gating each field on
+      `viper.IsSet(...)` for `name`/`detail`/`data` (matching
+      `number-control`'s pattern for its `name`/`detail` flags exactly,
+      `cmd/number-control/main.go:365-370`-equivalent) and on
+      `viper.GetString(...) != ""` for `pre-flow-id`/`post-flow-id`
+      (matching `number-control`'s pattern for its
+      `call-flow-id`/`message-flow-id` flags, which use the
+      non-empty-string check rather than `IsSet` --
+      `cmd/number-control/main.go:371-378`-equivalent). Do not apply a
+      single blanket pattern uniformly across all fields; the two
+      sub-patterns exist in the reference CLI for a reason (string flags
+      with a meaningful non-empty default vs. flags whose zero value is
+      never itself a valid intentional input) and must be matched
+      per-field-type, not applied identically to every field.
+    - Only pass a non-nil `data` pointer when `viper.IsSet("data")` is
+      true (after successful JSON parse), and only pass non-nil flow-ID
+      pointers when the corresponding flag string is non-empty, not
+      unconditionally on every invocation. This is a genuine (small)
+      behavior change to the CLI's flag-parsing and flag surface (one
+      new flag), not a pure pointer-wrap, and must be implemented and
+      tested as such.
 11. RST docs (`bin-api-manager/docsdev/source/conference_struct_conference.rst`
     -- filename confirmed to exist at this exact path) updated with an
     Implementation Hint note (omission=unchanged, `data: {}` clears
@@ -196,11 +222,13 @@ Per roadmap §3's established pattern, applied to this chain:
   **`bin-common-handler/pkg/requesthandler/conference_conference_test.go`**:
   updated for the pointer signature change.
 - **`bin-conference-manager/cmd/conference-control/main.go`**
-  (`runUpdate`): after conversion to flag-conditional field construction,
-  add/update tests confirming a name-only CLI invocation does NOT pass a
+  (`runUpdate`): after adding the new `--data` flag and converting to
+  flag-conditional field construction, add/update tests confirming a
+  name-only CLI invocation (no `--data` flag passed) does NOT pass a
   non-nil `data` pointer (preventing the accidental clear identified in
-  §3 item 10), and that a `--data` flag explicitly provided does pass a
-  non-nil pointer.
+  §3 item 10); a `--data '{"key":"value"}'` invocation does pass a
+  non-nil pointer with the parsed content; a malformed `--data` JSON
+  value returns a clear CLI error before calling `Update`.
 - **Revert-and-rerun** (mandatory per roadmap §5): temporarily simulate
   the pre-fix unconditional field-map population in `conference.go`'s
   `Update`, rerun the new partial-update tests, confirm they fail
@@ -228,7 +256,30 @@ hedge were also tightened to state the already-confirmed facts
 (`Get`, `conference.go:167-181`; RST file confirmed to exist) rather than
 deferring trivially-verifiable facts to implementation time.
 
-## 7. Non-goals
+## 7. Round 2 review disposition
+
+Round 2 (`deleg_16762672` task 0) verdict: REQUEST CHANGES. All Round 1
+factual claims (signature, field-map, `Get` wrapper, timeout/rescheduling,
+RST file, `campaigns.go` precedent) re-verified correct on independent
+re-derivation. One MAJOR gap found: §3 item 10's fix as worded presupposed
+an existing `--data` CLI flag to gate -- **no such flag exists today**
+(`cmdUpdate()`/`cmdCreate()` have no `--data` flag at all), so the
+one-line "only pass non-nil when `--data` was provided" resolution could
+not actually be implemented against current code; the fix requires
+**adding** a new flag (type, JSON parsing, error handling), not just
+gating an existing one. Also flagged: citing `number-control`'s
+`viper.IsSet` as *the* mirrored pattern was imprecise, since
+`number-control` actually uses two different sub-patterns
+(`viper.IsSet` for `name`/`detail`, `viper.GetString(...) != ""` for its
+flow-ID flags) and conference's flow-ID fields are the closer match to
+the latter. Fixed: §3 item 10 rewritten to state the new-flag requirement
+explicitly (flag registration, JSON unmarshal with error handling,
+default value choice) and to cite the correct number-control sub-pattern
+per field type rather than a single blanket precedent. §5 testing
+strategy updated to test flag-addition + JSON-parse-error behavior, not
+just gating.
+
+## 8. Non-goals
 
 - No retroactive data remediation for conferences whose `pre_flow_id`/
   `post_flow_id` may have already been silently wiped by the pre-fix
