@@ -307,27 +307,43 @@ the merged-effective-value validation, not this exact code shape.)
    - `members` omitted, `start_member_id` provided — both existing-
      members-contains-it (success) and does-not-contain-it (error) cases.
    - both omitted (name/detail-only update) — assert `validateTeam`/
-     `validateNoInsightMembers` are NOT called (e.g. via a test double or
-     by asserting `h.Get` is called exactly once — the no-op-check `Get`
-     — not twice, since the merged-validation `Get` should be skipped
-     entirely in this case; if implemented as written in §3's pseudocode,
-     a name-only update never triggers the extra `Get` at all since
-     `startMemberID != nil || members != nil` is false).
+     `validateNoInsightMembers` are NOT called, and assert `h.Get` is
+     called **zero** times (per §3's pseudocode, the merged-validation
+     `Get` sits entirely inside the `if startMemberID != nil || members
+     != nil` branch, so a `name`-only update never enters that branch and
+     never calls `Get` at all in `teamHandler.Update` itself — this is
+     distinct from the next bullet's true-no-op case, which calls `Get`
+     exactly once via the `len(fields)==0` short-circuit).
    - all fields omitted, true no-op — asserts `TeamUpdate` (db) is
-     `.Times(0)` and only `Get` is called once.
+     `.Times(0)` and `h.Get` (the no-op short-circuit) is called exactly
+     once.
    - malformed `start_member_id` string via the HTTP layer → 400,
      asserting `servicehandler.TeamUpdate` is never reached (mirrors
      Phase 5's `Test_conferencesIDPUT_MalformedFlowID`/
      `Test_numbersIDPUT_MalformedFlowID` pattern).
-   - **`Test_Update_NotFoundDuringMergedValidation`**: the merged-
-     validation `Get` (triggered by a non-nil `startMemberID` or
-     `members`) returns `dbhandler.ErrNotFound`; assert the error
-     propagates as a typed not-found error through `errors.Wrap`'s
-     unwrap-transparent chain, all the way to an HTTP 404 at the
-     `bin-api-manager/server/teams_test.go` layer — this pins the
-     currently-incidental-but-verified-correct behavior described in
-     §3's inline code comment, rather than leaving it to work by luck of
-     `pkg/errors`' `Unwrap()` semantics.
+   - **`Test_Update_NotFoundDuringMergedValidation`**: this test MUST
+     live in `bin-ai-manager/pkg/teamhandler/handler_test.go` (table test
+     on `teamHandler.Update` directly, with `mockDB.EXPECT().TeamGet(...)`
+     returning `dbhandler.ErrNotFound` for the merged-validation `Get`
+     call), NOT in `bin-api-manager/server/teams_test.go`. The
+     `bin-api-manager` server tests only mock the `servicehandler.
+     ServiceHandler` interface boundary (confirmed against the existing
+     `Test_conferencesIDPUT_MalformedFlowID` pattern in
+     `conferences_test.go`) and never exercise `ai-manager`'s
+     `errors.Wrap`/`errors.As`/`teamHandler.Get` code at all — a test
+     placed at the `bin-api-manager` layer would only re-prove the
+     already-covered generic `translateToVoipbinError` HTTP-status
+     mapping, not the actual unwrap-transparency mechanism this case
+     exists to pin. The `teamhandler`-level test should assert that
+     `Update` returns an error satisfying `errors.As(err, &voipbinErr)`
+     with `voipbinErr.Code` indicating not-found, directly exercising the
+     `errors.Wrap(err, "could not get current team for validation")`
+     line and confirming the unwrap chain resolves correctly at the
+     layer where the wrapping actually happens. A separate, ordinary
+     `bin-api-manager`-layer test (not a new one — the existing generic
+     not-found-mapping coverage already exists elsewhere in this
+     codebase's test suite per standard practice) is not required to
+     duplicate this at the HTTP layer specifically for this case.
    - **`Test_Update_StartMemberIDOnly_EmptyStoredMembers`**: currently-
      stored `members` is empty, request supplies only `start_member_id` —
      assert the request fails with a validation error (rule 10), pinning
@@ -404,4 +420,29 @@ architecturally sound, not over-engineering; the absence of any team CLI
 subcommand; the `parameter`-always-cleared-on-omission pre-existing bug
 claim in §6; the illustrative code's consistency with the file's real
 struct fields, interface signatures, and error-wrapping conventions.
+
+## 8. Round 2 review disposition
+
+Independent review (`deleg_7cefc86f` task 1) verdict: REQUEST CHANGES.
+Fresh re-derivation confirmed all Round 1 facts hold (call chain, no
+`len(fields)==0` guard, `validateTeam`'s 11 rules, no team CLI, the
+`parameter`-cleared bug) and confirmed the `pkg/errors.Wrap`/
+`errors.As` unwrap-transparency claim in §3's inline comment is
+technically correct (verified against the vendored `pkg/errors` source
+and an existing proven pattern elsewhere in `bin-ai-manager`). Two
+issues found in the Round 1 fixes themselves:
+
+| # | Finding | Severity | Fix location |
+|---|---|---|---|
+| 1 | `Test_Update_NotFoundDuringMergedValidation` was specified to live in `bin-api-manager/server/teams_test.go` and assert an end-to-end HTTP 404 — but that layer only mocks the `servicehandler.ServiceHandler` interface boundary and never exercises `ai-manager`'s `errors.Wrap`/`errors.As`/`teamHandler.Get` code at all, so as specified the test would only re-prove the already-covered generic HTTP-status mapping, not the actual unwrap-transparency mechanism the case exists to pin | **MAJOR** | §4 item 9 rewritten: the test now correctly targets `bin-ai-manager/pkg/teamhandler/handler_test.go` (a table test directly on `teamHandler.Update`, mocking `TeamGet` to return `dbhandler.ErrNotFound` and asserting `errors.As` resolves the typed not-found error), which is the layer where the wrapping and unwrap-transparency actually occur |
+| 2 | The "both omitted (name/detail-only)" test bullet said `h.Get` is called "exactly once," but per §3's own pseudocode a name-only update never enters the `startMemberID != nil \|\| members != nil` branch at all, so `Get` is called **zero** times in that branch — the "once" case actually belongs to the separate true-no-op bullet | MINOR | §4 item 9's two bullets reworded to state zero calls (name/detail-only) vs. exactly one call (true no-op via the `len(fields)==0` short-circuit) explicitly, removing the ambiguity |
+
+Not changed (reviewer confirmed correct via fresh re-derivation, not
+trust in the Round 1 disposition table): all §2 call-chain facts; the
+`dbhandler.TeamUpdate` no-guard claim; `validateTeam`'s rules; the
+absence of a team CLI; the `parameter`-cleared bug; the three new §3
+explanatory paragraphs (Get-chain-position, TOCTOU, confusing-400) — all
+confirmed factually accurate and free of new errors;
+`Test_Update_StartMemberIDOnly_EmptyStoredMembers` — confirmed
+well-specified and correctly placed as originally written.
 
