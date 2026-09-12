@@ -395,16 +395,21 @@ func Test_ConferenceV1ConferenceCreate(t *testing.T) {
 
 func Test_ConferenceV1ConferenceUpdate(t *testing.T) {
 
+	strPtrCfConf := func(s string) *string { return &s }
+	intPtrCfConf := func(i int) *int { return &i }
+	uuidPtrCfConf := func(u uuid.UUID) *uuid.UUID { return &u }
+	mapPtrCfConf := func(m map[string]any) *map[string]any { return &m }
+
 	tests := []struct {
 		name string
 
 		id             uuid.UUID
-		conferenceName string
-		detail         string
-		data           map[string]any
-		timeout        int
-		preFlowID      uuid.UUID
-		postFlowID     uuid.UUID
+		conferenceName *string
+		detail         *string
+		data           *map[string]any
+		timeout        *int
+		preFlowID      *uuid.UUID
+		postFlowID     *uuid.UUID
 
 		response      *sock.Response
 		expectTarget  string
@@ -415,12 +420,12 @@ func Test_ConferenceV1ConferenceUpdate(t *testing.T) {
 			name: "normal",
 
 			id:             uuid.FromStringOrNil("77ebcd6c-1e16-11f0-9bb7-c3dbf388b8ac"),
-			conferenceName: "test",
-			detail:         "test detail",
-			data:           map[string]any{"key1": "val1"},
-			timeout:        86400000,
-			preFlowID:      uuid.FromStringOrNil("781eb272-1e16-11f0-9cb8-9b794114fb25"),
-			postFlowID:     uuid.FromStringOrNil("7847a3da-1e16-11f0-8549-9f04e3676942"),
+			conferenceName: strPtrCfConf("test"),
+			detail:         strPtrCfConf("test detail"),
+			data:           mapPtrCfConf(map[string]any{"key1": "val1"}),
+			timeout:        intPtrCfConf(86400000),
+			preFlowID:      uuidPtrCfConf(uuid.FromStringOrNil("781eb272-1e16-11f0-9cb8-9b794114fb25")),
+			postFlowID:     uuidPtrCfConf(uuid.FromStringOrNil("7847a3da-1e16-11f0-8549-9f04e3676942")),
 
 			response: &sock.Response{
 				StatusCode: 200,

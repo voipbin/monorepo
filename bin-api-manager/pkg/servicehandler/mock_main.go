@@ -2071,7 +2071,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceTranscribeStop(ctx, a, confe
 }
 
 // ConferenceUpdate mocks base method.
-func (m *MockServiceHandler) ConferenceUpdate(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceUpdate(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, name, detail *string, data *map[string]any, timeout *int, preFlowID, postFlowID *uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceUpdate", ctx, a, conferenceID, name, detail, data, timeout, preFlowID, postFlowID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)

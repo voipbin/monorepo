@@ -464,12 +464,12 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		conferenceID uuid.UUID,
-		name string,
-		detail string,
-		data map[string]any,
-		timeout int,
-		preFlowID uuid.UUID,
-		postFlowID uuid.UUID,
+		name *string,
+		detail *string,
+		data *map[string]any,
+		timeout *int,
+		preFlowID *uuid.UUID,
+		postFlowID *uuid.UUID,
 	) (*cfconference.WebhookMessage, error)
 
 	// conferencecall handlers

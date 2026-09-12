@@ -179,8 +179,27 @@ func (h *server) PutConferencesId(c *gin.Context, id string) {
 		return
 	}
 
-	preFlowID := uuid.FromStringOrNil(req.PreFlowId)
-	postFlowID := uuid.FromStringOrNil(req.PostFlowId)
+	var preFlowID *uuid.UUID
+	if req.PreFlowId != nil {
+		parsed, errParse := uuid.FromString(*req.PreFlowId)
+		if errParse != nil {
+			log.Errorf("Could not parse pre_flow_id. err: %v", errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_PRE_FLOW_ID", "pre_flow_id is not a valid UUID."))
+			return
+		}
+		preFlowID = &parsed
+	}
+
+	var postFlowID *uuid.UUID
+	if req.PostFlowId != nil {
+		parsed, errParse := uuid.FromString(*req.PostFlowId)
+		if errParse != nil {
+			log.Errorf("Could not parse post_flow_id. err: %v", errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_POST_FLOW_ID", "post_flow_id is not a valid UUID."))
+			return
+		}
+		postFlowID = &parsed
+	}
 
 	res, err := h.serviceHandler.ConferenceUpdate(c.Request.Context(), a, target, req.Name, req.Detail, req.Data, req.Timeout, preFlowID, postFlowID)
 	if err != nil {

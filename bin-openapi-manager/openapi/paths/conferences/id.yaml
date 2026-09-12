@@ -48,25 +48,33 @@ put:
           properties:
             name:
               type: string
+              description: Name of the conference. Omit to leave unchanged.
             detail:
               type: string
+              description: Detail of the conference. Omit to leave unchanged.
             data:
               type: object
-              description: Custom data associated with the conference.
+              description: >-
+                Custom data associated with the conference. Omit to leave
+                unchanged; send an explicit empty object ({}) to clear
+                all custom data.
               additionalProperties: true
             timeout:
               type: integer
+              description: >-
+                Auto-termination timeout in seconds. 0 disables
+                auto-termination and is a real, settable value distinct
+                from omission. Omit to leave unchanged.
             pre_flow_id:
               type: string
+              description: >-
+                Flow to run before participants join. Omit to leave
+                unchanged.
             post_flow_id:
               type: string
-          required:
-            - name
-            - detail
-            - data
-            - timeout
-            - pre_flow_id
-            - post_flow_id
+              description: >-
+                Flow to run after the conference ends. Omit to leave
+                unchanged.
   responses:
     '200':
       content:

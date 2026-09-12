@@ -254,7 +254,7 @@ func (mr *MockConferenceHandlerMockRecorder) TranscribeStop(ctx, id any) *gomock
 }
 
 // Update mocks base method.
-func (m *MockConferenceHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.Conference, error) {
+func (m *MockConferenceHandler) Update(ctx context.Context, id uuid.UUID, name, detail *string, data *map[string]any, timeout *int, preFlowID, postFlowID *uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, data, timeout, preFlowID, postFlowID)
 	ret0, _ := ret[0].(*conference.Conference)
