@@ -7,7 +7,7 @@
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>Environment variables and maintenance - VoIPBin Documentation</title>
+        <title>First login and API access - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -616,12 +616,12 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/self_hosting_envvars.rst?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/self_hosting_first_login.rst?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
 </div><div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/self_hosting_envvars.rst" rel="edit" title="Edit this page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/self_hosting_first_login.rst" rel="edit" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -638,145 +638,107 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="environment-variables-and-maintenance">
-<h1>Environment variables and maintenance<a class="headerlink" href="#environment-variables-and-maintenance" title="Link to this heading">¶</a></h1>
-<section id="key-env-variables">
-<h2>Key <code class="docutils literal notranslate"><span class="pre">.env</span></code> variables<a class="headerlink" href="#key-env-variables" title="Link to this heading">¶</a></h2>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 30.0%" />
-<col style="width: 70.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Variable</p></th>
-<th class="head"><p>Purpose</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DOMAIN_MODE</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">internal</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">external</span></code>. A missing key means internal.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">BASE_DOMAIN</span></code></p></td>
-<td><p>The base domain all derived domain values are composed from.
-Edit and re-run <code class="docutils literal notranslate"><span class="pre">init</span></code> rather than editing derived vars directly.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">TLS_MODE</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">mkcert</span></code>, <code class="docutils literal notranslate"><span class="pre">selfsigned</span></code>, or <code class="docutils literal notranslate"><span class="pre">byo</span></code>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">COMPOSE_PROFILES</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">internal-dns</span></code> in internal mode (enables CoreDNS), empty in
-external mode, <code class="docutils literal notranslate"><span class="pre">web-proxy</span></code> when the reverse proxy is enabled.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WEB_REVERSE_PROXY</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code> enables the built-in Caddy reverse proxy (external mode,
-<code class="docutils literal notranslate"><span class="pre">--tls</span> <span class="pre">byo</span></code> only).</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">HOST_EXTERNAL_IP</span></code></p></td>
-<td><p>Host’s LAN or public IP (auto-detected).</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_EXTERNAL_IP</span></code> / <code class="docutils literal notranslate"><span class="pre">RTPENGINE_EXTERNAL_IP</span></code></p></td>
-<td><p>Dedicated external IPs for SIP signaling and RTP media
-(auto-generated; must differ from the host IP).</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DOMAIN_NAME_EXTENSION</span></code></p></td>
-<td><p>SIP domain suffix for extensions. Full realm is
-<code class="docutils literal notranslate"><span class="pre">{customer_id}.{DOMAIN_NAME_EXTENSION}</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">VOIPBIN_SANDBOX_DEV_SEED</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code> to opt in to dev/test account seeding on <code class="docutils literal notranslate"><span class="pre">start</span></code>. Off
-by default; never enable on a public install.</p></td>
-</tr>
-</tbody>
-</table>
+          <section id="first-login-and-api-access">
+<h1>First login and API access<a class="headerlink" href="#first-login-and-api-access" title="Link to this heading">¶</a></h1>
+<p>A completed install has a running stack, but no way to sign in yet
+unless you opted in to the dev-seed account. This section covers how to
+create a real admin account and start calling the API.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code> account and extensions <code class="docutils literal notranslate"><span class="pre">1000</span></code>, <code class="docutils literal notranslate"><span class="pre">2000</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">3000</span></code> (three specific extensions, not a range) only exist when
+the stack was started with <code class="docutils literal notranslate"><span class="pre">VOIPBIN_SANDBOX_DEV_SEED=true</span></code>. Leave
+this flag unset or <code class="docutils literal notranslate"><span class="pre">false</span></code> on any install reachable beyond
+localhost; see the credentials table in Prerequisites.</p>
 </div>
+<p>If your first login attempt fails outright (curl connection errors,
+browser certificate warnings), confirm TLS trust first: see
+Troubleshooting’s DNS/certificate checks and, for internal mode, the
+mkcert CA trust step in Prerequisites. A first-login failure is very
+often a certificate problem, not an auth problem.</p>
+<section id="two-ways-to-create-your-first-account">
+<h2>Two ways to create your first account<a class="headerlink" href="#two-ways-to-create-your-first-account" title="Link to this heading">¶</a></h2>
+<p><strong>Path A: CLI bootstrap (recommended for a fresh self-hosted install).</strong>
+Works immediately, no email provider required.</p>
+<p><strong>Path B: email-based signup</strong>, the same flow the hosted service at
+<code class="docutils literal notranslate"><span class="pre">voipbin.net</span></code> uses (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code>). This only works if you have
+already configured an email provider (<code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code> or
+<code class="docutils literal notranslate"><span class="pre">MAILGUN_API_KEY</span></code>, see Provider configuration) so the verification
+email can actually be delivered. Without one, the signup call succeeds
+but the verification email never arrives. Use this path only if you have
+already set up email delivery; otherwise use Path A.</p>
 </section>
-<section id="third-party-integrations">
-<h2>Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h2>
-<p>Voice AI, transcription, TTS, phone number provisioning, and email/SMS
-providers are configured through their own keys in <code class="docutils literal notranslate"><span class="pre">.env</span></code>. See the
-Provider configuration section for the full list of variables, which
-service to restart after setting each, and the AI-provider-specific
-details (shared credentials, multi-service consumers). Until a
-provider’s keys are set, the corresponding flow actions return a
-“provider not configured” error; the rest of the platform stays healthy.</p>
-</section>
-<section id="maintenance-commands-the-voipbin-cli">
-<h2>Maintenance commands (the <code class="docutils literal notranslate"><span class="pre">voipbin</span></code> CLI)<a class="headerlink" href="#maintenance-commands-the-voipbin-cli" title="Link to this heading">¶</a></h2>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 30.0%" />
-<col style="width: 70.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Command</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">version</span> <span class="pre">[--json]</span></code></p></td>
-<td><p>Show pinned image versions</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">[images/scripts/all]</span></code></p></td>
-<td><p>Update Docker images or scripts. <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">all</span></code> on a pinned repo
-runs the full safe upgrade: backup, git pull, migrate, recreate,
-verify.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--check</span></code></p></td>
-<td><p>Dry-run to preview updates</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">backup</span></code></p></td>
-<td><p>Full data backup (MySQL, call recordings, <code class="docutils literal notranslate"><span class="pre">.env</span></code>, certificates,
-<code class="docutils literal notranslate"><span class="pre">versions.lock</span></code>, a <code class="docutils literal notranslate"><span class="pre">manifest.json</span></code>) into <code class="docutils literal notranslate"><span class="pre">backups/&lt;timestamp&gt;/</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">restore</span> <span class="pre">&lt;timestamp&gt;</span> <span class="pre">--force</span></code></p></td>
-<td><p>Restore data from a backup. Destructive; services must be stopped
-except <code class="docutils literal notranslate"><span class="pre">db</span></code>/<code class="docutils literal notranslate"><span class="pre">redis</span></code>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rollback</span> <span class="pre">[timestamp]</span></code></p></td>
-<td><p>Roll back image versions from override history (unpinned repos
-only). For data recovery use <code class="docutils literal notranslate"><span class="pre">restore</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">clean</span> <span class="pre">[options]</span></code></p></td>
-<td><p>Cleanup sandbox resources</p></td>
-</tr>
-</tbody>
-</table>
+<section id="path-a-cli-bootstrap">
+<h2>Path A: CLI bootstrap<a class="headerlink" href="#path-a-cli-bootstrap" title="Link to this heading">¶</a></h2>
+<p>Create a customer and an admin agent directly via the manager CLIs, then
+set the agent’s password explicitly (a fresh admin agent is created with
+a random, unusable password):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Create the customer</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">"My Company"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--email<span class="w"> </span><span class="s2">"admin@example.com"</span>
+
+<span class="c1"># 2. Get the customer ID</span>
+<span class="nv">CUSTOMER_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>list<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[] | select(.email == "admin@example.com") | .id'</span><span class="k">)</span>
+
+<span class="c1"># 3. Wait a few seconds for agent-manager to process the event via RabbitMQ</span>
+sleep<span class="w"> </span><span class="m">5</span>
+
+<span class="c1"># 4. Get the auto-created admin agent's ID</span>
+<span class="nv">AGENT_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>list<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[0].id'</span><span class="k">)</span>
+
+<span class="c1"># 5. Set a real password</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>update-password<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--id<span class="w"> </span><span class="s2">"</span><span class="nv">$AGENT_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--password<span class="w"> </span><span class="s2">"your-secure-password"</span>
+</pre></div>
 </div>
-<section id="scheduled-backups">
-<h3>Scheduled backups<a class="headerlink" href="#scheduled-backups" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">schedule-manager</span></code> runs a nightly <code class="docutils literal notranslate"><span class="pre">database-backup</span></code> job (MySQL dump
-plus gzip of the two databases, written to <code class="docutils literal notranslate"><span class="pre">backups/scheduled-db/</span></code>,
-retaining the newest 7). <code class="docutils literal notranslate"><span class="pre">start.sh</span></code> enables it on every run. This is
-deliberately separate from the manual <code class="docutils literal notranslate"><span class="pre">voipbin</span> <span class="pre">backup</span></code> command above:
-different retention, different directory, so neither one’s pruning
-touches the other.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-schedule-mgr<span class="w"> </span>/app/bin/schedule-control<span class="w"> </span>schedule<span class="w"> </span>list
-docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-schedule-mgr<span class="w"> </span>/app/bin/schedule-control<span class="w"> </span>schedule<span class="w"> </span>disable<span class="w"> </span>database-backup
+<section id="get-a-jwt-token">
+<h3>Get a JWT token<a class="headerlink" href="#get-a-jwt-token" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/auth/login<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"username": "admin@example.com", "password": "your-secure-password"}'</span>
+
+<span class="c1"># Response: {"username": "...", "token": "JWT_TOKEN_HERE"}</span>
 </pre></div>
 </div>
 </section>
-<section id="host-side-gaps-operator-responsibility">
-<h3>Host-side gaps (operator responsibility)<a class="headerlink" href="#host-side-gaps-operator-responsibility" title="Link to this heading">¶</a></h3>
-<p>Two tasks stay outside the installer’s automation:</p>
-<ul class="simple">
-<li><p><strong>Offsite copy of backups.</strong> <code class="docutils literal notranslate"><span class="pre">backups/</span></code> is local disk; ship it to
-remote or object storage on your own recovery-objective schedule
-(for example an <code class="docutils literal notranslate"><span class="pre">rsync</span></code> cron job).</p></li>
-<li><p><strong>Host-level maintenance.</strong> OS package updates, Docker Engine upgrades,
-disk space and log rotation, and kernel/security patching are the
-operator’s responsibility.</p></li>
-</ul>
+<section id="create-an-api-key-accesskey">
+<h3>Create an API key (accesskey)<a class="headerlink" href="#create-an-api-key-accesskey" title="Link to this heading">¶</a></h3>
+<p>An accesskey is a long-lived API token, separate from the short-lived
+JWT above, meant for scripts and integrations:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>accesskey<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">"API Key"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--detail<span class="w"> </span><span class="s2">"For automation"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--expire<span class="w"> </span>87600h
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--expire</span> <span class="pre">87600h</span></code> is roughly 10 years, a practically non-expiring key
+for automation use. Use a shorter value for keys you intend to rotate.</p>
+</section>
+<section id="create-your-first-extension">
+<h3>Create your first extension<a class="headerlink" href="#create-your-first-extension" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TOKEN</span><span class="o">=</span><span class="s2">"&lt;jwt_token_from_above&gt;"</span>
+
+curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/v1.0/extensions<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"extension": "2000", "password": "your-secure-password-here", "name": "Extension 2000"}'</span>
+</pre></div>
+</div>
 </section>
 </section>
-<section id="scaling">
-<h2>Scaling<a class="headerlink" href="#scaling" title="Link to this heading">¶</a></h2>
-<p>The installer starts every backend service at one replica. Scaling a
-single-server Compose install means raising the host’s own CPU/RAM and,
-for the SIP/media layer, the RTPEngine port range and Asterisk channel
-limits. There is no automated horizontal-scale profile in this installer
-today; track resource usage and scale the host vertically first.</p>
+<section id="path-b-email-based-signup">
+<h2>Path B: email-based signup<a class="headerlink" href="#path-b-email-based-signup" title="Link to this heading">¶</a></h2>
+<p>Once an email provider is configured (see Provider configuration), the
+hosted-service signup flow works identically for a self-hosted install:
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> against your own <code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code> endpoint instead
+of <code class="docutils literal notranslate"><span class="pre">api.voipbin.net</span></code>. See the Quickstart guide’s Signup page for the
+full request/response shape and troubleshooting; the mechanics are
+identical, only the base URL differs.</p>
 </section>
 </section>
 
@@ -820,15 +782,15 @@ today; track resource usage and scale the host vertically first.</p>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Environment variables and maintenance</a><ul>
-<li><a class="reference internal" href="#key-env-variables">Key <code class="docutils literal notranslate"><span class="pre">.env</span></code> variables</a></li>
-<li><a class="reference internal" href="#third-party-integrations">Third-party integrations</a></li>
-<li><a class="reference internal" href="#maintenance-commands-the-voipbin-cli">Maintenance commands (the <code class="docutils literal notranslate"><span class="pre">voipbin</span></code> CLI)</a><ul>
-<li><a class="reference internal" href="#scheduled-backups">Scheduled backups</a></li>
-<li><a class="reference internal" href="#host-side-gaps-operator-responsibility">Host-side gaps (operator responsibility)</a></li>
+<li><a class="reference internal" href="#">First login and API access</a><ul>
+<li><a class="reference internal" href="#two-ways-to-create-your-first-account">Two ways to create your first account</a></li>
+<li><a class="reference internal" href="#path-a-cli-bootstrap">Path A: CLI bootstrap</a><ul>
+<li><a class="reference internal" href="#get-a-jwt-token">Get a JWT token</a></li>
+<li><a class="reference internal" href="#create-an-api-key-accesskey">Create an API key (accesskey)</a></li>
+<li><a class="reference internal" href="#create-your-first-extension">Create your first extension</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#scaling">Scaling</a></li>
+<li><a class="reference internal" href="#path-b-email-based-signup">Path B: email-based signup</a></li>
 </ul>
 </li>
 </ul>

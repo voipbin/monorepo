@@ -39,11 +39,12 @@ Third-party integrations
 ---------------------------
 
 Voice AI, transcription, TTS, phone number provisioning, and email/SMS
-providers are configured through their own keys in ``.env``
-(for example ``OPENAI_API_KEY``, ``TWILIO_SID``, ``SENDGRID_API_KEY``,
-``AWS_ACCESS_KEY``). Until the relevant keys are set, the corresponding
-flow actions return a "provider not configured" error; the rest of the
-platform stays healthy.
+providers are configured through their own keys in ``.env``. See the
+Provider configuration section for the full list of variables, which
+service to restart after setting each, and the AI-provider-specific
+details (shared credentials, multi-service consumers). Until a
+provider's keys are set, the corresponding flow actions return a
+"provider not configured" error; the rest of the platform stays healthy.
 
 Maintenance commands (the ``voipbin`` CLI)
 ---------------------------------------------
