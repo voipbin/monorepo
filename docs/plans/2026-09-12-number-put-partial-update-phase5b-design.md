@@ -36,16 +36,14 @@ PUT /numbers/{id}                          PUT /numbers/{id}/flow_id
     NumberUpdate                               NumberUpdateFlowIDs
         |                                           |
   bin-common-handler/pkg/requesthandler/number_number.go:
-    NumberV1NumberUpdate                       NumberV1NumberUpdateFlowIDs (verify exact name)
+    NumberV1NumberUpdate                       NumberV1NumberUpdateFlowID
         |                                           |
   bin-number-manager/pkg/listenhandler/
     models/request/v1_numbers.go: V1DataNumbersIDPut / V1DataNumbersIDFlowIDPut
-    v1_numbers.go: processV1NumbersIDPut / processV1NumbersIDFlowIDPut   <-- ACTUAL FIX SITE
+    v1_numbers.go: processV1NumbersIDPut / processV1NumbersIDFlowIDsPut   <-- ACTUAL FIX SITE
       (both build `fields := map[number.Field]any{...}` directly inline,
-      unconditionally, v1_numbers.go:155-160 for the ID PUT variant --
-      confirmed via direct read; the flow_id variant's exact line range
-      to be confirmed at implementation time but follows the identical
-      inline-fields-map pattern per file structure)
+      unconditionally; ID PUT variant at v1_numbers.go:155-160, flow_id
+      variant at v1_numbers.go:256-259 -- both confirmed via direct read)
         |
   bin-number-manager/pkg/numberhandler/number.go: Update(ctx, id, fields)
     (thin passthrough, already accepts a pre-built fields map -- no
@@ -61,7 +59,7 @@ PUT /numbers/{id}                          PUT /numbers/{id}/flow_id
 accepts a pre-built field map (not individual typed parameters), so the
 business-handler layer itself needs NO signature change. **The actual fix
 site is one layer up, in `bin-number-manager/pkg/listenhandler/v1_numbers.go`**,
-where `processV1NumbersIDPut` and `processV1NumbersIDFlowIDPut` build the
+where `processV1NumbersIDPut` and `processV1NumbersIDFlowIDsPut` build the
 `fields` map directly inline from the unmarshaled request DTO
 (`v1_numbers.go:155-160`, confirmed):
 
@@ -119,40 +117,41 @@ verbatim):
    declaration updated; `mock_main.go` regenerated.
 7. **`bin-number-manager/pkg/listenhandler/models/request/v1_numbers.go`**:
    `V1DataNumbersIDPut` and `V1DataNumbersIDFlowIDPut` fields become
-   pointers with `omitempty` JSON tags (currently plain `uuid.UUID`/
-   `string` with `omitempty`, confirmed at lines 34-47 -- `omitempty` on
+   pointers with `omitempty` JSON tags. **Correction from Round 1
+   review**: only `V1DataNumbersIDPut` (lines 34-39) currently has
+   `omitempty` on its plain `uuid.UUID`/`string` fields -- `omitempty` on
    a non-pointer `uuid.UUID` is already a latent bug in the opposite
-   direction: it never omits a non-zero UUID from the wire, but also
+   direction (it never omits a non-zero UUID from the wire, but also
    never distinguishes "the zero UUID was explicitly sent" from
-   "omitted", which is exactly what pointer conversion fixes).
+   "omitted", exactly what pointer conversion fixes). `V1DataNumbersIDFlowIDPut`
+   (lines 44-47, `CallFlowID uuid.UUID \`json:"call_flow_id"\`` and
+   `MessageFlowID uuid.UUID \`json:"message_flow_id"\``) has **no**
+   `omitempty` tags at all today -- adding `omitempty` there when
+   converting to pointers is a genuinely new addition, not a
+   modification of existing tag behavior.
 8. **`bin-number-manager/pkg/listenhandler/v1_numbers.go`**
-   (`processV1NumbersIDPut`, `processV1NumbersIDFlowIDPut`) --
+   (`processV1NumbersIDPut`, `processV1NumbersIDFlowIDsPut`) --
    **THE ACTUAL FIX SITE** (deviation from the standard pattern's step 7,
    since this service has no separate business-handler-level field-map
    construction to fix): the inline `fields := map[number.Field]any{...}`
    literal construction becomes conditional per non-nil pointer, directly
-   in the listenhandler function. `len(fields) == 0` short-circuits to
+   in the listenhandler function, at both sites (`v1_numbers.go:155-160`
+   and `v1_numbers.go:256-259`). `len(fields) == 0` short-circuits to
    this service's existing `Get`-equivalent (confirm the exact call --
    `numberHandler` likely has a `Get(ctx, id)` wrapper; verify and reuse
    it rather than introducing a new one, per this monorepo's established
    discipline of not duplicating `ErrNotFound` translation).
 9. **`bin-number-manager/cmd/number-control/main.go`**: confirmed to
    exist and to call `numberHandler.Update` directly with an
-   already-built `fields` map (per this service's own CLAUDE.md
-   documenting `./bin/number-control number update --id <uuid>
-   --call-flow-id <flow-uuid>`) -- **must be updated** to preserve
-   current behavior. Verify at implementation time exactly how this CLI
-   builds its `fields` map (whether it already conditionally includes
-   only flags the user passed, in which case NO CLI change is needed
-   since it already speaks the pointer-shaped-map language natively; or
-   whether it unconditionally includes all fields regardless of which
-   flags were passed, in which case it needs the same
-   pointer-wrap-preserving-current-behavior treatment as Phase 2/3/4's
-   CLIs). Do not assume either way -- this is the one open question this
-   design doc flags for implementation-time verification with a
-   concrete, cited answer, per this monorepo's review-loop standard
-   (an assumption here previously caused Phase 3's Round 1 REQUEST
-   CHANGES for a missed CLI call site).
+   already-built `fields` map (line 385, `runUpdate`/equivalent). **Round
+   1 review resolved the open question this doc originally left
+   unverified**: this CLI already conditionally builds `fields` only for
+   flags the operator explicitly set (`main.go:363-384`, e.g. `if
+   viper.IsSet("name")`, `if viper.GetString("call-flow-id") != ""`,
+   etc.), and already guards `len(fields) == 0`. **No CLI change is
+   needed** -- it already speaks the pointer-shaped, omit-means-unchanged
+   contract natively today, unlike Phase 3/4's CLIs which required an
+   explicit pointer-wrap fix.
 10. RST docs (`bin-api-manager/docsdev/source/number_struct_number.rst`
     -- verify exact filename) updated with an Implementation Hint note
     (omission=unchanged for all 4/2 fields respectively), clean Sphinx
@@ -165,16 +164,16 @@ verbatim):
 - No changes to number purchase (`POST /numbers`), release, or metadata
   update (`PUT /numbers/{id}/metadata`) -- not in the 34-endpoint
   inventory.
-- No flag-changed detection added to the `number-control` CLI if its
-  current behavior turns out to require pointer-wrapping (per §3 step 9)
-  -- deferred as a named follow-up, matching every prior phase's CLI
-  scoping decision (오버엔지니어링 지양).
+- No flag-changed detection added anywhere -- deferred as a named
+  follow-up, matching every prior phase's CLI scoping decision
+  (오버엔지니어링 지양). Not applicable to `number-control` itself since
+  it requires no change (§3 item 9).
 
 ## 5. Testing strategy
 
 - **`bin-number-manager/pkg/listenhandler/v1_numbers_test.go`**:
   table-driven cases for `processV1NumbersIDPut` and
-  `processV1NumbersIDFlowIDPut` -- one field set / rest nil per case
+  `processV1NumbersIDFlowIDsPut` -- one field set / rest nil per case
   (assert exact `fields` map contents); all-omitted no-op case for each
   endpoint (assert `numberHandler.Update` is NOT called, `Times(0)`).
   Since the fix site is the listenhandler itself here (not a separate
@@ -196,7 +195,33 @@ verbatim):
   (reproducing the silent-wipe-to-`uuid.Nil` bug for
   `call_flow_id`/`message_flow_id`), then revert and reconfirm green.
 
-## 6. Non-goals
+## 6. Round 1 review disposition
+
+Round 1 (`deleg_81ae9039` task 1) verdict: REQUEST CHANGES. The
+load-bearing architectural claim (fix site is the listenhandler's inline
+fields-map construction, not `numberHandler.Update`) was independently
+verified correct, along with the call-chain, `server/numbers.go`
+`FromStringOrNil` sites, and `dbhandler.NumberUpdate`'s `len(fields)==0`
+guard. Two factual errors and one self-contradiction were found and
+fixed: (1) §3 item 7's claim that both request DTOs already have
+`omitempty` was wrong for `V1DataNumbersIDFlowIDPut` (no `omitempty` tags
+today) -- corrected to distinguish the two structs' actual current state.
+(2) §3 item 9 left the CLI's field-construction behavior as an
+unresolved "open question for implementation time" despite this exact
+failure mode being the doc's own cited cautionary precedent (Phase 3's
+Round 1 REQUEST CHANGES for a missed CLI verification) -- resolved
+directly: `cmd/number-control/main.go:363-384` already conditionally
+builds fields per explicitly-set flag and already guards
+`len(fields)==0`; **no CLI change is needed**, corrected throughout §3
+item 9, §4, and the call-chain diagram. (3) Naming inaccuracies fixed:
+the flow_id listenhandler function is `processV1NumbersIDFlowIDsPut`
+(plural "IDs", not singular), and the RPC client method is
+`NumberV1NumberUpdateFlowID` (singular, no trailing "s") -- both
+corrected in §2's call-chain diagram and throughout §3/§5. The flow_id
+variant's inline fields-map is confirmed at `v1_numbers.go:256-259`
+(previously left as "to be confirmed at implementation time").
+
+## 7. Non-goals
 
 - No retroactive data remediation for numbers whose `call_flow_id`/
   `message_flow_id` may have already been silently wiped by the pre-fix
