@@ -245,18 +245,23 @@ func Test_processV1ConferencesIDDelete(t *testing.T) {
 
 func Test_processV1ConferencesIDPut(t *testing.T) {
 
+	strPtrCfListen := func(s string) *string { return &s }
+	intPtrCfListen := func(i int) *int { return &i }
+	uuidPtrCfListen := func(u uuid.UUID) *uuid.UUID { return &u }
+	mapPtrCfListen := func(m map[string]any) *map[string]any { return &m }
+
 	tests := []struct {
 		name               string
 		request            *sock.Request
 		responseConference *conference.Conference
 
 		expectedID       uuid.UUID
-		expectedName     string
-		expectedDetail   string
-		expectedData     map[string]any
-		expectedTimeout  int
-		expectPreFlowID  uuid.UUID
-		expectPostFlowID uuid.UUID
+		expectedName     *string
+		expectedDetail   *string
+		expectedData     *map[string]any
+		expectedTimeout  *int
+		expectPreFlowID  *uuid.UUID
+		expectPostFlowID *uuid.UUID
 		expectedRes      *sock.Response
 	}{
 		{
@@ -274,12 +279,12 @@ func Test_processV1ConferencesIDPut(t *testing.T) {
 			},
 
 			expectedID:       uuid.FromStringOrNil("a07e574a-4002-11ec-9c73-a31093777cf0"),
-			expectedName:     "test update",
-			expectedDetail:   "test detail update",
-			expectedData:     map[string]any{"key1": "val1"},
-			expectedTimeout:  86400,
-			expectPreFlowID:  uuid.FromStringOrNil("cfc8ec76-1e17-11f0-a8c7-4b7957ebef12"),
-			expectPostFlowID: uuid.FromStringOrNil("cffbc290-1e17-11f0-ba00-bb8f33143099"),
+			expectedName:     strPtrCfListen("test update"),
+			expectedDetail:   strPtrCfListen("test detail update"),
+			expectedData:     mapPtrCfListen(map[string]any{"key1": "val1"}),
+			expectedTimeout:  intPtrCfListen(86400),
+			expectPreFlowID:  uuidPtrCfListen(uuid.FromStringOrNil("cfc8ec76-1e17-11f0-a8c7-4b7957ebef12")),
+			expectPostFlowID: uuidPtrCfListen(uuid.FromStringOrNil("cffbc290-1e17-11f0-ba00-bb8f33143099")),
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",

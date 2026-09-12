@@ -27,12 +27,12 @@ type V1DataConferencesPost struct {
 // v1 data type request struct for
 // /v1/conferences/<conference-id> PUT
 type V1DataConferencesIDPut struct {
-	Name       string         `json:"name,omitempty"`
-	Detail     string         `json:"detail,omitempty"`
-	Data       map[string]any `json:"data,omitempty"`
-	Timeout    int            `json:"timeout,omitempty"`      // timeout. second
-	PreFlowID  uuid.UUID      `json:"pre_flow_id,omitempty"`  // pre flow id
-	PostFlowID uuid.UUID      `json:"post_flow_id,omitempty"` // post flow id
+	Name       *string         `json:"name,omitempty"`
+	Detail     *string         `json:"detail,omitempty"`
+	Data       *map[string]any `json:"data,omitempty"`
+	Timeout    *int            `json:"timeout,omitempty"`      // timeout. second
+	PreFlowID  *uuid.UUID      `json:"pre_flow_id,omitempty"`  // pre flow id
+	PostFlowID *uuid.UUID      `json:"post_flow_id,omitempty"` // post flow id
 }
 
 // V1DataConferencesPost is

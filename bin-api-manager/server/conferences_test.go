@@ -265,6 +265,11 @@ func Test_conferencesIDDELETE(t *testing.T) {
 
 func Test_conferencesIDPUT(t *testing.T) {
 
+	strPtrConfSrv := func(s string) *string { return &s }
+	intPtrConfSrv := func(i int) *int { return &i }
+	uuidPtrConfSrv := func(u uuid.UUID) *uuid.UUID { return &u }
+	mapPtrConfSrv := func(m map[string]any) *map[string]any { return &m }
+
 	tests := []struct {
 		name  string
 		agent *auth.AuthIdentity
@@ -275,15 +280,15 @@ func Test_conferencesIDPUT(t *testing.T) {
 		responseConference *cfconference.WebhookMessage
 
 		expectedConferenceID uuid.UUID
-		expectedName         string
-		expectedDetail       string
-		expectedData         map[string]any
-		expectedTimeout      int
-		expectedPreFlowID    uuid.UUID
-		expectedPostFlowID   uuid.UUID
+		expectedName         *string
+		expectedDetail       *string
+		expectedData         *map[string]any
+		expectedTimeout      *int
+		expectedPreFlowID    *uuid.UUID
+		expectedPostFlowID   *uuid.UUID
 	}{
 		{
-			name: "normal",
+			name: "normal, all fields set",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
@@ -300,15 +305,35 @@ func Test_conferencesIDPUT(t *testing.T) {
 			},
 
 			expectedConferenceID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
-			expectedName:         "update name",
-			expectedDetail:       "update detail",
-			expectedData: map[string]any{
+			expectedName:         strPtrConfSrv("update name"),
+			expectedDetail:       strPtrConfSrv("update detail"),
+			expectedData: mapPtrConfSrv(map[string]any{
 				"key1": "val1",
 				"key2": 2.1,
+			}),
+			expectedTimeout:    intPtrConfSrv(86400),
+			expectedPreFlowID:  uuidPtrConfSrv(uuid.Nil),
+			expectedPostFlowID: uuidPtrConfSrv(uuid.Nil),
+		},
+		{
+			name: "name only, other fields not sent by client",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/conferences/4363587a-92ff-11ed-8a2f-930de2e9aeae",
+			reqBody:  []byte(`{"name": "name only update"}`),
+
+			responseConference: &cfconference.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
+				},
 			},
-			expectedTimeout:    86400,
-			expectedPreFlowID:  uuid.Nil,
-			expectedPostFlowID: uuid.Nil,
+
+			expectedConferenceID: uuid.FromStringOrNil("4363587a-92ff-11ed-8a2f-930de2e9aeae"),
+			expectedName:         strPtrConfSrv("name only update"),
 		},
 	}
 
@@ -350,6 +375,70 @@ func Test_conferencesIDPUT(t *testing.T) {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 			}
 
+		})
+	}
+}
+
+func Test_conferencesIDPUT_MalformedFlowID(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+		reqBody  []byte
+	}{
+		{
+			name: "malformed pre_flow_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/conferences/4363587a-92ff-11ed-8a2f-930de2e9aeae",
+			reqBody:  []byte(`{"pre_flow_id": "not-a-valid-uuid"}`),
+		},
+		{
+			name: "malformed post_flow_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/conferences/4363587a-92ff-11ed-8a2f-930de2e9aeae",
+			reqBody:  []byte(`{"post_flow_id": "not-a-valid-uuid"}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			// no ConferenceUpdate call expected -- malformed UUID must be
+			// rejected before reaching the servicehandler.
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+			}
 		})
 	}
 }

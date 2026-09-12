@@ -64,6 +64,8 @@ Conference
 
    ``tm_update``/``tm_delete``/``tm_end`` are ``null`` when the corresponding event has not yet occurred, not a sentinel timestamp.
 
+   On ``PUT /conferences/{id}``, all fields (``name``, ``detail``, ``data``, ``timeout``, ``pre_flow_id``, ``post_flow_id``) are optional; omitting a field leaves its current value unchanged. Sending an explicit empty object (``data: {}``) clears all custom data, distinct from omitting ``data``. ``timeout: 0`` disables auto-termination and is a real, settable value distinct from omitting ``timeout``.
+
 
 Example
 +++++++

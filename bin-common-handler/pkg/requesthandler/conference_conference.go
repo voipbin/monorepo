@@ -177,12 +177,12 @@ func (r *requestHandler) ConferenceV1ConferenceCreate(
 func (r *requestHandler) ConferenceV1ConferenceUpdate(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	data map[string]any,
-	timeout int,
-	preFlowID uuid.UUID,
-	postFlowID uuid.UUID,
+	name *string,
+	detail *string,
+	data *map[string]any,
+	timeout *int,
+	preFlowID *uuid.UUID,
+	postFlowID *uuid.UUID,
 ) (*cfconference.Conference, error) {
 	uri := fmt.Sprintf("/v1/conferences/%s", id.String())
 

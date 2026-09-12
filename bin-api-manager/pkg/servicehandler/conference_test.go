@@ -375,16 +375,20 @@ func Test_ConferenceGet(t *testing.T) {
 
 func Test_ConferenceUpdate(t *testing.T) {
 
+	strPtrConf := func(s string) *string { return &s }
+	intPtrConf := func(i int) *int { return &i }
+	uuidPtrConf := func(u uuid.UUID) *uuid.UUID { return &u }
+
 	tests := []struct {
 		name       string
 		agent      *auth.AuthIdentity
 		id         uuid.UUID
-		updateName string
-		detail     string
-		data       map[string]any
-		timeout    int
-		preFlowID  uuid.UUID
-		postFlowID uuid.UUID
+		updateName *string
+		detail     *string
+		data       *map[string]any
+		timeout    *int
+		preFlowID  *uuid.UUID
+		postFlowID *uuid.UUID
 
 		response  *cfconference.Conference
 		expectRes *cfconference.WebhookMessage
@@ -399,11 +403,11 @@ func Test_ConferenceUpdate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 			id:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
-			updateName: "update name",
-			detail:     "update detail",
-			timeout:    86400,
-			preFlowID:  uuid.FromStringOrNil("3c9c8bc8-1e1d-11f0-a370-03530069d812"),
-			postFlowID: uuid.FromStringOrNil("3cc09626-1e1d-11f0-ab8a-6be43ca1e9e9"),
+			updateName: strPtrConf("update name"),
+			detail:     strPtrConf("update detail"),
+			timeout:    intPtrConf(86400),
+			preFlowID:  uuidPtrConf(uuid.FromStringOrNil("3c9c8bc8-1e1d-11f0-a370-03530069d812")),
+			postFlowID: uuidPtrConf(uuid.FromStringOrNil("3cc09626-1e1d-11f0-ab8a-6be43ca1e9e9")),
 
 			response: &cfconference.Conference{
 				Identity: commonidentity.Identity{

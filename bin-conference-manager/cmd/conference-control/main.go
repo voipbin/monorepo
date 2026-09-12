@@ -328,6 +328,7 @@ func cmdUpdate() *cobra.Command {
 	flags.String("id", "", "Conference ID (required)")
 	flags.String("name", "", "Conference name")
 	flags.String("detail", "", "Conference description")
+	flags.String("data", "", "Custom data as a JSON object (optional; omit to leave unchanged)")
 	flags.Int("timeout", 0, "Timeout in seconds")
 	flags.String("pre-flow-id", "", "Pre-flow ID (optional)")
 	flags.String("post-flow-id", "", "Post-flow ID (optional)")
@@ -346,31 +347,60 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve conference ID")
 	}
 
-	var preFlowID uuid.UUID
-	preFlowIDStr := viper.GetString("pre-flow-id")
-	if preFlowIDStr != "" {
-		preFlowID = uuid.FromStringOrNil(preFlowIDStr)
-		if preFlowID == uuid.Nil {
-			return fmt.Errorf("invalid format for Pre-flow ID: '%s' is not a valid UUID", preFlowIDStr)
-		}
+	var name *string
+	if viper.IsSet("name") {
+		v := viper.GetString("name")
+		name = &v
 	}
 
-	var postFlowID uuid.UUID
+	var detail *string
+	if viper.IsSet("detail") {
+		v := viper.GetString("detail")
+		detail = &v
+	}
+
+	var data *map[string]interface{}
+	if viper.IsSet("data") {
+		var parsed map[string]interface{}
+		if errUnmarshal := json.Unmarshal([]byte(viper.GetString("data")), &parsed); errUnmarshal != nil {
+			return fmt.Errorf("invalid JSON for --data: %w", errUnmarshal)
+		}
+		data = &parsed
+	}
+
+	var timeout *int
+	if viper.IsSet("timeout") {
+		v := viper.GetInt("timeout")
+		timeout = &v
+	}
+
+	var preFlowID *uuid.UUID
+	preFlowIDStr := viper.GetString("pre-flow-id")
+	if preFlowIDStr != "" {
+		parsed := uuid.FromStringOrNil(preFlowIDStr)
+		if parsed == uuid.Nil {
+			return fmt.Errorf("invalid format for Pre-flow ID: '%s' is not a valid UUID", preFlowIDStr)
+		}
+		preFlowID = &parsed
+	}
+
+	var postFlowID *uuid.UUID
 	postFlowIDStr := viper.GetString("post-flow-id")
 	if postFlowIDStr != "" {
-		postFlowID = uuid.FromStringOrNil(postFlowIDStr)
-		if postFlowID == uuid.Nil {
+		parsed := uuid.FromStringOrNil(postFlowIDStr)
+		if parsed == uuid.Nil {
 			return fmt.Errorf("invalid format for Post-flow ID: '%s' is not a valid UUID", postFlowIDStr)
 		}
+		postFlowID = &parsed
 	}
 
 	res, err := handler.Update(
 		context.Background(),
 		id,
-		viper.GetString("name"),
-		viper.GetString("detail"),
-		map[string]interface{}{},
-		viper.GetInt("timeout"),
+		name,
+		detail,
+		data,
+		timeout,
 		preFlowID,
 		postFlowID,
 	)

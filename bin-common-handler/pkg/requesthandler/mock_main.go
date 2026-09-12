@@ -3484,7 +3484,7 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ConferenceTranscribeStop(c
 }
 
 // ConferenceV1ConferenceUpdate mocks base method.
-func (m *MockRequestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.Conference, error) {
+func (m *MockRequestHandler) ConferenceV1ConferenceUpdate(ctx context.Context, id uuid.UUID, name, detail *string, data *map[string]any, timeout *int, preFlowID, postFlowID *uuid.UUID) (*conference.Conference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceV1ConferenceUpdate", ctx, id, name, detail, data, timeout, preFlowID, postFlowID)
 	ret0, _ := ret[0].(*conference.Conference)

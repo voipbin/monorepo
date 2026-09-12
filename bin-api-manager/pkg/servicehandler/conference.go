@@ -206,12 +206,12 @@ func (h *serviceHandler) ConferenceUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	conferenceID uuid.UUID,
-	name string,
-	detail string,
-	data map[string]any,
-	timeout int,
-	preFlowID uuid.UUID,
-	postFlowID uuid.UUID,
+	name *string,
+	detail *string,
+	data *map[string]any,
+	timeout *int,
+	preFlowID *uuid.UUID,
+	postFlowID *uuid.UUID,
 ) (*cfconference.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ConferenceUpdate",

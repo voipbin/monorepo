@@ -39,12 +39,12 @@ type ConferenceHandler interface {
 	Update(
 		ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
-		data map[string]interface{},
-		timeout int,
-		preFlowID uuid.UUID,
-		postFlowID uuid.UUID,
+		name *string,
+		detail *string,
+		data *map[string]interface{},
+		timeout *int,
+		preFlowID *uuid.UUID,
+		postFlowID *uuid.UUID,
 	) (*conference.Conference, error)
 	UpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*conference.Conference, error)
 	AddConferencecallID(ctx context.Context, id uuid.UUID, conferencecallID uuid.UUID) (*conference.Conference, error)
