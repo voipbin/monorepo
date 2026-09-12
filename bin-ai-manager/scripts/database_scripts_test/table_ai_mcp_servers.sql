@@ -14,6 +14,13 @@ create table ai_mcp_servers(
   secret_nonce      binary(12),
   key_version       smallint,
 
+  oauth_vendor             varchar(64),
+  access_token_ciphertext  blob,
+  access_token_nonce       binary(12),
+  access_token_expires_at  datetime(6),
+  refresh_token_ciphertext blob,
+  refresh_token_nonce      binary(12),
+
   tm_create datetime(6),
   tm_update datetime(6),
   tm_delete datetime(6),

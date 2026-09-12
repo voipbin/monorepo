@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-ai-manager/pkg/listenhandler/models/response"
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -212,6 +213,112 @@ func (h *listenHandler) processV1McpServersIDPut(ctx context.Context, m *sock.Re
 	}
 
 	return res, nil
+}
+
+// processV1McpServersOAuthStartPost handles POST /v1/mcp_servers/oauth/start request
+func (h *listenHandler) processV1McpServersOAuthStartPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1McpServersOAuthStartPost",
+		"request": m,
+	})
+
+	var req request.V1DataMcpServersOAuthStartPost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	authorizeURL, linkToken, err := h.mcpOAuthHandler.Start(ctx, req.CustomerID, req.Vendor, req.McpServerID)
+	if err != nil {
+		log.Errorf("Could not start mcp oauth flow. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	res := response.V1ResponseMcpServersOAuthStartPost{
+		AuthorizeURL: authorizeURL,
+		LinkToken:    linkToken,
+	}
+
+	data, err := json.Marshal(res)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", res, err)
+		return simpleResponse(500), nil
+	}
+
+	return &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
+}
+
+// processV1McpServersOAuthCallbackGet handles GET /v1/mcp_servers/oauth/callback request
+func (h *listenHandler) processV1McpServersOAuthCallbackGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1McpServersOAuthCallbackGet",
+		"request": m,
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		log.Errorf("Could not parse the request uri. err: %v", err)
+		return simpleResponse(400), nil
+	}
+	state := u.Query().Get("state")
+
+	exists, err := h.mcpOAuthHandler.CallbackExists(ctx, state)
+	if err != nil {
+		log.Errorf("Could not check mcp oauth callback state. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	res := response.V1ResponseMcpServersOAuthCallbackGet{
+		Exists: exists,
+	}
+
+	data, err := json.Marshal(res)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", res, err)
+		return simpleResponse(500), nil
+	}
+
+	return &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
+}
+
+// processV1McpServersOAuthCompletePost handles POST /v1/mcp_servers/oauth/complete request
+func (h *listenHandler) processV1McpServersOAuthCompletePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1McpServersOAuthCompletePost",
+		"request": m,
+	})
+
+	var req request.V1DataMcpServersOAuthCompletePost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.mcpOAuthHandler.Complete(ctx, req.CustomerID, req.State, req.Code)
+	if err != nil {
+		log.Errorf("Could not complete mcp oauth flow. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	return &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
 }
 
 // processV1McpServersIDDelete handles DELETE /v1/mcp_servers/<mcp-server-id> request

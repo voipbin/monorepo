@@ -14,6 +14,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpoauthhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 )
 
@@ -46,6 +47,14 @@ type mcpToolHandler struct {
 	crypto  *mcpserverhandler.SecretCrypto
 	timeout time.Duration
 
+	// oauthHandler resolves a valid (transparently refreshed if needed)
+	// OAuth access token for AuthTypeOAuth servers (design
+	// docs/plans/2026-09-12-mcp-server-oauth-support-design.md §8). Nil
+	// is tolerated (buildAuthHeader fails closed with an error for
+	// AuthTypeOAuth) so existing call sites that don't yet pass one
+	// don't break -- production wiring always sets it.
+	oauthHandler mcpoauthhandler.McpOAuthHandler
+
 	// newClient builds the http.Client used for every outbound tools/list
 	// and tools/call request. Defaults to
 	// mcpserverhandler.NewSSRFGuardedClient in production
@@ -59,8 +68,10 @@ type mcpToolHandler struct {
 // NewMcpToolHandler creates a new McpToolHandler. cryptoKeys is the raw
 // MCP_SECRET_ENCRYPTION_KEYS config value; timeoutSeconds is
 // mcp_tool_call_timeout_seconds (design §13), applied to every outbound
-// tools/list and tools/call request.
-func NewMcpToolHandler(db dbhandler.DBHandler, cryptoKeys string, timeoutSeconds int) (McpToolHandler, error) {
+// tools/list and tools/call request. oauthHandler resolves valid access
+// tokens for AuthTypeOAuth servers (design §8); pass nil only in tests
+// that don't exercise OAuth servers.
+func NewMcpToolHandler(db dbhandler.DBHandler, cryptoKeys string, timeoutSeconds int, oauthHandler mcpoauthhandler.McpOAuthHandler) (McpToolHandler, error) {
 	crypto, err := mcpserverhandler.NewSecretCrypto(cryptoKeys)
 	if err != nil {
 		return nil, err
@@ -71,9 +82,10 @@ func NewMcpToolHandler(db dbhandler.DBHandler, cryptoKeys string, timeoutSeconds
 	}
 
 	return &mcpToolHandler{
-		db:        db,
-		crypto:    crypto,
-		timeout:   time.Duration(timeoutSeconds) * time.Second,
-		newClient: mcpserverhandler.NewSSRFGuardedClient,
+		db:           db,
+		crypto:       crypto,
+		timeout:      time.Duration(timeoutSeconds) * time.Second,
+		oauthHandler: oauthHandler,
+		newClient:    mcpserverhandler.NewSSRFGuardedClient,
 	}, nil
 }

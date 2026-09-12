@@ -357,6 +357,11 @@ type ServiceHandler interface {
 	) (*ammcpserver.WebhookMessage, error)
 	McpServerDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammcpserver.WebhookMessage, error)
 
+	// mcp server oauth handlers
+	McpOAuthStart(ctx context.Context, a *auth.AuthIdentity, vendor string, mcpServerID *uuid.UUID) (authorizeURL string, linkToken string, err error)
+	McpOAuthCallback(ctx context.Context, state string) (bool, error)
+	McpOAuthComplete(ctx context.Context, a *auth.AuthIdentity, state string, code string) (*ammcpserver.WebhookMessage, error)
+
 	// ai prompt history handlers
 	AIPromptHistoryGetsByAIID(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, size uint64, token string) ([]*amaiprompthistory.AIPromptHistory, error)
 	AIPromptHistoryGet(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, historyID uuid.UUID) (*amaiprompthistory.AIPromptHistory, error)

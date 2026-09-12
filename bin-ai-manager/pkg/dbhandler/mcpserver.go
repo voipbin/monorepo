@@ -75,7 +75,7 @@ func (h *handler) mcpserverGetFromDB(ctx context.Context, id uuid.UUID) (*mcpser
 	if err := commondatabasehandler.ScanRow(rows, res); err != nil {
 		return nil, fmt.Errorf("mcpserverGetFromDB: could not scan row. err: %v", err)
 	}
-	res.HasSecret = len(res.SecretCiphertext) > 0
+	res.HasSecret = len(res.SecretCiphertext) > 0 || len(res.AccessTokenCiphertext) > 0
 
 	return res, nil
 }
@@ -123,7 +123,7 @@ func (h *handler) McpServerList(ctx context.Context, size uint64, token string, 
 		if err := commondatabasehandler.ScanRow(rows, m); err != nil {
 			return nil, fmt.Errorf("McpServerList: could not scan row. err: %v", err)
 		}
-		m.HasSecret = len(m.SecretCiphertext) > 0
+		m.HasSecret = len(m.SecretCiphertext) > 0 || len(m.AccessTokenCiphertext) > 0
 		res = append(res, m)
 	}
 
