@@ -1,198 +1,228 @@
 Install
 =======
 
-The happy path is three commands. They are idempotent and resumable.
+The recommended path is the four-command flow, then day-to-day operation
+through the ``voipbin`` CLI.
 
 .. code-block:: bash
 
-    git clone https://github.com/voipbin/install.git
-    cd install
-    pip install -r requirements.txt
+    git clone https://github.com/voipbin/voipbin.git
+    cd voipbin/install
 
-    ./voipbin-install init      # interactive wizard + GCP bootstrap
-    ./voipbin-install apply     # provision and deploy
-    ./voipbin-install verify    # health check
+    ./scripts/init.sh --yes          # 1. Generate .env, certificates, docker-compose.yml
+    sudo ./scripts/setup-host.sh     # 2. The single sudo command (host mutations)
+    ./scripts/start.sh               # 3. Start all services
+    ./scripts/check-install.sh       # 4. Self-verify the install
 
-``init`` (interactive wizard)
------------------------------
+``init.sh`` (generate configuration)
+-------------------------------------
 
-The ``init`` command runs a multi-step bootstrap, in order:
-
-1. Preflight checks for the six local tools.
-2. ``gcloud`` user auth and Application Default Credentials.
-3. **Eight wizard questions**: GCP project ID, region, GKE cluster type
-   (zonal or regional), TLS strategy (``self-signed`` or ``byoc``),
-   Docker image tag strategy (latest or pinned via
-   ``config/versions.yaml``), base domain name, Kamailio TLS cert mode
-   (``self_signed`` or ``manual``), and Cloud DNS mode (auto or manual).
-4. Project existence and billing.
-5. Quota check against ``config/gcp_quotas.yaml``.
-6. Enable sixteen GCP APIs.
-7. Create the ``voipbin-installer`` service account with the IAM role
-   bindings defined in ``config/gcp_iam_roles.yaml``.
-8. Create a KMS key ring and crypto key.
-9. Generate six secrets (``jwt_key``, ``cloudsql_password``,
-   ``redis_password``, ``rabbitmq_user``, ``rabbitmq_password``,
-   ``api_signing_key``) and encrypt them into ``secrets.yaml`` with SOPS
-   bound to the KMS key.
-10. Write ``.sops.yaml``.
-11. Save ``config.yaml``.
-12. Print a cost summary.
-
-Wizard questions
-~~~~~~~~~~~~~~~~
-
-The eight questions and their accepted values:
-
-==================================  ==========================================
-Question                            Options / Example
-==================================  ==========================================
-GCP project ID                      ``my-voipbin-project``
-Region                              ``us-central1`` (or any GCP region)
-GKE cluster type                    ``zonal`` (cheaper) or ``regional`` (HA)
-TLS strategy                        ``self-signed`` or ``byoc``
-Docker image tag strategy           ``latest`` or ``pinned``
-Domain name                         ``voipbin.example.com``
-Kamailio cert mode                  ``self_signed`` (auto) or ``manual``
-Cloud DNS mode                      ``auto`` (GCP manages DNS) or ``manual``
-==================================  ==========================================
-
-Useful flags:
+Generates ``.env``, TLS certificates, and copies ``docker-compose.yml``
+from the committed ``docker-compose.yml.dist``. After this first copy,
+``docker-compose.yml`` is untracked and operator-owned: a later
+``git pull`` in this repo updates ``docker-compose.yml.dist`` but never
+touches your live file. The same split applies to ``versions.lock`` /
+``versions.lock.dist``.
 
 .. code-block:: bash
 
-    ./voipbin-install init --reconfigure          # re-run the wizard
-    ./voipbin-install init --config path/to.yaml  # import existing config
-    ./voipbin-install init --skip-api-enable      # APIs already enabled
-    ./voipbin-install init --skip-quota-check     # bypass quota gate
-    ./voipbin-install init --dry-run              # show what would happen
+    ./scripts/init.sh --yes
 
-The two files written are everything you need to reproduce the install:
+    # external mode (real domain, bring-your-own certificate)
+    ./scripts/init.sh --mode external --domain example.com --tls byo \
+      --cert fullchain.pem --key privkey.pem --yes
 
-- ``config.yaml``: non-sensitive. Safe to commit if you want a record
-  per environment.
-- ``secrets.yaml``: SOPS-encrypted with GCP KMS. Decrypt locally with
-  ``sops --decrypt secrets.yaml``.
+``setup-host.sh`` (the single sudo command)
+----------------------------------------------
 
-.. warning::
+Owns every host mutation: mkcert package and CA trust (internal mode
+only), CoreDNS setup (internal mode only), the Compose default Docker
+network, and the VoIP network interfaces. Idempotent; safe to rerun.
 
-   Back up ``secrets.yaml`` and the KMS key ring. If the key ring is
-   destroyed or the GCP project is deleted, ``secrets.yaml`` becomes
-   unrecoverable.
+.. code-block:: bash
 
-``apply`` (eight-stage deploy)
-------------------------------
+    sudo ./scripts/setup-host.sh
 
-``./voipbin-install apply`` executes eight pipeline stages in order. The
-pipeline checkpoints between stages, so if a run fails you can fix the
-problem and rerun the same command; it picks up from the failed stage.
+``start.sh`` (bring the stack up)
+------------------------------------
+
+Starts infrastructure, runs database migrations inside a container, and
+starts all services.
+
+.. code-block:: bash
+
+    ./scripts/start.sh
+
+``check-install.sh`` (self-verify)
+--------------------------------------
+
+Verifies service counts, DNS resolution, API liveness, and (external
+mode) the TLS chain strictly, without skipping validation.
+
+.. code-block:: bash
+
+    ./scripts/check-install.sh
+
+If anything fails at any of the four steps, run ``./scripts/doctor.sh``: a
+read-only diagnostic that works at any stage and prints the exact recovery
+command for every failure. See the Troubleshooting section below.
+
+Once installed, ``sudo ./voipbin`` is the interactive CLI for day-to-day
+operations.
+
+.. code-block:: bash
+
+    sudo ./voipbin
+
+    voipbin> status
+    voipbin> logs -f api-manager
+
+Or run single commands directly: ``sudo ./voipbin status``.
+
+Command categories:
 
 .. list-table::
    :header-rows: 1
-   :widths: 25 50 25
+   :widths: 30 70
 
-   * - Stage
-     - What it does
-     - Typical duration
-   * - ``terraform_init``
-     - Initialize Terraform backend (GCS state bucket)
-     - 1 to 2 minutes
-   * - ``reconcile_imports``
-     - Import drifted GCP resources into Terraform state
-     - 1 to 3 minutes
-   * - ``terraform_apply``
-     - Provision VPC, GKE, Cloud SQL, VMs
-     - 12 to 18 minutes
-   * - ``reconcile_outputs``
-     - Read Terraform outputs into ``config.yaml``
-     - under 1 minute
-   * - ``k8s_apply``
-     - Deploy Kubernetes workloads to GKE
-     - 3 to 5 minutes
-   * - ``reconcile_k8s_outputs``
-     - Read Kubernetes LB IPs into ``config.yaml``
-     - under 1 minute
-   * - ``cert_provision``
-     - Issue Kamailio TLS certificates
-     - 1 to 2 minutes
-   * - ``ansible_run``
-     - Configure Kamailio and RTPEngine VMs
-     - 5 to 8 minutes
+   * - Category
+     - Examples
+   * - Service control
+     - ``start``, ``stop``, ``restart``, ``status``/``ps``, ``logs``
+   * - Debug shells
+     - ``ast`` (Asterisk CLI), ``kam`` (Kamailio kamcmd), ``db`` (MySQL),
+       ``api`` (authenticated REST client)
+   * - Extension management
+     - ``ext list``/``create``/``delete``
+   * - Infrastructure
+     - ``dns status``/``test``/``regenerate``, ``network status``/``setup``,
+       ``certs status``/``trust``
+   * - Resource management
+     - ``customer``, ``agent``, ``billing``, ``number``, ``registrar``,
+       ``call``, ``conference``, ``flow``, ``campaign``, ``queue``, and more
+   * - Maintenance
+     - ``version``, ``update``, ``backup``, ``restore``, ``rollback``,
+       ``clean``, ``config``
 
-Useful flags:
+See the Environment variables and maintenance section below for the full
+maintenance command reference (backup, restore, upgrade).
+
+External mode (real domain)
+------------------------------
+
+External mode runs the install under a real domain with a real
+certificate. The installer never touches DNS or the trust store in this
+mode; you own both.
+
+Step 1: create DNS records
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 15 25 30
+
+   * - Record
+     - Type
+     - Target
+     - Purpose
+   * - ``api.<domain>``
+     - A
+     - Host IP
+     - REST API + WebSocket (:8443)
+   * - ``admin.<domain>`` / ``meet.<domain>`` / ``talk.<domain>``
+     - A
+     - Host IP
+     - Web UIs (:3003/:3004/:3005)
+   * - ``sip.<domain>``
+     - A
+     - Kamailio external IP
+     - SIP signaling / WSS (:5060/:5066)
+   * - ``sip-service.<domain>``, ``conference.<domain>``,
+       ``trunk.<domain>``, ``pstn.<domain>``
+     - A
+     - Kamailio external IP
+     - SIP surfaces
+   * - ``registrar.<domain>``
+     - A
+     - Kamailio external IP
+     - Apex registrar name, not covered by the wildcard below
+   * - ``*.registrar.<domain>``
+     - A
+     - Kamailio external IP
+     - Per-customer SIP realm resolution
+
+Host IP and Kamailio IP are two distinct addresses on the same subnet.
+
+Step 2: obtain a certificate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The certificate must cover ``api.``, ``sip.``, ``sip-service.``,
+``conference.``, ``trunk.``, and ``registrar.`` of your domain; a wildcard
+covers all six. A wildcard requires the DNS-01 challenge:
 
 .. code-block:: bash
 
-    ./voipbin-install apply --dry-run               # plan, do not change
-    ./voipbin-install apply --auto-approve          # skip prompts
-    ./voipbin-install apply --stage terraform_init  # only run this stage
-    ./voipbin-install apply --stage k8s_apply
-    ./voipbin-install apply --stage ansible_run
+    certbot certonly --preferred-challenges dns --manual \
+      -d example.com -d '*.example.com' -d '*.registrar.example.com'
 
-``verify`` (health check)
--------------------------
-
-The ``verify`` command runs a series of checks against the live
-deployment and prints a pass, warn, or fail per check. The current set
-of checks covers, in order: GKE cluster status, pod readiness in three
-namespaces, service endpoint availability in three namespaces, Kamailio
-and RTPEngine VM run state, Cloud SQL instance state, DNS resolution
-for ``api.<domain>``, HTTPS reachability of ``https://api.<domain>/health``,
-and a TCP socket probe of SIP port ``5060``. Each check prints the
-underlying command on failure so you can rerun individual probes
-manually.
-
-.. note::
-
-   The SIP probe uses a TCP socket connect. If you need to verify UDP
-   reachability for media or signalling, use a separate tool such as
-   ``nc -zuv`` and the GCP firewall log stream.
-
-``status`` (deployment overview)
----------------------------------
-
-The ``status`` command shows a summary of the current deployment state:
+Step 3: initialize
+~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
-    ./voipbin-install status            # human-readable output
-    ./voipbin-install status --json     # machine-readable JSON
+    ./scripts/init.sh --mode external --domain example.com --tls byo \
+      --cert /etc/letsencrypt/live/example.com/fullchain.pem \
+      --key  /etc/letsencrypt/live/example.com/privkey.pem \
+      --yes
 
-``cert`` (certificate management)
-----------------------------------
+The certificate is validated (key match, SAN coverage, expiry) before
+``.env`` is written; a bad certificate aborts cleanly.
 
-The ``cert`` subcommand manages Kamailio TLS certificates:
+Step 4: host setup, start, and verify
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
-    ./voipbin-install cert status       # show per-SAN cert expiry and mode
-    ./voipbin-install cert renew        # re-run cert_provision stage
-    ./voipbin-install cert renew --force  # force re-issuance even if not expired
-    ./voipbin-install cert export-ca --out ca.pem  # export self-signed CA
+    sudo ./scripts/setup-host.sh
+    ./scripts/start.sh
+    ./scripts/check-install.sh
 
-DNS step
---------
+Certificate renewal
+~~~~~~~~~~~~~~~~~~~~~
 
-After apply, the installer prints the DNS records you must publish if
-you chose ``dns_mode: manual``, or the four nameservers to delegate to
-if you chose ``dns_mode: auto``. Required records, with
-``example.com`` standing in for your domain:
+``install-certs.sh`` is idempotent and usable as a certbot deploy hook:
 
-============================  ======  ========================
-Subdomain                     Type    Value
-============================  ======  ========================
-``api.example.com``           A       External LB IP
-``hook.example.com``          A       External LB IP
-``admin.example.com``         A       External LB IP
-``talk.example.com``          A       External LB IP
-``meet.example.com``          A       External LB IP
-``sip.example.com``           A       Kamailio external LB IP
-============================  ======  ========================
+.. code-block:: bash
 
-.. note::
+    certbot renew --deploy-hook \
+      '/path/to/install/scripts/install-certs.sh /etc/letsencrypt/live/example.com/fullchain.pem /etc/letsencrypt/live/example.com/privkey.pem'
 
-   The ``hook`` subdomain is commonly missed. It is required for
-   webhook ingress (HTTP and HTTPS callbacks from external providers).
+.. warning::
 
-DNS propagation can take up to 48 hours for NS delegation changes. Once
-records resolve, rerun ``./voipbin-install verify``.
+   By default, the ``admin``/``meet``/``talk`` web UIs are plain HTTP on
+   ports 3003 to 3005 in both modes. On a routable domain this means
+   credentials travel in the clear. Front them with a TLS-terminating
+   reverse proxy, restrict those ports to trusted networks, or use the
+   built-in ``--web-reverse-proxy`` flag described next.
+
+Web reverse proxy (port-less URLs)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``init.sh --web-reverse-proxy`` (external mode with ``--tls byo`` only)
+runs a Caddy container that terminates TLS with your certificate and
+routes ``api``/``admin``/``meet``/``talk.<domain>`` by Host header, so
+``https://admin.example.com`` works with no port suffix:
+
+.. code-block:: bash
+
+    ./scripts/init.sh --mode external --domain example.com --tls byo \
+      --cert fullchain.pem --key privkey.pem \
+      --web-reverse-proxy --yes
+    sudo ./scripts/setup-host.sh
+    ./scripts/start.sh
+    ./scripts/check-install.sh
+
+The certificate must additionally cover ``admin``, ``meet``, and ``talk``
+(a wildcard already does). Once enabled, ``admin``/``meet``/``talk``'s
+published ports become loopback-only; Caddy's 80/443 is the only
+externally-reachable path to them.

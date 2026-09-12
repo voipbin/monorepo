@@ -18,7 +18,7 @@ Start here
 - :ref:`Flow <flow-main>` — Build programmable communication workflows with visual flows and AI-driven flows.
 - :ref:`Webhook <webhook-main>` — Receive real-time events for calls, messages, and conversations.
 - `REST API Reference <https://api.voipbin.net/redoc/index.html>`_ — Full endpoint catalog (ReDoc).
-- :ref:`Installation <installation-main>` — Deploy VoIPBin on your own GCP project with a single CLI.
+- :ref:`Installation <installation-main>` — Self-host the full VoIPBin stack on your own server with Docker Compose.
 
 What you can build
 ==================

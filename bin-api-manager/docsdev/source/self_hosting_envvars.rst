@@ -1,263 +1,111 @@
-Environment variables and post-install configuration
-====================================================
+Environment variables and maintenance
+========================================
 
-The defaults produce a deployment that boots and passes ``verify``, but
-production workloads need adjustments. This section enumerates what to
-touch and where.
+Key ``.env`` variables
+-------------------------
 
-1. Domain-related values
-------------------------
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-Derived from the ``domain`` you entered in the wizard. Using
-``voipbin.example.com`` as an example, the rendered values are:
+   * - Variable
+     - Purpose
+   * - ``DOMAIN_MODE``
+     - ``internal`` (default) or ``external``. A missing key means internal.
+   * - ``BASE_DOMAIN``
+     - The base domain all derived domain values are composed from.
+       Edit and re-run ``init`` rather than editing derived vars directly.
+   * - ``TLS_MODE``
+     - ``mkcert``, ``selfsigned``, or ``byo``.
+   * - ``COMPOSE_PROFILES``
+     - ``internal-dns`` in internal mode (enables CoreDNS), empty in
+       external mode, ``web-proxy`` when the reverse proxy is enabled.
+   * - ``WEB_REVERSE_PROXY``
+     - ``true`` enables the built-in Caddy reverse proxy (external mode,
+       ``--tls byo`` only).
+   * - ``HOST_EXTERNAL_IP``
+     - Host's LAN or public IP (auto-detected).
+   * - ``KAMAILIO_EXTERNAL_IP`` / ``RTPENGINE_EXTERNAL_IP``
+     - Dedicated external IPs for SIP signaling and RTP media
+       (auto-generated; must differ from the host IP).
+   * - ``DOMAIN_NAME_EXTENSION``
+     - SIP domain suffix for extensions. Full realm is
+       ``{customer_id}.{DOMAIN_NAME_EXTENSION}``.
+   * - ``VOIPBIN_SANDBOX_DEV_SEED``
+     - ``true`` to opt in to dev/test account seeding on ``start``. Off
+       by default; never enable on a public install.
 
-==========================  =================================  ===========================================
-Variable                    Value                              Location
-==========================  =================================  ===========================================
-``DOMAIN``                  ``voipbin.example.com``            ``k8s/backend/configmap.yaml``
-``BASE_DOMAIN``             ``voipbin.example.com``            Kamailio VM ``/opt/kamailio-docker/.env``
-``DOMAIN_NAME_EXTENSION``   ``reg.voipbin.example.com``        Kamailio VM ``.env``
-``DOMAIN_NAME_TRUNK``       ``trunk.voipbin.example.com``      Kamailio VM ``.env``
-==========================  =================================  ===========================================
+Third-party integrations
+---------------------------
 
-``DOMAIN_NAME_EXTENSION`` sets the base domain suffix for
-customer-specific SIP registration domains: each customer's realm is
-``<customer-label>.<DOMAIN_NAME_EXTENSION>``. The public voipbin.net
-deployment uses ``reg.voipbin.net`` since the short-domain cutover; the
-table above shows the matching ``reg.`` prefix as the example value.
+Voice AI, transcription, TTS, phone number provisioning, and email/SMS
+providers are configured through their own keys in ``.env``
+(for example ``OPENAI_API_KEY``, ``TWILIO_SID``, ``SENDGRID_API_KEY``,
+``AWS_ACCESS_KEY``). Until the relevant keys are set, the corresponding
+flow actions return a "provider not configured" error; the rest of the
+platform stays healthy.
 
-How the ``<customer-label>`` part is generated is controlled by a
-separate registrar-manager setting:
+Maintenance commands (the ``voipbin`` CLI)
+---------------------------------------------
 
-- ``DOMAIN_SHORT_LABEL_ENABLED`` (registrar-manager backend deployment
-  env, defined under ``k8s/backend/services/``): defaults to ``false``.
-  With the default, newly created customers get the legacy label, the
-  customer uuid, producing long realms such as
-  ``550e8400-e29b-41d4-a716-446655440000.reg.voipbin.example.com``.
-  Set it to ``true`` to have registrar-manager assign a short
-  4-character label to each newly created customer instead
-  (e.g. ``ab12.reg.voipbin.example.com``).
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-Self-hosters are recommended to set ``DOMAIN_SHORT_LABEL_ENABLED=true``
-together with a short ``DOMAIN_NAME_EXTENSION`` so SIP messages stay
-under the UDP MTU. The flag only affects customers created after it is
-enabled; existing customers' domains are only changed by running the
-``registrar-control`` domain-migrate batch (which assigns short labels
-regardless of the flag).
+   * - Command
+     - Description
+   * - ``version [--json]``
+     - Show pinned image versions
+   * - ``update [images/scripts/all]``
+     - Update Docker images or scripts. ``update all`` on a pinned repo
+       runs the full safe upgrade: backup, git pull, migrate, recreate,
+       verify.
+   * - ``update --check``
+     - Dry-run to preview updates
+   * - ``backup``
+     - Full data backup (MySQL, call recordings, ``.env``, certificates,
+       ``versions.lock``, a ``manifest.json``) into ``backups/<timestamp>/``
+   * - ``restore <timestamp> --force``
+     - Restore data from a backup. Destructive; services must be stopped
+       except ``db``/``redis``.
+   * - ``rollback [timestamp]``
+     - Roll back image versions from override history (unpinned repos
+       only). For data recovery use ``restore``.
+   * - ``clean [options]``
+     - Cleanup sandbox resources
 
-To change the base domain after install, edit ``domain`` in
-``config.yaml`` and rerun ``./voipbin-install apply``. Both the Ansible
-env template and the Kubernetes ConfigMap regenerate consistently.
-
-2. Generated credentials (RabbitMQ, Redis, MySQL, JWT, API signing)
--------------------------------------------------------------------
-
-These live in the SOPS-encrypted ``secrets.yaml`` and are wired into the
-ConfigMap, Secret, and VM ``.env`` automatically. Rotate them through
-SOPS:
-
-.. code-block:: bash
-
-    sops secrets.yaml
-    ./voipbin-install apply
-
-3. SIP and PSTN settings
-------------------------
-
-These are not part of the wizard. Edit them in the appropriate place and
-rerun the relevant stage.
-
-PSTN allowlist
-~~~~~~~~~~~~~~
-
-Kamailio only accepts inbound PSTN traffic from explicitly whitelisted
-source IPs. Populate the list with ``VOIPBIN_PSTN_WHITELIST_IPS`` and
-rerun the Ansible stage:
-
-.. code-block:: bash
-
-    export VOIPBIN_PSTN_WHITELIST_IPS="203.0.113.10,198.51.100.4"
-    ./voipbin-install apply --stage ansible_run
-
-The value flows through ``ansible/group_vars/all.yml`` into the Kamailio
-env template as ``PSTN_WHITELIST_IPS``.
-
-SIP auth backend
-~~~~~~~~~~~~~~~~
-
-The four ``KAMAILIO_AUTH_*`` variables in the Kamailio env template
-default to empty. Production deployments point them at a database that
-holds SIP credentials:
-
-- ``KAMAILIO_AUTH_DB_URL``: connection string Kamailio uses for the
-  auth database.
-- ``KAMAILIO_AUTH_USER_COLUMN``: defaults to ``username``.
-- ``KAMAILIO_AUTH_DOMAIN_COLUMN``: defaults to ``realm``.
-- ``KAMAILIO_AUTH_PASSWORD_COLUMN``: defaults to ``password``.
-
-Set them via Ansible extra vars or by editing
-``ansible/group_vars/kamailio.yml`` and rerunning
-``./voipbin-install apply --stage ansible_run``.
-
-RTPEngine port range
+Scheduled backups
 ~~~~~~~~~~~~~~~~~~~~
 
-The default media port range is ``20000-65535``. If your network only
-opens ``20000-30000``, set ``rtpengine_port_max: 30000`` in
-``ansible/group_vars/rtpengine.yml`` and rerun the Ansible stage. Make
-sure the firewall rule matches.
-
-4. TLS certificate strategy
----------------------------
-
-The ``tls_strategy`` chosen in the wizard governs how the frontend TLS
-certificate is managed. There are two valid values:
-
-- ``self-signed`` (default): on first ``apply``, the installer generates
-  a self-signed RSA-2048 certificate and stores it in the
-  ``voipbin-tls`` Kubernetes Secret in both ``bin-manager`` and
-  ``square-manager`` namespaces, and as base64-encoded env vars in
-  ``voipbin-secret``. Browsers will show a certificate warning until you
-  replace it with a CA-issued cert. Use only for initial bring-up or
-  internal testing.
-- ``byoc`` (Bring Your Own Cert): the operator pre-creates the
-  ``voipbin-tls`` Secret with a real CA-issued certificate before the
-  ``k8s_apply`` stage. The installer detects populated SSL keys and
-  skips its own writes. To use BYOC mode, create the secret in both
-  namespaces before running apply:
-
-  .. code-block:: bash
-
-      kubectl -n bin-manager create secret tls voipbin-tls \
-        --cert=/path/to/fullchain.pem --key=/path/to/privkey.pem
-      kubectl -n square-manager create secret tls voipbin-tls \
-        --cert=/path/to/fullchain.pem --key=/path/to/privkey.pem
-
-  Then run:
-
-  .. code-block:: bash
-
-      ./voipbin-install apply --stage k8s_apply
-
-To change strategy after install, edit ``tls_strategy`` in
-``config.yaml`` and rerun apply.
-
-5. Third-party integrations
----------------------------
-
-VoIPBin services can integrate with external providers for LLM, ASR,
-TTS, email, SMS, and payments. The installer ships with these slots
-intentionally **empty**, because they are operator-specific and not
-free. Add them as Kubernetes Secrets in the ``bin-manager`` namespace,
-then mount them into the relevant deployments.
-
-Provider categories you will likely need to wire up:
-
-- An LLM or AI provider.
-- A speech-to-text provider.
-- A text-to-speech provider.
-- An email API or SMTP provider.
-- An SMS provider.
-- A payment provider for billing flows.
-
-Pick providers based on your own region, compliance, and pricing
-constraints. Until the relevant keys are wired up, the corresponding
-flow actions return ``provider not configured`` errors; the platform
-itself stays healthy and the rest of the channels remain usable.
-
-Recommended pattern: a separate Secret per provider so rotation is
-independent.
+``schedule-manager`` runs a nightly ``database-backup`` job (MySQL dump
+plus gzip of the two databases, written to ``backups/scheduled-db/``,
+retaining the newest 7). ``start.sh`` enables it on every run. This is
+deliberately separate from the manual ``voipbin backup`` command above:
+different retention, different directory, so neither one's pruning
+touches the other.
 
 .. code-block:: bash
 
-    kubectl -n bin-manager create secret generic voipbin-llm \
-      --from-literal=LLM_API_KEY=...
+    docker exec voipbin-schedule-mgr /app/bin/schedule-control schedule list
+    docker exec voipbin-schedule-mgr /app/bin/schedule-control schedule disable database-backup
 
-Then patch the deployment to mount it via ``envFrom``. Track the provider
-matrix per service in your own runbook; upstream manifests deliberately
-do not enumerate provider keys because the supported list evolves.
+Host-side gaps (operator responsibility)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-6. Scaling
-----------
+Two tasks stay outside the installer's automation:
 
-The defaults are minimal:
+- **Offsite copy of backups.** ``backups/`` is local disk; ship it to
+  remote or object storage on your own recovery-objective schedule
+  (for example an ``rsync`` cron job).
+- **Host-level maintenance.** OS package updates, Docker Engine upgrades,
+  disk space and log rotation, and kernel/security patching are the
+  operator's responsibility.
 
-- GKE: 2 nodes of ``n1-standard-2``.
-- Kamailio: 1 VM of ``f1-micro``.
-- RTPEngine: 1 VM of ``f1-micro``.
-- Backend deployments: 1 replica each, ``50m`` CPU and ``64Mi`` memory
-  request, ``200m`` and ``256Mi`` limits.
+Scaling
+---------
 
-For anything beyond a demo, raise the VM types and replica counts.
-Adjust ``gke_machine_type``, ``gke_node_count``, ``vm_machine_type``,
-``kamailio_count``, and ``rtpengine_count`` in ``config.yaml`` and
-rerun ``./voipbin-install apply``.
-
-Backend replica counts live in the per-service manifest under
-``k8s/backend/services/<name>.yaml``. For now, edit those files
-directly; a future installer revision will surface scaling profiles
-through ``config.yaml``.
-
-Consolidated environment variable map
--------------------------------------
-
-Every variable a fresh install touches comes from one of three sources:
-the wizard, generated secrets, or operator overrides.
-
-Wizard-sourced (``config.yaml``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- ``gcp_project_id``
-- ``region``, ``zone``
-- ``gke_type`` (``zonal`` or ``regional``)
-- ``tls_strategy`` (``self-signed`` or ``byoc``)
-- ``image_tag_strategy`` (``latest`` or ``pinned``)
-- ``domain``
-- ``dns_mode`` (``auto`` or ``manual``)
-- ``gke_machine_type``, ``gke_node_count``
-- ``vm_machine_type``, ``kamailio_count``, ``rtpengine_count``
-
-Any of these can be overridden at runtime with the ``VOIPBIN_`` prefix
-(uppercased), for example ``VOIPBIN_REGION=europe-west1``.
-
-Generated and SOPS-encrypted (``secrets.yaml``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- ``jwt_key``
-- ``cloudsql_password``
-- ``redis_password``
-- ``rabbitmq_user``, ``rabbitmq_password``
-- ``api_signing_key``
-
-Ansible variables (Kamailio VMs)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Defined in ``ansible/group_vars/all.yml`` and
-``ansible/group_vars/kamailio.yml``. The ones operators routinely change:
-
-- ``domain`` via ``VOIPBIN_DOMAIN`` or ``config.yaml``.
-- ``image_tag`` via ``VOIPBIN_IMAGE_TAG``.
-- ``pstn_whitelist_ips`` via ``VOIPBIN_PSTN_WHITELIST_IPS``.
-- ``kamailio_auth_db_url`` and the three ``kamailio_auth_*_column``
-  variables via extra-vars or ``group_vars/kamailio.yml``.
-- ``kamailio_shm_size``, ``kamailio_pkg_size``: memory tuning.
-- ``pike_enabled``, ``pike_rate``, ``pike_timeout``: anti-flood.
-- ``homer_enabled``, ``homer_uri``: HEP capture.
-
-Kubernetes ConfigMap (``voipbin-config``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In namespaces ``bin-manager`` and ``infrastructure``. Placeholders are
-substituted at apply time:
-
-- ``DOMAIN``, ``DB_HOST``, ``DB_PORT``, ``DB_NAME``,
-  ``CLOUDSQL_CONNECTION_NAME``
-- ``REDIS_URL``, ``RABBITMQ_URL``, ``CLICKHOUSE_URL``
-
-Kubernetes Secret (``voipbin-secret``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In namespace ``bin-manager``:
-
-- ``JWT_KEY``, ``DB_USER``, ``DB_PASSWORD``, ``REDIS_PASSWORD``,
-  ``RABBITMQ_PASSWORD``, ``API_SIGNING_KEY``
+The installer starts every backend service at one replica. Scaling a
+single-server Compose install means raising the host's own CPU/RAM and,
+for the SIP/media layer, the RTPEngine port range and Asterisk channel
+limits. There is no automated horizontal-scale profile in this installer
+today; track resource usage and scale the host vertically first.
