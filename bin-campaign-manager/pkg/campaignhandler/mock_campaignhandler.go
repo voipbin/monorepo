@@ -189,7 +189,7 @@ func (mr *MockCampaignHandlerMockRecorder) UpdateActions(ctx, id, actions any) *
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockCampaignHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle) (*campaign.Campaign, error) {
+func (m *MockCampaignHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail *string, campaignType *campaign.Type, serviceLevel *int, endHandle *campaign.EndHandle) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, detail, campaignType, serviceLevel, endHandle)
 	ret0, _ := ret[0].(*campaign.Campaign)

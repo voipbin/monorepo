@@ -246,11 +246,11 @@ func (h *campaignHandler) ListByCustomerID(ctx context.Context, customerID uuid.
 func (h *campaignHandler) UpdateBasicInfo(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	campaignType campaign.Type,
-	serviceLevel int,
-	endHandle campaign.EndHandle,
+	name *string,
+	detail *string,
+	campaignType *campaign.Type,
+	serviceLevel *int,
+	endHandle *campaign.EndHandle,
 ) (*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "UpdateBasicInfo",
@@ -263,7 +263,28 @@ func (h *campaignHandler) UpdateBasicInfo(
 	})
 	log.Debug("Updating campaign basic info.")
 
-	if err := h.db.CampaignUpdateBasicInfo(ctx, id, name, detail, campaignType, serviceLevel, endHandle); err != nil {
+	fields := map[campaign.Field]any{}
+	if name != nil {
+		fields[campaign.FieldName] = *name
+	}
+	if detail != nil {
+		fields[campaign.FieldDetail] = *detail
+	}
+	if campaignType != nil {
+		fields[campaign.FieldType] = *campaignType
+	}
+	if serviceLevel != nil {
+		fields[campaign.FieldServiceLevel] = *serviceLevel
+	}
+	if endHandle != nil {
+		fields[campaign.FieldEndHandle] = *endHandle
+	}
+
+	if len(fields) == 0 {
+		return h.Get(ctx, id)
+	}
+
+	if err := h.db.CampaignUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update campaign. err: %v", err)
 		return nil, err
 	}

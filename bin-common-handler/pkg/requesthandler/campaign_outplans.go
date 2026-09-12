@@ -163,13 +163,13 @@ func (r *requestHandler) CampaignV1OutplanUpdateDialInfo(
 	ctx context.Context,
 	id uuid.UUID,
 	source *address.Address,
-	dialTimeout int,
-	tryInterval int,
-	maxTryCount0 int,
-	maxTryCount1 int,
-	maxTryCount2 int,
-	maxTryCount3 int,
-	maxTryCount4 int,
+	dialTimeout *int,
+	tryInterval *int,
+	maxTryCount0 *int,
+	maxTryCount1 *int,
+	maxTryCount2 *int,
+	maxTryCount3 *int,
+	maxTryCount4 *int,
 ) (*caoutplan.Outplan, error) {
 	uri := fmt.Sprintf("/v1/outplans/%s/dials", id)
 

@@ -203,11 +203,11 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	id uuid.UUID,
-	name string,
-	detail string,
-	campaignType cacampaign.Type,
-	serviceLevel int,
-	endHandle cacampaign.EndHandle,
+	name *string,
+	detail *string,
+	campaignType *cacampaign.Type,
+	serviceLevel *int,
+	endHandle *cacampaign.EndHandle,
 ) (*cacampaign.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "CampaignUpdateBasicInfo",

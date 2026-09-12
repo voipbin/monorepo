@@ -48,23 +48,21 @@ put:
           properties:
             name:
               type: string
-              description: Updated name of the campaign
+              description: Updated name of the campaign. Omit to leave unchanged.
             detail:
               type: string
-              description: Updated details of the campaign
+              description: Updated details of the campaign. Omit to leave unchanged.
             type:
-              $ref: '#/components/schemas/CampaignManagerCampaignType'
+              allOf:
+                - $ref: '#/components/schemas/CampaignManagerCampaignType'
+              description: Updated type of the campaign. Omit to leave unchanged.
             service_level:
               type: integer
-              description: Updated service level of the campaign
+              description: Updated service level of the campaign. Omit to leave unchanged.
             end_handle:
-              $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
-          required:
-            - name
-            - detail
-            - type
-            - service_level
-            - end_handle
+              allOf:
+                - $ref: '#/components/schemas/CampaignManagerCampaignEndHandle'
+              description: Updated end handle of the campaign. Omit to leave unchanged.
   responses:
     '200':
       content:

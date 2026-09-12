@@ -288,11 +288,11 @@ func cmdUpdateBasicInfo() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Campaign ID (required)")
-	flags.String("name", "", "Campaign name (required)")
-	flags.String("detail", "", "Description")
-	flags.String("type", string(campaign.TypeCall), "Campaign type: call or flow")
-	flags.Int("service-level", 100, "Service level percentage (0-100)")
-	flags.String("end-handle", string(campaign.EndHandleStop), "End handle: stop or continue")
+	flags.String("name", "", "Campaign name. Omit to leave unchanged.")
+	flags.String("detail", "", "Description. Omit to leave unchanged.")
+	flags.String("type", "", "Campaign type: call or flow. Omit to leave unchanged.")
+	flags.Int("service-level", 0, "Service level percentage (0-100). Omit to leave unchanged.")
+	flags.String("end-handle", "", "End handle: stop or continue. Omit to leave unchanged.")
 
 	return cmd
 }
@@ -308,19 +308,44 @@ func runUpdateBasicInfo(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve campaign ID")
 	}
 
-	name := viper.GetString("name")
-	if name == "" {
-		return fmt.Errorf("name is required")
+	var name *string
+	if viper.IsSet("name") {
+		v := viper.GetString("name")
+		name = &v
+	}
+
+	var detail *string
+	if viper.IsSet("detail") {
+		v := viper.GetString("detail")
+		detail = &v
+	}
+
+	var campaignType *campaign.Type
+	if viper.IsSet("type") {
+		v := campaign.Type(viper.GetString("type"))
+		campaignType = &v
+	}
+
+	var serviceLevel *int
+	if viper.IsSet("service-level") {
+		v := viper.GetInt("service-level")
+		serviceLevel = &v
+	}
+
+	var endHandle *campaign.EndHandle
+	if viper.IsSet("end-handle") {
+		v := campaign.EndHandle(viper.GetString("end-handle"))
+		endHandle = &v
 	}
 
 	res, err := handler.UpdateBasicInfo(
 		context.Background(),
 		id,
 		name,
-		viper.GetString("detail"),
-		campaign.Type(viper.GetString("type")),
-		viper.GetInt("service-level"),
-		campaign.EndHandle(viper.GetString("end-handle")),
+		detail,
+		campaignType,
+		serviceLevel,
+		endHandle,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update campaign basic info")

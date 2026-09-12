@@ -374,6 +374,11 @@ func Test_campaignsIDDELETE(t *testing.T) {
 
 func Test_campaignsIDPUT(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	typePtr := func(v cacampaign.Type) *cacampaign.Type { return &v }
+	intPtr := func(v int) *int { return &v }
+	endHandlePtr := func(v cacampaign.EndHandle) *cacampaign.EndHandle { return &v }
+
 	tests := []struct {
 		name  string
 		agent *auth.AuthIdentity
@@ -384,11 +389,11 @@ func Test_campaignsIDPUT(t *testing.T) {
 		responseCampaign *cacampaign.WebhookMessage
 
 		expectCampaignID   uuid.UUID
-		expectName         string
-		expectDetail       string
-		expectType         cacampaign.Type
-		expectServiceLevel int
-		expectEndHandle    cacampaign.EndHandle
+		expectName         *string
+		expectDetail       *string
+		expectType         *cacampaign.Type
+		expectServiceLevel *int
+		expectEndHandle    *cacampaign.EndHandle
 		expectRes          string
 	}{
 		{
@@ -409,12 +414,33 @@ func Test_campaignsIDPUT(t *testing.T) {
 			},
 
 			expectCampaignID:   uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
-			expectName:         "test name",
-			expectDetail:       "test detail",
-			expectType:         cacampaign.TypeCall,
-			expectServiceLevel: 100,
-			expectEndHandle:    cacampaign.EndHandleContinue,
+			expectName:         strPtr("test name"),
+			expectDetail:       strPtr("test detail"),
+			expectType:         typePtr(cacampaign.TypeCall),
+			expectServiceLevel: intPtr(100),
+			expectEndHandle:    endHandlePtr(cacampaign.EndHandleContinue),
 			expectRes:          `{"id":"e2758bfe-c68b-11ec-a1d0-ff54494682b4","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "name only, all other fields omitted",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
+			reqBody:  []byte(`{"name":"renamed"}`),
+
+			responseCampaign: &cacampaign.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
+				},
+			},
+
+			expectCampaignID: uuid.FromStringOrNil("e2758bfe-c68b-11ec-a1d0-ff54494682b4"),
+			expectName:       strPtr("renamed"),
+			expectRes:        `{"id":"e2758bfe-c68b-11ec-a1d0-ff54494682b4","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -450,6 +476,59 @@ func Test_campaignsIDPUT(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 
+		})
+	}
+}
+
+func Test_campaignsIDPUT_MalformedType(t *testing.T) {
+	// A malformed "type" or "end_handle" enum value should fail JSON binding
+	// (400) before ever reaching the service handler. No servicehandler
+	// call is expected.
+
+	tests := []struct {
+		name string
+
+		reqQuery string
+		reqBody  []byte
+	}{
+		{
+			name:     "type is not a string",
+			reqQuery: "/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
+			reqBody:  []byte(`{"type": 123}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			})
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+			// no CampaignUpdateBasicInfo mock EXPECT() set: any call would fail the test
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+			}
 		})
 	}
 }

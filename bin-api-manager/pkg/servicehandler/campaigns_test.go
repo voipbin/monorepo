@@ -320,15 +320,20 @@ func Test_CampaignDelete(t *testing.T) {
 
 func Test_CampaignUpdateBasicInfo(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	typePtr := func(v cacampaign.Type) *cacampaign.Type { return &v }
+	intPtr := func(v int) *int { return &v }
+	endHandlePtr := func(v cacampaign.EndHandle) *cacampaign.EndHandle { return &v }
+
 	tests := []struct {
 		name         string
 		agent        *auth.AuthIdentity
 		campaignID   uuid.UUID
-		campaignName string
-		detail       string
-		campaignType cacampaign.Type
-		serviceLevel int
-		endHandle    cacampaign.EndHandle
+		campaignName *string
+		detail       *string
+		campaignType *cacampaign.Type
+		serviceLevel *int
+		endHandle    *cacampaign.EndHandle
 
 		response  *cacampaign.Campaign
 		expectRes *cacampaign.WebhookMessage
@@ -344,11 +349,11 @@ func Test_CampaignUpdateBasicInfo(t *testing.T) {
 			}),
 
 			campaignID:   uuid.FromStringOrNil("6d1e3e5e-c655-11ec-bc77-cf50387b8fe7"),
-			campaignName: "test name",
-			detail:       "test detail",
-			campaignType: cacampaign.TypeCall,
-			serviceLevel: 100,
-			endHandle:    cacampaign.EndHandleContinue,
+			campaignName: strPtr("test name"),
+			detail:       strPtr("test detail"),
+			campaignType: typePtr(cacampaign.TypeCall),
+			serviceLevel: intPtr(100),
+			endHandle:    endHandlePtr(cacampaign.EndHandleContinue),
 
 			response: &cacampaign.Campaign{
 				Identity: commonidentity.Identity{
