@@ -849,12 +849,12 @@ type RequestHandler interface {
 	ConferenceV1ConferenceUpdate(
 		ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
-		data map[string]any,
-		timeout int,
-		preFlowID uuid.UUID,
-		postFlowID uuid.UUID,
+		name *string,
+		detail *string,
+		data *map[string]any,
+		timeout *int,
+		preFlowID *uuid.UUID,
+		postFlowID *uuid.UUID,
 	) (*cfconference.Conference, error)
 	ConferenceV1ConferenceUpdateRecordingID(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) (*cfconference.Conference, error)
 	ConferenceV1ConferenceRecordingStart(

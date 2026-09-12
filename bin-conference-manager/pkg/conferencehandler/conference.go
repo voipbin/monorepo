@@ -236,12 +236,12 @@ func (h *conferenceHandler) GetByConfbridgeID(ctx context.Context, confbridgeID 
 func (h *conferenceHandler) Update(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	data map[string]any,
-	timeout int,
-	preFlowID uuid.UUID,
-	postFlowID uuid.UUID,
+	name *string,
+	detail *string,
+	data *map[string]any,
+	timeout *int,
+	preFlowID *uuid.UUID,
+	postFlowID *uuid.UUID,
 ) (*conference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "Update",
@@ -255,19 +255,35 @@ func (h *conferenceHandler) Update(
 	})
 	log.Debugf("Updating the conference. conference_id: %s", id)
 
-	if timeout > 0 && timeout < 60 {
-		timeout = defaultConferenceTimeout
+	fields := map[conference.Field]any{}
+	if name != nil {
+		fields[conference.FieldName] = *name
+	}
+	if detail != nil {
+		fields[conference.FieldDetail] = *detail
+	}
+	if data != nil {
+		fields[conference.FieldData] = *data
+	}
+	if timeout != nil {
+		t := *timeout
+		if t > 0 && t < 60 {
+			t = defaultConferenceTimeout
+		}
+		fields[conference.FieldTimeout] = t
+	}
+	if preFlowID != nil {
+		fields[conference.FieldPreFlowID] = *preFlowID
+	}
+	if postFlowID != nil {
+		fields[conference.FieldPostFlowID] = *postFlowID
+	}
+
+	if len(fields) == 0 {
+		return h.Get(ctx, id)
 	}
 
 	// update conference
-	fields := map[conference.Field]any{
-		conference.FieldName:       name,
-		conference.FieldDetail:     detail,
-		conference.FieldData:       data,
-		conference.FieldTimeout:    timeout,
-		conference.FieldPreFlowID:  preFlowID,
-		conference.FieldPostFlowID: postFlowID,
-	}
 	if errSet := h.db.ConferenceUpdate(ctx, id, fields); errSet != nil {
 		return nil, errors.Wrapf(errSet, "Could not update the conference. conference_id: %s", id)
 	}

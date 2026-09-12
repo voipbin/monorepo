@@ -11038,13 +11038,23 @@ type PostConferencesJSONBody struct {
 
 // PutConferencesIdJSONBody defines parameters for PutConferencesId.
 type PutConferencesIdJSONBody struct {
-	// Data Custom data associated with the conference.
-	Data       map[string]interface{} `json:"data"`
-	Detail     string                 `json:"detail"`
-	Name       string                 `json:"name"`
-	PostFlowId string                 `json:"post_flow_id"`
-	PreFlowId  string                 `json:"pre_flow_id"`
-	Timeout    int                    `json:"timeout"`
+	// Data Custom data associated with the conference. Omit to leave unchanged; send an explicit empty object ({}) to clear all custom data.
+	Data *map[string]interface{} `json:"data,omitempty"`
+
+	// Detail Detail of the conference. Omit to leave unchanged.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Name of the conference. Omit to leave unchanged.
+	Name *string `json:"name,omitempty"`
+
+	// PostFlowId Flow to run after the conference ends. Omit to leave unchanged.
+	PostFlowId *string `json:"post_flow_id,omitempty"`
+
+	// PreFlowId Flow to run before participants join. Omit to leave unchanged.
+	PreFlowId *string `json:"pre_flow_id,omitempty"`
+
+	// Timeout Auto-termination timeout in seconds. 0 disables auto-termination and is a real, settable value distinct from omission. Omit to leave unchanged.
+	Timeout *int `json:"timeout,omitempty"`
 }
 
 // GetConferencesIdMediaStreamParams defines parameters for GetConferencesIdMediaStream.

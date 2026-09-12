@@ -216,32 +216,38 @@ func Test_GetByConfbridgeID(t *testing.T) {
 
 func Test_Update(t *testing.T) {
 
+	strPtr := func(s string) *string { return &s }
+	intPtr := func(i int) *int { return &i }
+	uuidPtr := func(u uuid.UUID) *uuid.UUID { return &u }
+	mapPtr := func(m map[string]any) *map[string]any { return &m }
+
 	tests := []struct {
 		name string
 
 		id             uuid.UUID
-		conferenceName string
-		detail         string
-		data           map[string]any
-		timeout        int
-		preFlowID      uuid.UUID
-		postFlowID     uuid.UUID
+		conferenceName *string
+		detail         *string
+		data           *map[string]any
+		timeout        *int
+		preFlowID      *uuid.UUID
+		postFlowID     *uuid.UUID
 
 		expectFields       map[conference.Field]any
+		expectNoDBCall     bool
 		responseConference *conference.Conference
 	}{
 		{
-			name: "normal",
+			name: "normal, all fields set",
 
 			id:             uuid.FromStringOrNil("c40d48ac-1e10-11f0-a6b3-276e2a2df365"),
-			conferenceName: "update name",
-			detail:         "update detail",
-			data: map[string]any{
+			conferenceName: strPtr("update name"),
+			detail:         strPtr("update detail"),
+			data: mapPtr(map[string]any{
 				"key1": "value1",
-			},
-			timeout:    86400,
-			preFlowID:  uuid.FromStringOrNil("c4642da2-1e10-11f0-9c2d-9fadec265c1d"),
-			postFlowID: uuid.FromStringOrNil("c48cc2e4-1e10-11f0-9e00-bbd2a97e0a8e"),
+			}),
+			timeout:    intPtr(86400),
+			preFlowID:  uuidPtr(uuid.FromStringOrNil("c4642da2-1e10-11f0-9c2d-9fadec265c1d")),
+			postFlowID: uuidPtr(uuid.FromStringOrNil("c48cc2e4-1e10-11f0-9e00-bbd2a97e0a8e")),
 
 			expectFields: map[conference.Field]any{
 				conference.FieldName:       "update name",
@@ -258,18 +264,56 @@ func Test_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "update to nil",
+			name: "name only, other fields omitted",
+
+			id:             uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
+			conferenceName: strPtr("name only update"),
+
+			expectFields: map[conference.Field]any{
+				conference.FieldName: "name only update",
+			},
+			responseConference: &conference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
+				},
+			},
+		},
+		{
+			name: "timeout explicitly zero, distinct from omission",
+
+			id:      uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
+			timeout: intPtr(0),
+
+			expectFields: map[conference.Field]any{
+				conference.FieldTimeout: 0,
+			},
+			responseConference: &conference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
+				},
+			},
+		},
+		{
+			name: "data explicitly empty map, distinct from omission",
+
+			id:   uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
+			data: mapPtr(map[string]any{}),
+
+			expectFields: map[conference.Field]any{
+				conference.FieldData: map[string]any{},
+			},
+			responseConference: &conference.Conference{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
+				},
+			},
+		},
+		{
+			name: "all fields omitted, no-op",
 
 			id: uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
 
-			expectFields: map[conference.Field]any{
-				conference.FieldName:       "",
-				conference.FieldDetail:     "",
-				conference.FieldData:       map[string]any(nil),
-				conference.FieldTimeout:    0,
-				conference.FieldPreFlowID:  uuid.Nil,
-				conference.FieldPostFlowID: uuid.Nil,
-			},
+			expectNoDBCall: true,
 			responseConference: &conference.Conference{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c4bfe75a-1e10-11f0-802b-0769590697e5"),
@@ -295,9 +339,17 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields).Return(nil)
-			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
+			if tt.expectNoDBCall {
+				mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, gomock.Any()).Times(0)
+				mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+			} else {
+				mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+				mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConference.CustomerID, conference.EventTypeConferenceUpdated, tt.responseConference)
+				if tt.responseConference.Timeout > 0 {
+					mockReq.EXPECT().ConferenceV1ConferenceDeleteDelay(ctx, tt.id, tt.responseConference.Timeout*1000).Return(nil)
+				}
+			}
 
 			res, err := h.Update(ctx, tt.id, tt.conferenceName, tt.detail, tt.data, tt.timeout, tt.preFlowID, tt.postFlowID)
 			if err != nil {
