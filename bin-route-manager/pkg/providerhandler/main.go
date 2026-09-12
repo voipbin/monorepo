@@ -40,14 +40,14 @@ type ProviderHandler interface {
 	Update(
 		ctx context.Context,
 		id uuid.UUID,
-		providerType provider.Type,
-		hostname string,
-		techPrefix string,
-		techPostfix string,
-		techHeaders map[string]string,
-		name string,
-		detail string,
-		codecs string,
+		providerType *provider.Type,
+		hostname *string,
+		techPrefix *string,
+		techPostfix *string,
+		techHeaders *map[string]string,
+		name *string,
+		detail *string,
+		codecs *string,
 	) (*provider.Provider, error)
 	// Setup validates the carrier API key, creates the carrier-side SIP trunk,
 	// and creates the VoIPBin provider record. Compensating cleanup is attempted

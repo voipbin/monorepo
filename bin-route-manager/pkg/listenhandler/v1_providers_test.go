@@ -335,7 +335,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Update(gomock.Any(), tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail, "").Return(tt.responseRoute, nil)
+			mockProvider.EXPECT().Update(gomock.Any(), tt.id, &tt.providerType, &tt.hostname, &tt.techPrefix, &tt.techPostfix, &tt.techHeaders, &tt.providerName, &tt.detail, nil).Return(tt.responseRoute, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

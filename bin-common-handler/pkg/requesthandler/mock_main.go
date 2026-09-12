@@ -6645,7 +6645,7 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderSetup(ctx, carrier, nam
 }
 
 // RouteV1ProviderUpdate mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderUpdate(ctx context.Context, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderUpdate(ctx context.Context, providerID uuid.UUID, providerType *provider.Type, hostname, techPrefix, techPostfix *string, techHeaders *map[string]string, name, detail, codecs *string) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteV1ProviderUpdate", ctx, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 	ret0, _ := ret[0].(*provider.Provider)

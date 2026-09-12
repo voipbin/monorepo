@@ -1313,14 +1313,14 @@ type RequestHandler interface {
 	RouteV1ProviderUpdate(
 		ctx context.Context,
 		providerID uuid.UUID,
-		providerType rmprovider.Type,
-		hostname string,
-		techPrefix string,
-		techPostfix string,
-		techHeaders map[string]string,
-		name string,
-		detail string,
-		codecs string,
+		providerType *rmprovider.Type,
+		hostname *string,
+		techPrefix *string,
+		techPostfix *string,
+		techHeaders *map[string]string,
+		name *string,
+		detail *string,
+		codecs *string,
 	) (*rmprovider.Provider, error)
 	RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
 	RouteV1ProviderSetup(

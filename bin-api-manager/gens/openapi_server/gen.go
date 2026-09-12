@@ -318,6 +318,7 @@ const (
 	AIManagerMcpServerAuthTypeApiKey AIManagerMcpServerAuthType = "api_key"
 	AIManagerMcpServerAuthTypeBearer AIManagerMcpServerAuthType = "bearer"
 	AIManagerMcpServerAuthTypeEmpty  AIManagerMcpServerAuthType = ""
+	AIManagerMcpServerAuthTypeOauth  AIManagerMcpServerAuthType = "oauth"
 )
 
 // Valid indicates whether the value is a known member of the AIManagerMcpServerAuthType enum.
@@ -328,6 +329,26 @@ func (e AIManagerMcpServerAuthType) Valid() bool {
 	case AIManagerMcpServerAuthTypeBearer:
 		return true
 	case AIManagerMcpServerAuthTypeEmpty:
+		return true
+	case AIManagerMcpServerAuthTypeOauth:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AIManagerMcpServerOauthVendor.
+const (
+	AIManagerMcpServerOauthVendorGithub AIManagerMcpServerOauthVendor = "github"
+	AIManagerMcpServerOauthVendorLinear AIManagerMcpServerOauthVendor = "linear"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerMcpServerOauthVendor enum.
+func (e AIManagerMcpServerOauthVendor) Valid() bool {
+	switch e {
+	case AIManagerMcpServerOauthVendorGithub:
+		return true
+	case AIManagerMcpServerOauthVendorLinear:
 		return true
 	default:
 		return false
@@ -3525,16 +3546,16 @@ func (e PostMcpserversJSONBodyAuthType) Valid() bool {
 
 // Defines values for PostMcpserversOauthStartJSONBodyVendor.
 const (
-	Github PostMcpserversOauthStartJSONBodyVendor = "github"
-	Linear PostMcpserversOauthStartJSONBodyVendor = "linear"
+	PostMcpserversOauthStartJSONBodyVendorGithub PostMcpserversOauthStartJSONBodyVendor = "github"
+	PostMcpserversOauthStartJSONBodyVendorLinear PostMcpserversOauthStartJSONBodyVendor = "linear"
 )
 
 // Valid indicates whether the value is a known member of the PostMcpserversOauthStartJSONBodyVendor enum.
 func (e PostMcpserversOauthStartJSONBodyVendor) Valid() bool {
 	switch e {
-	case Github:
+	case PostMcpserversOauthStartJSONBodyVendorGithub:
 		return true
-	case Linear:
+	case PostMcpserversOauthStartJSONBodyVendorLinear:
 		return true
 	default:
 		return false
@@ -4062,7 +4083,7 @@ type AIManagerMcpServer struct {
 	// ApiKeyHeader Header name used when auth_type is api_key.
 	ApiKeyHeader *string `json:"api_key_header,omitempty"`
 
-	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header.
+	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. "oauth" is set implicitly by completing POST /mcpservers/oauth/complete -- never set directly via POST/PUT with a customer-supplied secret.
 	AuthType *AIManagerMcpServerAuthType `json:"auth_type,omitempty"`
 
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
@@ -4071,7 +4092,7 @@ type AIManagerMcpServer struct {
 	// Detail Detailed description of the MCP server.
 	Detail *string `json:"detail,omitempty"`
 
-	// HasSecret Whether a bearer token / API key is configured. The secret value itself is never returned.
+	// HasSecret Whether a bearer token / API key / OAuth access token is configured. The secret/token value itself is never returned.
 	HasSecret bool `json:"has_secret"`
 
 	// Id The unique identifier of the MCP server.
@@ -4079,6 +4100,9 @@ type AIManagerMcpServer struct {
 
 	// Name Name of the MCP server.
 	Name *string `json:"name,omitempty"`
+
+	// OauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth".
+	OauthVendor *AIManagerMcpServerOauthVendor `json:"oauth_vendor,omitempty"`
 
 	// Status disabled servers are excluded from tool list resolution and tool calls.
 	Status *AIManagerMcpServerStatus `json:"status,omitempty"`
@@ -4096,8 +4120,11 @@ type AIManagerMcpServer struct {
 	Url *string `json:"url,omitempty"`
 }
 
-// AIManagerMcpServerAuthType How the outbound MCP call authenticates. Empty string sends no Authorization header.
+// AIManagerMcpServerAuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. "oauth" is set implicitly by completing POST /mcpservers/oauth/complete -- never set directly via POST/PUT with a customer-supplied secret.
 type AIManagerMcpServerAuthType string
+
+// AIManagerMcpServerOauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth".
+type AIManagerMcpServerOauthVendor string
 
 // AIManagerMcpServerStatus disabled servers are excluded from tool list resolution and tool calls.
 type AIManagerMcpServerStatus string
@@ -9680,17 +9707,29 @@ type PostProvidersJSONBody struct {
 
 // PutProvidersIdJSONBody defines parameters for PutProvidersId.
 type PutProvidersIdJSONBody struct {
-	// Codecs Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA"). Empty means server-default negotiation. Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
-	Codecs      *string                `json:"codecs,omitempty"`
-	Detail      string                 `json:"detail"`
-	Hostname    string                 `json:"hostname"`
-	Name        string                 `json:"name"`
-	TechHeaders map[string]interface{} `json:"tech_headers"`
-	TechPostfix string                 `json:"tech_postfix"`
-	TechPrefix  string                 `json:"tech_prefix"`
+	// Codecs Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA"). Omit to leave the current codecs unchanged. An explicit empty string ("") clears codecs back to server-default negotiation. Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
+	Codecs *string `json:"codecs,omitempty"`
 
-	// Type Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
-	Type RouteManagerProviderType `json:"type"`
+	// Detail Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
+
+	// Hostname Omit to leave the current hostname unchanged.
+	Hostname *string `json:"hostname,omitempty"`
+
+	// Name Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
+
+	// TechHeaders Omit to leave the current tech_headers unchanged.
+	TechHeaders *map[string]interface{} `json:"tech_headers,omitempty"`
+
+	// TechPostfix Omit to leave the current tech_postfix unchanged.
+	TechPostfix *string `json:"tech_postfix,omitempty"`
+
+	// TechPrefix Omit to leave the current tech_prefix unchanged.
+	TechPrefix *string `json:"tech_prefix,omitempty"`
+
+	// Type Omit to leave the current type unchanged.
+	Type *RouteManagerProviderType `json:"type,omitempty"`
 }
 
 // GetProvisioningExtensionParams defines parameters for GetProvisioningExtension.

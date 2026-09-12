@@ -60,7 +60,11 @@ delete:
 
 put:
   summary: Update provider information
-  description: Updates the provider details for the given ID with the provided information.
+  description: >
+    Updates the provider details for the given ID with the provided
+    information. All body fields are optional; omitted fields keep their
+    current value unchanged. `codecs: ""` explicitly clears codecs back
+    to server-default negotiation, distinct from omitting the field.
   tags:
     - Provider
   parameters:
@@ -77,34 +81,35 @@ put:
           type: object
           properties:
             type:
-              $ref: '#/components/schemas/RouteManagerProviderType'
+              allOf:
+                - $ref: '#/components/schemas/RouteManagerProviderType'
+              description: "Omit to leave the current type unchanged."
             hostname:
               type: string
+              description: "Omit to leave the current hostname unchanged."
             tech_prefix:
               type: string
+              description: "Omit to leave the current tech_prefix unchanged."
             tech_postfix:
               type: string
+              description: "Omit to leave the current tech_postfix unchanged."
             tech_headers:
               type: object
+              description: "Omit to leave the current tech_headers unchanged."
             name:
               type: string
+              description: "Omit to leave the current name unchanged."
             detail:
               type: string
+              description: "Omit to leave the current detail unchanged."
             codecs:
               type: string
               description: >
                 Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA").
-                Empty means server-default negotiation.
+                Omit to leave the current codecs unchanged. An explicit empty
+                string ("") clears codecs back to server-default negotiation.
                 Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
               example: "PCMU,PCMA"
-          required:
-            - type
-            - hostname
-            - tech_prefix
-            - tech_postfix
-            - tech_headers
-            - name
-            - detail
   responses:
     '200':
       description: The updated provider details.

@@ -139,68 +139,80 @@ func (h *providerHandler) Delete(ctx context.Context, id uuid.UUID) (*provider.P
 }
 
 // Update updates the provider and return the updated provider
+// All fields are pointers: nil means "leave unchanged", a non-nil
+// pointer means "set to this value" (including a pointer to an empty
+// codecs string, which explicitly resets codecs to server-default
+// negotiation).
 func (h *providerHandler) Update(
 	ctx context.Context,
 	id uuid.UUID,
-	providerType provider.Type,
-	hostname string,
-	techPrefix string,
-	techPostfix string,
-	techHeaders map[string]string,
-	name string,
-	detail string,
-	codecs string,
+	providerType *provider.Type,
+	hostname *string,
+	techPrefix *string,
+	techPostfix *string,
+	techHeaders *map[string]string,
+	name *string,
+	detail *string,
+	codecs *string,
 ) (*provider.Provider, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "Update",
 			"id":   id,
 		})
-	log.WithFields(
-		logrus.Fields{
-			"id":          id,
-			"type":        providerType,
-			"hostname":    hostname,
-			"techPrefix":  techPrefix,
-			"techPostfix": techPostfix,
-			"techHeaders": techHeaders,
-			"name":        name,
-			"detail":      detail,
-			"codecs":      codecs,
-		},
-	).Debug("Updating the provider.")
+	log.Debug("Updating the provider.")
 
-	normalizedCodecs, err := validateCodecs(codecs)
-	if err != nil {
-		return nil, cerrors.InvalidArgument(
-			commonoutline.ServiceNameRouteManager,
-			"INVALID_CODECS",
-			fmt.Sprintf("Invalid codecs value: %v", err),
-		)
-	}
-
-	// Fetch current provider to determine if hostname is changing.
+	// Fetch current provider first: needed both for the hostname-change
+	// comparison below and as the response for an all-omitted no-op PUT.
 	current, err := h.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get current provider. err: %v", err)
 		return nil, errors.Wrap(err, "could not get current provider")
 	}
 
-	fields := map[provider.Field]any{
-		provider.FieldType:        providerType,
-		provider.FieldHostname:    hostname,
-		provider.FieldTechPrefix:  techPrefix,
-		provider.FieldTechPostfix: techPostfix,
-		provider.FieldTechHeaders: techHeaders,
-		provider.FieldName:        name,
-		provider.FieldDetail:      detail,
-		provider.FieldCodecs:      normalizedCodecs,
+	fields := map[provider.Field]any{}
+	if providerType != nil {
+		fields[provider.FieldType] = *providerType
+	}
+	if hostname != nil {
+		fields[provider.FieldHostname] = *hostname
+	}
+	if techPrefix != nil {
+		fields[provider.FieldTechPrefix] = *techPrefix
+	}
+	if techPostfix != nil {
+		fields[provider.FieldTechPostfix] = *techPostfix
+	}
+	if techHeaders != nil {
+		fields[provider.FieldTechHeaders] = *techHeaders
+	}
+	if name != nil {
+		fields[provider.FieldName] = *name
+	}
+	if detail != nil {
+		fields[provider.FieldDetail] = *detail
+	}
+	if codecs != nil {
+		normalizedCodecs, errValidate := validateCodecs(*codecs)
+		if errValidate != nil {
+			return nil, cerrors.InvalidArgument(
+				commonoutline.ServiceNameRouteManager,
+				"INVALID_CODECS",
+				fmt.Sprintf("Invalid codecs value: %v", errValidate),
+			)
+		}
+		fields[provider.FieldCodecs] = normalizedCodecs
 	}
 
 	// Reset health status only when hostname actually changes.
-	if current.Hostname != hostname {
+	if hostname != nil && current.Hostname != *hostname {
 		fields[provider.FieldHealthStatus] = provider.HealthStatusUnknown
 		fields[provider.FieldHealthCheckedAt] = nil
+	}
+
+	if len(fields) == 0 {
+		// nothing to update; no PublishEvent for a true no-op PUT.
+		return current, nil
 	}
 
 	if errUpdate := h.db.ProviderUpdate(ctx, id, fields); errUpdate != nil {
