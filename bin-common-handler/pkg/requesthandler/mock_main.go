@@ -5870,7 +5870,7 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueueList(ctx, pageToken, pageS
 }
 
 // QueueV1QueueUpdate mocks base method.
-func (m *MockRequestHandler) QueueV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, waitTimeout, serviceTimeout int) (*queue.Queue, error) {
+func (m *MockRequestHandler) QueueV1QueueUpdate(ctx context.Context, queueID uuid.UUID, name, detail *string, routingMethod *queue.RoutingMethod, tagIDs *[]uuid.UUID, waitFlowID *uuid.UUID, waitTimeout, serviceTimeout *int) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueV1QueueUpdate", ctx, queueID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
 	ret0, _ := ret[0].(*queue.Queue)

@@ -406,26 +406,26 @@ func Test_QueueUpdate(t *testing.T) {
 			mockReq.EXPECT().QueueV1QueueUpdate(
 				ctx,
 				tt.queueID,
-				tt.queueName,
-				tt.detail,
-				tt.routingMethod,
-				tt.tagIDs,
-				tt.waitFlowID,
-				tt.timeoutWait,
-				tt.timeoutService,
+				&tt.queueName,
+				&tt.detail,
+				&tt.routingMethod,
+				&tt.tagIDs,
+				&tt.waitFlowID,
+				&tt.timeoutWait,
+				&tt.timeoutService,
 			).Return(tt.response, nil)
 
 			res, err := h.QueueUpdate(
 				ctx,
 				tt.agent,
 				tt.queueID,
-				tt.queueName,
-				tt.detail,
-				tt.routingMethod,
-				tt.tagIDs,
-				tt.waitFlowID,
-				tt.timeoutWait,
-				tt.timeoutService,
+				&tt.queueName,
+				&tt.detail,
+				&tt.routingMethod,
+				&tt.tagIDs,
+				&tt.waitFlowID,
+				&tt.timeoutWait,
+				&tt.timeoutService,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

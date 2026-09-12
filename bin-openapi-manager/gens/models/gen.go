@@ -12254,17 +12254,26 @@ type PostQueuesJSONBody struct {
 
 // PutQueuesIdJSONBody defines parameters for PutQueuesId.
 type PutQueuesIdJSONBody struct {
-	Detail string `json:"detail"`
-	Name   string `json:"name"`
+	// Detail Omit to leave the current detail unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// RoutingMethod Example: random
-	RoutingMethod  QueueManagerQueueRoutingMethod `json:"routing_method"`
-	ServiceTimeout int                            `json:"service_timeout"`
-	TagIds         []string                       `json:"tag_ids"`
+	// Name Omit to leave the current name unchanged.
+	Name *string `json:"name,omitempty"`
 
-	// WaitFlowId Flow ID for the wait queue.
-	WaitFlowId  string `json:"wait_flow_id"`
-	WaitTimeout int    `json:"wait_timeout"`
+	// RoutingMethod Omit to leave the current routing method unchanged.
+	RoutingMethod *QueueManagerQueueRoutingMethod `json:"routing_method,omitempty"`
+
+	// ServiceTimeout Omit to leave the current service timeout unchanged. 0 is a real value meaning "no auto-timeout", distinct from omission.
+	ServiceTimeout *int `json:"service_timeout,omitempty"`
+
+	// TagIds Omit to leave the current tags unchanged. An explicit empty array ([]) clears all tags.
+	TagIds *[]string `json:"tag_ids,omitempty"`
+
+	// WaitFlowId Flow ID for the wait queue. Omit to leave the current wait flow unchanged.
+	WaitFlowId *string `json:"wait_flow_id,omitempty"`
+
+	// WaitTimeout Omit to leave the current wait timeout unchanged. 0 is a real value meaning "no auto-timeout", distinct from omission.
+	WaitTimeout *int `json:"wait_timeout,omitempty"`
 }
 
 // PutQueuesIdRoutingMethodJSONBody defines parameters for PutQueuesIdRoutingMethod.

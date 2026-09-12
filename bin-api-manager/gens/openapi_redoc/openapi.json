@@ -3302,6 +3302,181 @@
         }
       }
     },
+    "/mcpservers/oauth/start": {
+      "post": {
+        "summary": "Start the vendor OAuth flow for an MCP server connection.",
+        "description": "Starts a vendor-fixed OAuth 2.1 authorization-code + PKCE flow so the authenticated customer can connect a GitHub or Linear account to an MCP server without ever handling a client_id/client_secret. Returns the vendor's authorize_url to redirect the user's browser to, plus a link_token used to correlate the eventual POST /mcpservers/oauth/complete call back to this flow.\n",
+        "tags": [
+          "AI"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vendor": {
+                    "type": "string",
+                    "enum": [
+                      "github",
+                      "linear"
+                    ],
+                    "description": "The OAuth vendor to connect to.",
+                    "example": "github"
+                  },
+                  "mcp_server_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional. The ID of an existing customer-owned MCP server (returned from a prior POST /mcpservers response) to reconnect/refresh OAuth credentials for. Omit to create a new MCP server on completion.\n",
+                    "example": "0b61dcbe-a770-11ed-bab4-2fc1dac66672"
+                  }
+                },
+                "required": [
+                  "vendor"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The vendor authorize URL and a correlating link token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "authorize_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Redirect the user's browser here to start the vendor's consent screen.",
+                      "example": "https://github.com/login/oauth/authorize?client_id=...&state=..."
+                    },
+                    "link_token": {
+                      "type": "string",
+                      "description": "Opaque token correlating this flow to the later POST /mcpservers/oauth/complete call.",
+                      "example": "9f2c1e7a4b3d4f5e8a9b0c1d2e3f4a5b"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/mcpservers/oauth/callback": {
+      "get": {
+        "summary": "Vendor OAuth callback relay (public, unauthenticated).",
+        "description": "The redirect_uri registered with the GitHub/Linear OAuth apps. Not called directly by API clients -- the vendor's authorization server redirects the user's browser here after consent. Relays the browser onward with the vendor's `code`/`state` query parameters preserved so the client application can complete the flow via POST /mcpservers/oauth/complete. Deliberately unauthenticated: the browser arriving here has not sent any VoIPbin credentials.\n",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The vendor authorization code (absent if the user denied consent)."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The opaque state/link_token from POST /mcpservers/oauth/start."
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects the browser to the client application's configured landing page."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/mcpservers/oauth/complete": {
+      "post": {
+        "summary": "Complete the vendor OAuth flow for an MCP server connection.",
+        "description": "Verifies the state/link_token belongs to the authenticated customer, exchanges the vendor authorization code for tokens, encrypts them at rest, and creates (or updates, for a reconnect) the customer's McpServer row.\n",
+        "tags": [
+          "AI"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "description": "The link_token returned by POST /mcpservers/oauth/start.",
+                    "example": "9f2c1e7a4b3d4f5e8a9b0c1d2e3f4a5b"
+                  },
+                  "code": {
+                    "type": "string",
+                    "description": "The vendor authorization code from the GET /mcpservers/oauth/callback redirect.",
+                    "example": "8a3b1c9d0e2f"
+                  }
+                },
+                "required": [
+                  "state",
+                  "code"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The connected MCP server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerMcpServer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/mcpservers": {
       "get": {
         "summary": "Gets a list of MCP servers.",
@@ -16466,7 +16641,7 @@
       },
       "put": {
         "summary": "Update the queue details",
-        "description": "Updates the details of the queue identified by the given ID.",
+        "description": "Updates the details of the queue identified by the given ID. All body fields are optional; omitted fields keep their current value unchanged. Explicitly sending an empty value (e.g. `tag_ids: []`) clears/resets that field. `wait_timeout: 0` / `service_timeout: 0` are real, meaningful values (disable auto-timeout), distinct from omitting the field.\n",
         "tags": [
           "Queue"
         ],
@@ -16488,40 +16663,41 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current name unchanged."
                   },
                   "detail": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Omit to leave the current detail unchanged."
                   },
                   "routing_method": {
-                    "$ref": "#/components/schemas/QueueManagerQueueRoutingMethod"
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/QueueManagerQueueRoutingMethod"
+                      }
+                    ],
+                    "description": "Omit to leave the current routing method unchanged."
                   },
                   "tag_ids": {
                     "type": "array",
                     "items": {
                       "type": "string"
-                    }
+                    },
+                    "description": "Omit to leave the current tags unchanged. An explicit empty array ([]) clears all tags.\n"
                   },
                   "wait_flow_id": {
                     "type": "string",
-                    "description": "Flow ID for the wait queue."
+                    "description": "Flow ID for the wait queue. Omit to leave the current wait flow unchanged.\n"
                   },
                   "wait_timeout": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Omit to leave the current wait timeout unchanged. 0 is a real value meaning \"no auto-timeout\", distinct from omission.\n"
                   },
                   "service_timeout": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Omit to leave the current service timeout unchanged. 0 is a real value meaning \"no auto-timeout\", distinct from omission.\n"
                   }
-                },
-                "required": [
-                  "name",
-                  "detail",
-                  "routing_method",
-                  "tag_ids",
-                  "wait_flow_id",
-                  "wait_timeout",
-                  "service_timeout"
-                ]
+                }
               }
             }
           }
@@ -26918,9 +27094,10 @@
             "enum": [
               "",
               "bearer",
-              "api_key"
+              "api_key",
+              "oauth"
             ],
-            "description": "How the outbound MCP call authenticates. Empty string sends no Authorization header.",
+            "description": "How the outbound MCP call authenticates. Empty string sends no Authorization header. \"oauth\" is set implicitly by completing POST /mcpservers/oauth/complete -- never set directly via POST/PUT with a customer-supplied secret.",
             "example": "bearer"
           },
           "api_key_header": {
@@ -26928,9 +27105,18 @@
             "description": "Header name used when auth_type is api_key.",
             "example": "X-API-Key"
           },
+          "oauth_vendor": {
+            "type": "string",
+            "enum": [
+              "github",
+              "linear"
+            ],
+            "description": "Which OAuth vendor this server is connected to. Only set when auth_type is \"oauth\".",
+            "example": "github"
+          },
           "has_secret": {
             "type": "boolean",
-            "description": "Whether a bearer token / API key is configured. The secret value itself is never returned.",
+            "description": "Whether a bearer token / API key / OAuth access token is configured. The secret/token value itself is never returned.",
             "example": true
           },
           "tm_create": {

@@ -45,13 +45,13 @@ type QueueHandler interface {
 	UpdateBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
-		routingMethod queue.RoutingMethod,
-		tagIDs []uuid.UUID,
-		waitFlowID uuid.UUID,
-		waitTimeout int,
-		serviceTimeout int,
+		name *string,
+		detail *string,
+		routingMethod *queue.RoutingMethod,
+		tagIDs *[]uuid.UUID,
+		waitFlowID *uuid.UUID,
+		waitTimeout *int,
+		serviceTimeout *int,
 	) (*queue.Queue, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error)
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error)

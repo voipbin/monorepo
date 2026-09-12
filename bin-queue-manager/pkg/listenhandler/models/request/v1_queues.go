@@ -28,14 +28,16 @@ type V1DataQueuesPost struct {
 // V1DataQueuesIDPut is
 // v1 data type request struct for
 // /v1/queues/<queue-id> PUT
+// All fields are optional pointers: nil means "unchanged", a non-nil
+// pointer (including a pointer to a zero value) means "set to this value".
 type V1DataQueuesIDPut struct {
-	Name           string              `json:"name,omitempty"`
-	Detail         string              `json:"detail,omitempty"`
-	RoutingMethod  queue.RoutingMethod `json:"routing_method,omitempty"`
-	TagIDs         []uuid.UUID         `json:"tag_ids,omitempty"`
-	WaitFlowID     uuid.UUID           `json:"wait_flow_id,omitempty"`
-	WaitTimeout    int                 `json:"wait_timeout,omitempty"`
-	ServiceTimeout int                 `json:"service_timeout,omitempty"`
+	Name           *string              `json:"name,omitempty"`
+	Detail         *string              `json:"detail,omitempty"`
+	RoutingMethod  *queue.RoutingMethod `json:"routing_method,omitempty"`
+	TagIDs         *[]uuid.UUID         `json:"tag_ids,omitempty"`
+	WaitFlowID     *uuid.UUID           `json:"wait_flow_id,omitempty"`
+	WaitTimeout    *int                 `json:"wait_timeout,omitempty"`
+	ServiceTimeout *int                 `json:"service_timeout,omitempty"`
 }
 
 // V1DataQueuesIDQueuecallsPost is
