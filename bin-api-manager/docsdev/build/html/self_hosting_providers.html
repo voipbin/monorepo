@@ -7,7 +7,7 @@
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>Environment variables and maintenance - VoIPBin Documentation</title>
+        <title>Provider configuration - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -616,12 +616,12 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/self_hosting_envvars.rst?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/self_hosting_providers.rst?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
 </div><div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/self_hosting_envvars.rst" rel="edit" title="Edit this page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/self_hosting_providers.rst" rel="edit" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -638,145 +638,173 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="environment-variables-and-maintenance">
-<h1>Environment variables and maintenance<a class="headerlink" href="#environment-variables-and-maintenance" title="Link to this heading">¶</a></h1>
-<section id="key-env-variables">
-<h2>Key <code class="docutils literal notranslate"><span class="pre">.env</span></code> variables<a class="headerlink" href="#key-env-variables" title="Link to this heading">¶</a></h2>
+          <section id="provider-configuration">
+<h1>Provider configuration<a class="headerlink" href="#provider-configuration" title="Link to this heading">¶</a></h1>
+<p>All third-party providers are optional. Until a provider’s keys are set,
+the corresponding flow actions return a “provider not configured” error;
+the rest of the platform stays healthy. This page lists every provider
+env var in <code class="docutils literal notranslate"><span class="pre">.env</span></code>, what it enables, and which service to restart after
+setting it. All facts below are verified directly against this
+installer’s own <code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code> (the Docker Compose
+self-hosting stack); a Kubernetes/hosted-service deployment wires some
+of these variables differently and is out of scope for this page.</p>
+<section id="ai-voice-agent-providers">
+<h2>AI voice agent providers<a class="headerlink" href="#ai-voice-agent-providers" title="Link to this heading">¶</a></h2>
 <div class="table-wrapper colwidths-given docutils container">
 <table class="docutils align-default">
 <colgroup>
+<col style="width: 20.0%" />
 <col style="width: 30.0%" />
-<col style="width: 70.0%" />
+<col style="width: 50.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Variable</p></th>
-<th class="head"><p>Purpose</p></th>
+<tr class="row-odd"><th class="head"><p>Capability</p></th>
+<th class="head"><p>Providers</p></th>
+<th class="head"><p>Env var(s)</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DOMAIN_MODE</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">internal</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">external</span></code>. A missing key means internal.</p></td>
+<tr class="row-even"><td><p>LLM / conversation (batch, e.g. audit evaluation)</p></td>
+<td><p>OpenAI</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code> (restart <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">BASE_DOMAIN</span></code></p></td>
-<td><p>The base domain all derived domain values are composed from.
-Edit and re-run <code class="docutils literal notranslate"><span class="pre">init</span></code> rather than editing derived vars directly.</p></td>
+<tr class="row-odd"><td><p>LLM / conversation (real-time voice pipeline)</p></td>
+<td><p>OpenAI, Google Gemini, xAI</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>
+(restart <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">TLS_MODE</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">mkcert</span></code>, <code class="docutils literal notranslate"><span class="pre">selfsigned</span></code>, or <code class="docutils literal notranslate"><span class="pre">byo</span></code>.</p></td>
+<tr class="row-even"><td><p>Speech-to-text</p></td>
+<td><p>Deepgram, AWS Transcribe, Google Cloud Speech-to-Text</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>; <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>/<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>;
+<code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">COMPOSE_PROFILES</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">internal-dns</span></code> in internal mode (enables CoreDNS), empty in
-external mode, <code class="docutils literal notranslate"><span class="pre">web-proxy</span></code> when the reverse proxy is enabled.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WEB_REVERSE_PROXY</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code> enables the built-in Caddy reverse proxy (external mode,
-<code class="docutils literal notranslate"><span class="pre">--tls</span> <span class="pre">byo</span></code> only).</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">HOST_EXTERNAL_IP</span></code></p></td>
-<td><p>Host’s LAN or public IP (auto-detected).</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_EXTERNAL_IP</span></code> / <code class="docutils literal notranslate"><span class="pre">RTPENGINE_EXTERNAL_IP</span></code></p></td>
-<td><p>Dedicated external IPs for SIP signaling and RTP media
-(auto-generated; must differ from the host IP).</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DOMAIN_NAME_EXTENSION</span></code></p></td>
-<td><p>SIP domain suffix for extensions. Full realm is
-<code class="docutils literal notranslate"><span class="pre">{customer_id}.{DOMAIN_NAME_EXTENSION}</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">VOIPBIN_SANDBOX_DEV_SEED</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code> to opt in to dev/test account seeding on <code class="docutils literal notranslate"><span class="pre">start</span></code>. Off
-by default; never enable on a public install.</p></td>
+<tr class="row-odd"><td><p>Text-to-speech</p></td>
+<td><p>ElevenLabs, Cartesia, AWS Polly, Google Cloud TTS</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code>;
+<code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>/<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>;
+<code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>)</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-</section>
-<section id="third-party-integrations">
-<h2>Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h2>
-<p>Voice AI, transcription, TTS, phone number provisioning, and email/SMS
-providers are configured through their own keys in <code class="docutils literal notranslate"><span class="pre">.env</span></code>. See the
-Provider configuration section for the full list of variables, which
-service to restart after setting each, and the AI-provider-specific
-details (shared credentials, multi-service consumers). Until a
-provider’s keys are set, the corresponding flow actions return a
-“provider not configured” error; the rest of the platform stays healthy.</p>
-</section>
-<section id="maintenance-commands-the-voipbin-cli">
-<h2>Maintenance commands (the <code class="docutils literal notranslate"><span class="pre">voipbin</span></code> CLI)<a class="headerlink" href="#maintenance-commands-the-voipbin-cli" title="Link to this heading">¶</a></h2>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 30.0%" />
-<col style="width: 70.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Command</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">version</span> <span class="pre">[--json]</span></code></p></td>
-<td><p>Show pinned image versions</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">[images/scripts/all]</span></code></p></td>
-<td><p>Update Docker images or scripts. <code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">all</span></code> on a pinned repo
-runs the full safe upgrade: backup, git pull, migrate, recreate,
-verify.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">update</span> <span class="pre">--check</span></code></p></td>
-<td><p>Dry-run to preview updates</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">backup</span></code></p></td>
-<td><p>Full data backup (MySQL, call recordings, <code class="docutils literal notranslate"><span class="pre">.env</span></code>, certificates,
-<code class="docutils literal notranslate"><span class="pre">versions.lock</span></code>, a <code class="docutils literal notranslate"><span class="pre">manifest.json</span></code>) into <code class="docutils literal notranslate"><span class="pre">backups/&lt;timestamp&gt;/</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">restore</span> <span class="pre">&lt;timestamp&gt;</span> <span class="pre">--force</span></code></p></td>
-<td><p>Restore data from a backup. Destructive; services must be stopped
-except <code class="docutils literal notranslate"><span class="pre">db</span></code>/<code class="docutils literal notranslate"><span class="pre">redis</span></code>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rollback</span> <span class="pre">[timestamp]</span></code></p></td>
-<td><p>Roll back image versions from override history (unpinned repos
-only). For data recovery use <code class="docutils literal notranslate"><span class="pre">restore</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">clean</span> <span class="pre">[options]</span></code></p></td>
-<td><p>Cleanup sandbox resources</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<section id="scheduled-backups">
-<h3>Scheduled backups<a class="headerlink" href="#scheduled-backups" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">schedule-manager</span></code> runs a nightly <code class="docutils literal notranslate"><span class="pre">database-backup</span></code> job (MySQL dump
-plus gzip of the two databases, written to <code class="docutils literal notranslate"><span class="pre">backups/scheduled-db/</span></code>,
-retaining the newest 7). <code class="docutils literal notranslate"><span class="pre">start.sh</span></code> enables it on every run. This is
-deliberately separate from the manual <code class="docutils literal notranslate"><span class="pre">voipbin</span> <span class="pre">backup</span></code> command above:
-different retention, different directory, so neither one’s pruning
-touches the other.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-schedule-mgr<span class="w"> </span>/app/bin/schedule-control<span class="w"> </span>schedule<span class="w"> </span>list
-docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-schedule-mgr<span class="w"> </span>/app/bin/schedule-control<span class="w"> </span>schedule<span class="w"> </span>disable<span class="w"> </span>database-backup
+<p><code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> are two
+unrelated variables that happen to share the “Google” prefix. Do not
+confuse them:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> is a Gemini API key. It is consumed by two
+independent features: <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>’s batch audit evaluation
+(mapped internally to a ChatGPT-compatible engine key,
+<code class="docutils literal notranslate"><span class="pre">ENGINE_KEY_CHATGPT=${OPENAI_API_KEY}</span></code>, does <strong>not</strong> actually use
+<code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> for this) and <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>’s real-time voice
+pipeline (the sidecar that actually reads <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> directly
+for live Gemini conversations). Restart <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> after
+changing it for the voice-pipeline use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> is a GCP service-account JSON key
+file path. It is mounted into <strong>five</strong> services in this installer’s
+Docker Compose stack: <code class="docutils literal notranslate"><span class="pre">api-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>,
+<code class="docutils literal notranslate"><span class="pre">storage-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, and <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>.
+<code class="docutils literal notranslate"><span class="pre">storage-manager</span></code> treats a missing value as fatal for signed
+download/upload URLs; <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> falls back to AWS Polly if
+unset. <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> does <strong>not</strong> consume this variable in the
+Docker Compose stack (it only uses <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, above) —
+restarting <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> for a <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code>
+change has no effect.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code> has no dedicated feature write-up beyond its
+<code class="docutils literal notranslate"><span class="pre">.env.template</span></code> entry; it is consumed by <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>’s
+real-time voice pipeline as an LLM alternative, not by <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>.</p>
+<p>After setting an AI provider key, restart the service(s) that actually
+consume that specific variable, per the tables above:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>ai-manager<span class="w">           </span><span class="c1"># OPENAI_API_KEY (batch)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>pipecat-manager<span class="w">       </span><span class="c1"># OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY (real-time)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>transcribe-manager<span class="w">    </span><span class="c1"># DEEPGRAM_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>tts-manager<span class="w">           </span><span class="c1"># ELEVENLABS_API_KEY, CARTESIA_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>storage-manager<span class="w">       </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 </pre></div>
 </div>
 </section>
-<section id="host-side-gaps-operator-responsibility">
-<h3>Host-side gaps (operator responsibility)<a class="headerlink" href="#host-side-gaps-operator-responsibility" title="Link to this heading">¶</a></h3>
-<p>Two tasks stay outside the installer’s automation:</p>
-<ul class="simple">
-<li><p><strong>Offsite copy of backups.</strong> <code class="docutils literal notranslate"><span class="pre">backups/</span></code> is local disk; ship it to
-remote or object storage on your own recovery-objective schedule
-(for example an <code class="docutils literal notranslate"><span class="pre">rsync</span></code> cron job).</p></li>
-<li><p><strong>Host-level maintenance.</strong> OS package updates, Docker Engine upgrades,
-disk space and log rotation, and kernel/security patching are the
-operator’s responsibility.</p></li>
-</ul>
+<section id="telephony-and-messaging-providers">
+<h2>Telephony and messaging providers<a class="headerlink" href="#telephony-and-messaging-providers" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 40.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Provider</p></th>
+<th class="head"><p>Env var(s)</p></th>
+<th class="head"><p>Consuming service</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Twilio (PSTN numbers)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TWILIO_SID</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Telnyx (PSTN numbers and messaging)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_CONNECTION_ID</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TELNYX_PROFILE_ID</span></code> (all three required)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>MessageBird (SMS)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> variable names above are what you set;
+<code class="docutils literal notranslate"><span class="pre">number-manager</span></code> itself binds them internally as <code class="docutils literal notranslate"><span class="pre">TWILIO_TOKEN</span></code> and
+<code class="docutils literal notranslate"><span class="pre">TELNYX_TOKEN</span></code> (<code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code> maps
+<code class="docutils literal notranslate"><span class="pre">TWILIO_TOKEN=${TWILIO_API_KEY}</span></code> and
+<code class="docutils literal notranslate"><span class="pre">TELNYX_TOKEN=${TELNYX_API_KEY}</span></code>), and <code class="docutils literal notranslate"><span class="pre">message-manager</span></code> binds
+<code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code> internally as <code class="docutils literal notranslate"><span class="pre">AUTHTOKEN_MESSAGEBIRD</span></code>. This
+only matters if you go looking for the raw variable name inside
+<code class="docutils literal notranslate"><span class="pre">number-manager</span></code>’s or <code class="docutils literal notranslate"><span class="pre">message-manager</span></code>’s own config; the <code class="docutils literal notranslate"><span class="pre">.env</span></code>
+names above are what you actually set. MessageBird has no dedicated
+feature write-up beyond its <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> entry.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>number-manager
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>message-manager
+</pre></div>
+</div>
 </section>
-</section>
-<section id="scaling">
-<h2>Scaling<a class="headerlink" href="#scaling" title="Link to this heading">¶</a></h2>
-<p>The installer starts every backend service at one replica. Scaling a
-single-server Compose install means raising the host’s own CPU/RAM and,
-for the SIP/media layer, the RTPEngine port range and Asterisk channel
-limits. There is no automated horizontal-scale profile in this installer
-today; track resource usage and scale the host vertically first.</p>
+<section id="email-providers">
+<h2>Email providers<a class="headerlink" href="#email-providers" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 40.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Provider</p></th>
+<th class="head"><p>Env var</p></th>
+<th class="head"><p>Consuming service</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>SendGrid</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Mailgun</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MAILGUN_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>email-manager
+</pre></div>
+</div>
+<p>Configuring at least one of these two is required for the email-based
+signup flow (Path B in First login and API access) to actually deliver
+its verification email.</p>
 </section>
 </section>
 
@@ -820,15 +848,10 @@ today; track resource usage and scale the host vertically first.</p>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Environment variables and maintenance</a><ul>
-<li><a class="reference internal" href="#key-env-variables">Key <code class="docutils literal notranslate"><span class="pre">.env</span></code> variables</a></li>
-<li><a class="reference internal" href="#third-party-integrations">Third-party integrations</a></li>
-<li><a class="reference internal" href="#maintenance-commands-the-voipbin-cli">Maintenance commands (the <code class="docutils literal notranslate"><span class="pre">voipbin</span></code> CLI)</a><ul>
-<li><a class="reference internal" href="#scheduled-backups">Scheduled backups</a></li>
-<li><a class="reference internal" href="#host-side-gaps-operator-responsibility">Host-side gaps (operator responsibility)</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#scaling">Scaling</a></li>
+<li><a class="reference internal" href="#">Provider configuration</a><ul>
+<li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a></li>
+<li><a class="reference internal" href="#telephony-and-messaging-providers">Telephony and messaging providers</a></li>
+<li><a class="reference internal" href="#email-providers">Email providers</a></li>
 </ul>
 </li>
 </ul>
