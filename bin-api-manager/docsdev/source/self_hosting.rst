@@ -8,22 +8,21 @@ Installation
 
 .. note:: **AI Context**
 
-   This page documents how to deploy a full VoIPBin platform on your own
-   Google Cloud Platform project using the official installer at
-   https://github.com/voipbin/install. It is intended for operators
-   running their own VoIPBin instance, not for customers of the hosted
-   service at https://voipbin.net.
+   This page documents how to self-host the full VoIPBin platform on your
+   own server using Docker Compose, via the official installer at
+   https://github.com/voipbin/voipbin (the ``install/`` directory). It is
+   intended for operators running their own VoIPBin instance, not for
+   customers of the hosted service at https://voipbin.net.
 
 VoIPBin is an opensource CPaaS platform. The complete stack, including the
 SIP edge (Kamailio, RTPEngine), the Asterisk media layer, all backend
 microservices, the database, the message bus, and the admin/talk/meet
-frontends, can be installed into a Google Cloud Platform project with a
-single CLI.
+frontends, runs as a single Docker Compose project on one server.
 
-This section walks through what you need, the three commands that perform
-the install, what configuration the installer generates, and which
-environment variables you typically need to adjust before the platform is
-ready for real traffic.
+This section walks through what you need, the four commands that perform
+the install, the two install modes (a local/LAN evaluation domain or your
+own real domain), what configuration the installer generates, and the
+day-to-day CLI used for backup, restore, and upgrades.
 
 .. include:: self_hosting_overview.rst
 .. include:: self_hosting_prerequisites.rst

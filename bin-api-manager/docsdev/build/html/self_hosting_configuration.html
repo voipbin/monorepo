@@ -640,91 +640,71 @@
         <article role="main" id="furo-main-content">
           <section id="configuration-files">
 <h1>Configuration files<a class="headerlink" href="#configuration-files" title="Link to this heading">¶</a></h1>
-<p>The installer writes two files in the working directory.</p>
-<section id="config-yaml-non-sensitive">
-<h2><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> (non-sensitive)<a class="headerlink" href="#config-yaml-non-sensitive" title="Link to this heading">¶</a></h2>
-<p>Holds every parameter from the wizard and the defaults applied around
-them. Environment variables prefixed with <code class="docutils literal notranslate"><span class="pre">VOIPBIN_</span></code> override a value
-at runtime, for a single CLI invocation (for example
-<code class="docutils literal notranslate"><span class="pre">VOIPBIN_REGION=europe-west1</span> <span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>).</p>
-<p>Typical contents:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">gcp_project_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project-123</span>
-<span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
-<span class="nt">zone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1-a</span>
-<span class="nt">gke_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zonal</span>
-<span class="nt">tls_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self-signed</span>
-<span class="nt">image_tag_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pinned</span>
-<span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">voipbin.example.com</span>
-<span class="nt">dns_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
-<span class="nt">gke_machine_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">n1-standard-2</span>
-<span class="nt">gke_node_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="nt">vm_machine_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">f1-micro</span>
-<span class="nt">kamailio_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="nt">rtpengine_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<p>The installer writes and manages two operator-owned files in the
+<code class="docutils literal notranslate"><span class="pre">install/</span></code> working directory.</p>
+<section id="docker-compose-yml-operator-owned-copy-of-dist">
+<h2><code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code> (operator-owned copy of <code class="docutils literal notranslate"><span class="pre">.dist</span></code>)<a class="headerlink" href="#docker-compose-yml-operator-owned-copy-of-dist" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code> is copied once from the committed
+<code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code> the first time <code class="docutils literal notranslate"><span class="pre">init.sh</span></code> runs, then left
+alone: a later <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span></code> in this repo updates <code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code>
+but never touches your live <code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code>. This means a repo
+update never silently changes a running install’s Compose configuration.</p>
+<p>To adopt upstream changes (new services, image digest bumps), diff the two
+files and merge deliberately, or run <code class="docutils literal notranslate"><span class="pre">scripts/sync-compose-images.sh</span></code>
+with <code class="docutils literal notranslate"><span class="pre">COMPOSE_FILE=docker-compose.yml</span></code> to pull in just the image digest
+updates from <code class="docutils literal notranslate"><span class="pre">versions.lock.dist</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">versions.lock</span></code> gets the identical treatment for the identical reason:
+copied once from <code class="docutils literal notranslate"><span class="pre">versions.lock.dist</span></code>, then untracked. Deploying a new
+image and updating <code class="docutils literal notranslate"><span class="pre">versions.lock.dist</span></code> are deliberately decoupled; the
+live <code class="docutils literal notranslate"><span class="pre">versions.lock</span></code> is yours to manage on your own schedule.</p>
+</section>
+<section id="env-generated-secrets-and-configuration">
+<h2><code class="docutils literal notranslate"><span class="pre">.env</span></code> (generated secrets and configuration)<a class="headerlink" href="#env-generated-secrets-and-configuration" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">init.sh</span></code> auto-generates <code class="docutils literal notranslate"><span class="pre">.env</span></code> with detected network settings and
+freshly generated credentials (MySQL, RabbitMQ, JWT signing key). See the
+Environment variables section below for the full variable reference.</p>
+</section>
+<section id="cli-configuration-voipbin-cli-conf">
+<h2>CLI configuration (<code class="docutils literal notranslate"><span class="pre">~/.voipbin-cli.conf</span></code>)<a class="headerlink" href="#cli-configuration-voipbin-cli-conf" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">voipbin</span></code> CLI stores its own settings separately from <code class="docutils literal notranslate"><span class="pre">.env</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>voipbin&gt;<span class="w"> </span>config<span class="w">                    </span><span class="c1"># Show all settings</span>
+voipbin&gt;<span class="w"> </span>config<span class="w"> </span>log_lines<span class="w"> </span><span class="m">100</span><span class="w">      </span><span class="c1"># Set log lines to 100</span>
+voipbin&gt;<span class="w"> </span>config<span class="w"> </span>reset<span class="w">              </span><span class="c1"># Reset to defaults</span>
 </pre></div>
 </div>
-<p>The schema is enforced by <code class="docutils literal notranslate"><span class="pre">config/schema.py</span></code>. To change a value after
-the initial install, edit <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and rerun
-<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>.</p>
-</section>
-<section id="secrets-yaml-sops-encrypted">
-<h2><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> (SOPS-encrypted)<a class="headerlink" href="#secrets-yaml-sops-encrypted" title="Link to this heading">¶</a></h2>
-<p>Holds the six secrets generated by <code class="docutils literal notranslate"><span class="pre">init</span></code>, encrypted with GCP KMS via
-SOPS:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">jwt_key</span></code>: JWT signing key consumed by the API and webhook layers.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code>: Cloud SQL root password. The instance is
-created with this value.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">redis_password</span></code>: Redis <code class="docutils literal notranslate"><span class="pre">AUTH</span></code> password.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code> and <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code>. RabbitMQ credentials.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">api_signing_key</span></code>: request signing key used between internal
-services.</p></li>
-</ul>
-<p>Editing a secret:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sops<span class="w"> </span>secrets.yaml<span class="w">         </span><span class="c1"># opens editor with decrypted view</span>
-<span class="c1"># edit the field, save</span>
-./voipbin-install<span class="w"> </span>apply<span class="w">   </span><span class="c1"># re-render ConfigMap, Secret, and VM .env</span>
-</pre></div>
-</div>
-<p>After editing, the Kubernetes ConfigMap, the Kubernetes Secret, and the
-Kamailio VM <code class="docutils literal notranslate"><span class="pre">.env</span></code> are re-rendered consistently in a single apply.</p>
-</section>
-<section id="where-each-value-lands">
-<h2>Where each value lands<a class="headerlink" href="#where-each-value-lands" title="Link to this heading">¶</a></h2>
-<p>Most of the wizard’s answers and secrets fan out into multiple targets at
-apply time. The most important paths to know:</p>
-<div class="table-wrapper docutils container">
+<div class="table-wrapper colwidths-given docutils container">
 <table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 20.0%" />
+<col style="width: 50.0%" />
+</colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Source</p></th>
-<th class="head"><p>Target type</p></th>
-<th class="head"><p>Where it ends up</p></th>
+<tr class="row-odd"><th class="head"><p>Setting</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></td>
-<td><p>Terraform variables</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">terraform/</span></code> <code class="docutils literal notranslate"><span class="pre">tfvars</span></code> and resource arguments</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">api_host</span></code></p></td>
+<td><p>localhost</p></td>
+<td><p>API hostname</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></td>
-<td><p>Kubernetes ConfigMap</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">voipbin-config</span></code> in <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">api_port</span></code></p></td>
+<td><p>8443</p></td>
+<td><p>API port</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></td>
-<td><p>Ansible group_vars</p></td>
-<td><p>Kamailio VM <code class="docutils literal notranslate"><span class="pre">/opt/kamailio-docker/.env</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">log_lines</span></code></p></td>
+<td><p>50</p></td>
+<td><p>Number of log lines to display</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code></p></td>
-<td><p>Kubernetes Secret</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">voipbin-secret</span></code> in <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">colors</span></code></p></td>
+<td><p>True</p></td>
+<td><p>Enable colored output</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code></p></td>
-<td><p>Kubernetes Secret (composite)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">RABBITMQ_ADDRESS</span></code> and <code class="docutils literal notranslate"><span class="pre">REDIS_ADDRESS</span></code> in <code class="docutils literal notranslate"><span class="pre">voip</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code></p></td>
-<td><p>Ansible group_vars</p></td>
-<td><p>Kamailio VM <code class="docutils literal notranslate"><span class="pre">.env</span></code> (<code class="docutils literal notranslate"><span class="pre">RABBITMQ_URL</span></code>, etc.)</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">asterisk_container</span></code></p></td>
+<td><p>voipbin-ast-call</p></td>
+<td><p>Default Asterisk container for the <code class="docutils literal notranslate"><span class="pre">ast</span></code> debug shell</p></td>
 </tr>
 </tbody>
 </table>
@@ -773,9 +753,9 @@ apply time. The most important paths to know:</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Configuration files</a><ul>
-<li><a class="reference internal" href="#config-yaml-non-sensitive"><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> (non-sensitive)</a></li>
-<li><a class="reference internal" href="#secrets-yaml-sops-encrypted"><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> (SOPS-encrypted)</a></li>
-<li><a class="reference internal" href="#where-each-value-lands">Where each value lands</a></li>
+<li><a class="reference internal" href="#docker-compose-yml-operator-owned-copy-of-dist"><code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code> (operator-owned copy of <code class="docutils literal notranslate"><span class="pre">.dist</span></code>)</a></li>
+<li><a class="reference internal" href="#env-generated-secrets-and-configuration"><code class="docutils literal notranslate"><span class="pre">.env</span></code> (generated secrets and configuration)</a></li>
+<li><a class="reference internal" href="#cli-configuration-voipbin-cli-conf">CLI configuration (<code class="docutils literal notranslate"><span class="pre">~/.voipbin-cli.conf</span></code>)</a></li>
 </ul>
 </li>
 </ul>
