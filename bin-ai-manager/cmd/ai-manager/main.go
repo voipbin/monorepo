@@ -35,6 +35,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/geminiaudithandler"
 	"monorepo/bin-ai-manager/pkg/geminiproposalhandler"
 	"monorepo/bin-ai-manager/pkg/listenhandler"
+	"monorepo/bin-ai-manager/pkg/mcpoauthhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
@@ -140,7 +141,19 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		log.Errorf("Could not create mcp server handler. err: %v", err)
 		return err
 	}
-	mcptoolHandler, err := mcptoolhandler.NewMcpToolHandler(db, cfg.McpSecretEncryptionKeys, cfg.McpToolCallTimeoutSeconds)
+	mcpOAuthHandler, err := mcpoauthhandler.NewMcpOAuthHandler(
+		db,
+		cfg.McpSecretEncryptionKeys,
+		cfg.McpOAuthGithubClientID,
+		cfg.McpOAuthGithubClientSecret,
+		cfg.McpOAuthLinearClientID,
+		cfg.McpOAuthLinearClientSecret,
+	)
+	if err != nil {
+		log.Errorf("Could not create mcp oauth handler. err: %v", err)
+		return err
+	}
+	mcptoolHandler, err := mcptoolhandler.NewMcpToolHandler(db, cfg.McpSecretEncryptionKeys, cfg.McpToolCallTimeoutSeconds, mcpOAuthHandler)
 	if err != nil {
 		log.Errorf("Could not create mcp tool handler. err: %v", err)
 		return err
@@ -187,7 +200,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aipromptproposalHandler.SweepStaleProposals(context.Background())
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler, mcpOAuthHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -241,6 +254,7 @@ func runListen(
 	participantHandler participanthandler.ParticipantHandler,
 	analysisHandler analysishandler.AnalysisHandler,
 	mcpServerHandler mcpserverhandler.McpServerHandler,
+	mcpOAuthHandler mcpoauthhandler.McpOAuthHandler,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	toolHandler := toolhandler.NewToolHandler()
@@ -262,6 +276,7 @@ func runListen(
 		participantHandler,
 		analysisHandler,
 		mcpServerHandler,
+		mcpOAuthHandler,
 	)
 
 	// run

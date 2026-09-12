@@ -64,7 +64,7 @@ type toolsCallResult struct {
 // buildAuthHeader returns the header name/value to set on the outbound
 // request per the server's AuthType, decrypting the stored secret via
 // h.crypto.Decrypt. Returns ("", "", nil) for AuthTypeNone.
-func (h *mcpToolHandler) buildAuthHeader(m *mcpserver.McpServer) (headerName string, headerValue string, err error) {
+func (h *mcpToolHandler) buildAuthHeader(ctx context.Context, m *mcpserver.McpServer) (headerName string, headerValue string, err error) {
 	switch m.AuthType {
 	case mcpserver.AuthTypeNone:
 		return "", "", nil
@@ -86,6 +86,19 @@ func (h *mcpToolHandler) buildAuthHeader(m *mcpserver.McpServer) (headerName str
 			headerName = "X-API-Key"
 		}
 		return headerName, secret, nil
+
+	case mcpserver.AuthTypeOAuth:
+		// design docs/plans/2026-09-12-mcp-server-oauth-support-design.md
+		// §8: resolves a currently-valid access token, transparently
+		// refreshing it first via the vendor's token endpoint if needed.
+		if h.oauthHandler == nil {
+			return "", "", fmt.Errorf("mcp server uses oauth auth but no oauth handler is configured")
+		}
+		token, err := h.oauthHandler.GetValidAccessToken(ctx, m)
+		if err != nil {
+			return "", "", fmt.Errorf("could not get valid oauth access token: %w", err)
+		}
+		return "Authorization", "Bearer " + token, nil
 
 	default:
 		return "", "", fmt.Errorf("unsupported auth type: %q", m.AuthType)
@@ -116,7 +129,7 @@ func (h *mcpToolHandler) doJSONRPCRequest(ctx context.Context, m *mcpserver.McpS
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Accept", "application/json")
 
-	headerName, headerValue, err := h.buildAuthHeader(m)
+	headerName, headerValue, err := h.buildAuthHeader(ctx, m)
 	if err != nil {
 		return nil, fmt.Errorf("mcptoolhandler: could not build auth header: %w", err)
 	}

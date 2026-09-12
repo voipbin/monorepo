@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/aipromptproposal"
+	"monorepo/bin-ai-manager/models/mcpoauthstate"
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/participant"
@@ -83,6 +84,11 @@ type DBHandler interface {
 	McpServerList(ctx context.Context, size uint64, token string, filters map[mcpserver.Field]any) ([]*mcpserver.McpServer, error)
 	McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[mcpserver.Field]any) error
 	McpServerDelete(ctx context.Context, id uuid.UUID) error
+
+	McpOAuthStateCreate(ctx context.Context, s *mcpoauthstate.McpOAuthState) error
+	McpOAuthStateGet(ctx context.Context, state string) (*mcpoauthstate.McpOAuthState, error)
+	McpOAuthStateDelete(ctx context.Context, state string) error
+	McpOAuthStateDeleteExpired(ctx context.Context, now string) (int64, error)
 
 	// Participant
 	ParticipantCreate(ctx context.Context, aicallID uuid.UUID, aiID uuid.UUID) error

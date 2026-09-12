@@ -14,10 +14,14 @@ const (
 	AuthTypeNone   AuthType = ""        // no Authorization header sent
 	AuthTypeBearer AuthType = "bearer"  // Authorization: Bearer ***
 	AuthTypeAPIKey AuthType = "api_key" // <APIKeyHeader>: <secret>
+	// AuthTypeOAuth is set implicitly by completing the OAuth flow (see
+	// docs/plans/2026-09-12-mcp-server-oauth-support-design.md §4) --
+	// never set directly via POST/PUT with a customer-supplied secret.
+	AuthTypeOAuth AuthType = "oauth"
 )
 
 var validAuthTypes = map[AuthType]bool{
-	AuthTypeNone: true, AuthTypeBearer: true, AuthTypeAPIKey: true,
+	AuthTypeNone: true, AuthTypeBearer: true, AuthTypeAPIKey: true, AuthTypeOAuth: true,
 }
 
 // IsValid returns true if the AuthType is a known valid value.
@@ -67,8 +71,27 @@ type McpServer struct {
 	// KeyVersion records which entry of MCP_SECRET_ENCRYPTION_KEYS encrypted
 	// this row's secret, so rotating the configured key set never breaks
 	// decryption of rows encrypted under a still-configured older version.
+	// Also covers the OAuth token ciphertext fields below (same key set,
+	// same rotation story -- see docs/plans/2026-09-12-mcp-server-oauth-support-design.md §4).
 	KeyVersion int  `json:"-" db:"key_version"`
-	HasSecret  bool `json:"has_secret" db:"-"` // derived, exposed instead of the secret itself
+	HasSecret  bool `json:"has_secret" db:"-"` // derived, true whenever SecretCiphertext OR AccessTokenCiphertext is non-empty
+
+	// OAuthVendor identifies which entry of the vendor catalog (design §6)
+	// this row is bound to. Empty for non-oauth auth types. Immutable once
+	// set (changing vendor requires disconnect + reconnect, not an update).
+	OAuthVendor string `json:"oauth_vendor,omitempty" db:"oauth_vendor"`
+
+	// AccessTokenCiphertext/-Nonce hold the encrypted OAuth access token,
+	// same AES-256-GCM envelope and KeyVersion column as SecretCiphertext
+	// above (reuses mcpserverhandler.SecretCrypto, not a new key set).
+	AccessTokenCiphertext []byte     `json:"-" db:"access_token_ciphertext"`
+	AccessTokenNonce      []byte     `json:"-" db:"access_token_nonce"`
+	AccessTokenExpiresAt  *time.Time `json:"-" db:"access_token_expires_at"` // nil = vendor did not report an expiry (treat as long-lived, e.g. GitHub)
+
+	// RefreshTokenCiphertext/-Nonce are nil when the vendor did not issue a
+	// refresh token (GitHub) -- a normal, not an error, state.
+	RefreshTokenCiphertext []byte `json:"-" db:"refresh_token_ciphertext"`
+	RefreshTokenNonce      []byte `json:"-" db:"refresh_token_nonce"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`

@@ -79,6 +79,15 @@ type Config struct {
 	McpSecretEncryptionKeys     string // Comma-separated "<version>:<base64-32-byte-key>" pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows.
 	McpToolsListCacheTTLSeconds int    // Redis cache TTL for a server's tools/list result.
 	McpToolCallTimeoutSeconds   int    // Bounded HTTP timeout for tools/call.
+
+	// MCP server OAuth 2.1 support (docs/plans/
+	// 2026-09-12-mcp-server-oauth-support-design.md §6). VoIPBin-owned,
+	// vendor-fixed OAuth app credentials -- NOT per-customer, NOT in the
+	// database.
+	McpOAuthGithubClientID     string
+	McpOAuthGithubClientSecret string
+	McpOAuthLinearClientID     string
+	McpOAuthLinearClientSecret string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -132,6 +141,10 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("mcp_secret_encryption_keys", "", "Comma-separated <version>:<base64-32-byte-key> pairs for MCP server secret envelope encryption")
 	f.Int("mcp_tools_list_cache_ttl_seconds", 60, "Redis cache TTL (seconds) for an MCP server's tools/list result")
 	f.Int("mcp_tool_call_timeout_seconds", 10, "Bounded HTTP timeout (seconds) for an MCP tools/call request")
+	f.String("mcp_oauth_github_client_id", "", "GitHub OAuth App client_id for MCP server OAuth (design doc 2026-09-12-mcp-server-oauth-support)")
+	f.String("mcp_oauth_github_client_secret", "", "GitHub OAuth App client_secret for MCP server OAuth")
+	f.String("mcp_oauth_linear_client_id", "", "Linear OAuth application client_id for MCP server OAuth")
+	f.String("mcp_oauth_linear_client_secret", "", "Linear OAuth application client_secret for MCP server OAuth")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -175,6 +188,10 @@ func bindConfig(cmd *cobra.Command) error {
 		"mcp_secret_encryption_keys":       "MCP_SECRET_ENCRYPTION_KEYS",
 		"mcp_tools_list_cache_ttl_seconds": "MCP_TOOLS_LIST_CACHE_TTL_SECONDS",
 		"mcp_tool_call_timeout_seconds":    "MCP_TOOL_CALL_TIMEOUT_SECONDS",
+		"mcp_oauth_github_client_id":       "MCP_OAUTH_GITHUB_CLIENT_ID",
+		"mcp_oauth_github_client_secret":   "MCP_OAUTH_GITHUB_CLIENT_SECRET",
+		"mcp_oauth_linear_client_id":       "MCP_OAUTH_LINEAR_CLIENT_ID",
+		"mcp_oauth_linear_client_secret":   "MCP_OAUTH_LINEAR_CLIENT_SECRET",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -245,6 +262,11 @@ func LoadGlobalConfig() {
 			McpSecretEncryptionKeys:     viper.GetString("mcp_secret_encryption_keys"),
 			McpToolsListCacheTTLSeconds: viper.GetInt("mcp_tools_list_cache_ttl_seconds"),
 			McpToolCallTimeoutSeconds:   viper.GetInt("mcp_tool_call_timeout_seconds"),
+
+			McpOAuthGithubClientID:     viper.GetString("mcp_oauth_github_client_id"),
+			McpOAuthGithubClientSecret: viper.GetString("mcp_oauth_github_client_secret"),
+			McpOAuthLinearClientID:     viper.GetString("mcp_oauth_linear_client_id"),
+			McpOAuthLinearClientSecret: viper.GetString("mcp_oauth_linear_client_secret"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

@@ -3523,6 +3523,24 @@ func (e PostMcpserversJSONBodyAuthType) Valid() bool {
 	}
 }
 
+// Defines values for PostMcpserversOauthStartJSONBodyVendor.
+const (
+	Github PostMcpserversOauthStartJSONBodyVendor = "github"
+	Linear PostMcpserversOauthStartJSONBodyVendor = "linear"
+)
+
+// Valid indicates whether the value is a known member of the PostMcpserversOauthStartJSONBodyVendor enum.
+func (e PostMcpserversOauthStartJSONBodyVendor) Valid() bool {
+	switch e {
+	case Github:
+		return true
+	case Linear:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PutMcpserversIdJSONBodyAuthType.
 const (
 	ApiKey PutMcpserversIdJSONBodyAuthType = "api_key"
@@ -9305,6 +9323,36 @@ type PostMcpserversJSONBody struct {
 // PostMcpserversJSONBodyAuthType defines parameters for PostMcpservers.
 type PostMcpserversJSONBodyAuthType string
 
+// GetMcpserversOauthCallbackParams defines parameters for GetMcpserversOauthCallback.
+type GetMcpserversOauthCallbackParams struct {
+	// Code The vendor authorization code (absent if the user denied consent).
+	Code *string `form:"code,omitempty" json:"code,omitempty"`
+
+	// State The opaque state/link_token from POST /mcpservers/oauth/start.
+	State string `form:"state" json:"state"`
+}
+
+// PostMcpserversOauthCompleteJSONBody defines parameters for PostMcpserversOauthComplete.
+type PostMcpserversOauthCompleteJSONBody struct {
+	// Code The vendor authorization code from the GET /mcpservers/oauth/callback redirect.
+	Code string `json:"code"`
+
+	// State The link_token returned by POST /mcpservers/oauth/start.
+	State string `json:"state"`
+}
+
+// PostMcpserversOauthStartJSONBody defines parameters for PostMcpserversOauthStart.
+type PostMcpserversOauthStartJSONBody struct {
+	// McpServerId Optional. The ID of an existing customer-owned MCP server (returned from a prior POST /mcpservers response) to reconnect/refresh OAuth credentials for. Omit to create a new MCP server on completion.
+	McpServerId *openapi_types.UUID `json:"mcp_server_id,omitempty"`
+
+	// Vendor The OAuth vendor to connect to.
+	Vendor PostMcpserversOauthStartJSONBodyVendor `json:"vendor"`
+}
+
+// PostMcpserversOauthStartJSONBodyVendor defines parameters for PostMcpserversOauthStart.
+type PostMcpserversOauthStartJSONBodyVendor string
+
 // PutMcpserversIdJSONBody defines parameters for PutMcpserversId.
 type PutMcpserversIdJSONBody struct {
 	// ApiKeyHeader Omit to leave the current api_key_header unchanged.
@@ -10966,6 +11014,12 @@ type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
 // PostMcpserversJSONRequestBody defines body for PostMcpservers for application/json ContentType.
 type PostMcpserversJSONRequestBody PostMcpserversJSONBody
 
+// PostMcpserversOauthCompleteJSONRequestBody defines body for PostMcpserversOauthComplete for application/json ContentType.
+type PostMcpserversOauthCompleteJSONRequestBody PostMcpserversOauthCompleteJSONBody
+
+// PostMcpserversOauthStartJSONRequestBody defines body for PostMcpserversOauthStart for application/json ContentType.
+type PostMcpserversOauthStartJSONRequestBody PostMcpserversOauthStartJSONBody
+
 // PutMcpserversIdJSONRequestBody defines body for PutMcpserversId for application/json ContentType.
 type PutMcpserversIdJSONRequestBody PutMcpserversIdJSONBody
 
@@ -11835,6 +11889,15 @@ type ServerInterface interface {
 	// Register a new MCP server.
 	// (POST /mcpservers)
 	PostMcpservers(c *gin.Context)
+	// Vendor OAuth callback relay (public, unauthenticated).
+	// (GET /mcpservers/oauth/callback)
+	GetMcpserversOauthCallback(c *gin.Context, params GetMcpserversOauthCallbackParams)
+	// Complete the vendor OAuth flow for an MCP server connection.
+	// (POST /mcpservers/oauth/complete)
+	PostMcpserversOauthComplete(c *gin.Context)
+	// Start the vendor OAuth flow for an MCP server connection.
+	// (POST /mcpservers/oauth/start)
+	PostMcpserversOauthStart(c *gin.Context)
 	// Delete an MCP server.
 	// (DELETE /mcpservers/{id})
 	DeleteMcpserversId(c *gin.Context, id openapi_types.UUID)
@@ -17863,6 +17926,67 @@ func (siw *ServerInterfaceWrapper) PostMcpservers(c *gin.Context) {
 	siw.Handler.PostMcpservers(c)
 }
 
+// GetMcpserversOauthCallback operation middleware
+func (siw *ServerInterfaceWrapper) GetMcpserversOauthCallback(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetMcpserversOauthCallbackParams
+
+	// ------------- Optional query parameter "code" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "code", c.Request.URL.Query(), &params.Code, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter code: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Required query parameter "state" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "state", c.Request.URL.Query(), &params.State, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter state: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetMcpserversOauthCallback(c, params)
+}
+
+// PostMcpserversOauthComplete operation middleware
+func (siw *ServerInterfaceWrapper) PostMcpserversOauthComplete(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostMcpserversOauthComplete(c)
+}
+
+// PostMcpserversOauthStart operation middleware
+func (siw *ServerInterfaceWrapper) PostMcpserversOauthStart(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostMcpserversOauthStart(c)
+}
+
 // DeleteMcpserversId operation middleware
 func (siw *ServerInterfaceWrapper) DeleteMcpserversId(c *gin.Context) {
 
@@ -23867,6 +23991,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/groupcalls/:id/hangup", wrapper.PostGroupcallsIdHangup)
 	router.GET(options.BaseURL+"/mcpservers", wrapper.GetMcpservers)
 	router.POST(options.BaseURL+"/mcpservers", wrapper.PostMcpservers)
+	router.GET(options.BaseURL+"/mcpservers/oauth/callback", wrapper.GetMcpserversOauthCallback)
+	router.POST(options.BaseURL+"/mcpservers/oauth/complete", wrapper.PostMcpserversOauthComplete)
+	router.POST(options.BaseURL+"/mcpservers/oauth/start", wrapper.PostMcpserversOauthStart)
 	router.DELETE(options.BaseURL+"/mcpservers/:id", wrapper.DeleteMcpserversId)
 	router.GET(options.BaseURL+"/mcpservers/:id", wrapper.GetMcpserversId)
 	router.PUT(options.BaseURL+"/mcpservers/:id", wrapper.PutMcpserversId)
@@ -40909,6 +41036,212 @@ func (response PostMcpservers401JSONResponse) VisitPostMcpserversResponse(w http
 type PostMcpservers500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostMcpservers500JSONResponse) VisitPostMcpserversResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversOauthCallbackRequestObject struct {
+	Params GetMcpserversOauthCallbackParams
+}
+
+type GetMcpserversOauthCallbackResponseObject interface {
+	VisitGetMcpserversOauthCallbackResponse(w http.ResponseWriter) error
+}
+
+type GetMcpserversOauthCallback302Response struct {
+}
+
+func (response GetMcpserversOauthCallback302Response) VisitGetMcpserversOauthCallbackResponse(w http.ResponseWriter) error {
+	w.WriteHeader(302)
+	return nil
+}
+
+type GetMcpserversOauthCallback400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetMcpserversOauthCallback400JSONResponse) VisitGetMcpserversOauthCallbackResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMcpserversOauthCallback500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetMcpserversOauthCallback500JSONResponse) VisitGetMcpserversOauthCallbackResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthCompleteRequestObject struct {
+	Body *PostMcpserversOauthCompleteJSONRequestBody
+}
+
+type PostMcpserversOauthCompleteResponseObject interface {
+	VisitPostMcpserversOauthCompleteResponse(w http.ResponseWriter) error
+}
+
+type PostMcpserversOauthComplete200JSONResponse AIManagerMcpServer
+
+func (response PostMcpserversOauthComplete200JSONResponse) VisitPostMcpserversOauthCompleteResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthComplete400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostMcpserversOauthComplete400JSONResponse) VisitPostMcpserversOauthCompleteResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthComplete401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostMcpserversOauthComplete401JSONResponse) VisitPostMcpserversOauthCompleteResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthComplete404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostMcpserversOauthComplete404JSONResponse) VisitPostMcpserversOauthCompleteResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthComplete500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostMcpserversOauthComplete500JSONResponse) VisitPostMcpserversOauthCompleteResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthStartRequestObject struct {
+	Body *PostMcpserversOauthStartJSONRequestBody
+}
+
+type PostMcpserversOauthStartResponseObject interface {
+	VisitPostMcpserversOauthStartResponse(w http.ResponseWriter) error
+}
+
+type PostMcpserversOauthStart200JSONResponse struct {
+	// AuthorizeUrl Redirect the user's browser here to start the vendor's consent screen.
+	AuthorizeUrl *string `json:"authorize_url,omitempty"`
+
+	// LinkToken Opaque token correlating this flow to the later POST /mcpservers/oauth/complete call.
+	LinkToken *string `json:"link_token,omitempty"`
+}
+
+func (response PostMcpserversOauthStart200JSONResponse) VisitPostMcpserversOauthStartResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthStart400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostMcpserversOauthStart400JSONResponse) VisitPostMcpserversOauthStartResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthStart401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostMcpserversOauthStart401JSONResponse) VisitPostMcpserversOauthStartResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthStart404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostMcpserversOauthStart404JSONResponse) VisitPostMcpserversOauthStartResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostMcpserversOauthStart500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostMcpserversOauthStart500JSONResponse) VisitPostMcpserversOauthStartResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -59471,6 +59804,15 @@ type StrictServerInterface interface {
 	// Register a new MCP server.
 	// (POST /mcpservers)
 	PostMcpservers(ctx context.Context, request PostMcpserversRequestObject) (PostMcpserversResponseObject, error)
+	// Vendor OAuth callback relay (public, unauthenticated).
+	// (GET /mcpservers/oauth/callback)
+	GetMcpserversOauthCallback(ctx context.Context, request GetMcpserversOauthCallbackRequestObject) (GetMcpserversOauthCallbackResponseObject, error)
+	// Complete the vendor OAuth flow for an MCP server connection.
+	// (POST /mcpservers/oauth/complete)
+	PostMcpserversOauthComplete(ctx context.Context, request PostMcpserversOauthCompleteRequestObject) (PostMcpserversOauthCompleteResponseObject, error)
+	// Start the vendor OAuth flow for an MCP server connection.
+	// (POST /mcpservers/oauth/start)
+	PostMcpserversOauthStart(ctx context.Context, request PostMcpserversOauthStartRequestObject) (PostMcpserversOauthStartResponseObject, error)
 	// Delete an MCP server.
 	// (DELETE /mcpservers/{id})
 	DeleteMcpserversId(ctx context.Context, request DeleteMcpserversIdRequestObject) (DeleteMcpserversIdResponseObject, error)
@@ -65958,6 +66300,94 @@ func (sh *strictHandler) PostMcpservers(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PostMcpserversResponseObject); ok {
 		if err := validResponse.VisitPostMcpserversResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetMcpserversOauthCallback operation middleware
+func (sh *strictHandler) GetMcpserversOauthCallback(ctx *gin.Context, params GetMcpserversOauthCallbackParams) {
+	var request GetMcpserversOauthCallbackRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetMcpserversOauthCallback(ctx, request.(GetMcpserversOauthCallbackRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetMcpserversOauthCallback")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetMcpserversOauthCallbackResponseObject); ok {
+		if err := validResponse.VisitGetMcpserversOauthCallbackResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostMcpserversOauthComplete operation middleware
+func (sh *strictHandler) PostMcpserversOauthComplete(ctx *gin.Context) {
+	var request PostMcpserversOauthCompleteRequestObject
+
+	var body PostMcpserversOauthCompleteJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostMcpserversOauthComplete(ctx, request.(PostMcpserversOauthCompleteRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostMcpserversOauthComplete")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostMcpserversOauthCompleteResponseObject); ok {
+		if err := validResponse.VisitPostMcpserversOauthCompleteResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostMcpserversOauthStart operation middleware
+func (sh *strictHandler) PostMcpserversOauthStart(ctx *gin.Context) {
+	var request PostMcpserversOauthStartRequestObject
+
+	var body PostMcpserversOauthStartJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostMcpserversOauthStart(ctx, request.(PostMcpserversOauthStartRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostMcpserversOauthStart")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostMcpserversOauthStartResponseObject); ok {
+		if err := validResponse.VisitPostMcpserversOauthStartResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

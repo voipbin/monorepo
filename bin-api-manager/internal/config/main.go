@@ -71,6 +71,9 @@ type Config struct {
 	RateLimitProvisioningPublicRPS   float64 // RateLimitProvisioningPublicRPS is the per-IP request rate for the unauthenticated /provisioning/* routes (extension QR provisioning).
 	RateLimitProvisioningPublicBurst int     // RateLimitProvisioningPublicBurst is the burst size for RateLimitProvisioningPublicRPS.
 
+	RateLimitMcpOAuthPublicRPS   float64 // RateLimitMcpOAuthPublicRPS is the per-IP request rate for the unauthenticated GET /mcpservers/oauth/callback route.
+	RateLimitMcpOAuthPublicBurst int     // RateLimitMcpOAuthPublicBurst is the burst size for RateLimitMcpOAuthPublicRPS.
+
 	// Customer-scoped rate limiting (Redis-backed, cross-pod global -- see
 	// lib/middleware/customer_ratelimit.go and VOIP-1302 design doc §4-9).
 	// Applies only to the v1.0 route group, keyed by customer_id rather
@@ -138,6 +141,8 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("rate_limit_v1_burst", 400, "Rate limit burst size for the authenticated v1.0 API surface. <=0 disables this tier. Env var only, see RATE_LIMIT_V1_BURST.")
 	f.Float64("rate_limit_provisioning_public_rps", 5, "Rate limit (requests/second per IP) for unauthenticated /provisioning/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_PROVISIONING_PUBLIC_RPS.")
 	f.Int("rate_limit_provisioning_public_burst", 10, "Rate limit burst size for the unauthenticated /provisioning/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_PROVISIONING_PUBLIC_BURST.")
+	f.Float64("rate_limit_mcp_oauth_public_rps", 5, "Rate limit (requests/second per IP) for the unauthenticated GET /mcpservers/oauth/callback route. <=0 disables this tier. Env var only, see RATE_LIMIT_MCP_OAUTH_PUBLIC_RPS.")
+	f.Int("rate_limit_mcp_oauth_public_burst", 10, "Rate limit burst size for the unauthenticated GET /mcpservers/oauth/callback route. <=0 disables this tier. Env var only, see RATE_LIMIT_MCP_OAUTH_PUBLIC_BURST.")
 	f.Float64("rate_limit_customer_v1_rps", 16.7, "Redis-backed per-customer request rate (agent+accesskey, tier v1_customer). <=0 disables this tier. Env var only, see RATE_LIMIT_CUSTOMER_V1_RPS.")
 	f.Int("rate_limit_customer_v1_burst", 33, "Burst size for RATE_LIMIT_CUSTOMER_V1_RPS. <=0 disables this tier.")
 	f.Float64("rate_limit_customer_v1_direct_rps", 50, "Redis-backed per-customer request rate for direct identities (tier v1_customer_direct). <=0 disables this tier. Env var only, see RATE_LIMIT_CUSTOMER_V1_DIRECT_RPS.")
@@ -169,6 +174,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"rate_limit_v1_burst":                  "RATE_LIMIT_V1_BURST",
 		"rate_limit_provisioning_public_rps":   "RATE_LIMIT_PROVISIONING_PUBLIC_RPS",
 		"rate_limit_provisioning_public_burst": "RATE_LIMIT_PROVISIONING_PUBLIC_BURST",
+		"rate_limit_mcp_oauth_public_rps":       "RATE_LIMIT_MCP_OAUTH_PUBLIC_RPS",
+		"rate_limit_mcp_oauth_public_burst":     "RATE_LIMIT_MCP_OAUTH_PUBLIC_BURST",
 
 		"rate_limit_customer_v1_rps":            "RATE_LIMIT_CUSTOMER_V1_RPS",
 		"rate_limit_customer_v1_burst":          "RATE_LIMIT_CUSTOMER_V1_BURST",
@@ -225,6 +232,9 @@ func LoadGlobalConfig() {
 
 			RateLimitProvisioningPublicRPS:   viper.GetFloat64("rate_limit_provisioning_public_rps"),
 			RateLimitProvisioningPublicBurst: viper.GetInt("rate_limit_provisioning_public_burst"),
+
+			RateLimitMcpOAuthPublicRPS:   viper.GetFloat64("rate_limit_mcp_oauth_public_rps"),
+			RateLimitMcpOAuthPublicBurst: viper.GetInt("rate_limit_mcp_oauth_public_burst"),
 
 			RateLimitCustomerV1RPS:           viper.GetFloat64("rate_limit_customer_v1_rps"),
 			RateLimitCustomerV1Burst:         viper.GetInt("rate_limit_customer_v1_burst"),
