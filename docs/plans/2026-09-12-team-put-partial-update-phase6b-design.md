@@ -336,7 +336,14 @@ the merged-effective-value validation, not this exact code shape.)
      mapping, not the actual unwrap-transparency mechanism this case
      exists to pin. The `teamhandler`-level test should assert that
      `Update` returns an error satisfying `errors.As(err, &voipbinErr)`
-     with `voipbinErr.Code` indicating not-found, directly exercising the
+     where `voipbinErr` is a `*cerrors.VoipbinError` with
+     `voipbinErr.Status == cerrors.StatusNotFound` and
+     `voipbinErr.Reason == "TEAM_NOT_FOUND"` (the exact status/reason
+     `teamHandler.Get` already sets via `cerrors.NotFound(...)`, confirmed
+     at `handler.go:93-97` — `VoipbinError` has no `Code` field; its
+     identifying fields are `Status`/`Reason`/`Domain`/`Message`, per
+     `bin-common-handler/models/errors/voipbin_error.go:26-40`), directly
+     exercising the
      `errors.Wrap(err, "could not get current team for validation")`
      line and confirming the unwrap chain resolves correctly at the
      layer where the wrapping actually happens. A separate, ordinary
@@ -445,4 +452,27 @@ explanatory paragraphs (Get-chain-position, TOCTOU, confusing-400) — all
 confirmed factually accurate and free of new errors;
 `Test_Update_StartMemberIDOnly_EmptyStoredMembers` — confirmed
 well-specified and correctly placed as originally written.
+
+## 9. Round 3 review disposition
+
+Independent review (`deleg_4d58a589`) verdict: REQUEST CHANGES. Fresh
+re-derivation reconfirmed every Round 1/2 fact (call chain, no
+`len(fields)==0` guard, `validateTeam`'s 11 rules, no team CLI,
+`parameter`-cleared bug, the corrected test's layer placement, and the
+corrected `Get`-call-count bullets' internal consistency with §3's
+pseudocode) but found one new, smaller defect introduced by Round 2's
+own fix:
+
+| # | Finding | Severity | Fix location |
+|---|---|---|---|
+| 1 | Round 2's rewritten `Test_Update_NotFoundDuringMergedValidation` spec instructed asserting `voipbinErr.Code` — but `*cerrors.VoipbinError` has no `Code` field at all (its fields are `Status`/`Reason`/`Domain`/`Message`/`Details`/`Cause`, confirmed directly against `bin-common-handler/models/errors/voipbin_error.go:26-40`); an implementer following the doc literally would hit a compile error | **MAJOR** | §4 item 9's test spec corrected to assert `voipbinErr.Status == cerrors.StatusNotFound` and `voipbinErr.Reason == "TEAM_NOT_FOUND"` — the exact status/reason `teamHandler.Get` already sets via `cerrors.NotFound(...)` at `handler.go:93-97`, verified directly against source |
+
+Not changed (reviewer confirmed correct via fresh re-derivation): the
+test's layer placement (`bin-ai-manager/pkg/teamhandler/handler_test.go`,
+confirmed to already exist with an established gomock table-test
+pattern); the `pkg/errors.Wrap`/`errors.As` unwrap-transparency mechanism
+itself; both corrected `Get`-call-count test bullets (zero calls for
+name/detail-only, exactly one call for true no-op); the full §2 call
+chain; the RST file's existence at the cited path; all other test
+specifications including `Test_Update_StartMemberIDOnly_EmptyStoredMembers`.
 
