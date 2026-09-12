@@ -319,14 +319,18 @@ func Test_NumberV1NumberDelete(t *testing.T) {
 }
 
 func Test_NumberV1NumberUpdate(t *testing.T) {
+
+	strPtrNum := func(s string) *string { return &s }
+	uuidPtrNum := func(u uuid.UUID) *uuid.UUID { return &u }
+
 	tests := []struct {
 		name string
 
 		id            uuid.UUID
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
-		numberName    string
-		detail        string
+		callFlowID    *uuid.UUID
+		messageFlowID *uuid.UUID
+		numberName    *string
+		detail        *string
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -338,10 +342,10 @@ func Test_NumberV1NumberUpdate(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
-			uuid.FromStringOrNil("338f6098-2c7d-11ee-86a3-67a8ca2722ce"),
-			uuid.FromStringOrNil("33f5363e-2c7d-11ee-ba15-0762eae47333"),
-			"test name",
-			"test detail",
+			uuidPtrNum(uuid.FromStringOrNil("338f6098-2c7d-11ee-86a3-67a8ca2722ce")),
+			uuidPtrNum(uuid.FromStringOrNil("33f5363e-2c7d-11ee-ba15-0762eae47333")),
+			strPtrNum("test name"),
+			strPtrNum("test detail"),
 
 			"bin-manager.number-manager.request",
 			&sock.Request{
@@ -403,12 +407,14 @@ func Test_NumberV1NumberUpdate(t *testing.T) {
 
 func Test_NumberV1NumberUpdateFlowID(t *testing.T) {
 
+	uuidPtrNumFlow := func(u uuid.UUID) *uuid.UUID { return &u }
+
 	tests := []struct {
 		name string
 
 		id            uuid.UUID
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
+		callFlowID    *uuid.UUID
+		messageFlowID *uuid.UUID
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -420,8 +426,8 @@ func Test_NumberV1NumberUpdateFlowID(t *testing.T) {
 			"normal",
 
 			uuid.FromStringOrNil("d3877fec-7c5b-11eb-bb46-07fe08c74815"),
-			uuid.FromStringOrNil("5f69889c-881e-11ec-b32e-93104f30aa92"),
-			uuid.FromStringOrNil("d04e2a5c-a873-11ec-b16f-23f1e4cf842e"),
+			uuidPtrNumFlow(uuid.FromStringOrNil("5f69889c-881e-11ec-b32e-93104f30aa92")),
+			uuidPtrNumFlow(uuid.FromStringOrNil("d04e2a5c-a873-11ec-b16f-23f1e4cf842e")),
 
 			"bin-manager.number-manager.request",
 			&sock.Request{

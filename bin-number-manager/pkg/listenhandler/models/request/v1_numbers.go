@@ -32,18 +32,18 @@ type V1DataNumbersRenewPost struct {
 // v1 data type request struct for
 // /v1/numbers/<id> PUT
 type V1DataNumbersIDPut struct {
-	CallFlowID    uuid.UUID `json:"call_flow_id,omitempty"`
-	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty"`
-	Name          string    `json:"name,omitempty"`
-	Detail        string    `json:"detail,omitempty"`
+	CallFlowID    *uuid.UUID `json:"call_flow_id,omitempty"`
+	MessageFlowID *uuid.UUID `json:"message_flow_id,omitempty"`
+	Name          *string    `json:"name,omitempty"`
+	Detail        *string    `json:"detail,omitempty"`
 }
 
 // V1DataNumbersIDFlowIDPut is
 // v1 data type request struct for
 // /v1/numbers/<id>/flow_id PUT
 type V1DataNumbersIDFlowIDPut struct {
-	CallFlowID    uuid.UUID `json:"call_flow_id"`
-	MessageFlowID uuid.UUID `json:"message_flow_id"`
+	CallFlowID    *uuid.UUID `json:"call_flow_id,omitempty"`
+	MessageFlowID *uuid.UUID `json:"message_flow_id,omitempty"`
 }
 
 // V1DataNumbersIDMetadataPut is

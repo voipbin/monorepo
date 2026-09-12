@@ -318,6 +318,9 @@ func TestNumbersPOST(t *testing.T) {
 
 func TestNumbersIDPUT(t *testing.T) {
 
+	strPtrNumSrv := func(s string) *string { return &s }
+	uuidPtrNumSrv := func(u uuid.UUID) *uuid.UUID { return &u }
+
 	type test struct {
 		name  string
 		agent *auth.AuthIdentity
@@ -328,16 +331,16 @@ func TestNumbersIDPUT(t *testing.T) {
 		responseNumber *nmnumber.WebhookMessage
 
 		expectNumberID      uuid.UUID
-		expectCallFlowID    uuid.UUID
-		expectMessageFlowID uuid.UUID
-		expectName          string
-		expectDetail        string
+		expectCallFlowID    *uuid.UUID
+		expectMessageFlowID *uuid.UUID
+		expectName          *string
+		expectDetail        *string
 		expectRes           string
 	}
 
 	tests := []test{
 		{
-			name: "normal",
+			name: "normal, all fields set",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
@@ -355,11 +358,33 @@ func TestNumbersIDPUT(t *testing.T) {
 				},
 			},
 
-			expectCallFlowID:    uuid.FromStringOrNil("e2263f7a-2ca3-11ee-82b7-97de2fb4a790"),
-			expectMessageFlowID: uuid.FromStringOrNil("e26b0eb6-2ca3-11ee-b7ce-d36a5a962472"),
-			expectName:          "test name",
-			expectDetail:        "test detail",
+			expectCallFlowID:    uuidPtrNumSrv(uuid.FromStringOrNil("e2263f7a-2ca3-11ee-82b7-97de2fb4a790")),
+			expectMessageFlowID: uuidPtrNumSrv(uuid.FromStringOrNil("e26b0eb6-2ca3-11ee-b7ce-d36a5a962472")),
+			expectName:          strPtrNumSrv("test name"),
+			expectDetail:        strPtrNumSrv("test detail"),
 			expectRes:           `{"id":"4e1a6702-7c60-11eb-bca2-3fd92181c652","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "name only, other fields not sent by client",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
+			reqBody:  []byte(`{"name":"name only update"}`),
+
+			expectNumberID: uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
+
+			responseNumber: &nmnumber.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e1a6702-7c60-11eb-bca2-3fd92181c652"),
+				},
+			},
+
+			expectName: strPtrNumSrv("name only update"),
+			expectRes:  `{"id":"4e1a6702-7c60-11eb-bca2-3fd92181c652","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -397,7 +422,72 @@ func TestNumbersIDPUT(t *testing.T) {
 	}
 }
 
+func Test_numbersIDPUT_MalformedFlowID(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+		reqBody  []byte
+	}{
+		{
+			name: "malformed call_flow_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
+			reqBody:  []byte(`{"call_flow_id": "not-a-valid-uuid"}`),
+		},
+		{
+			name: "malformed message_flow_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
+			reqBody:  []byte(`{"message_flow_id": "not-a-valid-uuid"}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+
+			// no NumberUpdate call expected -- malformed UUID must be
+			// rejected before reaching the servicehandler.
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+			}
+		})
+	}
+}
+
 func TestNumbersIDFlowIDsPUT(t *testing.T) {
+
+	uuidPtrNumFlowSrv := func(u uuid.UUID) *uuid.UUID { return &u }
 
 	type test struct {
 		name  string
@@ -409,8 +499,8 @@ func TestNumbersIDFlowIDsPUT(t *testing.T) {
 		responseNumber *nmnumber.WebhookMessage
 
 		expectNumberID      uuid.UUID
-		expectCallFlowID    uuid.UUID
-		expectMessageFlowID uuid.UUID
+		expectCallFlowID    *uuid.UUID
+		expectMessageFlowID *uuid.UUID
 		expectRes           string
 	}
 
@@ -433,8 +523,8 @@ func TestNumbersIDFlowIDsPUT(t *testing.T) {
 			},
 
 			expectNumberID:      uuid.FromStringOrNil("a440c6b8-94cd-11ec-a524-af82f0c3ee68"),
-			expectCallFlowID:    uuid.FromStringOrNil("b6161d70-94cd-11ec-b56c-bb1a417ae104"),
-			expectMessageFlowID: uuid.FromStringOrNil("6e7ecc24-a881-11ec-bb4f-4b5822260cbe"),
+			expectCallFlowID:    uuidPtrNumFlowSrv(uuid.FromStringOrNil("b6161d70-94cd-11ec-b56c-bb1a417ae104")),
+			expectMessageFlowID: uuidPtrNumFlowSrv(uuid.FromStringOrNil("6e7ecc24-a881-11ec-bb4f-4b5822260cbe")),
 			expectRes:           `{"id":"a440c6b8-94cd-11ec-a524-af82f0c3ee68","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}

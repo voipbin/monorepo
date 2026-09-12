@@ -17,14 +17,13 @@ put:
           type: object
           properties:
             call_flow_id:
-              description: The ID of the updated call flow.
+              description: >-
+                The ID of the updated call flow. Omit to leave unchanged.
               type: string
             message_flow_id:
-              description: The ID of the updated message flow.
+              description: >-
+                The ID of the updated message flow. Omit to leave unchanged.
               type: string
-          required:
-            - call_flow_id
-            - message_flow_id
   responses:
     '200':
       description: The updated order number details.

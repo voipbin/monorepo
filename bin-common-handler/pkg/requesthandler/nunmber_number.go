@@ -114,7 +114,7 @@ func (r *requestHandler) NumberV1NumberDelete(ctx context.Context, id uuid.UUID)
 // NumberV1NumberUpdate sends a request to the number-manager
 // to update a number.
 // Returns updated number info
-func (r *requestHandler) NumberV1NumberUpdate(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberUpdate(ctx context.Context, id uuid.UUID, callFlowID *uuid.UUID, messageFlowID *uuid.UUID, name *string, detail *string) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s", id)
 
 	data := &nmrequest.V1DataNumbersIDPut{
@@ -145,7 +145,7 @@ func (r *requestHandler) NumberV1NumberUpdate(ctx context.Context, id uuid.UUID,
 // NumberV1NumberUpdate sends a request to the number-manager
 // to update a number.
 // Returns updated number info
-func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.Number, error) {
+func (r *requestHandler) NumberV1NumberUpdateFlowID(ctx context.Context, id uuid.UUID, callFlowID *uuid.UUID, messageFlowID *uuid.UUID) (*nmnumber.Number, error) {
 	uri := fmt.Sprintf("/v1/numbers/%s/flow_ids", id)
 
 	data := &nmrequest.V1DataNumbersIDFlowIDPut{

@@ -186,8 +186,27 @@ func (h *server) PutNumbersId(c *gin.Context, id string) {
 		return
 	}
 
-	callFlowID := uuid.FromStringOrNil(req.CallFlowId)
-	messageFlowID := uuid.FromStringOrNil(req.MessageFlowId)
+	var callFlowID *uuid.UUID
+	if req.CallFlowId != nil {
+		parsed, errParse := uuid.FromString(*req.CallFlowId)
+		if errParse != nil {
+			log.Errorf("Could not parse call_flow_id. err: %v", errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CALL_FLOW_ID", "call_flow_id is not a valid UUID."))
+			return
+		}
+		callFlowID = &parsed
+	}
+
+	var messageFlowID *uuid.UUID
+	if req.MessageFlowId != nil {
+		parsed, errParse := uuid.FromString(*req.MessageFlowId)
+		if errParse != nil {
+			log.Errorf("Could not parse message_flow_id. err: %v", errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_MESSAGE_FLOW_ID", "message_flow_id is not a valid UUID."))
+			return
+		}
+		messageFlowID = &parsed
+	}
 
 	res, err := h.serviceHandler.NumberUpdate(c.Request.Context(), a, target, callFlowID, messageFlowID, req.Name, req.Detail)
 	if err != nil {
@@ -228,8 +247,27 @@ func (h *server) PutNumbersIdFlowIds(c *gin.Context, id string) {
 		return
 	}
 
-	callFlowID := uuid.FromStringOrNil(req.CallFlowId)
-	messageFlowID := uuid.FromStringOrNil(req.MessageFlowId)
+	var callFlowID *uuid.UUID
+	if req.CallFlowId != nil {
+		parsed, errParse := uuid.FromString(*req.CallFlowId)
+		if errParse != nil {
+			log.Errorf("Could not parse call_flow_id. err: %v", errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CALL_FLOW_ID", "call_flow_id is not a valid UUID."))
+			return
+		}
+		callFlowID = &parsed
+	}
+
+	var messageFlowID *uuid.UUID
+	if req.MessageFlowId != nil {
+		parsed, errParse := uuid.FromString(*req.MessageFlowId)
+		if errParse != nil {
+			log.Errorf("Could not parse message_flow_id. err: %v", errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_MESSAGE_FLOW_ID", "message_flow_id is not a valid UUID."))
+			return
+		}
+		messageFlowID = &parsed
+	}
 
 	res, err := h.serviceHandler.NumberUpdateFlowIDs(c.Request.Context(), a, target, callFlowID, messageFlowID)
 	if err != nil {

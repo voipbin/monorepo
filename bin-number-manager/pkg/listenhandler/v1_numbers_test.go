@@ -380,14 +380,20 @@ func Test_processV1NumbersGet(t *testing.T) {
 
 func Test_processV1NumbersIDPut(t *testing.T) {
 
+	strPtrNumListen := func(s string) *string { return &s }
+	uuidPtrNumListen := func(u uuid.UUID) *uuid.UUID { return &u }
+
 	type test struct {
 		name string
 
 		id            uuid.UUID
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
-		numberName    string
-		detail        string
+		callFlowID    *uuid.UUID
+		messageFlowID *uuid.UUID
+		numberName    *string
+		detail        *string
+
+		expectFields   map[number.Field]any
+		expectNoUpdate bool
 
 		resultData *number.Number
 
@@ -397,13 +403,21 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 
 	tests := []test{
 		{
-			"normal",
+			"normal, all fields set",
 
 			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
-			uuid.FromStringOrNil("848dd8e8-20a3-11ee-bfaa-73da44e5a15c"),
-			uuid.FromStringOrNil("84cbd580-20a3-11ee-81cd-b34190bda150"),
-			"update name",
-			"update detail",
+			uuidPtrNumListen(uuid.FromStringOrNil("848dd8e8-20a3-11ee-bfaa-73da44e5a15c")),
+			uuidPtrNumListen(uuid.FromStringOrNil("84cbd580-20a3-11ee-81cd-b34190bda150")),
+			strPtrNumListen("update name"),
+			strPtrNumListen("update detail"),
+
+			map[number.Field]any{
+				number.FieldCallFlowID:    uuid.FromStringOrNil("848dd8e8-20a3-11ee-bfaa-73da44e5a15c"),
+				number.FieldMessageFlowID: uuid.FromStringOrNil("84cbd580-20a3-11ee-81cd-b34190bda150"),
+				number.FieldName:          "update name",
+				number.FieldDetail:        "update detail",
+			},
+			false,
 
 			&number.Number{
 				Identity: commonidentity.Identity{
@@ -411,7 +425,7 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 				},
 				CallFlowID:          uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
-				Number:              "+821021656521",
+				Number:              "+821****6521",
 				Name:                "update name",
 				Detail:              "update detail",
 				ProviderName:        number.ProviderNameTelnyx,
@@ -429,7 +443,67 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821****6521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			"name only, other fields omitted",
+
+			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+			nil,
+			nil,
+			strPtrNumListen("name only update"),
+			nil,
+
+			map[number.Field]any{
+				number.FieldName: "name only update",
+			},
+			false,
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+				},
+			},
+			&sock.Request{
+				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name": "name only update"}`),
+			},
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			"all fields omitted, no-op",
+
+			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+			nil,
+			nil,
+			nil,
+			nil,
+
+			nil,
+			true,
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+				},
+			},
+			&sock.Request{
+				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -447,14 +521,12 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			expectFields := map[number.Field]any{
-				number.FieldCallFlowID:    tt.callFlowID,
-				number.FieldMessageFlowID: tt.messageFlowID,
-				number.FieldName:          tt.numberName,
-				number.FieldDetail:        tt.detail,
+			if tt.expectNoUpdate {
+				mockNumber.EXPECT().Update(gomock.Any(), tt.id, gomock.Any()).Times(0)
+				mockNumber.EXPECT().Get(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			} else {
+				mockNumber.EXPECT().Update(gomock.Any(), tt.id, tt.expectFields).Return(tt.resultData, nil)
 			}
-
-			mockNumber.EXPECT().Update(gomock.Any(), tt.id, expectFields).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -469,12 +541,17 @@ func Test_processV1NumbersIDPut(t *testing.T) {
 }
 
 func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
+
+	uuidPtrNumFlowListen := func(u uuid.UUID) *uuid.UUID { return &u }
+
 	type test struct {
 		name string
 
 		id            uuid.UUID
-		callFlowID    uuid.UUID
-		messageFlowID uuid.UUID
+		callFlowID    *uuid.UUID
+		messageFlowID *uuid.UUID
+
+		expectFields map[number.Field]any
 
 		resultData *number.Number
 
@@ -487,8 +564,12 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 			"update call flow id",
 
 			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
-			uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
-			uuid.Nil,
+			uuidPtrNumFlowListen(uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6")),
+			nil,
+
+			map[number.Field]any{
+				number.FieldCallFlowID: uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
+			},
 
 			&number.Number{
 				Identity: commonidentity.Identity{
@@ -496,7 +577,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("72f3b054-7ff4-11ec-9af9-0b8c5dbee258"),
 				},
 				CallFlowID:          uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
-				Number:              "+821021656521",
+				Number:              "+821****6521",
 				Name:                "update name",
 				Detail:              "update detail",
 				ProviderName:        number.ProviderNameTelnyx,
@@ -514,7 +595,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821021656521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821****6521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -532,12 +613,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			expectFields := map[number.Field]any{
-				number.FieldCallFlowID:    tt.callFlowID,
-				number.FieldMessageFlowID: tt.messageFlowID,
-			}
-
-			mockNumber.EXPECT().Update(gomock.Any(), tt.id, expectFields).Return(tt.resultData, nil)
+			mockNumber.EXPECT().Update(gomock.Any(), tt.id, tt.expectFields).Return(tt.resultData, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
