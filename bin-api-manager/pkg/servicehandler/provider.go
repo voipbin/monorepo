@@ -237,19 +237,21 @@ func (h *serviceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity
 
 // ProviderUpdate sends a request to route-manager
 // to updating the provider.
+// All fields except providerID are pointers: nil means "leave unchanged",
+// a non-nil pointer means "set to this value".
 // it returns error if it failed.
 func (h *serviceHandler) ProviderUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	providerID uuid.UUID,
-	providerType rmprovider.Type,
-	hostname string,
-	techPrefix string,
-	techPostfix string,
-	techHeaders map[string]string,
-	name string,
-	detail string,
-	codecs string,
+	providerType *rmprovider.Type,
+	hostname *string,
+	techPrefix *string,
+	techPostfix *string,
+	techHeaders *map[string]string,
+	name *string,
+	detail *string,
+	codecs *string,
 ) (*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderUpdate",

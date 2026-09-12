@@ -64,6 +64,16 @@ Queue struct
 
    The ``wait_timeout`` and ``service_timeout`` fields are in **milliseconds**. A 5-minute wait timeout should be ``300000``, not ``300``. Setting either to ``0`` disables that timeout entirely.
 
+.. note:: **AI Implementation Hint**
+
+   ``PUT /queues/{id}`` treats all body fields as optional. Omitting a field
+   leaves its current value unchanged; there is no need to resend the full
+   object. Sending an explicit empty array for ``tag_ids`` (``[]``) clears
+   all tags. ``wait_timeout: 0`` and ``service_timeout: 0`` are real values
+   meaning "no timeout", distinct from omitting the field. A request body
+   that omits every field is a no-op and returns the queue unchanged
+   without publishing a ``queue_updated`` event.
+
 .. _queue-struct-queue-routing-method:
 
 Routing Method

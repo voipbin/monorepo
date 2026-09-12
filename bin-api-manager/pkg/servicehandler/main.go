@@ -357,6 +357,11 @@ type ServiceHandler interface {
 	) (*ammcpserver.WebhookMessage, error)
 	McpServerDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammcpserver.WebhookMessage, error)
 
+	// mcp server oauth handlers
+	McpOAuthStart(ctx context.Context, a *auth.AuthIdentity, vendor string, mcpServerID *uuid.UUID) (authorizeURL string, linkToken string, err error)
+	McpOAuthCallback(ctx context.Context, state string) (bool, error)
+	McpOAuthComplete(ctx context.Context, a *auth.AuthIdentity, state string, code string) (*ammcpserver.WebhookMessage, error)
+
 	// ai prompt history handlers
 	AIPromptHistoryGetsByAIID(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, size uint64, token string) ([]*amaiprompthistory.AIPromptHistory, error)
 	AIPromptHistoryGet(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, historyID uuid.UUID) (*amaiprompthistory.AIPromptHistory, error)
@@ -863,14 +868,14 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		providerID uuid.UUID,
-		providerType rmprovider.Type,
-		hostname string,
-		techPrefix string,
-		techPostfix string,
-		techHeaders map[string]string,
-		name string,
-		detail string,
-		codecs string,
+		providerType *rmprovider.Type,
+		hostname *string,
+		techPrefix *string,
+		techPostfix *string,
+		techHeaders *map[string]string,
+		name *string,
+		detail *string,
+		codecs *string,
 	) (*rmprovider.WebhookMessage, error)
 
 	// providercall handlers
@@ -907,13 +912,13 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		queueID uuid.UUID,
-		name string,
-		detail string,
-		routingMethod qmqueue.RoutingMethod,
-		tagIDs []uuid.UUID,
-		waitFlowID uuid.UUID,
-		timeoutWait int,
-		timeoutService int,
+		name *string,
+		detail *string,
+		routingMethod *qmqueue.RoutingMethod,
+		tagIDs *[]uuid.UUID,
+		waitFlowID *uuid.UUID,
+		timeoutWait *int,
+		timeoutService *int,
 	) (*qmqueue.WebhookMessage, error)
 
 	// webchat handlers

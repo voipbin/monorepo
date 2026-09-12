@@ -3210,6 +3210,52 @@ func (mr *MockServiceHandlerMockRecorder) InteractionList(ctx, a, size, token, p
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockServiceHandler)(nil).InteractionList), ctx, a, size, token, peerType, peerTarget, contactID, addressID)
 }
 
+// McpOAuthCallback mocks base method.
+func (m *MockServiceHandler) McpOAuthCallback(ctx context.Context, state string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpOAuthCallback", ctx, state)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpOAuthCallback indicates an expected call of McpOAuthCallback.
+func (mr *MockServiceHandlerMockRecorder) McpOAuthCallback(ctx, state any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpOAuthCallback", reflect.TypeOf((*MockServiceHandler)(nil).McpOAuthCallback), ctx, state)
+}
+
+// McpOAuthComplete mocks base method.
+func (m *MockServiceHandler) McpOAuthComplete(ctx context.Context, a *auth.AuthIdentity, state, code string) (*mcpserver.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpOAuthComplete", ctx, a, state, code)
+	ret0, _ := ret[0].(*mcpserver.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// McpOAuthComplete indicates an expected call of McpOAuthComplete.
+func (mr *MockServiceHandlerMockRecorder) McpOAuthComplete(ctx, a, state, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpOAuthComplete", reflect.TypeOf((*MockServiceHandler)(nil).McpOAuthComplete), ctx, a, state, code)
+}
+
+// McpOAuthStart mocks base method.
+func (m *MockServiceHandler) McpOAuthStart(ctx context.Context, a *auth.AuthIdentity, vendor string, mcpServerID *uuid.UUID) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpOAuthStart", ctx, a, vendor, mcpServerID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// McpOAuthStart indicates an expected call of McpOAuthStart.
+func (mr *MockServiceHandlerMockRecorder) McpOAuthStart(ctx, a, vendor, mcpServerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpOAuthStart", reflect.TypeOf((*MockServiceHandler)(nil).McpOAuthStart), ctx, a, vendor, mcpServerID)
+}
+
 // McpServerCreate mocks base method.
 func (m *MockServiceHandler) McpServerCreate(ctx context.Context, a *auth.AuthIdentity, name, detail, url string, authType mcpserver.AuthType, apiKeyHeader, secret string) (*mcpserver.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -3977,7 +4023,7 @@ func (mr *MockServiceHandlerMockRecorder) ProviderSetup(ctx, a, carrier, name, d
 }
 
 // ProviderUpdate mocks base method.
-func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID, providerType *provider.Type, hostname, techPrefix, techPostfix *string, techHeaders *map[string]string, name, detail, codecs *string) (*provider.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderUpdate", ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 	ret0, _ := ret[0].(*provider.WebhookMessage)
@@ -4067,7 +4113,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueList(ctx, a, size, token any) *go
 }
 
 // QueueUpdate mocks base method.
-func (m *MockServiceHandler) QueueUpdate(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueUpdate(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, name, detail *string, routingMethod *queue.RoutingMethod, tagIDs *[]uuid.UUID, waitFlowID *uuid.UUID, timeoutWait, timeoutService *int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdate", ctx, a, queueID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.WebhookMessage)

@@ -72,33 +72,52 @@ func (h *queueHandler) dbDelete(ctx context.Context, id uuid.UUID) (*queue.Queue
 }
 
 // UpdateBasicInfo updates the queue's basic info.
+// All fields are pointers: nil means "leave unchanged", a non-nil
+// pointer means "set to this value" (including a pointer to a zero
+// value, which is a real, meaningful value for wait_timeout/service_timeout).
 func (h *queueHandler) UpdateBasicInfo(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	routingMethod queue.RoutingMethod,
-	tagIDs []uuid.UUID,
-	waitFlowID uuid.UUID,
-	waitTimeout int,
-	serviceTimeout int,
+	name *string,
+	detail *string,
+	routingMethod *queue.RoutingMethod,
+	tagIDs *[]uuid.UUID,
+	waitFlowID *uuid.UUID,
+	waitTimeout *int,
+	serviceTimeout *int,
 ) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "UpdateBasicInfo",
-		"queue_id":     id,
-		"queue_name":   name,
-		"queue_detail": detail,
+		"func":     "UpdateBasicInfo",
+		"queue_id": id,
 	})
 	log.Debug("Updating the queue's basic info.")
 
-	fields := map[queue.Field]any{
-		queue.FieldName:           name,
-		queue.FieldDetail:         detail,
-		queue.FieldRoutingMethod:  routingMethod,
-		queue.FieldTagIDs:         tagIDs,
-		queue.FieldWaitFlowID:     waitFlowID,
-		queue.FieldWaitTimeout:    waitTimeout,
-		queue.FieldServiceTimeout: serviceTimeout,
+	fields := map[queue.Field]any{}
+	if name != nil {
+		fields[queue.FieldName] = *name
+	}
+	if detail != nil {
+		fields[queue.FieldDetail] = *detail
+	}
+	if routingMethod != nil {
+		fields[queue.FieldRoutingMethod] = *routingMethod
+	}
+	if tagIDs != nil {
+		fields[queue.FieldTagIDs] = *tagIDs
+	}
+	if waitFlowID != nil {
+		fields[queue.FieldWaitFlowID] = *waitFlowID
+	}
+	if waitTimeout != nil {
+		fields[queue.FieldWaitTimeout] = *waitTimeout
+	}
+	if serviceTimeout != nil {
+		fields[queue.FieldServiceTimeout] = *serviceTimeout
+	}
+
+	if len(fields) == 0 {
+		// nothing to update
+		return h.Get(ctx, id)
 	}
 
 	if err := h.db.QueueUpdate(ctx, id, fields); err != nil {

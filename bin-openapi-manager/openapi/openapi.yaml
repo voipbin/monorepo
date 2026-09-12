@@ -2265,16 +2265,27 @@ components:
           example: "active"
         auth_type:
           type: string
-          enum: ["", "bearer", "api_key"]
-          description: "How the outbound MCP call authenticates. Empty string sends no Authorization header."
+          enum: ["", "bearer", "api_key", "oauth"]
+          description: >-
+            How the outbound MCP call authenticates. Empty string sends
+            no Authorization header. "oauth" is set implicitly by
+            completing POST /mcpservers/oauth/complete -- never set
+            directly via POST/PUT with a customer-supplied secret.
           example: "bearer"
         api_key_header:
           type: string
           description: "Header name used when auth_type is api_key."
           example: "X-API-Key"
+        oauth_vendor:
+          type: string
+          enum: ["github", "linear"]
+          description: >-
+            Which OAuth vendor this server is connected to. Only set
+            when auth_type is "oauth".
+          example: "github"
         has_secret:
           type: boolean
-          description: "Whether a bearer token / API key is configured. The secret value itself is never returned."
+          description: "Whether a bearer token / API key / OAuth access token is configured. The secret/token value itself is never returned."
           example: true
         tm_create:
           type: string
@@ -8492,6 +8503,12 @@ paths:
     $ref: './paths/aiaudits/main.yaml'
   /mcpservers/{id}:
     $ref: './paths/mcpservers/id.yaml'
+  /mcpservers/oauth/start:
+    $ref: './paths/mcpservers/oauth_start.yaml'
+  /mcpservers/oauth/callback:
+    $ref: './paths/mcpservers/oauth_callback.yaml'
+  /mcpservers/oauth/complete:
+    $ref: './paths/mcpservers/oauth_complete.yaml'
   /mcpservers:
     $ref: './paths/mcpservers/main.yaml'
 

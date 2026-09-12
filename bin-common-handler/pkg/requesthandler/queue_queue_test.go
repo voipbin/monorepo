@@ -499,7 +499,7 @@ func Test_QueueV1QueueUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.QueueV1QueueUpdate(ctx, tt.id, tt.queueName, tt.detail, tt.routingMethod, tt.tagIDs, tt.waitFlowID, tt.waitTimeout, tt.serviceTimeout)
+			res, err := reqHandler.QueueV1QueueUpdate(ctx, tt.id, &tt.queueName, &tt.detail, &tt.routingMethod, &tt.tagIDs, &tt.waitFlowID, &tt.waitTimeout, &tt.serviceTimeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

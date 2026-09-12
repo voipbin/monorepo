@@ -16,6 +16,10 @@ import (
 	"monorepo/bin-route-manager/pkg/dbhandler"
 )
 
+func ptrString(v string) *string { return &v }
+
+func ptrProviderType(v provider.Type) *provider.Type { return &v }
+
 func Test_Get(t *testing.T) {
 
 	tests := []struct {
@@ -300,13 +304,121 @@ func Test_Update(t *testing.T) {
 			mockDB.EXPECT().ProviderUpdate(ctx, tt.id, fields).Return(nil)
 			mockNotify.EXPECT().PublishEvent(ctx, provider.EventTypeProviderUpdated, tt.responseProvider)
 
-			res, err := h.Update(ctx, tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.updateName, tt.detail, "")
+			res, err := h.Update(ctx, tt.id, &tt.providerType, &tt.hostname, &tt.techPrefix, &tt.techPostfix, &tt.techHeaders, &tt.updateName, &tt.detail, func() *string { v := ""; return &v }())
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if !reflect.DeepEqual(res, tt.responseProvider) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseProvider, res)
+			}
+		})
+	}
+}
+
+// Test_Update_PartialUpdate verifies the nil-means-unchanged pointer
+// contract established by the platform-wide PUT partial-update migration
+// (Phase 4b). Each subtest sets exactly one field (or none) and asserts
+// the built fields map contains only the fields that were actually set.
+func Test_Update_PartialUpdate(t *testing.T) {
+
+	baseID := uuid.FromStringOrNil("eab70c18-4618-11ed-857f-234c1cd0b634")
+	currentProvider := &provider.Provider{
+		ID:       baseID,
+		Hostname: "current.example.com",
+	}
+
+	tests := []struct {
+		name string
+
+		id uuid.UUID
+
+		setType        *provider.Type
+		setHostname    *string
+		setTechPrefix  *string
+		setTechPostfix *string
+		setTechHeaders *map[string]string
+		setName        *string
+		setDetail      *string
+		setCodecs      *string
+
+		expectFields map[provider.Field]any
+		expectNoOp   bool
+	}{
+		{
+			name:    "name only",
+			id:      baseID,
+			setName: func() *string { v := "new name"; return &v }(),
+			expectFields: map[provider.Field]any{
+				provider.FieldName: "new name",
+			},
+		},
+		{
+			name:      "codecs explicit empty string clears codecs",
+			id:        baseID,
+			setCodecs: func() *string { v := ""; return &v }(),
+			expectFields: map[provider.Field]any{
+				provider.FieldCodecs: "",
+			},
+		},
+		{
+			name:        "hostname change resets health status",
+			id:          baseID,
+			setHostname: func() *string { v := "new.example.com"; return &v }(),
+			expectFields: map[provider.Field]any{
+				provider.FieldHostname:       "new.example.com",
+				provider.FieldHealthStatus:   provider.HealthStatusUnknown,
+				provider.FieldHealthCheckedAt: nil,
+			},
+		},
+		{
+			name:       "all omitted is a no-op",
+			id:         baseID,
+			expectNoOp: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &providerHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			if tt.expectNoOp {
+				mockDB.EXPECT().ProviderGet(ctx, tt.id).Return(currentProvider, nil)
+				mockDB.EXPECT().ProviderUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			} else {
+				mockDB.EXPECT().ProviderGet(ctx, tt.id).Return(currentProvider, nil).Times(2)
+				mockDB.EXPECT().ProviderUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+				mockNotify.EXPECT().PublishEvent(ctx, provider.EventTypeProviderUpdated, currentProvider)
+			}
+
+			res, err := h.Update(
+				ctx,
+				tt.id,
+				tt.setType,
+				tt.setHostname,
+				tt.setTechPrefix,
+				tt.setTechPostfix,
+				tt.setTechHeaders,
+				tt.setName,
+				tt.setDetail,
+				tt.setCodecs,
+			)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, currentProvider) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", currentProvider, res)
 			}
 		})
 	}
@@ -429,7 +541,7 @@ func Test_Update_Error(t *testing.T) {
 	mockDB.EXPECT().ProviderGet(ctx, id).Return(&provider.Provider{ID: id}, nil)
 	mockDB.EXPECT().ProviderUpdate(ctx, id, gomock.Any()).Return(fmt.Errorf("database error"))
 
-	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail", "")
+	res, err := h.Update(ctx, id, ptrProviderType(provider.TypeSIP), ptrString("test.com"), ptrString(""), ptrString(""), nil, ptrString("name"), ptrString("detail"), ptrString(""))
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -510,7 +622,7 @@ func Test_Update_GetError(t *testing.T) {
 		mockDB.EXPECT().ProviderGet(ctx, id).Return(nil, fmt.Errorf("get error")),
 	)
 
-	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail", "")
+	res, err := h.Update(ctx, id, ptrProviderType(provider.TypeSIP), ptrString("test.com"), ptrString(""), ptrString(""), nil, ptrString("name"), ptrString("detail"), ptrString(""))
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}

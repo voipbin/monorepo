@@ -370,6 +370,11 @@ type RequestHandler interface {
 	AIV1McpServerUpdate(ctx context.Context, id uuid.UUID, name *string, detail *string, url *string, status *ammcpserver.Status, authType *ammcpserver.AuthType, apiKeyHeader *string, secret *string) (*ammcpserver.McpServer, error)
 	AIV1McpServerDelete(ctx context.Context, id uuid.UUID) (*ammcpserver.McpServer, error)
 
+	// ai-manager mcpserver oauth
+	AIV1McpOAuthStart(ctx context.Context, customerID uuid.UUID, vendor string, mcpServerID *uuid.UUID) (authorizeURL string, linkToken string, err error)
+	AIV1McpOAuthCallback(ctx context.Context, state string) (bool, error)
+	AIV1McpOAuthComplete(ctx context.Context, customerID uuid.UUID, state string, code string) (*ammcpserver.McpServer, error)
+
 	// ai-manager aipromptproposal
 	AIV1AIPromptProposalCreate(ctx context.Context, customerID uuid.UUID, aiID uuid.UUID, auditIDs []uuid.UUID, language string) (*amaipromptproposal.AIPromptProposal, error)
 	AIV1AIPromptProposalList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaipromptproposal.Field]any) ([]*amaipromptproposal.AIPromptProposal, error)
@@ -1242,13 +1247,13 @@ type RequestHandler interface {
 	QueueV1QueueUpdate(
 		ctx context.Context,
 		queueID uuid.UUID,
-		name string,
-		detail string,
-		routingMethod qmqueue.RoutingMethod,
-		tagIDs []uuid.UUID,
-		waitFlowID uuid.UUID,
-		waitTimeout int,
-		serviceTimeout int,
+		name *string,
+		detail *string,
+		routingMethod *qmqueue.RoutingMethod,
+		tagIDs *[]uuid.UUID,
+		waitFlowID *uuid.UUID,
+		waitTimeout *int,
+		serviceTimeout *int,
 	) (*qmqueue.Queue, error)
 	QueueV1QueueUpdateTagIDs(ctx context.Context, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.Queue, error)
 	QueueV1QueueUpdateRoutingMethod(ctx context.Context, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.Queue, error)
@@ -1308,14 +1313,14 @@ type RequestHandler interface {
 	RouteV1ProviderUpdate(
 		ctx context.Context,
 		providerID uuid.UUID,
-		providerType rmprovider.Type,
-		hostname string,
-		techPrefix string,
-		techPostfix string,
-		techHeaders map[string]string,
-		name string,
-		detail string,
-		codecs string,
+		providerType *rmprovider.Type,
+		hostname *string,
+		techPrefix *string,
+		techPostfix *string,
+		techHeaders *map[string]string,
+		name *string,
+		detail *string,
+		codecs *string,
 	) (*rmprovider.Provider, error)
 	RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
 	RouteV1ProviderSetup(

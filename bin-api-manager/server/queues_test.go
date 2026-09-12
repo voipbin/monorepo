@@ -456,7 +456,7 @@ func Test_queuesIDPut(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().QueueUpdate(req.Context(), tt.agent, tt.expectQueueID, tt.expectQueueName, tt.expectDetail, tt.expectRoutingMethod, tt.expectTagIDs, tt.expectWaitFlowID, tt.expectTimeoutWait, tt.expectTimeoutService).Return(tt.responseQueue, nil)
+			mockSvc.EXPECT().QueueUpdate(req.Context(), tt.agent, tt.expectQueueID, &tt.expectQueueName, &tt.expectDetail, &tt.expectRoutingMethod, &tt.expectTagIDs, &tt.expectWaitFlowID, &tt.expectTimeoutWait, &tt.expectTimeoutService).Return(tt.responseQueue, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

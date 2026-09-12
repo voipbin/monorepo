@@ -286,7 +286,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
 
-			res, err := reqHandler.RouteV1ProviderUpdate(ctx, tt.providerID, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail, tt.codecs)
+			res, err := reqHandler.RouteV1ProviderUpdate(ctx, tt.providerID, &tt.providerType, &tt.hostname, &tt.techPrefix, &tt.techPostfix, &tt.techHeaders, &tt.providerName, &tt.detail, &tt.codecs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
