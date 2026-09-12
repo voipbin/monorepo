@@ -4,81 +4,92 @@ Prerequisites
 Local tools
 -----------
 
-Install these on the workstation that will run the installer. The
-preflight step in ``voipbin-install init`` verifies each version.
+Install these on the server that will run the stack. The preflight step
+in ``init.sh`` verifies Docker is present.
 
 ================  ================  =================================================
 Tool              Min. version      Notes
 ================  ================  =================================================
-gcloud CLI        400.0.0           Both ``gcloud auth login`` and
-                                    ``gcloud auth application-default login`` required.
-terraform         1.5.0             Bundled under ``terraform/`` in the installer repo.
-ansible           2.15.0            Install via ``pip install ansible``.
-kubectl           1.28.0            Used by the installer and for verification.
-python3           3.10.0            Required by the installer CLI.
-sops              3.7.0             Encrypts ``secrets.yaml`` with GCP KMS.
+Docker Engine     n/a               Required.
+Docker Compose    2.24.4+           v2 CLI plugin. The test override file uses
+                                    ``!reset``/``!override`` merge tags that need
+                                    this version or later.
+mkcert            n/a               Recommended (internal mode). Falls back to
+                                    self-signed certificates if absent.
 ================  ================  =================================================
 
-Python dependencies are installed with ``pip install -r requirements.txt``
-after cloning the installer repo.
+No host Python, alembic, or MySQL client is required: database migrations
+run inside a container (``scripts/migrate.sh``, ``python:3.11-slim`` on
+the Compose network).
 
-GCP account
------------
+Installing prerequisites
+-------------------------
 
-The installer refuses to proceed unless the following are true:
+Ubuntu/Debian:
 
-- A GCP project exists with **billing enabled**.
-- The authenticated principal has Owner or Editor on the project, or the
-  least-privilege set of twelve roles in ``config/gcp_iam_roles.yaml``
-  (Compute Admin, Container Admin, Cloud SQL Admin, DNS Admin, Cloud KMS
-  Admin, Secret Manager Admin, Service Account Admin, Service Account
-  User, Project IAM Admin, Storage Admin, Service Usage Admin,
-  IAP-Secured Tunnel User). In addition, the principal running the
-  installer needs ``roles/compute.osLogin`` and
-  ``roles/compute.osAdminLogin`` to SSH into the Kamailio and RTPEngine
-  VMs via OS Login during the Ansible stage.
-- You own a domain name. The installer uses
-  ``api.<domain>``, ``hook.<domain>``, ``admin.<domain>``,
-  ``talk.<domain>``, ``meet.<domain>``, and ``sip.<domain>``.
+.. code-block:: bash
 
-GCP quotas
-----------
+    sudo apt update && sudo apt install -y docker.io docker-compose-v2
+    sudo usermod -aG docker $USER && newgrp docker
 
-The ``init`` command checks regional quotas. New GCP projects ship with
-8 vCPUs and 8 in-use external IPs, which is below what VoIPBin needs.
-Request increases for the following before installing if you do not want
-the apply to fail mid stage:
+    sudo apt install -y mkcert
+    mkcert -install
 
-==========================  ====================  ===============================
-Quota                       Minimum required      Notes
-==========================  ====================  ===============================
-CPUs (region)               12                    2x GKE nodes + 2x VoIP VMs
-In-use external IPs         10                    NAT, LBs, RTPEngine static IPs
-Static external IPs         4                     usually sufficient by default
-SSD total (GB)              100                   usually sufficient by default
-==========================  ====================  ===============================
+macOS:
 
-Quota increases are requested at
-https://console.cloud.google.com/iam-admin/quotas.
+.. code-block:: bash
 
-GCP APIs
---------
+    brew install --cask docker
+    brew install mkcert
+    mkcert -install
 
-The ``init`` command automatically enables sixteen APIs on the project:
-``compute``, ``container``, ``sqladmin``, ``dns``, ``cloudkms``,
-``secretmanager``, ``cloudresourcemanager``, ``iam``,
-``servicenetworking``, ``storage``, ``storage-api``, ``logging``,
-``monitoring``, ``oslogin``, ``serviceusage``, and ``iap``.
+``mkcert -install`` adds a local Certificate Authority to your system
+trust store, so browsers trust the certificates the installer generates
+for ``*.voipbin.test`` without a warning.
 
-Two authentications, not one
-----------------------------
+System requirements
+--------------------
 
-VoIPBin's installer depends on **both** of the following being live, and
-this catches operators by surprise often enough to be worth calling out:
+- **OS**: Linux (Ubuntu/Debian tested) or macOS.
+- **Disk space**: ``doctor.sh`` enforces a hard minimum of 3 GiB free and
+  warns under 15 GiB. Budget more over time for call recordings and
+  database growth.
+- **CPU/RAM**: not automatically checked. The stack is roughly 50
+  containers: 32 backend Go microservices, the SIP/media stack (Kamailio,
+  RTPEngine, 3x Asterisk plus their AMI/ARI proxy sidecars), supporting
+  infrastructure (MySQL, Redis, RabbitMQ, PostgreSQL, ClickHouse, CoreDNS),
+  and 3 frontend apps. A laptop-class multi-core machine with a few GB of
+  RAM headroom works for development; a single-vCPU, 1 GB VM will not keep
+  up.
+- **Networking (external mode only)**: a directly-routable host with
+  distinct IPs for the host, Kamailio, and RTPEngine. See the Install
+  section's External mode instructions below.
 
-1. ``gcloud auth login`` for the human/CLI principal.
-2. ``gcloud auth application-default login`` for Terraform and SOPS,
-   which read Application Default Credentials.
+Credentials generated at install time
+---------------------------------------
 
-The preflight in ``init`` checks both and offers to refresh ADC if it is
-missing or expired.
+``init.sh`` generates fresh, random credentials for this install; nothing
+is shipped as a shared default.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Service
+     - Credentials
+   * - MySQL
+     - Randomly generated per install, in ``.env`` (``MYSQL_ROOT_PASSWORD``)
+   * - RabbitMQ
+     - Randomly generated per install, in ``.env``
+       (``RABBITMQ_DEFAULT_USER`` / ``RABBITMQ_DEFAULT_PASS``)
+   * - JWT signing key
+     - Auto-generated in ``.env``
+   * - Admin account and extensions (opt-in)
+     - ``admin@localhost`` / ``admin@localhost``, extensions ``1000``,
+       ``2000``, ``3000``. Only created when ``VOIPBIN_SANDBOX_DEV_SEED=true``
+       is set. Never set this on an install reachable from the public
+       internet.
+
+Before exposing an install beyond localhost, review the TLS mode, the
+firewall and network exposure of the ports this stack opens, and confirm
+``VOIPBIN_SANDBOX_DEV_SEED`` is unset or ``false``.

@@ -1,132 +1,83 @@
 Overview
 ========
 
-The installer is an eight-stage pipeline driven by the
-``voipbin-install`` CLI.
-
-The eight stages run in order when you execute ``./voipbin-install apply``:
-
-1. **terraform_init** initializes the Terraform backend (GCS state bucket)
-   and downloads providers.
-2. **reconcile_imports** detects any GCP resources that already exist
-   outside Terraform state and imports them, preventing 409 conflicts on
-   resume.
-3. **terraform_apply** provisions GCP infrastructure: a custom VPC, GKE
-   cluster, Cloud SQL (MySQL 8.0), Kamailio and RTPEngine VMs, DNS zone,
-   load balancers, KMS key ring for SOPS, and GCS buckets.
-4. **reconcile_outputs** reads Terraform outputs (IPs, connection names)
-   into ``config.yaml`` so later stages can consume them.
-5. **k8s_apply** deploys VoIPBin services to the GKE cluster using
-   manifests under ``k8s/``, with placeholders substituted from Terraform
-   outputs and SOPS-decrypted secrets.
-6. **reconcile_k8s_outputs** reads Kubernetes load balancer IPs into
-   ``config.yaml``.
-7. **cert_provision** issues Kamailio TLS certificates.
-8. **ansible_run** configures Kamailio and RTPEngine VMs over an IAP
-   tunnel and renders their Docker Compose ``.env`` files from templates.
-
-The pipeline is resumable: if a stage fails, fix the issue and rerun
-``./voipbin-install apply``; it continues from where it left off. Run a
-single stage with ``./voipbin-install apply --stage <name>`` (for example
-``--stage ansible_run``).
+The installer is a Docker Compose stack driven by four shell scripts and,
+after install, the ``voipbin`` interactive CLI. It runs the complete
+VoIPBin platform, roughly 50 containers, on a single server.
 
 What gets deployed
-------------------
+-------------------
 
-A successful install produces:
+- **32 of VoIPBin's 33 backend Go microservices** (``bin-sentinel-manager``
+  needs a Kubernetes API and stays out of this Compose-based install).
+- **SIP/media stack**: Kamailio (SIP proxy), RTPEngine (RTP media relay),
+  three Asterisk instances (call, registrar, conference) each with an
+  AMI/ARI proxy sidecar.
+- **Supporting infrastructure**: MySQL, Redis, RabbitMQ, PostgreSQL
+  (pgvector, for ``rag-manager``), ClickHouse (``timeline-manager``),
+  CoreDNS (internal mode only).
+- **Three frontend web applications**: Admin Console, Talk (agent
+  messenger), Meet (voice conferencing).
 
-- **VPC and connectivity**: custom VPC ``10.0.0.0/16``, Cloud NAT with a
-  static IP for outbound, Cloud Router, eight firewall rules covering
-  SIP, RTP, IAP SSH, GKE internal, and health checks.
-- **GKE cluster**: zonal or regional, 2 nodes of ``n1-standard-2`` by
-  default, private nodes, shielded instances, COS_CONTAINERD image,
-  REGULAR release channel.
-- **Kamailio VM**: 1x ``f1-micro`` by default, SIP/TLS/WSS proxy reached
-  through an external network load balancer.
-- **RTPEngine VM**: 1x ``f1-micro`` by default, RTP media relay with a
-  static external IP for direct media paths.
-- **Cloud SQL MySQL 8.0**: ``db-f1-micro`` instance, SSL required, daily
-  automated backups, Cloud SQL Proxy deployed as a sidecar in GKE.
-- **Kubernetes workloads**: backend microservices in the ``bin-manager``
-  namespace, Asterisk in ``voip``, Redis, RabbitMQ, ClickHouse, and Cloud
-  SQL Proxy in ``infrastructure``, plus three frontend apps
-  (``square-admin``, ``square-talk``, ``square-meet``) in the
-  ``square-manager`` namespace.
-- **DNS records**: six A records are required. With ``example.com`` as
-  your domain: ``api.example.com``, ``hook.example.com``,
-  ``admin.example.com``, ``talk.example.com``, ``meet.example.com``, and
-  ``sip.example.com``. The first five point at the GKE load balancer IP
-  and the last points at the Kamailio external load balancer IP.
+Install modes
+-------------
 
-Cost
-----
-
-Estimated monthly costs in ``us-central1`` (on-demand, list price). Costs vary by
-region. You are responsible for all charges incurred on your GCP project.
-
-**Minimum config** (``gke_node_count=1``, ``kamailio_count=1``, ``rtpengine_count=1``):
+The installer runs in one of two modes, chosen at ``init`` time and
+recorded in ``.env`` as ``DOMAIN_MODE``. Mode is an init-time decision:
+extension SIP realms embed the base domain in the database, so ``init.sh``
+refuses to switch mode or domain on an existing install.
 
 .. list-table::
    :header-rows: 1
-   :widths: 55 25
+   :widths: 20 40 40
 
-   * - Resource
-     - Cost/mo (USD)
-   * - GKE Control Plane
-     - $0 zonal, ~$74 regional
-   * - GKE Node (1x n1-standard-2 + 100 GB disk)
-     - ~$213
-   * - Kamailio VM (1x f1-micro + 30 GB disk)
-     - ~$7
-   * - RTPEngine VM (1x f1-micro + 30 GB disk)
-     - ~$7
-   * - Cloud SQL MySQL db-f1-micro + 10 GB SSD
-     - ~$13
-   * - Static External IPs (8x in-use)
-     - ~$23
-   * - Load Balancers (Kamailio NLB 3 rules + K8s LB 5 services)
-     - ~$146
-   * - Cloud NAT gateway
-     - ~$32
-   * - Cloud DNS, GCS, KMS
-     - ~$1
-   * - **Total**
-     - **~$442 zonal / ~$516 regional**
+   * - 
+     - Internal mode (default)
+     - External mode
+   * - Base domain
+     - ``voipbin.test`` (IANA reserved TLD, RFC 2606)
+     - Your real domain (for example ``example.com``)
+   * - DNS
+     - Automatic. CoreDNS container plus ``/etc/resolv.conf`` forwarding
+     - Operator-managed A records at your DNS provider
+   * - TLS
+     - Automatic. mkcert (browser-trusted) or self-signed
+     - Bring your own certificate
+   * - Reachable from
+     - This machine and your LAN
+     - Any host that can route to your IPs
+   * - Best for
+     - Local development, demos, evaluation
+     - A production or shared install under a real domain
 
-**Default config** (``gke_node_count=2``, ``kamailio_count=2``, ``rtpengine_count=2``):
+Use internal mode unless you specifically need the install reachable under
+a real domain from machines you do not control. Internal mode requires
+nothing from you (no domain, no certificate, no DNS provider). External
+mode targets directly-routable hosts (on-prem, corporate LAN with internal
+DNS, cloud environments with multiple routable IPs); single-public-IP NAT
+environments are a documented limitation.
 
-.. list-table::
-   :header-rows: 1
-   :widths: 55 25
+The four-command install
+-------------------------
 
-   * - Resource
-     - Cost/mo (USD)
-   * - GKE Control Plane
-     - $0 zonal, ~$74 regional
-   * - GKE Nodes (2x n1-standard-2 + 100 GB disks)
-     - ~$426
-   * - Kamailio VMs (2x f1-micro + 30 GB disks)
-     - ~$14
-   * - RTPEngine VMs (2x f1-micro + 30 GB disks)
-     - ~$14
-   * - Cloud SQL MySQL db-f1-micro + 10 GB SSD
-     - ~$13
-   * - Static External IPs (9x in-use)
-     - ~$26
-   * - Load Balancers (Kamailio NLB 3 rules + K8s LB 5 services)
-     - ~$146
-   * - Cloud NAT gateway
-     - ~$32
-   * - Cloud DNS, GCS, KMS
-     - ~$1
-   * - **Total**
-     - **~$672 zonal / ~$746 regional**
+The recommended path isolates the one step that needs root:
 
-These figures are on-demand list prices and do not include committed-use
-discounts, data egress, or usage beyond the included free tiers.
+.. code-block:: bash
 
-.. warning::
+    git clone https://github.com/voipbin/voipbin.git
+    cd voipbin/install
 
-   ``./voipbin-install destroy`` is irreversible. It permanently deletes
-   every resource the installer created, including the Cloud SQL instance
-   and its backups. Export any data you need before destroying.
+    ./scripts/init.sh --yes          # 1. Generate .env, certificates, docker-compose.yml
+    sudo ./scripts/setup-host.sh     # 2. The single sudo command (host mutations)
+    ./scripts/start.sh               # 3. Start all services
+    ./scripts/check-install.sh       # 4. Self-verify the install
+
+``setup-host.sh`` owns every host mutation: mkcert package and CA trust
+(internal mode only), CoreDNS setup (internal mode only), the Compose
+default Docker network, and the VoIP network interfaces (internal veth
+pairs, plus external macvlan for pinned hosting-provider IPs). It is
+idempotent; each step probes current state and skips what is already done.
+
+Once installed, ``sudo ./voipbin`` is the interactive CLI for day-to-day
+operations: status, logs, restart, debug shells, backup/restore, and
+version upgrades. See the Install section for the full command reference.
