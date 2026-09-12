@@ -447,28 +447,87 @@ func Test_ListByCustomerID(t *testing.T) {
 
 func Test_UpdateBasicInfo(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	typePtr := func(v campaign.Type) *campaign.Type { return &v }
+	intPtr := func(v int) *int { return &v }
+	endHandlePtr := func(v campaign.EndHandle) *campaign.EndHandle { return &v }
+
 	tests := []struct {
 		name string
 
 		id           uuid.UUID
-		campaignName string
-		detail       string
-		campaignType campaign.Type
-		serviceLevel int
-		endHandle    campaign.EndHandle
+		campaignName *string
+		detail       *string
+		campaignType *campaign.Type
+		serviceLevel *int
+		endHandle    *campaign.EndHandle
+
+		expectFields   map[campaign.Field]any
+		expectNoUpdate bool
 
 		response  *campaign.Campaign
 		expectRes *campaign.Campaign
 	}{
 		{
-			name: "normal",
+			name: "normal, all fields set",
 
 			id:           uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
-			campaignName: "update name",
-			detail:       "update detail",
-			campaignType: campaign.TypeCall,
-			serviceLevel: 100,
-			endHandle:    campaign.EndHandleContinue,
+			campaignName: strPtr("update name"),
+			detail:       strPtr("update detail"),
+			campaignType: typePtr(campaign.TypeCall),
+			serviceLevel: intPtr(100),
+			endHandle:    endHandlePtr(campaign.EndHandleContinue),
+
+			expectFields: map[campaign.Field]any{
+				campaign.FieldName:         "update name",
+				campaign.FieldDetail:       "update detail",
+				campaign.FieldType:         campaign.TypeCall,
+				campaign.FieldServiceLevel: 100,
+				campaign.FieldEndHandle:    campaign.EndHandleContinue,
+			},
+
+			response: &campaign.Campaign{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+			},
+			expectRes: &campaign.Campaign{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+			},
+		},
+		{
+			name: "name only",
+
+			id:           uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
+			campaignName: strPtr("renamed"),
+
+			expectFields: map[campaign.Field]any{
+				campaign.FieldName: "renamed",
+			},
+
+			response: &campaign.Campaign{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+			},
+			expectRes: &campaign.Campaign{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
+					CustomerID: uuid.FromStringOrNil("1973d7a7-0a06-4be2-b855-73565b136f9e"),
+				},
+			},
+		},
+		{
+			name: "all fields omitted, no-op",
+
+			id: uuid.FromStringOrNil("dc1a10c1-65db-46a6-8fbd-07cf3113bac0"),
+
+			expectNoUpdate: true,
 
 			response: &campaign.Campaign{
 				Identity: commonidentity.Identity{
@@ -501,9 +560,14 @@ func Test_UpdateBasicInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().CampaignUpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle).Return(nil)
-			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
+			if tt.expectNoUpdate {
+				mockDB.EXPECT().CampaignUpdate(ctx, tt.id, gomock.Any()).Times(0)
+				mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+			} else {
+				mockDB.EXPECT().CampaignUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+				mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.response, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.response.CustomerID, campaign.EventTypeCampaignUpdated, tt.response)
+			}
 
 			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.campaignName, tt.detail, tt.campaignType, tt.serviceLevel, tt.endHandle)
 			if err != nil {

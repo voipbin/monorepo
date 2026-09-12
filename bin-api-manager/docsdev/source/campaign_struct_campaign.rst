@@ -52,6 +52,10 @@ Campaign
 
    ``tm_update``/``tm_delete`` are ``null`` when the corresponding event has not occurred, not a sentinel timestamp. When filtering active resources, check for ``tm_delete == null``.
 
+.. note:: **AI Implementation Hint: PUT partial update**
+
+   ``PUT /campaigns/{id}`` accepts a partial body. Any of ``name``, ``detail``, ``type``, ``service_level``, ``end_handle`` may be omitted; an omitted field is left unchanged, it is never reset to a zero value. Sending an empty body is a valid no-op request that returns the campaign's current state unchanged.
+
 Example
 +++++++
 

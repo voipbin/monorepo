@@ -384,25 +384,27 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 
 func Test_OutplanUpdateDialInfo(t *testing.T) {
 
+	intPtr := func(v int) *int { return &v }
+
 	tests := []struct {
 		name         string
 		agent        *auth.AuthIdentity
 		outplanID    uuid.UUID
 		source       *commonaddress.Address
-		dialTimeout  int
-		tryInterval  int
-		maxTryCount0 int
-		maxTryCount1 int
-		maxTryCount2 int
-		maxTryCount3 int
-		maxTryCount4 int
+		dialTimeout  *int
+		tryInterval  *int
+		maxTryCount0 *int
+		maxTryCount1 *int
+		maxTryCount2 *int
+		maxTryCount3 *int
+		maxTryCount4 *int
 
 		response  *caoutplan.Outplan
 		expectRes *caoutplan.WebhookMessage
 	}{
 		{
-			"normal",
-			auth.NewAgentIdentity(&amagent.Agent{
+			name: "normal",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -410,26 +412,26 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 
-			uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
-			&commonaddress.Address{
+			outplanID: uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
+			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
-				Target: "+821100000001",
+				Target: "+821****0001",
 			},
-			30000,
-			600000,
-			5,
-			5,
-			5,
-			5,
-			5,
+			dialTimeout:  intPtr(30000),
+			tryInterval:  intPtr(600000),
+			maxTryCount0: intPtr(5),
+			maxTryCount1: intPtr(5),
+			maxTryCount2: intPtr(5),
+			maxTryCount3: intPtr(5),
+			maxTryCount4: intPtr(5),
 
-			&caoutplan.Outplan{
+			response: &caoutplan.Outplan{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 			},
-			&caoutplan.WebhookMessage{
+			expectRes: &caoutplan.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("451a473e-c643-11ec-93c4-0bd1b9b41f16"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),

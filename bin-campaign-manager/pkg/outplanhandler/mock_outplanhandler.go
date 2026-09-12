@@ -134,7 +134,7 @@ func (mr *MockOutplanHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail 
 }
 
 // UpdateDialInfo mocks base method.
-func (m *MockOutplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.Outplan, error) {
+func (m *MockOutplanHandler) UpdateDialInfo(ctx context.Context, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 *int) (*outplan.Outplan, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateDialInfo", ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(*outplan.Outplan)

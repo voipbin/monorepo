@@ -7749,30 +7749,33 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "Updated name of the campaign"
+                    "description": "Updated name of the campaign. Omit to leave unchanged."
                   },
                   "detail": {
                     "type": "string",
-                    "description": "Updated details of the campaign"
+                    "description": "Updated details of the campaign. Omit to leave unchanged."
                   },
                   "type": {
-                    "$ref": "#/components/schemas/CampaignManagerCampaignType"
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/CampaignManagerCampaignType"
+                      }
+                    ],
+                    "description": "Updated type of the campaign. Omit to leave unchanged."
                   },
                   "service_level": {
                     "type": "integer",
-                    "description": "Updated service level of the campaign"
+                    "description": "Updated service level of the campaign. Omit to leave unchanged."
                   },
                   "end_handle": {
-                    "$ref": "#/components/schemas/CampaignManagerCampaignEndHandle"
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/CampaignManagerCampaignEndHandle"
+                      }
+                    ],
+                    "description": "Updated end handle of the campaign. Omit to leave unchanged."
                   }
-                },
-                "required": [
-                  "name",
-                  "detail",
-                  "type",
-                  "service_level",
-                  "end_handle"
-                ]
+                }
               }
             }
           }
@@ -14793,47 +14796,37 @@
                 "properties": {
                   "source": {
                     "$ref": "#/components/schemas/CommonAddress",
-                    "description": "The new source address."
+                    "description": "The new source address. Omit to leave unchanged."
                   },
                   "dial_timeout": {
                     "type": "integer",
-                    "description": "The new dial timeout in seconds."
+                    "description": "The new dial timeout in seconds. Omit to leave unchanged."
                   },
                   "try_interval": {
                     "type": "integer",
-                    "description": "The new interval between retry attempts."
+                    "description": "The new interval between retry attempts. Omit to leave unchanged."
                   },
                   "max_try_count_0": {
                     "type": "integer",
-                    "description": "The new maximum retry count for destination 0."
+                    "description": "The new maximum retry count for destination 0. Omit to leave unchanged."
                   },
                   "max_try_count_1": {
                     "type": "integer",
-                    "description": "The new maximum retry count for destination 1."
+                    "description": "The new maximum retry count for destination 1. Omit to leave unchanged."
                   },
                   "max_try_count_2": {
                     "type": "integer",
-                    "description": "The new maximum retry count for destination 2."
+                    "description": "The new maximum retry count for destination 2. Omit to leave unchanged."
                   },
                   "max_try_count_3": {
                     "type": "integer",
-                    "description": "The new maximum retry count for destination 3."
+                    "description": "The new maximum retry count for destination 3. Omit to leave unchanged."
                   },
                   "max_try_count_4": {
                     "type": "integer",
-                    "description": "The new maximum retry count for destination 4."
+                    "description": "The new maximum retry count for destination 4. Omit to leave unchanged."
                   }
-                },
-                "required": [
-                  "source",
-                  "dial_timeout",
-                  "try_interval",
-                  "max_try_count_0",
-                  "max_try_count_1",
-                  "max_try_count_2",
-                  "max_try_count_3",
-                  "max_try_count_4"
-                ]
+                }
               }
             }
           }

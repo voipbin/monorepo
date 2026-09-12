@@ -39,14 +39,14 @@ type V1DataOutplansIDPut struct {
 // v1 data type request struct for
 // /v1/outplans/<outplan_id>/dials PUT
 type V1DataOutplansIDDialsPut struct {
-	Source *commonaddress.Address `json:"source"`
+	Source *commonaddress.Address `json:"source,omitempty"`
 
-	DialTimeout int `json:"dial_timeout"`
-	TryInterval int `json:"try_interval"`
+	DialTimeout *int `json:"dial_timeout,omitempty"`
+	TryInterval *int `json:"try_interval,omitempty"`
 
-	MaxTryCount0 int `json:"max_try_count_0"`
-	MaxTryCount1 int `json:"max_try_count_1"`
-	MaxTryCount2 int `json:"max_try_count_2"`
-	MaxTryCount3 int `json:"max_try_count_3"`
-	MaxTryCount4 int `json:"max_try_count_4"`
+	MaxTryCount0 *int `json:"max_try_count_0,omitempty"`
+	MaxTryCount1 *int `json:"max_try_count_1,omitempty"`
+	MaxTryCount2 *int `json:"max_try_count_2,omitempty"`
+	MaxTryCount3 *int `json:"max_try_count_3,omitempty"`
+	MaxTryCount4 *int `json:"max_try_count_4,omitempty"`
 }

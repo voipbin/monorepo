@@ -729,11 +729,11 @@ type RequestHandler interface {
 	CampaignV1CampaignUpdateBasicInfo(
 		ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
-		campaignType cacampaign.Type,
-		serviceLevel int,
-		endHandle cacampaign.EndHandle,
+		name *string,
+		detail *string,
+		campaignType *cacampaign.Type,
+		serviceLevel *int,
+		endHandle *cacampaign.EndHandle,
 	) (*cacampaign.Campaign, error)
 	CampaignV1CampaignUpdateStatus(ctx context.Context, id uuid.UUID, status cacampaign.Status) (*cacampaign.Campaign, error)
 	CampaignV1CampaignUpdateServiceLevel(ctx context.Context, id uuid.UUID, serviceLevel int) (*cacampaign.Campaign, error)
@@ -769,13 +769,13 @@ type RequestHandler interface {
 		ctx context.Context,
 		id uuid.UUID,
 		source *commonaddress.Address,
-		dialTimeout int,
-		tryInterval int,
-		maxTryCount0 int,
-		maxTryCount1 int,
-		maxTryCount2 int,
-		maxTryCount3 int,
-		maxTryCount4 int,
+		dialTimeout *int,
+		tryInterval *int,
+		maxTryCount0 *int,
+		maxTryCount1 *int,
+		maxTryCount2 *int,
+		maxTryCount3 *int,
+		maxTryCount4 *int,
 	) (*caoutplan.Outplan, error)
 
 	// customer-manager accesskeys

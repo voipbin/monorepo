@@ -304,16 +304,21 @@ func Test_v1CampaignsIDDelete(t *testing.T) {
 
 func Test_v1CampaignsIDPut(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	typePtr := func(v campaign.Type) *campaign.Type { return &v }
+	intPtr := func(v int) *int { return &v }
+	endHandlePtr := func(v campaign.EndHandle) *campaign.EndHandle { return &v }
+
 	tests := []struct {
 		name    string
 		request *sock.Request
 
 		campaignID   uuid.UUID
-		campaignName string
-		detail       string
-		campaignType campaign.Type
-		serviceLevel int
-		endHandle    campaign.EndHandle
+		campaignName *string
+		detail       *string
+		campaignType *campaign.Type
+		serviceLevel *int
+		endHandle    *campaign.EndHandle
 
 		responseCampaign *campaign.Campaign
 
@@ -329,11 +334,11 @@ func Test_v1CampaignsIDPut(t *testing.T) {
 			},
 
 			campaignID:   uuid.FromStringOrNil("40b95d6c-c466-11ec-88ac-734fd1ce5539"),
-			campaignName: "update name",
-			detail:       "update detail",
-			campaignType: campaign.TypeCall,
-			serviceLevel: 100,
-			endHandle:    campaign.EndHandleContinue,
+			campaignName: strPtr("update name"),
+			detail:       strPtr("update detail"),
+			campaignType: typePtr(campaign.TypeCall),
+			serviceLevel: intPtr(100),
+			endHandle:    endHandlePtr(campaign.EndHandleContinue),
 
 			responseCampaign: &campaign.Campaign{
 				Identity: commonidentity.Identity{

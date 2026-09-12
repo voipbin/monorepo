@@ -187,13 +187,13 @@ func (h *outplanHandler) UpdateDialInfo(
 	ctx context.Context,
 	id uuid.UUID,
 	source *commonaddress.Address,
-	dialTimeout int,
-	tryInterval int,
-	maxTryCount0 int,
-	maxTryCount1 int,
-	maxTryCount2 int,
-	maxTryCount3 int,
-	maxTryCount4 int,
+	dialTimeout *int,
+	tryInterval *int,
+	maxTryCount0 *int,
+	maxTryCount1 *int,
+	maxTryCount2 *int,
+	maxTryCount3 *int,
+	maxTryCount4 *int,
 ) (*outplan.Outplan, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "UpdateDialInfo",
@@ -209,18 +209,37 @@ func (h *outplanHandler) UpdateDialInfo(
 	})
 	log.Debug("Updating outplan dial info.")
 
-	if err := h.db.OutplanUpdateDialInfo(
-		ctx,
-		id,
-		source,
-		dialTimeout,
-		tryInterval,
-		maxTryCount0,
-		maxTryCount1,
-		maxTryCount2,
-		maxTryCount3,
-		maxTryCount4,
-	); err != nil {
+	fields := map[outplan.Field]any{}
+	if source != nil {
+		fields[outplan.FieldSource] = source
+	}
+	if dialTimeout != nil {
+		fields[outplan.FieldDialTimeout] = *dialTimeout
+	}
+	if tryInterval != nil {
+		fields[outplan.FieldTryInterval] = *tryInterval
+	}
+	if maxTryCount0 != nil {
+		fields[outplan.FieldMaxTryCount0] = *maxTryCount0
+	}
+	if maxTryCount1 != nil {
+		fields[outplan.FieldMaxTryCount1] = *maxTryCount1
+	}
+	if maxTryCount2 != nil {
+		fields[outplan.FieldMaxTryCount2] = *maxTryCount2
+	}
+	if maxTryCount3 != nil {
+		fields[outplan.FieldMaxTryCount3] = *maxTryCount3
+	}
+	if maxTryCount4 != nil {
+		fields[outplan.FieldMaxTryCount4] = *maxTryCount4
+	}
+
+	if len(fields) == 0 {
+		return h.Get(ctx, id)
+	}
+
+	if err := h.db.OutplanUpdate(ctx, id, fields); err != nil {
 		log.Errorf("Could not update outplan dial info. err: %v", err)
 		return nil, err
 	}

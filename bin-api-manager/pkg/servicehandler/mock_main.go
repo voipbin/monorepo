@@ -1606,7 +1606,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateActions(ctx, a, id, acti
 }
 
 // CampaignUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) CampaignUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail *string, campaignType *campaign.Type, serviceLevel *int, endHandle *campaign.EndHandle) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignUpdateBasicInfo", ctx, a, id, name, detail, campaignType, serviceLevel, endHandle)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -3857,7 +3857,7 @@ func (mr *MockServiceHandlerMockRecorder) OutplanUpdateBasicInfo(ctx, a, id, nam
 }
 
 // OutplanUpdateDialInfo mocks base method.
-func (m *MockServiceHandler) OutplanUpdateDialInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.WebhookMessage, error) {
+func (m *MockServiceHandler) OutplanUpdateDialInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 *int) (*outplan.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutplanUpdateDialInfo", ctx, a, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(*outplan.WebhookMessage)

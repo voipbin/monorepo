@@ -230,34 +230,70 @@ func Test_UpdateBasicInfo(t *testing.T) {
 }
 
 func Test_UpdateDialInfo(t *testing.T) {
+	intPtr := func(v int) *int { return &v }
+
 	tests := []struct {
 		name string
 
 		id           uuid.UUID
 		source       *commonaddress.Address
-		dialTimeout  int
-		tyrInterval  int
-		maxTryCount0 int
-		maxTryCount1 int
-		maxTryCount2 int
-		maxTryCount3 int
-		maxTryCount4 int
+		dialTimeout  *int
+		tyrInterval  *int
+		maxTryCount0 *int
+		maxTryCount1 *int
+		maxTryCount2 *int
+		maxTryCount3 *int
+		maxTryCount4 *int
+
+		expectFields   map[outplan.Field]any
+		expectNoUpdate bool
 	}{
 		{
-			"normal",
+			name: "normal, all fields set",
 
-			uuid.FromStringOrNil("1f7003d0-b3dc-11ec-906b-33094783cdd2"),
-			&commonaddress.Address{
+			id: uuid.FromStringOrNil("1f7003d0-b3dc-11ec-906b-33094783cdd2"),
+			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
-				Target: "+821100000001",
+				Target: "+821****0001",
 			},
-			30000,
-			600000,
-			3,
-			3,
-			3,
-			3,
-			3,
+			dialTimeout:  intPtr(30000),
+			tyrInterval:  intPtr(600000),
+			maxTryCount0: intPtr(3),
+			maxTryCount1: intPtr(3),
+			maxTryCount2: intPtr(3),
+			maxTryCount3: intPtr(3),
+			maxTryCount4: intPtr(3),
+
+			expectFields: map[outplan.Field]any{
+				outplan.FieldSource: &commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821****0001",
+				},
+				outplan.FieldDialTimeout:  30000,
+				outplan.FieldTryInterval:  600000,
+				outplan.FieldMaxTryCount0: 3,
+				outplan.FieldMaxTryCount1: 3,
+				outplan.FieldMaxTryCount2: 3,
+				outplan.FieldMaxTryCount3: 3,
+				outplan.FieldMaxTryCount4: 3,
+			},
+		},
+		{
+			name: "dial_timeout only",
+
+			id:          uuid.FromStringOrNil("1f7003d0-b3dc-11ec-906b-33094783cdd2"),
+			dialTimeout: intPtr(45000),
+
+			expectFields: map[outplan.Field]any{
+				outplan.FieldDialTimeout: 45000,
+			},
+		},
+		{
+			name: "all fields omitted, no-op",
+
+			id: uuid.FromStringOrNil("1f7003d0-b3dc-11ec-906b-33094783cdd2"),
+
+			expectNoUpdate: true,
 		},
 	}
 
@@ -275,8 +311,13 @@ func Test_UpdateDialInfo(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().OutplanUpdateDialInfo(ctx, tt.id, tt.source, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4).Return(nil)
-			mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+			if tt.expectNoUpdate {
+				mockDB.EXPECT().OutplanUpdate(ctx, tt.id, gomock.Any()).Times(0)
+				mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+			} else {
+				mockDB.EXPECT().OutplanUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+				mockDB.EXPECT().OutplanGet(ctx, tt.id).Return(&outplan.Outplan{}, nil)
+			}
 
 			_, err := h.UpdateDialInfo(ctx, tt.id, tt.source, tt.dialTimeout, tt.tyrInterval, tt.maxTryCount0, tt.maxTryCount1, tt.maxTryCount2, tt.maxTryCount3, tt.maxTryCount4)
 			if err != nil {

@@ -51,6 +51,10 @@ Outplan
 
    The ``dial_timeout`` and ``try_interval`` fields are in **milliseconds**. Common conversions: 30 seconds = ``30000``, 1 minute = ``60000``, 1 hour = ``3600000``, 2 hours = ``7200000``. A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` is a sentinel meaning the resource has **not** been deleted.
 
+.. note:: **AI Implementation Hint: PUT partial update**
+
+   ``PUT /outplans/{id}/dial_info`` accepts a partial body. Any of ``source``, ``dial_timeout``, ``try_interval``, ``max_try_count_0``..``max_try_count_4`` may be omitted; an omitted field is left unchanged, it is never reset to a zero value. Sending an empty body is a valid no-op request that returns the outplan's current state unchanged.
+
 Example
 +++++++
 

@@ -200,7 +200,19 @@ func (h *server) PutCampaignsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CampaignUpdateBasicInfo(c.Request.Context(), a, target, req.Name, req.Detail, cmcampaign.Type(req.Type), req.ServiceLevel, cmcampaign.EndHandle(req.EndHandle))
+	var campaignType *cmcampaign.Type
+	if req.Type != nil {
+		v := cmcampaign.Type(*req.Type)
+		campaignType = &v
+	}
+
+	var endHandle *cmcampaign.EndHandle
+	if req.EndHandle != nil {
+		v := cmcampaign.EndHandle(*req.EndHandle)
+		endHandle = &v
+	}
+
+	res, err := h.serviceHandler.CampaignUpdateBasicInfo(c.Request.Context(), a, target, req.Name, req.Detail, campaignType, req.ServiceLevel, endHandle)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		abortWithServiceError(c, err)

@@ -394,15 +394,20 @@ func Test_CampaignV1CampaignExecute(t *testing.T) {
 
 func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	typePtr := func(v cacampaign.Type) *cacampaign.Type { return &v }
+	intPtr := func(v int) *int { return &v }
+	endHandlePtr := func(v cacampaign.EndHandle) *cacampaign.EndHandle { return &v }
+
 	tests := []struct {
 		name string
 
 		campaignID         uuid.UUID
-		updateName         string
-		updateDetail       string
-		campaignType       cacampaign.Type
-		updateServiceLevel int
-		updateEndHandle    cacampaign.EndHandle
+		updateName         *string
+		updateDetail       *string
+		campaignType       *cacampaign.Type
+		updateServiceLevel *int
+		updateEndHandle    *cacampaign.EndHandle
 
 		response *sock.Response
 
@@ -414,11 +419,11 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 			name: "normal",
 
 			campaignID:         uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
-			updateName:         "update name",
-			updateDetail:       "update detail",
-			campaignType:       cacampaign.TypeCall,
-			updateServiceLevel: 100,
-			updateEndHandle:    cacampaign.EndHandleContinue,
+			updateName:         strPtr("update name"),
+			updateDetail:       strPtr("update detail"),
+			campaignType:       typePtr(cacampaign.TypeCall),
+			updateServiceLevel: intPtr(100),
+			updateEndHandle:    endHandlePtr(cacampaign.EndHandleContinue),
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -432,6 +437,31 @@ func Test_CampaignV1CampaignUpdateBasicInfo(t *testing.T) {
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"name":"update name","detail":"update detail","type":"call","service_level":100,"end_handle":"continue"}`),
+			},
+			expectResult: &cacampaign.Campaign{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
+				},
+			},
+		},
+		{
+			name: "name only",
+
+			campaignID: uuid.FromStringOrNil("1692450e-c50f-11ec-8e6c-07b184583eb1"),
+			updateName: strPtr("renamed"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"1692450e-c50f-11ec-8e6c-07b184583eb1"}`),
+			},
+
+			expectTarget: "bin-manager.campaign-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/campaigns/1692450e-c50f-11ec-8e6c-07b184583eb1",
+				Method:   sock.RequestMethodPut,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"name":"renamed"}`),
 			},
 			expectResult: &cacampaign.Campaign{
 				Identity: identity.Identity{
