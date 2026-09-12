@@ -111,10 +111,9 @@ Per roadmap §3's established pattern, applied to this chain:
    timeout should not trigger this normalization against a zero
    placeholder value). `len(fields) == 0` short-circuits to `h.Get(ctx,
    id)` (confirmed `conferenceHandler` has its own `Get` wrapper with
-   `ErrNotFound` translation via `h.db.ConferenceGet` -- reuse it
-   directly rather than a raw db call, per this monorepo's established
-   discipline; verify exact wrapper name at implementation time and cite
-   its line number). The post-write `ConferenceV1ConferenceDeleteDelay`
+   `ErrNotFound` translation, confirmed as `Get` at `conference.go:167-181`
+   -- reuse it directly rather than a raw db call, per this monorepo's
+   established discipline). The post-write `ConferenceV1ConferenceDeleteDelay`
    re-scheduling call (`conference.go:283-286`) reads `res.Timeout` (the
    post-write DB value), which already works correctly for both the
    omitted-timeout case (unchanged stored value) and the
@@ -123,14 +122,34 @@ Per roadmap §3's established pattern, applied to this chain:
    (a no-op PUT should not reset the conference's existing termination
    timer), so the no-op short-circuit must return before reaching this
    logic, which it naturally does by returning early from `h.Get`.
-10. **`bin-conference-manager/cmd/conference-control/main.go`** (if this
-    CLI binary exists and calls `conferenceHandler.Update` directly --
-    confirm at implementation time via `search_files(target='files')` on
-    `cmd/`, do not assume absence or presence): if a direct call exists,
-    wrap every value in a pointer unconditionally, preserving current
-    all-fields-sent behavior, mirroring Phase 2/3/4's CLI treatment.
+10. **`bin-conference-manager/cmd/conference-control/main.go`** --
+    **CONFIRMED to exist and to call `conferenceHandler.Update` directly**
+    (`runUpdate`, `main.go:338-382`, direct call at `main.go:367`). Its
+    current behavior unconditionally passes `map[string]interface{}{}`
+    (an always-empty map, never the operator's actual custom data) and
+    zero-value UUIDs for any flow ID flag left unset, on every single
+    invocation regardless of which flags the operator passed. **This is
+    a footgun under the new pointer contract**: if this CLI is
+    pointer-wrapped naively ("wrap every value unconditionally,
+    preserving current behavior"), every CLI-driven update -- including
+    a name-only or timeout-only edit -- would continue to send a real,
+    non-nil `&map[string]interface{}{}` for `data`, which under the new
+    semantics means "explicitly clear all custom data," silently wiping
+    a conference's custom data on every CLI update. This is the same
+    risk class this doc already calls out for the HTTP API's `data: {}`
+    vs `data: nil` distinction (§3 item 1) and must not be reintroduced
+    at the CLI layer. Resolution: `runUpdate` must be changed to build
+    its fields conditionally, mirroring the flag-based conditional
+    construction already used by this monorepo's `number-control` CLI
+    (`cmd/number-control/main.go`, e.g. `if viper.IsSet("name") { ... }`)
+    -- only pass a non-nil `data` pointer when an explicit `--data` flag
+    was provided by the operator, and only pass non-nil flow-ID pointers
+    when the corresponding flag was provided, not unconditionally on
+    every invocation. This is a genuine (small) behavior change to the
+    CLI's flag-parsing, not a pure pointer-wrap, and must be implemented
+    and tested as such.
 11. RST docs (`bin-api-manager/docsdev/source/conference_struct_conference.rst`
-    -- verify exact filename at implementation time) updated with an
+    -- filename confirmed to exist at this exact path) updated with an
     Implementation Hint note (omission=unchanged, `data: {}` clears
     custom data, `timeout: 0` disables auto-termination distinct from
     omission), clean Sphinx rebuild committed.
@@ -176,13 +195,40 @@ Per roadmap §3's established pattern, applied to this chain:
 - **`bin-api-manager/pkg/servicehandler/conferences_test.go`** and
   **`bin-common-handler/pkg/requesthandler/conference_conference_test.go`**:
   updated for the pointer signature change.
+- **`bin-conference-manager/cmd/conference-control/main.go`**
+  (`runUpdate`): after conversion to flag-conditional field construction,
+  add/update tests confirming a name-only CLI invocation does NOT pass a
+  non-nil `data` pointer (preventing the accidental clear identified in
+  §3 item 10), and that a `--data` flag explicitly provided does pass a
+  non-nil pointer.
 - **Revert-and-rerun** (mandatory per roadmap §5): temporarily simulate
   the pre-fix unconditional field-map population in `conference.go`'s
   `Update`, rerun the new partial-update tests, confirm they fail
   (reproducing the silent-wipe bug for `pre_flow_id`/`post_flow_id`),
   then revert and reconfirm green.
 
-## 6. Non-goals
+## 6. Round 1 review disposition
+
+Round 1 (`deleg_81ae9039` task 0) verdict: REQUEST CHANGES. All call-chain,
+signature, `Get`-wrapper, timeout/re-scheduling, and RST-filename claims
+were independently verified correct. One MAJOR finding: §3 item 10's
+original phrasing conditionally hedged on whether
+`cmd/conference-control` exists and did not flag that this CLI
+unconditionally sends `map[string]interface{}{}` for `data` on every
+invocation, which under the new pointer contract would silently clear
+custom conference data on every CLI-driven update (the same risk class
+already called out for the HTTP API in §3 item 1). Fixed: §3 item 10
+rewritten to state the CLI's existence and direct-call site as confirmed
+fact (`main.go:338-382`, call at `main.go:367`), and to require
+flag-conditional field construction (mirroring `number-control`'s
+`viper.IsSet(...)` pattern) rather than a naive unconditional
+pointer-wrap. §5 testing strategy updated with a corresponding CLI test
+requirement. §3 item 9's `Get`-wrapper hedge and item 11's RST-filename
+hedge were also tightened to state the already-confirmed facts
+(`Get`, `conference.go:167-181`; RST file confirmed to exist) rather than
+deferring trivially-verifiable facts to implementation time.
+
+## 7. Non-goals
 
 - No retroactive data remediation for conferences whose `pre_flow_id`/
   `post_flow_id` may have already been silently wiped by the pre-fix
