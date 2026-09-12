@@ -478,7 +478,6 @@ func Test_Update(t *testing.T) {
 		currentTeam *team.Team
 
 		expectAIGets    bool
-		expectGetCalls  int
 		expectNoUpdate  bool
 		expectValidFail bool
 
