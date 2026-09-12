@@ -1,0 +1,1194 @@
+.. _ai-overview:
+
+Overview
+========
+
+.. note:: **AI Context**
+
+   * **Complexity:** High
+   * **Cost:** Chargeable (credit deduction per AI session based on LLM, TTS, and STT usage)
+   * **Async:** Yes. AI sessions run asynchronously during calls. Monitor via ``GET https://api.voipbin.net/v1.0/calls/{id}`` or WebSocket events.
+
+VoIPBin's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.
+
+.. note:: **AI Implementation Hint**
+
+   AI is configured in two layers: (1) a reusable AI configuration resource created via ``POST https://api.voipbin.net/v1.0/ais`` (defines LLM, TTS, STT, and tools), and (2) a flow action (``ai_talk`` or ``ai``) that references the AI configuration or provides inline settings. For quick prototyping, use inline flow actions. For production, create a reusable AI resource and reference it by ``ai_id``.
+
+How it works
+============
+
+Architecture Overview
+---------------------
+VoIPBin's AI system consists of two main components working together: the AI Manager (Go) for orchestration and the Pipecat Manager (Python) for real-time audio processing.
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                        VoIPBin AI Architecture                        |
+    +-----------------------------------------------------------------------+
+
+                                 +-------------------+
+                                 |   Flow Manager    |
+                                 |  (ai_talk action) |
+                                 +--------+----------+
+                                          |
+                                          | Start AI session
+                                          v
+    +-------------------+        +-------------------+        +-------------------+
+    |                   |        |                   |        |                   |
+    |    Asterisk       |<------>|   AI Manager      |<------>|  Pipecat Manager  |
+    |  (8kHz audio)     |  HTTP  |     (Go)          | RMQ/WS |    (Python)       |
+    |                   |        |                   |        |                   |
+    +-------------------+        +--------+----------+        +--------+----------+
+           ^                              |                            |
+           |                              |                            |
+           | RTP audio                    | Tool                       | Real-time
+           |                              | execution                  | processing
+           v                              v                            v
+    +-------------------+        +-------------------+        +-------------------+
+    |       User        |        | call-manager      |        |    STT / LLM      |
+    |    (Phone)        |        | message-manager   |        |      / TTS        |
+    |                   |        | email-manager     |        |   Providers       |
+    +-------------------+        +-------------------+        +-------------------+
+
+
+Audio Flow
+----------
+Audio flows through the system with sample rate conversion between components:
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                           Audio Flow                                  |
+    +-----------------------------------------------------------------------+
+
+    User (Phone)                    VoIPBin                    AI Providers
+         |                               |                           |
+         |  RTP (8kHz PCM)               |                           |
+         +------------------------------>|                           |
+         |                               |                           |
+         |              +----------------+----------------+          |
+         |              |                                 |          |
+         |              v                                 v          |
+         |      +---------------+              +------------------+  |
+         |      |   Asterisk    |              |     Pipecat      |  |
+         |      |   (8kHz)      |<------------>|     (16kHz)      |  |
+         |      +---------------+   WebSocket  +------------------+  |
+         |              |          audio stream       |              |
+         |              |                             v              |
+         |              |                    +------------------+    |
+         |              |                    |  Sample Rate     |    |
+         |              |                    |  Conversion      |    |
+         |              |                    |  8kHz <-> 16kHz  |    |
+         |              |                    +--------+---------+    |
+         |              |                             |              |
+         |              |                             v              |
+         |              |                    +------------------+    |
+         |              |                    |      STT         |--->|
+         |              |                    |   (Deepgram)     |    |
+         |              |                    +------------------+    |
+         |              |                             |              |
+         |              |                             | Text         |
+         |              |                             v              |
+         |              |                    +------------------+    |
+         |              |                    |      LLM         |--->|
+         |              |                    |   (OpenAI/etc)   |    |
+         |              |                    +------------------+    |
+         |              |                             |              |
+         |              |                             | Response     |
+         |              |                             v              |
+         |              |                    +------------------+    |
+         |              |<-------------------|      TTS         |<---|
+         |              |   Audio response   |  (ElevenLabs)    |    |
+         |              |                    +------------------+    |
+         |              |                                            |
+         |<-------------+                                            |
+         |  RTP audio playback                                       |
+         |                                                           |
+
+
+AI Call Lifecycle
+-----------------
+An AI call goes through several stages from initialization to termination:
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                        AI Call Lifecycle                              |
+    +-----------------------------------------------------------------------+
+
+    1. INITIALIZATION
+       +-------------------+        +-------------------+
+       |   Flow Manager    |------->|   AI Manager      |
+       |   (ai_talk)       |        |   Start AIcall    |
+       +-------------------+        +--------+----------+
+                                             |
+                                             v
+       +-------------------+        +-------------------+
+       |   Pipecat         |<-------|   Creates session |
+       |   Initializing    |        |   in database     |
+       +-------------------+        +-------------------+
+
+    2. PROCESSING (Real-time conversation)
+       +-------------------+        +-------------------+
+       |      User          |<------>|    Pipecat        |
+       |   speaks/listens  |        |  STT->LLM->TTS    |
+       +-------------------+        +-------------------+
+              ^                            |
+              |                            v
+              |                   +-------------------+
+              |                   |  Tool Execution   |
+              |                   |  (if triggered)   |
+              |                   +-------------------+
+              |                            |
+              +----------------------------+
+
+    3. TERMINATION
+       +-------------------+        +-------------------+
+       |   stop_service    |------->|   AI Manager      |
+       |   or hangup       |        |   Terminate       |
+       +-------------------+        +--------+----------+
+                                             |
+                                             v
+                                    +-------------------+
+                                    |  Cleanup session  |
+                                    |  Save messages    |
+                                    +-------------------+
+
+
+Action Component
+----------------
+The AI is integrated as a configurable action within VoIPBin flows. When a call reaches an AI action, the system triggers the AI to generate responses based on the provided prompt.
+
+.. image:: _static/images/ai_overview_overview.png
+    :alt: AI component in action builder
+    :align: center
+
+TTS/STT + AI Engine
+-------------------
+VoIPBin's AI uses Speech-to-Text (STT) to convert spoken words into text, processes through the LLM, and Text-to-Speech (TTS) converts responses back to audio. This happens in real-time for seamless conversations.
+
+.. image:: _static/images/ai_overview_stt_tts.png
+    :alt: AI implementation using TTS/STT + AI Engine
+    :align: center
+
+Voice Detection and Play Interruption
+-------------------------------------
+VoIPBin incorporates voice detection for natural conversational flow. While the AI is speaking (TTS playback), if the system detects the user's voice, it immediately stops TTS and routes the user's speech to STT and then to the LLM. This ensures user input is prioritized, enabling dynamic interaction that resembles real conversation.
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                       Voice Interruption Flow                         |
+    +-----------------------------------------------------------------------+
+
+         AI Speaking                 User Interrupts              AI Listens
+              |                            |                          |
+    +---------v---------+                  |                          |
+    |  TTS audio plays  |                  |                          |
+    |  "I can help you  |                  |                          |
+    |   with that..."   |                  |                          |
+    +-------------------+                  |                          |
+              |                            |                          |
+              |  <---- Voice detected ---->|                          |
+              |                            |                          |
+    +---------v---------+                  |                          |
+    |  STOP TTS         |                  |                          |
+    |  immediately      |                  |                          |
+    +-------------------+                  |                          |
+              |                            |                          |
+              +--------------------------->|                          |
+                                           |                          |
+                                  +--------v--------+                 |
+                                  | User speaks:    |                 |
+                                  | "Actually, I    |                 |
+                                  |  need help with |                 |
+                                  |  something else"|                 |
+                                  +--------+--------+                 |
+                                           |                          |
+                                           | STT -> LLM               |
+                                           |                          |
+                                           +------------------------->|
+                                                              +-------v-------+
+                                                              | AI processes  |
+                                                              | new request   |
+                                                              +---------------+
+
+
+Context Retention
+-----------------
+VoIPBin's AI supports context saving. During a conversation, the AI remembers prior exchanges, allowing it to maintain continuity and respond based on earlier parts of the interaction. This provides a more natural and human-like dialogue experience.
+
+Multilingual Support
+--------------------
+VoIPBin's AI supports multiple languages. The STT language is configured on the AI resource itself using the ``stt_language`` field in BCP-47 format (e.g., ``ko-KR``, ``en-US``). This tells the Speech-to-Text engine which language to listen for, improving recognition accuracy.
+
+To support multiple languages, create separate AI configurations — one per language — and reference the appropriate ``ai_id`` in each flow action. When ``stt_language`` is omitted, the STT provider uses auto-detection.
+
+See :ref:`STT Language <ai-struct-ai-stt_language>` for supported language codes and :ref:`supported languages <transcribe-overview-supported_languages>` for the full list.
+
+Tool Functions
+==============
+AI tool functions enable the AI to take actions during conversations, such as transferring calls, sending messages, or managing the conversation flow.
+
+Tool Execution Architecture
+---------------------------
+
+::
+
+    +-----------------------------------------------------------------------+
+    |                      Tool Execution Flow                              |
+    +-----------------------------------------------------------------------+
+
+    Step 1: User makes request
+    +-------------------+
+    | "Transfer me to   |
+    |  sales please"    |
+    +--------+----------+
+             |
+             v
+    Step 2: Speech-to-Text
+    +-------------------+
+    | STT converts      |
+    | audio to text     |
+    +--------+----------+
+             |
+             v
+    Step 3: LLM Processing
+    +-------------------+
+    | LLM detects intent|
+    | Generates:        |
+    | function_call:    |
+    |   connect_call    |
+    +--------+----------+
+             |
+             v
+    Step 4: Tool Execution
+    +-------------------+        +-------------------+
+    | Python Pipecat    |------->|   Go AIcallHandler|
+    | sends HTTP POST   |        |   ToolHandle()    |
+    +-------------------+        +--------+----------+
+                                          |
+                                          v
+                                 +-------------------+
+                                 | Execute via       |
+                                 | call-manager      |
+                                 +--------+----------+
+                                          |
+                                          v
+    Step 5: Result returned
+    +-------------------+        +-------------------+
+    | Pipecat receives  |<-------|  Tool result      |
+    | success/failure   |        |  returned         |
+    +--------+----------+        +-------------------+
+             |
+             v
+    Step 6: AI Response
+    +-------------------+
+    | LLM generates     |
+    | "Connecting you   |
+    |  to sales now..." |
+    +--------+----------+
+             |
+             v
+    Step 7: TTS Playback
+    +-------------------+
+    | TTS converts to   |
+    | audio, plays to   |
+    | user              |
+    +-------------------+
+
+
+Available Tools
+---------------
+
+========================= ===================================================
+Tool                      Description
+========================= ===================================================
+connect_call              Transfer or connect to another endpoint
+create_call               Place a new, independent outbound call
+send_email                Send an email message
+send_message              Send an SMS text message
+stop_media                Stop currently playing media
+stop_service              End AI conversation (soft stop, flow continues)
+stop_flow                 Terminate entire flow (hard stop, call ends)
+set_variables             Save data to flow context
+get_variables             Retrieve data from flow context
+get_aicall_messages       Get message history from an AI call
+search_knowledge          Search the configured knowledge base (RAG)
+get_correlation           List resources linked to an activeflow (diagnostic)
+get_resource              Fetch the content of a related resource (diagnostic)
+describe_action           Look up a flow action's option schema
+case_create               Create a CRM case for the current contact
+========================= ===================================================
+
+.. note:: **AI Implementation Hint**
+
+   ``type=insight`` AIs use a separate, smaller tool set instead of the tools
+   above: ``get_contact_interactions``, ``get_conversation_content``,
+   ``get_related_cases``, ``get_case_notes``,
+   ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, and
+   ``notify_agent``. See
+   :ref:`Insight Tools <ai-struct-tool-insight>`.
+
+For detailed documentation on each tool, see :ref:`Tool Functions <ai-struct-tool>`.
+
+.. _ai-overview-insight-listening:
+
+Insight Assistant: live call listening
+--------------------------------------
+
+When an agent opens a Case whose linked call is still in progress, the Insight
+Assistant can follow that call's live transcript and speak up on its own if the
+situation warrants it, instead of waiting to be asked.
+
+**What triggers a proactive note is entirely up to you.** It is defined in the
+AI's ``init_prompt``, the same field you already edit — for example: *"if the
+customer mentions cancellation, a compliance keyword, or requests something
+requiring approval, call notify_agent with a short actionable note; otherwise
+say nothing."* There is no separate rule engine and no extra configuration.
+
+Proactive notes arrive in the same Case Insight Assistant thread the agent is
+already reading, over the same delivery path as any other message, and are
+marked ``origin: "proactive"`` so they can be told apart from an answer to a
+question. See :ref:`Origin <ai-struct-message-origin>`.
+
+Listening stops automatically when the call ends. Saying nothing is the normal
+outcome of most checks — the assistant is expected to stay quiet unless your
+instructions genuinely call for an alert.
+
+Starting to listen
+++++++++++++++++++
+
+Listening is triggered explicitly, by a single call:
+
+.. code::
+
+    POST /service_agents/aicalls/<aicall-id>/listen
+
+There is no request body. The response is the current AI call
+(:ref:`AIcall <aicall-struct-aicall>`), returned immediately — it deliberately
+carries no listening-status field, so there is nothing to poll on it. The call
+is safe to repeat: opening the same Case panel again is free.
+
+Possible responses are ``200`` with the AI call, ``401``/``403`` if the caller
+is not an agent of the AI call's own customer, ``404`` if the AI call does not
+exist, and ``500`` on an internal error.
+
+Listening does **not** start automatically when an AI call is created. The two
+are separate actions on purpose, so either can be used without the other.
+
+.. _ai-overview-insight-session:
+
+Insight Assistant: session history
+----------------------------------
+
+Each Case has exactly one Insight Assistant thread, and reopening the Case
+returns the agent to it. What the model is shown, however, is scoped to the
+CURRENT session, and never includes anything from an earlier session.
+
+For a question the agent asks, the model sees at most the newest 100 messages of
+the current session. For a proactive check while the assistant is listening to a
+live call or conversation, it sees at most
+``AICALL_LISTEN_QA_CONTEXT_SIZE`` (default ``10``) recent question and answer
+rows from the current session, plus the transcript window.
+
+A new session starts when an agent reopens the Case panel after
+``AICALL_INSIGHT_SESSION_IDLE_MINUTES`` (default ``30``) has passed without an
+agent question. At that moment the assistant's instructions are refreshed from
+that assistant's current prompt, so a prompt you edited between the two visits
+takes effect on the next question rather than at some later point.
+
+Two consequences are worth planning around:
+
+* Proactive notes and earlier answers stay visible in the panel. They are part
+  of the Case record. They are simply no longer fed to the model once a new
+  session has started.
+* An instruction an agent gives the assistant in conversation, for example
+  *"from now on flag anything about refunds"*, lives until the next session
+  starts. Restate it in the new session, or put it in the AI's ``init_prompt``
+  where it belongs permanently.
+
+Configuring Tools
+-----------------
+Tools are configured per-AI using the ``tool_names`` field (Array of String):
+
+.. code::
+
+    // Enable all tools
+    "tool_names": ["all"]
+
+    // Enable specific tools only
+    "tool_names": ["connect_call", "send_email", "stop_service"]
+
+    // Disable all tools (conversation-only)
+    "tool_names": []
+
+.. note:: **AI Implementation Hint**
+
+   When using ``["all"]``, the AI can invoke any available tool, including ``stop_flow`` which terminates the entire call. For customer-facing deployments, prefer listing specific tools explicitly to prevent unintended call terminations.
+
+Using the AI
+============
+
+Initial Prompt
+--------------
+The initial prompt serves as the foundation for the AI's behavior. A well-crafted prompt ensures accurate and relevant responses. There is no enforced limit to prompt length, but we recommend keeping this confidential to ensure consistent performance and security.
+
+Example Prompt:
++++++++++++++++
+
+.. code::
+
+    Pretend you are an expert customer service agent.
+
+    Please respond kindly.
+
+AI Talk
+=======
+
+**AI Talk** enables real-time conversational AI with voice in VoIPBin, powered by high-quality TTS engines (ElevenLabs, Deepgram, OpenAI, etc.) for natural-sounding speech.
+
+.. image:: _static/images/ai_overview_ai_talk.png
+    :alt: AI Talk component in action builder
+    :align: center
+    :width: 300px
+
+Key Features
+------------
+
+* **Real-time Voice Interaction**: AI generates responses in real-time based on user input and delivers them as speech.
+* **Interruption Detection & Listening**: If the user speaks while the AI is talking, the system immediately **stops the AI's speech** and captures the user's voice via STT. This ensures smooth, continuous conversation flow.
+* **Low Latency Response**: For longer prompts, AI Talk generates and plays speech in smaller chunks, **reducing perceived response time** for the user.
+* **Multiple TTS/STT Providers**: Support for ElevenLabs, Deepgram, OpenAI, and many other providers.
+* **Tool Function Integration**: AI can perform actions like call transfers, sending messages, and managing variables during conversation.
+
+Built-in ElevenLabs Voice IDs
+---------------------------------
+VoIPBin uses a predefined set of voice IDs for various languages. Here are the default ElevenLabs Voice IDs currently in use:
+
+=========================== ==================================== =================================== =================================
+Language                    Male Voice ID (Name)                 Female Voice ID (Name)              Neutral Voice ID (Name)
+=========================== ==================================== =================================== =================================
+English (Default)           ``21m00Tcm4TlvDq8ikWAM`` (Adam)      ``EXAVITQu4vr4xnSDxMaL`` (Rachel)   ``EXAVITQu4vr4xnSDxMaL`` (Rachel)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Japanese                    ``Mv8AjrYZCBkdsmDHNwcB`` (Ishibashi) ``PmgfHCGeS5b7sH90BOOJ`` (Fumi)     ``PmgfHCGeS5b7sH90BOOJ`` (Fumi)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Chinese                     ``MI36FIkp9wRP7cpWKPTl`` (Evan)      ``ZL9dtgFhmkTzAHUUtQL8`` (Xiao)     ``ZL9dtgFhmkTzAHUUtQL8`` (Xiao)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+German                      ``uM8iMoqaSe1eDaJiWfxf`` (Felix)     ``nF7t9cuYo0u3kuVI9q4B`` (Dana)     ``nF7t9cuYo0u3kuVI9q4B`` (Dana)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+French                      ``IPgYtHTNLjC7Bq7IPHrm`` (Alexandre) ``SmWACbi37pETyxxMhSpc``            ``SmWACbi37pETyxxMhSpc``
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Hindi                       ``IvLWq57RKibBrqZGpQrC`` (Leo)       ``MF4J4IDTRo0AxOO4dpFR`` (Devi)     ``MF4J4IDTRo0AxOO4dpFR`` (Devi)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Korean                      ``nbrxrAz3eYm9NgojrmFK`` (Minjoon)   ``AW5wrnG1jVizOYY7R1Oo`` (Jiyoung)  ``AW5wrnG1jVizOYY7R1Oo`` (Jiyoung)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Italian                     ``iLVmqjzCGGvqtMCk6vVQ``             ``b8jhBTcGAq4kQGWmKprT`` (Sami)     ``b8jhBTcGAq4kQGWmKprT`` (Sami)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Spanish (Spain)             ``JjHBC66wF58p4ogebCNA`` (Eduardo)   ``UOIqAnmS11Reiei1Ytkc`` (Carolina) ``UOIqAnmS11Reiei1Ytkc`` (Carolina)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Portuguese (Brazil)         ``NdHRjGnnDKGnnm2c19le`` (Tiago)     ``CZD4BJ803C6T0alQxsR7`` (Andreia)  ``CZD4BJ803C6T0alQxsR7`` (Andreia)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Dutch                       ``G53Wkf3yrsXvhoQsmslL`` (James)     ``YUdpWWny7k5yb4QCeweX`` (Ruth)     ``YUdpWWny7k5yb4QCeweX`` (Ruth)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Russian                     ``qJBO8ZmKp4te7NTtYgzz`` (Egor)      ``ymDCYd8puC7gYjxIamPt``            ``ymDCYd8puC7gYjxIamPt``
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Arabic                      ``s83SAGdFTflAwJcAV81K`` (Adeeb)     ``EXAVITQu4vr4xnSDxMaL`` (Farah)    ``4wf10lgibMnboGJGCLrP`` (Farah)
+--------------------------- ------------------------------------ ----------------------------------- ---------------------------------
+Polish                      ``H5xTcsAIeS5RAykjz57a`` (Alex)      ``W0sqKm1Sfw1EzlCH14FQ`` (Beata)    ``W0sqKm1Sfw1EzlCH14FQ`` (Beata)
+=========================== ==================================== =================================== =================================
+
+Other ElevenLabs Voice ID Options
+---------------------------------
+VoIPBin allows you to personalize the text-to-speech output by specifying a custom ElevenLabs Voice ID. By setting the *voipbin.tts.elevenlabs.voice_id* variable, you can override the default voice selection.
+
+..
+
+    voipbin.tts.elevenlabs.voice_id: <Your Custom Voice ID>
+
+See how to set the variables :ref:`here <variable-overview>`.
+
+.. _ai-overview-conversation-ai:
+
+Using AI in Conversations (SMS / LINE)
+======================================
+
+VoIPBin can run an AI agent inside a text conversation channel (SMS or LINE),
+not only inside voice calls. The plumbing is the same ``ai_talk`` flow action
+used for voice; the difference is the reference type the AIcall is bound to.
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Chargeable (LLM token usage; no TTS/STT cost in chat mode)
+   * **Async:** Yes. The flow advances past ``ai_talk`` immediately; the AI's
+     reply is delivered asynchronously via the same channel as the inbound
+     message.
+
+Lifecycle
+---------
+
+* Each inbound message on a number with a ``message_flow`` triggers a fresh
+  per-message activeflow.
+* The activeflow's ``ai_talk`` action invokes ``bin-ai-manager`` with
+  ``reference_type = conversation`` and ``reference_id = conversation_id``.
+* ``bin-ai-manager`` reuses the existing AIcall for the conversation across
+  turns; a new one is created only when:
+
+  * The previous AIcall called the ``stop_service`` tool.
+  * The previous AIcall sat idle for more than
+    ``AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS`` (default 24).
+  * The previous AIcall was explicitly terminated.
+
+* The flow advances past ``ai_talk`` immediately and does not block on the
+  LLM. The AI's reply is delivered asynchronously by ``bin-ai-manager`` via
+  the same channel the inbound message used (SMS or LINE).
+
+.. note:: **AI Implementation Hint**
+
+   Because the per-message activeflow does not block on the LLM, do not chain
+   downstream actions in the message flow that depend on the AI's reply text
+   being available — they will run before the LLM responds. The reply is
+   delivered out-of-band via ``bin-message-manager``.
+
+Tool Availability for Conversation AI
+-------------------------------------
+
+The same tool registry is used for voice and conversation AI sessions today.
+Some voice-only tools may fail at execute time when invoked in a chat
+context (no live phone call exists for ``connect_call`` to operate on, etc.).
+A future release will whitelist conversation-safe tools at session start; for
+now, configure your AI's ``tool_names`` to include only chat-relevant tools.
+
+========================= ============== =========================================
+Tool                      Conversation   Notes
+========================= ============== =========================================
+``send_email``            Supported      Channel-agnostic
+------------------------- -------------- -----------------------------------------
+``send_message``          Supported      Channel-agnostic
+------------------------- -------------- -----------------------------------------
+``set_variables``         Supported      Flow context
+------------------------- -------------- -----------------------------------------
+``get_variables``         Supported      Flow context
+------------------------- -------------- -----------------------------------------
+``stop_service``          Supported      Ends the chat session
+------------------------- -------------- -----------------------------------------
+``get_aicall_messages``   Supported      Context-neutral
+------------------------- -------------- -----------------------------------------
+``search_knowledge``      Supported      Context-neutral
+------------------------- -------------- -----------------------------------------
+``describe_action``       Supported      Read-only schema lookup, channel-agnostic
+------------------------- -------------- -----------------------------------------
+``case_create``           Supported      Channel-agnostic
+------------------------- -------------- -----------------------------------------
+``connect_call``          Avoid          Requires a live phone call
+------------------------- -------------- -----------------------------------------
+``create_call``           Avoid          Not on the conversation-safe whitelist today
+------------------------- -------------- -----------------------------------------
+``stop_media``            Avoid          No media playback in chat
+------------------------- -------------- -----------------------------------------
+``stop_flow``             Avoid          Per-message flow already short
+------------------------- -------------- -----------------------------------------
+``get_correlation``       Avoid          Not on the conversation-safe whitelist today
+------------------------- -------------- -----------------------------------------
+``get_resource``          Avoid          Not on the conversation-safe whitelist today
+========================= ============== =========================================
+
+.. note:: **AI Implementation Hint**
+
+   When configuring an AI for use with conversation flows, prefer an explicit
+   ``tool_names`` allowlist (e.g., ``["send_email", "send_message",
+   "set_variables", "get_variables", "stop_service"]``) instead of
+   ``["all"]``. This avoids surprising failures from voice-only tools the LLM
+   may try to call.
+
+Concurrency and Reliability
+---------------------------
+
+* Multiple inbound messages on the same conversation interrupt the previous
+  pipecat session (best-effort) and start a new one. Only the response from
+  the most recent user message reaches the user; superseded responses are
+  dropped by ``bin-ai-manager``'s response guard, which compares
+  ``pipecatcall_id`` between the in-flight session and the LLM response.
+* ``bin-pipecat-manager`` pod restarts do not lose conversation context.
+  Message history is persisted in ``ai_messages`` and the next inbound
+  message picks up on a healthy pod via the shared queue.
+* If a stale or superseded LLM response arrives, it is silently discarded —
+  this is normal during rapid user back-and-forth and does not indicate a
+  fault.
+
+AI Summary
+==========
+
+The AI Summary feature in VoIPBin generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.
+
+.. image:: _static/images/ai_overview_summary.png
+    :alt: AI summary component in action builder
+    :align: center
+
+Supported Resources
+-------------------
+
+AI summaries work with a single resource at a time. The supported resources are:
+
+Real-time Summary:
+* Live call transcription
+* Live conference transcription
+
+Non-Real-time Summary:
+* Transcribed recordings (post-call)
+* Recorded conferences (post-call)
+
+Choosing Between Real-time and Non-Real-time Summaries
+------------------------------------------------------
+
+Developers must decide whether to use a real-time or non-real-time summary based on their needs:
+
+=========================== ============= ==============================================
+Use Case                    Summary Type  Recommendation
+=========================== ============= ==============================================
+Live call monitoring        Real-time     Use AI summary with a live call transcription
+--------------------------- ------------- ----------------------------------------------
+Live conference insights    Real-time     Use AI summary with a live conference transcription
+--------------------------- ------------- ----------------------------------------------
+Post-call analysis          Non-real-time Use AI summary with transcribe_id from a completed call
+--------------------------- ------------- ----------------------------------------------
+Recorded conference summary Non-real-time Use AI summary with recording_id
+=========================== ============= ==============================================
+
+AI Summary Behavior
+-------------------
+
+* The summary action processes only one resource at a time.
+* If multiple AI summary actions are used in a flow, each executes independently.
+* If an AI summary action is triggered multiple times for the same resource, it only returns the most recent segment.
+* In conference calls, the summary is unified across all participants rather than per speaker.
+
+Ensuring Full Coverage
+----------------------
+
+Since starting an AI summary action late in the call results in missing earlier conversations, developers should follow best practices:
+* Enable transcribe_start early: This ensures that transcriptions are available even if an AI summary action is triggered later.
+* Use transcribe_id instead of call_id: This allows summarizing a full transcription rather than just the latest segment.
+* For post-call summaries, use recording_id: This ensures that the full conversation is summarized from the recorded audio.
+
+External AI Agent Integration
+=============================
+For users who prefer to use external AI services, VoIPBin offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
+
+MCP Server
+----------
+A recommended open-source implementation is available here:
+
+* https://github.com/nrjchnd/voipbin-mcp
+
+
+Common Scenarios
+================
+
+**Scenario 1: Customer Service Agent**
+
+AI handles routine customer inquiries with tool actions.
+
+::
+
+    Caller: "I want to check my order status"
+         |
+         v
+    +---------------------------+
+    | AI: "I'd be happy to help.|
+    | What's your order number?"|
+    +---------------------------+
+         |
+         v
+    Caller: "Order 12345"
+         |
+         v
+    +---------------------------+
+    | AI triggers tool:         |
+    | get_variables(order_id)   |
+    | -> Retrieves order data   |
+    +---------------------------+
+         |
+         v
+    +---------------------------+
+    | AI: "Your order shipped   |
+    | yesterday and will arrive |
+    | by Friday."               |
+    +---------------------------+
+
+**Scenario 2: Appointment Scheduling**
+
+AI collects information and transfers to agent.
+
+::
+
+    +------------------------------------------------+
+    | AI Interaction                                 |
+    +------------------------------------------------+
+    |                                                |
+    | AI: "Welcome! How can I help you today?"       |
+    |                                                |
+    | Caller: "I need to schedule an appointment"    |
+    |                                                |
+    | AI: "What day works best for you?"             |
+    |                                                |
+    | Caller: "Next Tuesday afternoon"               |
+    |                                                |
+    | AI: "Let me transfer you to our scheduling     |
+    |      team with this information."              |
+    |                                                |
+    | [Tool: set_variables(preferred_date, time)]    |
+    | [Tool: connect_call(scheduling_queue)]         |
+    |                                                |
+    +------------------------------------------------+
+
+**Scenario 3: Interactive Voice Survey**
+
+AI collects survey responses with natural conversation.
+
+::
+
+    AI Flow:
+
+    1. Greeting + consent
+       "This is a brief satisfaction survey. May I continue?"
+
+    2. Question 1 (scale)
+       "On a scale of 1-10, how satisfied are you?"
+       [Tool: set_variables(q1_score)]
+
+    3. Question 2 (open-ended)
+       "What could we improve?"
+       [Tool: set_variables(q2_feedback)]
+
+    4. Thank you + end
+       "Thank you for your feedback!"
+       [Tool: stop_service]
+
+
+Best Practices
+==============
+
+**1. Prompt Design**
+
+- Keep prompts clear and focused on specific tasks
+- Include examples of expected responses
+- Define the AI's persona and tone
+- Specify what tools the AI should use and when
+
+**2. Tool Configuration**
+
+- Enable only tools the AI needs for its task
+- Use ``["all"]`` cautiously - prefer specific tool lists
+- Test tool interactions thoroughly before deployment
+- Handle tool failures gracefully in prompts
+
+**3. Conversation Flow**
+
+- Set appropriate timeouts for user responses
+- Use voice detection settings that match your use case
+- Enable context retention for multi-turn conversations
+- Plan exit paths (transfer, end call, escalation)
+
+**4. Audio Quality**
+
+- Choose TTS voices appropriate for your language/region
+- Test audio quality across different phone networks
+- Consider latency when selecting STT/TTS providers
+- Use 16kHz providers for better quality when possible
+
+
+Troubleshooting
+===============
+
+.. note:: **AI Implementation Hint**
+
+   When diagnosing AI call issues, check these endpoints in order: (1) ``GET https://api.voipbin.net/v1.0/calls/{id}`` to verify call status and hangup reason, (2) ``GET https://api.voipbin.net/v1.0/activeflows/{id}`` to check flow execution state, (3) WebSocket events for real-time error notifications.
+
+**Common HTTP Errors**
+
+* **400 Bad Request:**
+    * **Cause:** Invalid ``engine_model`` format. Must be ``<provider>.<model>`` (e.g., ``openai.gpt-4o``).
+    * **Fix:** Verify the format matches the provider table in :ref:`Engine Models <ai-struct-ai-engine_model>`.
+
+* **402 Payment Required:**
+    * **Cause:** Insufficient account balance for AI session (LLM + TTS + STT costs).
+    * **Fix:** Check balance via ``GET https://api.voipbin.net/v1.0/billing-accounts``. Top up before retrying.
+
+* **404 Not Found:**
+    * **Cause:** The ``ai_id`` does not exist or belongs to a different customer.
+    * **Fix:** Verify the UUID was obtained from ``GET https://api.voipbin.net/v1.0/ais`` or ``POST https://api.voipbin.net/v1.0/ais``.
+
+* **500 Internal Server Error:**
+    * **Cause:** LLM provider API key is invalid or the provider is unavailable.
+    * **Fix:** Verify ``engine_key`` is correct. Check the provider's status page.
+
+**Audio Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| No audio from AI          | Check Pipecat connection; verify TTS provider  |
+|                           | credentials; check audio routing               |
++---------------------------+------------------------------------------------+
+| Choppy or delayed audio   | Check network latency; try different TTS       |
+|                           | provider; verify sample rate conversion        |
++---------------------------+------------------------------------------------+
+| User not heard            | Check STT configuration; verify microphone     |
+|                           | audio is reaching the system                   |
++---------------------------+------------------------------------------------+
+
+**AI Response Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| AI gives wrong answers    | Review and refine prompt; add examples;        |
+|                           | check context length limits                    |
++---------------------------+------------------------------------------------+
+| AI doesn't use tools      | Verify tool_names configuration; check tool    |
+|                           | descriptions in prompt; review LLM response    |
++---------------------------+------------------------------------------------+
+| Tool execution fails      | Check tool handler logs; verify target service |
+|                           | (call-manager, etc.) is available              |
++---------------------------+------------------------------------------------+
+
+**Connection Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| AI session won't start    | Check AI Manager connectivity; verify Pipecat  |
+|                           | is running; check database connection          |
++---------------------------+------------------------------------------------+
+| Session drops unexpectedly| Check timeout settings; review AI Manager logs |
+|                           | for errors; verify WebSocket stability         |
++---------------------------+------------------------------------------------+
+
+
+AI Prompt History
+=================
+
+The prompt history tracks every distinct ``init_prompt`` value that has been set on an AI
+configuration over time. A new history entry is created automatically whenever
+``init_prompt`` changes via ``POST /ais`` or ``PUT /ais/{id}``. History entries are
+read-only; to restore a previous prompt, read the desired entry and submit it via
+``PUT /ais/{id}``.
+
+List prompt history
+-------------------
+
+``GET https://api.voipbin.net/v1.0/ais/{ai_id}/prompt_histories``
+
+Returns a list of ``AIPromptHistory`` objects for the specified AI, newest first.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per page.
+* ``page_token`` (string, optional): Pagination token returned in a previous response.
+
+Get a single prompt history entry
+----------------------------------
+
+``GET https://api.voipbin.net/v1.0/ais/{ai_id}/prompt_histories/{history_id}``
+
+Returns a single ``AIPromptHistory`` object.
+
+For the full struct definition, see :ref:`AIPromptHistory <ai-struct-aiprompthistory>`.
+
+AI Participants
+===============
+
+Participants track the individual legs (callers, agents, etc.) that are part of
+an AI call session. Use these endpoints to inspect who is active in a given
+session or to list all sessions a particular AI agent is involved in.
+
+List participants for an AI call
+---------------------------------
+
+``GET https://api.voipbin.net/v1.0/aicalls/{aicall_id}/participants``
+
+Returns a list of participant objects for the specified AI call.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per page.
+* ``page_token`` (string, optional): Pagination token returned in a previous response.
+
+List participants for an AI agent
+-----------------------------------
+
+``GET https://api.voipbin.net/v1.0/ais/{ai_id}/participants``
+
+Returns a list of participant objects across all AI call sessions associated
+with the specified AI agent.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per page.
+* ``page_token`` (string, optional): Pagination token returned in a previous response.
+
+Terminate AI Call
+=================
+
+Use this endpoint to forcefully end an in-progress AI call session. Once
+terminated, the session status transitions to ``terminated`` and no further
+AI interactions occur on the associated call leg.
+
+Terminate a session
+-------------------
+
+``POST https://api.voipbin.net/v1.0/aicalls/{id}/terminate``
+
+Terminates an in-progress AI call session immediately.
+
+**Path parameters**
+
+* ``id`` (UUID, required): The UUID of the AI call session to terminate.
+
+**Response** — 200 OK
+
+Returns the terminated AI call object.
+
+.. code::
+
+    {
+        "id": "<uuid>",
+        "customer_id": "<uuid>",
+        ...
+    }
+
+For the full struct definition, see :ref:`AIcall <aicall-struct-aicall>`.
+
+AI Audit
+========
+
+The AI Audit feature evaluates how well the AI assistant performed during a
+completed call session. Triggering an audit sends the call transcript and the
+prompt snapshot used during the call to an LLM-based evaluator, which returns
+a numeric score and structured feedback. Use audits to monitor AI quality over
+time and identify calls that need attention.
+
+Audit evaluation is asynchronous. After triggering, poll the audit record
+until ``status`` changes from ``progressing`` to ``completed`` or ``failed``.
+
+Automatic auditing
+------------------
+
+To audit every finished AICall automatically without calling ``POST /aiaudits``
+manually, set ``auto_aicall_audit_enabled: true`` on the AI configuration. When
+this flag is enabled, the platform triggers an audit immediately after each
+AICall that used the AI finishes — whether the call was a normal voice session
+or a team call. Audits created this way behave identically to manually triggered
+ones and appear in the same ``GET /aiaudits`` list.
+
+.. note:: **AI Implementation Hint**
+
+   ``auto_aicall_audit_enabled`` is an opt-in field that defaults to ``false``.
+   Enable it on AI configurations where you want continuous quality monitoring.
+   If you only need to audit specific calls, leave it ``false`` and use
+   ``POST /aiaudits`` on demand.
+
+Trigger an audit
+----------------
+
+``POST https://api.voipbin.net/v1.0/aiaudits``
+
+Requests the creation of one or more audit records for a completed AI call.
+
+**Request body**
+
+.. code::
+
+    {
+        "aicall_id": "<UUID of the AI call to audit>",
+        "language": "<BCP47 language code, e.g. en-US>"
+    }
+
+* ``aicall_id`` (UUID, required): The call session to evaluate. Must belong to the authenticated customer.
+* ``language`` (string, optional): Language for the evaluator. Defaults to the AI configuration's language if omitted.
+
+**Response** — 202 Accepted
+
+.. code::
+
+    {
+        "result": [ <AIAudit object>, ... ]
+    }
+
+List audits
+-----------
+
+``GET https://api.voipbin.net/v1.0/aiaudits``
+
+Returns a paginated list of audit records owned by the authenticated customer.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per page (1–100, default 100).
+* ``page_token`` (string, optional): Pagination token returned in a previous response.
+* ``aicall_id`` (UUID, optional): Filter by AI call session.
+* ``ai_id`` (UUID, optional): Filter by AI configuration.
+
+Get a single audit
+------------------
+
+``GET https://api.voipbin.net/v1.0/aiaudits/{id}``
+
+Returns the audit record for the given ID.
+
+Delete an audit
+---------------
+
+``DELETE https://api.voipbin.net/v1.0/aiaudits/{id}``
+
+Soft-deletes the audit record. The record is retained but marked as deleted and excluded from future list responses.
+
+See :ref:`AI Audit Structure <ai-struct-aiaudit>` for the full field reference.
+
+AI Prompt Improvement Proposals
+===============================
+
+VoIPBin can analyze multiple completed AI audits for a single AI and generate
+an improved system prompt that addresses the failure patterns the audits
+surfaced. The improved prompt is produced by Gemini 2.5 Pro and returned for
+human review; nothing is applied to the live AI until you explicitly accept
+the proposal.
+
+Proposal generation is asynchronous. After triggering, poll the proposal
+record until ``status`` changes from ``progressing`` to ``completed`` (or
+``failed``), then either ``accept`` to apply the new prompt or ``reject`` to
+dismiss it.
+
+Workflow
+--------
+
+1. Run audits via the AI Audit API on completed AI calls.
+2. ``POST https://api.voipbin.net/v1.0/aipromptproposals`` with the target
+   AI's id and a list of audit ids. VoIPBin returns ``202 Accepted`` and a
+   proposal record in ``progressing`` status; generation runs asynchronously
+   via Gemini 2.5 Pro.
+3. Poll ``GET https://api.voipbin.net/v1.0/aipromptproposals/{id}`` until
+   ``status`` is ``completed``. The record now contains ``original_prompt``,
+   ``proposed_prompt``, and a ``rationale``. Render the diff client-side from
+   ``original_prompt`` vs. ``proposed_prompt``.
+4. To apply: ``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/accept``.
+   VoIPBin writes a new ``AIPromptHistory`` row and updates the AI's
+   ``init_prompt`` in a single transaction. The proposal status becomes
+   ``accepted``.
+5. To dismiss: ``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/reject``
+   (status becomes ``rejected``) or ``DELETE`` the proposal (soft-deletes).
+
+Create a proposal
+-----------------
+
+``POST https://api.voipbin.net/v1.0/aipromptproposals``
+
+Submits a set of completed audits and asks VoIPBin to generate an improved
+``init_prompt`` for the target AI.
+
+**Request body**
+
+.. code::
+
+    {
+        "ai_id": "<UUID of the AI to improve>",
+        "audit_ids": ["<UUID>", "<UUID>", "..."],
+        "language": "<BCP47 language code, e.g. en-US>"
+    }
+
+* ``ai_id`` (UUID, required): The AI configuration whose ``init_prompt``
+  should be improved. Must belong to the authenticated customer.
+* ``audit_ids`` (array of UUIDs, required): Between 1 and 20 audit records to
+  use as evidence. All audits must be for the target AI AND for the AI's
+  current prompt version.
+* ``language`` (string, optional): Language for the generation prompt.
+  Defaults to the AI configuration's language if omitted.
+
+**Response** — 202 Accepted
+
+Returns the proposal record in ``progressing`` status. ``proposed_prompt``
+and ``rationale`` are empty until generation completes.
+
+List proposals
+--------------
+
+``GET https://api.voipbin.net/v1.0/aipromptproposals``
+
+Returns a paginated list of proposal records owned by the authenticated
+customer.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per
+  page (1–100, default 100).
+* ``page_token`` (string, optional): Pagination token returned in a previous
+  response.
+* ``ai_id`` (UUID, optional): Filter by AI configuration.
+
+Get a single proposal
+---------------------
+
+``GET https://api.voipbin.net/v1.0/aipromptproposals/{id}``
+
+Returns the proposal record for the given ID. Use this endpoint to poll for
+generation completion.
+
+Accept a proposal
+-----------------
+
+``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/accept``
+
+Applies ``proposed_prompt`` to the AI's ``init_prompt`` in a single
+transaction. A new ``AIPromptHistory`` row is created and its id is written
+back to the proposal as ``applied_prompt_history_id``. The proposal status
+becomes ``accepted``.
+
+Reject a proposal
+-----------------
+
+``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/reject``
+
+Marks the proposal as ``rejected`` without modifying the AI. Use this to
+record an explicit decision to dismiss the suggestion.
+
+Delete a proposal
+-----------------
+
+``DELETE https://api.voipbin.net/v1.0/aipromptproposals/{id}``
+
+Soft-deletes the proposal record. The record is retained but marked as
+deleted and excluded from future list responses.
+
+Constraints
+-----------
+
+* All selected audits MUST be for the target AI AND for the AI's current
+  prompt version. Mismatches cause ``POST /v1.0/aipromptproposals`` to return
+  ``400`` with the offending audit ids in the error message.
+* If the AI's ``init_prompt`` is updated between create and accept, the
+  proposal becomes ``expired`` and accept returns ``409``.
+* If any source audit is deleted between create and accept, accept returns
+  ``409 audit set invalidated``.
+* Up to 20 audits per proposal.
+* Up to 3 ``progressing`` proposals per customer at once. Exceeding returns
+  ``429``.
+
+See :ref:`AI Prompt Proposal Structure <ai-struct-aipromptproposal>` for the
+full field reference, and :ref:`ai-tutorial-prompt-proposal` for an
+end-to-end walkthrough.
+
+Related Documentation
+=====================
+
+- :ref:`AI Structure <ai-struct-ai>` - AI configuration options
+- :ref:`AI Audit Structure <ai-struct-aiaudit>` - AI audit struct fields
+- :ref:`AI Prompt History Structure <ai-struct-aiprompthistory>` - Prompt history struct fields
+- :ref:`AI Prompt Proposal Structure <ai-struct-aipromptproposal>` - AI prompt improvement proposal struct fields
+- :ref:`Tool Functions <ai-struct-tool>` - Available tool documentation
+- :ref:`Transcribe Overview <transcribe-overview>` - Speech-to-text languages
+- :ref:`Flow Actions <flow-struct-action>` - ai_talk action configuration
+- :ref:`Variable Overview <variable-overview>` - Using variables with AI

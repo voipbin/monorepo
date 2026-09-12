@@ -157,11 +157,11 @@ type CampaignHandler interface {
 
 	UpdateBasicInfo(ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
-		campaignType campaign.Type,
-		serviceLevel int,
-		endHandle campaign.EndHandle,
+		name *string,
+		detail *string,
+		campaignType *campaign.Type,
+		serviceLevel *int,
+		endHandle *campaign.EndHandle,
 	) (*campaign.Campaign, error)
 	UpdateResourceInfo(ctx context.Context, id, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.Campaign, error)
 	UpdateNextCampaignID(ctx context.Context, id, nextCampaignID uuid.UUID) (*campaign.Campaign, error)

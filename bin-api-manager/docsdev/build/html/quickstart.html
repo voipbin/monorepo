@@ -1,0 +1,1933 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="SDK(Software Development Kit)" href="sdk.html"><link rel="prev" title="Introduction" href="intro.html">
+        <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Quickstart - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-primary: #0066cc;
+  --color-brand-content: #0066cc;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     VoIPBin is an opensource CPaaS platform. <a style="color: var(--color-announcement-text);" href="https://github.com/voipbin/voipbin">Star us on GitHub</a> 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">VoIPBin Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/voipbin-high-resolution-logo-white-transparent.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">VoIPBin Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="flow.html">Flow</a><input aria-label="Toggle navigation of Flow" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_struct_flow.html">Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_struct_action.html">Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_tutorial_basic.html">Tutorial basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_tutorial_scenario.html">Tutorial scenario</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_execution_internals.html">Flow Execution Internals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_advanced_patterns.html">Advanced Flow Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_debugging.html">Flow Debugging and Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_best_practices.html">Flow Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_struct_activeflow.html">Activeflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="variable.html">Variable</a><input aria-label="Toggle navigation of Variable" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#using-variables-in-flows">Using Variables in Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#capturing-and-setting-dynamic-values">Capturing and Setting Dynamic Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#integration-with-applications">Integration with Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#best-practices-and-considerations">Best Practices and Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_variable.html">Variable</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="webhook.html">Webhook</a><input aria-label="Toggle navigation of Webhook" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="webhook_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webhook_struct_webhook.html">Webhook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webhook_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="direct_hash.html">Direct Hash</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="common.html">Common</a><input aria-label="Toggle navigation of Common" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="common_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="common_struct_address.html">Address</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="call.html">Call</a><input aria-label="Toggle navigation of Call" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="call_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_transfer.html">Transfer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transfer_struct_transfer.html">Transfer Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_groupcall.html">Groupcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_struct_call.html">Struct Call</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_struct_groupcall.html">Struct Groupcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_sequences.html">Internal Call Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_scenarios.html">Advanced Call Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_media.html">Call Media and Codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_troubleshooting.html">Call Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="conference.html">Conference</a><input aria-label="Toggle navigation of Conference" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="conference_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_struct_conference.html">Conference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_struct_conferencecall.html">conferencecall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="queue.html">Queue</a><input aria-label="Toggle navigation of Queue" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="queue_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_struct_queue.html">Queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_struct_queuecall.html">Queuecall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="recording.html">Recording</a><input aria-label="Toggle navigation of Recording" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="recording_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording_struct_recording.html">Recording</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="transcribe.html">Transcribe</a><input aria-label="Toggle navigation of Transcribe" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html">Transcribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html#transcription">Transcription</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html#speech-webhook-message">Speech Webhook Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcript_struct_transcript.html">Transcript</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="speaking.html">Speaking</a><input aria-label="Toggle navigation of Speaking" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="speaking_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speaking_struct_speaking.html">Speaking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speaking_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="mediastream.html">Mediastream</a><input aria-label="Toggle navigation of Mediastream" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="mediastream_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streaming_struct_streaming.html">Streaming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mediastream_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="message.html">Message</a><input aria-label="Toggle navigation of Message" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="message_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="email.html">Email</a><input aria-label="Toggle navigation of Email" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="email_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_struct_email.html">Email</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_struct_attachment.html">Attachment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="talk.html">Talk</a><input aria-label="Toggle navigation of Talk" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="talk_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_talk.html">Talk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_participant.html">Participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="conversation.html">Conversation</a><input aria-label="Toggle navigation of Conversation" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="conversation_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_conversation.html">Conversation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_account.html">Conversation Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="webchat.html">Webchat</a><input aria-label="Toggle navigation of Webchat" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="webchat_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_widget.html">Widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_session.html">Session</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_message.html">Message</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ai.html">AI</a><input aria-label="Toggle navigation of AI" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#tool-functions">Tool Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#using-the-ai">Using the AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-talk">AI Talk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#using-ai-in-conversations-sms-line">Using AI in Conversations (SMS / LINE)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-summary">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#external-ai-agent-integration">External AI Agent Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#common-scenarios">Common Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-history">AI Prompt History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-participants">AI Participants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#terminate-ai-call">Terminate AI Call</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-audit">AI Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_message.html">AI Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_summary.html">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aiaudit.html">AI Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aipromptproposal.html">AI Prompt Proposal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_participant.html">AI Call Participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial_prompt_proposal.html">Tutorial: Improve an AI Prompt from Audits</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a><input aria-label="Toggle navigation of AI Voice Agent Integration" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai_voice_agent_integration_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_voice_agent_integration_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="rag.html">RAG</a><input aria-label="Toggle navigation of RAG" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_struct_rag.html">RAG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="timeline.html">Timeline</a><input aria-label="Toggle navigation of Timeline" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="timeline_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_struct_event.html">Timeline event</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="timeline_analysis.html">Timeline analysis</a><input aria-label="Toggle navigation of Timeline analysis" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_struct_timeline_analysis.html">Timeline analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="team.html">Team</a><input aria-label="Toggle navigation of Team" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#runtime-behavior">Runtime Behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_struct_team.html">Team</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="campaign.html">Campaign</a><input aria-label="Toggle navigation of Campaign" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="campaign_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_struct_campaign.html">Campaign</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_struct_campaigncall.html">Campaigncall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outdial.html">Outdial</a><input aria-label="Toggle navigation of Outdial" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outdial_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_struct_outdial.html">Outdial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_struct_outdialtarget.html">Outdialtarget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outplan.html">Outplan</a><input aria-label="Toggle navigation of Outplan" class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outplan_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan_struct_outplan.html">Outplan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Identity &amp; Contacts</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="accesskey.html">Accesskey</a><input aria-label="Toggle navigation of Accesskey" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_overview.html">Accesskey API Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="agent.html">Agent</a><input aria-label="Toggle navigation of Agent" class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="agent_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agent_struct_agent.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agent_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="auth.html">Auth</a><input aria-label="Toggle navigation of Auth" class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" role="switch" type="checkbox"/><label for="toctree-checkbox-28"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="auth_overview.html">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="contact.html">Contact</a><input aria-label="Toggle navigation of Contact" class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" role="switch" type="checkbox"/><label for="toctree-checkbox-29"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="contact_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_struct_contact.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_address_overview.html">Contact Addresses Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_address_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_case_overview.html">Case Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_case_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_peer_event_overview.html">Peer Events Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_peer_event_struct.html">Structures</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="customer.html">Customer</a><input aria-label="Toggle navigation of Customer" class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" role="switch" type="checkbox"/><label for="toctree-checkbox-30"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="customer_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer_struct_customer.html">Customer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Agent Console</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="service_agent.html">Agent Console</a><input aria-label="Toggle navigation of Agent Console" class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" role="switch" type="checkbox"/><label for="toctree-checkbox-31"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_case_overview.html">Case Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_case_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Numbers &amp; PSTN</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="number.html">Number</a><input aria-label="Toggle navigation of Number" class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" role="switch" type="checkbox"/><label for="toctree-checkbox-32"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="number_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number_struct_number.html">Number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="availablenumber_struct.html">Available Number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="provider.html">Provider</a><input aria-label="Toggle navigation of Provider" class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" role="switch" type="checkbox"/><label for="toctree-checkbox-33"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="provider_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider_struct_provider.html">Provider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="providercall.html">ProviderCall</a><input aria-label="Toggle navigation of ProviderCall" class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" role="switch" type="checkbox"/><label for="toctree-checkbox-34"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="providercall_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="providercall_struct_providercall.html">ProviderCall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="providercall_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="route.html">Route</a><input aria-label="Toggle navigation of Route" class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" role="switch" type="checkbox"/><label for="toctree-checkbox-35"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="route_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route_struct_route.html">Route</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="extension.html">Extension</a><input aria-label="Toggle navigation of Extension" class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" role="switch" type="checkbox"/><label for="toctree-checkbox-36"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="extension_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension_struct_extension.html">Extension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="trunk.html">Trunk</a><input aria-label="Toggle navigation of Trunk" class="toctree-checkbox" id="toctree-checkbox-37" name="toctree-checkbox-37" role="switch" type="checkbox"/><label for="toctree-checkbox-37"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview_trunking.html">Trunking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview_domain_name.html">Domain name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_struct_trunk.html">Trunk</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><input aria-label="Toggle navigation of OutboundConfig" class="toctree-checkbox" id="toctree-checkbox-38" name="toctree-checkbox-38" role="switch" type="checkbox"/><label for="toctree-checkbox-38"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Billing &amp; Operations</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="billing_account.html">Billing Account</a><input aria-label="Toggle navigation of Billing Account" class="toctree-checkbox" id="toctree-checkbox-39" name="toctree-checkbox-39" role="switch" type="checkbox"/><label for="toctree-checkbox-39"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_struct_billing.html">Billing</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="storage.html">Storage</a><input aria-label="Toggle navigation of Storage" class="toctree-checkbox" id="toctree-checkbox-40" name="toctree-checkbox-40" role="switch" type="checkbox"/><label for="toctree-checkbox-40"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_account.html">Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html">File</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tag.html">Tag</a><input aria-label="Toggle navigation of Tag" class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" role="switch" type="checkbox"/><label for="toctree-checkbox-41"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_struct_tag.html">Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="architecture.html">Architecture</a><input aria-label="Toggle navigation of Architecture" class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" role="switch" type="checkbox"/><label for="toctree-checkbox-42"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="architecture_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_backend.html">Backend Microservices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_communication.html">Inter-Service Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_data.html">Data Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_dataflow.html">Data Flow Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_rtc.html">Real-Time Communication (RTC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_flow.html">System Request Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_sequences.html">Call Flow Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_deployment.html">Deployment Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_security.html">Security Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="websocket.html">Websocket</a><input aria-label="Toggle navigation of Websocket" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" role="switch" type="checkbox"/><label for="toctree-checkbox-43"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="websocket_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="websocket_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="websocket_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="self_hosting.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/quickstart.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/quickstart.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="quickstart">
+<span id="quickstart-main"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">¶</a></h1>
+<section id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h2>
+<p>Create your VoIPBin account and get API credentials.</p>
+<section id="signup">
+<span id="quickstart-signup"></span><h3>Signup<a class="headerlink" href="#signup" title="Link to this heading">¶</a></h3>
+<p>To use the VoIPBin production API, you need your own account. There are two ways to sign up: via the Admin Console (browser) or via the API (headless, for automated systems).</p>
+<section id="sign-up-via-admin-console">
+<h4>Sign up via Admin Console<a class="headerlink" href="#sign-up-via-admin-console" title="Link to this heading">¶</a></h4>
+<ol class="arabic simple">
+<li><p>Go to the <a class="reference external" href="https://admin.voipbin.net">admin console</a>.</p></li>
+<li><p>Click <strong>Sign Up</strong>.</p></li>
+<li><p>Enter your email address and submit.</p></li>
+<li><p>Check your inbox for a verification email.</p></li>
+<li><p>Click the verification link in the email to verify your address.</p></li>
+<li><p>You will receive a welcome email with instructions to set your password.</p></li>
+</ol>
+<p>If the link has expired (verification links are valid for 24 hours, and an unverified signup is left open for 72 hours), the page it opens will offer to send you a new one. Enter your email address there and follow the fresh link.</p>
+<p>Once your password is set, you can log in to the <a class="reference external" href="https://admin.voipbin.net">admin console</a> and start making API requests.</p>
+</section>
+<section id="sign-up-via-api">
+<h4>Sign up via API<a class="headerlink" href="#sign-up-via-api" title="Link to this heading">¶</a></h4>
+<p>For automated systems and AI agents, use the API signup flow. This is a single API call that returns an access key immediately.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> response includes an <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> with an API token that can be used immediately — no need to call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> separately. Note that <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> always returns HTTP 200 regardless of success to prevent email enumeration. An empty response body (<code class="docutils literal notranslate"><span class="pre">{}</span></code>) may indicate the email is already registered or invalid.</p>
+</div>
+<p><strong>Initiate signup</strong></p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/signup</span></code> with your email address (String, Required) and <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code> (Boolean, Required, must be <code class="docutils literal notranslate"><span class="pre">true</span></code>). All other fields are optional.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/auth/signup' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "email": "your-email@example.com",
+        "name": "Your Company Name",
+        "accepted_tos": true
+    }'
+</pre></div>
+</div>
+<p>Response (always HTTP 200):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"customer"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Your Company Name"</span><span class="p">,</span>
+        <span class="s2">"email"</span><span class="p">:</span> <span class="s2">"your-email@example.com"</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">},</span>
+    <span class="s2">"accesskey"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+        <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"your-api-access-key-token"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> (String) is your API key. Use it immediately for authentication — see <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
+<p>A verification email is also sent to the email address you provided. Click the link in the email to verify your address and activate your account. After verification, you will receive a welcome email with instructions to set your password.</p>
+<p>If that email is lost or the link expires, request a new one with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> (body: <code class="docutils literal notranslate"><span class="pre">{&quot;email&quot;:</span> <span class="pre">&quot;your-email&#64;example.com&quot;}</span></code>). Like signup, it always returns HTTP 200 with an empty body, so the response does not tell you whether an email was sent. Sends are limited to one per 60 seconds and 5 per 24 hours per account. See <a class="reference internal" href="auth_overview.html#auth-overview"><span class="std std-ref">Auth Overview</span></a> for details.</p>
+</section>
+<section id="troubleshooting">
+<h4>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>200 OK but empty response (``{}``):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The email may already be registered, or the email format is invalid.</p></li>
+<li><p><strong>Fix:</strong> Try logging in via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> with the email. If the account exists, use the existing credentials. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> always returns 200 to prevent email enumeration.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Missing required fields (<code class="docutils literal notranslate"><span class="pre">email</span></code> or <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code>) or <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code> is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Ensure the request body includes <code class="docutils literal notranslate"><span class="pre">&quot;email&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;accepted_tos&quot;:</span> <span class="pre">true</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Verification link expired / verification email never arrived:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Verification tokens are valid for 24 hours, and the email may have been filtered or lost.</p></li>
+<li><p><strong>Fix:</strong> Call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify-resend</span></code> with the registered email address, or use the resend form on the page the expired link opens. An account that already expired for want of verification can still be recovered this way.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="authentication">
+<span id="quickstart-authentication"></span><h3>Authentication<a class="headerlink" href="#authentication" title="Link to this heading">¶</a></h3>
+<p>Every API request must be authenticated using either a <strong>Token</strong> (JWT string) or an <strong>Accesskey</strong> (API key string). Both serve the same purpose — choose whichever fits your workflow.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Use <strong>Token</strong> (JWT) for short-lived, session-based authentication (valid for 7 days). Use <strong>Accesskey</strong> for long-lived, programmatic access with custom expiration. For automated systems and AI agents, Accesskey is recommended because it does not require periodic re-authentication.</p>
+</div>
+<section id="generate-a-token">
+<h4>Generate a Token<a class="headerlink" href="#generate-a-token" title="Link to this heading">¶</a></h4>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">/auth/login</span></code> with your username (String) and password (String) to receive a JWT token. The token is valid for 7 days.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/auth/login' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "username": "your-voipbin-username",
+        "password": "your-voipbin-password"
+    }'
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"your-voipbin-username"</span><span class="p">,</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Use the token in subsequent API requests. See <a class="reference internal" href="#using-credentials-in-api-requests">Using Credentials in API Requests</a> below for usage examples.</p>
+</section>
+<section id="generate-an-accesskey">
+<h4>Generate an Accesskey<a class="headerlink" href="#generate-an-accesskey" title="Link to this heading">¶</a></h4>
+<p>For long-lived authentication, generate an access key. You can create one from the <a class="reference external" href="https://admin.voipbin.net">admin console</a> or via the API.</p>
+<p><strong>Via Admin Console:</strong></p>
+<img alt="_images/quickstart_authentication_accesskey.png" src="_images/quickstart_authentication_accesskey.png" />
+<p><strong>Via API:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/accesskeys?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "my-api-key",
+        "detail": "API key for automated access"
+    }'
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"your-access-key-token"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"my-api-key"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"API key for automated access"</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>If you signed up via the API (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code>), the response already includes an <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> with a valid token — you do not need to create another one. Use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/accesskeys</span></code> only if you need additional keys or want to set a custom expiration via the <code class="docutils literal notranslate"><span class="pre">expire</span></code> (Integer, Optional) field.</p>
+</div>
+</section>
+<section id="direct-token-boot">
+<h4>Direct Token (Boot)<a class="headerlink" href="#direct-token-boot" title="Link to this heading">¶</a></h4>
+<p>For resource-scoped access without user credentials, use a <strong>direct hash</strong> to obtain a short-lived JWT. This is used for direct links (e.g., AI voice agent web widgets) where the end user does not have a VoIPBin account.</p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/auth/boot</span></code> with the <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String, Required). The hash is obtained from a direct link URL or from the <code class="docutils literal notranslate"><span class="pre">hash</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/directs</span></code>. Must start with <code class="docutils literal notranslate"><span class="pre">direct.</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/auth/boot' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "direct_hash": "direct.abc123def456..."
+    }'
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"direct"</span><span class="p">,</span>
+    <span class="s2">"resource_type"</span><span class="p">:</span> <span class="s2">"ai"</span><span class="p">,</span>
+    <span class="s2">"resource_id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"c1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"expire"</span><span class="p">:</span> <span class="s2">"2026-04-06T20:00:00Z"</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The returned token is valid for <strong>4 hours</strong> and grants access only to the resource types associated with the direct hash (e.g., <code class="docutils literal notranslate"><span class="pre">aicall</span></code> for an AI direct hash). Use it in subsequent API and WebSocket requests via the <code class="docutils literal notranslate"><span class="pre">?token=</span></code> query parameter.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Direct tokens have limited scope — they can only access specific resource types (e.g., <code class="docutils literal notranslate"><span class="pre">aicall</span></code>), not the full API. For WebSocket subscriptions, direct tokens can only subscribe to 4-part topics: <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;uuid&gt;:&lt;resource_type&gt;:&lt;resource_id&gt;</span></code>. Broad customer-level topics (2-part or 3-part) are rejected.</p>
+</div>
+<p>Troubleshooting (Boot):</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> field is missing, empty, or does not start with <code class="docutils literal notranslate"><span class="pre">direct.</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Verify the hash was copied correctly from the direct link URL.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request (Hash not found):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The direct hash does not resolve to any resource (deleted or invalid).</p></li>
+<li><p><strong>Fix:</strong> Verify the direct hash is still active via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/directs</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request (Customer not active):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The customer account associated with the direct hash is not active.</p></li>
+<li><p><strong>Fix:</strong> Contact the account owner to reactivate the customer account.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="delegate-token-platform-superadmin">
+<h4>Delegate Token (Platform Superadmin)<a class="headerlink" href="#delegate-token-platform-superadmin" title="Link to this heading">¶</a></h4>
+<p>Platform superadmins can issue a short-lived <strong>delegate token</strong> that grants full customer-admin access to a specific customer account. This is used for support and investigation scenarios where a superadmin needs to act on behalf of a customer.</p>
+<p><strong>Requires:</strong> <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code></p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/auth/delegate</span></code> with a valid superadmin token, the target <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>, and a mandatory <code class="docutils literal notranslate"><span class="pre">reason</span></code> for the access.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/auth/delegate?token=&lt;superadmin-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "customer_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "reason": "Investigating dropped call reported by customer support"
+    }'
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"expire"</span><span class="p">:</span> <span class="s2">"2026-05-19T06:00:00.000000Z"</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The returned delegate token is valid for <strong>8 hours</strong> and grants <code class="docutils literal notranslate"><span class="pre">PermissionCustomerAdmin</span></code>-equivalent access scoped to the specified customer. Project-level permissions are not granted.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">expire</span></code> field uses ISO 8601 UTC with microsecond precision (RFC3339Nano compatible, e.g. <code class="docutils literal notranslate"><span class="pre">2026-05-19T06:00:00.000000Z</span></code>). Parsers that only accept <code class="docutils literal notranslate"><span class="pre">time.RFC3339</span></code> (without fractional seconds) must use <code class="docutils literal notranslate"><span class="pre">time.RFC3339Nano</span></code> or strip the fractional part before parsing.</p>
+</div>
+<p>Request fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (String, Required) — UUID of the target customer account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reason</span></code> (String, Required) — Justification for the access. Must be 10–200 printable ASCII characters with no control characters. This is written to the audit log.</p></li>
+</ul>
+<p>Errors:</p>
+<ul class="simple">
+<li><p><strong>400 Bad Request:</strong> Request body is missing or malformed.</p></li>
+<li><p><strong>401 Unauthorized:</strong> Caller is not authenticated.</p></li>
+<li><p><strong>403 Forbidden:</strong> Caller lacks <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code>, or the caller is already using a delegate token (recursive delegation is not permitted).</p></li>
+<li><p><strong>404 Not Found:</strong> Target customer does not exist or has been deleted.</p></li>
+<li><p><strong>422 Unprocessable Entity:</strong> <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> is not a valid UUID, or <code class="docutils literal notranslate"><span class="pre">reason</span></code> fails validation.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All delegate token issuance events are logged with <code class="docutils literal notranslate"><span class="pre">audit=true</span></code> and include the issuer identity, target customer, reason, and token expiry. These logs form the audit trail for superadmin access.</p>
+</div>
+</section>
+<section id="using-credentials-in-api-requests">
+<h4>Using Credentials in API Requests<a class="headerlink" href="#using-credentials-in-api-requests" title="Link to this heading">¶</a></h4>
+<p>The query parameter name depends on which credential type you are using:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Credential</p></th>
+<th class="head"><p>Query Parameter</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Token (JWT)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">?token=&lt;your-token&gt;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Accesskey</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">?accesskey=&lt;your-accesskey&gt;</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Token example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET 'https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;'
+</pre></div>
+</div>
+<p><strong>Accesskey example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET 'https://api.voipbin.net/v1.0/calls?accesskey=&lt;your-accesskey&gt;'
+</pre></div>
+</div>
+<p>Tokens can also be passed via the <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request GET 'https://api.voipbin.net/v1.0/calls' \
+    --header 'Authorization: Bearer &lt;your-token&gt;'
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The parameter names are <strong>not interchangeable</strong> — use <code class="docutils literal notranslate"><span class="pre">token=</span></code> for JWT tokens and <code class="docutils literal notranslate"><span class="pre">accesskey=</span></code> for access keys. Using the wrong parameter name results in <code class="docutils literal notranslate"><span class="pre">401</span> <span class="pre">Unauthorized</span></code>. All quickstart examples use <code class="docutils literal notranslate"><span class="pre">?token=&lt;your-token&gt;</span></code> — if you are using an accesskey instead, replace <code class="docutils literal notranslate"><span class="pre">token=</span></code> with <code class="docutils literal notranslate"><span class="pre">accesskey=</span></code> in every request.</p>
+</div>
+</section>
+<section id="id3">
+<h4>Troubleshooting<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>401 Unauthorized:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Token has expired (older than 7 days) or is malformed.</p></li>
+<li><p><strong>Fix:</strong> Generate a new token via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>. Ensure the <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header uses the format <code class="docutils literal notranslate"><span class="pre">Bearer</span> <span class="pre">&lt;token&gt;</span></code> (with a space after “Bearer”).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>401 Unauthorized (Accesskey):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Accesskey has expired (past <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code>) or has been deleted.</p></li>
+<li><p><strong>Fix:</strong> Check the accesskey’s expiration via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>. Generate a new one from the admin console if expired.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>403 Forbidden:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The authenticated user lacks permission for the requested resource.</p></li>
+<li><p><strong>Fix:</strong> Verify the resource belongs to your customer account. Check your permission level (admin vs. manager).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For more details, see the full <a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">Accesskey tutorial</span></a>.</p>
+</section>
+</section>
+</section>
+<section id="set-up-your-test-environment">
+<h2>Set Up Your Test Environment<a class="headerlink" href="#set-up-your-test-environment" title="Link to this heading">¶</a></h2>
+<p>Before running the tutorials, set up a SIP extension and softphone for voice testing, and configure event delivery to observe real-time notifications.</p>
+<section id="extension-softphone-setup">
+<span id="quickstart-extension"></span><h3>Extension &amp; Softphone Setup<a class="headerlink" href="#extension-softphone-setup" title="Link to this heading">¶</a></h3>
+<p>Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBin. This is required for the <a class="reference internal" href="#quickstart-realtime"><span class="std std-ref">Real-Time Voice Interaction</span></a> scenario.</p>
+<section id="prerequisites">
+<h4>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> or from your admin console profile.</p></li>
+<li><p>Linphone softphone installed on your computer or mobile device. Download from <a class="reference external" href="https://www.linphone.org/">linphone.org</a>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This section requires a human with a softphone to complete the registration and answer calls. AI agents can execute the API call to create the extension and instruct the human for the Linphone registration.</p>
+</div>
+<section id="create-an-extension">
+<h5>Create an extension<a class="headerlink" href="#create-an-extension" title="Link to this heading">¶</a></h5>
+<p>Create a SIP extension that your softphone will register to. The <code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required) identifies the extension for dialing. The <code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Required) is a description. The <code class="docutils literal notranslate"><span class="pre">extension</span></code> (String, Required) and <code class="docutils literal notranslate"><span class="pre">password</span></code> (String, Required) are used for SIP authentication.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/extensions?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "quickstart-phone",
+        "detail": "Quickstart softphone extension",
+        "extension": "quickstart1",
+        "password": "your-secure-password-here"
+    }'
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"quickstart-phone"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Quickstart softphone extension"</span><span class="p">,</span>
+    <span class="s2">"extension"</span><span class="p">:</span> <span class="s2">"quickstart1"</span><span class="p">,</span>
+    <span class="s2">"username"</span><span class="p">:</span> <span class="s2">"quickstart1"</span><span class="p">,</span>
+    <span class="s2">"password"</span><span class="p">:</span> <span class="s2">"your-secure-password-here"</span><span class="p">,</span>
+    <span class="s2">"domain_name"</span><span class="p">:</span> <span class="s2">"ab12.reg.voipbin.net"</span><span class="p">,</span>
+    <span class="s2">"direct_hash"</span><span class="p">:</span> <span class="s2">"a8f3b2c1d4e5"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:00:00.000000Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">""</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) is the extension’s unique identifier — use it for <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/extensions/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/extensions/{id}</span></code>, or <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/extensions/{id}</span></code> operations. For dialing, use the <code class="docutils literal notranslate"><span class="pre">name</span></code> field instead. Save the <code class="docutils literal notranslate"><span class="pre">name</span></code> (String) — you will use it as the call destination in the <a class="reference internal" href="#quickstart-realtime"><span class="std std-ref">Real-Time Voice Interaction</span></a> scenario.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">extension</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> are SIP credentials, not VoIPBin login credentials. The <code class="docutils literal notranslate"><span class="pre">name</span></code> field is the extension identifier used when dialing (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;target_name&quot;:</span> <span class="pre">&quot;quickstart-phone&quot;</span></code> in the call request). The response includes both <code class="docutils literal notranslate"><span class="pre">extension</span></code> and <code class="docutils literal notranslate"><span class="pre">username</span></code> fields — they contain the same value (<code class="docutils literal notranslate"><span class="pre">username</span></code> is a Kamailio-internal mirror of <code class="docutils literal notranslate"><span class="pre">extension</span></code>). Choose a memorable <code class="docutils literal notranslate"><span class="pre">extension</span></code> value and a strong <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p>
+</div>
+</section>
+<section id="register-linphone">
+<h5>Register Linphone<a class="headerlink" href="#register-linphone" title="Link to this heading">¶</a></h5>
+<p>Configure your Linphone softphone to register with VoIPBin using the extension credentials created above.</p>
+<p><strong>Linphone configuration:</strong></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Username</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">quickstart1</span></code> (from the <code class="docutils literal notranslate"><span class="pre">extension</span></code> field above)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Password</p></td>
+<td><p>The password you set when creating the extension</p></td>
+</tr>
+<tr class="row-even"><td><p>Domain</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">domain_name</span></code> from the extension response
+(e.g. <code class="docutils literal notranslate"><span class="pre">ab12.reg.voipbin.net</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Transport</p></td>
+<td><p>UDP (use TCP or TLS if SIP messages are too large for UDP)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">domain_name</span></code> value returned when you created the extension (also visible via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/extensions</span></code>). It is your customer-specific SIP domain in the format <code class="docutils literal notranslate"><span class="pre">&lt;label&gt;.reg.voipbin.net</span></code> (a short 4-character label, e.g. <code class="docutils literal notranslate"><span class="pre">ab12.reg.voipbin.net</span></code>). Do not construct the domain yourself. Always copy it from the API response.</p>
+<p><strong>Setup steps (Linphone desktop):</strong></p>
+<ol class="arabic simple">
+<li><p>Open Linphone and go to <strong>Preferences</strong> &gt; <strong>Account</strong> (or <strong>SIP Account</strong> on mobile).</p></li>
+<li><p>Select <strong>I already have a SIP account</strong> (or <strong>Use SIP account</strong>).</p></li>
+<li><p>Enter the username, password, and domain from the table above.</p></li>
+<li><p>Save. Linphone should show <strong>Registered</strong> status within a few seconds.</p></li>
+</ol>
+<p>If registration succeeds, the status indicator turns green. If it fails, see Troubleshooting below.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Instead of typing the credentials, you can also provision the Linphone mobile app by scanning a QR code: issue a short-lived provisioning URL via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/extensions/{id}/provisioning-token</span></code> and render it as a QR code. See <a class="reference internal" href="extension_overview.html#extension-overview-provisioning"><span class="std std-ref">Softphone QR Provisioning</span></a>.</p>
+</div>
+</section>
+</section>
+<section id="id4">
+<h4>Troubleshooting<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>Extension creation returns 400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Missing required fields (<code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">extension</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>).</p></li>
+<li><p><strong>Fix:</strong> Ensure all four fields are present in the request body.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Linphone shows “Registration failed” or “408 Timeout”:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Incorrect domain, extension/username, or password. The domain must be the extension’s <code class="docutils literal notranslate"><span class="pre">domain_name</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Verify the domain matches the <code class="docutils literal notranslate"><span class="pre">domain_name</span></code> field from the extension response exactly (e.g. <code class="docutils literal notranslate"><span class="pre">ab12.reg.voipbin.net</span></code>). Double-check the <code class="docutils literal notranslate"><span class="pre">extension</span></code> and <code class="docutils literal notranslate"><span class="pre">password</span></code> match exactly what was set when creating the extension. Ensure UDP port 5060 is not blocked by your firewall. If SIP messages are too large for a single UDP datagram, switch the transport to TCP or TLS.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="receiving-events">
+<span id="quickstart-event-subscription"></span><span id="quickstart-events"></span><h3>Receiving Events<a class="headerlink" href="#receiving-events" title="Link to this heading">¶</a></h3>
+<p>VoIPBin notifies you in real-time when things happen — calls connect, transcriptions arrive, recordings complete. There are two delivery methods:</p>
+<ul class="simple">
+<li><p><strong>WebSocket</strong> — Maintain a persistent connection and receive events instantly. No public server needed.</p></li>
+<li><p><strong>Customer Webhook</strong> — Configure a webhook URI on your customer account to receive all events via HTTP POST.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For AI agents and automated systems, <strong>WebSocket is preferred</strong> because it requires no public server endpoint and delivers events with lower latency. Use <strong>Customer Webhook</strong> when you have a persistent server that needs to process events asynchronously.</p>
+</div>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>WebSocket</p></th>
+<th class="head"><p>Customer Webhook</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Connection</p></td>
+<td><p>Persistent bidirectional connection</p></td>
+<td><p>Stateless HTTP pushes to your server</p></td>
+</tr>
+<tr class="row-odd"><td><p>Setup</p></td>
+<td><p>Connect to <code class="docutils literal notranslate"><span class="pre">wss://</span></code> endpoint</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/customer</span></code> with webhook URI</p></td>
+</tr>
+<tr class="row-even"><td><p>Filtering</p></td>
+<td><p>Subscribe to specific topics</p></td>
+<td><p>Receives <strong>all</strong> events (no filtering)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Best for</p></td>
+<td><p>Real-time dashboards, AI agents</p></td>
+<td><p>Server-side catch-all processing</p></td>
+</tr>
+<tr class="row-even"><td><p>Requires</p></td>
+<td><p>WebSocket client library</p></td>
+<td><p>Public HTTPS endpoint</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="websocket">
+<h4>WebSocket<a class="headerlink" href="#websocket" title="Link to this heading">¶</a></h4>
+<p>Connect to VoIPBin’s WebSocket endpoint and subscribe to topics to receive events in real-time.</p>
+<p><strong>Connect:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;your-token&gt;
+</pre></div>
+</div>
+<p><strong>Subscribe</strong> by sending a JSON message after connecting. Replace <code class="docutils literal notranslate"><span class="pre">&lt;your-customer-id&gt;</span></code> with your customer ID (UUID) obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+    <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"customer_id:&lt;your-customer-id&gt;:call:*"</span><span class="p">,</span>
+        <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:*"</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The wildcard <code class="docutils literal notranslate"><span class="pre">*</span></code> subscribes to events from all resources of that type under your account.</p>
+<p><strong>Python example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">token</span> <span class="o">=</span> <span class="s2">"&lt;your-token&gt;"</span>
+<span class="n">customer_id</span> <span class="o">=</span> <span class="s2">"&lt;your-customer-id&gt;"</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"event_type"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">event_type</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"transcript"</span> <span class="ow">in</span> <span class="n">event_type</span><span class="p">:</span>
+            <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"direction"</span><span class="p">,</span> <span class="s2">"?"</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"message"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[TRANSCRIBE </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[EVENT] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+    <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"subscribe"</span><span class="p">,</span>
+        <span class="s2">"topics"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">"customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:call:*"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"customer_id:</span><span class="si">{</span><span class="n">customer_id</span><span class="si">}</span><span class="s2">:transcribe:*"</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Subscribed to call and transcribe events. Waiting..."</span><span class="p">)</span>
+
+<span class="n">ws</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">WebSocketApp</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"wss://api.voipbin.net/v1.0/ws?token=</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">on_open</span><span class="o">=</span><span class="n">on_open</span><span class="p">,</span>
+    <span class="n">on_message</span><span class="o">=</span><span class="n">on_message</span>
+<span class="p">)</span>
+<span class="n">ws</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The topic format is <code class="docutils literal notranslate"><span class="pre">&lt;scope&gt;:&lt;scope_id&gt;:&lt;resource&gt;:&lt;resource_id&gt;</span></code>. Use <code class="docutils literal notranslate"><span class="pre">*</span></code> as the <code class="docutils literal notranslate"><span class="pre">resource_id</span></code> to subscribe to all resources of a type (e.g., <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:call:*</span></code> for all call events, <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;id&gt;:transcribe:*</span></code> for all transcription events). If the WebSocket connection drops, all subscriptions are lost — implement automatic reconnection and re-subscribe after reconnecting.</p>
+</div>
+<p>For the full WebSocket guide, see <a class="reference internal" href="websocket.html#websocket-main"><span class="std std-ref">WebSocket documentation</span></a>.</p>
+</section>
+<section id="customer-webhook">
+<h4>Customer Webhook<a class="headerlink" href="#customer-webhook" title="Link to this heading">¶</a></h4>
+<p>Configure a webhook URI on your customer account. VoIPBin sends HTTP POST requests to this URI for <strong>all</strong> events associated with your account — no per-event-type filtering is needed.</p>
+<p><strong>Update your customer’s webhook configuration:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT 'https://api.voipbin.net/v1.0/customer?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "webhook_method": "POST",
+        "webhook_uri": "https://your-server.com/voipbin/events"
+    }'
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+    <span class="s2">"webhook_method"</span><span class="p">:</span> <span class="s2">"POST"</span><span class="p">,</span>
+    <span class="s2">"webhook_uri"</span><span class="p">:</span> <span class="s2">"https://your-server.com/voipbin/events"</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Once configured, VoIPBin sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> each time any event occurs for your account. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds.</p>
+<p><strong>Fields:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum String): The HTTP method used for webhook delivery. Use <code class="docutils literal notranslate"><span class="pre">&quot;POST&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String): The URI where event notifications are sent. Must be publicly accessible.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The customer webhook receives <strong>all</strong> event types for your account — there is no filtering by event type. For local development, use a tunneling tool (e.g., ngrok) to expose your local server. To stop receiving events, set <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> to an empty string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>.</p>
+</div>
+<section id="id5">
+<h5>Troubleshooting<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h5>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>No events received via WebSocket:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Subscription topic does not match your customer ID, or subscription was sent before the connection opened.</p></li>
+<li><p><strong>Fix:</strong> Verify the customer ID in the topic matches your account (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>). Send the subscribe message only after the <code class="docutils literal notranslate"><span class="pre">on_open</span></code> callback fires.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>No events received via customer webhook:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> is not publicly accessible, or the endpoint does not return HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds.</p></li>
+<li><p><strong>Fix:</strong> Verify the URI is reachable from the internet. For local development, use a tunneling tool (e.g., ngrok). Check your server logs for incoming requests.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>403 Forbidden on customer update:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The authenticated user lacks admin permission to update the customer.</p></li>
+<li><p><strong>Fix:</strong> Verify you are using an admin-level token. Regular agents cannot modify customer settings.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+<section id="make-your-first-hello-world">
+<h2>Make your first Hello World<a class="headerlink" href="#make-your-first-hello-world" title="Link to this heading">¶</a></h2>
+<p>Try VoIPBin’s core communication APIs:</p>
+<ol class="arabic simple">
+<li><p><strong>Your First Call</strong> — Place an outbound voice call with text-to-speech.</p></li>
+<li><p><strong>Your First Real-Time Voice Interaction</strong> — Make a call with live transcription and speak into the call using the TTS API.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Tutorial 2 (Real-Time Voice) builds on the extension and event setup from the previous section. Retain your authentication token (String) or accesskey (String) from Getting Started for all tutorials. Tokens expire after 7 days — if you receive a <code class="docutils literal notranslate"><span class="pre">401</span> <span class="pre">Unauthorized</span></code> response, re-authenticate via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>.</p>
+</div>
+<section id="call">
+<span id="quickstart-call"></span><h3>Call<a class="headerlink" href="#call" title="Link to this heading">¶</a></h3>
+<p>Make an outbound voice call to the extension you created in <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
+<section id="id6">
+<h4>Prerequisites<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBin account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A registered SIP extension and softphone. See <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBin-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>. The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
+</div>
+<section id="make-your-first-call">
+<h5>Make your first call<a class="headerlink" href="#make-your-first-call" title="Link to this heading">¶</a></h5>
+<p>This example calls your registered extension and plays a text-to-speech greeting. Make sure Linphone is registered and ready to receive the call.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "&lt;your-source-number&gt;"
+        },
+        "destinations": [
+            {
+                "type": "extension",
+                "target_name": "quickstart-phone"
+            }
+        ],
+        "actions": [
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Hello. This is a VoIPBin test call. Thank you, bye.",
+                    "language": "en-US"
+                }
+            }
+        ]
+    }'
+</pre></div>
+</div>
+<p>When calling an extension, the response contains a <code class="docutils literal notranslate"><span class="pre">groupcalls</span></code> entry (the system creates a group call to ring the extension):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"calls"</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">"groupcalls"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"8dfb3692-9403-49d5-b2b2-031ef7f52d9d"</span><span class="p">,</span>
+            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;your-source-number&gt;"</span>
+            <span class="p">},</span>
+            <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"extension"</span><span class="p">,</span>
+                    <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"quickstart-phone"</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="s2">"ring_method"</span><span class="p">:</span> <span class="s2">"ring_all"</span><span class="p">,</span>
+            <span class="s2">"answer_method"</span><span class="p">:</span> <span class="s2">"hangup_others"</span><span class="p">,</span>
+            <span class="s2">"call_ids"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"98146643-1b81-498c-a3e2-9dd480899945"</span>
+            <span class="p">],</span>
+            <span class="s2">"call_count"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Linphone rings — <strong>answer the call</strong> to hear the TTS greeting.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When calling an extension, the response contains a <code class="docutils literal notranslate"><span class="pre">groupcalls</span></code> array (not <code class="docutils literal notranslate"><span class="pre">calls</span></code>). The <code class="docutils literal notranslate"><span class="pre">groupcalls[0].id</span></code> (UUID) is the group call ID. The individual call IDs are in <code class="docutils literal notranslate"><span class="pre">groupcalls[0].call_ids</span></code> — use these with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> to check call status or <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/calls/{id}</span></code> to hang up. The <code class="docutils literal notranslate"><span class="pre">ring_method</span></code> (String) controls how multiple devices are rung (<code class="docutils literal notranslate"><span class="pre">ring_all</span></code> rings all registered devices simultaneously). For the full call lifecycle and advanced call scenarios, see <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call overview</span></a> and <a class="reference internal" href="call_tutorial.html#call-tutorial"><span class="std std-ref">Call tutorial</span></a>.</p>
+</div>
+</section>
+</section>
+<section id="id7">
+<h4>Troubleshooting<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source</span></code> number is not owned by your VoIPBin account, or the phone number is not in E.164 format.</p></li>
+<li><p><strong>Fix:</strong> Verify your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Ensure all phone numbers start with <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by digits only (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Call created but Linphone does not ring:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Linphone is not registered, or the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> does not match the extension <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Verify Linphone shows “Registered” status. Verify the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> in the call request matches the extension <code class="docutils literal notranslate"><span class="pre">name</span></code> from <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a> exactly (case-sensitive).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Call status immediately shows “hangup”:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The destination extension has no registered devices, or the source number has no telephony provider attached.</p></li>
+<li><p><strong>Fix:</strong> Verify Linphone is registered. Check extension status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/extensions</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="real-time-voice-interaction">
+<span id="quickstart-realtime"></span><h3>Real-Time Voice Interaction<a class="headerlink" href="#real-time-voice-interaction" title="Link to this heading">¶</a></h3>
+<p>This scenario walks through making a call with live transcription and speaking into the call using the real-time TTS API.</p>
+<p>By the end, you will have:</p>
+<ul class="simple">
+<li><p>A live call with real-time speech-to-text transcription</p></li>
+<li><p>Real-time text-to-speech injected into the call via the Speaking API</p></li>
+</ul>
+<section id="id8">
+<h4>Prerequisites<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBin account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> or from your admin console profile.</p></li>
+<li><p>A registered SIP extension and softphone. See <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
+<li><p>Event subscription set up (WebSocket or customer webhook). See <a class="reference internal" href="#quickstart-events"><span class="std std-ref">Receiving Events</span></a>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This scenario requires a registered softphone (Linphone) to answer the call and speak. AI agents can execute all API calls and instruct the human for answering the call on Linphone. Set up event delivery before starting — you will need it to observe transcription events during the call.</p>
+</div>
+<section id="make-a-call-to-the-extension">
+<h5>Make a call to the extension<a class="headerlink" href="#make-a-call-to-the-extension" title="Link to this heading">¶</a></h5>
+<p>With event subscription configured and Linphone registered, make an outbound call to the extension. This call starts real-time transcription, plays a TTS greeting, and then sleeps to keep the call alive while you interact.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "source": {
+            "type": "tel",
+            "target": "&lt;your-source-number&gt;"
+        },
+        "destinations": [
+            {
+                "type": "extension",
+                "target_name": "quickstart-phone"
+            }
+        ],
+        "actions": [
+            {
+                "type": "transcribe_start",
+                "option": {
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed. The call will stay open for you to test the Speaking API.",
+                    "language": "en-US"
+                }
+            },
+            {
+                "type": "sleep",
+                "option": {
+                    "duration": 600000
+                }
+            }
+        ]
+    }'
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"calls"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"e2a65df2-4e50-4e37-8628-df07b3cec579"</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+                <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"&lt;your-source-number&gt;"</span><span class="p">,</span>
+                <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">""</span>
+            <span class="p">},</span>
+            <span class="s2">"destination"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"extension"</span><span class="p">,</span>
+                <span class="s2">"target_name"</span><span class="p">:</span> <span class="s2">"quickstart-phone"</span>
+            <span class="p">},</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"dialing"</span><span class="p">,</span>
+            <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"outgoing"</span><span class="p">,</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">"groupcalls"</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Save the call <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) from <code class="docutils literal notranslate"><span class="pre">calls[0].id</span></code> in the response — you will need it when creating a speaking stream.</p>
+<p><strong>Call status lifecycle</strong> (enum string):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dialing</span></code>: The system is currently dialing the destination extension.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ringing</span></code>: The destination device (Linphone) is ringing, awaiting answer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">progressing</span></code>: The call is answered. Audio is flowing between parties.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">terminating</span></code>: The system is ending the call.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">canceling</span></code>: The originator canceled the call before it was answered (outgoing calls only).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hangup</span></code>: The call has ended. Final state — no further changes possible.</p></li>
+</ul>
+<p><strong>What happens next:</strong></p>
+<ol class="arabic simple">
+<li><p>Linphone rings. <strong>Answer the call.</strong></p></li>
+<li><p>The TTS greeting plays (you hear it through Linphone).</p></li>
+<li><p>The call enters the <code class="docutils literal notranslate"><span class="pre">sleep</span></code> action (600 seconds = 10 minutes), keeping the call alive.</p></li>
+<li><p>Transcription is active — anything you say into Linphone is transcribed.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBin-owned number (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>). The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>. The <code class="docutils literal notranslate"><span class="pre">sleep</span></code> <code class="docutils literal notranslate"><span class="pre">duration</span></code> (Integer, milliseconds) keeps the call alive — <code class="docutils literal notranslate"><span class="pre">600000</span></code> = 10 minutes. The <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action uses BCP47 language codes (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code>).</p>
+</div>
+</section>
+<section id="observe-real-time-transcription">
+<h5>Observe real-time transcription<a class="headerlink" href="#observe-real-time-transcription" title="Link to this heading">¶</a></h5>
+<p>After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads.</p>
+<p><strong>The TTS greeting appears first</strong> (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code> — VoIPBin to caller):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
+    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:02.000000Z"</span><span class="p">,</span>
+    <span class="s2">"topic"</span><span class="p">:</span> <span class="s2">"customer_id:&lt;your-customer-id&gt;:transcribe:&lt;transcribe-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"9d59e7f0-7bdc-4c52-bb8c-bab718952050"</span><span class="p">,</span>
+        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hello. This is the VoIPBin real-time voice interaction test. You can speak now and your speech will be transcribed."</span><span class="p">,</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:02.233415Z"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Transcript event fields:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data.transcribe_id</span></code> (UUID): The transcription session ID, generated internally when the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action executes. Query all transcripts for this session via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcripts?transcribe_id=&lt;transcribe_id&gt;</span></code>. Transcripts are paginated; see the <a class="reference internal" href="transcribe_tutorial.html#transcribe-tutorial"><span class="std std-ref">Transcribe tutorial</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data.direction</span></code> (enum String): <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> — speech from the caller to VoIPBin. <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> — speech from VoIPBin to the caller (TTS output).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data.message</span></code> (String): The transcribed text.</p></li>
+</ul>
+<p><strong>When you speak into Linphone</strong>, your speech appears as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;in&quot;</span></code> (caller to VoIPBin):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"transcript_created"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"transcribe_id"</span><span class="p">:</span> <span class="s2">"8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"in"</span><span class="p">,</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Hi, this is a test of the transcription feature."</span><span class="p">,</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:05:15.100000Z"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>If you run the Python WebSocket example from <a class="reference internal" href="#quickstart-events"><span class="std std-ref">Receiving Events</span></a>, you will see output like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Subscribed</span> <span class="n">to</span> <span class="n">call</span> <span class="ow">and</span> <span class="n">transcribe</span> <span class="n">events</span><span class="o">.</span> <span class="n">Waiting</span><span class="o">...</span>
+<span class="p">[</span><span class="n">EVENT</span><span class="p">]</span> <span class="n">call_progressing</span>
+<span class="p">[</span><span class="n">TRANSCRIBE</span> <span class="n">out</span><span class="p">]</span> <span class="n">Hello</span><span class="o">.</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">VoIPBin</span> <span class="n">real</span><span class="o">-</span><span class="n">time</span> <span class="n">voice</span> <span class="n">interaction</span> <span class="n">test</span><span class="o">...</span>
+<span class="p">[</span><span class="n">TRANSCRIBE</span> <span class="ow">in</span><span class="p">]</span> <span class="n">Hi</span><span class="p">,</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">test</span> <span class="n">of</span> <span class="n">the</span> <span class="n">transcription</span> <span class="n">feature</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="create-a-speaking-stream">
+<h5>Create a speaking stream<a class="headerlink" href="#create-a-speaking-stream" title="Link to this heading">¶</a></h5>
+<p>While the call is active, you can inject real-time text-to-speech audio using the Speaking API. Create a speaking stream attached to the call.</p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings</span></code> with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (String, Required): <code class="docutils literal notranslate"><span class="pre">&quot;call&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID, Required): The call <code class="docutils literal notranslate"><span class="pre">id</span></code> from the call response above</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">language</span></code> (String, Optional): BCP47 language code (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;en-US&quot;</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provider</span></code> (String, Optional): TTS provider. Use <code class="docutils literal notranslate"><span class="pre">&quot;elevenlabs&quot;</span></code> for high-quality streaming TTS</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum String, Optional): Controls which side of the call hears the TTS audio. One of: <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> (the call’s destination hears the TTS), <code class="docutils literal notranslate"><span class="pre">&quot;in&quot;</span></code> (the call’s source hears the TTS), <code class="docutils literal notranslate"><span class="pre">&quot;both&quot;</span></code> (both sides hear). In this scenario, use <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> so the Linphone user (destination) hears the TTS.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/speakings?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "reference_type": "call",
+        "reference_id": "&lt;call-id&gt;",
+        "language": "en-US",
+        "provider": "elevenlabs",
+        "direction": "out"
+    }'
+</pre></div>
+</div>
+<p>Response (HTTP 201 Created):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1e103d2-0429-4170-83b3-e95e29bb0ca8"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"550e8400-e29b-41d4-a716-446655440000"</span><span class="p">,</span>
+    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;call-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
+    <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"elevenlabs"</span><span class="p">,</span>
+    <span class="s2">"voice_id"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
+    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"initiating"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-02-21T10:06:00.000000Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">""</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Save the speaking <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) — you will use it to send text-to-speech.</p>
+<p><strong>Speaking status lifecycle</strong> (enum string):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">initiating</span></code>: The speaking stream is being set up and connecting to the TTS provider.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">active</span></code>: The TTS provider is connected. You can now call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> to speak.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stopped</span></code>: The speaking stream has been stopped or the call has ended.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The speaking stream must be created while the call is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (answered and audio flowing). If the call has already hung up, the API returns <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>. The <code class="docutils literal notranslate"><span class="pre">direction</span></code> field controls which side of the call hears the TTS: <code class="docutils literal notranslate"><span class="pre">&quot;out&quot;</span></code> means the called party (Linphone) hears it. The <code class="docutils literal notranslate"><span class="pre">status</span></code> transitions from <code class="docutils literal notranslate"><span class="pre">initiating</span></code> to <code class="docutils literal notranslate"><span class="pre">active</span></code> once the TTS provider connects.</p>
+</div>
+</section>
+<section id="speak-via-tts-api">
+<h5>Speak via TTS API<a class="headerlink" href="#speak-via-tts-api" title="Link to this heading">¶</a></h5>
+<p>Send text to the speaking stream to have it spoken into the call in real time.</p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (String, Required): The text to speak. Maximum 5000 characters.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST 'https://api.voipbin.net/v1.0/speakings/&lt;speaking-id&gt;/say?token=&lt;your-token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "text": "Hello, how are you today? This is VoIPBin speaking to you in real time using the ElevenLabs text-to-speech engine."
+    }'
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"f1e103d2-0429-4170-83b3-e95e29bb0ca8"</span><span class="p">,</span>
+    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>
+    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"&lt;call-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
+    <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"elevenlabs"</span><span class="p">,</span>
+    <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"out"</span><span class="p">,</span>
+    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You should hear the text spoken through Linphone within a second or two. You can call <code class="docutils literal notranslate"><span class="pre">/say</span></code> multiple times to queue additional speech.</p>
+<p><strong>Additional speaking operations:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/flush</span></code> — Clear the speech queue (stop any pending text from being spoken).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/stop</span></code> — Stop the current speech immediately.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/speakings/{id}</span></code> — Delete the speaking stream entirely.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>You can call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> multiple times. Each call queues text for sequential playback. If you need to interrupt, call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/flush</span></code> first, then <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> with new text. The <code class="docutils literal notranslate"><span class="pre">text</span></code> field has a 5000-character limit per request. Since transcription is still active, the TTS output will also appear in transcription events as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code>.</p>
+</div>
+</section>
+</section>
+<section id="id9">
+<h4>Troubleshooting<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>Call created but Linphone does not ring:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Linphone is not registered, or the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> does not match the extension <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Verify Linphone shows “Registered” status. Verify the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> in the call request matches the extension <code class="docutils literal notranslate"><span class="pre">name</span></code> from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a> exactly (case-sensitive). See <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension troubleshooting</span></a> for registration issues.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>No transcription events received:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Event subscription is not set up, or configuration is incorrect.</p></li>
+<li><p><strong>Fix:</strong> See <a class="reference internal" href="#quickstart-event-subscription"><span class="std std-ref">Event Subscription troubleshooting</span></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Speaking creation returns 400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The call is not in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (not yet answered or already hung up), or the <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is invalid.</p></li>
+<li><p><strong>Fix:</strong> Verify the call status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/&lt;call-id&gt;</span></code>. The call must be answered (<code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">&quot;progressing&quot;</span></code>) before creating a speaking stream.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Speaking say returns 400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">text</span></code> field is empty or exceeds 5000 characters, or the speaking stream is no longer active.</p></li>
+<li><p><strong>Fix:</strong> Verify the text is non-empty and under 5000 characters. Check the speaking status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings/&lt;speaking-id&gt;</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>401 Unauthorized on any API call:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Token has expired (older than 7 days) or is malformed.</p></li>
+<li><p><strong>Fix:</strong> Generate a new token via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>. Ensure the <code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header uses the format <code class="docutils literal notranslate"><span class="pre">Bearer</span> <span class="pre">&lt;token&gt;</span></code> (with a space after “Bearer”), or pass the token as a query parameter <code class="docutils literal notranslate"><span class="pre">?token=&lt;token&gt;</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found on speaking or call operations:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The call ID or speaking ID is incorrect, or the resource has been deleted.</p></li>
+<li><p><strong>Fix:</strong> Verify the ID by listing resources via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>One-way audio (can hear TTS but Linphone speech is not transcribed):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> NAT or firewall blocking RTP traffic.</p></li>
+<li><p><strong>Fix:</strong> Enable STUN in Linphone settings (use <code class="docutils literal notranslate"><span class="pre">stun.linphone.org</span></code>). Ensure your network allows UDP traffic on ports 5060 and 10000-20000.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="sandbox">
+<span id="quickstart-sandbox"></span><h3>Sandbox<a class="headerlink" href="#sandbox" title="Link to this heading">¶</a></h3>
+<p>The VoIPBin Sandbox lets you run the entire VoIPBin platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The Sandbox is a fully functional local VoIPBin instance. When working with the Sandbox, replace all API URLs from <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code> to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code>. The Sandbox uses a self-signed SSL certificate, so add <code class="docutils literal notranslate"><span class="pre">-k</span></code> (insecure) flag to curl commands. The default credentials are <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code> / <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code>.</p>
+</div>
+<section id="id10">
+<h4>Prerequisites<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Docker and Docker Compose v2</p></li>
+</ul>
+</section>
+<section id="install-and-run">
+<h4>Install and Run<a class="headerlink" href="#install-and-run" title="Link to this heading">¶</a></h4>
+<p>Clone the sandbox repository and launch the interactive CLI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/voipbin/sandbox.git
+$ cd sandbox
+$ sudo ./voipbin
+</pre></div>
+</div>
+<p>Initialize and start the services:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">voipbin</span><span class="o">&gt;</span> <span class="n">init</span>
+<span class="n">voipbin</span><span class="o">&gt;</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>Once started, you can log in with the default admin account:</p>
+<ul class="simple">
+<li><p><strong>Username</strong>: <a class="reference external" href="mailto:admin&#37;&#52;&#48;localhost">admin<span>&#64;</span>localhost</a></p></li>
+<li><p><strong>Password</strong>: <a class="reference external" href="mailto:admin&#37;&#52;&#48;localhost">admin<span>&#64;</span>localhost</a></p></li>
+</ul>
+<p>For full documentation, troubleshooting, and advanced usage, see the <a class="reference external" href="https://github.com/voipbin/sandbox">Sandbox GitHub repository</a>.</p>
+</section>
+<section id="using-tutorials-with-the-sandbox">
+<h4>Using Tutorials with the Sandbox<a class="headerlink" href="#using-tutorials-with-the-sandbox" title="Link to this heading">¶</a></h4>
+<p>All tutorials in this documentation use <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code> as the API endpoint. If you are using the sandbox, substitute it with your local sandbox endpoint:</p>
+<ul class="simple">
+<li><p><strong>Production</strong>: <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code></p></li>
+<li><p><strong>Sandbox</strong>: <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code></p></li>
+</ul>
+<p>For example, to generate a token using the sandbox:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --request POST 'https://api.voipbin.test:8443/auth/login' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "username": "admin@localhost",
+        "password": "admin@localhost"
+    }'
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h4>Troubleshooting<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>“init” or “start” command fails:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Docker daemon is not running or Docker Compose v2 is not installed.</p></li>
+<li><p><strong>Fix:</strong> Verify Docker is running with <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">version</span></code>. Must show v2.x or later.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Port 8443 already in use:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Another service is occupying port 8443.</p></li>
+<li><p><strong>Fix:</strong> Stop the conflicting service, or check with <code class="docutils literal notranslate"><span class="pre">ss</span> <span class="pre">-tlnp</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">8443</span></code> (Linux) / <code class="docutils literal notranslate"><span class="pre">lsof</span> <span class="pre">-i</span> <span class="pre">:8443</span></code> (macOS).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>SSL certificate error (without ``-k`` flag):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The Sandbox uses a self-signed SSL certificate that is not trusted by default.</p></li>
+<li><p><strong>Fix:</strong> Add the <code class="docutils literal notranslate"><span class="pre">-k</span></code> flag to all curl commands when using the Sandbox.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>401 Unauthorized with default credentials:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The Sandbox has not fully initialized.</p></li>
+<li><p><strong>Fix:</strong> Run <code class="docutils literal notranslate"><span class="pre">voipbin&gt;</span> <span class="pre">init</span></code> again and wait for it to complete before running <code class="docutils literal notranslate"><span class="pre">voipbin&gt;</span> <span class="pre">start</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Additional standalone walkthroughs are also available: <a class="reference internal" href="quickstart_message.html#quickstart-message"><span class="std std-ref">Send an SMS</span></a>, <a class="reference internal" href="quickstart_email.html#quickstart-email"><span class="std std-ref">Send an Email</span></a>, <a class="reference internal" href="quickstart_transcribe.html#quickstart-transcribe"><span class="std std-ref">Transcribe a Call</span></a>, and <a class="reference internal" href="quickstart_queue.html#quickstart-queue"><span class="std std-ref">Queue a Call</span></a>.</p>
+</section>
+</section>
+</section>
+<section id="what-s-next">
+<span id="quickstart-next"></span><h2>What’s Next<a class="headerlink" href="#what-s-next" title="Link to this heading">¶</a></h2>
+<p>Now that you have completed the quickstart, explore the full capabilities of VoIPBin:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow</span></a> — Build programmable voice workflows with the visual flow builder.</p></li>
+<li><p><a class="reference internal" href="ai.html#ai-main"><span class="std std-ref">AI</span></a> — Integrate AI-powered voice agents with real-time speech processing.</p></li>
+<li><p><a class="reference internal" href="conference.html#conference-main"><span class="std std-ref">Conference</span></a> — Set up multi-party conferencing.</p></li>
+<li><p><a class="reference internal" href="conversation.html#conversation-main"><span class="std std-ref">Conversation</span></a> — Manage messaging conversations.</p></li>
+<li><p><a class="reference internal" href="queue.html#queue-main"><span class="std std-ref">Queue</span></a> — Route incoming calls to available agents with queue management.</p></li>
+</ul>
+<p>For the complete API reference, visit the <a class="reference external" href="https://api.voipbin.net/redoc/index.html">API documentation</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The full OpenAPI 3.0 specification is available as machine-readable JSON at <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/openapi.json</span></code>. Use this for automated client generation, API discovery, and building integrations programmatically.</p>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="sdk.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">SDK(Software Development Kit)</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="intro.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Introduction</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, VoIPBin
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/voipbin/voipbin" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Quickstart</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#signup">Signup</a><ul>
+<li><a class="reference internal" href="#sign-up-via-admin-console">Sign up via Admin Console</a></li>
+<li><a class="reference internal" href="#sign-up-via-api">Sign up via API</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#authentication">Authentication</a><ul>
+<li><a class="reference internal" href="#generate-a-token">Generate a Token</a></li>
+<li><a class="reference internal" href="#generate-an-accesskey">Generate an Accesskey</a></li>
+<li><a class="reference internal" href="#direct-token-boot">Direct Token (Boot)</a></li>
+<li><a class="reference internal" href="#delegate-token-platform-superadmin">Delegate Token (Platform Superadmin)</a></li>
+<li><a class="reference internal" href="#using-credentials-in-api-requests">Using Credentials in API Requests</a></li>
+<li><a class="reference internal" href="#id3">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#set-up-your-test-environment">Set Up Your Test Environment</a><ul>
+<li><a class="reference internal" href="#extension-softphone-setup">Extension &amp; Softphone Setup</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#create-an-extension">Create an extension</a></li>
+<li><a class="reference internal" href="#register-linphone">Register Linphone</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">Troubleshooting</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#receiving-events">Receiving Events</a><ul>
+<li><a class="reference internal" href="#websocket">WebSocket</a></li>
+<li><a class="reference internal" href="#customer-webhook">Customer Webhook</a><ul>
+<li><a class="reference internal" href="#id5">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#make-your-first-hello-world">Make your first Hello World</a><ul>
+<li><a class="reference internal" href="#call">Call</a><ul>
+<li><a class="reference internal" href="#id6">Prerequisites</a><ul>
+<li><a class="reference internal" href="#make-your-first-call">Make your first call</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id7">Troubleshooting</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#real-time-voice-interaction">Real-Time Voice Interaction</a><ul>
+<li><a class="reference internal" href="#id8">Prerequisites</a><ul>
+<li><a class="reference internal" href="#make-a-call-to-the-extension">Make a call to the extension</a></li>
+<li><a class="reference internal" href="#observe-real-time-transcription">Observe real-time transcription</a></li>
+<li><a class="reference internal" href="#create-a-speaking-stream">Create a speaking stream</a></li>
+<li><a class="reference internal" href="#speak-via-tts-api">Speak via TTS API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id9">Troubleshooting</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sandbox">Sandbox</a><ul>
+<li><a class="reference internal" href="#id10">Prerequisites</a></li>
+<li><a class="reference internal" href="#install-and-run">Install and Run</a></li>
+<li><a class="reference internal" href="#using-tutorials-with-the-sandbox">Using Tutorials with the Sandbox</a></li>
+<li><a class="reference internal" href="#id11">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-s-next">What’s Next</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=8a448e45"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

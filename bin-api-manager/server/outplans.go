@@ -2,6 +2,7 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
@@ -219,9 +220,13 @@ func (h *server) PutOutplansIdDialInfo(c *gin.Context, id string) {
 		return
 	}
 
-	source := ConvertCommonAddress(req.Source)
+	var source *commonaddress.Address
+	if req.Source != nil {
+		s := ConvertCommonAddress(*req.Source)
+		source = &s
+	}
 
-	res, err := h.serviceHandler.OutplanUpdateDialInfo(c.Request.Context(), a, target, &source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
+	res, err := h.serviceHandler.OutplanUpdateDialInfo(c.Request.Context(), a, target, source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
 	if err != nil {
 		log.Errorf("Could not update the outplan. err: %v", err)
 		abortWithServiceError(c, err)

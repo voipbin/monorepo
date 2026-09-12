@@ -366,53 +366,55 @@ func Test_v1OutplansIDPut(t *testing.T) {
 
 func Test_v1OutplansIDDialsPut(t *testing.T) {
 
+	intPtr := func(v int) *int { return &v }
+
 	tests := []struct {
 		name    string
 		request *sock.Request
 
 		outplanID    uuid.UUID
 		source       *commonaddress.Address
-		dialTimeout  int
-		tryInterval  int
-		maxTryCount0 int
-		maxTryCount1 int
-		maxTryCount2 int
-		maxTryCount3 int
-		maxTryCount4 int
+		dialTimeout  *int
+		tryInterval  *int
+		maxTryCount0 *int
+		maxTryCount1 *int
+		maxTryCount2 *int
+		maxTryCount3 *int
+		maxTryCount4 *int
 
 		responseOutplan *outplan.Outplan
 
 		expectRes *sock.Response
 	}{
 		{
-			"normal",
-			&sock.Request{
+			name: "normal",
+			request: &sock.Request{
 				URI:      "/v1/outplans/703adb5e-c468-11ec-b8ff-f3c00713cce4/dials",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
+				Data:     []byte(`{"source":{"type":"tel","target":"+821****0001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
 
-			uuid.FromStringOrNil("703adb5e-c468-11ec-b8ff-f3c00713cce4"),
-			&commonaddress.Address{
+			outplanID: uuid.FromStringOrNil("703adb5e-c468-11ec-b8ff-f3c00713cce4"),
+			source: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
-				Target: "+821100000001",
+				Target: "+821****0001",
 			},
-			30000,
-			600000,
-			5,
-			5,
-			5,
-			5,
-			5,
+			dialTimeout:  intPtr(30000),
+			tryInterval:  intPtr(600000),
+			maxTryCount0: intPtr(5),
+			maxTryCount1: intPtr(5),
+			maxTryCount2: intPtr(5),
+			maxTryCount3: intPtr(5),
+			maxTryCount4: intPtr(5),
 
-			&outplan.Outplan{
+			responseOutplan: &outplan.Outplan{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("703adb5e-c468-11ec-b8ff-f3c00713cce4"),
 				},
 			},
 
-			&sock.Response{
+			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"703adb5e-c468-11ec-b8ff-f3c00713cce4","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":null,"tm_update":null,"tm_delete":null}`),

@@ -385,18 +385,20 @@ func Test_CampaignV1OutplanUpdateBasicInfo(t *testing.T) {
 
 func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 
+	intPtr := func(v int) *int { return &v }
+
 	tests := []struct {
 		name string
 
 		outplanID    uuid.UUID
 		source       *address.Address
-		dialTimeout  int
-		tryInterval  int
-		maxTryCount0 int
-		maxTryCount1 int
-		maxTryCount2 int
-		maxTryCount3 int
-		maxTryCount4 int
+		dialTimeout  *int
+		tryInterval  *int
+		maxTryCount0 *int
+		maxTryCount1 *int
+		maxTryCount2 *int
+		maxTryCount3 *int
+		maxTryCount4 *int
 
 		response *sock.Response
 
@@ -410,15 +412,15 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 			outplanID: uuid.FromStringOrNil("e2b014d4-c516-11ec-a724-8bf87a1beb50"),
 			source: &address.Address{
 				Type:   address.TypeTel,
-				Target: "+821100000001",
+				Target: "+821****0001",
 			},
-			dialTimeout:  30000,
-			tryInterval:  600000,
-			maxTryCount0: 5,
-			maxTryCount1: 5,
-			maxTryCount2: 5,
-			maxTryCount3: 5,
-			maxTryCount4: 5,
+			dialTimeout:  intPtr(30000),
+			tryInterval:  intPtr(600000),
+			maxTryCount0: intPtr(5),
+			maxTryCount1: intPtr(5),
+			maxTryCount2: intPtr(5),
+			maxTryCount3: intPtr(5),
+			maxTryCount4: intPtr(5),
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -431,7 +433,7 @@ func Test_CampaignV1OutplanUpdateDialInfo(t *testing.T) {
 				URI:      "/v1/outplans/e2b014d4-c516-11ec-a724-8bf87a1beb50/dials",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"source":{"type":"tel","target":"+821100000001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
+				Data:     []byte(`{"source":{"type":"tel","target":"+821****0001"},"dial_timeout":30000,"try_interval":600000,"max_try_count_0":5,"max_try_count_1":5,"max_try_count_2":5,"max_try_count_3":5,"max_try_count_4":5}`),
 			},
 			expectResult: &caoutplan.Outplan{
 				Identity: identity.Identity{

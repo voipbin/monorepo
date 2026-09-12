@@ -153,11 +153,11 @@ func (r *requestHandler) CampaignV1CampaignExecute(ctx context.Context, id uuid.
 func (r *requestHandler) CampaignV1CampaignUpdateBasicInfo(
 	ctx context.Context,
 	id uuid.UUID,
-	name string,
-	detail string,
-	campaignType cacampaign.Type,
-	serviceLevel int,
-	endHandle cacampaign.EndHandle,
+	name *string,
+	detail *string,
+	campaignType *cacampaign.Type,
+	serviceLevel *int,
+	endHandle *cacampaign.EndHandle,
 ) (*cacampaign.Campaign, error) {
 	uri := fmt.Sprintf("/v1/campaigns/%s", id)
 

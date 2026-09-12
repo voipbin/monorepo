@@ -1,0 +1,1504 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Conversation" href="conversation_struct_conversation.html"><link rel="prev" title="Conversation" href="conversation.html">
+        <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Overview - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-primary: #0066cc;
+  --color-brand-content: #0066cc;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     VoIPBin is an opensource CPaaS platform. <a style="color: var(--color-announcement-text);" href="https://github.com/voipbin/voipbin">Star us on GitHub</a> 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">VoIPBin Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/voipbin-high-resolution-logo-white-transparent.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">VoIPBin Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="flow.html">Flow</a><input aria-label="Toggle navigation of Flow" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_struct_flow.html">Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_struct_action.html">Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_tutorial_basic.html">Tutorial basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_tutorial_scenario.html">Tutorial scenario</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_execution_internals.html">Flow Execution Internals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_advanced_patterns.html">Advanced Flow Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_debugging.html">Flow Debugging and Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_best_practices.html">Flow Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_struct_activeflow.html">Activeflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="variable.html">Variable</a><input aria-label="Toggle navigation of Variable" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#using-variables-in-flows">Using Variables in Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#capturing-and-setting-dynamic-values">Capturing and Setting Dynamic Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#integration-with-applications">Integration with Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#best-practices-and-considerations">Best Practices and Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_variable.html">Variable</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="webhook.html">Webhook</a><input aria-label="Toggle navigation of Webhook" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="webhook_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webhook_struct_webhook.html">Webhook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webhook_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="direct_hash.html">Direct Hash</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="common.html">Common</a><input aria-label="Toggle navigation of Common" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="common_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="common_struct_address.html">Address</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="call.html">Call</a><input aria-label="Toggle navigation of Call" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="call_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_transfer.html">Transfer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transfer_struct_transfer.html">Transfer Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_groupcall.html">Groupcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_struct_call.html">Struct Call</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_struct_groupcall.html">Struct Groupcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_sequences.html">Internal Call Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_scenarios.html">Advanced Call Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_media.html">Call Media and Codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_troubleshooting.html">Call Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="conference.html">Conference</a><input aria-label="Toggle navigation of Conference" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="conference_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_struct_conference.html">Conference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_struct_conferencecall.html">conferencecall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="queue.html">Queue</a><input aria-label="Toggle navigation of Queue" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="queue_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_struct_queue.html">Queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_struct_queuecall.html">Queuecall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="recording.html">Recording</a><input aria-label="Toggle navigation of Recording" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="recording_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording_struct_recording.html">Recording</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="transcribe.html">Transcribe</a><input aria-label="Toggle navigation of Transcribe" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html">Transcribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html#transcription">Transcription</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html#speech-webhook-message">Speech Webhook Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcript_struct_transcript.html">Transcript</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="speaking.html">Speaking</a><input aria-label="Toggle navigation of Speaking" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="speaking_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speaking_struct_speaking.html">Speaking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speaking_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="mediastream.html">Mediastream</a><input aria-label="Toggle navigation of Mediastream" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="mediastream_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streaming_struct_streaming.html">Streaming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mediastream_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="message.html">Message</a><input aria-label="Toggle navigation of Message" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="message_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="email.html">Email</a><input aria-label="Toggle navigation of Email" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="email_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_struct_email.html">Email</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_struct_attachment.html">Attachment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="talk.html">Talk</a><input aria-label="Toggle navigation of Talk" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="talk_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_talk.html">Talk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_participant.html">Participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="conversation.html">Conversation</a><input aria-label="Toggle navigation of Conversation" checked="" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_conversation.html">Conversation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_account.html">Conversation Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="webchat.html">Webchat</a><input aria-label="Toggle navigation of Webchat" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="webchat_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_widget.html">Widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_session.html">Session</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_message.html">Message</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ai.html">AI</a><input aria-label="Toggle navigation of AI" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#tool-functions">Tool Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#using-the-ai">Using the AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-talk">AI Talk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#using-ai-in-conversations-sms-line">Using AI in Conversations (SMS / LINE)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-summary">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#external-ai-agent-integration">External AI Agent Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#common-scenarios">Common Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-history">AI Prompt History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-participants">AI Participants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#terminate-ai-call">Terminate AI Call</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-audit">AI Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_message.html">AI Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_summary.html">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aiaudit.html">AI Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aipromptproposal.html">AI Prompt Proposal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_participant.html">AI Call Participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial_prompt_proposal.html">Tutorial: Improve an AI Prompt from Audits</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a><input aria-label="Toggle navigation of AI Voice Agent Integration" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai_voice_agent_integration_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_voice_agent_integration_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="rag.html">RAG</a><input aria-label="Toggle navigation of RAG" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_struct_rag.html">RAG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="timeline.html">Timeline</a><input aria-label="Toggle navigation of Timeline" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="timeline_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_struct_event.html">Timeline event</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="timeline_analysis.html">Timeline analysis</a><input aria-label="Toggle navigation of Timeline analysis" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_struct_timeline_analysis.html">Timeline analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="team.html">Team</a><input aria-label="Toggle navigation of Team" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#runtime-behavior">Runtime Behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_struct_team.html">Team</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="campaign.html">Campaign</a><input aria-label="Toggle navigation of Campaign" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="campaign_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_struct_campaign.html">Campaign</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_struct_campaigncall.html">Campaigncall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outdial.html">Outdial</a><input aria-label="Toggle navigation of Outdial" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outdial_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_struct_outdial.html">Outdial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_struct_outdialtarget.html">Outdialtarget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outplan.html">Outplan</a><input aria-label="Toggle navigation of Outplan" class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outplan_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan_struct_outplan.html">Outplan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Identity &amp; Contacts</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="accesskey.html">Accesskey</a><input aria-label="Toggle navigation of Accesskey" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_overview.html">Accesskey API Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="agent.html">Agent</a><input aria-label="Toggle navigation of Agent" class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="agent_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agent_struct_agent.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agent_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="auth.html">Auth</a><input aria-label="Toggle navigation of Auth" class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" role="switch" type="checkbox"/><label for="toctree-checkbox-28"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="auth_overview.html">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="contact.html">Contact</a><input aria-label="Toggle navigation of Contact" class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" role="switch" type="checkbox"/><label for="toctree-checkbox-29"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="contact_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_struct_contact.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_address_overview.html">Contact Addresses Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_address_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_case_overview.html">Case Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_case_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_peer_event_overview.html">Peer Events Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_peer_event_struct.html">Structures</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="customer.html">Customer</a><input aria-label="Toggle navigation of Customer" class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" role="switch" type="checkbox"/><label for="toctree-checkbox-30"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="customer_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer_struct_customer.html">Customer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Agent Console</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="service_agent.html">Agent Console</a><input aria-label="Toggle navigation of Agent Console" class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" role="switch" type="checkbox"/><label for="toctree-checkbox-31"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_case_overview.html">Case Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_case_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Numbers &amp; PSTN</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="number.html">Number</a><input aria-label="Toggle navigation of Number" class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" role="switch" type="checkbox"/><label for="toctree-checkbox-32"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="number_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number_struct_number.html">Number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="availablenumber_struct.html">Available Number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="provider.html">Provider</a><input aria-label="Toggle navigation of Provider" class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" role="switch" type="checkbox"/><label for="toctree-checkbox-33"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="provider_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider_struct_provider.html">Provider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="providercall.html">ProviderCall</a><input aria-label="Toggle navigation of ProviderCall" class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" role="switch" type="checkbox"/><label for="toctree-checkbox-34"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="providercall_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="providercall_struct_providercall.html">ProviderCall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="providercall_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="route.html">Route</a><input aria-label="Toggle navigation of Route" class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" role="switch" type="checkbox"/><label for="toctree-checkbox-35"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="route_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route_struct_route.html">Route</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="extension.html">Extension</a><input aria-label="Toggle navigation of Extension" class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" role="switch" type="checkbox"/><label for="toctree-checkbox-36"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="extension_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension_struct_extension.html">Extension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="trunk.html">Trunk</a><input aria-label="Toggle navigation of Trunk" class="toctree-checkbox" id="toctree-checkbox-37" name="toctree-checkbox-37" role="switch" type="checkbox"/><label for="toctree-checkbox-37"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview_trunking.html">Trunking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview_domain_name.html">Domain name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_struct_trunk.html">Trunk</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><input aria-label="Toggle navigation of OutboundConfig" class="toctree-checkbox" id="toctree-checkbox-38" name="toctree-checkbox-38" role="switch" type="checkbox"/><label for="toctree-checkbox-38"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Billing &amp; Operations</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="billing_account.html">Billing Account</a><input aria-label="Toggle navigation of Billing Account" class="toctree-checkbox" id="toctree-checkbox-39" name="toctree-checkbox-39" role="switch" type="checkbox"/><label for="toctree-checkbox-39"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_struct_billing.html">Billing</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="storage.html">Storage</a><input aria-label="Toggle navigation of Storage" class="toctree-checkbox" id="toctree-checkbox-40" name="toctree-checkbox-40" role="switch" type="checkbox"/><label for="toctree-checkbox-40"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_account.html">Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html">File</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tag.html">Tag</a><input aria-label="Toggle navigation of Tag" class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" role="switch" type="checkbox"/><label for="toctree-checkbox-41"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_struct_tag.html">Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="architecture.html">Architecture</a><input aria-label="Toggle navigation of Architecture" class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" role="switch" type="checkbox"/><label for="toctree-checkbox-42"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="architecture_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_backend.html">Backend Microservices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_communication.html">Inter-Service Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_data.html">Data Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_dataflow.html">Data Flow Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_rtc.html">Real-Time Communication (RTC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_flow.html">System Request Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_sequences.html">Call Flow Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_deployment.html">Deployment Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_security.html">Security Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="websocket.html">Websocket</a><input aria-label="Toggle navigation of Websocket" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" role="switch" type="checkbox"/><label for="toctree-checkbox-43"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="websocket_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="websocket_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="websocket_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="self_hosting.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/conversation_overview.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/conversation_overview.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="overview">
+<span id="conversation-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Free (conversations are organizational containers; message delivery costs apply per channel)</p></li>
+<li><p><strong>Async:</strong> Yes. Messages sent within a conversation are delivered asynchronously. Use webhooks to receive delivery status and inbound message events.</p></li>
+</ul>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Recent change (additive, non-breaking)</strong></p>
+<p>As of this release, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> and <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> in conversation webhook payloads will start carrying real values for conversations that have been explicitly assigned to an agent. Existing unassigned conversations continue to read empty values for both fields, so no client-side change is required. See <a class="reference internal" href="#conversation-overview-assigning-conversation-to-agent"><span class="std std-ref">Assigning a Conversation to an Agent</span></a>.</p>
+</div>
+<p>VoIPBin’s Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.</p>
+<p>With the Conversation API you can:</p>
+<ul class="simple">
+<li><p>Create unified conversations across multiple channels</p></li>
+<li><p>Switch channels seamlessly within the same conversation</p></li>
+<li><p>Track message history across all channels</p></li>
+<li><p>Manage participants dynamically</p></li>
+<li><p>Receive real-time updates via webhooks</p></li>
+</ul>
+<section id="how-conversations-work">
+<h2>How Conversations Work<a class="headerlink" href="#how-conversations-work" title="Link to this heading">¶</a></h2>
+<p>VoIPBin Conversations acts as a unified hub that routes messages across different communication channels while maintaining conversation context.</p>
+<p><strong>Conversation Architecture</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------+</span>        <span class="o">+----------------+</span>        <span class="o">+---------------+</span>
+<span class="o">|</span>   <span class="n">SMS</span>    <span class="o">|-------&gt;|</span>                <span class="o">|-------&gt;|</span>    <span class="n">SMS</span><span class="o">/</span><span class="n">MMS</span>    <span class="o">|</span>
+<span class="o">+----------+</span>        <span class="o">|</span>                <span class="o">|</span>        <span class="o">+---------------+</span>
+                    <span class="o">|</span>                <span class="o">|</span>
+<span class="o">+----------+</span>        <span class="o">|</span>    <span class="n">VoIPBin</span>     <span class="o">|</span>        <span class="o">+---------------+</span>
+<span class="o">|</span>  <span class="n">Email</span>   <span class="o">|-------&gt;|</span>  <span class="n">Conversation</span>  <span class="o">|-------&gt;|</span>     <span class="n">Email</span>     <span class="o">|</span>
+<span class="o">+----------+</span>        <span class="o">|</span>      <span class="n">Hub</span>       <span class="o">|</span>        <span class="o">+---------------+</span>
+                    <span class="o">|</span>                <span class="o">|</span>
+<span class="o">+----------+</span>        <span class="o">|</span>                <span class="o">|</span>        <span class="o">+---------------+</span>
+<span class="o">|</span>   <span class="n">Chat</span>   <span class="o">|-------&gt;|</span>                <span class="o">|-------&gt;|</span>   <span class="n">Chat</span><span class="o">/</span><span class="n">SNS</span>    <span class="o">|</span>
+<span class="o">+----------+</span>        <span class="o">+-------+--------+</span>        <span class="o">+---------------+</span>
+                            <span class="o">|</span>
+                     <span class="o">+------+------+</span>
+                     <span class="o">|</span>   <span class="n">Webhook</span>   <span class="o">|</span>
+                     <span class="o">|</span>  <span class="p">(</span><span class="n">events</span><span class="p">)</span>   <span class="o">|</span>
+                     <span class="o">+-------------+</span>
+</pre></div>
+</div>
+<p><strong>Key Components</strong></p>
+<ul class="simple">
+<li><p><strong>Conversation</strong>: A container that groups related messages across channels</p></li>
+<li><p><strong>Participant</strong>: An endpoint (phone number, email, chat ID) in the conversation</p></li>
+<li><p><strong>Message</strong>: Content sent within a conversation via any channel</p></li>
+<li><p><strong>Channel</strong>: The communication method (SMS, MMS, email, chat, SNS)</p></li>
+</ul>
+<p><strong>Unified Conversation Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">User</span>                    <span class="n">VoIPBin</span>                     <span class="n">Recipient</span>
+  <span class="o">|</span>                        <span class="o">|</span>                            <span class="o">|</span>
+  <span class="o">|</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Hello"</span>           <span class="o">|</span>                            <span class="o">|</span>
+  <span class="o">+-----------------------&gt;|</span> <span class="n">Route</span> <span class="n">to</span> <span class="n">conversation</span>      <span class="o">|</span>
+  <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="n">auto</span><span class="o">-</span><span class="n">detect</span> <span class="ow">or</span> <span class="n">create</span><span class="p">)</span>    <span class="o">|</span>
+  <span class="o">|</span>                        <span class="o">+---------------------------&gt;|</span>
+  <span class="o">|</span>                        <span class="o">|</span>              <span class="n">SMS</span> <span class="n">delivered</span> <span class="o">|</span>
+  <span class="o">|</span>                        <span class="o">|</span>                            <span class="o">|</span>
+  <span class="o">|</span>                        <span class="o">|&lt;---------------------------+</span>
+  <span class="o">|</span>                        <span class="o">|</span>   <span class="n">Email</span> <span class="n">reply</span><span class="p">:</span> <span class="s2">"Hi there"</span>  <span class="o">|</span>
+  <span class="o">|</span>                        <span class="o">|</span>                            <span class="o">|</span>
+  <span class="o">|&lt;-----------------------+</span>                            <span class="o">|</span>
+  <span class="o">|</span> <span class="n">Webhook</span><span class="p">:</span> <span class="n">message</span>       <span class="o">|</span>                            <span class="o">|</span>
+  <span class="o">|</span> <span class="n">received</span> <span class="ow">in</span> <span class="n">same</span>       <span class="o">|</span>                            <span class="o">|</span>
+  <span class="o">|</span> <span class="n">conversation</span>           <span class="o">|</span>                            <span class="o">|</span>
+</pre></div>
+</div>
+</section>
+<section id="channel-types">
+<h2>Channel Types<a class="headerlink" href="#channel-types" title="Link to this heading">¶</a></h2>
+<p>VoIPBin supports multiple communication channels within a single conversation.</p>
+<p><strong>Supported Channels</strong></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Channel</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>message</p></td>
+<td><p>SMS/MMS text messages to mobile phones</p></td>
+</tr>
+<tr class="row-odd"><td><p>line</p></td>
+<td><p>LINE messaging platform</p></td>
+</tr>
+<tr class="row-even"><td><p>whatsapp</p></td>
+<td><p>WhatsApp Business messaging via Meta Cloud API</p></td>
+</tr>
+<tr class="row-odd"><td><p>email</p></td>
+<td><p>Outbound email conversations</p></td>
+</tr>
+<tr class="row-even"><td><p>webchat</p></td>
+<td><p>Conversations originating from an embedded webchat widget session</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Channel Selection</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              Which channel?
+                    |
+      +-------------+-------------+-----------+
+      |                           |           |
+      v                           v           v
++-----------+               +-----------+ +-----------+
+|  message  |               |   line    | | whatsapp  |
+| (SMS/MMS) |               | messaging | | (Meta API)|
++-----+-----+               +-----+-----+ +-----+-----+
+      |                           |             |
+      v                           v             v
+Short,                      Real-time,      Rich media,
+immediate                   interactive     global reach,
+(&lt; 160 chars)               chat-based      read receipts
+</pre></div>
+</div>
+</section>
+<section id="conversation-lifecycle">
+<h2>Conversation Lifecycle<a class="headerlink" href="#conversation-lifecycle" title="Link to this heading">¶</a></h2>
+<p>A conversation is created automatically when VoIPBin receives an inbound message (SMS/MMS or LINE) or when a message is sent via the API. Conversations persist as long as they are not deleted.</p>
+<p><strong>Conversation Message States</strong></p>
+<p>Messages within a conversation move through predictable states.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Message</span> <span class="n">sent</span><span class="o">/</span><span class="n">received</span>
+       <span class="o">|</span>
+       <span class="n">v</span>
+<span class="o">+--------------+</span>
+<span class="o">|</span> <span class="n">progressing</span>  <span class="o">|</span>
+<span class="o">+------+-------+</span>
+       <span class="o">|</span>
+  <span class="o">+----+----+</span>
+  <span class="o">|</span>         <span class="o">|</span>
+  <span class="n">v</span>         <span class="n">v</span>
+<span class="o">+------+</span> <span class="o">+--------+</span>
+<span class="o">|</span> <span class="n">done</span> <span class="o">|</span> <span class="o">|</span> <span class="n">failed</span> <span class="o">|</span>
+<span class="o">+------+</span> <span class="o">+--------+</span>
+</pre></div>
+</div>
+<p><strong>Message Status Descriptions</strong></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>progressing</p></td>
+<td><p>Message is being processed and delivered</p></td>
+</tr>
+<tr class="row-odd"><td><p>done</p></td>
+<td><p>Message was successfully delivered</p></td>
+</tr>
+<tr class="row-even"><td><p>failed</p></td>
+<td><p>Message delivery failed</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="conversation-rooms">
+<h2>Conversation Rooms<a class="headerlink" href="#conversation-rooms" title="Link to this heading">¶</a></h2>
+<p>VoIPBin automatically organizes messages into distinct conversation rooms based on participants and channels.</p>
+<p><strong>Room Matching Logic</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>New message arrives
+       |
+       v
++--------------------+
+| Check participants |
+| and channel        |
++--------+-----------+
+         |
+         v
++--------------------+     Yes    +--------------------+
+| Match existing     |-----------&gt;| Add message to     |
+| conversation?      |            | existing room      |
++--------+-----------+            +--------------------+
+         |
+         | No
+         v
++--------------------+
+| Create new         |
+| conversation room  |
++--------------------+
+</pre></div>
+</div>
+<p><strong>Room Benefits</strong></p>
+<ul class="simple">
+<li><p>Messages automatically grouped by context</p></li>
+<li><p>No manual conversation management needed</p></li>
+<li><p>Full history preserved across channel switches</p></li>
+<li><p>Participants can be added or removed dynamically</p></li>
+</ul>
+</section>
+<section id="how-conversations-are-created">
+<h2>How Conversations Are Created<a class="headerlink" href="#how-conversations-are-created" title="Link to this heading">¶</a></h2>
+<p>Conversations are created automatically by VoIPBin when inbound messages arrive or when messages are sent through flows. You can list existing conversations with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>There is no <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations</span></code> endpoint. Conversations are created automatically based on incoming messages (SMS/MMS or LINE) or outbound message flow actions. To view conversations, use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>. Each conversation links a <code class="docutils literal notranslate"><span class="pre">self</span></code> address (your number) to a <code class="docutils literal notranslate"><span class="pre">peer</span></code> address (the external party). The <code class="docutils literal notranslate"><span class="pre">type</span></code> field is <code class="docutils literal notranslate"><span class="pre">message</span></code> for SMS/MMS or <code class="docutils literal notranslate"><span class="pre">line</span></code> for LINE messaging.</p>
+</div>
+</section>
+<section id="sending-messages">
+<h2>Sending Messages<a class="headerlink" href="#sending-messages" title="Link to this heading">¶</a></h2>
+<p>Send messages to a conversation and VoIPBin routes to appropriate channels.</p>
+<p><strong>Send Message Flow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBin</span>                 <span class="n">Participants</span>
+    <span class="o">|</span>                          <span class="o">|</span>                         <span class="o">|</span>
+    <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">conversations</span><span class="o">/</span>     <span class="o">|</span>                         <span class="o">|</span>
+    <span class="o">|</span>   <span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">messages</span>          <span class="o">|</span>                         <span class="o">|</span>
+    <span class="o">+-------------------------&gt;|</span>                         <span class="o">|</span>
+    <span class="o">|</span>                          <span class="o">|</span> <span class="n">Determine</span> <span class="n">best</span> <span class="n">channel</span>  <span class="o">|</span>
+    <span class="o">|</span>                          <span class="o">|</span> <span class="k">for</span> <span class="n">each</span> <span class="n">participant</span>    <span class="o">|</span>
+    <span class="o">|</span>                          <span class="o">|</span>                         <span class="o">|</span>
+    <span class="o">|</span>                          <span class="o">+--</span> <span class="n">SMS</span> <span class="o">-----------------&gt;|</span>
+    <span class="o">|</span>                          <span class="o">+--</span> <span class="n">Email</span> <span class="o">---------------&gt;|</span>
+    <span class="o">|</span>                          <span class="o">+--</span> <span class="n">Chat</span> <span class="o">----------------&gt;|</span>
+    <span class="o">|</span>  <span class="n">message_id</span>              <span class="o">|</span>                         <span class="o">|</span>
+    <span class="o">|&lt;-------------------------+</span>                         <span class="o">|</span>
+    <span class="o">|</span>                          <span class="o">|</span>                         <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Send Message Example</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;/messages?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "text": "Your order has been shipped!"
+    }'
+</pre></div>
+</div>
+<p><strong>Channel Selection Priority</strong></p>
+<p>When sending to a conversation, VoIPBin selects the best channel based on:</p>
+<ol class="arabic simple">
+<li><p>Participant’s last active channel</p></li>
+<li><p>Message content (media requires MMS/email)</p></li>
+<li><p>Participant preferences</p></li>
+<li><p>Channel availability</p></li>
+</ol>
+</section>
+<section id="receiving-messages">
+<h2>Receiving Messages<a class="headerlink" href="#receiving-messages" title="Link to this heading">¶</a></h2>
+<p>VoIPBin delivers inbound messages to your application via webhooks.</p>
+<p><strong>Webhook Delivery</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Participant</span>             <span class="n">VoIPBin</span>                      <span class="n">Your</span> <span class="n">App</span>
+     <span class="o">|</span>                     <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span> <span class="n">SMS</span> <span class="n">reply</span>           <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">+--------------------&gt;|</span>                            <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span> <span class="n">Match</span> <span class="n">to</span> <span class="n">conversation</span>      <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">your</span><span class="o">-</span><span class="n">webhook</span>         <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span> <span class="p">{</span><span class="n">conversation_message</span><span class="p">}</span>     <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">+---------------------------&gt;|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                            <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>            <span class="mi">200</span> <span class="n">OK</span>          <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|&lt;---------------------------+</span>
+     <span class="o">|</span>                     <span class="o">|</span>                            <span class="o">|</span>
+</pre></div>
+</div>
+<p><strong>Inbound Message Webhook</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"conversation_message_created"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"msg-xyz-789"</span><span class="p">,</span>
+        <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"cust-1111-3333"</span><span class="p">,</span>
+        <span class="s2">"conversation_id"</span><span class="p">:</span> <span class="s2">"conv-abc-123"</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"incoming"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"done"</span><span class="p">,</span>
+        <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"message"</span><span class="p">,</span>
+        <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"ref-7777-9999"</span><span class="p">,</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+155****6543"</span>
+        <span class="p">},</span>
+        <span class="s2">"destination"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span>
+            <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+155****0000"</span>
+        <span class="p">},</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Thanks for the update!"</span><span class="p">,</span>
+        <span class="s2">"medias"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00.000000"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">destination</span></code> fields are absolute: <code class="docutils literal notranslate"><span class="pre">source</span></code> is always the
+sending party and <code class="docutils literal notranslate"><span class="pre">destination</span></code> is always the receiving party, regardless of
+direction. To recover the remote (counterpart) party from a single message: for
+an <code class="docutils literal notranslate"><span class="pre">incoming</span></code> message the remote party is the <code class="docutils literal notranslate"><span class="pre">source</span></code>; for an <code class="docutils literal notranslate"><span class="pre">outgoing</span></code>
+message the remote party is the <code class="docutils literal notranslate"><span class="pre">destination</span></code>.</p>
+</section>
+<section id="assigning-a-conversation-to-an-agent">
+<span id="conversation-overview-assigning-conversation-to-agent"></span><h2>Assigning a Conversation to an Agent<a class="headerlink" href="#assigning-a-conversation-to-an-agent" title="Link to this heading">¶</a></h2>
+<p>A conversation can be explicitly assigned to a specific agent so that inbound messages on that conversation are routed to the agent for manual handling instead of running through the registered flow. Assignment is an additive feature: conversations that have never been assigned continue to behave exactly as before.</p>
+<p><strong>How assignment works</strong></p>
+<p>Assignment is performed via a partial-update on the conversation. This operation requires admin or manager permission:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>PUT<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;?token<span class="o">=</span>&lt;admin-or-manager-token&gt;
+Content-Type:<span class="w"> </span>application/json
+
+<span class="o">{</span>
+<span class="w">    </span><span class="s2">"owner_id"</span>:<span class="w"> </span><span class="s2">"&lt;agent-uuid&gt;"</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>The server derives <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>: when <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is a real agent UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is set to <code class="docutils literal notranslate"><span class="pre">agent</span></code>; when <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is cleared to an empty string. Clients must not set <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> directly — any value supplied for <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> in the request body is ignored.</p>
+<p><strong>How unassignment works</strong></p>
+<p>There are two ways to unassign a conversation:</p>
+<ol class="arabic simple">
+<li><p><strong>Admin/manager</strong>: Use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code> with <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> set to the nil UUID.</p></li>
+<li><p><strong>Owning agent</strong> (or admin/manager): Use the dedicated <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> endpoint. No request body is needed.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Option 1: Admin/manager via PUT (also works for reassignment)</span>
+PUT<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;?token<span class="o">=</span>&lt;admin-or-manager-token&gt;
+Content-Type:<span class="w"> </span>application/json
+
+<span class="o">{</span>
+<span class="w">    </span><span class="s2">"owner_id"</span>:<span class="w"> </span><span class="s2">"00000000-0000-0000-0000-000000000000"</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Option 2: Owning agent (or admin/manager) via dedicated unassign endpoint</span>
+POST<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;/unassign?token<span class="o">=</span>&lt;agent-or-admin-token&gt;
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/unassign</span></code> endpoint takes no request body and returns the updated conversation object.</p>
+<p><strong>Permission Semantics</strong></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Caller</p></th>
+<th class="head"><p>Permitted operations</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Customer admin / manager</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code>: assign, reassign, or unassign the conversation. All fields (owner, name, detail) may be updated. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code>: unassign the conversation (no body required).</p></td>
+</tr>
+<tr class="row-odd"><td><p>Owning agent</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> only — self-unassign without a request body. <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code> is <strong>not</strong> permitted for agents (returns 403 even for the owning agent).</p></td>
+</tr>
+<tr class="row-even"><td><p>Any other agent</p></td>
+<td><p>No assignment-related changes permitted. 403 returned.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Breaking Change</strong></p>
+<p>As of this release, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code> requires <strong>admin or manager</strong> permission. Owning agents that previously used this endpoint to self-unassign (by sending the nil UUID) <strong>must migrate</strong> to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> instead. The <code class="docutils literal notranslate"><span class="pre">/unassign</span></code> endpoint is the supported path for agent-initiated unassignment.</p>
+</div>
+<p><strong>Service-Agents Surface</strong></p>
+<p>The same endpoints are also available under the <code class="docutils literal notranslate"><span class="pre">/service_agents/</span></code> path prefix, which is admin/manager-only:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/conversations/&lt;id&gt;</span></code> — same as <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code> but requires admin or manager permission (no agent access).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/conversations/&lt;id&gt;/unassign</span></code> — same unassign semantics as <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> (admin/manager + owning agent).</p></li>
+</ul>
+<p><strong>Error Responses</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>403 Forbidden:</strong></dt><dd><ul>
+<li><p><strong>Cause (PUT):</strong> Caller is not an admin or manager. Agents (including the owning agent) are not permitted to call <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code>.</p></li>
+<li><p><strong>Cause (POST /unassign):</strong> Caller is neither an admin/manager nor the current owner of the conversation.</p></li>
+<li><p><strong>Fix:</strong> Use a customer admin or manager token for <code class="docutils literal notranslate"><span class="pre">PUT</span></code>. For unassignment, use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/&lt;id&gt;/unassign</span></code> with the owning agent’s token or any admin/manager token.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> could not be validated — either it does not reference an existing agent, or the referenced agent does not belong to the same customer as the conversation. The two cases are intentionally indistinguishable in the response.</p></li>
+<li><p><strong>Fix:</strong> Verify the agent UUID via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/agents</span></code> under the same customer and retry.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Behavior Change for Inbound Messages</strong></p>
+<p>When a conversation is assigned (<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is a real agent UUID):</p>
+<ul class="simple">
+<li><p>New inbound messages do <strong>not</strong> trigger the conversation’s registered flow. No new activeflow is created.</p></li>
+<li><p>Outbound message delivery via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/messages</span></code> continues to work normally — the assigned agent (or admin/manager) can reply through the standard message-send API.</p></li>
+<li><p>Any activeflow that was already running before the assignment continues to run to completion; assignment does not interrupt in-flight flows.</p></li>
+</ul>
+<p>When a conversation is unassigned (<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID or empty):</p>
+<ul class="simple">
+<li><p>The next inbound message resumes the standard behavior and triggers the registered flow as usual.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>To unassign a conversation as the owning agent, use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/conversations/&lt;id&gt;/unassign</span></code> with no request body. Do <strong>not</strong> use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/conversations/&lt;id&gt;</span></code> — that endpoint now requires admin or manager permission and will return 403 for agent callers. Admin and manager callers may use either endpoint.</p>
+</div>
+<p><strong>Listing Conversations by Owner</strong></p>
+<p>Filter conversations by their currently assigned agent using the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> query parameter on <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>GET<span class="w"> </span>https://api.voipbin.net/v1.0/conversations?owner_id<span class="o">=</span>&lt;agent-uuid&gt;<span class="p">&amp;</span><span class="nv">page_token</span><span class="o">=</span>&lt;token&gt;
+</pre></div>
+</div>
+<p>This is the supported way to build a “my conversations” view for an agent.</p>
+<p>Permission rule: an agent caller (non-admin, non-manager) MUST set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to their own agent UUID; otherwise the request is rejected with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>. Admin and manager callers may pass any <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> or omit the filter entirely. Omitting the filter — or passing the nil UUID — disables the filter and returns all conversations the caller can see.</p>
+<p><strong>Webhook Updates</strong></p>
+<p>When a conversation is assigned or unassigned, a <code class="docutils literal notranslate"><span class="pre">conversation_updated</span></code> event fires with the new <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> and <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> values. See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation"><span class="std std-ref">Conversation</span></a> for the field definitions.</p>
+</section>
+<section id="cross-channel-continuity">
+<h2>Cross-Channel Continuity<a class="headerlink" href="#cross-channel-continuity" title="Link to this heading">¶</a></h2>
+<p>The key feature of VoIPBin Conversations is seamless channel switching.</p>
+<p><strong>Cross-Channel Example</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Conversation</span><span class="p">:</span> <span class="s2">"Order Support #5678"</span>                           <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">00</span><span class="p">]</span> <span class="n">Customer</span> <span class="n">via</span> <span class="n">SMS</span><span class="p">:</span>                                     <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"When will my order arrive?"</span>                          <span class="o">|</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">05</span><span class="p">]</span> <span class="n">Support</span> <span class="n">via</span> <span class="n">Email</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"Your order is scheduled for Friday delivery.         |</span>
+<span class="o">|</span>          <span class="n">Here</span><span class="s1">'s the tracking link: ..."                       |</span>
+<span class="o">|</span>         <span class="p">[</span><span class="n">attachment</span><span class="p">:</span> <span class="n">tracking</span><span class="o">-</span><span class="n">details</span><span class="o">.</span><span class="n">pdf</span><span class="p">]</span>                    <span class="o">|</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="n">Customer</span> <span class="n">via</span> <span class="n">Chat</span><span class="p">:</span>                                    <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"Can I change the delivery address?"</span>                  <span class="o">|</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span> <span class="n">Support</span> <span class="n">via</span> <span class="n">Chat</span><span class="p">:</span>                                     <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"Yes, I've updated it. Sending confirmation..."</span>       <span class="o">|</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">13</span><span class="p">]</span> <span class="n">Support</span> <span class="n">via</span> <span class="n">SMS</span><span class="p">:</span>                                      <span class="o">|</span>
+<span class="o">|</span>         <span class="s2">"Address updated! Confirmation sent to your email."</span>   <span class="o">|</span>
+<span class="o">|</span>                                                               <span class="o">|</span>
+<span class="o">+---------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Benefits</strong></p>
+<ul class="simple">
+<li><p>Single conversation ID tracks all interactions</p></li>
+<li><p>Full history visible regardless of channel</p></li>
+<li><p>Participants can use their preferred channel</p></li>
+<li><p>Agents see unified view of all messages</p></li>
+</ul>
+</section>
+<section id="event-types">
+<h2>Event Types<a class="headerlink" href="#event-types" title="Link to this heading">¶</a></h2>
+<p>VoIPBin sends webhook events for conversation activities.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Event</p></th>
+<th class="head"><p>When it fires</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>conversation_created</p></td>
+<td><p>New conversation started</p></td>
+</tr>
+<tr class="row-odd"><td><p>conversation_updated</p></td>
+<td><p>Conversation metadata changed</p></td>
+</tr>
+<tr class="row-even"><td><p>conversation_deleted</p></td>
+<td><p>Conversation deleted</p></td>
+</tr>
+<tr class="row-odd"><td><p>conversation_message_created</p></td>
+<td><p>New message created in conversation</p></td>
+</tr>
+<tr class="row-even"><td><p>conversation_message_updated</p></td>
+<td><p>Message status or content updated</p></td>
+</tr>
+<tr class="row-odd"><td><p>conversation_message_deleted</p></td>
+<td><p>Message deleted from conversation</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="common-scenarios">
+<h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h2>
+<p><strong>Scenario 1: Customer Support Ticket</strong></p>
+<p>Unified support across channels.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Customer</span><span class="p">:</span> <span class="n">SMS</span> <span class="s2">"Having login issues"</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="o">+---------------------------+</span>
+<span class="o">|</span> <span class="n">VoIPBin</span> <span class="n">creates</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">conversation</span>              <span class="o">|</span>
+<span class="o">+---------------------------+</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Support</span> <span class="n">agent</span> <span class="n">responds</span> <span class="n">via</span> <span class="n">email</span>
+<span class="p">(</span><span class="n">includes</span> <span class="n">detailed</span> <span class="n">instructions</span> <span class="o">+</span> <span class="n">screenshots</span><span class="p">)</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Customer</span> <span class="n">follows</span> <span class="n">up</span> <span class="n">via</span> <span class="n">chat</span>
+<span class="p">(</span><span class="n">real</span><span class="o">-</span><span class="n">time</span> <span class="n">troubleshooting</span><span class="p">)</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Issue</span> <span class="n">resolved</span> <span class="o">-</span> <span class="n">conversation</span> <span class="n">closed</span>
+<span class="p">(</span><span class="n">full</span> <span class="n">history</span> <span class="ow">in</span> <span class="n">one</span> <span class="n">place</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Scenario 2: Order Notifications</strong></p>
+<p>Multi-channel order updates.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Order</span> <span class="n">placed</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Order confirmed! #12345"</span>          <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+                   <span class="o">|</span>
+                   <span class="n">v</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Order</span> <span class="n">shipped</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">Email</span><span class="p">:</span> <span class="n">Tracking</span> <span class="n">details</span> <span class="o">+</span> <span class="n">invoice</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Your order shipped!"</span>              <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+                   <span class="o">|</span>
+                   <span class="n">v</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Out</span> <span class="k">for</span> <span class="n">delivery</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Arriving today by 5pm"</span>            <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+                   <span class="o">|</span>
+                   <span class="n">v</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Delivered</span>                                  <span class="o">|</span>
+<span class="o">|</span> <span class="o">-&gt;</span> <span class="n">SMS</span><span class="p">:</span> <span class="s2">"Delivered! Rate your experience"</span>  <span class="o">|</span>
+<span class="o">+--------------------------------------------+</span>
+</pre></div>
+</div>
+<p><strong>Scenario 3: Appointment Reminders</strong></p>
+<p>Escalating reminders across channels.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">3</span> <span class="n">days</span> <span class="n">before</span><span class="p">:</span>
+    <span class="n">Email</span> <span class="o">-&gt;</span> <span class="n">Detailed</span> <span class="n">appointment</span> <span class="n">info</span>
+
+<span class="mi">1</span> <span class="n">day</span> <span class="n">before</span><span class="p">:</span>
+    <span class="n">SMS</span> <span class="o">-&gt;</span> <span class="s2">"Reminder: Appointment tomorrow at 2pm"</span>
+
+<span class="mi">2</span> <span class="n">hours</span> <span class="n">before</span><span class="p">:</span>
+    <span class="n">SMS</span> <span class="o">-&gt;</span> <span class="s2">"Your appointment is in 2 hours"</span>
+
+<span class="n">Customer</span> <span class="n">replies</span> <span class="n">via</span> <span class="nb">any</span> <span class="n">channel</span>
+    <span class="o">-&gt;</span> <span class="n">All</span> <span class="n">responses</span> <span class="ow">in</span> <span class="n">same</span> <span class="n">conversation</span>
+</pre></div>
+</div>
+</section>
+<section id="auto-generated-titles">
+<h2>Auto-Generated Titles<a class="headerlink" href="#auto-generated-titles" title="Link to this heading">¶</a></h2>
+<p>When a conversation is created automatically — on an inbound SMS or a LINE follow event — the platform
+generates a <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">detail</span></code> using the peer’s identity and the channel type.</p>
+<p><strong>Format</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: <code class="docutils literal notranslate"><span class="pre">{channel}</span> <span class="pre">·</span> <span class="pre">{peer}</span></code> — the middle dot (·) is U+00B7.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code>: <code class="docutils literal notranslate"><span class="pre">{channel}</span> <span class="pre">conversation</span></code></p></li>
+</ul>
+<p><strong>Examples</strong></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Scenario</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>detail</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Inbound SMS, contact known</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SMS</span> <span class="pre">·</span> <span class="pre">Alice</span> <span class="pre">(+14155551234)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SMS</span> <span class="pre">conversation</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Inbound SMS, number only (no contact name)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SMS</span> <span class="pre">·</span> <span class="pre">+14155551234</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SMS</span> <span class="pre">conversation</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Inbound SMS, no peer information available</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SMS</span> <span class="pre">·</span> <span class="pre">Unknown</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SMS</span> <span class="pre">conversation</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>LINE follow event, display name known</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">LINE</span> <span class="pre">·</span> <span class="pre">Alice</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">LINE</span> <span class="pre">conversation</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>LINE follow event, no display name</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">LINE</span> <span class="pre">·</span> <span class="pre">Unknown</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">LINE</span> <span class="pre">conversation</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>LINE user IDs (e.g., <code class="docutils literal notranslate"><span class="pre">Uabcdef1234567890</span></code>) are opaque platform identifiers and are intentionally
+<strong>not</strong> shown in the generated title even when no display name is available. Only human-readable
+identifiers (phone numbers, email addresses, SIP URIs, extension numbers) appear in parentheses
+after the contact name.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">name</span></code> field can be updated at any time via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/conversations/{id}</span></code>.
+Auto-generated titles apply only to conversations created automatically; conversations created via
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations</span></code> use the <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">detail</span></code> values provided in the request body.</p>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
+<p><strong>1. Channel Selection</strong></p>
+<ul class="simple">
+<li><p>Use SMS for urgent, short notifications</p></li>
+<li><p>Use email for detailed information with attachments</p></li>
+<li><p>Use chat for real-time, interactive conversations</p></li>
+<li><p>Respect participant channel preferences</p></li>
+</ul>
+<p><strong>2. Conversation Organization</strong></p>
+<ul class="simple">
+<li><p>Use descriptive conversation names</p></li>
+<li><p>Set appropriate conversation timeouts</p></li>
+<li><p>Archive completed conversations</p></li>
+<li><p>Tag conversations for easy filtering</p></li>
+</ul>
+<p><strong>3. Message Content</strong></p>
+<ul class="simple">
+<li><p>Keep messages channel-appropriate</p></li>
+<li><p>Include context when switching channels</p></li>
+<li><p>Use consistent tone across channels</p></li>
+<li><p>Avoid duplicate notifications</p></li>
+</ul>
+<p><strong>4. Participant Management</strong></p>
+<ul class="simple">
+<li><p>Verify participant endpoints before adding</p></li>
+<li><p>Remove inactive participants</p></li>
+<li><p>Handle bounce-backs and failures gracefully</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h2>
+<p><strong>Message Issues</strong></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Message not delivered</p></td>
+<td><p>Check participant endpoint validity; verify channel is available for participant</p></td>
+</tr>
+<tr class="row-odd"><td><p>Wrong channel selected</p></td>
+<td><p>Check channel selection priority; verify participant preferences</p></td>
+</tr>
+<tr class="row-even"><td><p>Duplicate messages</p></td>
+<td><p>Check for retry logic; ensure idempotency using message IDs</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Conversation Issues</strong></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Messages in wrong conversation</p></td>
+<td><p>Check participant matching; verify conversation is active (not closed)</p></td>
+</tr>
+<tr class="row-odd"><td><p>New conversation created unexpectedly</p></td>
+<td><p>Previous conversation may have timed out; check conversation state</p></td>
+</tr>
+<tr class="row-even"><td><p>Participant can’t receive messages</p></td>
+<td><p>Verify endpoint; check channel availability; review delivery errors</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Webhook Issues</strong></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Missing events</p></td>
+<td><p>Verify webhook URL configuration; check endpoint returns 200 OK within 5 seconds</p></td>
+</tr>
+<tr class="row-odd"><td><p>Delayed events</p></td>
+<td><p>Check webhook endpoint performance; review retry queue</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="setting-up-a-whatsapp-conversation-account">
+<h2>Setting Up a WhatsApp Conversation Account<a class="headerlink" href="#setting-up-a-whatsapp-conversation-account" title="Link to this heading">¶</a></h2>
+<p>To receive and send WhatsApp messages through VoIPBin, you must create a <code class="docutils literal notranslate"><span class="pre">whatsapp</span></code> conversation account and configure Meta Business Manager to forward events to VoIPBin’s webhook endpoint.</p>
+<p><strong>Prerequisites</strong></p>
+<ul class="simple">
+<li><p>A Meta Business Manager account with a WhatsApp Business App set up.</p></li>
+<li><p>A Meta system user access token with <code class="docutils literal notranslate"><span class="pre">whatsapp_business_messaging</span></code> and <code class="docutils literal notranslate"><span class="pre">whatsapp_business_management</span></code> permissions.</p></li>
+<li><p>The phone number ID for the WhatsApp Business phone number you want to use. Found in Meta Business Manager under <strong>WhatsApp → Phone numbers</strong>.</p></li>
+<li><p>The Meta app secret for your app. Found in Meta Business Manager under <strong>App settings → Basic</strong>.</p></li>
+</ul>
+<p><strong>Step 1 — Create the conversation account</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/conversation_accounts?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "type": "whatsapp",
+        "name": "My WhatsApp Account",
+        "detail": "WhatsApp Business account for customer support",
+        "token": "&lt;META_SYSTEM_USER_ACCESS_TOKEN&gt;",
+        "secret": "&lt;YOUR_WEBHOOK_VERIFY_TOKEN&gt;",
+        "provider_data": {
+            "phone_number_id": "&lt;META_PHONE_NUMBER_ID&gt;",
+            "app_secret": "&lt;META_APP_SECRET&gt;"
+        }
+    }'
+
+{
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "type": "whatsapp",
+    "name": "My WhatsApp Account",
+    "detail": "WhatsApp Business account for customer support",
+    "provider_data": {
+        "phone_number_id": "&lt;META_PHONE_NUMBER_ID&gt;",
+        "app_secret": "&lt;META_APP_SECRET&gt;"
+    },
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "tm_create": "2026-01-15T09:30:00.000000Z",
+    "tm_update": "2026-01-15T09:30:00.000000Z",
+    "tm_delete": "9999-01-01T00:00:00.000000Z"
+}
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">token</span></code> and <code class="docutils literal notranslate"><span class="pre">secret</span></code> are write-only fields — they are <strong>not</strong> returned in the response. <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> is returned in both <code class="docutils literal notranslate"><span class="pre">POST</span></code> (create) and <code class="docutils literal notranslate"><span class="pre">GET</span></code> responses.</p>
+<p><strong>Step 2 — Note the account ID</strong></p>
+<p>Copy the <code class="docutils literal notranslate"><span class="pre">id</span></code> from the response (e.g., <code class="docutils literal notranslate"><span class="pre">a1b2c3d4-e5f6-7890-abcd-ef1234567890</span></code>). You will use it to construct your webhook URL.</p>
+<p><strong>Step 3 — Configure the webhook in Meta Business Manager</strong></p>
+<p>In Meta Business Manager, navigate to your WhatsApp app’s <strong>Webhooks</strong> settings and configure:</p>
+<ul class="simple">
+<li><p><strong>Callback URL</strong>: <code class="docutils literal notranslate"><span class="pre">https://hook.voipbin.net/v1.0/conversation/accounts/&lt;account_id&gt;</span></code>
+(replace <code class="docutils literal notranslate"><span class="pre">&lt;account_id&gt;</span></code> with the <code class="docutils literal notranslate"><span class="pre">id</span></code> from Step 2)</p></li>
+<li><p><strong>Verify token</strong>: The value you set in the <code class="docutils literal notranslate"><span class="pre">secret</span></code> field when creating the account.</p></li>
+<li><p><strong>Webhook fields to subscribe</strong>: <code class="docutils literal notranslate"><span class="pre">messages</span></code></p></li>
+</ul>
+<p>Meta will send a <code class="docutils literal notranslate"><span class="pre">GET</span></code> request to the callback URL to verify ownership. VoIPBin handles this automatically using the <code class="docutils literal notranslate"><span class="pre">secret</span></code> you configured.</p>
+<p><strong>Step 4 — Verify the setup</strong></p>
+<p>Send a test WhatsApp message to your configured phone number. VoIPBin will:</p>
+<ol class="arabic simple">
+<li><p>Receive the inbound webhook from Meta.</p></li>
+<li><p>Validate the <code class="docutils literal notranslate"><span class="pre">X-Hub-Signature-256</span></code> signature using the <code class="docutils literal notranslate"><span class="pre">app_secret</span></code> from <code class="docutils literal notranslate"><span class="pre">provider_data</span></code>.</p></li>
+<li><p>Create (or match) a conversation with <code class="docutils literal notranslate"><span class="pre">dialog_id</span></code> equal to the sender’s <code class="docutils literal notranslate"><span class="pre">wa_id</span></code> (E.164 number without <code class="docutils literal notranslate"><span class="pre">+</span></code>).</p></li>
+<li><p>Deliver a <code class="docutils literal notranslate"><span class="pre">conversation_message_created</span></code> webhook event to your application if a flow is configured.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> field is a JSON object returned in GET responses. Set it on create/update. The <code class="docutils literal notranslate"><span class="pre">secret</span></code> field stores the Meta webhook verify token (not the app secret — that lives inside <code class="docutils literal notranslate"><span class="pre">provider_data.app_secret</span></code>) and is write-only. The <code class="docutils literal notranslate"><span class="pre">token</span></code> field stores the Meta system user access token used for outbound API calls and is also write-only.</p>
+<p>For <a class="reference internal" href="conversation_struct_account.html#conversation-struct-account-type"><span class="std std-ref">type field values</span></a> and additional WhatsApp-specific field details, see the <a class="reference internal" href="conversation_struct_account.html#conversation-struct-account"><span class="std std-ref">Account struct reference</span></a>.</p>
+</div>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="message_overview.html#message-overview"><span class="std std-ref">Message Overview</span></a> - SMS/MMS messaging</p></li>
+<li><p><a class="reference internal" href="email_overview.html#email-overview"><span class="std std-ref">Email Overview</span></a> - Email integration</p></li>
+<li><p><a class="reference internal" href="webchat_overview.html#webchat-overview"><span class="std std-ref">Webchat Overview</span></a> - Embedded chat widget integration</p></li>
+<li><p><a class="reference internal" href="talk_overview.html#talk-overview"><span class="std std-ref">Talk Overview</span></a> - Internal team messaging</p></li>
+<li><p><a class="reference internal" href="webhook_overview.html#webhook-overview"><span class="std std-ref">Webhook Overview</span></a> - Webhook configuration</p></li>
+<li><p><a class="reference internal" href="ai_overview.html#ai-overview-conversation-ai"><span class="std std-ref">Using AI in Conversations</span></a> - Run an AI agent inside an SMS or LINE conversation via the <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> flow action</p></li>
+</ul>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="conversation_struct_conversation.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Conversation</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="conversation.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Conversation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, VoIPBin
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/voipbin/voipbin" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#how-conversations-work">How Conversations Work</a></li>
+<li><a class="reference internal" href="#channel-types">Channel Types</a></li>
+<li><a class="reference internal" href="#conversation-lifecycle">Conversation Lifecycle</a></li>
+<li><a class="reference internal" href="#conversation-rooms">Conversation Rooms</a></li>
+<li><a class="reference internal" href="#how-conversations-are-created">How Conversations Are Created</a></li>
+<li><a class="reference internal" href="#sending-messages">Sending Messages</a></li>
+<li><a class="reference internal" href="#receiving-messages">Receiving Messages</a></li>
+<li><a class="reference internal" href="#assigning-a-conversation-to-an-agent">Assigning a Conversation to an Agent</a></li>
+<li><a class="reference internal" href="#cross-channel-continuity">Cross-Channel Continuity</a></li>
+<li><a class="reference internal" href="#event-types">Event Types</a></li>
+<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
+<li><a class="reference internal" href="#auto-generated-titles">Auto-Generated Titles</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#setting-up-a-whatsapp-conversation-account">Setting Up a WhatsApp Conversation Account</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=8a448e45"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

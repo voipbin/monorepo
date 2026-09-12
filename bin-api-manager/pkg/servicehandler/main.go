@@ -266,11 +266,11 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		id uuid.UUID,
-		name string,
-		detail string,
-		campaignType cacampaign.Type,
-		serviceLevel int,
-		endHandle cacampaign.EndHandle,
+		name *string,
+		detail *string,
+		campaignType *cacampaign.Type,
+		serviceLevel *int,
+		endHandle *cacampaign.EndHandle,
 	) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateStatus(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, status cacampaign.Status) (*cacampaign.WebhookMessage, error)
 	CampaignUpdateServiceLevel(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, serviceLevel int) (*cacampaign.WebhookMessage, error)
@@ -838,13 +838,13 @@ type ServiceHandler interface {
 		a *auth.AuthIdentity,
 		id uuid.UUID,
 		source *commonaddress.Address,
-		dialTimeout int,
-		tryInterval int,
-		maxTryCount0 int,
-		maxTryCount1 int,
-		maxTryCount2 int,
-		maxTryCount3 int,
-		maxTryCount4 int,
+		dialTimeout *int,
+		tryInterval *int,
+		maxTryCount0 *int,
+		maxTryCount1 *int,
+		maxTryCount2 *int,
+		maxTryCount3 *int,
+		maxTryCount4 *int,
 	) (*caoutplan.WebhookMessage, error)
 
 	// provider handlers

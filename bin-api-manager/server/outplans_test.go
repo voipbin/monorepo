@@ -448,6 +448,8 @@ func Test_outplansIDPUT(t *testing.T) {
 
 func Test_outplansIDDialInfoPUT(t *testing.T) {
 
+	intPtr := func(v int) *int { return &v }
+
 	tests := []struct {
 		name  string
 		agent *auth.AuthIdentity
@@ -459,13 +461,13 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 
 		expectOutplanID    uuid.UUID
 		expectSource       *commonaddress.Address
-		expectDialTimeout  int
-		expectTryInterval  int
-		expectMaxTryCount0 int
-		expectMaxTryCount1 int
-		expectMaxTryCount2 int
-		expectMaxTryCount3 int
-		expectMaxTryCount4 int
+		expectDialTimeout  *int
+		expectTryInterval  *int
+		expectMaxTryCount0 *int
+		expectMaxTryCount1 *int
+		expectMaxTryCount2 *int
+		expectMaxTryCount3 *int
+		expectMaxTryCount4 *int
 		expectRes          string
 	}{
 		{
@@ -490,14 +492,35 @@ func Test_outplansIDDialInfoPUT(t *testing.T) {
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			expectDialTimeout:  30000,
-			expectTryInterval:  600000,
-			expectMaxTryCount0: 5,
-			expectMaxTryCount1: 5,
-			expectMaxTryCount2: 5,
-			expectMaxTryCount3: 5,
-			expectMaxTryCount4: 5,
+			expectDialTimeout:  intPtr(30000),
+			expectTryInterval:  intPtr(600000),
+			expectMaxTryCount0: intPtr(5),
+			expectMaxTryCount1: intPtr(5),
+			expectMaxTryCount2: intPtr(5),
+			expectMaxTryCount3: intPtr(5),
+			expectMaxTryCount4: intPtr(5),
 			expectRes:          `{"id":"d94e07e8-c64c-11ec-9e9d-8b700336c5ef","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "dial_timeout only, all other fields omitted",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/outplans/d94e07e8-c64c-11ec-9e9d-8b700336c5ef/dial_info",
+			reqBody:  []byte(`{"dial_timeout":45000}`),
+
+			responseOutplan: &caoutplan.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d94e07e8-c64c-11ec-9e9d-8b700336c5ef"),
+				},
+			},
+
+			expectOutplanID:   uuid.FromStringOrNil("d94e07e8-c64c-11ec-9e9d-8b700336c5ef"),
+			expectDialTimeout: intPtr(45000),
+			expectRes:         `{"id":"d94e07e8-c64c-11ec-9e9d-8b700336c5ef","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","source":null,"dial_timeout":0,"try_interval":0,"max_try_count_0":0,"max_try_count_1":0,"max_try_count_2":0,"max_try_count_3":0,"max_try_count_4":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

@@ -8580,20 +8580,20 @@ type PostCampaignsJSONBody struct {
 
 // PutCampaignsIdJSONBody defines parameters for PutCampaignsId.
 type PutCampaignsIdJSONBody struct {
-	// Detail Updated details of the campaign
-	Detail string `json:"detail"`
+	// Detail Updated details of the campaign. Omit to leave unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// EndHandle Behavior of the campaign after outdial has no more targets.
-	EndHandle CampaignManagerCampaignEndHandle `json:"end_handle"`
+	// EndHandle Updated end handle of the campaign. Omit to leave unchanged.
+	EndHandle *CampaignManagerCampaignEndHandle `json:"end_handle,omitempty"`
 
-	// Name Updated name of the campaign
-	Name string `json:"name"`
+	// Name Updated name of the campaign. Omit to leave unchanged.
+	Name *string `json:"name,omitempty"`
 
-	// ServiceLevel Updated service level of the campaign
-	ServiceLevel int `json:"service_level"`
+	// ServiceLevel Updated service level of the campaign. Omit to leave unchanged.
+	ServiceLevel *int `json:"service_level,omitempty"`
 
-	// Type Type of campaign.
-	Type CampaignManagerCampaignType `json:"type"`
+	// Type Updated type of the campaign. Omit to leave unchanged.
+	Type *CampaignManagerCampaignType `json:"type,omitempty"`
 }
 
 // PutCampaignsIdActionsJSONBody defines parameters for PutCampaignsIdActions.
@@ -9630,29 +9630,29 @@ type PutOutplansIdJSONBody struct {
 
 // PutOutplansIdDialInfoJSONBody defines parameters for PutOutplansIdDialInfo.
 type PutOutplansIdDialInfoJSONBody struct {
-	// DialTimeout The new dial timeout in seconds.
-	DialTimeout int `json:"dial_timeout"`
+	// DialTimeout The new dial timeout in seconds. Omit to leave unchanged.
+	DialTimeout *int `json:"dial_timeout,omitempty"`
 
-	// MaxTryCount0 The new maximum retry count for destination 0.
-	MaxTryCount0 int `json:"max_try_count_0"`
+	// MaxTryCount0 The new maximum retry count for destination 0. Omit to leave unchanged.
+	MaxTryCount0 *int `json:"max_try_count_0,omitempty"`
 
-	// MaxTryCount1 The new maximum retry count for destination 1.
-	MaxTryCount1 int `json:"max_try_count_1"`
+	// MaxTryCount1 The new maximum retry count for destination 1. Omit to leave unchanged.
+	MaxTryCount1 *int `json:"max_try_count_1,omitempty"`
 
-	// MaxTryCount2 The new maximum retry count for destination 2.
-	MaxTryCount2 int `json:"max_try_count_2"`
+	// MaxTryCount2 The new maximum retry count for destination 2. Omit to leave unchanged.
+	MaxTryCount2 *int `json:"max_try_count_2,omitempty"`
 
-	// MaxTryCount3 The new maximum retry count for destination 3.
-	MaxTryCount3 int `json:"max_try_count_3"`
+	// MaxTryCount3 The new maximum retry count for destination 3. Omit to leave unchanged.
+	MaxTryCount3 *int `json:"max_try_count_3,omitempty"`
 
-	// MaxTryCount4 The new maximum retry count for destination 4.
-	MaxTryCount4 int `json:"max_try_count_4"`
+	// MaxTryCount4 The new maximum retry count for destination 4. Omit to leave unchanged.
+	MaxTryCount4 *int `json:"max_try_count_4,omitempty"`
 
 	// Source Contains source or destination detail info.
-	Source CommonAddress `json:"source"`
+	Source *CommonAddress `json:"source,omitempty"`
 
-	// TryInterval The new interval between retry attempts.
-	TryInterval int `json:"try_interval"`
+	// TryInterval The new interval between retry attempts. Omit to leave unchanged.
+	TryInterval *int `json:"try_interval,omitempty"`
 }
 
 // GetProvidercallsParams defines parameters for GetProvidercalls.
