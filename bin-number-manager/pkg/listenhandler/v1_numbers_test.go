@@ -551,7 +551,8 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 		callFlowID    *uuid.UUID
 		messageFlowID *uuid.UUID
 
-		expectFields map[number.Field]any
+		expectFields   map[number.Field]any
+		expectNoUpdate bool
 
 		resultData *number.Number
 
@@ -570,6 +571,7 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 			map[number.Field]any{
 				number.FieldCallFlowID: uuid.FromStringOrNil("9394929c-7c58-11eb-8af3-13d1657955b6"),
 			},
+			false,
 
 			&number.Number{
 				Identity: commonidentity.Identity{
@@ -598,6 +600,33 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"72f3b054-7ff4-11ec-9af9-0b8c5dbee258","number":"+821****6521","type":"","call_flow_id":"9394929c-7c58-11eb-8af3-13d1657955b6","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","provider_name":"telnyx","provider_reference_id":"","status":"active","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
+		{
+			"all fields omitted, no-op",
+
+			uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+			nil,
+			nil,
+
+			nil,
+			true,
+
+			&number.Number{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("935190b4-7c58-11eb-8b90-f777a56fe90f"),
+				},
+			},
+			&sock.Request{
+				URI:      "/v1/numbers/935190b4-7c58-11eb-8b90-f777a56fe90f/flow_ids",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"935190b4-7c58-11eb-8b90-f777a56fe90f","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -613,7 +642,12 @@ func Test_processV1NumbersIDFlowIDPut(t *testing.T) {
 				numberHandler: mockNumber,
 			}
 
-			mockNumber.EXPECT().Update(gomock.Any(), tt.id, tt.expectFields).Return(tt.resultData, nil)
+			if tt.expectNoUpdate {
+				mockNumber.EXPECT().Update(gomock.Any(), tt.id, gomock.Any()).Times(0)
+				mockNumber.EXPECT().Get(gomock.Any(), tt.id).Return(tt.resultData, nil)
+			} else {
+				mockNumber.EXPECT().Update(gomock.Any(), tt.id, tt.expectFields).Return(tt.resultData, nil)
+			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

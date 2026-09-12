@@ -453,6 +453,28 @@ func Test_numbersIDPUT_MalformedFlowID(t *testing.T) {
 			reqQuery: "/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652",
 			reqBody:  []byte(`{"message_flow_id": "not-a-valid-uuid"}`),
 		},
+		{
+			name: "malformed call_flow_id on flow_ids endpoint",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652/flow_ids",
+			reqBody:  []byte(`{"call_flow_id": "not-a-valid-uuid"}`),
+		},
+		{
+			name: "malformed message_flow_id on flow_ids endpoint",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/numbers/4e1a6702-7c60-11eb-bca2-3fd92181c652/flow_ids",
+			reqBody:  []byte(`{"message_flow_id": "not-a-valid-uuid"}`),
+		},
 	}
 
 	for _, tt := range tests {
