@@ -640,219 +640,115 @@
         <article role="main" id="furo-main-content">
           <section id="operations-and-troubleshooting">
 <h1>Operations and troubleshooting<a class="headerlink" href="#operations-and-troubleshooting" title="Link to this heading">¶</a></h1>
+<section id="install-doctor">
+<h2>Install doctor<a class="headerlink" href="#install-doctor" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">./scripts/doctor.sh</span></code> (or <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">./voipbin</span> <span class="pre">doctor</span></code>) is the read-only
+diagnostic superset of <code class="docutils literal notranslate"><span class="pre">check-install.sh</span></code>. It runs at any stage
+(pre-install, mid-install, running stack), never mutates anything, and
+auto-skips whatever cannot be probed at the current stage.</p>
+<p>Output is one line per check, <code class="docutils literal notranslate"><span class="pre">DOCTOR</span> <span class="pre">&lt;name&gt;:</span> <span class="pre">pass|fail|warn|skip</span>
+<span class="pre">&lt;detail&gt;</span></code>; every failure (and every fixable warning) is immediately
+followed by a <code class="docutils literal notranslate"><span class="pre">FIX</span> <span class="pre">&lt;name&gt;:</span> <span class="pre">&lt;exact</span> <span class="pre">command&gt;</span></code> line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./scripts/doctor.sh
+./scripts/doctor.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">'^FIX '</span><span class="w">   </span><span class="c1"># extract every recovery command</span>
+</pre></div>
+</div>
+<p>Exit codes: <code class="docutils literal notranslate"><span class="pre">0</span></code> only when nothing failed (warnings and skips do not
+fail the run); <code class="docutils literal notranslate"><span class="pre">1</span></code> when any check failed; <code class="docutils literal notranslate"><span class="pre">2</span></code> when the doctor cannot
+even start.</p>
+</section>
 <section id="day-to-day-commands">
 <h2>Day-to-day commands<a class="headerlink" href="#day-to-day-commands" title="Link to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show the current pipeline state</span>
-./voipbin-install<span class="w"> </span>status
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Status and logs</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>status
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>api-manager
 
-<span class="c1"># Show status as JSON (for scripting)</span>
-./voipbin-install<span class="w"> </span>status<span class="w"> </span>--json
+<span class="c1"># Restart a service (Asterisk call/registrar/conference restarts</span>
+<span class="c1"># its paired proxy sidecar automatically)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager
 
-<span class="c1"># Verify deployment health (API, SIP, pods, TLS)</span>
-./voipbin-install<span class="w"> </span>verify
+<span class="c1"># Debug shells</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>ast<span class="w">     </span><span class="c1"># Asterisk CLI</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>kam<span class="w">     </span><span class="c1"># Kamailio kamcmd</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>db<span class="w">      </span><span class="c1"># MySQL</span>
 
-<span class="c1"># Run only a specific health check</span>
-./voipbin-install<span class="w"> </span>verify<span class="w"> </span>--check<span class="w"> </span>http_health
-
-<span class="c1"># Re-render and apply just the K8s manifests after editing a value</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s_apply
-
-<span class="c1"># Re-render the Kamailio VM .env after editing group_vars</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible_run
-
-<span class="c1"># Show Kamailio TLS certificate status</span>
-./voipbin-install<span class="w"> </span>cert<span class="w"> </span>status
-
-<span class="c1"># Renew Kamailio TLS certificates</span>
-./voipbin-install<span class="w"> </span>cert<span class="w"> </span>renew
-
-<span class="c1"># Show help for any command</span>
-./voipbin-install<span class="w"> </span>--help
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--help
-
-<span class="c1"># Inspect what secrets are stored</span>
-sops<span class="w"> </span>--decrypt<span class="w"> </span>secrets.yaml
-
-<span class="c1"># SSH into Kamailio for debugging</span>
-gcloud<span class="w"> </span>compute<span class="w"> </span>ssh<span class="w"> </span>kamailio-0<span class="w"> </span>--tunnel-through-iap<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--project<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>yq<span class="w"> </span>.gcp_project_id<span class="w"> </span>config.yaml<span class="k">)</span><span class="s2">"</span>
-
-<span class="c1"># Get logs from a backend service</span>
-kubectl<span class="w"> </span>-n<span class="w"> </span>bin-manager<span class="w"> </span>logs<span class="w"> </span>deploy/call-manager<span class="w"> </span>--tail<span class="w"> </span><span class="m">200</span>
+<span class="c1"># Backup and restore</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>backup
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restore<span class="w"> </span>&lt;timestamp&gt;<span class="w"> </span>--force
 
 <span class="c1"># Tear everything down (irreversible, including the database)</span>
-./voipbin-install<span class="w"> </span>destroy
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>clean<span class="w"> </span>--all
 </pre></div>
 </div>
 </section>
 <section id="common-issues">
 <h2>Common issues<a class="headerlink" href="#common-issues" title="Link to this heading">¶</a></h2>
-<section id="terraform-quota-exceeded">
-<h3>Terraform: quota exceeded<a class="headerlink" href="#terraform-quota-exceeded" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">Quota</span> <span class="pre">exceeded</span></code>. Request quota increases
-at <a class="reference external" href="https://console.cloud.google.com/iam-admin/quotas">https://console.cloud.google.com/iam-admin/quotas</a>, then rerun
-<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>. Common quotas: <code class="docutils literal notranslate"><span class="pre">CPUS_ALL_REGIONS</span></code>,
-<code class="docutils literal notranslate"><span class="pre">IN_USE_ADDRESSES</span></code>, <code class="docutils literal notranslate"><span class="pre">SSD_TOTAL_GB</span></code>.</p>
-</section>
-<section id="terraform-state-lock">
-<h3>Terraform: state lock<a class="headerlink" href="#terraform-state-lock" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">Error</span> <span class="pre">acquiring</span> <span class="pre">the</span> <span class="pre">state</span> <span class="pre">lock</span></code>. Only when you are certain no
-other process is running Terraform:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>terraform
-terraform<span class="w"> </span>force-unlock<span class="w"> </span>LOCK_ID
+<section id="extensions-register-but-calls-fail-ami-ari-mismatch">
+<h3>Extensions register but calls fail (AMI/ARI mismatch)<a class="headerlink" href="#extensions-register-but-calls-fail-ami-ari-mismatch" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">AMI_USERNAME</span></code>/<code class="docutils literal notranslate"><span class="pre">AMI_PASSWORD</span></code> must stay <code class="docutils literal notranslate"><span class="pre">asterisk</span></code>/<code class="docutils literal notranslate"><span class="pre">asterisk</span></code> to
+match the static account baked into the Asterisk images’ AMI and ARI
+configuration. If these were ever changed, SIP registration keeps working
+(that path is pjsip plus realtime MySQL) while call control silently
+breaks. Fix by restoring the fixed values in <code class="docutils literal notranslate"><span class="pre">.env</span></code> and recreating the
+three proxy sidecars:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--force-recreate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>asterisk-call-proxy<span class="w"> </span>asterisk-conference-proxy<span class="w"> </span>asterisk-registrar-proxy
 </pre></div>
 </div>
 </section>
-<section id="terraform-api-not-enabled">
-<h3>Terraform: API not enabled<a class="headerlink" href="#terraform-api-not-enabled" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">...</span> <span class="pre">API</span> <span class="pre">not</span> <span class="pre">enabled</span></code>. Re-run
-<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">init</span></code> to enable APIs, or enable manually:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>services<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>container.googleapis.com<span class="w"> </span>--project<span class="w"> </span>PROJECT_ID
+<section id="extensions-created-with-the-wrong-domain">
+<h3>Extensions created with the wrong domain<a class="headerlink" href="#extensions-created-with-the-wrong-domain" title="Link to this heading">¶</a></h3>
+<p>If extensions register under <code class="docutils literal notranslate"><span class="pre">.voipbin.test</span></code> instead of
+<code class="docutils literal notranslate"><span class="pre">.registrar.voipbin.test</span></code>, a shell-exported <code class="docutils literal notranslate"><span class="pre">DOMAIN_NAME_EXTENSION</span></code>
+is overriding <code class="docutils literal notranslate"><span class="pre">.env</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>env<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>DOMAIN_NAME
+<span class="nb">unset</span><span class="w"> </span>DOMAIN_NAME_EXTENSION<span class="w"> </span>DOMAIN_NAME_TRUNK
+docker<span class="w"> </span>compose<span class="w"> </span>config<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>DOMAIN
+docker<span class="w"> </span>compose<span class="w"> </span>rm<span class="w"> </span>-fsv<span class="w"> </span>registrar-manager<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>registrar-manager
 </pre></div>
 </div>
+<p>Then delete and recreate the affected extensions via the API.</p>
 </section>
-<section id="terraform-state-bucket-missing">
-<h3>Terraform: state bucket missing<a class="headerlink" href="#terraform-state-bucket-missing" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">get</span> <span class="pre">existing</span> <span class="pre">workspaces:</span> <span class="pre">storage:</span> <span class="pre">bucket</span> <span class="pre">doesn't</span> <span class="pre">exist</span></code>.
-The GCS state bucket must exist before <code class="docutils literal notranslate"><span class="pre">terraform</span> <span class="pre">init</span></code>. The <code class="docutils literal notranslate"><span class="pre">apply</span></code>
-command creates it automatically; if you are running Terraform manually,
-create it first:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gsutil<span class="w"> </span>mb<span class="w"> </span>-p<span class="w"> </span>PROJECT_ID<span class="w"> </span>gs://PROJECT_ID-voipbin-tf-state
+<section id="dns-not-resolving-voipbin-test-internal-mode">
+<h3>DNS not resolving <code class="docutils literal notranslate"><span class="pre">*.voipbin.test</span></code> (internal mode)<a class="headerlink" href="#dns-not-resolving-voipbin-test-internal-mode" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>ps<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>voipbin-dns<span class="w">          </span><span class="c1"># CoreDNS container running?</span>
+dig<span class="w"> </span>@127.0.0.1<span class="w"> </span>voipbin.test<span class="w">           </span><span class="c1"># CoreDNS answering directly?</span>
+dig<span class="w"> </span>voipbin.test<span class="w">                      </span><span class="c1"># system resolver picking it up?</span>
+cat<span class="w"> </span>/etc/resolv.conf<span class="w">                  </span><span class="c1"># 127.0.0.1 listed first?</span>
+sudo<span class="w"> </span>./scripts/setup-dns.sh<span class="w">           </span><span class="c1"># re-run DNS setup</span>
 </pre></div>
 </div>
+<p>A downed CoreDNS container does not take down all host DNS: a captured
+upstream nameserver (from the pre-install resolver, or a hardcoded public
+fallback) is written into <code class="docutils literal notranslate"><span class="pre">/etc/resolv.conf</span></code> alongside <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code>.</p>
 </section>
-<section id="terraform-permission-denied">
-<h3>Terraform: permission denied<a class="headerlink" href="#terraform-permission-denied" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">Required</span> <span class="pre">permission</span></code>. Re-check the
-authenticated principal:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>auth<span class="w"> </span>list
-gcloud<span class="w"> </span>projects<span class="w"> </span>get-iam-policy<span class="w"> </span>PROJECT_ID
+<section id="host-ip-changed-after-reboot">
+<h3>Host IP changed after reboot<a class="headerlink" href="#host-ip-changed-after-reboot" title="Link to this heading">¶</a></h3>
+<p>The installer detects a changed host IP on <code class="docutils literal notranslate"><span class="pre">start.sh</span></code> and regenerates
+<code class="docutils literal notranslate"><span class="pre">.env</span></code>, the CoreDNS Corefile, and TLS certificates automatically. Force
+it manually if needed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./scripts/setup-dns.sh<span class="w"> </span>--regenerate
 </pre></div>
 </div>
-<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (12 roles). The principal also needs <code class="docutils literal notranslate"><span class="pre">roles/compute.osLogin</span></code> and <code class="docutils literal notranslate"><span class="pre">roles/compute.osAdminLogin</span></code> for Ansible VM access.</p>
+<p>If a browser then shows <code class="docutils literal notranslate"><span class="pre">ERR_CERT_AUTHORITY_INVALID</span></code>, the certificate
+was regenerated correctly; do a hard refresh or use a non-incognito
+window (incognito does not trust user-installed CAs).</p>
 </section>
-<section id="ansible-iap-tunnel-connection-failed">
-<h3>Ansible: IAP tunnel connection failed<a class="headerlink" href="#ansible-iap-tunnel-connection-failed" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">ERROR!</span> <span class="pre">Timeout</span> <span class="pre">waiting</span> <span class="pre">for</span> <span class="pre">connection</span></code> or
-<code class="docutils literal notranslate"><span class="pre">Permission</span> <span class="pre">denied</span> <span class="pre">(publickey)</span></code>.</p>
-<ol class="arabic simple">
-<li><p>Verify IAP SSH works directly:
-<code class="docutils literal notranslate"><span class="pre">gcloud</span> <span class="pre">compute</span> <span class="pre">ssh</span> <span class="pre">VM_NAME</span> <span class="pre">--tunnel-through-iap</span> <span class="pre">--project</span> <span class="pre">PROJECT_ID</span> <span class="pre">--zone</span> <span class="pre">ZONE</span></code>.</p></li>
-<li><p>Ensure the IAP API is enabled.</p></li>
-<li><p>Check the IAP firewall rule exists.</p></li>
-<li><p>Verify the principal has <code class="docutils literal notranslate"><span class="pre">roles/iap.tunnelResourceAccessor</span></code>.</p></li>
-</ol>
 </section>
-<section id="ansible-docker-install-failed-on-a-fresh-vm">
-<h3>Ansible: docker install failed on a fresh VM<a class="headerlink" href="#ansible-docker-install-failed-on-a-fresh-vm" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">Could</span> <span class="pre">not</span> <span class="pre">get</span> <span class="pre">lock</span> <span class="pre">/var/lib/dpkg/lock</span></code> typically means cloud-init is
-still running. Wait for it and rerun the stage:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>ssh<span class="w"> </span>kamailio-0<span class="w"> </span>--tunnel-through-iap<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--<span class="w"> </span><span class="s1">'cloud-init status --wait'</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible_run
+<section id="reset-everything">
+<h2>Reset everything<a class="headerlink" href="#reset-everything" title="Link to this heading">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./scripts/clean.sh<span class="w"> </span>--volumes<span class="w"> </span>--purge
 </pre></div>
 </div>
+<p>Always use the combined <code class="docutils literal notranslate"><span class="pre">--volumes</span> <span class="pre">--purge</span></code> form. <code class="docutils literal notranslate"><span class="pre">--purge</span></code> alone
+keeps the database volume with the old domain’s data, which is the worst
+partial state to be in.</p>
 </section>
-<section id="kubernetes-pod-in-crashloopbackoff">
-<h3>Kubernetes: pod in CrashLoopBackOff<a class="headerlink" href="#kubernetes-pod-in-crashloopbackoff" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>bin-manager
-kubectl<span class="w"> </span>logs<span class="w"> </span>POD_NAME<span class="w"> </span>-n<span class="w"> </span>bin-manager
-kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>POD_NAME<span class="w"> </span>-n<span class="w"> </span>bin-manager
-</pre></div>
-</div>
-<p>Most common causes:</p>
-<ul class="simple">
-<li><p>Cloud SQL Proxy not ready (check <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code> namespace first).</p></li>
-<li><p>Redis or RabbitMQ not ready.</p></li>
-<li><p>Missing ConfigMap or Secret values.</p></li>
-</ul>
-</section>
-<section id="kubernetes-imagepullbackoff">
-<h3>Kubernetes: ImagePullBackOff<a class="headerlink" href="#kubernetes-imagepullbackoff" title="Link to this heading">¶</a></h3>
-<ol class="arabic simple">
-<li><p>Verify the image exists at the tag declared in
-<code class="docutils literal notranslate"><span class="pre">config/versions.yaml</span></code>.</p></li>
-<li><p>GKE nodes need internet access through Cloud NAT.</p></li>
-<li><p>If images live in a private GAR or GCR repository, confirm the GKE
-node service account has <code class="docutils literal notranslate"><span class="pre">roles/artifactregistry.reader</span></code> (GAR) or
-<code class="docutils literal notranslate"><span class="pre">roles/storage.objectViewer</span></code> on the registry bucket (legacy GCR).</p></li>
-</ol>
-</section>
-<section id="cloud-sql-connection-refused-from-pods">
-<h3>Cloud SQL: connection refused from pods<a class="headerlink" href="#cloud-sql-connection-refused-from-pods" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>infrastructure<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>cloudsql-proxy
-kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>infrastructure<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>cloudsql-proxy
-</pre></div>
-</div>
-<p>Verify the Cloud SQL instance is up, the proxy service account has
-permissions, and the connection name matches the Terraform output.</p>
-</section>
-<section id="dns-domain-not-resolving">
-<h3>DNS: domain not resolving<a class="headerlink" href="#dns-domain-not-resolving" title="Link to this heading">¶</a></h3>
-<p>When <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">auto</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>dns<span class="w"> </span>managed-zones<span class="w"> </span>describe<span class="w"> </span>voipbin-zone<span class="w"> </span>--project<span class="w"> </span>PROJECT_ID<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--format<span class="o">=</span><span class="s2">"value(nameServers)"</span>
-</pre></div>
-</div>
-<p>Update your registrar’s NS records to point at those nameservers. NS
-delegation can take up to 48 hours.</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">manual</span></code>: pull the external LB IP from Terraform
-outputs and create A records for <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">hook</span></code>, <code class="docutils literal notranslate"><span class="pre">admin</span></code>, <code class="docutils literal notranslate"><span class="pre">talk</span></code>,
-<code class="docutils literal notranslate"><span class="pre">meet</span></code>, and <code class="docutils literal notranslate"><span class="pre">sip</span></code> subdomains at your DNS provider.</p>
-</section>
-<section id="sip-devices-cannot-register">
-<h3>SIP: devices cannot register<a class="headerlink" href="#sip-devices-cannot-register" title="Link to this heading">¶</a></h3>
-<ol class="arabic">
-<li><p>Confirm Kamailio is running on the VM:
-<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">ps</span></code> via IAP SSH.</p></li>
-<li><p>Inspect the logs:
-<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">logs</span> <span class="pre">--tail</span> <span class="pre">100</span></code>.</p></li>
-<li><p>List the Kamailio load balancer resources and check health, since the
-exact resource names vary by deployment environment:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>target-pools<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">"name~kamailio"</span>
-gcloud<span class="w"> </span>compute<span class="w"> </span>forwarding-rules<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">"name~kamailio"</span>
-</pre></div>
-</div>
-</li>
-</ol>
-</section>
-<section id="audio-calls-connect-but-no-audio">
-<h3>Audio: calls connect but no audio<a class="headerlink" href="#audio-calls-connect-but-no-audio" title="Link to this heading">¶</a></h3>
-<ol class="arabic simple">
-<li><p>Confirm RTPEngine is running on the VM.</p></li>
-<li><p>Check the firewall allows the RTP UDP port range.</p></li>
-<li><p>Verify RTPEngine sees the correct external IP, especially after
-moving regions.</p></li>
-</ol>
-</section>
-</section>
-<section id="rollback">
-<h2>Rollback<a class="headerlink" href="#rollback" title="Link to this heading">¶</a></h2>
-<p>Kubernetes rollout:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>rollout<span class="w"> </span>undo<span class="w"> </span>deployment/DEPLOYMENT_NAME<span class="w"> </span>-n<span class="w"> </span>NAMESPACE
-</pre></div>
-</div>
-<p>Terraform state from a previous version:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gsutil<span class="w"> </span>ls<span class="w"> </span>-la<span class="w"> </span>gs://PROJECT_ID-voipbin-tf-state/default.tfstate
-gsutil<span class="w"> </span>cp<span class="w"> </span>gs://PROJECT_ID-voipbin-tf-state/default.tfstate#VERSION<span class="w"> </span>terraform.tfstate
-<span class="nb">cd</span><span class="w"> </span>terraform<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>terraform<span class="w"> </span>apply
-</pre></div>
-</div>
-<p>Full teardown and rebuild:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>destroy
-./voipbin-install<span class="w"> </span>apply
-</pre></div>
-</div>
-</section>
-<section id="where-to-go-next">
-<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>The installer repo’s own <code class="docutils literal notranslate"><span class="pre">docs/troubleshooting.md</span></code> has a wider list
-of error symptoms by stage.</p></li>
-<li><p>The installer’s <code class="docutils literal notranslate"><span class="pre">README.md</span></code> lists exact IAM roles and Terraform
-outputs.</p></li>
-<li><p>For platform support, contact <code class="docutils literal notranslate"><span class="pre">support&#64;voipbin.net</span></code>.</p></li>
-</ul>
+<section id="getting-help">
+<h2>Getting help<a class="headerlink" href="#getting-help" title="Link to this heading">¶</a></h2>
+<p>If <code class="docutils literal notranslate"><span class="pre">doctor.sh</span></code> does not resolve the issue, open an issue at
+<a class="reference external" href="https://github.com/voipbin/voipbin">https://github.com/voipbin/voipbin</a> or contact <a class="reference external" href="mailto:support&#37;&#52;&#48;voipbin&#46;net">support<span>&#64;</span>voipbin<span>&#46;</span>net</a> with
+the full output of <code class="docutils literal notranslate"><span class="pre">./scripts/doctor.sh</span></code>.</p>
 </section>
 </section>
 
@@ -897,25 +793,17 @@ outputs.</p></li>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Operations and troubleshooting</a><ul>
+<li><a class="reference internal" href="#install-doctor">Install doctor</a></li>
 <li><a class="reference internal" href="#day-to-day-commands">Day-to-day commands</a></li>
 <li><a class="reference internal" href="#common-issues">Common issues</a><ul>
-<li><a class="reference internal" href="#terraform-quota-exceeded">Terraform: quota exceeded</a></li>
-<li><a class="reference internal" href="#terraform-state-lock">Terraform: state lock</a></li>
-<li><a class="reference internal" href="#terraform-api-not-enabled">Terraform: API not enabled</a></li>
-<li><a class="reference internal" href="#terraform-state-bucket-missing">Terraform: state bucket missing</a></li>
-<li><a class="reference internal" href="#terraform-permission-denied">Terraform: permission denied</a></li>
-<li><a class="reference internal" href="#ansible-iap-tunnel-connection-failed">Ansible: IAP tunnel connection failed</a></li>
-<li><a class="reference internal" href="#ansible-docker-install-failed-on-a-fresh-vm">Ansible: docker install failed on a fresh VM</a></li>
-<li><a class="reference internal" href="#kubernetes-pod-in-crashloopbackoff">Kubernetes: pod in CrashLoopBackOff</a></li>
-<li><a class="reference internal" href="#kubernetes-imagepullbackoff">Kubernetes: ImagePullBackOff</a></li>
-<li><a class="reference internal" href="#cloud-sql-connection-refused-from-pods">Cloud SQL: connection refused from pods</a></li>
-<li><a class="reference internal" href="#dns-domain-not-resolving">DNS: domain not resolving</a></li>
-<li><a class="reference internal" href="#sip-devices-cannot-register">SIP: devices cannot register</a></li>
-<li><a class="reference internal" href="#audio-calls-connect-but-no-audio">Audio: calls connect but no audio</a></li>
+<li><a class="reference internal" href="#extensions-register-but-calls-fail-ami-ari-mismatch">Extensions register but calls fail (AMI/ARI mismatch)</a></li>
+<li><a class="reference internal" href="#extensions-created-with-the-wrong-domain">Extensions created with the wrong domain</a></li>
+<li><a class="reference internal" href="#dns-not-resolving-voipbin-test-internal-mode">DNS not resolving <code class="docutils literal notranslate"><span class="pre">*.voipbin.test</span></code> (internal mode)</a></li>
+<li><a class="reference internal" href="#host-ip-changed-after-reboot">Host IP changed after reboot</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#rollback">Rollback</a></li>
-<li><a class="reference internal" href="#where-to-go-next">Where to go next</a></li>
+<li><a class="reference internal" href="#reset-everything">Reset everything</a></li>
+<li><a class="reference internal" href="#getting-help">Getting help</a></li>
 </ul>
 </li>
 </ul>

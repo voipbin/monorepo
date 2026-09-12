@@ -640,165 +640,94 @@
         <article role="main" id="furo-main-content">
           <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
-<p>The installer is an eight-stage pipeline driven by the
-<code class="docutils literal notranslate"><span class="pre">voipbin-install</span></code> CLI.</p>
-<p>The eight stages run in order when you execute <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>:</p>
-<ol class="arabic simple">
-<li><p><strong>terraform_init</strong> initializes the Terraform backend (GCS state bucket)
-and downloads providers.</p></li>
-<li><p><strong>reconcile_imports</strong> detects any GCP resources that already exist
-outside Terraform state and imports them, preventing 409 conflicts on
-resume.</p></li>
-<li><p><strong>terraform_apply</strong> provisions GCP infrastructure: a custom VPC, GKE
-cluster, Cloud SQL (MySQL 8.0), Kamailio and RTPEngine VMs, DNS zone,
-load balancers, KMS key ring for SOPS, and GCS buckets.</p></li>
-<li><p><strong>reconcile_outputs</strong> reads Terraform outputs (IPs, connection names)
-into <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> so later stages can consume them.</p></li>
-<li><p><strong>k8s_apply</strong> deploys VoIPBin services to the GKE cluster using
-manifests under <code class="docutils literal notranslate"><span class="pre">k8s/</span></code>, with placeholders substituted from Terraform
-outputs and SOPS-decrypted secrets.</p></li>
-<li><p><strong>reconcile_k8s_outputs</strong> reads Kubernetes load balancer IPs into
-<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p></li>
-<li><p><strong>cert_provision</strong> issues Kamailio TLS certificates.</p></li>
-<li><p><strong>ansible_run</strong> configures Kamailio and RTPEngine VMs over an IAP
-tunnel and renders their Docker Compose <code class="docutils literal notranslate"><span class="pre">.env</span></code> files from templates.</p></li>
-</ol>
-<p>The pipeline is resumable: if a stage fails, fix the issue and rerun
-<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>; it continues from where it left off. Run a
-single stage with <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">&lt;name&gt;</span></code> (for example
-<code class="docutils literal notranslate"><span class="pre">--stage</span> <span class="pre">ansible_run</span></code>).</p>
+<p>The installer is a Docker Compose stack driven by four shell scripts and,
+after install, the <code class="docutils literal notranslate"><span class="pre">voipbin</span></code> interactive CLI. It runs the complete
+VoIPBin platform, roughly 50 containers, on a single server.</p>
 <section id="what-gets-deployed">
 <h2>What gets deployed<a class="headerlink" href="#what-gets-deployed" title="Link to this heading">¶</a></h2>
-<p>A successful install produces:</p>
 <ul class="simple">
-<li><p><strong>VPC and connectivity</strong>: custom VPC <code class="docutils literal notranslate"><span class="pre">10.0.0.0/16</span></code>, Cloud NAT with a
-static IP for outbound, Cloud Router, eight firewall rules covering
-SIP, RTP, IAP SSH, GKE internal, and health checks.</p></li>
-<li><p><strong>GKE cluster</strong>: zonal or regional, 2 nodes of <code class="docutils literal notranslate"><span class="pre">n1-standard-2</span></code> by
-default, private nodes, shielded instances, COS_CONTAINERD image,
-REGULAR release channel.</p></li>
-<li><p><strong>Kamailio VM</strong>: 1x <code class="docutils literal notranslate"><span class="pre">f1-micro</span></code> by default, SIP/TLS/WSS proxy reached
-through an external network load balancer.</p></li>
-<li><p><strong>RTPEngine VM</strong>: 1x <code class="docutils literal notranslate"><span class="pre">f1-micro</span></code> by default, RTP media relay with a
-static external IP for direct media paths.</p></li>
-<li><p><strong>Cloud SQL MySQL 8.0</strong>: <code class="docutils literal notranslate"><span class="pre">db-f1-micro</span></code> instance, SSL required, daily
-automated backups, Cloud SQL Proxy deployed as a sidecar in GKE.</p></li>
-<li><p><strong>Kubernetes workloads</strong>: backend microservices in the <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code>
-namespace, Asterisk in <code class="docutils literal notranslate"><span class="pre">voip</span></code>, Redis, RabbitMQ, ClickHouse, and Cloud
-SQL Proxy in <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code>, plus three frontend apps
-(<code class="docutils literal notranslate"><span class="pre">square-admin</span></code>, <code class="docutils literal notranslate"><span class="pre">square-talk</span></code>, <code class="docutils literal notranslate"><span class="pre">square-meet</span></code>) in the
-<code class="docutils literal notranslate"><span class="pre">square-manager</span></code> namespace.</p></li>
-<li><p><strong>DNS records</strong>: six A records are required. With <code class="docutils literal notranslate"><span class="pre">example.com</span></code> as
-your domain: <code class="docutils literal notranslate"><span class="pre">api.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">hook.example.com</span></code>,
-<code class="docutils literal notranslate"><span class="pre">admin.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">talk.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">meet.example.com</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">sip.example.com</span></code>. The first five point at the GKE load balancer IP
-and the last points at the Kamailio external load balancer IP.</p></li>
+<li><p><strong>32 of VoIPBin’s 33 backend Go microservices</strong> (<code class="docutils literal notranslate"><span class="pre">bin-sentinel-manager</span></code>
+needs a Kubernetes API and stays out of this Compose-based install).</p></li>
+<li><p><strong>SIP/media stack</strong>: Kamailio (SIP proxy), RTPEngine (RTP media relay),
+three Asterisk instances (call, registrar, conference) each with an
+AMI/ARI proxy sidecar.</p></li>
+<li><p><strong>Supporting infrastructure</strong>: MySQL, Redis, RabbitMQ, PostgreSQL
+(pgvector, for <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>), ClickHouse (<code class="docutils literal notranslate"><span class="pre">timeline-manager</span></code>),
+CoreDNS (internal mode only).</p></li>
+<li><p><strong>Three frontend web applications</strong>: Admin Console, Talk (agent
+messenger), Meet (voice conferencing).</p></li>
 </ul>
 </section>
-<section id="cost">
-<h2>Cost<a class="headerlink" href="#cost" title="Link to this heading">¶</a></h2>
-<p>Estimated monthly costs in <code class="docutils literal notranslate"><span class="pre">us-central1</span></code> (on-demand, list price). Costs vary by
-region. You are responsible for all charges incurred on your GCP project.</p>
-<p><strong>Minimum config</strong> (<code class="docutils literal notranslate"><span class="pre">gke_node_count=1</span></code>, <code class="docutils literal notranslate"><span class="pre">kamailio_count=1</span></code>, <code class="docutils literal notranslate"><span class="pre">rtpengine_count=1</span></code>):</p>
+<section id="install-modes">
+<h2>Install modes<a class="headerlink" href="#install-modes" title="Link to this heading">¶</a></h2>
+<p>The installer runs in one of two modes, chosen at <code class="docutils literal notranslate"><span class="pre">init</span></code> time and
+recorded in <code class="docutils literal notranslate"><span class="pre">.env</span></code> as <code class="docutils literal notranslate"><span class="pre">DOMAIN_MODE</span></code>. Mode is an init-time decision:
+extension SIP realms embed the base domain in the database, so <code class="docutils literal notranslate"><span class="pre">init.sh</span></code>
+refuses to switch mode or domain on an existing install.</p>
 <div class="table-wrapper colwidths-given docutils container">
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 68.8%" />
-<col style="width: 31.2%" />
+<col style="width: 20.0%" />
+<col style="width: 40.0%" />
+<col style="width: 40.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Resource</p></th>
-<th class="head"><p>Cost/mo (USD)</p></th>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Internal mode (default)</p></th>
+<th class="head"><p>External mode</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>GKE Control Plane</p></td>
-<td><p>$0 zonal, ~$74 regional</p></td>
+<tr class="row-even"><td><p>Base domain</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">voipbin.test</span></code> (IANA reserved TLD, RFC 2606)</p></td>
+<td><p>Your real domain (for example <code class="docutils literal notranslate"><span class="pre">example.com</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td><p>GKE Node (1x n1-standard-2 + 100 GB disk)</p></td>
-<td><p>~$213</p></td>
+<tr class="row-odd"><td><p>DNS</p></td>
+<td><p>Automatic. CoreDNS container plus <code class="docutils literal notranslate"><span class="pre">/etc/resolv.conf</span></code> forwarding</p></td>
+<td><p>Operator-managed A records at your DNS provider</p></td>
 </tr>
-<tr class="row-even"><td><p>Kamailio VM (1x f1-micro + 30 GB disk)</p></td>
-<td><p>~$7</p></td>
+<tr class="row-even"><td><p>TLS</p></td>
+<td><p>Automatic. mkcert (browser-trusted) or self-signed</p></td>
+<td><p>Bring your own certificate</p></td>
 </tr>
-<tr class="row-odd"><td><p>RTPEngine VM (1x f1-micro + 30 GB disk)</p></td>
-<td><p>~$7</p></td>
+<tr class="row-odd"><td><p>Reachable from</p></td>
+<td><p>This machine and your LAN</p></td>
+<td><p>Any host that can route to your IPs</p></td>
 </tr>
-<tr class="row-even"><td><p>Cloud SQL MySQL db-f1-micro + 10 GB SSD</p></td>
-<td><p>~$13</p></td>
-</tr>
-<tr class="row-odd"><td><p>Static External IPs (8x in-use)</p></td>
-<td><p>~$23</p></td>
-</tr>
-<tr class="row-even"><td><p>Load Balancers (Kamailio NLB 3 rules + K8s LB 5 services)</p></td>
-<td><p>~$146</p></td>
-</tr>
-<tr class="row-odd"><td><p>Cloud NAT gateway</p></td>
-<td><p>~$32</p></td>
-</tr>
-<tr class="row-even"><td><p>Cloud DNS, GCS, KMS</p></td>
-<td><p>~$1</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Total</strong></p></td>
-<td><p><strong>~$442 zonal / ~$516 regional</strong></p></td>
+<tr class="row-even"><td><p>Best for</p></td>
+<td><p>Local development, demos, evaluation</p></td>
+<td><p>A production or shared install under a real domain</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><strong>Default config</strong> (<code class="docutils literal notranslate"><span class="pre">gke_node_count=2</span></code>, <code class="docutils literal notranslate"><span class="pre">kamailio_count=2</span></code>, <code class="docutils literal notranslate"><span class="pre">rtpengine_count=2</span></code>):</p>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 68.8%" />
-<col style="width: 31.2%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Resource</p></th>
-<th class="head"><p>Cost/mo (USD)</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>GKE Control Plane</p></td>
-<td><p>$0 zonal, ~$74 regional</p></td>
-</tr>
-<tr class="row-odd"><td><p>GKE Nodes (2x n1-standard-2 + 100 GB disks)</p></td>
-<td><p>~$426</p></td>
-</tr>
-<tr class="row-even"><td><p>Kamailio VMs (2x f1-micro + 30 GB disks)</p></td>
-<td><p>~$14</p></td>
-</tr>
-<tr class="row-odd"><td><p>RTPEngine VMs (2x f1-micro + 30 GB disks)</p></td>
-<td><p>~$14</p></td>
-</tr>
-<tr class="row-even"><td><p>Cloud SQL MySQL db-f1-micro + 10 GB SSD</p></td>
-<td><p>~$13</p></td>
-</tr>
-<tr class="row-odd"><td><p>Static External IPs (9x in-use)</p></td>
-<td><p>~$26</p></td>
-</tr>
-<tr class="row-even"><td><p>Load Balancers (Kamailio NLB 3 rules + K8s LB 5 services)</p></td>
-<td><p>~$146</p></td>
-</tr>
-<tr class="row-odd"><td><p>Cloud NAT gateway</p></td>
-<td><p>~$32</p></td>
-</tr>
-<tr class="row-even"><td><p>Cloud DNS, GCS, KMS</p></td>
-<td><p>~$1</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Total</strong></p></td>
-<td><p><strong>~$672 zonal / ~$746 regional</strong></p></td>
-</tr>
-</tbody>
-</table>
+<p>Use internal mode unless you specifically need the install reachable under
+a real domain from machines you do not control. Internal mode requires
+nothing from you (no domain, no certificate, no DNS provider). External
+mode targets directly-routable hosts (on-prem, corporate LAN with internal
+DNS, cloud environments with multiple routable IPs); single-public-IP NAT
+environments are a documented limitation.</p>
+</section>
+<section id="the-four-command-install">
+<h2>The four-command install<a class="headerlink" href="#the-four-command-install" title="Link to this heading">¶</a></h2>
+<p>The recommended path isolates the one step that needs root:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/voipbin/voipbin.git
+<span class="nb">cd</span><span class="w"> </span>voipbin/install
+
+./scripts/init.sh<span class="w"> </span>--yes<span class="w">          </span><span class="c1"># 1. Generate .env, certificates, docker-compose.yml</span>
+sudo<span class="w"> </span>./scripts/setup-host.sh<span class="w">     </span><span class="c1"># 2. The single sudo command (host mutations)</span>
+./scripts/start.sh<span class="w">               </span><span class="c1"># 3. Start all services</span>
+./scripts/check-install.sh<span class="w">       </span><span class="c1"># 4. Self-verify the install</span>
+</pre></div>
 </div>
-<p>These figures are on-demand list prices and do not include committed-use
-discounts, data egress, or usage beyond the included free tiers.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">destroy</span></code> is irreversible. It permanently deletes
-every resource the installer created, including the Cloud SQL instance
-and its backups. Export any data you need before destroying.</p>
-</div>
+<p><code class="docutils literal notranslate"><span class="pre">setup-host.sh</span></code> owns every host mutation: mkcert package and CA trust
+(internal mode only), CoreDNS setup (internal mode only), the Compose
+default Docker network, and the VoIP network interfaces (internal veth
+pairs, plus external macvlan for pinned hosting-provider IPs). It is
+idempotent; each step probes current state and skips what is already done.</p>
+<p>Once installed, <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">./voipbin</span></code> is the interactive CLI for day-to-day
+operations: status, logs, restart, debug shells, backup/restore, and
+version upgrades. See the Install section for the full command reference.</p>
 </section>
 </section>
 
@@ -844,7 +773,8 @@ and its backups. Export any data you need before destroying.</p>
             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#what-gets-deployed">What gets deployed</a></li>
-<li><a class="reference internal" href="#cost">Cost</a></li>
+<li><a class="reference internal" href="#install-modes">Install modes</a></li>
+<li><a class="reference internal" href="#the-four-command-install">The four-command install</a></li>
 </ul>
 </li>
 </ul>
