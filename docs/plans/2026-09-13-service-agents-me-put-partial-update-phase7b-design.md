@@ -37,7 +37,7 @@ PUT /service_agents/me                    PUT /agents/{id}  (admin surface)
     (agent.go, IsAgent check)                  (agent.go:215, admin/manager perm check)
          \                                    /
           → h.agentUpdate(ctx,id,name,detail,ringMethod)   ← SHARED private helper (agent.go:248)
-             → reqHandler.AgentV1AgentUpdate(...)          ← SHARED RPC (flow_flow → agent_agents.go:285)
+             → reqHandler.AgentV1AgentUpdate(...)          ← SHARED RPC (agent_agents.go:285)
                 → wire DTO V1DataAgentsIDPut               ← SHARED (agents.go request DTO)
                    → bin-agent-manager listenhandler v1_agents.go
                       → agentHandler.UpdateBasicInfo (agent.go:273)   ← SHARED FIX SITE
@@ -48,13 +48,17 @@ PUT /service_agents/me                    PUT /agents/{id}  (admin surface)
 
 ### Consequence
 
-**It is impossible to fix `/service_agents/me` in isolation.** The moment we
-change the shared `agentUpdate` helper, `AgentV1AgentUpdate` RPC signature, the
+**It is impossible to fix `/service_agents/me` in isolation without duplicating
+the entire shared agent-update chain.** The moment we change the shared
+`agentUpdate` helper, `AgentV1AgentUpdate` RPC signature, the
 `V1DataAgentsIDPut` wire DTO, and the `agentHandler.UpdateBasicInfo`/
 `dbUpdateInfo` fix site to pointer semantics, the admin `PUT /agents/{id}`
 call path is necessarily carried along. Both `server` entrypoints
 (`PutServiceAgentsMe` and `PutAgentsId`) must be updated in the same PR to
-thread pointers instead of collapsing them to zero values.
+thread pointers instead of collapsing them to zero values. (It is technically
+possible to spin up a parallel me-only helper/RPC/DTO, but that duplicates the
+shared chain for no benefit and violates DRY — fixing both is the correct
+minimal outcome.)
 
 ### Is that in scope? Yes — and it's a bug fix, not scope creep
 
@@ -98,9 +102,11 @@ path — this is one logical change to one repo boundary.
      as pointers (it already does).
    - `ring_method` is a `$ref` to `AgentManagerAgentRingMethod`; confirm it
      generates as `*AgentManagerAgentRingMethod` when not required.
-2. **`server/service_agents_me.go PutServiceAgentsMe`**: pass `req.Name`,
-   `req.Detail`, `req.RingMethod` through as pointers (currently passes them but
-   wraps `RingMethod(req.RingMethod)` — must handle the nil `*RingMethod` case).
+2. **`server/service_agents_me.go PutServiceAgentsMe`**: today `req.Name`,
+   `req.Detail` are plain `string` and `req.RingMethod` is a non-pointer enum
+   (they become pointers only after the OpenAPI change). Post-codegen, pass all
+   three through as pointers, handling the nil `*RingMethod` case (do not wrap a
+   nil pointer into a zero-value `RingMethod`).
 3. **`server/agents.go PutAgentsId`**: stop collapsing `*req.Name → ""`,
    `*req.RingMethod → RingMethodRingAll`; pass pointers straight through.
 4. **`servicehandler` `AgentUpdate` + `ServiceAgentMeUpdate`**: accept
@@ -123,10 +129,13 @@ path — this is one logical change to one repo boundary.
    - Add a `len(fields)==0` short-circuit → return `db.AgentGet(ctx, id)`
      (fresh read, no write, no event publish) for a true no-op PUT, matching
      the teams/campaigns/mcpservers precedent.
-   - `db.AgentSetBasicInfo` becomes unused by this path; leave it in place
-     (still unit-tested, may have other callers — grep confirms only this path
-     + tests) — do NOT delete (avoid dead-code churn; matches Phase 6a's
-     treatment of the bypassed `dbhandler` wrappers).
+   - `db.AgentSetBasicInfo` becomes unused by this path; leave it in place.
+     It is a `DBHandler` **interface method** (dbhandler/main.go), so
+     golangci-lint will NOT flag it as unused even after `dbUpdateInfo` stops
+     calling it — do NOT delete (avoid dead-code churn; matches Phase 6a's
+     treatment of the bypassed `dbhandler` wrappers). (Confirmed the only
+     non-test caller of the shared chain is these two entrypoints, so nothing
+     else silently breaks.)
 
 ## 4. Tests
 
@@ -167,4 +176,23 @@ since they share behavior). Clean Sphinx rebuild + `git add -f build/`.
 
 ## 6. Review disposition
 
-(Filled in during the design review loop.)
+### Round 1 (`deleg_9f261e02` task 2): APPROVE
+
+All load-bearing claims independently re-derived from source and CONFIRMED:
+the shared convergence of both entrypoints on the single `agentUpdate` helper /
+`AgentV1AgentUpdate` RPC / `V1DataAgentsIDPut` DTO / `UpdateBasicInfo` fix site;
+the admin `PUT /agents/{id}` runtime silent-wipe bug despite optional OpenAPI;
+`db.AgentUpdate` partial-map capability; `db.AgentSetBasicInfo` unconditional
+3-field write; **no third non-test caller** of the shared chain; the one-PR
+decision (both entrypoints in bin-agent-manager, forced by the shared signature
+change); `ring_method` `$ref` pointer generation safety; interface-method
+lint-safety of leaving `AgentSetBasicInfo` in place. 4 MINOR (non-blocking)
+wording fixes applied:
+
+| # | Finding | Fix applied |
+|---|---|---|
+| 1 | §2 diagram RPC label had a spurious "flow_flow →" copy-paste token. | Removed; label now just `agent_agents.go:285`. |
+| 2 | "impossible to fix in isolation" overstated (technically possible via duplication). | Reworded to "impossible without duplicating the shared chain"; conclusion unchanged. |
+| 3 | §3 step 2 muddled current field types (implied req.* already pointers). | Clarified name/detail/ring_method are non-pointer today, become pointers only post-codegen. |
+| 4 | §3 step 9 rationale for keeping `AgentSetBasicInfo` was contradictory ("may have other callers"). | Corrected to cite `DBHandler` interface membership as the lint-safety reason; confirmed no third caller. |
+
