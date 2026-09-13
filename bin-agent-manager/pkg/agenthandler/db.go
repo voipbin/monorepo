@@ -211,7 +211,7 @@ func (h *agentHandler) dbLogin(ctx context.Context, username string, password st
 }
 
 // dbUpdateInfo updates the agent's basic info.
-func (h *agentHandler) dbUpdateInfo(ctx context.Context, id uuid.UUID, name string, detail string, ringMethod agent.RingMethod) (*agent.Agent, error) {
+func (h *agentHandler) dbUpdateInfo(ctx context.Context, id uuid.UUID, name *string, detail *string, ringMethod *agent.RingMethod) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "dbUpdateInfo",
 		"id":          id,
@@ -221,7 +221,29 @@ func (h *agentHandler) dbUpdateInfo(ctx context.Context, id uuid.UUID, name stri
 	})
 	log.Debug("Updating the agent's basic info.")
 
-	if errUpdate := h.db.AgentSetBasicInfo(ctx, id, name, detail, ringMethod); errUpdate != nil {
+	fields := map[agent.Field]any{}
+	if name != nil {
+		fields[agent.FieldName] = *name
+	}
+	if detail != nil {
+		fields[agent.FieldDetail] = *detail
+	}
+	if ringMethod != nil {
+		fields[agent.FieldRingMethod] = *ringMethod
+	}
+
+	// No-op update: nothing to change. Return the current agent without a
+	// write or an update event.
+	if len(fields) == 0 {
+		res, err := h.db.AgentGet(ctx, id)
+		if err != nil {
+			log.Errorf("Could not get agent. err: %v", err)
+			return nil, err
+		}
+		return res, nil
+	}
+
+	if errUpdate := h.db.AgentUpdate(ctx, id, fields); errUpdate != nil {
 		log.Errorf("Could not update the basic info. err: %v", errUpdate)
 		return nil, errUpdate
 	}

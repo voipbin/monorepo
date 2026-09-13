@@ -41,9 +41,9 @@ type V1DataAgentsUsernameLoginPost struct {
 // v1 data type request struct for
 // /v1/agents/<agent-id> PUT
 type V1DataAgentsIDPut struct {
-	Name       string `json:"name"`
-	Detail     string `json:"detail"`
-	RingMethod string `json:"ring_method"`
+	Name       *string `json:"name,omitempty"`
+	Detail     *string `json:"detail,omitempty"`
+	RingMethod *string `json:"ring_method,omitempty"`
 }
 
 // V1DataAgentsIDAddressesPut is

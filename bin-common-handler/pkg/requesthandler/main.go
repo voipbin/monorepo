@@ -474,7 +474,7 @@ type RequestHandler interface {
 	AgentV1AgentGetByCustomerIDAndAddress(ctx context.Context, timeout int, customerID uuid.UUID, addr commonaddress.Address) (*amagent.Agent, error)
 	AgentV1AgentList(ctx context.Context, pageToken string, pageSize uint64, filters map[amagent.Field]any) ([]amagent.Agent, error)
 	AgentV1AgentDelete(ctx context.Context, id uuid.UUID) (*amagent.Agent, error)
-	AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error)
+	AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name *string, detail *string, ringMethod *amagent.RingMethod) (*amagent.Agent, error)
 	AgentV1AgentUpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*amagent.Agent, error)
 	AgentV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) (*amagent.Agent, error)
 	AgentV1AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission amagent.Permission) (*amagent.Agent, error)

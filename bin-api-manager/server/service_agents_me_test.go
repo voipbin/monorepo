@@ -96,9 +96,9 @@ func Test_mePUT(t *testing.T) {
 
 		responseMe *amagent.WebhookMessage
 
-		expectName       string
-		expectDetail     string
-		expectRingMethod amagent.RingMethod
+		expectName       *string
+		expectDetail     *string
+		expectRingMethod *amagent.RingMethod
 		expectedRes      string
 	}{
 		{
@@ -118,9 +118,9 @@ func Test_mePUT(t *testing.T) {
 				},
 			},
 
-			expectName:       "test name",
-			expectDetail:     "test detail",
-			expectRingMethod: amagent.RingMethodRingAll,
+			expectName:       stringPtr("test name"),
+			expectDetail:     stringPtr("test detail"),
+			expectRingMethod: ringMethodPtr(amagent.RingMethodRingAll),
 			expectedRes:      `{"id":"2a2ec0ba-8004-11ec-aea5-439829c92a7c","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"direct_hash":""}`,
 		},
 	}

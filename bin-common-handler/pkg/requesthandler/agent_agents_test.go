@@ -759,13 +759,16 @@ func Test_AgentV1AgentUpdatePassword(t *testing.T) {
 
 func Test_AgentV1AgentUpdate(t *testing.T) {
 
+	stringPtr := func(v string) *string { return &v }
+	ringMethodPtr := func(v amagent.RingMethod) *amagent.RingMethod { return &v }
+
 	tests := []struct {
 		name string
 
 		id         uuid.UUID
-		agentName  string
-		detail     string
-		ringMethod amagent.RingMethod
+		agentName  *string
+		detail     *string
+		ringMethod *amagent.RingMethod
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -774,12 +777,12 @@ func Test_AgentV1AgentUpdate(t *testing.T) {
 		expectRes *amagent.Agent
 	}{
 		{
-			"normal",
+			"all fields set",
 
 			uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
-			"update name",
-			"update detail",
-			amagent.RingMethodRingAll,
+			stringPtr("update name"),
+			stringPtr("update detail"),
+			ringMethodPtr(amagent.RingMethodRingAll),
 
 			"bin-manager.agent-manager.request",
 			&sock.Request{
@@ -787,6 +790,33 @@ func Test_AgentV1AgentUpdate(t *testing.T) {
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"update name","detail":"update detail","ring_method":"ringall"}`),
+			},
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"1e60cb12-4e7b-11ec-9d7b-532466c1faf1"}`),
+			},
+			&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
+				},
+			},
+		},
+		{
+			"name only, other fields omitted",
+
+			uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
+			stringPtr("update name"),
+			nil,
+			nil,
+
+			"bin-manager.agent-manager.request",
+			&sock.Request{
+				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"update name"}`),
 			},
 
 			&sock.Response{

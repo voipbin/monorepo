@@ -282,13 +282,16 @@ func (r *requestHandler) AgentV1AgentUpdatePassword(ctx context.Context, timeout
 // AgentV1AgentUpdate sends a request to agent-manager
 // to update teh agent basic info
 // it returns error if something went wrong.
-func (r *requestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error) {
+func (r *requestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name *string, detail *string, ringMethod *amagent.RingMethod) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", id)
 
 	data := &amrequest.V1DataAgentsIDPut{
-		Name:       name,
-		Detail:     detail,
-		RingMethod: string(ringMethod),
+		Name:   name,
+		Detail: detail,
+	}
+	if ringMethod != nil {
+		rm := string(*ringMethod)
+		data.RingMethod = &rm
 	}
 
 	m, err := json.Marshal(data)

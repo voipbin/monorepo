@@ -589,7 +589,7 @@ func Test_processV1AgentsIDPut_nameLengthValidation(t *testing.T) {
 				mockAgent.EXPECT().UpdateBasicInfo(
 					gomock.Any(),
 					agentID,
-					longName,
+					gomock.Any(),
 					gomock.Any(), gomock.Any(),
 				).Return(&agent.Agent{}, nil)
 			}

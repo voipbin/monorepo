@@ -50,6 +50,10 @@ Agent
 
    A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the agent has not been deleted. When creating an agent, ``status`` defaults to ``offline`` and ``permission`` defaults to ``0`` (no permissions). The agent must set their status to ``available`` via ``PUT /agents/{id}/status`` before they can receive queue calls.
 
+.. note:: **AI Implementation Hint: PUT partial update**
+
+   ``PUT /agents/{id}`` (admin/manager) and ``PUT /service_agents/me`` (agent self-service) both use partial-update ("omit to leave unchanged") semantics for ``name``, ``detail``, and ``ring_method``. Omit any field from the request body to leave its current stored value unchanged; only fields explicitly present in the request are modified. In particular, sending a rename-only body such as ``{"name": "New Name"}`` will NOT reset ``ring_method`` or clear ``detail``.
+
 .. _agent-struct-agent-ring_method:
 
 Ring method

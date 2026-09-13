@@ -270,7 +270,7 @@ func (h *agentHandler) Login(ctx context.Context, username string, password stri
 }
 
 // UpdateBasicInfo updates the agent's basic info.
-func (h *agentHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name string, detail string, ringMethod agent.RingMethod) (*agent.Agent, error) {
+func (h *agentHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name *string, detail *string, ringMethod *agent.RingMethod) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "UpdateBasicInfo",
 		"agent_id":     id,
