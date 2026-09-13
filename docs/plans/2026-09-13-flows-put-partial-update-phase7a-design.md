@@ -190,8 +190,10 @@ its existing `Test_*Update` updated to the pointer signatures.
 ### Revert-and-rerun proof (mandatory)
 
 Temporarily restore the unconditional field-map construction in
-`flowHandler.Update` and confirm test #1/#2 FAIL (detail/on_complete wiped),
-then revert and confirm PASS.
+`flowHandler.Update` and confirm test #1/#2 FAIL (either the omitted field is
+wiped, or, if the reverted code unconditionally dereferences a nil pointer, the
+test fails via panic — both are acceptable FAIL signals proving the conditional
+logic is load-bearing), then revert and confirm PASS.
 
 ## 5. Verification sequence (per touched service)
 
@@ -222,4 +224,14 @@ Not changed (reviewer confirmed correct): fix-site location + unconditional
 field-map at db.go:217-222; `db.FlowUpdate` partial-map capability; the
 actions-always-set / no-short-circuit decision (sound GIVEN finding #2's guard,
 now mandatory); test placement at fix-site vs server layer.
+
+### Round 2 (`deleg_72b70aaf` task 1): APPROVE
+
+All four Round 1 fixes independently re-derived from source (gen.go:9288-9300,
+server/flows.go:162-172, wire DTO/requesthandler/servicehandler/flowHandler
+signatures, v1_flows.go:57) and confirmed to match reality. No-short-circuit
+reasoning confirmed sound given the now-mandatory server guard. Two non-blocking
+nitpicks: (a) generated field is `OnCompleteFlowId` (not `OnCompleteFlowID`) —
+cosmetic; (b) revert-proof wording — reworded to note a nil-pointer deref panic
+is also an acceptable FAIL signal.
 
