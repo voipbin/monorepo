@@ -977,7 +977,7 @@ func (mr *MockRequestHandlerMockRecorder) AIV1TeamList(ctx, pageToken, pageSize,
 }
 
 // AIV1TeamUpdate mocks base method.
-func (m *MockRequestHandler) AIV1TeamUpdate(ctx context.Context, teamID uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error) {
+func (m *MockRequestHandler) AIV1TeamUpdate(ctx context.Context, teamID uuid.UUID, name, detail *string, startMemberID *uuid.UUID, members *[]team.Member, parameter *map[string]any) (*team.Team, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIV1TeamUpdate", ctx, teamID, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.Team)

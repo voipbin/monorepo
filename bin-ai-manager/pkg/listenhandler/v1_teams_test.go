@@ -238,6 +238,10 @@ func Test_processV1TeamsIDGet(t *testing.T) {
 
 func Test_processV1TeamsIDPut(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	idPtr := func(v uuid.UUID) *uuid.UUID { return &v }
+	membersPtr := func(v []team.Member) *[]team.Member { return &v }
+
 	tests := []struct {
 		name    string
 		request *sock.Request
@@ -245,10 +249,10 @@ func Test_processV1TeamsIDPut(t *testing.T) {
 		responseTeam *team.Team
 
 		expectID            uuid.UUID
-		expectName          string
-		expectDetail        string
-		expectStartMemberID uuid.UUID
-		expectMembers       []team.Member
+		expectName          *string
+		expectDetail        *string
+		expectStartMemberID *uuid.UUID
+		expectMembers       *[]team.Member
 		expectRes           *sock.Response
 	}{
 		{
@@ -267,16 +271,47 @@ func Test_processV1TeamsIDPut(t *testing.T) {
 			},
 
 			expectID:            uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
-			expectName:          "updated team",
-			expectDetail:        "updated detail",
-			expectStartMemberID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-			expectMembers: []team.Member{
+			expectName:          strPtr("updated team"),
+			expectDetail:        strPtr("updated detail"),
+			expectStartMemberID: idPtr(uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")),
+			expectMembers: membersPtr([]team.Member{
 				{
 					ID:   uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 					Name: "A",
 					AIID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 				},
+			}),
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"fa4d3b6a-f82f-11ed-9176-d32f5705e10c","customer_id":"00000000-0000-0000-0000-000000000000","start_member_id":"00000000-0000-0000-0000-000000000000","direct_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
+		},
+		{
+			// VOIP-1234 Phase 6b design doc §4 item 9: an omitted-field PUT
+			// (only start_member_id set) must reach teamHandler.Update with
+			// nil name/detail/parameter and a nil members pointer, without
+			// triggering any unrelated DB write for the omitted fields.
+			name: "no-op fields omitted, only start_member_id set",
+			request: &sock.Request{
+				URI:      "/v1/teams/fa4d3b6a-f82f-11ed-9176-d32f5705e10c",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"start_member_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}`),
+			},
+
+			responseTeam: &team.Team{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
+				},
+			},
+
+			expectID:            uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c"),
+			expectName:          nil,
+			expectDetail:        nil,
+			expectStartMemberID: idPtr(uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")),
+			expectMembers:       nil,
 
 			expectRes: &sock.Response{
 				StatusCode: 200,

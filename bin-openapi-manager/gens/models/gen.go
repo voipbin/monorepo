@@ -13189,28 +13189,28 @@ type PostTeamsJSONBody struct {
 
 // PutTeamsIdJSONBody defines parameters for PutTeamsId.
 type PutTeamsIdJSONBody struct {
-	// Detail Detailed description of the team.
+	// Detail Detailed description of the team. Omit to leave unchanged.
 	//
 	// Example: Multi-agent team for handling customer inquiries
-	Detail string `json:"detail"`
+	Detail *string `json:"detail,omitempty"`
 
-	// Members List of team members forming the graph nodes.
-	Members []AIManagerTeamMember `json:"members"`
+	// Members List of team members forming the graph nodes. Omit to leave unchanged.
+	Members *[]AIManagerTeamMember `json:"members,omitempty"`
 
-	// Name Name of the team.
+	// Name Name of the team. Omit to leave unchanged.
 	//
 	// Example: Customer Support Team
-	Name string `json:"name"`
+	Name *string `json:"name,omitempty"`
 
-	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime. Omit to leave unchanged.
 	//
 	// Example: {"department":"support","language":"en-US"}
 	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
-	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
+	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the (possibly pre-existing) members array. Omit to leave unchanged.
 	//
 	// Example: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
-	StartMemberId string `json:"start_member_id"`
+	StartMemberId *string `json:"start_member_id,omitempty"`
 }
 
 // GetTimelineAnalysesParams defines parameters for GetTimelineAnalyses.

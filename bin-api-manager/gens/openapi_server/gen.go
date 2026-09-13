@@ -10589,20 +10589,20 @@ type PostTeamsJSONBody struct {
 
 // PutTeamsIdJSONBody defines parameters for PutTeamsId.
 type PutTeamsIdJSONBody struct {
-	// Detail Detailed description of the team.
-	Detail string `json:"detail"`
+	// Detail Detailed description of the team. Omit to leave unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// Members List of team members forming the graph nodes.
-	Members []AIManagerTeamMember `json:"members"`
+	// Members List of team members forming the graph nodes. Omit to leave unchanged.
+	Members *[]AIManagerTeamMember `json:"members,omitempty"`
 
-	// Name Name of the team.
-	Name string `json:"name"`
+	// Name Name of the team. Omit to leave unchanged.
+	Name *string `json:"name,omitempty"`
 
-	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+	// Parameter Custom key-value parameter data for the team. Supports flow variable substitution at runtime. Omit to leave unchanged.
 	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
-	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the members array.
-	StartMemberId string `json:"start_member_id"`
+	// StartMemberId The member ID that starts the conversation. Must reference one of the members in the (possibly pre-existing) members array. Omit to leave unchanged.
+	StartMemberId *string `json:"start_member_id,omitempty"`
 }
 
 // GetTimelineAnalysesParams defines parameters for GetTimelineAnalyses.

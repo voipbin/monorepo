@@ -22,9 +22,9 @@ type V1DataTeamsPost struct {
 // v1 data type request struct for
 // /v1/teams/<team-id> PUT
 type V1DataTeamsIDPut struct {
-	Name          string        `json:"name,omitempty"`
-	Detail        string        `json:"detail,omitempty"`
-	StartMemberID uuid.UUID     `json:"start_member_id,omitempty"`
-	Members       []team.Member  `json:"members,omitempty"`
-	Parameter     map[string]any `json:"parameter,omitempty"`
+	Name          *string         `json:"name,omitempty"`
+	Detail        *string         `json:"detail,omitempty"`
+	StartMemberID *uuid.UUID      `json:"start_member_id,omitempty"`
+	Members       *[]team.Member  `json:"members,omitempty"`
+	Parameter     *map[string]any `json:"parameter,omitempty"`
 }

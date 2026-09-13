@@ -688,6 +688,12 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicates the team has not been deleted and is still active. This sentinel value is used across all VoIPBin resources to represent “not yet occurred.”</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint: PUT partial update</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/teams/{id}</span></code> uses partial-update (“omit to leave unchanged”) semantics for <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code>, <code class="docutils literal notranslate"><span class="pre">members</span></code>, and <code class="docutils literal notranslate"><span class="pre">parameter</span></code>. Omit any field from the request body to leave its current stored value unchanged; only fields explicitly present in the request are modified.</p>
+<p><code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> and <code class="docutils literal notranslate"><span class="pre">members</span></code> are cross-validated together against the <em>merged</em> state: if you change only one of them, the team’s currently-stored value for the other is fetched and combined with your change before validation runs (<code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> must appear in the effective <code class="docutils literal notranslate"><span class="pre">members</span></code> list). This means a <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code>-only update can still fail with a validation error if the team’s currently-stored <code class="docutils literal notranslate"><span class="pre">members</span></code> is empty or does not contain that ID — check the team’s current state, not just your request body, when debugging an unexpected 400 here.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
