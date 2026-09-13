@@ -19,7 +19,7 @@ This is a **hybrid** migration:
 | `name` | required | **optional** (nil-means-unchanged) |
 | `detail` | required | **optional** (nil-means-unchanged) |
 | `actions` | required | **stays required** (§3.1 — see rationale below) |
-| `on_complete_flow_id` | already optional | already optional (no change to its optionality; threading fixed if needed) |
+| `on_complete_flow_id` | OpenAPI-optional, but silently cleared to `uuid.Nil` at runtime | **optional AND nil-safe** — requires threading `*uuid.UUID` through 4 lower layers (wire DTO, requesthandler, servicehandler, flowHandler.Update) plus a conditional field-map entry |
 
 ### Why `actions` stays required (roadmap §3.1, verbatim rationale)
 
@@ -39,17 +39,30 @@ required; a PUT with `actions` absent/null is a 400, not a no-op.**
 ```
 PUT /flows/{id}
   bin-api-manager/server/flows.go            PutFlowsId (line 133)
-    → dereferences req.Name/req.Detail to plain string  ← BUG SITE #1 (server)
+    → today passes req.Name/req.Detail directly as plain `string`, and
+      collapses an absent on_complete_flow_id pointer to uuid.Nil  ← BUG SITE #1
   bin-api-manager/pkg/servicehandler/flow.go FlowUpdate (line 204)
     → takes name,detail string; actions []Action; onCompleteID uuid.UUID
   bin-common-handler/pkg/requesthandler/flow_flow.go FlowV1FlowUpdate (line 108)
     → marshals into V1DataFlowsIDPut (wire DTO)
-  bin-flow-manager/pkg/listenhandler/v1_flows.go v1FlowsIDPut (line 72)
-    → unmarshals request.V1DataFlowsIDPut, calls flowHandler.Update
+  bin-flow-manager/pkg/listenhandler/v1_flows.go v1FlowsIDPut (line 57)
+    → unmarshals request.V1DataFlowsIDPut (line 72), calls flowHandler.Update
   bin-flow-manager/pkg/flowhandler/db.go     flowHandler.Update (line 198)  ← FIX SITE
     → unconditionally builds fields{Name,Detail,Actions,OnCompleteFlowID}
       and calls db.FlowUpdate  ← BUG SITE #2 (silent full-overwrite)
 ```
+
+**Current field types (Round 1 correction):** at branch base, the generated
+`PutFlowsIdJSONBody.Name`/`.Detail` are **plain `string`** (they are still in
+the OpenAPI `required` block, so oapi-codegen does NOT emit pointers today);
+`OnCompleteFlowID` already generates as `*string` (it is not required). The
+wire DTO `V1DataFlowsIDPut.OnCompleteFlowID`, `requesthandler.FlowV1FlowUpdate`,
+`servicehandler.FlowUpdate`, and `flowHandler.Update` all currently take a
+non-pointer `uuid.UUID`. So today there is **no** `if req.X != nil { x = *req.X }`
+collapse for name/detail to remove — they are simply passed as plain strings;
+the pointer threading is introduced BY this migration (after the required-block
+removal makes `Name`/`Detail` generate as `*string`).
+
 
 `db.FlowUpdate(ctx, id, fields map[flow.Field]any)` already accepts a partial
 field map, so the fix at the flowHandler layer is to build that map
@@ -68,10 +81,13 @@ fields := map[flow.Field]any{
 }
 ```
 
-Because `server/flows.go` collapses an absent `name`/`detail` pointer to `""`
-(and an absent `on_complete_flow_id` to `uuid.Nil`), a client that PUTs only
+Because `server/flows.go` passes an omitted `name`/`detail` as the empty
+string `""` (they are plain-string fields today, not pointers) and collapses an
+absent `on_complete_flow_id` pointer to `uuid.Nil`, a client that PUTs only
 `{"name": "...", "actions": [...]}` today **silently overwrites `detail` with
 `""`** and clears `on_complete_flow_id`. This is the exact PR #1291 bug class.
+The fix makes name/detail nil-distinguishable (pointers, post-codegen) and
+threads `on_complete_flow_id` as `*uuid.UUID` end to end.
 
 ## 3. Fix (per-layer)
 
@@ -81,15 +97,25 @@ Apply the canonical pattern (roadmap §3), hybrid variant:
    PUT `required:` block, remove `name` and `detail`; **keep `actions`**.
    (`on_complete_flow_id` is already not in `required`.) Update `name`/`detail`
    descriptions to "Omit to leave unchanged." Leave `actions` description as-is
-   (still required). Regenerate: `PutFlowsIdJSONBody` will keep `Actions` as a
-   required field and `Name`/`Detail` as `*string` (they already generate as
-   pointers today since oapi-codegen makes non-`required` object props
-   pointers; verify after `go generate`).
-2. **`bin-api-manager/server/flows.go` `PutFlowsId`**: pass `req.Name` /
-   `req.Detail` through as `*string` (stop the `if req.X != nil { x = *req.X }`
-   collapse). `actions` stays a required slice (validate present/non-nil →
-   400 `INVALID_ACTIONS` if absent, mirroring the required-field contract).
-   `on_complete_flow_id` continues to thread through as a pointer.
+   (still required). After `go generate`, `PutFlowsIdJSONBody.Actions` stays a
+   plain required slice while `Name`/`Detail` **newly** become `*string`
+   (they are plain `string` today because they are still required — the pointer
+   emission is a RESULT of this required-block removal, not a pre-existing
+   state). Verify the regenerated types after `go generate`.
+2. **`bin-api-manager/server/flows.go` `PutFlowsId`**: pass the now-`*string`
+   `req.Name` / `req.Detail` through unchanged (there is no existing
+   `if req.X != nil { x = *req.X }` collapse to remove — today they are plain
+   strings passed directly; post-codegen they are pointers passed directly).
+   **MANDATORY guard for `actions`** (linchpin of the hybrid design): the
+   generated binder does NOT reject a missing/null `actions` (the field carries
+   no `binding:"required"` tag, and `ServerInterfaceWrapper.PutFlowsId`
+   validates only the path param), so `req.Actions` would silently arrive as a
+   nil/empty slice and wipe the stored action list. Add an explicit
+   `if len(req.Actions) == 0 { abort 400 INVALID_ACTIONS }` guard before calling
+   the servicehandler. This guard is REQUIRED, not conditional — the entire
+   "always-set actions, no `len(fields)==0` short-circuit" safety argument in
+   step 7 depends on it. `on_complete_flow_id` threads through as `*uuid.UUID`
+   (stop the collapse to `uuid.Nil`).
 3. **`bin-api-manager/pkg/servicehandler/flow.go` `FlowUpdate`**: accept
    `name *string`, `detail *string`, keep `actions []Action` (required),
    `onCompleteFlowID *uuid.UUID`.
@@ -99,8 +125,9 @@ Apply the canonical pattern (roadmap §3), hybrid variant:
    reintroduces the bug one RabbitMQ hop later).
 5. **`bin-flow-manager/pkg/listenhandler/models/request/flows.go`
    `V1DataFlowsIDPut`**: `Name`/`Detail` become `*string` with `omitempty`;
-   `OnCompleteFlowID` becomes `*uuid.UUID` (if not already); `Actions` stays a
-   non-pointer required slice.
+   `OnCompleteFlowID` becomes `*uuid.UUID` with `omitempty` (it is a non-pointer
+   `uuid.UUID` today — this IS a required change, not "if not already");
+   `Actions` stays a non-pointer required slice.
 6. **`bin-flow-manager/pkg/listenhandler/v1_flows.go` `v1FlowsIDPut`**: pass
    the pointers through unchanged.
 7. **`bin-flow-manager/pkg/flowhandler/db.go` `flowHandler.Update`** (fix site):
@@ -150,11 +177,12 @@ Server layer (`bin-api-manager/server/flows_test.go`):
 6. `Test_flowsIDPut` rewritten with pointer helpers; assert a partial body
    (name only, with actions) reaches `servicehandler.FlowUpdate` with a nil
    detail pointer.
-7. **New**: a PUT body missing `actions` → 400 (asserts `servicehandler.FlowUpdate`
-   is never reached), pinning the §3.1 exemption as an intentional contract.
-   (Confirm the exact error code the server returns for a missing required field;
-   if the generated binder does not auto-reject, add an explicit `if req.Actions
-   == nil` guard returning `INVALID_ACTIONS`.)
+7. **New (mandatory)**: a PUT body missing/empty `actions` → 400
+   `INVALID_ACTIONS` (asserts `servicehandler.FlowUpdate` is never reached),
+   pinning the §3.1 exemption as an intentional contract. The generated binder
+   does NOT auto-reject a missing `actions` (no `binding:"required"` tag), so
+   the explicit `if len(req.Actions) == 0` guard from §3 step 2 is REQUIRED and
+   this test lands together with that guard.
 
 Every other touched layer (servicehandler, requesthandler, listenhandler) gets
 its existing `Test_*Update` updated to the pointer signatures.
@@ -181,4 +209,17 @@ Clean Sphinx rebuild + `git add -f build/`.
 
 ## 6. Review disposition
 
-(Filled in during the design review loop.)
+### Round 1 (`deleg_9f261e02` task 1): REQUEST CHANGES
+
+| # | Severity | Finding | Fix applied |
+|---|---|---|---|
+| 1 | HIGH | Call-chain narrative wrong: name/detail are plain `string` today (still required), not pointers; server does no deref/collapse for them. | §2 diagram + "Current field types" note + §1 table + §3 step 1/2 rewritten: name/detail become `*string` only AS A RESULT of the required-block removal; no existing collapse to remove. |
+| 2 | HIGH | "Missing actions → 400" does not hold today (no `binding:"required"` tag; binder validates only path param) and was treated as conditional; the whole no-short-circuit safety argument depends on it. | §3 step 2 now mandates an explicit `if len(req.Actions) == 0 { 400 INVALID_ACTIONS }` server guard; §4 test #7 lands with that guard. |
+| 3 | MEDIUM | `on_complete_flow_id` threading under-specified ("if needed"); actually requires `*uuid.UUID` at 4 lower layers today (all non-pointer, server collapses nil→uuid.Nil = real silent clear). | §1 table + §3 step 5 now state the 4-layer `*uuid.UUID` conversion as a definite requirement. |
+| 4 | LOW | `v1FlowsIDPut` starts at line 57, not 72. | §2 diagram corrected (57 = func start, 72 = unmarshal). |
+
+Not changed (reviewer confirmed correct): fix-site location + unconditional
+field-map at db.go:217-222; `db.FlowUpdate` partial-map capability; the
+actions-always-set / no-short-circuit decision (sound GIVEN finding #2's guard,
+now mandatory); test placement at fix-site vs server layer.
+
