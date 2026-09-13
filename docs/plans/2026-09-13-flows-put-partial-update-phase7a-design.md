@@ -118,7 +118,11 @@ Apply the canonical pattern (roadmap §3), hybrid variant:
    (stop the collapse to `uuid.Nil`).
 3. **`bin-api-manager/pkg/servicehandler/flow.go` `FlowUpdate`**: accept
    `name *string`, `detail *string`, keep `actions []Action` (required),
-   `onCompleteFlowID *uuid.UUID`.
+   `onCompleteFlowID *uuid.UUID`. NOTE: this function has an existing
+   `if onCompleteID != uuid.Nil { flowGet + hasPermission }` ownership check on
+   the on-complete flow (flow.go:227-236 today); when the parameter becomes a
+   pointer, adapt that branch to
+   `if onCompleteFlowID != nil && *onCompleteFlowID != uuid.Nil { ... }`.
 4. **`bin-common-handler/pkg/requesthandler/flow_flow.go` `FlowV1FlowUpdate`**:
    accept pointers for name/detail/onCompleteFlowID, marshal into the wire DTO
    as pointers (mandatory — §4.4 of the mcpservers design: skipping this
@@ -234,4 +238,15 @@ reasoning confirmed sound given the now-mandatory server guard. Two non-blocking
 nitpicks: (a) generated field is `OnCompleteFlowId` (not `OnCompleteFlowID`) —
 cosmetic; (b) revert-proof wording — reworded to note a nil-pointer deref panic
 is also an acceptable FAIL signal.
+
+### Round 3 (`deleg_185b2117`): APPROVE (design review loop CLOSED — R2+R3 consecutive)
+
+Every call-chain fact, generated type, and the mandatory-actions-guard
+reasoning independently re-derived from source and confirmed. One LOW
+completeness note applied to §3 step 3: `servicehandler.FlowUpdate` has an
+existing `if onCompleteID != uuid.Nil { flowGet + hasPermission }` ownership
+check (flow.go:227-236) that must be adapted to
+`if onCompleteFlowID != nil && *onCompleteFlowID != uuid.Nil` when the parameter
+becomes a pointer — follows mechanically from the type change, not a design
+change. Design confirmed complete and implementation-ready.
 
