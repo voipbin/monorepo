@@ -248,11 +248,11 @@ func (h *serviceHandler) TeamUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	id uuid.UUID,
-	name string,
-	detail string,
-	startMemberID uuid.UUID,
-	members []amteam.Member,
-	parameter map[string]any,
+	name *string,
+	detail *string,
+	startMemberID *uuid.UUID,
+	members *[]amteam.Member,
+	parameter *map[string]any,
 ) (*amteam.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported

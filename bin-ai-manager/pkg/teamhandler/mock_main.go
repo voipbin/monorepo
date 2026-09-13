@@ -118,7 +118,7 @@ func (mr *MockTeamHandlerMockRecorder) List(ctx, size, token, filters any) *gomo
 }
 
 // Update mocks base method.
-func (m *MockTeamHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.Team, error) {
+func (m *MockTeamHandler) Update(ctx context.Context, id uuid.UUID, name, detail *string, startMemberID *uuid.UUID, members *[]team.Member, parameter *map[string]any) (*team.Team, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.Team)

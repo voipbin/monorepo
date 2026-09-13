@@ -53,6 +53,12 @@ Team
 
    A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the team has not been deleted and is still active. This sentinel value is used across all VoIPBin resources to represent "not yet occurred."
 
+.. note:: **AI Implementation Hint: PUT partial update**
+
+   ``PUT /teams/{id}`` uses partial-update ("omit to leave unchanged") semantics for ``name``, ``detail``, ``start_member_id``, ``members``, and ``parameter``. Omit any field from the request body to leave its current stored value unchanged; only fields explicitly present in the request are modified.
+
+   ``start_member_id`` and ``members`` are cross-validated together against the *merged* state: if you change only one of them, the team's currently-stored value for the other is fetched and combined with your change before validation runs (``start_member_id`` must appear in the effective ``members`` list). This means a ``start_member_id``-only update can still fail with a validation error if the team's currently-stored ``members`` is empty or does not contain that ID — check the team's current state, not just your request body, when debugging an unexpected 400 here.
+
 Example
 +++++++
 

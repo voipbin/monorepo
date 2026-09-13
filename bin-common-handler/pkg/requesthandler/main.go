@@ -272,11 +272,11 @@ type RequestHandler interface {
 	AIV1TeamUpdate(
 		ctx context.Context,
 		teamID uuid.UUID,
-		name string,
-		detail string,
-		startMemberID uuid.UUID,
-		members []amteam.Member,
-		parameter map[string]any,
+		name *string,
+		detail *string,
+		startMemberID *uuid.UUID,
+		members *[]amteam.Member,
+		parameter *map[string]any,
 	) (*amteam.Team, error)
 
 	// ai-manager tools

@@ -54,3 +54,45 @@ func Test_teamsIDPut_InvalidID(t *testing.T) {
 
 	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
+
+// Test_teamsIDPut_MalformedStartMemberID verifies that a syntactically
+// invalid (non-empty, non-UUID) start_member_id in the request body is
+// rejected with a 400 INVALID_START_MEMBER_ID, and that the servicehandler
+// is never reached, mirroring the Phase 5
+// Test_conferencesIDPUT_MalformedFlowID / Test_numbersIDPUT_MalformedFlowID
+// pattern (see design doc §4 item 9).
+func Test_teamsIDPut_MalformedStartMemberID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("c96bf1c2-a2e9-11ec-a8e3-a716ee72ed9d"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	// mockSvc.TeamUpdate is deliberately never registered with EXPECT(): if
+	// the handler mistakenly reaches the servicehandler, gomock will fail
+	// the test with an unexpected-call error.
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	teamID := uuid.FromStringOrNil("fa4d3b6a-f82f-11ed-9176-d32f5705e10c")
+	req, _ := http.NewRequest(http.MethodPut, "/teams/"+teamID.String(),
+		bytes.NewBufferString(`{"start_member_id":"not-a-uuid"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_START_MEMBER_ID")
+}

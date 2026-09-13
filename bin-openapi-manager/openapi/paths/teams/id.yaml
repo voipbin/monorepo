@@ -79,36 +79,36 @@ put:
           properties:
             name:
               type: string
-              description: Name of the team.
+              description: Name of the team. Omit to leave unchanged.
               example: "Customer Support Team"
             detail:
               type: string
-              description: Detailed description of the team.
+              description: Detailed description of the team. Omit to leave unchanged.
               example: "Multi-agent team for handling customer inquiries"
             start_member_id:
               type: string
               format: uuid
               x-go-type: string
-              description: The member ID that starts the conversation. Must reference one of the members in the members array.
+              description: >-
+                The member ID that starts the conversation. Must reference
+                one of the members in the (possibly pre-existing) members
+                array. Omit to leave unchanged.
               example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
             members:
               type: array
               items:
                 $ref: '#/components/schemas/AIManagerTeamMember'
               minItems: 1
-              description: List of team members forming the graph nodes.
+              description: >-
+                List of team members forming the graph nodes. Omit to leave
+                unchanged.
             parameter:
               type: object
               additionalProperties: true
-              description: Custom key-value parameter data for the team. Supports flow variable substitution at runtime.
+              description: Custom key-value parameter data for the team. Supports flow variable substitution at runtime. Omit to leave unchanged.
               example:
                 language: "en-US"
                 department: "support"
-          required:
-            - name
-            - detail
-            - start_member_id
-            - members
   responses:
     '200':
       description: Details of the updated team.
