@@ -27,6 +27,8 @@ day-to-day CLI used for backup, restore, and upgrades.
 .. include:: self_hosting_overview.rst
 .. include:: self_hosting_prerequisites.rst
 .. include:: self_hosting_install.rst
+.. include:: self_hosting_first_login.rst
+.. include:: self_hosting_providers.rst
 .. include:: self_hosting_configuration.rst
 .. include:: self_hosting_envvars.rst
 .. include:: self_hosting_troubleshooting.rst

@@ -694,11 +694,12 @@ by default; never enable on a public install.</p></td>
 <section id="third-party-integrations">
 <h2>Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h2>
 <p>Voice AI, transcription, TTS, phone number provisioning, and email/SMS
-providers are configured through their own keys in <code class="docutils literal notranslate"><span class="pre">.env</span></code>
-(for example <code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_SID</span></code>, <code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code>,
-<code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>). Until the relevant keys are set, the corresponding
-flow actions return a “provider not configured” error; the rest of the
-platform stays healthy.</p>
+providers are configured through their own keys in <code class="docutils literal notranslate"><span class="pre">.env</span></code>. See the
+Provider configuration section for the full list of variables, which
+service to restart after setting each, and the AI-provider-specific
+details (shared credentials, multi-service consumers). Until a
+provider’s keys are set, the corresponding flow actions return a
+“provider not configured” error; the rest of the platform stays healthy.</p>
 </section>
 <section id="maintenance-commands-the-voipbin-cli">
 <h2>Maintenance commands (the <code class="docutils literal notranslate"><span class="pre">voipbin</span></code> CLI)<a class="headerlink" href="#maintenance-commands-the-voipbin-cli" title="Link to this heading">¶</a></h2>
