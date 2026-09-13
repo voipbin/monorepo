@@ -1096,6 +1096,278 @@ externally-reachable path to them.</p>
 </section>
 </section>
 </section>
+<section id="first-login-and-api-access">
+<h2>First login and API access<a class="headerlink" href="#first-login-and-api-access" title="Link to this heading">¶</a></h2>
+<p>A completed install has a running stack, but no way to sign in yet
+unless you opted in to the dev-seed account. This section covers how to
+create a real admin account and start calling the API.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code> account and extensions <code class="docutils literal notranslate"><span class="pre">1000</span></code>, <code class="docutils literal notranslate"><span class="pre">2000</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">3000</span></code> (three specific extensions, not a range) only exist when
+the stack was started with <code class="docutils literal notranslate"><span class="pre">VOIPBIN_SANDBOX_DEV_SEED=true</span></code>. Leave
+this flag unset or <code class="docutils literal notranslate"><span class="pre">false</span></code> on any install reachable beyond
+localhost; see the credentials table in Prerequisites.</p>
+</div>
+<p>If your first login attempt fails outright (curl connection errors,
+browser certificate warnings), confirm TLS trust first: see
+Troubleshooting’s DNS/certificate checks and, for internal mode, the
+mkcert CA trust step in Prerequisites. A first-login failure is very
+often a certificate problem, not an auth problem.</p>
+<section id="two-ways-to-create-your-first-account">
+<h3>Two ways to create your first account<a class="headerlink" href="#two-ways-to-create-your-first-account" title="Link to this heading">¶</a></h3>
+<p><strong>Path A: CLI bootstrap (recommended for a fresh self-hosted install).</strong>
+Works immediately, no email provider required.</p>
+<p><strong>Path B: email-based signup</strong>, the same flow the hosted service at
+<code class="docutils literal notranslate"><span class="pre">voipbin.net</span></code> uses (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code>). This only works if you have
+already configured an email provider (<code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code> or
+<code class="docutils literal notranslate"><span class="pre">MAILGUN_API_KEY</span></code>, see Provider configuration) so the verification
+email can actually be delivered. Without one, the signup call succeeds
+but the verification email never arrives. Use this path only if you have
+already set up email delivery; otherwise use Path A.</p>
+</section>
+<section id="path-a-cli-bootstrap">
+<h3>Path A: CLI bootstrap<a class="headerlink" href="#path-a-cli-bootstrap" title="Link to this heading">¶</a></h3>
+<p>Create a customer and an admin agent directly via the manager CLIs, then
+set the agent’s password explicitly (a fresh admin agent is created with
+a random, unusable password):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Create the customer</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">"My Company"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--email<span class="w"> </span><span class="s2">"admin@example.com"</span>
+
+<span class="c1"># 2. Get the customer ID</span>
+<span class="nv">CUSTOMER_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>list<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[] | select(.email == "admin@example.com") | .id'</span><span class="k">)</span>
+
+<span class="c1"># 3. Wait a few seconds for agent-manager to process the event via RabbitMQ</span>
+sleep<span class="w"> </span><span class="m">5</span>
+
+<span class="c1"># 4. Get the auto-created admin agent's ID</span>
+<span class="nv">AGENT_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>list<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[0].id'</span><span class="k">)</span>
+
+<span class="c1"># 5. Set a real password</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>update-password<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--id<span class="w"> </span><span class="s2">"</span><span class="nv">$AGENT_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--password<span class="w"> </span><span class="s2">"your-secure-password"</span>
+</pre></div>
+</div>
+<section id="get-a-jwt-token">
+<h4>Get a JWT token<a class="headerlink" href="#get-a-jwt-token" title="Link to this heading">¶</a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/auth/login<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"username": "admin@example.com", "password": "your-secure-password"}'</span>
+
+<span class="c1"># Response: {"username": "...", "token": "JWT_TOKEN_HERE"}</span>
+</pre></div>
+</div>
+</section>
+<section id="create-an-api-key-accesskey">
+<h4>Create an API key (accesskey)<a class="headerlink" href="#create-an-api-key-accesskey" title="Link to this heading">¶</a></h4>
+<p>An accesskey is a long-lived API token, separate from the short-lived
+JWT above, meant for scripts and integrations:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>accesskey<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">"API Key"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--detail<span class="w"> </span><span class="s2">"For automation"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--expire<span class="w"> </span>87600h
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--expire</span> <span class="pre">87600h</span></code> is roughly 10 years, a practically non-expiring key
+for automation use. Use a shorter value for keys you intend to rotate.</p>
+</section>
+<section id="create-your-first-extension">
+<h4>Create your first extension<a class="headerlink" href="#create-your-first-extension" title="Link to this heading">¶</a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TOKEN</span><span class="o">=</span><span class="s2">"&lt;jwt_token_from_above&gt;"</span>
+
+curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/v1.0/extensions<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"extension": "2000", "password": "your-secure-password-here", "name": "Extension 2000"}'</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="path-b-email-based-signup">
+<h3>Path B: email-based signup<a class="headerlink" href="#path-b-email-based-signup" title="Link to this heading">¶</a></h3>
+<p>Once an email provider is configured (see Provider configuration), the
+hosted-service signup flow works identically for a self-hosted install:
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code> against your own <code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code> endpoint instead
+of <code class="docutils literal notranslate"><span class="pre">api.voipbin.net</span></code>. See the Quickstart guide’s Signup page for the
+full request/response shape and troubleshooting; the mechanics are
+identical, only the base URL differs.</p>
+</section>
+</section>
+<section id="provider-configuration">
+<h2>Provider configuration<a class="headerlink" href="#provider-configuration" title="Link to this heading">¶</a></h2>
+<p>All third-party providers are optional. Until a provider’s keys are set,
+the corresponding flow actions return a “provider not configured” error;
+the rest of the platform stays healthy. This page lists every provider
+env var in <code class="docutils literal notranslate"><span class="pre">.env</span></code>, what it enables, and which service to restart after
+setting it. All facts below are verified directly against this
+installer’s own <code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code> (the Docker Compose
+self-hosting stack); a Kubernetes/hosted-service deployment wires some
+of these variables differently and is out of scope for this page.</p>
+<section id="ai-voice-agent-providers">
+<h3>AI voice agent providers<a class="headerlink" href="#ai-voice-agent-providers" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 30.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Capability</p></th>
+<th class="head"><p>Providers</p></th>
+<th class="head"><p>Env var(s)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>LLM / conversation (batch, e.g. audit evaluation)</p></td>
+<td><p>OpenAI</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code> (restart <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>LLM / conversation (real-time voice pipeline)</p></td>
+<td><p>OpenAI, Google Gemini, xAI</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>
+(restart <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p>Speech-to-text</p></td>
+<td><p>Deepgram, AWS Transcribe, Google Cloud Speech-to-Text</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>; <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>/<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>;
+<code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Text-to-speech</p></td>
+<td><p>ElevenLabs, Cartesia, AWS Polly, Google Cloud TTS</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code>;
+<code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>/<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>;
+<code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> are two
+unrelated variables that happen to share the “Google” prefix. Do not
+confuse them:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> is a Gemini API key. It is consumed by two
+independent features: <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>’s batch audit evaluation
+(mapped internally to a ChatGPT-compatible engine key,
+<code class="docutils literal notranslate"><span class="pre">ENGINE_KEY_CHATGPT=${OPENAI_API_KEY}</span></code>, does <strong>not</strong> actually use
+<code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> for this) and <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>’s real-time voice
+pipeline (the sidecar that actually reads <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code> directly
+for live Gemini conversations). Restart <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> after
+changing it for the voice-pipeline use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> is a GCP service-account JSON key
+file path. It is mounted into <strong>five</strong> services in this installer’s
+Docker Compose stack: <code class="docutils literal notranslate"><span class="pre">api-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>,
+<code class="docutils literal notranslate"><span class="pre">storage-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, and <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code>.
+<code class="docutils literal notranslate"><span class="pre">storage-manager</span></code> treats a missing value as fatal for signed
+download/upload URLs; <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> falls back to AWS Polly if
+unset. <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> does <strong>not</strong> consume this variable in the
+Docker Compose stack (it only uses <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, above) —
+restarting <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> for a <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code>
+change has no effect.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code> has no dedicated feature write-up beyond its
+<code class="docutils literal notranslate"><span class="pre">.env.template</span></code> entry; it is consumed by <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>’s
+real-time voice pipeline as an LLM alternative, not by <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>.</p>
+<p>After setting an AI provider key, restart the service(s) that actually
+consume that specific variable, per the tables above:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>ai-manager<span class="w">           </span><span class="c1"># OPENAI_API_KEY (batch)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>pipecat-manager<span class="w">       </span><span class="c1"># OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY (real-time)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>transcribe-manager<span class="w">    </span><span class="c1"># DEEPGRAM_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>tts-manager<span class="w">           </span><span class="c1"># ELEVENLABS_API_KEY, CARTESIA_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>storage-manager<span class="w">       </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
+</pre></div>
+</div>
+</section>
+<section id="telephony-and-messaging-providers">
+<h3>Telephony and messaging providers<a class="headerlink" href="#telephony-and-messaging-providers" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 40.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Provider</p></th>
+<th class="head"><p>Env var(s)</p></th>
+<th class="head"><p>Consuming service</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Twilio (PSTN numbers)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TWILIO_SID</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Telnyx (PSTN numbers and messaging)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TELNYX_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TELNYX_CONNECTION_ID</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TELNYX_PROFILE_ID</span></code> (all three required)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">number-manager</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>MessageBird (SMS)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">message-manager</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> variable names above are what you set;
+<code class="docutils literal notranslate"><span class="pre">number-manager</span></code> itself binds them internally as <code class="docutils literal notranslate"><span class="pre">TWILIO_TOKEN</span></code> and
+<code class="docutils literal notranslate"><span class="pre">TELNYX_TOKEN</span></code> (<code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code> maps
+<code class="docutils literal notranslate"><span class="pre">TWILIO_TOKEN=${TWILIO_API_KEY}</span></code> and
+<code class="docutils literal notranslate"><span class="pre">TELNYX_TOKEN=${TELNYX_API_KEY}</span></code>), and <code class="docutils literal notranslate"><span class="pre">message-manager</span></code> binds
+<code class="docutils literal notranslate"><span class="pre">MESSAGEBIRD_API_KEY</span></code> internally as <code class="docutils literal notranslate"><span class="pre">AUTHTOKEN_MESSAGEBIRD</span></code>. This
+only matters if you go looking for the raw variable name inside
+<code class="docutils literal notranslate"><span class="pre">number-manager</span></code>’s or <code class="docutils literal notranslate"><span class="pre">message-manager</span></code>’s own config; the <code class="docutils literal notranslate"><span class="pre">.env</span></code>
+names above are what you actually set. MessageBird has no dedicated
+feature write-up beyond its <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> entry.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>number-manager
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>message-manager
+</pre></div>
+</div>
+</section>
+<section id="email-providers">
+<h3>Email providers<a class="headerlink" href="#email-providers" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 40.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Provider</p></th>
+<th class="head"><p>Env var</p></th>
+<th class="head"><p>Consuming service</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>SendGrid</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Mailgun</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MAILGUN_API_KEY</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">email-manager</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>email-manager
+</pre></div>
+</div>
+<p>Configuring at least one of these two is required for the email-based
+signup flow (Path B in First login and API access) to actually deliver
+its verification email.</p>
+</section>
+</section>
 <section id="configuration-files">
 <h2>Configuration files<a class="headerlink" href="#configuration-files" title="Link to this heading">¶</a></h2>
 <p>The installer writes and manages two operator-owned files in the
@@ -1225,11 +1497,12 @@ by default; never enable on a public install.</p></td>
 <section id="third-party-integrations">
 <h3>Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h3>
 <p>Voice AI, transcription, TTS, phone number provisioning, and email/SMS
-providers are configured through their own keys in <code class="docutils literal notranslate"><span class="pre">.env</span></code>
-(for example <code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">TWILIO_SID</span></code>, <code class="docutils literal notranslate"><span class="pre">SENDGRID_API_KEY</span></code>,
-<code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>). Until the relevant keys are set, the corresponding
-flow actions return a “provider not configured” error; the rest of the
-platform stays healthy.</p>
+providers are configured through their own keys in <code class="docutils literal notranslate"><span class="pre">.env</span></code>. See the
+Provider configuration section for the full list of variables, which
+service to restart after setting each, and the AI-provider-specific
+details (shared credentials, multi-service consumers). Until a
+provider’s keys are set, the corresponding flow actions return a
+“provider not configured” error; the rest of the platform stays healthy.</p>
 </section>
 <section id="maintenance-commands-the-voipbin-cli">
 <h3>Maintenance commands (the <code class="docutils literal notranslate"><span class="pre">voipbin</span></code> CLI)<a class="headerlink" href="#maintenance-commands-the-voipbin-cli" title="Link to this heading">¶</a></h3>
@@ -1510,6 +1783,23 @@ the full output of <code class="docutils literal notranslate"><span class="pre">
 <li><a class="reference internal" href="#web-reverse-proxy-port-less-urls">Web reverse proxy (port-less URLs)</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li><a class="reference internal" href="#first-login-and-api-access">First login and API access</a><ul>
+<li><a class="reference internal" href="#two-ways-to-create-your-first-account">Two ways to create your first account</a></li>
+<li><a class="reference internal" href="#path-a-cli-bootstrap">Path A: CLI bootstrap</a><ul>
+<li><a class="reference internal" href="#get-a-jwt-token">Get a JWT token</a></li>
+<li><a class="reference internal" href="#create-an-api-key-accesskey">Create an API key (accesskey)</a></li>
+<li><a class="reference internal" href="#create-your-first-extension">Create your first extension</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#path-b-email-based-signup">Path B: email-based signup</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#provider-configuration">Provider configuration</a><ul>
+<li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a></li>
+<li><a class="reference internal" href="#telephony-and-messaging-providers">Telephony and messaging providers</a></li>
+<li><a class="reference internal" href="#email-providers">Email providers</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#configuration-files">Configuration files</a><ul>
