@@ -263,6 +263,9 @@ func Test_GetFlowsId(t *testing.T) {
 
 func Test_PutFlowsId(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	uuidPtr := func(v uuid.UUID) *uuid.UUID { return &v }
+
 	tests := []struct {
 		name  string
 		agent *auth.AuthIdentity
@@ -273,10 +276,11 @@ func Test_PutFlowsId(t *testing.T) {
 		responseFlow *fmflow.WebhookMessage
 
 		expectFlowID           uuid.UUID
-		expectName             string
-		expectDetail           string
+		expectName             *string
+		expectDetail           *string
 		expectActions          []fmaction.Action
-		expectOnCompleteFlowID uuid.UUID
+		expectOnCompleteFlowID *uuid.UUID
+		expectStatus           int
 		expectRes              string
 	}{
 		{
@@ -297,15 +301,62 @@ func Test_PutFlowsId(t *testing.T) {
 			},
 
 			expectFlowID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
-			expectName:   "test name",
-			expectDetail: "test detail",
+			expectName:   strPtr("test name"),
+			expectDetail: strPtr("test detail"),
 			expectActions: []fmaction.Action{
 				{
 					Type: "answer",
 				},
 			},
-			expectOnCompleteFlowID: uuid.FromStringOrNil("305ebdb8-cf93-11f0-9bd2-4386663663cd"),
+			expectOnCompleteFlowID: uuidPtr(uuid.FromStringOrNil("305ebdb8-cf93-11f0-9bd2-4386663663cd")),
+			expectStatus:           http.StatusOK,
 			expectRes:              `{"id":"d213a09e-6790-11eb-8cea-bb3b333200ed","customer_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			// Phase 7a hybrid: name/detail/on_complete omitted, only actions
+			// present. FlowUpdate must receive nil name/detail/onComplete.
+			name: "name/detail/on_complete omitted, actions only",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/flows/d213a09e-6790-11eb-8cea-bb3b333200ed",
+			reqBody:  []byte(`{"actions":[{"type":"answer"}]}`),
+
+			responseFlow: &fmflow.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+				},
+			},
+
+			expectFlowID: uuid.FromStringOrNil("d213a09e-6790-11eb-8cea-bb3b333200ed"),
+			expectName:   nil,
+			expectDetail: nil,
+			expectActions: []fmaction.Action{
+				{
+					Type: "answer",
+				},
+			},
+			expectOnCompleteFlowID: nil,
+			expectStatus:           http.StatusOK,
+			expectRes:              `{"id":"d213a09e-6790-11eb-8cea-bb3b333200ed","customer_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			// Phase 7a hybrid: actions is required. A PUT missing actions must
+			// be rejected with 400 and FlowUpdate must never be called.
+			name: "missing actions returns 400",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/flows/d213a09e-6790-11eb-8cea-bb3b333200ed",
+			reqBody:  []byte(`{"name":"test name"}`),
+
+			expectStatus: http.StatusBadRequest,
 		},
 	}
 
@@ -330,22 +381,25 @@ func Test_PutFlowsId(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().FlowUpdate(
-				req.Context(),
-				tt.agent,
-				tt.expectFlowID,
-				tt.expectName,
-				tt.expectDetail,
-				tt.expectActions,
-				tt.expectOnCompleteFlowID,
-			).Return(tt.responseFlow, nil)
 
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			if tt.expectStatus == http.StatusOK {
+				mockSvc.EXPECT().FlowUpdate(
+					req.Context(),
+					tt.agent,
+					tt.expectFlowID,
+					tt.expectName,
+					tt.expectDetail,
+					tt.expectActions,
+					tt.expectOnCompleteFlowID,
+				).Return(tt.responseFlow, nil)
 			}
 
-			if w.Body.String() != tt.expectRes {
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
+			}
+
+			if tt.expectStatus == http.StatusOK && w.Body.String() != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})

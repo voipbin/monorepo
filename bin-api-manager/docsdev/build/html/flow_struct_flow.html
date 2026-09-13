@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Action" href="flow_struct_action.html"><link rel="prev" title="Overview" href="flow_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>Flow - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -676,6 +676,7 @@
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code>, this means the flow is still active.</p>
+<p>On <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/flows/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, and <code class="docutils literal notranslate"><span class="pre">on_complete_flow_id</span></code> follow partial-update semantics: omit a field to leave its stored value unchanged. <code class="docutils literal notranslate"><span class="pre">actions</span></code> is required and is always fully replaced with the provided list, so a <code class="docutils literal notranslate"><span class="pre">PUT</span></code> without <code class="docutils literal notranslate"><span class="pre">actions</span></code> (or with an empty array) is rejected with <code class="docutils literal notranslate"><span class="pre">400</span></code>. To keep the existing actions unchanged, resend the current action list.</p>
 </div>
 <p><strong>Example</strong>
 .. code:</p>

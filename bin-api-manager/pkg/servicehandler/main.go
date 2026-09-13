@@ -759,10 +759,10 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		id uuid.UUID,
-		name string,
-		detail string,
+		name *string,
+		detail *string,
 		actions []fmaction.Action,
-		onCompleteID uuid.UUID,
+		onCompleteID *uuid.UUID,
 	) (*fmflow.WebhookMessage, error)
 
 	// grpupcall handlers

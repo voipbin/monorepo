@@ -3105,7 +3105,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowList(ctx, a, pageSize, pageToken a
 }
 
 // FlowUpdate mocks base method.
-func (m *MockServiceHandler) FlowUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, actions []action.Action, onCompleteID uuid.UUID) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail *string, actions []action.Action, onCompleteID *uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowUpdate", ctx, a, id, name, detail, actions, onCompleteID)
 	ret0, _ := ret[0].(*flow.WebhookMessage)

@@ -9289,13 +9289,13 @@ type PutFlowsIdJSONBody struct {
 	// Actions Updated list of actions associated with the flow.
 	Actions []FlowManagerAction `json:"actions"`
 
-	// Detail The updated details of the flow.
-	Detail string `json:"detail"`
+	// Detail The updated details of the flow. Omit to leave unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// Name The updated name of the flow.
-	Name string `json:"name"`
+	// Name The updated name of the flow. Omit to leave unchanged.
+	Name *string `json:"name,omitempty"`
 
-	// OnCompleteFlowId ID of the flow to be executed on completion.
+	// OnCompleteFlowId ID of the flow to be executed on completion. Omit to leave unchanged.
 	OnCompleteFlowId *string `json:"on_complete_flow_id,omitempty"`
 }
 

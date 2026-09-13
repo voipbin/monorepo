@@ -550,14 +550,17 @@ func Test_List(t *testing.T) {
 
 func Test_Update(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	uuidPtr := func(v uuid.UUID) *uuid.UUID { return &v }
+
 	tests := []struct {
 		name string
 
 		id               uuid.UUID
-		flowName         string
-		detail           string
+		flowName         *string
+		detail           *string
 		actions          []action.Action
-		onCompleteFlowID uuid.UUID
+		onCompleteFlowID *uuid.UUID
 
 		responseFlow       *flow.Flow
 		expectUpdateFiedls map[flow.Field]any
@@ -567,14 +570,14 @@ func Test_Update(t *testing.T) {
 			name: "test normal",
 
 			id:       uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
-			flowName: "changed name",
-			detail:   "changed detail",
+			flowName: strPtr("changed name"),
+			detail:   strPtr("changed detail"),
 			actions: []action.Action{
 				{
 					Type: action.TypeAnswer,
 				},
 			},
-			onCompleteFlowID: uuid.FromStringOrNil("9d74ce00-ce18-11f0-ba12-37c102015df6"),
+			onCompleteFlowID: uuidPtr(uuid.FromStringOrNil("9d74ce00-ce18-11f0-ba12-37c102015df6")),
 
 			responseFlow: &flow.Flow{
 				Identity: commonidentity.Identity{
@@ -610,6 +613,39 @@ func Test_Update(t *testing.T) {
 						ID:   uuid.FromStringOrNil("445ad416-676d-11eb-bca9-1f9e07621368"),
 						Type: action.TypeAnswer,
 					},
+				},
+			},
+		},
+		{
+			// Phase 7a hybrid: name omitted, only actions (required) + detail
+			// provided. The fields map must NOT contain FieldName or
+			// FieldOnCompleteFlowID, proving those stay unchanged.
+			name: "name and on_complete omitted, actions always present",
+
+			id:     uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
+			detail: strPtr("only detail changed"),
+			actions: []action.Action{
+				{
+					Type: action.TypeAnswer,
+				},
+			},
+
+			responseFlow: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
+				},
+			},
+			expectUpdateFiedls: map[flow.Field]any{
+				flow.FieldDetail: "only detail changed",
+				flow.FieldActions: []action.Action{
+					{
+						Type: action.TypeAnswer,
+					},
+				},
+			},
+			expectedRes: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("728c58a6-676c-11eb-945b-e7ade6fd0b8d"),
 				},
 			},
 		},

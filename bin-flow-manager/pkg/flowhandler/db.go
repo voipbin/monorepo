@@ -195,7 +195,7 @@ func (h *flowHandler) List(ctx context.Context, token string, size uint64, filte
 }
 
 // Update updates the flow info and return the updated flow
-func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name string, detail string, actions []action.Action, onCompleteFlowID uuid.UUID) (*flow.Flow, error) {
+func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name *string, detail *string, actions []action.Action, onCompleteFlowID *uuid.UUID) (*flow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                "Update",
 		"flow_id":             id,
@@ -214,11 +214,21 @@ func (h *flowHandler) Update(ctx context.Context, id uuid.UUID, name string, det
 	}
 	log.WithField("new_actions", tmpActions).Debug("Created the new actions tmp.")
 
+	// actions is a required field (Phase 7a hybrid migration: name/detail/
+	// on_complete_flow_id are optional/nil-means-unchanged, but actions is
+	// always fully replaced), so the fields map is never empty and no
+	// len(fields)==0 short-circuit is needed.
 	fields := map[flow.Field]any{
-		flow.FieldName:             name,
-		flow.FieldDetail:           detail,
-		flow.FieldActions:          tmpActions,
-		flow.FieldOnCompleteFlowID: onCompleteFlowID,
+		flow.FieldActions: tmpActions,
+	}
+	if name != nil {
+		fields[flow.FieldName] = *name
+	}
+	if detail != nil {
+		fields[flow.FieldDetail] = *detail
+	}
+	if onCompleteFlowID != nil {
+		fields[flow.FieldOnCompleteFlowID] = *onCompleteFlowID
 	}
 
 	if err := h.db.FlowUpdate(ctx, id, fields); err != nil {

@@ -503,15 +503,18 @@ func Test_FlowList(t *testing.T) {
 
 func Test_FlowUpdate(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	uuidPtr := func(v uuid.UUID) *uuid.UUID { return &v }
+
 	tests := []struct {
 		name  string
 		agent *auth.AuthIdentity
 
 		flowID           uuid.UUID
-		flowName         string
-		detail           string
+		flowName         *string
+		detail           *string
 		actions          []fmaction.Action
-		onCompleteFlowID uuid.UUID
+		onCompleteFlowID *uuid.UUID
 
 		responseFlow         *fmflow.Flow
 		responseCompleteFlow *fmflow.Flow
@@ -528,14 +531,14 @@ func Test_FlowUpdate(t *testing.T) {
 			}),
 
 			flowID:   uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
-			flowName: "test name",
-			detail:   "test detail",
+			flowName: strPtr("test name"),
+			detail:   strPtr("test detail"),
 			actions: []fmaction.Action{
 				{
 					Type: fmaction.TypeAnswer,
 				},
 			},
-			onCompleteFlowID: uuid.FromStringOrNil("dd113542-cf91-11f0-9f8a-fb8e4c6a808b"),
+			onCompleteFlowID: uuidPtr(uuid.FromStringOrNil("dd113542-cf91-11f0-9f8a-fb8e4c6a808b")),
 
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -547,6 +550,40 @@ func Test_FlowUpdate(t *testing.T) {
 			responseCompleteFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("dd113542-cf91-11f0-9f8a-fb8e4c6a808b"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: nil,
+			},
+			expectRes: &fmflow.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				TMDelete: nil,
+			},
+		},
+		{
+			// Phase 7a hybrid: name/detail/on_complete omitted (nil), only
+			// actions present. No onComplete flow permission check happens.
+			name: "name/detail/on_complete omitted, actions only",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+
+			flowID: uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
+			actions: []fmaction.Action{
+				{
+					Type: fmaction.TypeAnswer,
+				},
+			},
+
+			responseFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a64ff8ce-1ab3-4564-9d34-e5f3147810e5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				TMDelete: nil,
@@ -577,8 +614,8 @@ func Test_FlowUpdate(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
 
-			if tt.onCompleteFlowID != uuid.Nil {
-				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.onCompleteFlowID).Return(tt.responseCompleteFlow, nil)
+			if tt.onCompleteFlowID != nil && *tt.onCompleteFlowID != uuid.Nil {
+				mockReq.EXPECT().FlowV1FlowGet(ctx, *tt.onCompleteFlowID).Return(tt.responseCompleteFlow, nil)
 			}
 
 			mockReq.EXPECT().FlowV1FlowUpdate(ctx, tt.flowID, tt.flowName, tt.detail, tt.actions, tt.onCompleteFlowID).Return(tt.responseFlow, nil)

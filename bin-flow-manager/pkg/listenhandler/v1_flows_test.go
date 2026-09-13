@@ -490,6 +490,9 @@ func Test_v1FlowsIDGet(t *testing.T) {
 
 func Test_v1FlowsIDPut(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	uuidPtr := func(v uuid.UUID) *uuid.UUID { return &v }
+
 	tests := []struct {
 		name    string
 		request *sock.Request
@@ -497,10 +500,10 @@ func Test_v1FlowsIDPut(t *testing.T) {
 		responseFlow *flow.Flow
 
 		expectedflowID           uuid.UUID
-		expectedName             string
-		expectedDetail           string
+		expectedName             *string
+		expectedDetail           *string
 		expectedActions          []action.Action
-		expectedOnCompleteFlowID uuid.UUID
+		expectedOnCompleteFlowID *uuid.UUID
 		expectedRes              *sock.Response
 	}{
 		{
@@ -531,8 +534,8 @@ func Test_v1FlowsIDPut(t *testing.T) {
 			},
 
 			expectedflowID: uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
-			expectedName:   "update name",
-			expectedDetail: "update detail",
+			expectedName:   strPtr("update name"),
+			expectedDetail: strPtr("update detail"),
 			expectedActions: []action.Action{
 				{
 					Type: action.TypeAnswer,
@@ -541,11 +544,43 @@ func Test_v1FlowsIDPut(t *testing.T) {
 					Type: action.TypeEcho,
 				},
 			},
-			expectedOnCompleteFlowID: uuid.FromStringOrNil("8a7e0694-ce19-11f0-a304-97efac450d48"),
+			expectedOnCompleteFlowID: uuidPtr(uuid.FromStringOrNil("8a7e0694-ce19-11f0-a304-97efac450d48")),
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","name":"update name","detail":"update detail","actions":[{"id":"559d044e-6770-11eb-8c51-eb96d1c14b35","next_id":"00000000-0000-0000-0000-000000000000","type":"answer","tm_execute":null},{"id":"561fa020-6770-11eb-b8ff-ef78ac0df0fb","next_id":"00000000-0000-0000-0000-000000000000","type":"echo","tm_execute":null}],"direct_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			// Phase 7a hybrid: name/detail/on_complete omitted, only actions
+			// (required) present. Update must receive nil name/detail/onComplete.
+			name: "name/detail/on_complete omitted, actions only",
+			request: &sock.Request{
+				URI:      "/v1/flows/b6768dd6-676f-11eb-8f00-7fb6aa43e2dc",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"actions":[{"type":"answer"}]}`),
+			},
+
+			responseFlow: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
+				},
+			},
+
+			expectedflowID: uuid.FromStringOrNil("b6768dd6-676f-11eb-8f00-7fb6aa43e2dc"),
+			expectedName:   nil,
+			expectedDetail: nil,
+			expectedActions: []action.Action{
+				{
+					Type: action.TypeAnswer,
+				},
+			},
+			expectedOnCompleteFlowID: nil,
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"b6768dd6-676f-11eb-8f00-7fb6aa43e2dc","customer_id":"00000000-0000-0000-0000-000000000000","direct_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
