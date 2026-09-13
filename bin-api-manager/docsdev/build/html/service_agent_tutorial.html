@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Number" href="number.html"><link rel="prev" title="Structures" href="service_agent_case_struct.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -654,28 +654,28 @@
 </div>
 <section id="check-your-own-profile-and-go-available">
 <h3>1. Check your own profile and go available<a class="headerlink" href="#check-your-own-profile-and-go-available" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/me?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/me?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/me/status?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "status": "available"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/service_agents/me/status?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;status&quot;: &quot;available&quot;
+    }&#39;
 </pre></div>
 </div>
 </section>
 <section id="list-open-cases-and-pick-one-up">
 <h3>2. List open cases and pick one up<a class="headerlink" href="#list-open-cases-and-pick-one-up" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases?page_size=20&amp;token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases?page_size=20&amp;token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 <p>Filter the <code class="docutils literal notranslate"><span class="pre">result</span></code> array client-side for <code class="docutils literal notranslate"><span class="pre">&quot;status&quot;:</span> <span class="pre">&quot;open&quot;</span></code> and an empty/missing <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to build a “New” queue view. Once you’ve picked a case, assign it to yourself:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/assign?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "owner_id": "&lt;your-own-agent-id&gt;"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/assign?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;owner_id&quot;: &quot;&lt;your-own-agent-id&gt;&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">&lt;your-own-agent-id&gt;</span></code> is the <code class="docutils literal notranslate"><span class="pre">id</span></code> field from the <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/me</span></code> response in step 1.</p>
@@ -683,21 +683,21 @@
 <section id="review-interaction-history-for-the-case-s-peer">
 <h3>3. Review interaction history for the case’s peer<a class="headerlink" href="#review-interaction-history-for-the-case-s-peer" title="Link to this heading">¶</a></h3>
 <p>Before working the case, pull the interaction history for the peer it’s scoped to (the <code class="docutils literal notranslate"><span class="pre">peer</span></code> field on the Case, from step 2):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_interactions?peer_type=tel&amp;peer_target=%2B155****4567&amp;token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contact_interactions?peer_type=tel&amp;peer_target=%2B155****4567&amp;token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 <p>If the case is already attached to a resolved Contact (<code class="docutils literal notranslate"><span class="pre">contact_id</span></code> is non-null), you can also pull the contact’s full profile:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contacts/&lt;contact-id&gt;?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contacts/&lt;contact-id&gt;?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="leave-a-note-for-the-next-agent">
 <h3>4. Leave a note for the next agent<a class="headerlink" href="#leave-a-note-for-the-next-agent" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/notes?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "text": "Customer confirmed the outage affects only their US-East line. Escalating to network team."
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/notes?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;text&quot;: &quot;Customer confirmed the outage affects only their US-East line. Escalating to network team.&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>Notes are agent-only – they never appear in any customer-facing response.</p>
@@ -705,35 +705,35 @@
 <section id="attach-the-resolved-contact-and-close-the-case">
 <h3>5. Attach the resolved contact and close the case<a class="headerlink" href="#attach-the-resolved-contact-and-close-the-case" title="Link to this heading">¶</a></h3>
 <p>If the case wasn’t already linked to a Contact, attach one once you’ve identified the customer:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "contact_id": "&lt;contact-id&gt;"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;contact_id&quot;: &quot;&lt;contact-id&gt;&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>Once resolved, close the case:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/close?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;/close?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 </section>
 <section id="ask-a-teammate-for-help-via-talk">
 <h3>6. Ask a teammate for help via Talk<a class="headerlink" href="#ask-a-teammate-for-help-via-talk" title="Link to this heading">¶</a></h3>
 <p>Browse public channels and join the on-call channel:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/talk_channels?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/talk_channels?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;channel-id&gt;/join?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;channel-id&gt;/join?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 <p>Send a message:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "chat_id": "&lt;channel-id&gt;",
-        "type": "normal",
-        "text": "Anyone else seeing US-East line outages? Case &lt;case-id&gt; escalated to network team."
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;chat_id&quot;: &quot;&lt;channel-id&gt;&quot;,
+        &quot;type&quot;: &quot;normal&quot;,
+        &quot;text&quot;: &quot;Anyone else seeing US-East line outages? Case &lt;case-id&gt; escalated to network team.&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>See <a class="reference internal" href="talk.html#talk-main"><span class="std std-ref">Talk</span></a> for message threading, reactions, and media attachments.</p>
@@ -741,18 +741,18 @@
 <section id="stay-in-sync-with-real-time-updates">
 <h3>7. Stay in sync with real-time updates<a class="headerlink" href="#stay-in-sync-with-real-time-updates" title="Link to this heading">¶</a></h3>
 <p>Open a WebSocket connection scoped to your agent identity to receive new case updates and chat messages without polling:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ wscat -c 'wss://api.voipbin.net/v1.0/service_agents/ws?token=&lt;token&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ wscat -c &#39;wss://api.voipbin.net/v1.0/service_agents/ws?token=&lt;token&gt;&#39;
 </pre></div>
 </div>
 <p>See <a class="reference internal" href="websocket.html#websocket-main"><span class="std std-ref">WebSocket</span></a> for the event catalog.</p>
 </section>
 <section id="go-offline-at-the-end-of-your-shift">
 <h3>8. Go offline at the end of your shift<a class="headerlink" href="#go-offline-at-the-end-of-your-shift" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/me/status?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "status": "offline"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/service_agents/me/status?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;status&quot;: &quot;offline&quot;
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -841,8 +841,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

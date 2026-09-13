@@ -111,9 +111,11 @@ func Test_GetAisummaries(t *testing.T) {
 
 		responseAIsummaries []*amsummary.WebhookMessage
 
-		expectedPageSize  uint64
-		expectedPageToken string
-		expectedRes       string
+		expectedPageSize      uint64
+		expectedPageToken     string
+		expectedReferenceType string
+		expectedReferenceID   uuid.UUID
+		expectedRes           string
 	}
 
 	tests := []test{
@@ -135,9 +137,35 @@ func Test_GetAisummaries(t *testing.T) {
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
-			expectedPageSize:  10,
-			expectedPageToken: "2020-09-20T03:23:20.995000Z",
-			expectedRes:       `{"result":[{"id":"f01f38f0-0ccd-11f0-81ab-730c812c39fb","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectedPageSize:      10,
+			expectedPageToken:     "2020-09-20T03:23:20.995000Z",
+			expectedReferenceType: "",
+			expectedReferenceID:   uuid.Nil,
+			expectedRes:           `{"result":[{"id":"f01f38f0-0ccd-11f0-81ab-730c812c39fb","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+		},
+		{
+			name: "with reference filter",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ef9f2bd8-0ccd-11f0-9c5b-0b861eb38bff"),
+				},
+			}),
+
+			reqQuery: "/aisummaries?page_size=10&page_token=2020-09-20T03:23:20.995000Z&reference_type=recording&reference_id=1ca46b4e-0ccd-11f0-8a52-2f20e29cf20a",
+
+			responseAIsummaries: []*amsummary.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("f01f38f0-0ccd-11f0-81ab-730c812c39fb"),
+					},
+					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
+				},
+			},
+			expectedPageSize:      10,
+			expectedPageToken:     "2020-09-20T03:23:20.995000Z",
+			expectedReferenceType: "recording",
+			expectedReferenceID:   uuid.FromStringOrNil("1ca46b4e-0ccd-11f0-8a52-2f20e29cf20a"),
+			expectedRes:           `{"result":[{"id":"f01f38f0-0ccd-11f0-81ab-730c812c39fb","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 	}
 
@@ -161,7 +189,7 @@ func Test_GetAisummaries(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AISummaryGetsByCustomerID(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAIsummaries, nil)
+			mockSvc.EXPECT().AISummaryList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedReferenceType, tt.expectedReferenceID).Return(tt.responseAIsummaries, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -170,6 +198,64 @@ func Test_GetAisummaries(t *testing.T) {
 
 			if w.Body.String() != tt.expectedRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_GetAisummaries_partialReferenceFilterRejected(t *testing.T) {
+
+	type test struct {
+		name     string
+		agent    *auth.AuthIdentity
+		reqQuery string
+	}
+
+	tests := []test{
+		{
+			name: "reference_type without reference_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ef9f2bd8-0ccd-11f0-9c5b-0b861eb38bff"),
+				},
+			}),
+			reqQuery: "/aisummaries?reference_type=recording",
+		},
+		{
+			name: "reference_id without reference_type",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ef9f2bd8-0ccd-11f0-9c5b-0b861eb38bff"),
+				},
+			}),
+			reqQuery: "/aisummaries?reference_id=1ca46b4e-0ccd-11f0-8a52-2f20e29cf20a",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			// AISummaryList must NOT be called when the pair is partial.
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			r.ServeHTTP(w, req)
+
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
 			}
 		})
 	}

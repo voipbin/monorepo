@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Route" href="route_struct_route.html"><link rel="prev" title="Route" href="route.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -813,29 +813,29 @@
 <h2>Route Configuration<a class="headerlink" href="#route-configuration" title="Link to this heading">¶</a></h2>
 <p>Configure routes with priorities and providers.</p>
 <p><strong>Create a Route</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/routes?token=&lt;token&gt;' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "customer_id": "00000000-0000-0000-0000-000000000001",
-        "name": "US Primary Route",
-        "detail": "Primary route for US outbound calls",
-        "provider_id": "provider-uuid-123",
-        "priority": 1,
-        "target": "+1"
-    }'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/routes?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;customer_id&quot;: &quot;00000000-0000-0000-0000-000000000001&quot;,
+        &quot;name&quot;: &quot;US Primary Route&quot;,
+        &quot;detail&quot;: &quot;Primary route for US outbound calls&quot;,
+        &quot;provider_id&quot;: &quot;provider-uuid-123&quot;,
+        &quot;priority&quot;: 1,
+        &quot;target&quot;: &quot;+1&quot;
+    }&#39;
 </pre></div>
 </div>
 <p><strong>Route Configuration Example</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Route</span><span class="p">:</span> <span class="s2">"US Outbound"</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Route</span><span class="p">:</span> <span class="s2">&quot;US Outbound&quot;</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">"US Primary Route"</span>                   <span class="o">|</span>
+<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;US Primary Route&quot;</span>                   <span class="o">|</span>
 <span class="o">|</span> <span class="n">provider_id</span><span class="p">:</span> <span class="n">provider</span><span class="o">-</span><span class="n">uuid</span><span class="o">-</span><span class="n">telnyx</span>          <span class="o">|</span>
 <span class="o">|</span> <span class="n">priority</span><span class="p">:</span> <span class="mi">1</span>                                <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
-<span class="n">Route</span><span class="p">:</span> <span class="s2">"US Backup"</span>
+<span class="n">Route</span><span class="p">:</span> <span class="s2">&quot;US Backup&quot;</span>
 <span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">"US Backup Route"</span>                    <span class="o">|</span>
+<span class="o">|</span> <span class="n">name</span><span class="p">:</span> <span class="s2">&quot;US Backup Route&quot;</span>                    <span class="o">|</span>
 <span class="o">|</span> <span class="n">provider_id</span><span class="p">:</span> <span class="n">provider</span><span class="o">-</span><span class="n">uuid</span><span class="o">-</span><span class="n">twilio</span>          <span class="o">|</span>
 <span class="o">|</span> <span class="n">priority</span><span class="p">:</span> <span class="mi">2</span>                                <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
@@ -1055,8 +1055,8 @@ changing route priorities</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

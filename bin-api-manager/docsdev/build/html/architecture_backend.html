@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Inter-Service Communication" href="architecture_communication.html"><link rel="prev" title="Overview" href="architecture_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Backend Microservices - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -701,7 +701,7 @@
 <span class="o">+-------------------------------------------------------------+</span>
 <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">talk</span><span class="o">-</span><span class="n">manager</span>        <span class="o">|</span>  <span class="n">Agent</span> <span class="n">UI</span> <span class="n">backend</span>                <span class="o">|</span>
 <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">hook</span><span class="o">-</span><span class="n">manager</span>        <span class="o">|</span>  <span class="n">External</span> <span class="n">webhook</span> <span class="n">gateway</span>        <span class="o">|</span>
-<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="nb">sentinel</span><span class="o">-</span><span class="n">manager</span>    <span class="o">|</span>  <span class="n">Kubernetes</span> <span class="n">pod</span> <span class="n">monitoring</span>       <span class="o">|</span>
+<span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">sentinel</span><span class="o">-</span><span class="n">manager</span>    <span class="o">|</span>  <span class="n">Kubernetes</span> <span class="n">pod</span> <span class="n">monitoring</span>       <span class="o">|</span>
 <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">route</span><span class="o">-</span><span class="n">manager</span>       <span class="o">|</span>  <span class="n">Call</span> <span class="n">routing</span> <span class="ow">and</span> <span class="n">providers</span>      <span class="o">|</span>
 <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">registrar</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>  <span class="n">SIP</span> <span class="n">registration</span> <span class="n">management</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="nb">bin</span><span class="o">-</span><span class="n">direct</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>  <span class="n">SIP</span> <span class="n">URI</span> <span class="nb">hash</span> <span class="n">routing</span> <span class="o">/</span> <span class="n">direct</span>   <span class="o">|</span>
@@ -890,7 +890,7 @@ Client                    API Gateway              Backend Service
     <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">|</span>  <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">calls</span>     <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">+---------------------&gt;&gt;</span>                        <span class="o">|</span>
-    <span class="o">|</span>                      <span class="o">|</span>  <span class="n">Parse</span><span class="p">:</span> <span class="s2">"calls"</span>        <span class="o">|</span>
+    <span class="o">|</span>                      <span class="o">|</span>  <span class="n">Parse</span><span class="p">:</span> <span class="s2">&quot;calls&quot;</span>        <span class="o">|</span>
     <span class="o">|</span>                      <span class="o">|</span>  <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>
     <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">|</span>                      <span class="o">|</span>  <span class="n">RPC</span> <span class="n">Request</span>           <span class="o">|</span>
@@ -1038,7 +1038,7 @@ Client                    API Gateway              Backend Service
 <span class="o">|</span>                         <span class="o">|</span>                                 <span class="o">|</span>
 <span class="o">|</span>                         <span class="n">v</span>                                 <span class="o">|</span>
 <span class="o">|</span>         <span class="o">+-------------------------------+</span>                 <span class="o">|</span>
-<span class="o">|</span>         <span class="o">|</span>     <span class="nb">bin</span><span class="o">-</span><span class="nb">sentinel</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>                 <span class="o">|</span>
+<span class="o">|</span>         <span class="o">|</span>     <span class="nb">bin</span><span class="o">-</span><span class="n">sentinel</span><span class="o">-</span><span class="n">manager</span>      <span class="o">|</span>                 <span class="o">|</span>
 <span class="o">|</span>         <span class="o">|</span>                               <span class="o">|</span>                 <span class="o">|</span>
 <span class="o">|</span>         <span class="o">|</span>  <span class="n">o</span> <span class="n">Pod</span> <span class="n">informers</span> <span class="p">(</span><span class="n">client</span><span class="o">-</span><span class="n">go</span><span class="p">)</span>  <span class="o">|</span>                 <span class="o">|</span>
 <span class="o">|</span>         <span class="o">|</span>  <span class="n">o</span> <span class="n">Label</span> <span class="n">selector</span> <span class="n">filtering</span>   <span class="o">|</span>                 <span class="o">|</span>
@@ -1478,14 +1478,14 @@ Client                    API Gateway              Backend Service
 <p><strong>Logging</strong></p>
 <p>All services use structured logging:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-01-20T12:00:00.000Z"</span><span class="p">,</span>
-  <span class="s2">"level"</span><span class="p">:</span> <span class="s2">"info"</span><span class="p">,</span>
-  <span class="s2">"service"</span><span class="p">:</span> <span class="s2">"bin-call-manager"</span><span class="p">,</span>
-  <span class="s2">"instance"</span><span class="p">:</span> <span class="s2">"pod-xyz"</span><span class="p">,</span>
-  <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Call created successfully"</span><span class="p">,</span>
-  <span class="s2">"call_id"</span><span class="p">:</span> <span class="s2">"abc-123-def"</span><span class="p">,</span>
-  <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-789"</span><span class="p">,</span>
-  <span class="s2">"duration_ms"</span><span class="p">:</span> <span class="mi">45</span>
+  <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="s2">&quot;bin-call-manager&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;instance&quot;</span><span class="p">:</span> <span class="s2">&quot;pod-xyz&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Call created successfully&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;abc-123-def&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-789&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;duration_ms&quot;</span><span class="p">:</span> <span class="mi">45</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1620,8 +1620,8 @@ Client                    API Gateway              Backend Service
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

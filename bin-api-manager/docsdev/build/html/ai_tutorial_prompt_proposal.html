@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="AI Voice Agent Integration" href="ai_voice_agent_integration.html"><link rel="prev" title="Tutorial" href="ai_tutorial.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial: Improve an AI Prompt from Audits - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -665,39 +665,39 @@ VoIPBin balance. Generation typically completes in 10–30 seconds.</p>
 </div>
 <section id="step-1-submit-a-proposal">
 <h3>Step 1: Submit a proposal<a class="headerlink" href="#step-1-submit-a-proposal" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/aipromptproposals?token=&lt;YOUR_AUTH_TOKEN&gt;' \
-    --header 'Content-Type: application/json' \
-    --data-raw '{
-        "ai_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "audit_ids": [
-            "11111111-1111-1111-1111-111111111111",
-            "22222222-2222-2222-2222-222222222222",
-            "33333333-3333-3333-3333-333333333333"
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/aipromptproposals?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;ai_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;audit_ids&quot;: [
+            &quot;11111111-1111-1111-1111-111111111111&quot;,
+            &quot;22222222-2222-2222-2222-222222222222&quot;,
+            &quot;33333333-3333-3333-3333-333333333333&quot;
         ],
-        "language": "en-US"
-    }'
+        &quot;language&quot;: &quot;en-US&quot;
+    }&#39;
 </pre></div>
 </div>
 <p>Response (<code class="docutils literal notranslate"><span class="pre">202</span> <span class="pre">Accepted</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"p1234567-89ab-cdef-0123-456789abcdef"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;uuid&gt;"</span><span class="p">,</span>
-    <span class="s2">"ai_id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
-    <span class="s2">"audit_ids"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"11111111-1111-1111-1111-111111111111"</span><span class="p">,</span>
-        <span class="s2">"22222222-2222-2222-2222-222222222222"</span><span class="p">,</span>
-        <span class="s2">"33333333-3333-3333-3333-333333333333"</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;p1234567-89ab-cdef-0123-456789abcdef&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;audit_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;11111111-1111-1111-1111-111111111111&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;22222222-2222-2222-2222-222222222222&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;33333333-3333-3333-3333-333333333333&quot;</span>
     <span class="p">],</span>
-    <span class="s2">"basis_prompt_history_id"</span><span class="p">:</span> <span class="s2">"&lt;uuid&gt;"</span><span class="p">,</span>
-    <span class="s2">"original_prompt"</span><span class="p">:</span> <span class="s2">"You are a helpful assistant..."</span><span class="p">,</span>
-    <span class="s2">"proposed_prompt"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"rationale"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>
-    <span class="s2">"applied_prompt_history_id"</span><span class="p">:</span> <span class="s2">"00000000-0000-0000-0000-000000000000"</span><span class="p">,</span>
-    <span class="s2">"error"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
-    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-05-29T10:30:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"9999-01-01T00:00:00.000000"</span><span class="p">,</span>
-    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"9999-01-01T00:00:00.000000"</span>
+    <span class="s2">&quot;basis_prompt_history_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;original_prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a helpful assistant...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;proposed_prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rationale&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;applied_prompt_history_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-29T10:30:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -708,17 +708,17 @@ subsequent steps.</p>
 <h3>Step 2: Poll until completed<a class="headerlink" href="#step-2-poll-until-completed" title="Link to this heading">¶</a></h3>
 <p>Generation runs in the background. Poll the proposal record until <code class="docutils literal notranslate"><span class="pre">status</span></code>
 becomes <code class="docutils literal notranslate"><span class="pre">completed</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/aipromptproposals/p1234567-89ab-cdef-0123-456789abcdef?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/aipromptproposals/p1234567-89ab-cdef-0123-456789abcdef?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Once <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">completed</span></code>, the response contains the generated
 content:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"p1234567-89ab-cdef-0123-456789abcdef"</span><span class="p">,</span>
-    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"completed"</span><span class="p">,</span>
-    <span class="s2">"original_prompt"</span><span class="p">:</span> <span class="s2">"You are a helpful assistant..."</span><span class="p">,</span>
-    <span class="s2">"proposed_prompt"</span><span class="p">:</span> <span class="s2">"You are a helpful, concise customer-service assistant. When the caller asks about pricing, restate the plan name before quoting the price..."</span><span class="p">,</span>
-    <span class="s2">"rationale"</span><span class="p">:</span> <span class="s2">"The audits show the AI frequently quoted prices without naming the plan, leading to caller confusion. The proposed prompt adds an explicit instruction to restate the plan name before any price."</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;p1234567-89ab-cdef-0123-456789abcdef&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;original_prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a helpful assistant...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;proposed_prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a helpful, concise customer-service assistant. When the caller asks about pricing, restate the plan name before quoting the price...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rationale&quot;</span><span class="p">:</span> <span class="s2">&quot;The audits show the AI frequently quoted prices without naming the plan, leading to caller confusion. The proposed prompt adds an explicit instruction to restate the plan name before any price.&quot;</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -736,7 +736,7 @@ and present it for human review.</p>
 <section id="step-4-accept-apply-or-reject">
 <h3>Step 4: Accept (apply) or Reject<a class="headerlink" href="#step-4-accept-apply-or-reject" title="Link to this heading">¶</a></h3>
 <p>To apply the proposed prompt to the AI:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/aipromptproposals/p1234567-89ab-cdef-0123-456789abcdef/accept?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/aipromptproposals/p1234567-89ab-cdef-0123-456789abcdef/accept?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Response (<code class="docutils literal notranslate"><span class="pre">200</span> <span class="pre">OK</span></code>): the updated proposal record with
@@ -744,7 +744,7 @@ and present it for human review.</p>
 AI’s <code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> and <code class="docutils literal notranslate"><span class="pre">current_prompt_history_id</span></code> are updated in the
 same transaction; subsequent calls will use the new prompt.</p>
 <p>To dismiss the proposal without applying it:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/aipromptproposals/p1234567-89ab-cdef-0123-456789abcdef/reject?token=&lt;YOUR_AUTH_TOKEN&gt;'
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/aipromptproposals/p1234567-89ab-cdef-0123-456789abcdef/reject?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>Response (<code class="docutils literal notranslate"><span class="pre">200</span> <span class="pre">OK</span></code>): the updated proposal record with
@@ -849,8 +849,8 @@ full field reference and <a class="reference internal" href="ai_overview.html#ai
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

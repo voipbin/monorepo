@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="AI" href="ai_struct_ai.html"><link rel="prev" title="AI" href="ai.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -812,8 +812,8 @@
           <span class="o">|</span>                            <span class="o">|</span>                          <span class="o">|</span>
 <span class="o">+---------</span><span class="n">v</span><span class="o">---------+</span>                  <span class="o">|</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="n">TTS</span> <span class="n">audio</span> <span class="n">plays</span>  <span class="o">|</span>                  <span class="o">|</span>                          <span class="o">|</span>
-<span class="o">|</span>  <span class="s2">"I can help you  |                  |                          |</span>
-<span class="o">|</span>   <span class="k">with</span> <span class="n">that</span><span class="o">...</span><span class="s2">"   |                  |                          |</span>
+<span class="o">|</span>  <span class="s2">&quot;I can help you  |                  |                          |</span>
+<span class="o">|</span>   <span class="k">with</span> <span class="n">that</span><span class="o">...</span><span class="s2">&quot;   |                  |                          |</span>
 <span class="o">+-------------------+</span>                  <span class="o">|</span>                          <span class="o">|</span>
           <span class="o">|</span>                            <span class="o">|</span>                          <span class="o">|</span>
           <span class="o">|</span>  <span class="o">&lt;----</span> <span class="n">Voice</span> <span class="n">detected</span> <span class="o">----&gt;|</span>                          <span class="o">|</span>
@@ -827,9 +827,9 @@
                                        <span class="o">|</span>                          <span class="o">|</span>
                               <span class="o">+--------</span><span class="n">v</span><span class="o">--------+</span>                 <span class="o">|</span>
                               <span class="o">|</span> <span class="n">User</span> <span class="n">speaks</span><span class="p">:</span>    <span class="o">|</span>                 <span class="o">|</span>
-                              <span class="o">|</span> <span class="s2">"Actually, I    |                 |</span>
+                              <span class="o">|</span> <span class="s2">&quot;Actually, I    |                 |</span>
                               <span class="o">|</span>  <span class="n">need</span> <span class="n">help</span> <span class="k">with</span> <span class="o">|</span>                 <span class="o">|</span>
-                              <span class="o">|</span>  <span class="n">something</span> <span class="k">else</span><span class="s2">"|                 |</span>
+                              <span class="o">|</span>  <span class="n">something</span> <span class="k">else</span><span class="s2">&quot;|                 |</span>
                               <span class="o">+--------+--------+</span>                 <span class="o">|</span>
                                        <span class="o">|</span>                          <span class="o">|</span>
                                        <span class="o">|</span> <span class="n">STT</span> <span class="o">-&gt;</span> <span class="n">LLM</span>               <span class="o">|</span>
@@ -864,8 +864,8 @@
 
 <span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">User</span> <span class="n">makes</span> <span class="n">request</span>
 <span class="o">+-------------------+</span>
-<span class="o">|</span> <span class="s2">"Transfer me to   |</span>
-<span class="o">|</span>  <span class="n">sales</span> <span class="n">please</span><span class="s2">"    |</span>
+<span class="o">|</span> <span class="s2">&quot;Transfer me to   |</span>
+<span class="o">|</span>  <span class="n">sales</span> <span class="n">please</span><span class="s2">&quot;    |</span>
 <span class="o">+--------+----------+</span>
          <span class="o">|</span>
          <span class="n">v</span>
@@ -908,8 +908,8 @@
 <span class="n">Step</span> <span class="mi">6</span><span class="p">:</span> <span class="n">AI</span> <span class="n">Response</span>
 <span class="o">+-------------------+</span>
 <span class="o">|</span> <span class="n">LLM</span> <span class="n">generates</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="s2">"Connecting you   |</span>
-<span class="o">|</span>  <span class="n">to</span> <span class="n">sales</span> <span class="n">now</span><span class="o">...</span><span class="s2">" |</span>
+<span class="o">|</span> <span class="s2">&quot;Connecting you   |</span>
+<span class="o">|</span>  <span class="n">to</span> <span class="n">sales</span> <span class="n">now</span><span class="o">...</span><span class="s2">&quot; |</span>
 <span class="o">+--------+----------+</span>
          <span class="o">|</span>
          <span class="n">v</span>
@@ -1056,13 +1056,13 @@ where it belongs permanently.</p></li>
 <h2>Configuring Tools<a class="headerlink" href="#configuring-tools" title="Link to this heading">¶</a></h2>
 <p>Tools are configured per-AI using the <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> field (Array of String):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Enable</span> <span class="nb">all</span> <span class="n">tools</span>
-<span class="s2">"tool_names"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"all"</span><span class="p">]</span>
+<span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]</span>
 
 <span class="o">//</span> <span class="n">Enable</span> <span class="n">specific</span> <span class="n">tools</span> <span class="n">only</span>
-<span class="s2">"tool_names"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"connect_call"</span><span class="p">,</span> <span class="s2">"send_email"</span><span class="p">,</span> <span class="s2">"stop_service"</span><span class="p">]</span>
+<span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;connect_call&quot;</span><span class="p">,</span> <span class="s2">&quot;send_email&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_service&quot;</span><span class="p">]</span>
 
 <span class="o">//</span> <span class="n">Disable</span> <span class="nb">all</span> <span class="n">tools</span> <span class="p">(</span><span class="n">conversation</span><span class="o">-</span><span class="n">only</span><span class="p">)</span>
-<span class="s2">"tool_names"</span><span class="p">:</span> <span class="p">[]</span>
+<span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[]</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -1427,16 +1427,16 @@ fault.</p></li>
 <h1>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h1>
 <p><strong>Scenario 1: Customer Service Agent</strong></p>
 <p>AI handles routine customer inquiries with tool actions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span><span class="p">:</span> <span class="s2">"I want to check my order status"</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span><span class="p">:</span> <span class="s2">&quot;I want to check my order status&quot;</span>
      <span class="o">|</span>
      <span class="n">v</span>
 <span class="o">+---------------------------+</span>
-<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">"I'd be happy to help.|</span>
-<span class="o">|</span> <span class="n">What</span><span class="s1">'s your order number?"|</span>
+<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">&quot;I&#39;d be happy to help.|</span>
+<span class="o">|</span> <span class="n">What</span><span class="s1">&#39;s your order number?&quot;|</span>
 <span class="o">+---------------------------+</span>
      <span class="o">|</span>
      <span class="n">v</span>
-<span class="n">Caller</span><span class="p">:</span> <span class="s2">"Order 12345"</span>
+<span class="n">Caller</span><span class="p">:</span> <span class="s2">&quot;Order 12345&quot;</span>
      <span class="o">|</span>
      <span class="n">v</span>
 <span class="o">+---------------------------+</span>
@@ -1447,9 +1447,9 @@ fault.</p></li>
      <span class="o">|</span>
      <span class="n">v</span>
 <span class="o">+---------------------------+</span>
-<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">"Your order shipped   |</span>
+<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">&quot;Your order shipped   |</span>
 <span class="o">|</span> <span class="n">yesterday</span> <span class="ow">and</span> <span class="n">will</span> <span class="n">arrive</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">by</span> <span class="n">Friday</span><span class="o">.</span><span class="s2">"               |</span>
+<span class="o">|</span> <span class="n">by</span> <span class="n">Friday</span><span class="o">.</span><span class="s2">&quot;               |</span>
 <span class="o">+---------------------------+</span>
 </pre></div>
 </div>
@@ -1459,16 +1459,16 @@ fault.</p></li>
 <span class="o">|</span> <span class="n">AI</span> <span class="n">Interaction</span>                                 <span class="o">|</span>
 <span class="o">+------------------------------------------------+</span>
 <span class="o">|</span>                                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">"Welcome! How can I help you today?"</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">&quot;Welcome! How can I help you today?&quot;</span>       <span class="o">|</span>
 <span class="o">|</span>                                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Caller</span><span class="p">:</span> <span class="s2">"I need to schedule an appointment"</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Caller</span><span class="p">:</span> <span class="s2">&quot;I need to schedule an appointment&quot;</span>    <span class="o">|</span>
 <span class="o">|</span>                                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">"What day works best for you?"</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">&quot;What day works best for you?&quot;</span>             <span class="o">|</span>
 <span class="o">|</span>                                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Caller</span><span class="p">:</span> <span class="s2">"Next Tuesday afternoon"</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Caller</span><span class="p">:</span> <span class="s2">&quot;Next Tuesday afternoon&quot;</span>               <span class="o">|</span>
 <span class="o">|</span>                                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">"Let me transfer you to our scheduling     |</span>
-<span class="o">|</span>      <span class="n">team</span> <span class="k">with</span> <span class="n">this</span> <span class="n">information</span><span class="o">.</span><span class="s2">"              |</span>
+<span class="o">|</span> <span class="n">AI</span><span class="p">:</span> <span class="s2">&quot;Let me transfer you to our scheduling     |</span>
+<span class="o">|</span>      <span class="n">team</span> <span class="k">with</span> <span class="n">this</span> <span class="n">information</span><span class="o">.</span><span class="s2">&quot;              |</span>
 <span class="o">|</span>                                                <span class="o">|</span>
 <span class="o">|</span> <span class="p">[</span><span class="n">Tool</span><span class="p">:</span> <span class="n">set_variables</span><span class="p">(</span><span class="n">preferred_date</span><span class="p">,</span> <span class="n">time</span><span class="p">)]</span>    <span class="o">|</span>
 <span class="o">|</span> <span class="p">[</span><span class="n">Tool</span><span class="p">:</span> <span class="n">connect_call</span><span class="p">(</span><span class="n">scheduling_queue</span><span class="p">)]</span>         <span class="o">|</span>
@@ -1481,18 +1481,18 @@ fault.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AI</span> <span class="n">Flow</span><span class="p">:</span>
 
 <span class="mf">1.</span> <span class="n">Greeting</span> <span class="o">+</span> <span class="n">consent</span>
-   <span class="s2">"This is a brief satisfaction survey. May I continue?"</span>
+   <span class="s2">&quot;This is a brief satisfaction survey. May I continue?&quot;</span>
 
 <span class="mf">2.</span> <span class="n">Question</span> <span class="mi">1</span> <span class="p">(</span><span class="n">scale</span><span class="p">)</span>
-   <span class="s2">"On a scale of 1-10, how satisfied are you?"</span>
+   <span class="s2">&quot;On a scale of 1-10, how satisfied are you?&quot;</span>
    <span class="p">[</span><span class="n">Tool</span><span class="p">:</span> <span class="n">set_variables</span><span class="p">(</span><span class="n">q1_score</span><span class="p">)]</span>
 
 <span class="mf">3.</span> <span class="n">Question</span> <span class="mi">2</span> <span class="p">(</span><span class="nb">open</span><span class="o">-</span><span class="n">ended</span><span class="p">)</span>
-   <span class="s2">"What could we improve?"</span>
+   <span class="s2">&quot;What could we improve?&quot;</span>
    <span class="p">[</span><span class="n">Tool</span><span class="p">:</span> <span class="n">set_variables</span><span class="p">(</span><span class="n">q2_feedback</span><span class="p">)]</span>
 
 <span class="mf">4.</span> <span class="n">Thank</span> <span class="n">you</span> <span class="o">+</span> <span class="n">end</span>
-   <span class="s2">"Thank you for your feedback!"</span>
+   <span class="s2">&quot;Thank you for your feedback!&quot;</span>
    <span class="p">[</span><span class="n">Tool</span><span class="p">:</span> <span class="n">stop_service</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -1706,8 +1706,8 @@ AI interactions occur on the associated call leg.</p>
 <p><strong>Response</strong> — 200 OK</p>
 <p>Returns the terminated AI call object.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"&lt;uuid&gt;"</span><span class="p">,</span>
-    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"&lt;uuid&gt;"</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">,</span>
     <span class="o">...</span>
 <span class="p">}</span>
 </pre></div>
@@ -1747,8 +1747,8 @@ If you only need to audit specific calls, leave it <code class="docutils literal
 <p>Requests the creation of one or more audit records for a completed AI call.</p>
 <p><strong>Request body</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"aicall_id"</span><span class="p">:</span> <span class="s2">"&lt;UUID of the AI call to audit&gt;"</span><span class="p">,</span>
-    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"&lt;BCP47 language code, e.g. en-US&gt;"</span>
+    <span class="s2">&quot;aicall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;UUID of the AI call to audit&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;BCP47 language code, e.g. en-US&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1758,7 +1758,7 @@ If you only need to audit specific calls, leave it <code class="docutils literal
 </ul>
 <p><strong>Response</strong> — 202 Accepted</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"result"</span><span class="p">:</span> <span class="p">[</span> <span class="o">&lt;</span><span class="n">AIAudit</span> <span class="nb">object</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span> <span class="p">]</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="o">&lt;</span><span class="n">AIAudit</span> <span class="nb">object</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span> <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1825,9 +1825,9 @@ VoIPBin writes a new <code class="docutils literal notranslate"><span class="pre
 <code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> for the target AI.</p>
 <p><strong>Request body</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">"ai_id"</span><span class="p">:</span> <span class="s2">"&lt;UUID of the AI to improve&gt;"</span><span class="p">,</span>
-    <span class="s2">"audit_ids"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"&lt;UUID&gt;"</span><span class="p">,</span> <span class="s2">"&lt;UUID&gt;"</span><span class="p">,</span> <span class="s2">"..."</span><span class="p">],</span>
-    <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"&lt;BCP47 language code, e.g. en-US&gt;"</span>
+    <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;UUID of the AI to improve&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;audit_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;UUID&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;UUID&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;...&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;BCP47 language code, e.g. en-US&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1970,8 +1970,8 @@ end-to-end walkthrough.</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

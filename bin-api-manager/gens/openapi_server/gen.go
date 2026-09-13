@@ -8338,6 +8338,12 @@ type GetAisummariesParams struct {
 
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ReferenceType Filter by the reference type of the origin resource. Must be supplied together with reference_id; supplying only one of the two returns a 400 error.
+	ReferenceType *AIManagerSummaryReferenceType `form:"reference_type,omitempty" json:"reference_type,omitempty"`
+
+	// ReferenceId Filter by the ID of the origin resource (e.g. a recording ID returned from `GET /recordings`). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.
+	ReferenceId *openapi_types.UUID `form:"reference_id,omitempty" json:"reference_id,omitempty"`
 }
 
 // PostAisummariesJSONBody defines parameters for PostAisummaries.
@@ -14071,6 +14077,22 @@ func (siw *ServerInterfaceWrapper) GetAisummaries(c *gin.Context) {
 	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_type" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "reference_type", c.Request.URL.Query(), &params.ReferenceType, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -28686,6 +28708,20 @@ func (response GetAisummaries200JSONResponse) VisitGetAisummariesResponse(w http
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAisummaries400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetAisummaries400JSONResponse) VisitGetAisummariesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
 	_, err := buf.WriteTo(w)
 	return err
 }

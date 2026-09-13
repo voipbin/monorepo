@@ -413,7 +413,7 @@ type ServiceHandler interface {
 		referenceID uuid.UUID,
 		language string,
 	) (*amsummary.WebhookMessage, error)
-	AISummaryGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amsummary.WebhookMessage, error)
+	AISummaryList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*amsummary.WebhookMessage, error)
 	AISummaryGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amsummary.WebhookMessage, error)
 	AISummaryDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amsummary.WebhookMessage, error)
 

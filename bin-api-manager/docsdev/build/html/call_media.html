@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Call Troubleshooting" href="call_troubleshooting.html"><link rel="prev" title="Advanced Call Scenarios" href="call_scenarios.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Call Media and Codecs - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -922,21 +922,21 @@
 <p><strong>DTMF in Flow Actions:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sending</span> <span class="n">DTMF</span> <span class="p">(</span><span class="n">flow</span> <span class="n">action</span><span class="p">):</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"digits_send"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"digits"</span><span class="p">:</span> <span class="s2">"1234#"</span><span class="p">,</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span>      <span class="o">//</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">digit</span> <span class="n">tone</span> <span class="p">(</span><span class="mi">100</span><span class="o">-</span><span class="mi">1000</span><span class="p">)</span>
-        <span class="s2">"interval"</span><span class="p">:</span> <span class="mi">100</span>       <span class="o">//</span> <span class="n">ms</span> <span class="n">between</span> <span class="n">digits</span> <span class="p">(</span><span class="mi">0</span><span class="o">-</span><span class="mi">5000</span><span class="p">)</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;1234#&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span>      <span class="o">//</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">digit</span> <span class="n">tone</span> <span class="p">(</span><span class="mi">100</span><span class="o">-</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">100</span>       <span class="o">//</span> <span class="n">ms</span> <span class="n">between</span> <span class="n">digits</span> <span class="p">(</span><span class="mi">0</span><span class="o">-</span><span class="mi">5000</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
 <span class="n">Receiving</span> <span class="n">DTMF</span> <span class="p">(</span><span class="n">flow</span> <span class="n">action</span><span class="p">):</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"digits_receive"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"length"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>          <span class="o">//</span> <span class="n">Number</span> <span class="n">of</span> <span class="n">DTMF</span> <span class="n">events</span> <span class="n">to</span> <span class="n">gather</span> <span class="n">before</span> <span class="n">continuing</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>    <span class="o">//</span> <span class="n">Timeout</span> <span class="n">ms</span>
-        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"#"</span>            <span class="o">//</span> <span class="n">DTMF</span> <span class="n">that</span> <span class="n">ends</span> <span class="n">collection</span> <span class="n">early</span> <span class="ow">and</span> <span class="n">triggers</span> <span class="n">the</span> <span class="nb">next</span> <span class="n">step</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>          <span class="o">//</span> <span class="n">Number</span> <span class="n">of</span> <span class="n">DTMF</span> <span class="n">events</span> <span class="n">to</span> <span class="n">gather</span> <span class="n">before</span> <span class="n">continuing</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>    <span class="o">//</span> <span class="n">Timeout</span> <span class="n">ms</span>
+        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;#&quot;</span>            <span class="o">//</span> <span class="n">DTMF</span> <span class="n">that</span> <span class="n">ends</span> <span class="n">collection</span> <span class="n">early</span> <span class="ow">and</span> <span class="n">triggers</span> <span class="n">the</span> <span class="nb">next</span> <span class="n">step</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -965,19 +965,19 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">Options</span> <span class="p">(</span><span class="n">flow</span> <span class="n">action</span><span class="p">):</span>
 
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_start"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"wav"</span><span class="p">,</span>           <span class="o">//</span> <span class="n">only</span> <span class="s2">"wav"</span> <span class="ow">is</span> <span class="n">currently</span> <span class="n">supported</span>
-        <span class="s2">"end_of_silence"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>       <span class="o">//</span> <span class="n">seconds</span> <span class="n">of</span> <span class="n">silence</span> <span class="n">before</span> <span class="n">auto</span><span class="o">-</span><span class="n">stop</span><span class="o">.</span> <span class="mi">0</span> <span class="o">=</span> <span class="n">no</span> <span class="n">limit</span>
-        <span class="s2">"end_of_key"</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">,</span>      <span class="o">//</span> <span class="n">DTMF</span> <span class="n">that</span> <span class="n">stops</span> <span class="n">the</span> <span class="n">recording</span><span class="p">:</span> <span class="s2">"none"</span><span class="p">,</span> <span class="s2">"any"</span><span class="p">,</span> <span class="s2">"*"</span><span class="p">,</span> <span class="s2">"#"</span>
-        <span class="s2">"duration"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>             <span class="o">//</span> <span class="n">maximum</span> <span class="n">recording</span> <span class="n">duration</span> <span class="ow">in</span> <span class="n">seconds</span><span class="o">.</span> <span class="mi">0</span> <span class="o">=</span> <span class="n">no</span> <span class="n">limit</span>
-        <span class="s2">"beep_start"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>       <span class="o">//</span> <span class="n">play</span> <span class="n">a</span> <span class="n">beep</span> <span class="n">when</span> <span class="n">the</span> <span class="n">recording</span> <span class="n">begins</span>
-        <span class="s2">"on_end_flow_id"</span><span class="p">:</span> <span class="s2">""</span>       <span class="o">//</span> <span class="n">flow</span> <span class="n">to</span> <span class="n">execute</span> <span class="n">when</span> <span class="n">the</span> <span class="n">recording</span> <span class="n">ends</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;wav&quot;</span><span class="p">,</span>           <span class="o">//</span> <span class="n">only</span> <span class="s2">&quot;wav&quot;</span> <span class="ow">is</span> <span class="n">currently</span> <span class="n">supported</span>
+        <span class="s2">&quot;end_of_silence&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>       <span class="o">//</span> <span class="n">seconds</span> <span class="n">of</span> <span class="n">silence</span> <span class="n">before</span> <span class="n">auto</span><span class="o">-</span><span class="n">stop</span><span class="o">.</span> <span class="mi">0</span> <span class="o">=</span> <span class="n">no</span> <span class="n">limit</span>
+        <span class="s2">&quot;end_of_key&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>      <span class="o">//</span> <span class="n">DTMF</span> <span class="n">that</span> <span class="n">stops</span> <span class="n">the</span> <span class="n">recording</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="s2">&quot;any&quot;</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;#&quot;</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>             <span class="o">//</span> <span class="n">maximum</span> <span class="n">recording</span> <span class="n">duration</span> <span class="ow">in</span> <span class="n">seconds</span><span class="o">.</span> <span class="mi">0</span> <span class="o">=</span> <span class="n">no</span> <span class="n">limit</span>
+        <span class="s2">&quot;beep_start&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>       <span class="o">//</span> <span class="n">play</span> <span class="n">a</span> <span class="n">beep</span> <span class="n">when</span> <span class="n">the</span> <span class="n">recording</span> <span class="n">begins</span>
+        <span class="s2">&quot;on_end_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>       <span class="o">//</span> <span class="n">flow</span> <span class="n">to</span> <span class="n">execute</span> <span class="n">when</span> <span class="n">the</span> <span class="n">recording</span> <span class="n">ends</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"recording_stop"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording_stop&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1016,12 +1016,12 @@
 
 <span class="n">TTS</span> <span class="n">Action</span> <span class="n">Example</span><span class="p">:</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hello, welcome to our service."</span><span class="p">,</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
-        <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"gcp"</span><span class="p">,</span>                  <span class="o">//</span> <span class="n">Optional</span><span class="p">:</span> <span class="s2">"gcp"</span> <span class="ow">or</span> <span class="s2">"aws"</span>
-        <span class="s2">"voice_id"</span><span class="p">:</span> <span class="s2">"en-US-Neural2-C"</span>       <span class="o">//</span> <span class="n">Optional</span><span class="p">:</span> <span class="n">provider</span><span class="o">-</span><span class="n">specific</span> <span class="n">voice</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, welcome to our service.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span><span class="p">,</span>                  <span class="o">//</span> <span class="n">Optional</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span> <span class="ow">or</span> <span class="s2">&quot;aws&quot;</span>
+        <span class="s2">&quot;voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US-Neural2-C&quot;</span>       <span class="o">//</span> <span class="n">Optional</span><span class="p">:</span> <span class="n">provider</span><span class="o">-</span><span class="n">specific</span> <span class="n">voice</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1031,18 +1031,18 @@
 
 <span class="n">Basic</span> <span class="n">Example</span><span class="p">:</span>
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"talk"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"&lt;speak&gt;Your balance is &lt;say-as interpret-as='currency'&gt;$123.45&lt;/say-as&gt;&lt;/speak&gt;"</span><span class="p">,</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;speak&gt;Your balance is &lt;say-as interpret-as=&#39;currency&#39;&gt;$123.45&lt;/say-as&gt;&lt;/speak&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
 <span class="n">Common</span> <span class="n">SSML</span> <span class="n">Tags</span><span class="p">:</span>
 <span class="o">+------------------------------------------+</span>
-<span class="o">|</span> <span class="o">&lt;</span><span class="k">break</span> <span class="n">time</span><span class="o">=</span><span class="s1">'500ms'</span><span class="o">/&gt;</span>  <span class="o">-</span> <span class="n">Pause</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;</span><span class="k">break</span> <span class="n">time</span><span class="o">=</span><span class="s1">&#39;500ms&#39;</span><span class="o">/&gt;</span>  <span class="o">-</span> <span class="n">Pause</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="o">&lt;</span><span class="n">emphasis</span><span class="o">&gt;</span>            <span class="o">-</span> <span class="n">Stress</span> <span class="n">word</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="o">&lt;</span><span class="n">prosody</span> <span class="n">rate</span><span class="o">=</span><span class="s1">'slow'</span><span class="o">&gt;</span> <span class="o">-</span> <span class="n">Speed</span> <span class="n">control</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="o">&lt;</span><span class="n">prosody</span> <span class="n">rate</span><span class="o">=</span><span class="s1">&#39;slow&#39;</span><span class="o">&gt;</span> <span class="o">-</span> <span class="n">Speed</span> <span class="n">control</span>    <span class="o">|</span>
 <span class="o">|</span> <span class="o">&lt;</span><span class="n">say</span><span class="o">-</span><span class="k">as</span><span class="o">&gt;</span>              <span class="o">-</span> <span class="n">Format</span> <span class="n">numbers</span>   <span class="o">|</span>
 <span class="o">|</span> <span class="o">&lt;</span><span class="n">phoneme</span><span class="o">&gt;</span>             <span class="o">-</span> <span class="n">Pronunciation</span>    <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
@@ -1055,12 +1055,12 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">STT</span> <span class="n">Configuration</span><span class="p">:</span>
 
 <span class="p">{</span>
-    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"transcribe_start"</span><span class="p">,</span>
-    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"language"</span><span class="p">:</span> <span class="s2">"en-US"</span><span class="p">,</span>
-        <span class="s2">"direction"</span><span class="p">:</span> <span class="s2">"both"</span><span class="p">,</span>         <span class="o">//</span> <span class="s2">"in"</span><span class="p">,</span> <span class="s2">"out"</span><span class="p">,</span> <span class="s2">"both"</span><span class="o">.</span> <span class="n">default</span><span class="p">:</span> <span class="s2">"both"</span>
-        <span class="s2">"provider"</span><span class="p">:</span> <span class="s2">"gcp"</span><span class="p">,</span>           <span class="o">//</span> <span class="s2">"gcp"</span> <span class="ow">or</span> <span class="s2">"aws"</span>
-        <span class="s2">"on_end_flow_id"</span><span class="p">:</span> <span class="s2">""</span>         <span class="o">//</span> <span class="n">Optional</span><span class="p">:</span> <span class="n">flow</span> <span class="n">to</span> <span class="n">execute</span> <span class="n">when</span> <span class="n">transcription</span> <span class="n">ends</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_start&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>         <span class="o">//</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="o">.</span> <span class="n">default</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span><span class="p">,</span>           <span class="o">//</span> <span class="s2">&quot;gcp&quot;</span> <span class="ow">or</span> <span class="s2">&quot;aws&quot;</span>
+        <span class="s2">&quot;on_end_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>         <span class="o">//</span> <span class="n">Optional</span><span class="p">:</span> <span class="n">flow</span> <span class="n">to</span> <span class="n">execute</span> <span class="n">when</span> <span class="n">transcription</span> <span class="n">ends</span>
     <span class="p">}</span>
 <span class="p">}</span>
 
@@ -1076,7 +1076,7 @@
 
 <span class="mf">1.</span> <span class="n">Correct</span> <span class="n">Language</span><span class="p">:</span>
    <span class="o">+------------------------------------------+</span>
-   <span class="o">|</span> <span class="n">Specify</span> <span class="n">exact</span> <span class="n">locale</span><span class="p">:</span> <span class="s2">"en-US"</span> <span class="n">vs</span> <span class="s2">"en-GB"</span> <span class="o">|</span>
+   <span class="o">|</span> <span class="n">Specify</span> <span class="n">exact</span> <span class="n">locale</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span> <span class="n">vs</span> <span class="s2">&quot;en-GB&quot;</span> <span class="o">|</span>
    <span class="o">|</span> <span class="n">Affects</span> <span class="n">vocabulary</span> <span class="ow">and</span> <span class="n">accent</span> <span class="n">models</span>     <span class="o">|</span>
    <span class="o">+------------------------------------------+</span>
 
@@ -1259,8 +1259,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

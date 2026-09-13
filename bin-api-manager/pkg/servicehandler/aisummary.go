@@ -94,9 +94,17 @@ func (h *serviceHandler) aisummaryGet(ctx context.Context, id uuid.UUID) (*amsum
 	return res, nil
 }
 
-// AISummaryGetsByCustomerID gets the list of aisummaries of the given customer id.
+// AISummaryList gets the list of aisummaries of the authenticated customer.
 // It returns list of aisummaries if it succeed.
-func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amsummary.WebhookMessage, error) {
+// If referenceType/referenceID are both provided, results are additionally
+// filtered to summaries originating from that specific resource (e.g. a
+// recording). Note a single reference can have multiple summaries (e.g.
+// regenerated summaries), so this can return more than one item even when
+// scoped to a single reference.
+// The caller (server/aisummaries.go) is expected to reject a partial pair
+// (only one of referenceType/referenceID non-zero) before calling this;
+// this function does not itself validate pairing.
+func (h *serviceHandler) AISummaryList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*amsummary.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
@@ -113,6 +121,12 @@ func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *auth.
 	filters := map[string]string{
 		"deleted":     "false", // we don't need deleted items
 		"customer_id": a.CustomerID.String(),
+	}
+	if referenceType != "" {
+		filters["reference_type"] = referenceType
+	}
+	if referenceID != uuid.Nil {
+		filters["reference_id"] = referenceID.String()
 	}
 
 	// Convert string filters to typed filters

@@ -301,6 +301,45 @@ Real-time summaries provide:
 - **Agent Assistance**: Provides context to agents joining mid-call
 - **Call Monitoring**: Enables supervisors to quickly understand ongoing calls
 
+Retrieving Summaries for a Reference
+------------------------------------
+
+You can list the AI summaries tied to a specific origin resource (for example a
+recording) by filtering ``GET /aisummaries`` with ``reference_type`` and
+``reference_id``. Both parameters must be supplied together; supplying only one
+of the two returns a ``400`` error. A single reference can have more than one
+summary (for example, a regenerated summary), so this endpoint always returns a
+list.
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/aisummaries?reference_type=recording&reference_id=5e4a0680-804e-11ec-8477-2fea5968d85b&token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "result": [
+            {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "customer_id": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d",
+                "reference_type": "recording",
+                "reference_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "status": "done",
+                "language": "en-US",
+                "content": "The caller reported a billing issue...",
+                "tm_create": "2024-04-01 07:22:07.229309",
+                "tm_update": "2024-04-01 07:22:12.500000",
+                "tm_delete": "9999-01-01 00:00:00.000000"
+            }
+        ],
+        "next_page_token": "2024-04-01 07:22:07.229309"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   Summary generation is asynchronous. Immediately after ``POST /aisummaries``,
+   the summary's ``status`` is ``progressing`` and ``content`` is empty; poll
+   ``GET /aisummaries`` (with the reference filter) until ``status`` becomes
+   ``done`` to read the generated ``content``.
+
 Best Practices
 --------------
 
