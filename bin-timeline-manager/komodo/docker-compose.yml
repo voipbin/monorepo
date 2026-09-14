@@ -1,9 +1,10 @@
 # Komodo Stack definition for bin-timeline-manager (VOIP-1349, Tier 3
 # rollout). See docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md
 # for the shared design (pattern proven by VOIP-1342/bin-call-manager and
-# VOIP-1347/VOIP-1348). NOTE: unlike every other bin-*-manager service,
-# timeline-manager depends on clickhouse, not db/redis - no DATABASE_DSN
-# or REDIS_ADDRESS here.
+# VOIP-1347/VOIP-1348). NOTE: timeline-manager depends on clickhouse for
+# event ingestion AND MySQL (DATABASE_DSN) for the activeflow analysis
+# store (VOIP-1197) - omitting DATABASE_DSN silently disables all
+# /v1/analyses routes with 503 (VOIP-1524). It does not use Redis.
 services:
   timeline-manager:
     image: voipbin/bin-timeline-manager:__IMAGE_TAG__
@@ -21,6 +22,7 @@ services:
     deploy:
       replicas: 2
     environment:
+      - DATABASE_DSN=[[BIN_MANAGER__DATABASE_DSN_BIN]]
       - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
       - CLICKHOUSE_ADDRESS=[[BIN_MANAGER__CLICKHOUSE_ADDRESS]]
       - CLICKHOUSE_DATABASE=[[BIN_MANAGER__CLICKHOUSE_DATABASE]]

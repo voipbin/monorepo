@@ -61,6 +61,10 @@ kubectl logs -n voipbin -l app=timeline-manager --tail=200 | grep -E "ERROR|batc
 | `homer_api_address` / `HOMER_API_ADDRESS` | Homer SIP analysis API endpoint | optional |
 | `homer_auth_token` / `HOMER_AUTH_TOKEN` | Homer API authentication token | optional |
 | `gcs_bucket_name` / `GCS_BUCKET_NAME` | GCS bucket for PCAP archival | optional |
+| `database_dsn` / `DATABASE_DSN` | MySQL DSN for the activeflow analysis store (VOIP-1197). Optional, but when unset ALL `/v1/analyses` routes return 503 and the analysis feature is disabled — production must set it | optional (required for analysis) |
+| `analysis_model_stage1` / `ANALYSIS_MODEL_STAGE1` | LLM model for analysis stage 1 (inventory). Unset falls back to the ai-manager gateway default (`gemini-2.5-flash`) | optional |
+| `analysis_model_stage2` / `ANALYSIS_MODEL_STAGE2` | LLM model for analysis stage 2 (content). Same fallback | optional |
+| `analysis_model_stage3` / `ANALYSIS_MODEL_STAGE3` | LLM model for analysis stage 3 (diagnosis). Same fallback | optional |
 | `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics HTTP path | `/metrics` |
 | `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 
@@ -84,8 +88,14 @@ Komodo-managed (VOIP-1349), same mechanism as the other `bin-*-manager` services
 template this one extends). Deployed via `.circleci/scripts/render-image-tag.sh`
 + `.circleci/scripts/komodo-api-deploy.sh` from `komodo/docker-compose.yml`.
 
-Unlike most `bin-*-manager` services, timeline-manager does not use MySQL/Redis
-at all — its Komodo Variables are `RABBITMQ_ADDRESS`, `CLICKHOUSE_ADDRESS`,
-`CLICKHOUSE_DATABASE`, `HOMER_API_ADDRESS`, `HOMER_AUTH_TOKEN`. `GCS_BUCKET_NAME`
+Unlike most `bin-*-manager` services, timeline-manager does not use Redis, and
+its event-ingestion store is ClickHouse. It DOES additionally use MySQL for the
+activeflow analysis store (VOIP-1197): `DATABASE_DSN` must be set in production
+(mapped from the shared `BIN_MANAGER__DATABASE_DSN_BIN` Komodo Variable, the
+same mapping the retired GKE manifest used) or every `/v1/analyses` route
+returns 503 (VOIP-1524 was exactly this omission). Its environment variables
+(each mapped from the corresponding `BIN_MANAGER__*` Komodo Variable) are
+`RABBITMQ_ADDRESS`, `CLICKHOUSE_ADDRESS`, `CLICKHOUSE_DATABASE`,
+`HOMER_API_ADDRESS`, `HOMER_AUTH_TOKEN`, `DATABASE_DSN`. `GCS_BUCKET_NAME`
 (PCAP archival) is optional and not currently set in production, so it is
 omitted from the Komodo compose file too.
