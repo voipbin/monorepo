@@ -40,6 +40,8 @@ const (
 	defaultRecordingBucketName        = ""
 	defaultRecordingAsteriskDirectory = "/var/spool/asterisk/recording"
 	defaultRecordingBucketDirectory   = "/mnt/media/recording"
+
+	defaultGoogleApplicationCredentialsJSON = ""
 )
 
 // proces init
@@ -83,6 +85,8 @@ func initVariable() {
 	pflag.String("recording_bucket_name", defaultRecordingBucketName, "recording bucket name")
 	pflag.String("recording_asterisk_directory", defaultRecordingAsteriskDirectory, "recording directory of the Asterisk server")
 	pflag.String("recording_bucket_directory", defaultRecordingBucketDirectory, "recording directory of the bucket")
+
+	pflag.String("google_application_credentials_json", defaultGoogleApplicationCredentialsJSON, "GCP service-account key JSON content (not a file path) for GCS recording upload")
 
 	pflag.Bool("kubernetes_disabled", false, "Disable Kubernetes integration")
 
@@ -307,6 +311,17 @@ func initVariable() {
 		panic(errEnv)
 	}
 	recordingBucketDirectory = viper.GetString("recording_bucket_directory")
+
+	// google_application_credentials_json
+	if errFlag := viper.BindPFlag("google_application_credentials_json", pflag.Lookup("google_application_credentials_json")); errFlag != nil {
+		log.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("google_application_credentials_json", "GOOGLE_APPLICATION_CREDENTIALS_JSON"); errEnv != nil {
+		log.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	googleApplicationCredentialsJSON = viper.GetString("google_application_credentials_json")
 
 	// kubernetes_disabled
 	if errFlag := viper.BindPFlag("kubernetes_disabled", pflag.Lookup("kubernetes_disabled")); errFlag != nil {
