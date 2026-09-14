@@ -28,10 +28,10 @@ type V1DataFlowsPost struct {
 // v1 data type request struct for
 // /v1/flows/{id} PUT
 type V1DataFlowsIDPut struct {
-	Name   string `json:"name"`   // name
-	Detail string `json:"detail"` // detail
+	Name   *string `json:"name,omitempty"`   // name
+	Detail *string `json:"detail,omitempty"` // detail
 
 	Actions []action.Action `json:"actions"` // actions
 
-	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id"`
+	OnCompleteFlowID *uuid.UUID `json:"on_complete_flow_id,omitempty"`
 }

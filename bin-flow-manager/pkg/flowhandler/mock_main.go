@@ -164,7 +164,7 @@ func (mr *MockFlowHandlerMockRecorder) List(ctx, token, size, filters any) *gomo
 }
 
 // Update mocks base method.
-func (m *MockFlowHandler) Update(ctx context.Context, id uuid.UUID, name, detail string, actions []action.Action, onCompleteFlowID uuid.UUID) (*flow.Flow, error) {
+func (m *MockFlowHandler) Update(ctx context.Context, id uuid.UUID, name, detail *string, actions []action.Action, onCompleteFlowID *uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, id, name, detail, actions, onCompleteFlowID)
 	ret0, _ := ret[0].(*flow.Flow)

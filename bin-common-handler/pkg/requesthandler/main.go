@@ -1115,10 +1115,10 @@ type RequestHandler interface {
 	FlowV1FlowUpdate(
 		ctx context.Context,
 		flowID uuid.UUID,
-		name string,
-		detail string,
+		name *string,
+		detail *string,
 		actions []fmaction.Action,
-		onCompleteFlowID uuid.UUID,
+		onCompleteFlowID *uuid.UUID,
 	) (*fmflow.Flow, error)
 	FlowV1FlowUpdateActions(ctx context.Context, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.Flow, error)
 	FlowV1FlowCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)

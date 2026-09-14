@@ -290,10 +290,10 @@ func cmdUpdate() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Flow ID (required)")
-	flags.String("name", "", "New flow name (required)")
-	flags.String("detail", "", "New flow detail")
-	flags.String("actions", "", "Actions JSON array")
-	flags.String("on-complete-flow-id", "", "On complete flow ID")
+	flags.String("name", "", "New flow name (omit to leave unchanged)")
+	flags.String("detail", "", "New flow detail (omit to leave unchanged)")
+	flags.String("actions", "", "Actions JSON array (required)")
+	flags.String("on-complete-flow-id", "", "On complete flow ID (omit to leave unchanged)")
 
 	return cmd
 }
@@ -309,19 +309,33 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to resolve flow ID")
 	}
 
-	name := viper.GetString("name")
-	if name == "" {
-		return fmt.Errorf("name is required")
-	}
-
+	// actions is required for the flow PUT (Phase 7a hybrid); name/detail/
+	// on-complete-flow-id are optional (nil = leave unchanged).
 	actions, err := parseActions(viper.GetString("actions"))
 	if err != nil {
 		return errors.Wrap(err, "failed to parse actions")
 	}
+	if len(actions) == 0 {
+		return fmt.Errorf("actions is required")
+	}
 
-	onCompleteFlowID := uuid.FromStringOrNil(viper.GetString("on-complete-flow-id"))
+	var name *string
+	if viper.IsSet("name") {
+		n := viper.GetString("name")
+		name = &n
+	}
+	var detail *string
+	if viper.IsSet("detail") {
+		d := viper.GetString("detail")
+		detail = &d
+	}
+	var onCompleteFlowID *uuid.UUID
+	if viper.IsSet("on-complete-flow-id") {
+		parsed := uuid.FromStringOrNil(viper.GetString("on-complete-flow-id"))
+		onCompleteFlowID = &parsed
+	}
 
-	res, err := handler.Update(context.Background(), flowID, name, viper.GetString("detail"), actions, onCompleteFlowID)
+	res, err := handler.Update(context.Background(), flowID, name, detail, actions, onCompleteFlowID)
 	if err != nil {
 		return errors.Wrap(err, "failed to update flow")
 	}

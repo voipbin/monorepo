@@ -105,14 +105,17 @@ func Test_FlowV1FlowCreate(t *testing.T) {
 
 func Test_FlowV1FlowUpdate(t *testing.T) {
 
+	strPtr := func(v string) *string { return &v }
+	uuidPtr := func(v uuid.UUID) *uuid.UUID { return &v }
+
 	tests := []struct {
 		name string
 
 		flowID           uuid.UUID
-		flowName         string
-		flowDetail       string
+		flowName         *string
+		flowDetail       *string
 		actions          []fmaction.Action
-		onCompleteFlowID uuid.UUID
+		onCompleteFlowID *uuid.UUID
 
 		response *sock.Response
 
@@ -124,10 +127,10 @@ func Test_FlowV1FlowUpdate(t *testing.T) {
 			name: "empty action",
 
 			flowID:           uuid.FromStringOrNil("7dc3a1b2-6789-11eb-9f30-1b1cc6d13e51"),
-			flowName:         "update name",
-			flowDetail:       "update detail",
+			flowName:         strPtr("update name"),
+			flowDetail:       strPtr("update detail"),
 			actions:          []fmaction.Action{},
-			onCompleteFlowID: uuid.FromStringOrNil("feaf35be-cf8c-11f0-8b87-0b45b596f16e"),
+			onCompleteFlowID: uuidPtr(uuid.FromStringOrNil("feaf35be-cf8c-11f0-8b87-0b45b596f16e")),
 
 			response: &sock.Response{
 				StatusCode: 200,

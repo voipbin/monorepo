@@ -5081,7 +5081,7 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1FlowList(ctx, pageToken, pageSiz
 }
 
 // FlowV1FlowUpdate mocks base method.
-func (m *MockRequestHandler) FlowV1FlowUpdate(ctx context.Context, flowID uuid.UUID, name, detail string, actions []action.Action, onCompleteFlowID uuid.UUID) (*flow.Flow, error) {
+func (m *MockRequestHandler) FlowV1FlowUpdate(ctx context.Context, flowID uuid.UUID, name, detail *string, actions []action.Action, onCompleteFlowID *uuid.UUID) (*flow.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowV1FlowUpdate", ctx, flowID, name, detail, actions, onCompleteFlowID)
 	ret0, _ := ret[0].(*flow.Flow)
