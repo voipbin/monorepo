@@ -420,9 +420,9 @@ func cmdUpdateBasicInfo() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.String("id", "", "Agent ID (required)")
-	flags.String("name", "", "Agent name (required)")
-	flags.String("detail", "", "Description")
-	flags.String("ring-method", "ringall", "Ring method (ringall, linear)")
+	flags.String("name", "", "Agent name (omit to leave unchanged)")
+	flags.String("detail", "", "Description (omit to leave unchanged)")
+	flags.String("ring-method", "", "Ring method (ringall, linear; omit to leave unchanged)")
 
 	return cmd
 }
@@ -433,22 +433,36 @@ func runUpdateBasicInfo(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "invalid agent ID")
 	}
 
-	name, err := resolveString("name", "Name")
-	if err != nil {
-		return errors.Wrap(err, "invalid name")
-	}
-
 	handler, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
+	}
+
+	// Partial-update semantics: only fields explicitly provided on the command
+	// line are sent (nil = leave unchanged), matching the PUT /agents/{id}
+	// nil-means-unchanged contract.
+	var name *string
+	if viper.IsSet("name") {
+		n := viper.GetString("name")
+		name = &n
+	}
+	var detail *string
+	if viper.IsSet("detail") {
+		d := viper.GetString("detail")
+		detail = &d
+	}
+	var ringMethod *agent.RingMethod
+	if viper.IsSet("ring-method") {
+		rm := agent.RingMethod(viper.GetString("ring-method"))
+		ringMethod = &rm
 	}
 
 	res, err := handler.UpdateBasicInfo(
 		context.Background(),
 		id,
 		name,
-		viper.GetString("detail"),
-		agent.RingMethod(viper.GetString("ring-method")),
+		detail,
+		ringMethod,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update agent basic info")

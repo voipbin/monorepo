@@ -19706,21 +19706,16 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "The updated name of the agent."
+                    "description": "The updated name of the agent. Omit to leave unchanged."
                   },
                   "detail": {
                     "type": "string",
-                    "description": "Additional details about the agent."
+                    "description": "Additional details about the agent. Omit to leave unchanged."
                   },
                   "ring_method": {
                     "$ref": "#/components/schemas/AgentManagerAgentRingMethod"
                   }
-                },
-                "required": [
-                  "name",
-                  "detail",
-                  "ring_method"
-                ]
+                }
               }
             }
           }

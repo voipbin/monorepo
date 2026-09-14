@@ -791,14 +791,17 @@ func TestProcessV1AgentsIDGet(t *testing.T) {
 
 func TestProcessV1AgentsIDPut(t *testing.T) {
 
+	stringPtr := func(v string) *string { return &v }
+	ringMethodPtr := func(v agent.RingMethod) *agent.RingMethod { return &v }
+
 	tests := []struct {
 		name    string
 		request *sock.Request
 
 		id         uuid.UUID
-		agentName  string
-		detail     string
-		ringMethod agent.RingMethod
+		agentName  *string
+		detail     *string
+		ringMethod *agent.RingMethod
 
 		resonseAgent *agent.Agent
 		expectRes    *sock.Response
@@ -813,9 +816,9 @@ func TestProcessV1AgentsIDPut(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
-			"name1",
-			"detail1",
-			agent.RingMethodRingAll,
+			stringPtr("name1"),
+			stringPtr("detail1"),
+			ringMethodPtr(agent.RingMethodRingAll),
 
 			&agent.Agent{
 				Identity: commonidentity.Identity{

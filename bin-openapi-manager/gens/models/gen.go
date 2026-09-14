@@ -12875,16 +12875,16 @@ type PostServiceAgentsFilesMultipartBodyType string
 
 // PutServiceAgentsMeJSONBody defines parameters for PutServiceAgentsMe.
 type PutServiceAgentsMeJSONBody struct {
-	// Detail Additional details about the agent.
-	Detail string `json:"detail"`
+	// Detail Additional details about the agent. Omit to leave unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// Name The updated name of the agent.
-	Name string `json:"name"`
+	// Name The updated name of the agent. Omit to leave unchanged.
+	Name *string `json:"name,omitempty"`
 
 	// RingMethod Method used to ring the agent for incoming calls.
 	//
 	// Example: ringall
-	RingMethod AgentManagerAgentRingMethod `json:"ring_method"`
+	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
 }
 
 // PutServiceAgentsMeAddressesJSONBody defines parameters for PutServiceAgentsMeAddresses.

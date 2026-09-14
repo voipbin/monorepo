@@ -20,6 +20,8 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+func ringMethodPtr(v amagent.RingMethod) *amagent.RingMethod { return &v }
+
 func Test_PostAgents(t *testing.T) {
 
 	tests := []struct {
@@ -552,9 +554,9 @@ func Test_PutAgentsId(t *testing.T) {
 		responseAgent *amagent.WebhookMessage
 
 		expectedAgentID    uuid.UUID
-		expectedName       string
-		expectedDetail     string
-		expectedRingMethod amagent.RingMethod
+		expectedName       *string
+		expectedDetail     *string
+		expectedRingMethod *amagent.RingMethod
 		expectedRes        string
 	}{
 		{
@@ -574,9 +576,9 @@ func Test_PutAgentsId(t *testing.T) {
 			},
 
 			expectedAgentID:    uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
-			expectedName:       "test name",
-			expectedDetail:     "test detail",
-			expectedRingMethod: amagent.RingMethodRingAll,
+			expectedName:       stringPtr("test name"),
+			expectedDetail:     stringPtr("test detail"),
+			expectedRingMethod: ringMethodPtr(amagent.RingMethodRingAll),
 			expectedRes:        `{"id":"a8ba6662-540a-11ec-9a9f-b31de1a77615","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"direct_hash":""}`,
 		},
 		{
@@ -596,9 +598,9 @@ func Test_PutAgentsId(t *testing.T) {
 			},
 
 			expectedAgentID:    uuid.FromStringOrNil("a8ba6662-540a-11ec-9a9f-b31de1a77615"),
-			expectedName:       "",
-			expectedDetail:     "",
-			expectedRingMethod: amagent.RingMethodRingAll,
+			expectedName:       nil,
+			expectedDetail:     nil,
+			expectedRingMethod: nil,
 			expectedRes:        `{"id":"a8ba6662-540a-11ec-9a9f-b31de1a77615","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"direct_hash":""}`,
 		},
 	}

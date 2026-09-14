@@ -212,7 +212,7 @@ func (h *serviceHandler) AgentDelete(ctx context.Context, a *auth.AuthIdentity, 
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent info.
-func (h *serviceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name *string, detail *string, ringMethod *amagent.RingMethod) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
@@ -245,7 +245,7 @@ func (h *serviceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, 
 	return res, nil
 }
 
-func (h *serviceHandler) agentUpdate(ctx context.Context, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.Agent, error) {
+func (h *serviceHandler) agentUpdate(ctx context.Context, agentID uuid.UUID, name *string, detail *string, ringMethod *amagent.RingMethod) (*amagent.Agent, error) {
 	res, err := h.reqHandler.AgentV1AgentUpdate(ctx, agentID, name, detail, ringMethod)
 	if err != nil {
 		return nil, err
