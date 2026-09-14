@@ -6,6 +6,8 @@ import (
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -176,4 +178,137 @@ func (h *serviceHandler) convertRecordingFilters(filters map[string]string) (map
 	}
 
 	return result, nil
+}
+
+// RecordingTranscribeList returns the transcribes tied to the given recording,
+// regardless of the transcribe owner. This includes transcribes created
+// internally for AI summaries (owned by the ai-manager system account), which
+// are not reachable through the customer-scoped TranscribeList. Access is gated
+// by ownership of the recording itself.
+func (h *serviceHandler) RecordingTranscribeList(ctx context.Context, a *auth.AuthIdentity, recordingID uuid.UUID, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "RecordingTranscribeList",
+		"customer_id":  a.CustomerID,
+		"username":     a.DisplayName(),
+		"recording_id": recordingID,
+		"size":         size,
+		"token":        token,
+	})
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// gate: the caller must be admin/manager of the recording's owning customer
+	rec, err := h.recordingGet(ctx, recordingID)
+	if err != nil {
+		log.Infof("Could not get recording info. err: %v", err)
+		return nil, err
+	}
+	if !h.hasPermission(ctx, a, rec.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// owner-agnostic: scope by the recording's id only (no customer_id filter),
+	// so transcribes owned by the ai-manager account are returned too.
+	filters := map[string]string{
+		"reference_type": string(tmtranscribe.ReferenceTypeRecording),
+		"reference_id":   recordingID.String(),
+		"deleted":        "false",
+	}
+	typedFilters, err := h.convertTranscribeFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.TranscribeV1TranscribeList(ctx, token, size, typedFilters)
+	if err != nil {
+		log.Errorf("Could not get transcribes for the recording. err: %v", err)
+		return nil, err
+	}
+
+	res := []*tmtranscribe.WebhookMessage{}
+	for _, tmp := range tmps {
+		e := tmp.ConvertWebhookMessage()
+		res = append(res, e)
+	}
+
+	return res, nil
+}
+
+// RecordingTranscriptList returns the transcript lines for a transcribe tied to
+// the given recording, regardless of the transcribe owner. Access is gated
+// twice: the caller must be admin/manager of the recording's owning customer,
+// and the transcribe must actually belong to this recording.
+func (h *serviceHandler) RecordingTranscriptList(ctx context.Context, a *auth.AuthIdentity, recordingID uuid.UUID, transcribeID uuid.UUID, size uint64, token string) ([]*tmtranscript.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "RecordingTranscriptList",
+		"customer_id":   a.CustomerID,
+		"username":      a.DisplayName(),
+		"recording_id":  recordingID,
+		"transcribe_id": transcribeID,
+		"size":          size,
+		"token":         token,
+	})
+
+	if token == "" {
+		token = h.utilHandler.TimeGetCurTime()
+	}
+
+	// gate 1: the caller must be admin/manager of the recording's owning customer
+	rec, err := h.recordingGet(ctx, recordingID)
+	if err != nil {
+		log.Infof("Could not get recording info. err: %v", err)
+		return nil, err
+	}
+	if !h.hasPermission(ctx, a, rec.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// gate 2: the transcribe must belong to this recording. This prevents using
+	// a valid recording permission to read transcripts of another recording's
+	// (or another customer's) transcribe.
+	t, err := h.transcribeGet(ctx, transcribeID)
+	if err != nil {
+		log.Infof("Could not get transcribe info. err: %v", err)
+		return nil, err
+	}
+	if t.ReferenceType != tmtranscribe.ReferenceTypeRecording || t.ReferenceID != recordingID {
+		log.Infof("The transcribe does not belong to the recording. transcribe_reference_type: %s, transcribe_reference_id: %s", t.ReferenceType, t.ReferenceID)
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// owner-agnostic: scope by transcribe_id only (no customer_id filter).
+	filters := map[string]string{
+		"transcribe_id": transcribeID.String(),
+		"deleted":       "false",
+	}
+	typedFilters, err := h.convertTranscriptFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	tmps, err := h.reqHandler.TranscribeV1TranscriptList(ctx, token, size, typedFilters)
+	if err != nil {
+		log.Errorf("Could not get transcripts for the recording. err: %v", err)
+		return nil, err
+	}
+
+	res := []*tmtranscript.WebhookMessage{}
+	for _, tmp := range tmps {
+		e := tmp.ConvertWebhookMessage()
+		res = append(res, e)
+	}
+
+	return res, nil
 }

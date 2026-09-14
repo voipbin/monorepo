@@ -107,6 +107,60 @@ Example
     }
 
 
+Get transcribes of a recording
+-------------------------------
+
+Retrieves the transcribes tied to a recording, including any transcribe that was produced internally when an AI summary was generated for the recording. These internally produced transcribes are not visible through the top-level ``GET /transcribes`` list (that list is scoped to your own account), so this recording sub-resource endpoint exposes them as-is. Access is gated by ownership of the recording itself. A single recording can have multiple transcribes (for example one per language), so this always returns a list.
+
+Example
+
+.. code::
+
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings/f27d65bc-2f10-49e1-a49d-a7762965df13/transcribes?token=<YOUR_AUTH_TOKEN>&page_size=10'
+
+    {
+        "result": [
+            {
+                "id": "a1b2c3d4-0000-11eb-be45-000000000001",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "reference_type": "recording",
+                "reference_id": "f27d65bc-2f10-49e1-a49d-a7762965df13",
+                "language": "en-US",
+                "status": "done",
+                "tm_create": "2021-01-28 09:17:12.000000",
+                "tm_update": "2021-01-28 09:17:20.000000"
+            }
+        ],
+        "next_page_token": "2021-01-28 09:17:12.000000"
+    }
+
+Get transcripts of a recording
+------------------------------
+
+Retrieves the transcript lines for a transcribe tied to a recording. Use the transcribe ID returned from ``GET /recordings/{id}/transcribes``. Access is gated twice: you must be an admin or manager of the recording's owning customer, and the given transcribe must actually belong to this recording; otherwise the request is rejected.
+
+Example
+
+.. code::
+
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/recordings/f27d65bc-2f10-49e1-a49d-a7762965df13/transcripts?token=<YOUR_AUTH_TOKEN>&transcribe_id=a1b2c3d4-0000-11eb-be45-000000000001&page_size=10'
+
+    {
+        "result": [
+            {
+                "id": "c3d4e5f6-0000-11eb-be45-000000000003",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "transcribe_id": "a1b2c3d4-0000-11eb-be45-000000000001",
+                "direction": "in",
+                "message": "Hello, thank you for calling.",
+                "tm_transcript": "2021-01-28 09:17:01.000000",
+                "tm_create": "2021-01-28 09:17:13.000000"
+            }
+        ],
+        "next_page_token": "2021-01-28 09:17:13.000000"
+    }
+
+
 Simple recordingfile download
 -----------------------------
 

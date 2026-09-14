@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Recording Detail — Summary Source Transcript Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 28px 40px 60px;
+  }
+  .note {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-left: 3px solid #7c5cff;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 28px;
+    color: #b9c2cc;
+    font-size: 13px;
+    max-width: 1180px;
+  }
+  .note b { color: #e6edf3; }
+  .cols { display: flex; gap: 28px; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 540px; max-width: 620px; }
+  .col-title {
+    font-size: 13px; letter-spacing: .04em; text-transform: uppercase;
+    color: #8b949e; margin-bottom: 12px; font-weight: 600;
+  }
+  .col-title .tag {
+    display: inline-block; margin-left: 8px; font-size: 11px;
+    padding: 2px 8px; border-radius: 10px; letter-spacing: normal; text-transform: none;
+  }
+  .tag-a { background: rgba(124,92,255,.18); color: #b39cff; border: 1px solid rgba(124,92,255,.4); }
+  .tag-b { background: rgba(63,185,80,.15); color: #6cd57e; border: 1px solid rgba(63,185,80,.4); }
+
+  .card {
+    background: #0f141a;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin-bottom: 22px;
+  }
+  .card-head { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
+  .card-head .icon { color: #7c5cff; font-size: 16px; }
+  .card-head h3 { font-size: 16px; font-weight: 650; }
+  .card-sub { color: #8b949e; font-size: 13px; margin-bottom: 18px; }
+
+  .lang-pill {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    background: #1c2330; color: #9aa7b4; border: 1px solid #30363d;
+    padding: 3px 10px; border-radius: 5px; margin-bottom: 12px;
+  }
+  .summary-box {
+    background: #1a2029; border: 1px solid #262d38; border-radius: 8px;
+    padding: 18px 20px; color: #d7dee6; font-size: 13.5px;
+  }
+  .summary-box .h { font-weight: 700; color: #fff; margin-top: 12px; }
+  .summary-box .h:first-child { margin-top: 0; }
+  .summary-box .li { margin: 2px 0 2px 2px; color: #c2ccd6; }
+
+  /* source transcript block */
+  .src {
+    margin-top: 18px;
+    border: 1px solid #262d38;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #12171e;
+  }
+  .src-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; cursor: pointer;
+    background: #151b23; border-bottom: 1px solid #232b35;
+  }
+  .src-head .l { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; color: #cbd5e0; }
+  .src-head .l .ic { color: #7c5cff; }
+  .src-head .r { color: #7d8794; font-size: 12px; display: flex; align-items: center; gap: 10px; }
+  .chev { transition: transform .15s; color: #7d8794; }
+  .src-body { padding: 6px 16px 14px; }
+  .turn { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #1b222b; }
+  .turn:last-child { border-bottom: none; }
+  .turn .who {
+    flex: 0 0 74px; font-size: 11px; font-weight: 700; padding-top: 1px;
+  }
+  .who.in { color: #5ab0ff; }
+  .who.out { color: #6cd57e; }
+  .turn .tx { color: #c8d1db; font-size: 13px; }
+  .turn .ts { flex: 0 0 46px; color: #56606b; font-size: 11px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+
+  .muted { color: #6e7781; font-size: 12.5px; padding: 4px 0; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #1c2330; color: #c9d2dc; border: 1px solid #30363d;
+    padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    margin-top: 16px; cursor: pointer;
+  }
+  .btn.primary { background: #7c5cff; color: #fff; border-color: #7c5cff; }
+
+  /* option B: separate but linked */
+  .link-hint {
+    margin-top: 10px; font-size: 12.5px; color: #8b949e;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .link-hint a { color: #b39cff; text-decoration: none; }
+  .divider { height: 1px; background: #21262d; margin: 6px 0 26px; }
+</style>
+</head>
+<body>
+
+  <div class="note">
+    <b>예상 디자인 목업</b> — 대표님 요구: "AI Summary의 <b>근거가 된 트랜스크립트</b>를 레코딩 상세에서 함께 보고 싶다"(소유권 변경 없이).
+    아래 두 안은 <b>같은 데이터</b>(요약 + 근거 transcript)를 배치만 다르게 보여줍니다. 실제 스타일은 square-admin 다크 테마 근사치입니다.
+  </div>
+
+  <div class="cols">
+
+    <!-- ================= OPTION A ================= -->
+    <div class="col">
+      <div class="col-title">안 A: 요약 카드 안에 근거 transcript 내장 <span class="tag tag-a">권장</span></div>
+
+      <div class="card">
+        <div class="card-head"><span class="icon">✨</span><h3>AI Summary</h3></div>
+        <div class="card-sub">Generate an AI summary of this recording</div>
+
+        <span class="lang-pill">en-US</span>
+
+        <div class="summary-box">
+          <div class="h">Call Summary</div>
+          <div class="h">Call Type: Testing Call</div>
+          <div class="h">Key Discussion Points</div>
+          <div class="li">- The call was initiated to discuss payment information to be sent via email.</div>
+          <div class="h">Action Items &amp; Next Steps</div>
+          <div class="li">- Sender to follow up by emailing the detailed payment information.</div>
+        </div>
+
+        <!-- SOURCE TRANSCRIPT, collapsible, inside the summary card -->
+        <div class="src">
+          <div class="src-head">
+            <div class="l"><span class="ic">▾</span> Source transcript</div>
+            <div class="r"><span>en-US · 6 turns</span></div>
+          </div>
+          <div class="src-body">
+            <div class="turn"><div class="ts">0:01</div><div class="who in">Caller</div><div class="tx">Hi, I'm calling about the payment details we discussed.</div></div>
+            <div class="turn"><div class="ts">0:04</div><div class="who out">Agent</div><div class="tx">Sure. I'll send the full breakdown to your email right after this call.</div></div>
+            <div class="turn"><div class="ts">0:09</div><div class="who in">Caller</div><div class="tx">Perfect. Please include the invoice number as well.</div></div>
+            <div class="turn"><div class="ts">0:13</div><div class="who out">Agent</div><div class="tx">Will do. You'll receive it within the next few minutes.</div></div>
+            <div class="turn"><div class="ts">0:17</div><div class="who in">Caller</div><div class="tx">Thank you, that's all I needed.</div></div>
+            <div class="turn"><div class="ts">0:19</div><div class="who out">Agent</div><div class="tx">Thank you for calling. Have a great day.</div></div>
+          </div>
+        </div>
+
+        <div class="btn">↻ Regenerate</div>
+      </div>
+
+      <div class="muted">· 요약과 그 근거를 한 카드에서 즉시 대조. transcribe 소유권/목록 무변경.<br>· 근거 transcript는 요약 응답에 함께 실려 오거나 summary와 함께 저장됨(설계 대안 a/b).</div>
+    </div>
+
+    <!-- ================= OPTION B ================= -->
+    <div class="col">
+      <div class="col-title">안 B: Transcript 카드를 요약 근거로 자동 채움 <span class="tag tag-b">대안</span></div>
+
+      <div class="card">
+        <div class="card-head"><span class="icon">📄</span><h3>Transcript</h3></div>
+        <div class="card-sub">Transcript used for the AI summary of this recording</div>
+
+        <span class="lang-pill">en-US</span>
+
+        <div class="src" style="margin-top:4px;">
+          <div class="src-head" style="cursor:default;">
+            <div class="l">Transcript</div>
+            <div class="r"><span>en-US · 6 turns</span></div>
+          </div>
+          <div class="src-body">
+            <div class="turn"><div class="ts">0:01</div><div class="who in">Caller</div><div class="tx">Hi, I'm calling about the payment details we discussed.</div></div>
+            <div class="turn"><div class="ts">0:04</div><div class="who out">Agent</div><div class="tx">Sure. I'll send the full breakdown to your email right after this call.</div></div>
+            <div class="turn"><div class="ts">0:09</div><div class="who in">Caller</div><div class="tx">Perfect. Please include the invoice number as well.</div></div>
+            <div class="turn"><div class="ts">0:13</div><div class="who out">Agent</div><div class="tx">Will do. You'll receive it within the next few minutes.</div></div>
+          </div>
+        </div>
+        <div class="link-hint">↑ 이 트랜스크립트로 아래 요약이 생성되었습니다.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="icon">✨</span><h3>AI Summary</h3></div>
+        <div class="card-sub">Generate an AI summary of this recording</div>
+        <span class="lang-pill">en-US</span>
+        <div class="summary-box">
+          <div class="h">Call Summary</div>
+          <div class="li">- Payment details to be emailed; invoice number included; follow-up within minutes.</div>
+        </div>
+        <div class="link-hint">근거: <a href="#">위 Transcript 카드 ↑</a></div>
+        <div class="btn">↻ Regenerate</div>
+      </div>
+
+      <div class="muted">· 기존 두 카드 구조 유지. 근거 transcript가 위 카드에 자동 표시.<br>· 단, "No transcript yet"이 아니라 요약 근거로 채워지므로 두 카드의 의미가 겹칠 수 있음.</div>
+    </div>
+
+  </div>
+
+</body>
+</html>

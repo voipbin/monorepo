@@ -8864,6 +8864,10 @@ paths:
 
   /recordings/{id}:
     $ref: './paths/recordings/id.yaml'
+  /recordings/{id}/transcribes:
+    $ref: './paths/recordings/id_transcribes.yaml'
+  /recordings/{id}/transcripts:
+    $ref: './paths/recordings/id_transcripts.yaml'
   /recordings:
     $ref: './paths/recordings/main.yaml'
 

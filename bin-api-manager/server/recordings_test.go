@@ -15,6 +15,8 @@ import (
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -239,4 +241,106 @@ func Test_recordingsIDGet_ServiceError(t *testing.T) {
 // auth-identity-missing branch of DeleteRecordingsId.
 func Test_recordingsIDDelete_MissingAuthIdentity(t *testing.T) {
 	assertMissingAuthIdentity(t, http.MethodDelete, "/recordings/ca5f68bc-8f1e-11ed-957c-9b7ba0e03f3c", nil)
+}
+
+func Test_GetRecordingsIdTranscribes(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	recordingID := uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/recordings/%s/transcribes?page_size=10", recordingID), nil)
+	mockSvc.EXPECT().RecordingTranscribeList(req.Context(), agent, recordingID, uint64(10), "").Return([]*tmtranscribe.WebhookMessage{}, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+}
+
+func Test_GetRecordingsIdTranscribes_InvalidID(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+	openapi_server.RegisterHandlers(r, h)
+
+	// non-uuid recording id -> INVALID_ID, no service call
+	req, _ := http.NewRequest("GET", "/recordings/not-a-uuid/transcribes", nil)
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+	}
+}
+
+func Test_GetRecordingsIdTranscripts(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")},
+	})
+	recordingID := uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929")
+	transcribeID := uuid.FromStringOrNil("b2000000-0000-11eb-be45-000000000002")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/recordings/%s/transcripts?transcribe_id=%s&page_size=10", recordingID, transcribeID), nil)
+	mockSvc.EXPECT().RecordingTranscriptList(req.Context(), agent, recordingID, transcribeID, uint64(10), "").Return([]*tmtranscript.WebhookMessage{}, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+}
+
+func Test_GetRecordingsIdTranscripts_InvalidTranscribeID(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")},
+	})
+	recordingID := uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+	openapi_server.RegisterHandlers(r, h)
+
+	// missing/invalid transcribe_id -> INVALID_TRANSCRIBE_ID, no service call.
+	// transcribe_id is required by the spec; empty string is not a valid uuid.
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/recordings/%s/transcripts?transcribe_id=not-a-uuid", recordingID), nil)
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+	}
 }
