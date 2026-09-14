@@ -12366,6 +12366,27 @@ type GetRecordingsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetRecordingsIdTranscribesParams defines parameters for GetRecordingsIdTranscribes.
+type GetRecordingsIdTranscribesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetRecordingsIdTranscriptsParams defines parameters for GetRecordingsIdTranscripts.
+type GetRecordingsIdTranscriptsParams struct {
+	// TranscribeId The transcribe ID whose transcripts to fetch. Must belong to this recording (as returned by `GET /recordings/{id}/transcribes`).
+	TranscribeId string `form:"transcribe_id" json:"transcribe_id"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetRoutesParams defines parameters for GetRoutes.
 type GetRoutesParams struct {
 	// PageSize Number of results to return per page.

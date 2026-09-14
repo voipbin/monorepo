@@ -4382,6 +4382,36 @@ func (mr *MockServiceHandlerMockRecorder) RecordingList(ctx, a, size, token any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingList", reflect.TypeOf((*MockServiceHandler)(nil).RecordingList), ctx, a, size, token)
 }
 
+// RecordingTranscribeList mocks base method.
+func (m *MockServiceHandler) RecordingTranscribeList(ctx context.Context, a *auth.AuthIdentity, recordingID uuid.UUID, size uint64, token string) ([]*transcribe.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingTranscribeList", ctx, a, recordingID, size, token)
+	ret0, _ := ret[0].([]*transcribe.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingTranscribeList indicates an expected call of RecordingTranscribeList.
+func (mr *MockServiceHandlerMockRecorder) RecordingTranscribeList(ctx, a, recordingID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingTranscribeList", reflect.TypeOf((*MockServiceHandler)(nil).RecordingTranscribeList), ctx, a, recordingID, size, token)
+}
+
+// RecordingTranscriptList mocks base method.
+func (m *MockServiceHandler) RecordingTranscriptList(ctx context.Context, a *auth.AuthIdentity, recordingID, transcribeID uuid.UUID, size uint64, token string) ([]*transcript.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingTranscriptList", ctx, a, recordingID, transcribeID, size, token)
+	ret0, _ := ret[0].([]*transcript.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingTranscriptList indicates an expected call of RecordingTranscriptList.
+func (mr *MockServiceHandlerMockRecorder) RecordingTranscriptList(ctx, a, recordingID, transcribeID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingTranscriptList", reflect.TypeOf((*MockServiceHandler)(nil).RecordingTranscriptList), ctx, a, recordingID, transcribeID, size, token)
+}
+
 // RecordingfileGet mocks base method.
 func (m *MockServiceHandler) RecordingfileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()

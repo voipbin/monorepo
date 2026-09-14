@@ -149,3 +149,129 @@ func (h *server) DeleteRecordingsId(c *gin.Context, id string) {
 
 	c.JSON(200, res)
 }
+
+// GetRecordingsIdTranscribes handles GET /recordings/{id}/transcribes request.
+// It returns the transcribes tied to the recording regardless of the transcribe
+// owner (including transcribes created internally for AI summaries), gated by
+// ownership of the recording itself.
+func (h *server) GetRecordingsIdTranscribes(c *gin.Context, id string, params openapi_server.GetRecordingsIdTranscribesParams) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetRecordingsIdTranscribes",
+		"request_address": c.ClientIP,
+		"recording_id":    id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
+		return
+	}
+	log = log.WithField("agent", a)
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
+		return
+	}
+
+	pageSize := uint64(100)
+	if params.PageSize != nil {
+		pageSize = uint64(*params.PageSize)
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	res, err := h.serviceHandler.RecordingTranscribeList(c.Request.Context(), a, target, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get transcribes for the recording. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+// GetRecordingsIdTranscripts handles GET /recordings/{id}/transcripts request.
+// It returns the transcript lines for a transcribe tied to the recording,
+// gated by ownership of the recording and by the transcribe belonging to it.
+func (h *server) GetRecordingsIdTranscripts(c *gin.Context, id string, params openapi_server.GetRecordingsIdTranscriptsParams) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetRecordingsIdTranscripts",
+		"request_address": c.ClientIP,
+		"recording_id":    id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
+		return
+	}
+	log = log.WithField("agent", a)
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
+		return
+	}
+
+	transcribeID := uuid.FromStringOrNil(params.TranscribeId)
+	if transcribeID == uuid.Nil {
+		log.Error("Could not parse the transcribe_id.")
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_TRANSCRIBE_ID",
+			"The provided transcribe_id is not a valid UUID.",
+		))
+		return
+	}
+
+	pageSize := uint64(100)
+	if params.PageSize != nil {
+		pageSize = uint64(*params.PageSize)
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	res, err := h.serviceHandler.RecordingTranscriptList(c.Request.Context(), a, target, transcribeID, pageSize, pageToken)
+	if err != nil {
+		log.Errorf("Could not get transcripts for the recording. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}

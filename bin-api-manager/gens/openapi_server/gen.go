@@ -9870,6 +9870,27 @@ type GetRecordingsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetRecordingsIdTranscribesParams defines parameters for GetRecordingsIdTranscribes.
+type GetRecordingsIdTranscribesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetRecordingsIdTranscriptsParams defines parameters for GetRecordingsIdTranscripts.
+type GetRecordingsIdTranscriptsParams struct {
+	// TranscribeId The transcribe ID whose transcripts to fetch. Must belong to this recording (as returned by `GET /recordings/{id}/transcribes`).
+	TranscribeId string `form:"transcribe_id" json:"transcribe_id"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetRoutesParams defines parameters for GetRoutes.
 type GetRoutesParams struct {
 	// PageSize Number of results to return per page.
@@ -12177,6 +12198,12 @@ type ServerInterface interface {
 	// Get recording details
 	// (GET /recordings/{id})
 	GetRecordingsId(c *gin.Context, id string)
+	// List transcribes for a recording
+	// (GET /recordings/{id}/transcribes)
+	GetRecordingsIdTranscribes(c *gin.Context, id string, params GetRecordingsIdTranscribesParams)
+	// List transcripts for a recording's transcribe
+	// (GET /recordings/{id}/transcripts)
+	GetRecordingsIdTranscripts(c *gin.Context, id string, params GetRecordingsIdTranscriptsParams)
 	// List routes
 	// (GET /routes)
 	GetRoutes(c *gin.Context, params GetRoutesParams)
@@ -19938,6 +19965,102 @@ func (siw *ServerInterfaceWrapper) GetRecordingsId(c *gin.Context) {
 	siw.Handler.GetRecordingsId(c, id)
 }
 
+// GetRecordingsIdTranscribes operation middleware
+func (siw *ServerInterfaceWrapper) GetRecordingsIdTranscribes(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetRecordingsIdTranscribesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetRecordingsIdTranscribes(c, id, params)
+}
+
+// GetRecordingsIdTranscripts operation middleware
+func (siw *ServerInterfaceWrapper) GetRecordingsIdTranscripts(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetRecordingsIdTranscriptsParams
+
+	// ------------- Required query parameter "transcribe_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "transcribe_id", c.Request.URL.Query(), &params.TranscribeId, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter transcribe_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetRecordingsIdTranscripts(c, id, params)
+}
+
 // GetRoutes operation middleware
 func (siw *ServerInterfaceWrapper) GetRoutes(c *gin.Context) {
 
@@ -24139,6 +24262,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/recordings", wrapper.GetRecordings)
 	router.DELETE(options.BaseURL+"/recordings/:id", wrapper.DeleteRecordingsId)
 	router.GET(options.BaseURL+"/recordings/:id", wrapper.GetRecordingsId)
+	router.GET(options.BaseURL+"/recordings/:id/transcribes", wrapper.GetRecordingsIdTranscribes)
+	router.GET(options.BaseURL+"/recordings/:id/transcripts", wrapper.GetRecordingsIdTranscripts)
 	router.GET(options.BaseURL+"/routes", wrapper.GetRoutes)
 	router.POST(options.BaseURL+"/routes", wrapper.PostRoutes)
 	router.DELETE(options.BaseURL+"/routes/:id", wrapper.DeleteRoutesId)
@@ -47600,6 +47725,228 @@ func (response GetRecordingsId503JSONResponse) VisitGetRecordingsIdResponse(w ht
 	return err
 }
 
+type GetRecordingsIdTranscribesRequestObject struct {
+	Id     string `json:"id"`
+	Params GetRecordingsIdTranscribesParams
+}
+
+type GetRecordingsIdTranscribesResponseObject interface {
+	VisitGetRecordingsIdTranscribesResponse(w http.ResponseWriter) error
+}
+
+type GetRecordingsIdTranscribes200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]TranscribeManagerTranscribe `json:"result,omitempty"`
+}
+
+func (response GetRecordingsIdTranscribes200JSONResponse) VisitGetRecordingsIdTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscribes400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetRecordingsIdTranscribes400JSONResponse) VisitGetRecordingsIdTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscribes401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetRecordingsIdTranscribes401JSONResponse) VisitGetRecordingsIdTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscribes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetRecordingsIdTranscribes403JSONResponse) VisitGetRecordingsIdTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscribes404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetRecordingsIdTranscribes404JSONResponse) VisitGetRecordingsIdTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscribes500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetRecordingsIdTranscribes500JSONResponse) VisitGetRecordingsIdTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscribes503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetRecordingsIdTranscribes503JSONResponse) VisitGetRecordingsIdTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscriptsRequestObject struct {
+	Id     string `json:"id"`
+	Params GetRecordingsIdTranscriptsParams
+}
+
+type GetRecordingsIdTranscriptsResponseObject interface {
+	VisitGetRecordingsIdTranscriptsResponse(w http.ResponseWriter) error
+}
+
+type GetRecordingsIdTranscripts200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]TranscribeManagerTranscript `json:"result,omitempty"`
+}
+
+func (response GetRecordingsIdTranscripts200JSONResponse) VisitGetRecordingsIdTranscriptsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscripts400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetRecordingsIdTranscripts400JSONResponse) VisitGetRecordingsIdTranscriptsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscripts401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetRecordingsIdTranscripts401JSONResponse) VisitGetRecordingsIdTranscriptsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscripts403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetRecordingsIdTranscripts403JSONResponse) VisitGetRecordingsIdTranscriptsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscripts404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetRecordingsIdTranscripts404JSONResponse) VisitGetRecordingsIdTranscriptsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscripts500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetRecordingsIdTranscripts500JSONResponse) VisitGetRecordingsIdTranscriptsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdTranscripts503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetRecordingsIdTranscripts503JSONResponse) VisitGetRecordingsIdTranscriptsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetRoutesRequestObject struct {
 	Params GetRoutesParams
 }
@@ -60122,6 +60469,12 @@ type StrictServerInterface interface {
 	// Get recording details
 	// (GET /recordings/{id})
 	GetRecordingsId(ctx context.Context, request GetRecordingsIdRequestObject) (GetRecordingsIdResponseObject, error)
+	// List transcribes for a recording
+	// (GET /recordings/{id}/transcribes)
+	GetRecordingsIdTranscribes(ctx context.Context, request GetRecordingsIdTranscribesRequestObject) (GetRecordingsIdTranscribesResponseObject, error)
+	// List transcripts for a recording's transcribe
+	// (GET /recordings/{id}/transcripts)
+	GetRecordingsIdTranscripts(ctx context.Context, request GetRecordingsIdTranscriptsRequestObject) (GetRecordingsIdTranscriptsResponseObject, error)
 	// List routes
 	// (GET /routes)
 	GetRoutes(ctx context.Context, request GetRoutesRequestObject) (GetRoutesResponseObject, error)
@@ -68646,6 +68999,60 @@ func (sh *strictHandler) GetRecordingsId(ctx *gin.Context, id string) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetRecordingsIdResponseObject); ok {
 		if err := validResponse.VisitGetRecordingsIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetRecordingsIdTranscribes operation middleware
+func (sh *strictHandler) GetRecordingsIdTranscribes(ctx *gin.Context, id string, params GetRecordingsIdTranscribesParams) {
+	var request GetRecordingsIdTranscribesRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetRecordingsIdTranscribes(ctx, request.(GetRecordingsIdTranscribesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetRecordingsIdTranscribes")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetRecordingsIdTranscribesResponseObject); ok {
+		if err := validResponse.VisitGetRecordingsIdTranscribesResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetRecordingsIdTranscripts operation middleware
+func (sh *strictHandler) GetRecordingsIdTranscripts(ctx *gin.Context, id string, params GetRecordingsIdTranscriptsParams) {
+	var request GetRecordingsIdTranscriptsRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetRecordingsIdTranscripts(ctx, request.(GetRecordingsIdTranscriptsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetRecordingsIdTranscripts")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetRecordingsIdTranscriptsResponseObject); ok {
+		if err := validResponse.VisitGetRecordingsIdTranscriptsResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

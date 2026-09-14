@@ -17425,6 +17425,157 @@
         }
       }
     },
+    "/recordings/{id}/transcribes": {
+      "get": {
+        "summary": "List transcribes for a recording",
+        "description": "Retrieves the transcribes tied to a specific recording, regardless of the transcribe owner. This includes transcribes produced internally when an AI summary was generated for the recording, which are not visible through the top-level `GET /transcribes` list (that list is scoped to the caller's own customer). Access is gated by ownership of the recording itself: the caller must be an admin/manager of the recording's owning customer. A single recording can have multiple transcribes (e.g. one per language), so this always returns a list.",
+        "tags": [
+          "Recording"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The recording's ID.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of transcribes tied to the recording.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TranscribeManagerTranscribe"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/recordings/{id}/transcripts": {
+      "get": {
+        "summary": "List transcripts for a recording's transcribe",
+        "description": "Retrieves the transcript lines for a transcribe tied to a specific recording, regardless of the transcribe owner. This exposes the text of transcribes produced internally when an AI summary was generated (which are owned by the system account and therefore not reachable through the top-level `GET /transcripts`). Access is gated twice: the caller must be an admin/manager of the recording's owning customer, and the given transcribe must actually belong to this recording (reference_type=recording, reference_id={id}); otherwise a 403 is returned.",
+        "tags": [
+          "Recording"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The recording's ID.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transcribe_id",
+            "in": "query",
+            "required": true,
+            "description": "The transcribe ID whose transcripts to fetch. Must belong to this recording (as returned by `GET /recordings/{id}/transcribes`).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of transcripts for the transcribe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TranscribeManagerTranscript"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
     "/recordings": {
       "get": {
         "summary": "List recordings",

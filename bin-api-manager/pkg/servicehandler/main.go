@@ -977,6 +977,8 @@ type ServiceHandler interface {
 	RecordingGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmrecording.WebhookMessage, error)
 	RecordingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmrecording.WebhookMessage, error)
 	RecordingDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmrecording.WebhookMessage, error)
+	RecordingTranscribeList(ctx context.Context, a *auth.AuthIdentity, recordingID uuid.UUID, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error)
+	RecordingTranscriptList(ctx context.Context, a *auth.AuthIdentity, recordingID uuid.UUID, transcribeID uuid.UUID, size uint64, token string) ([]*tmtranscript.WebhookMessage, error)
 
 	// recordingfile handlers
 	RecordingfileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error)
