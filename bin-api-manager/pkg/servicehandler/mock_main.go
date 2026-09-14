@@ -445,19 +445,19 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryGet(ctx, a, id any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryGet", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryGet), ctx, a, id)
 }
 
-// AISummaryGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*summary.WebhookMessage, error) {
+// AISummaryList mocks base method.
+func (m *MockServiceHandler) AISummaryList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, referenceType string, referenceID uuid.UUID) ([]*summary.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AISummaryGetsByCustomerID", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "AISummaryList", ctx, a, size, token, referenceType, referenceID)
 	ret0, _ := ret[0].([]*summary.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AISummaryGetsByCustomerID indicates an expected call of AISummaryGetsByCustomerID.
-func (mr *MockServiceHandlerMockRecorder) AISummaryGetsByCustomerID(ctx, a, size, token any) *gomock.Call {
+// AISummaryList indicates an expected call of AISummaryList.
+func (mr *MockServiceHandlerMockRecorder) AISummaryList(ctx, a, size, token, referenceType, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryGetsByCustomerID), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryList", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryList), ctx, a, size, token, referenceType, referenceID)
 }
 
 // AIUpdate mocks base method.

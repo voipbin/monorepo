@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>First login and API access - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -675,33 +675,33 @@ set the agent’s password explicitly (a fresh admin agent is created with
 a random, unusable password):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Create the customer</span>
 docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--name<span class="w"> </span><span class="s2">"My Company"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--email<span class="w"> </span><span class="s2">"admin@example.com"</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;My Company&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--email<span class="w"> </span><span class="s2">&quot;admin@example.com&quot;</span>
 
 <span class="c1"># 2. Get the customer ID</span>
 <span class="nv">CUSTOMER_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>list<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[] | select(.email == "admin@example.com") | .id'</span><span class="k">)</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[] | select(.email == &quot;admin@example.com&quot;) | .id&#39;</span><span class="k">)</span>
 
 <span class="c1"># 3. Wait a few seconds for agent-manager to process the event via RabbitMQ</span>
 sleep<span class="w"> </span><span class="m">5</span>
 
-<span class="c1"># 4. Get the auto-created admin agent's ID</span>
+<span class="c1"># 4. Get the auto-created admin agent&#39;s ID</span>
 <span class="nv">AGENT_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>list<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[0].id'</span><span class="k">)</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CUSTOMER_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[0].id&#39;</span><span class="k">)</span>
 
 <span class="c1"># 5. Set a real password</span>
 docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>update-password<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--id<span class="w"> </span><span class="s2">"</span><span class="nv">$AGENT_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--password<span class="w"> </span><span class="s2">"your-secure-password"</span>
+<span class="w">  </span>--id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$AGENT_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--password<span class="w"> </span><span class="s2">&quot;your-secure-password&quot;</span>
 </pre></div>
 </div>
 <section id="get-a-jwt-token">
 <h3>Get a JWT token<a class="headerlink" href="#get-a-jwt-token" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/auth/login<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"username": "admin@example.com", "password": "your-secure-password"}'</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;username&quot;: &quot;admin@example.com&quot;, &quot;password&quot;: &quot;your-secure-password&quot;}&#39;</span>
 
-<span class="c1"># Response: {"username": "...", "token": "JWT_TOKEN_HERE"}</span>
+<span class="c1"># Response: {&quot;username&quot;: &quot;...&quot;, &quot;token&quot;: &quot;JWT_TOKEN_HERE&quot;}</span>
 </pre></div>
 </div>
 </section>
@@ -710,9 +710,9 @@ docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </spa
 <p>An accesskey is a long-lived API token, separate from the short-lived
 JWT above, meant for scripts and integrations:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>accesskey<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--name<span class="w"> </span><span class="s2">"API Key"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--detail<span class="w"> </span><span class="s2">"For automation"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CUSTOMER_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;API Key&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--detail<span class="w"> </span><span class="s2">&quot;For automation&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--expire<span class="w"> </span>87600h
 </pre></div>
 </div>
@@ -721,12 +721,12 @@ for automation use. Use a shorter value for keys you intend to rotate.</p>
 </section>
 <section id="create-your-first-extension">
 <h3>Create your first extension<a class="headerlink" href="#create-your-first-extension" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TOKEN</span><span class="o">=</span><span class="s2">"&lt;jwt_token_from_above&gt;"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;jwt_token_from_above&gt;&quot;</span>
 
 curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/v1.0/extensions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"extension": "2000", "password": "your-secure-password-here", "name": "Extension 2000"}'</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;extension&quot;: &quot;2000&quot;, &quot;password&quot;: &quot;your-secure-password-here&quot;, &quot;name&quot;: &quot;Extension 2000&quot;}&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -803,8 +803,8 @@ identical, only the base URL differs.</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -111,21 +111,24 @@ func Test_AISummaryCreate_referencetype_call(t *testing.T) {
 	}
 }
 
-func Test_AISummaryListByCustomerID(t *testing.T) {
+func Test_AISummaryList(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		agent   *auth.AuthIdentity
-		size    uint64
-		token   string
+		agent         *auth.AuthIdentity
+		size          uint64
+		token         string
+		referenceType string
+		referenceID   uuid.UUID
+
 		filters map[amsummary.Field]any
 
 		response  []amsummary.Summary
 		expectRes []*amsummary.WebhookMessage
 	}{
 		{
-			name: "normal",
+			name: "normal without reference filter",
 
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
@@ -139,6 +142,42 @@ func Test_AISummaryListByCustomerID(t *testing.T) {
 			filters: map[amsummary.Field]any{
 				amsummary.FieldDeleted:    false,
 				amsummary.FieldCustomerID: uuid.FromStringOrNil("2017e1fe-0ccb-11f0-9c4f-73268b39a2cc"),
+			},
+
+			response: []amsummary.Summary{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("20698ef0-0ccb-11f0-bd3f-278de4a3e853"),
+					},
+				},
+			},
+			expectRes: []*amsummary.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("20698ef0-0ccb-11f0-bd3f-278de4a3e853"),
+					},
+				},
+			},
+		},
+		{
+			name: "with reference filter",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1fe023c2-0ccb-11f0-919d-b3e9faacb57a"),
+					CustomerID: uuid.FromStringOrNil("2017e1fe-0ccb-11f0-9c4f-73268b39a2cc"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			size:          10,
+			token:         "2020-09-20T03:23:20.995000Z",
+			referenceType: "recording",
+			referenceID:   uuid.FromStringOrNil("2f7e6d2a-0ccb-11f0-8f0e-1b2c3d4e5f60"),
+			filters: map[amsummary.Field]any{
+				amsummary.FieldDeleted:       false,
+				amsummary.FieldCustomerID:    uuid.FromStringOrNil("2017e1fe-0ccb-11f0-9c4f-73268b39a2cc"),
+				amsummary.FieldReferenceType: "recording",
+				amsummary.FieldReferenceID:   uuid.FromStringOrNil("2f7e6d2a-0ccb-11f0-8f0e-1b2c3d4e5f60"),
 			},
 
 			response: []amsummary.Summary{
@@ -174,7 +213,7 @@ func Test_AISummaryListByCustomerID(t *testing.T) {
 
 			mockReq.EXPECT().AIV1SummaryList(ctx, tt.token, tt.size, tt.filters).Return(tt.response, nil)
 
-			res, err := h.AISummaryGetsByCustomerID(ctx, tt.agent, tt.size, tt.token)
+			res, err := h.AISummaryList(ctx, tt.agent, tt.size, tt.token, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
