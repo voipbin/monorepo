@@ -357,12 +357,18 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Reques
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
-	if len(reqData.Name) > agentNameMaxLength {
-		log.Debugf("Agent name too long. len: %d, max: %d", len(reqData.Name), agentNameMaxLength)
+	if reqData.Name != nil && len(*reqData.Name) > agentNameMaxLength {
+		log.Debugf("Agent name too long. len: %d, max: %d", len(*reqData.Name), agentNameMaxLength)
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.agentHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, agent.RingMethod(reqData.RingMethod))
+	var ringMethod *agent.RingMethod
+	if reqData.RingMethod != nil {
+		rm := agent.RingMethod(*reqData.RingMethod)
+		ringMethod = &rm
+	}
+
+	tmp, err := h.agentHandler.UpdateBasicInfo(ctx, id, reqData.Name, reqData.Detail, ringMethod)
 	if err != nil {
 		log.Errorf("Could not update the agent's basic info. err: %v", err)
 		return simpleResponse(400), nil

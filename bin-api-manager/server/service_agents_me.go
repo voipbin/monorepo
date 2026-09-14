@@ -72,7 +72,7 @@ func (h *server) PutServiceAgentsMe(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentMeUpdate(c.Request.Context(), a, req.Name, req.Detail, amagent.RingMethod(req.RingMethod))
+	res, err := h.serviceHandler.ServiceAgentMeUpdate(c.Request.Context(), a, req.Name, req.Detail, (*amagent.RingMethod)(req.RingMethod))
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		abortWithServiceError(c, err)

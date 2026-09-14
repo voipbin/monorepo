@@ -226,23 +226,8 @@ func (h *server) PutAgentsId(c *gin.Context, id string) {
 		return
 	}
 
-	name := ""
-	if req.Name != nil {
-		name = *req.Name
-	}
-
-	detail := ""
-	if req.Detail != nil {
-		detail = *req.Detail
-	}
-
-	ringMethod := amagent.RingMethodRingAll
-	if req.RingMethod != nil {
-		ringMethod = string(*req.RingMethod)
-	}
-
 	// update the agent
-	res, err := h.serviceHandler.AgentUpdate(c.Request.Context(), a, target, name, detail, amagent.RingMethod(ringMethod))
+	res, err := h.serviceHandler.AgentUpdate(c.Request.Context(), a, target, req.Name, req.Detail, (*amagent.RingMethod)(req.RingMethod))
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		abortWithServiceError(c, err)

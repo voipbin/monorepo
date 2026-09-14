@@ -43,7 +43,7 @@ type AgentHandler interface {
 	List(ctx context.Context, size uint64, token string, filters map[agent.Field]any) ([]*agent.Agent, error)
 	Login(ctx context.Context, username, password string) (*agent.Agent, error)
 	UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error)
-	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.Agent, error)
+	UpdateBasicInfo(ctx context.Context, id uuid.UUID, name *string, detail *string, ringMethod *agent.RingMethod) (*agent.Agent, error)
 	UpdatePassword(ctx context.Context, id uuid.UUID, password string) (*agent.Agent, error)
 	UpdatePermission(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error)
 	UpdatePermissionRaw(ctx context.Context, id uuid.UUID, permission agent.Permission) (*agent.Agent, error)

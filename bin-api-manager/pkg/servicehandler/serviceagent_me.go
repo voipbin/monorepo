@@ -34,7 +34,7 @@ func (h *serviceHandler) ServiceAgentMeGet(ctx context.Context, a *auth.AuthIden
 
 // ServiceAgentMeUpdate updates the authenticated agent's details.
 // It returns updated agent info.
-func (h *serviceHandler) ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthIdentity, name string, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthIdentity, name *string, detail *string, ringMethod *amagent.RingMethod) (*amagent.WebhookMessage, error) {
 	if !a.IsAgent() {
 		return nil, serviceerrors.ErrAuthenticationRequired
 	}
