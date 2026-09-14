@@ -9,6 +9,15 @@ bin/
 *.dylib
 *.test
 
+# Compiled control/manager CLI binaries accidentally left in a service root
+# (built from bin-*/cmd/<name>/main.go; the binary name equals <name>).
+# These are build outputs, never source. Only match files directly under a
+# service root so source dirs like bin-dbscheme-manager/bin-manager/ are safe.
+/bin-*/*-control
+/bin-*/*-manager
+# ...but keep any legitimately tracked source dir that ends in -manager.
+!/bin-*/*-manager/
+
 # Go coverage files
 *.out
 
