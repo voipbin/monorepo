@@ -122,6 +122,34 @@ Always use the combined ``--volumes --purge`` form. ``--purge`` alone
 keeps the database volume with the old domain's data, which is the worst
 partial state to be in.
 
+Known limitations
+------------------
+
+Single-public-IP NAT is not supported
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+External mode targets directly-routable hosts (on-prem, corporate LAN
+with internal DNS, cloud environments with multiple routable IPs).
+Kamailio runs with host networking and binds its dedicated address
+directly, so there is no port mapping to remap it behind a single public
+IP shared with other services. See :doc:`self_hosting_overview` for the
+internal-mode versus external-mode comparison; internal mode has no
+domain, certificate, or routability requirements and works behind any
+NAT.
+
+Restart the Asterisk service and its proxy sidecar together
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``asterisk-call``, ``asterisk-conference``, and ``asterisk-registrar``
+each pair with a dedicated ``-proxy`` sidecar that bridges AMI/ARI to
+the rest of the stack. Recreating one side without the other leaves the
+AMI/ARI bridge orphaned: SIP registration can keep working (it goes
+through pjsip and realtime MySQL, not the proxy) while call control
+silently breaks, reproducing the same symptom as the AMI/ARI credential
+mismatch above. ``sudo ./voipbin restart <service>`` already restarts a
+service and its paired proxy together; avoid running
+``docker compose restart`` directly on just one side of the pair.
+
 Getting help
 ------------
 

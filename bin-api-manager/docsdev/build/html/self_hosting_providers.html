@@ -706,7 +706,7 @@ Docker Compose stack: <code class="docutils literal notranslate"><span class="pr
 <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code> treats a missing value as fatal for signed
 download/upload URLs; <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> falls back to AWS Polly if
 unset. <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> does <strong>not</strong> consume this variable in the
-Docker Compose stack (it only uses <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, above) —
+Docker Compose stack (it only uses <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, above) –
 restarting <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> for a <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code>
 change has no effect.</p></li>
 </ul>
@@ -722,6 +722,68 @@ sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class=
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>storage-manager<span class="w">       </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
+</pre></div>
+</div>
+</section>
+<section id="shared-gcp-storage-and-project-variables">
+<h2>Shared GCP storage and project variables<a class="headerlink" href="#shared-gcp-storage-and-project-variables" title="Link to this heading">¶</a></h2>
+<p>Separately from <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> above, four more
+<code class="docutils literal notranslate"><span class="pre">.env.template</span></code> variables use the <code class="docutils literal notranslate"><span class="pre">GCP_</span></code> prefix. Unlike every other
+provider on this page, one service (<code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>) treats two of them
+as required at boot, not optional:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 35.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Var</p></th>
+<th class="head"><p>Consuming service(s)</p></th>
+<th class="head"><p>Behavior if unset</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_PROJECT_ID</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">api-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> fails to start (hard validation error);
+<code class="docutils literal notranslate"><span class="pre">api-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code> degrade gracefully</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_REGION</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">rag-manager</span></code></p></td>
+<td><p>Fails to start (hard validation error)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_BUCKET_NAME_MEDIA</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">asterisk-call-proxy</span></code>, <code class="docutils literal notranslate"><span class="pre">asterisk-conference-proxy</span></code>,
+<code class="docutils literal notranslate"><span class="pre">call-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code></p></td>
+<td><p>Optional for every consumer, including <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> itself;
+the three call-recording consumers have a working built-in
+default bucket name. <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>’s boot failure below is
+driven only by <code class="docutils literal notranslate"><span class="pre">GCP_PROJECT_ID</span></code>/<code class="docutils literal notranslate"><span class="pre">GCP_REGION</span></code>, not this var</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_BUCKET_NAME_TMP</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">api-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code></p></td>
+<td><p>Both degrade gracefully</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>’s boot failure is specific to its own startup
+validation, not a property of these variables in general: the same
+variables consumed by the other listed services do not crash those
+services if left empty. <code class="docutils literal notranslate"><span class="pre">init.sh</span></code> writes non-functional placeholder
+values (<code class="docutils literal notranslate"><span class="pre">sandbox-placeholder</span></code>, <code class="docutils literal notranslate"><span class="pre">us-central1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sandbox-placeholder-media</span></code>) that satisfy this startup check without
+granting real GCP access, so <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> stays running, but
+RAG ingestion and query calls fail against Vertex AI and Cloud Storage
+until real values are set in <code class="docutils literal notranslate"><span class="pre">.env</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GCP_PROJECT_ID, GCP_REGION, GCP_BUCKET_NAME_MEDIA</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GCP_PROJECT_ID, GCP_BUCKET_NAME_TMP</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>storage-manager<span class="w">       </span><span class="c1"># GCP_PROJECT_ID, GCP_BUCKET_NAME_MEDIA, GCP_BUCKET_NAME_TMP</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>asterisk-call<span class="w">         </span><span class="c1"># GCP_BUCKET_NAME_MEDIA (also restarts its -proxy sidecar)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>asterisk-conference<span class="w">   </span><span class="c1"># GCP_BUCKET_NAME_MEDIA (also restarts its -proxy sidecar)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>call-manager<span class="w">          </span><span class="c1"># GCP_BUCKET_NAME_MEDIA</span>
 </pre></div>
 </div>
 </section>
@@ -850,6 +912,7 @@ its verification email.</p>
             <ul>
 <li><a class="reference internal" href="#">Provider configuration</a><ul>
 <li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a></li>
+<li><a class="reference internal" href="#shared-gcp-storage-and-project-variables">Shared GCP storage and project variables</a></li>
 <li><a class="reference internal" href="#telephony-and-messaging-providers">Telephony and messaging providers</a></li>
 <li><a class="reference internal" href="#email-providers">Email providers</a></li>
 </ul>

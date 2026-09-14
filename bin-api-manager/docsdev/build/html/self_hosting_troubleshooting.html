@@ -650,7 +650,7 @@ auto-skips whatever cannot be probed at the current stage.</p>
 <span class="pre">&lt;detail&gt;</span></code>; every failure (and every fixable warning) is immediately
 followed by a <code class="docutils literal notranslate"><span class="pre">FIX</span> <span class="pre">&lt;name&gt;:</span> <span class="pre">&lt;exact</span> <span class="pre">command&gt;</span></code> line:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./scripts/doctor.sh
-./scripts/doctor.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">&#39;^FIX &#39;</span><span class="w">   </span><span class="c1"># extract every recovery command</span>
+./scripts/doctor.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">'^FIX '</span><span class="w">   </span><span class="c1"># extract every recovery command</span>
 </pre></div>
 </div>
 <p>Exit codes: <code class="docutils literal notranslate"><span class="pre">0</span></code> only when nothing failed (warnings and skips do not
@@ -744,6 +744,32 @@ window (incognito does not trust user-installed CAs).</p>
 keeps the database volume with the old domain’s data, which is the worst
 partial state to be in.</p>
 </section>
+<section id="known-limitations">
+<h2>Known limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">¶</a></h2>
+<section id="single-public-ip-nat-is-not-supported">
+<h3>Single-public-IP NAT is not supported<a class="headerlink" href="#single-public-ip-nat-is-not-supported" title="Link to this heading">¶</a></h3>
+<p>External mode targets directly-routable hosts (on-prem, corporate LAN
+with internal DNS, cloud environments with multiple routable IPs).
+Kamailio runs with host networking and binds its dedicated address
+directly, so there is no port mapping to remap it behind a single public
+IP shared with other services. See <a class="reference internal" href="self_hosting_overview.html"><span class="doc">Overview</span></a> for the
+internal-mode versus external-mode comparison; internal mode has no
+domain, certificate, or routability requirements and works behind any
+NAT.</p>
+</section>
+<section id="restart-the-asterisk-service-and-its-proxy-sidecar-together">
+<h3>Restart the Asterisk service and its proxy sidecar together<a class="headerlink" href="#restart-the-asterisk-service-and-its-proxy-sidecar-together" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">asterisk-call</span></code>, <code class="docutils literal notranslate"><span class="pre">asterisk-conference</span></code>, and <code class="docutils literal notranslate"><span class="pre">asterisk-registrar</span></code>
+each pair with a dedicated <code class="docutils literal notranslate"><span class="pre">-proxy</span></code> sidecar that bridges AMI/ARI to
+the rest of the stack. Recreating one side without the other leaves the
+AMI/ARI bridge orphaned: SIP registration can keep working (it goes
+through pjsip and realtime MySQL, not the proxy) while call control
+silently breaks, reproducing the same symptom as the AMI/ARI credential
+mismatch above. <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">./voipbin</span> <span class="pre">restart</span> <span class="pre">&lt;service&gt;</span></code> already restarts a
+service and its paired proxy together; avoid running
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">restart</span></code> directly on just one side of the pair.</p>
+</section>
+</section>
 <section id="getting-help">
 <h2>Getting help<a class="headerlink" href="#getting-help" title="Link to this heading">¶</a></h2>
 <p>If <code class="docutils literal notranslate"><span class="pre">doctor.sh</span></code> does not resolve the issue, open an issue at
@@ -803,6 +829,11 @@ the full output of <code class="docutils literal notranslate"><span class="pre">
 </ul>
 </li>
 <li><a class="reference internal" href="#reset-everything">Reset everything</a></li>
+<li><a class="reference internal" href="#known-limitations">Known limitations</a><ul>
+<li><a class="reference internal" href="#single-public-ip-nat-is-not-supported">Single-public-IP NAT is not supported</a></li>
+<li><a class="reference internal" href="#restart-the-asterisk-service-and-its-proxy-sidecar-together">Restart the Asterisk service and its proxy sidecar together</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#getting-help">Getting help</a></li>
 </ul>
 </li>
