@@ -659,46 +659,46 @@
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;destinations&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/emails?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "destinations": [
         {
-            &quot;type&quot;: &quot;email&quot;,
-            &quot;target&quot;: &quot;recipient@example.com&quot;
+            "type": "email",
+            "target": "recipient@example.com"
         }
     ],
-    &quot;subject&quot;: &quot;Hello from VoIPBin&quot;,
-    &quot;content&quot;: &quot;This is a test email sent via the VoIPBin API.&quot;,
-    &quot;attachments&quot;: []
-}&#39;
+    "subject": "Hello from VoIPBin",
+    "content": "This is a test email sent via the VoIPBin API.",
+    "attachments": []
+}'
 
 {
-    &quot;id&quot;: &quot;1f25e6c9-6709-44d1-b93e-a5f1c5f80411&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;source&quot;: {
-        &quot;type&quot;: &quot;email&quot;,
-        &quot;target&quot;: &quot;service@voipbin.net&quot;,
-        &quot;target_name&quot;: &quot;voipbin service&quot;,
-        &quot;name&quot;: &quot;&quot;,
-        &quot;detail&quot;: &quot;&quot;
+    "id": "1f25e6c9-6709-44d1-b93e-a5f1c5f80411",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "source": {
+        "type": "email",
+        "target": "service@voipbin.net",
+        "target_name": "voipbin service",
+        "name": "",
+        "detail": ""
     },
-    &quot;destinations&quot;: [
+    "destinations": [
         {
-            &quot;type&quot;: &quot;email&quot;,
-            &quot;target&quot;: &quot;recipient@example.com&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+            "type": "email",
+            "target": "recipient@example.com",
+            "target_name": "",
+            "name": "",
+            "detail": ""
         }
     ],
-    &quot;status&quot;: &quot;initiated&quot;,
-    &quot;subject&quot;: &quot;Hello from VoIPBin&quot;,
-    &quot;content&quot;: &quot;This is a test email sent via the VoIPBin API.&quot;,
-    &quot;attachments&quot;: [],
-    &quot;tm_create&quot;: &quot;2025-03-14 19:04:01.160250&quot;,
-    &quot;tm_update&quot;: &quot;2025-03-14 19:04:01.160250&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "status": "initiated",
+    "subject": "Hello from VoIPBin",
+    "content": "This is a test email sent via the VoIPBin API.",
+    "attachments": [],
+    "tm_create": "2025-03-14 19:04:01.160250",
+    "tm_update": "2025-03-14 19:04:01.160250",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -708,40 +708,40 @@
 </section>
 <section id="id1">
 <h2>Example<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location &#39;https://api.voipbin.net/v1.0/emails?accesskey=your_accesskey&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location 'https://api.voipbin.net/v1.0/emails?accesskey=your_accesskey'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;1f25e6c9-6709-44d1-b93e-a5f1c5f80411&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;source&quot;: {
-                &quot;type&quot;: &quot;email&quot;,
-                &quot;target&quot;: &quot;service@voipbin.net&quot;,
-                &quot;target_name&quot;: &quot;voipbin service&quot;,
-                &quot;name&quot;: &quot;&quot;,
-                &quot;detail&quot;: &quot;&quot;
+            "id": "1f25e6c9-6709-44d1-b93e-a5f1c5f80411",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "source": {
+                "type": "email",
+                "target": "service@voipbin.net",
+                "target_name": "voipbin service",
+                "name": "",
+                "detail": ""
             },
-            &quot;destinations&quot;: [
+            "destinations": [
                 {
-                    &quot;type&quot;: &quot;email&quot;,
-                    &quot;target&quot;: &quot;user@example.com&quot;,
-                    &quot;target_name&quot;: &quot;&quot;,
-                    &quot;name&quot;: &quot;&quot;,
-                    &quot;detail&quot;: &quot;&quot;
+                    "type": "email",
+                    "target": "user@example.com",
+                    "target_name": "",
+                    "name": "",
+                    "detail": ""
                 }
             ],
-            &quot;status&quot;: &quot;delivered&quot;,
-            &quot;subject&quot;: &quot;test email 7&quot;,
-            &quot;content&quot;: &quot;test email from voipbin.&quot;,
-            &quot;attachments&quot;: [],
-            &quot;tm_create&quot;: &quot;2025-03-14 19:04:01.160250&quot;,
-            &quot;tm_update&quot;: &quot;2025-03-14 19:04:11.509512&quot;,
-            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+            "status": "delivered",
+            "subject": "test email 7",
+            "content": "test email from voipbin.",
+            "attachments": [],
+            "tm_create": "2025-03-14 19:04:01.160250",
+            "tm_update": "2025-03-14 19:04:11.509512",
+            "tm_delete": "9999-01-01 00:00:00.000000"
         },
         ...
     ],
-    &quot;next_page_token&quot;: &quot;2025-03-14 18:04:41.998152&quot;
+    "next_page_token": "2025-03-14 18:04:41.998152"
 }
 </pre></div>
 </div>
