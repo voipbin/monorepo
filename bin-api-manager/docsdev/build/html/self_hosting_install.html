@@ -809,7 +809,7 @@ mode; you own both.</p>
 <code class="docutils literal notranslate"><span class="pre">conference.</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk.</span></code>, and <code class="docutils literal notranslate"><span class="pre">registrar.</span></code> of your domain; a wildcard
 covers all six. A wildcard requires the DNS-01 challenge:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>certbot<span class="w"> </span>certonly<span class="w"> </span>--preferred-challenges<span class="w"> </span>dns<span class="w"> </span>--manual<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span>example.com<span class="w"> </span>-d<span class="w"> </span><span class="s1">'*.example.com'</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">'*.registrar.example.com'</span>
+<span class="w">  </span>-d<span class="w"> </span>example.com<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;*.example.com&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;*.registrar.example.com&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -836,7 +836,7 @@ covers all six. A wildcard requires the DNS-01 challenge:</p>
 <h3>Certificate renewal<a class="headerlink" href="#certificate-renewal" title="Link to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">install-certs.sh</span></code> is idempotent and usable as a certbot deploy hook:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>certbot<span class="w"> </span>renew<span class="w"> </span>--deploy-hook<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">'/path/to/install/scripts/install-certs.sh /etc/letsencrypt/live/example.com/fullchain.pem /etc/letsencrypt/live/example.com/privkey.pem'</span>
+<span class="w">  </span><span class="s1">&#39;/path/to/install/scripts/install-certs.sh /etc/letsencrypt/live/example.com/fullchain.pem /etc/letsencrypt/live/example.com/privkey.pem&#39;</span>
 </pre></div>
 </div>
 <div class="admonition warning">

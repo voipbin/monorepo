@@ -673,7 +673,7 @@
               |
    +----------v----------+       +---------------------+
    |   Member A           |       |   Member B           |
-   |   "Receptionist"     |------&gt;|   "Billing Agent"    |
+   |   &quot;Receptionist&quot;     |------&gt;|   &quot;Billing Agent&quot;    |
    |   ai_id: &lt;uuid-A&gt;   | xfer  |   ai_id: &lt;uuid-B&gt;   |
    +-----------+----------+ _to_  +---------------------+
                |            billing
@@ -682,7 +682,7 @@
                v
    +---------------------+
    |   Member C           |
-   |   "Support Agent"    |
+   |   &quot;Support Agent&quot;    |
    |   ai_id: &lt;uuid-C&gt;   |
    +---------------------+
 
@@ -690,11 +690,11 @@
 
    Caller  ──&gt;  Member A (Receptionist)
                    │
-                   │ LLM invokes "xfer_to_billing"
+                   │ LLM invokes &quot;xfer_to_billing&quot;
                    v
                 Member B (Billing Agent)
                    │
-                   │ LLM invokes "xfer_to_support"  (if defined)
+                   │ LLM invokes &quot;xfer_to_support&quot;  (if defined)
                    v
                 Member C (Support Agent)
 </pre></div>
