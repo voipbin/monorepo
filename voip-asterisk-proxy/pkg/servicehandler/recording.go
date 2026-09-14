@@ -15,6 +15,11 @@ func (h *serviceHandler) RecordingFileMove(ctx context.Context, filenames []stri
 		"func":      "RecordingFileMove",
 		"filenames": filenames,
 	})
+
+	if h.client == nil {
+		return errors.New("GCS client is not configured; cannot upload recording files. Check the service-account credential (GOOGLE_APPLICATION_CREDENTIALS_JSON)")
+	}
+
 	log.Debugf("Moving the recording files.")
 
 	for _, filename := range filenames {

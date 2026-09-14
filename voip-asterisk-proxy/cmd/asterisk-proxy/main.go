@@ -55,6 +55,8 @@ var (
 	recordingAsteriskDirectory = ""
 	recordingBucketDirectory   = ""
 
+	googleApplicationCredentialsJSON = ""
+
 	kubernetesDisabled = false
 )
 
@@ -105,7 +107,7 @@ func main() {
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAsteriskEventAll, serviceName)
-	serviceHandler := servicehandler.NewServiceHandler(recordingBucketName, recordingAsteriskDirectory, recordingBucketDirectory)
+	serviceHandler := servicehandler.NewServiceHandler(googleApplicationCredentialsJSON, recordingBucketName, recordingAsteriskDirectory, recordingBucketDirectory)
 
 	// create event handler
 	evtHandler := eventhandler.NewEventHandler(
