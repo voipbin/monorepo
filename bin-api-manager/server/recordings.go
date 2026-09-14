@@ -205,7 +205,12 @@ func (h *server) GetRecordingsIdTranscribes(c *gin.Context, id string, params op
 		return
 	}
 
-	c.JSON(200, res)
+	nextToken := ""
+	if len(res) > 0 && res[len(res)-1].TMCreate != nil {
+		nextToken = res[len(res)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
+	c.JSON(200, GenerateListResponse(res, nextToken))
 }
 
 // GetRecordingsIdTranscripts handles GET /recordings/{id}/transcripts request.
@@ -273,5 +278,10 @@ func (h *server) GetRecordingsIdTranscripts(c *gin.Context, id string, params op
 		return
 	}
 
-	c.JSON(200, res)
+	nextToken := ""
+	if len(res) > 0 && res[len(res)-1].TMCreate != nil {
+		nextToken = res[len(res)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
+	c.JSON(200, GenerateListResponse(res, nextToken))
 }
