@@ -35,8 +35,19 @@ func (h *callHandler) RecordingStart(
 
 	if c.RecordingID != uuid.Nil {
 		return nil, fmt.Errorf("recording is already progressing. recording_id: %s", c.RecordingID)
-	} else if c.Status != call.StatusProgressing {
-		return nil, fmt.Errorf("the call is not progressing. status: %s", c.Status)
+	}
+
+	// answer the call if it has not been answered yet, then start recording without
+	// waiting for the status transition (mirrors the Talk auto-answer behavior).
+	// The call status flips to progressing asynchronously via the ARI
+	// ChannelStateChange event, so re-checking the status right after Answer would
+	// still read the old status. A hung-up call is rejected by channelHandler.Answer
+	// (tm_delete set), so a terminated call still cannot start a recording.
+	if c.Status != call.StatusProgressing {
+		log.Debugf("The call is not progressing yet. Answering the call before recording. status: %s", c.Status)
+		if errAnswer := h.channelHandler.Answer(ctx, c.ChannelID); errAnswer != nil {
+			return nil, errors.Wrap(errAnswer, "could not answer the call before recording")
+		}
 	}
 
 	// starts the recording
