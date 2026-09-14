@@ -15,7 +15,10 @@ bin/
 # service root so source dirs like bin-dbscheme-manager/bin-manager/ are safe.
 /bin-*/*-control
 /bin-*/*-manager
-# ...but keep any legitimately tracked source dir that ends in -manager.
+# ...but keep any legitimately tracked source dir that ends in -control or
+# -manager (e.g. bin-dbscheme-manager/bin-manager/); only the build-output
+# FILES at a service root are ignored, never source directories.
+!/bin-*/*-control/
 !/bin-*/*-manager/
 
 # Go coverage files
