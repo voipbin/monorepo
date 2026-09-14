@@ -1036,7 +1036,7 @@ mode; you own both.</p>
 <code class="docutils literal notranslate"><span class="pre">conference.</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk.</span></code>, and <code class="docutils literal notranslate"><span class="pre">registrar.</span></code> of your domain; a wildcard
 covers all six. A wildcard requires the DNS-01 challenge:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>certbot<span class="w"> </span>certonly<span class="w"> </span>--preferred-challenges<span class="w"> </span>dns<span class="w"> </span>--manual<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span>example.com<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;*.example.com&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;*.registrar.example.com&#39;</span>
+<span class="w">  </span>-d<span class="w"> </span>example.com<span class="w"> </span>-d<span class="w"> </span><span class="s1">'*.example.com'</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">'*.registrar.example.com'</span>
 </pre></div>
 </div>
 </section>
@@ -1063,7 +1063,7 @@ covers all six. A wildcard requires the DNS-01 challenge:</p>
 <h4>Certificate renewal<a class="headerlink" href="#certificate-renewal" title="Link to this heading">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">install-certs.sh</span></code> is idempotent and usable as a certbot deploy hook:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>certbot<span class="w"> </span>renew<span class="w"> </span>--deploy-hook<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">&#39;/path/to/install/scripts/install-certs.sh /etc/letsencrypt/live/example.com/fullchain.pem /etc/letsencrypt/live/example.com/privkey.pem&#39;</span>
+<span class="w">  </span><span class="s1">'/path/to/install/scripts/install-certs.sh /etc/letsencrypt/live/example.com/fullchain.pem /etc/letsencrypt/live/example.com/privkey.pem'</span>
 </pre></div>
 </div>
 <div class="admonition warning">
@@ -1133,33 +1133,33 @@ set the agent’s password explicitly (a fresh admin agent is created with
 a random, unusable password):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Create the customer</span>
 docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;My Company&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--email<span class="w"> </span><span class="s2">&quot;admin@example.com&quot;</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">"My Company"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--email<span class="w"> </span><span class="s2">"admin@example.com"</span>
 
 <span class="c1"># 2. Get the customer ID</span>
 <span class="nv">CUSTOMER_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>customer<span class="w"> </span>list<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[] | select(.email == &quot;admin@example.com&quot;) | .id&#39;</span><span class="k">)</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[] | select(.email == "admin@example.com") | .id'</span><span class="k">)</span>
 
 <span class="c1"># 3. Wait a few seconds for agent-manager to process the event via RabbitMQ</span>
 sleep<span class="w"> </span><span class="m">5</span>
 
-<span class="c1"># 4. Get the auto-created admin agent&#39;s ID</span>
+<span class="c1"># 4. Get the auto-created admin agent's ID</span>
 <span class="nv">AGENT_ID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>list<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CUSTOMER_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[0].id&#39;</span><span class="k">)</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.[0].id'</span><span class="k">)</span>
 
 <span class="c1"># 5. Set a real password</span>
 docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-agent-mgr<span class="w"> </span>/app/bin/agent-control<span class="w"> </span>agent<span class="w"> </span>update-password<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$AGENT_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--password<span class="w"> </span><span class="s2">&quot;your-secure-password&quot;</span>
+<span class="w">  </span>--id<span class="w"> </span><span class="s2">"</span><span class="nv">$AGENT_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--password<span class="w"> </span><span class="s2">"your-secure-password"</span>
 </pre></div>
 </div>
 <section id="get-a-jwt-token">
 <h4>Get a JWT token<a class="headerlink" href="#get-a-jwt-token" title="Link to this heading">¶</a></h4>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/auth/login<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;username&quot;: &quot;admin@example.com&quot;, &quot;password&quot;: &quot;your-secure-password&quot;}&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"username": "admin@example.com", "password": "your-secure-password"}'</span>
 
-<span class="c1"># Response: {&quot;username&quot;: &quot;...&quot;, &quot;token&quot;: &quot;JWT_TOKEN_HERE&quot;}</span>
+<span class="c1"># Response: {"username": "...", "token": "JWT_TOKEN_HERE"}</span>
 </pre></div>
 </div>
 </section>
@@ -1168,9 +1168,9 @@ docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </spa
 <p>An accesskey is a long-lived API token, separate from the short-lived
 JWT above, meant for scripts and integrations:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>voipbin-customer-mgr<span class="w"> </span>/app/bin/customer-control<span class="w"> </span>accesskey<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CUSTOMER_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;API Key&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--detail<span class="w"> </span><span class="s2">&quot;For automation&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--customer-id<span class="w"> </span><span class="s2">"</span><span class="nv">$CUSTOMER_ID</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">"API Key"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--detail<span class="w"> </span><span class="s2">"For automation"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--expire<span class="w"> </span>87600h
 </pre></div>
 </div>
@@ -1179,12 +1179,12 @@ for automation use. Use a shorter value for keys you intend to rotate.</p>
 </section>
 <section id="create-your-first-extension">
 <h4>Create your first extension<a class="headerlink" href="#create-your-first-extension" title="Link to this heading">¶</a></h4>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TOKEN</span><span class="o">=</span><span class="s2">&quot;&lt;jwt_token_from_above&gt;&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TOKEN</span><span class="o">=</span><span class="s2">"&lt;jwt_token_from_above&gt;"</span>
 
 curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://api.voipbin.test:8443/v1.0/extensions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;extension&quot;: &quot;2000&quot;, &quot;password&quot;: &quot;your-secure-password-here&quot;, &quot;name&quot;: &quot;Extension 2000&quot;}&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"extension": "2000", "password": "your-secure-password-here", "name": "Extension 2000"}'</span>
 </pre></div>
 </div>
 </section>
@@ -1267,7 +1267,7 @@ Docker Compose stack: <code class="docutils literal notranslate"><span class="pr
 <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code> treats a missing value as fatal for signed
 download/upload URLs; <code class="docutils literal notranslate"><span class="pre">tts-manager</span></code> falls back to AWS Polly if
 unset. <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> does <strong>not</strong> consume this variable in the
-Docker Compose stack (it only uses <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, above) —
+Docker Compose stack (it only uses <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, above) –
 restarting <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> for a <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code>
 change has no effect.</p></li>
 </ul>
@@ -1283,6 +1283,66 @@ sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class=
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>storage-manager<span class="w">       </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
+</pre></div>
+</div>
+</section>
+<section id="shared-gcp-storage-and-project-variables">
+<h3>Shared GCP storage and project variables<a class="headerlink" href="#shared-gcp-storage-and-project-variables" title="Link to this heading">¶</a></h3>
+<p>Separately from <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> above, four more
+<code class="docutils literal notranslate"><span class="pre">.env.template</span></code> variables use the <code class="docutils literal notranslate"><span class="pre">GCP_</span></code> prefix. Unlike every other
+provider on this page, one service (<code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>) treats two of them
+as required at boot, not optional:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 35.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Var</p></th>
+<th class="head"><p>Consuming service(s)</p></th>
+<th class="head"><p>Behavior if unset</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_PROJECT_ID</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">api-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> fails to start (hard validation error);
+<code class="docutils literal notranslate"><span class="pre">api-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code> degrade gracefully</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_REGION</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">rag-manager</span></code></p></td>
+<td><p>Fails to start (hard validation error)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_BUCKET_NAME_MEDIA</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">asterisk-call-proxy</span></code>, <code class="docutils literal notranslate"><span class="pre">asterisk-conference-proxy</span></code>,
+<code class="docutils literal notranslate"><span class="pre">call-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code></p></td>
+<td><p>The three call-recording consumers have a working built-in
+default bucket name and keep running; <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> fails to
+start if <code class="docutils literal notranslate"><span class="pre">GCP_PROJECT_ID</span></code>/<code class="docutils literal notranslate"><span class="pre">GCP_REGION</span></code> are also unset (see
+above), <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code> degrades gracefully</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_BUCKET_NAME_TMP</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">api-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code></p></td>
+<td><p>Both degrade gracefully</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>’s boot failure is specific to its own startup
+validation, not a property of these variables in general: the same
+variables consumed by the other listed services do not crash those
+services if left empty. <code class="docutils literal notranslate"><span class="pre">init.sh</span></code> writes non-functional placeholder
+values (<code class="docutils literal notranslate"><span class="pre">sandbox-placeholder</span></code>, <code class="docutils literal notranslate"><span class="pre">us-central1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sandbox-placeholder-media</span></code>) that satisfy this startup check without
+granting real GCP access, so <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> stays running, but
+RAG ingestion and query calls fail against Vertex AI and Cloud Storage
+until real values are set in <code class="docutils literal notranslate"><span class="pre">.env</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GCP_PROJECT_ID, GCP_REGION, GCP_BUCKET_NAME_MEDIA</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GCP_PROJECT_ID, GCP_BUCKET_NAME_TMP</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>storage-manager<span class="w">       </span><span class="c1"># GCP_PROJECT_ID, GCP_BUCKET_NAME_MEDIA, GCP_BUCKET_NAME_TMP</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>asterisk-call-proxy<span class="w"> </span>asterisk-conference-proxy<span class="w"> </span>call-manager<span class="w">   </span><span class="c1"># GCP_BUCKET_NAME_MEDIA</span>
 </pre></div>
 </div>
 </section>
@@ -1594,7 +1654,7 @@ auto-skips whatever cannot be probed at the current stage.</p>
 <span class="pre">&lt;detail&gt;</span></code>; every failure (and every fixable warning) is immediately
 followed by a <code class="docutils literal notranslate"><span class="pre">FIX</span> <span class="pre">&lt;name&gt;:</span> <span class="pre">&lt;exact</span> <span class="pre">command&gt;</span></code> line:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./scripts/doctor.sh
-./scripts/doctor.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">&#39;^FIX &#39;</span><span class="w">   </span><span class="c1"># extract every recovery command</span>
+./scripts/doctor.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">'^FIX '</span><span class="w">   </span><span class="c1"># extract every recovery command</span>
 </pre></div>
 </div>
 <p>Exit codes: <code class="docutils literal notranslate"><span class="pre">0</span></code> only when nothing failed (warnings and skips do not
@@ -1687,6 +1747,32 @@ window (incognito does not trust user-installed CAs).</p>
 <p>Always use the combined <code class="docutils literal notranslate"><span class="pre">--volumes</span> <span class="pre">--purge</span></code> form. <code class="docutils literal notranslate"><span class="pre">--purge</span></code> alone
 keeps the database volume with the old domain’s data, which is the worst
 partial state to be in.</p>
+</section>
+<section id="known-limitations">
+<h3>Known limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">¶</a></h3>
+<section id="single-public-ip-nat-is-not-supported">
+<h4>Single-public-IP NAT is not supported<a class="headerlink" href="#single-public-ip-nat-is-not-supported" title="Link to this heading">¶</a></h4>
+<p>External mode targets directly-routable hosts (on-prem, corporate LAN
+with internal DNS, cloud environments with multiple routable IPs).
+Kamailio runs with host networking and binds its dedicated address
+directly, so there is no port mapping to remap it behind a single public
+IP shared with other services. See <a class="reference internal" href="self_hosting_overview.html"><span class="doc">Overview</span></a> for the
+internal-mode versus external-mode comparison; internal mode has no
+domain, certificate, or routability requirements and works behind any
+NAT.</p>
+</section>
+<section id="restart-the-asterisk-service-and-its-proxy-sidecar-together">
+<h4>Restart the Asterisk service and its proxy sidecar together<a class="headerlink" href="#restart-the-asterisk-service-and-its-proxy-sidecar-together" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">asterisk-call</span></code>, <code class="docutils literal notranslate"><span class="pre">asterisk-conference</span></code>, and <code class="docutils literal notranslate"><span class="pre">asterisk-registrar</span></code>
+each pair with a dedicated <code class="docutils literal notranslate"><span class="pre">-proxy</span></code> sidecar that bridges AMI/ARI to
+the rest of the stack. Recreating one side without the other leaves the
+AMI/ARI bridge orphaned: SIP registration can keep working (it goes
+through pjsip and realtime MySQL, not the proxy) while call control
+silently breaks, reproducing the same symptom as the AMI/ARI credential
+mismatch above. <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">./voipbin</span> <span class="pre">restart</span> <span class="pre">&lt;service&gt;</span></code> already restarts a
+service and its paired proxy together; avoid running
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">restart</span></code> directly on just one side of the pair.</p>
+</section>
 </section>
 <section id="getting-help">
 <h3>Getting help<a class="headerlink" href="#getting-help" title="Link to this heading">¶</a></h3>
@@ -1798,6 +1884,7 @@ the full output of <code class="docutils literal notranslate"><span class="pre">
 </li>
 <li><a class="reference internal" href="#provider-configuration">Provider configuration</a><ul>
 <li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a></li>
+<li><a class="reference internal" href="#shared-gcp-storage-and-project-variables">Shared GCP storage and project variables</a></li>
 <li><a class="reference internal" href="#telephony-and-messaging-providers">Telephony and messaging providers</a></li>
 <li><a class="reference internal" href="#email-providers">Email providers</a></li>
 </ul>
@@ -1830,6 +1917,11 @@ the full output of <code class="docutils literal notranslate"><span class="pre">
 </ul>
 </li>
 <li><a class="reference internal" href="#reset-everything">Reset everything</a></li>
+<li><a class="reference internal" href="#known-limitations">Known limitations</a><ul>
+<li><a class="reference internal" href="#single-public-ip-nat-is-not-supported">Single-public-IP NAT is not supported</a></li>
+<li><a class="reference internal" href="#restart-the-asterisk-service-and-its-proxy-sidecar-together">Restart the Asterisk service and its proxy sidecar together</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#getting-help">Getting help</a></li>
 </ul>
 </li>

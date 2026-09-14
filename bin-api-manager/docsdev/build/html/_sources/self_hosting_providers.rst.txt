@@ -56,7 +56,7 @@ confuse them:
   ``storage-manager`` treats a missing value as fatal for signed
   download/upload URLs; ``tts-manager`` falls back to AWS Polly if
   unset. ``pipecat-manager`` does **not** consume this variable in the
-  Docker Compose stack (it only uses ``GOOGLE_API_KEY``, above) —
+  Docker Compose stack (it only uses ``GOOGLE_API_KEY``, above) --
   restarting ``pipecat-manager`` for a ``GOOGLE_APPLICATION_CREDENTIALS``
   change has no effect.
 
@@ -76,6 +76,56 @@ consume that specific variable, per the tables above:
     sudo ./voipbin restart rag-manager           # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart storage-manager       # GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart api-manager           # GOOGLE_APPLICATION_CREDENTIALS
+
+Shared GCP storage and project variables
+--------------------------------------------
+
+Separately from ``GOOGLE_APPLICATION_CREDENTIALS`` above, four more
+``.env.template`` variables use the ``GCP_`` prefix. Unlike every other
+provider on this page, one service (``rag-manager``) treats two of them
+as required at boot, not optional:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 35 45
+
+   * - Var
+     - Consuming service(s)
+     - Behavior if unset
+   * - ``GCP_PROJECT_ID``
+     - ``api-manager``, ``rag-manager``, ``storage-manager``
+     - ``rag-manager`` fails to start (hard validation error);
+       ``api-manager`` and ``storage-manager`` degrade gracefully
+   * - ``GCP_REGION``
+     - ``rag-manager``
+     - Fails to start (hard validation error)
+   * - ``GCP_BUCKET_NAME_MEDIA``
+     - ``asterisk-call-proxy``, ``asterisk-conference-proxy``,
+       ``call-manager``, ``rag-manager``, ``storage-manager``
+     - The three call-recording consumers have a working built-in
+       default bucket name and keep running; ``rag-manager`` fails to
+       start if ``GCP_PROJECT_ID``/``GCP_REGION`` are also unset (see
+       above), ``storage-manager`` degrades gracefully
+   * - ``GCP_BUCKET_NAME_TMP``
+     - ``api-manager``, ``storage-manager``
+     - Both degrade gracefully
+
+``rag-manager``'s boot failure is specific to its own startup
+validation, not a property of these variables in general: the same
+variables consumed by the other listed services do not crash those
+services if left empty. ``init.sh`` writes non-functional placeholder
+values (``sandbox-placeholder``, ``us-central1``,
+``sandbox-placeholder-media``) that satisfy this startup check without
+granting real GCP access, so ``rag-manager`` stays running, but
+RAG ingestion and query calls fail against Vertex AI and Cloud Storage
+until real values are set in ``.env``.
+
+.. code-block:: bash
+
+    sudo ./voipbin restart rag-manager           # GCP_PROJECT_ID, GCP_REGION, GCP_BUCKET_NAME_MEDIA
+    sudo ./voipbin restart api-manager           # GCP_PROJECT_ID, GCP_BUCKET_NAME_TMP
+    sudo ./voipbin restart storage-manager       # GCP_PROJECT_ID, GCP_BUCKET_NAME_MEDIA, GCP_BUCKET_NAME_TMP
+    sudo ./voipbin restart asterisk-call-proxy asterisk-conference-proxy call-manager   # GCP_BUCKET_NAME_MEDIA
 
 Telephony and messaging providers
 --------------------------------------
