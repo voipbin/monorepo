@@ -757,10 +757,10 @@ as required at boot, not optional:</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_BUCKET_NAME_MEDIA</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">asterisk-call-proxy</span></code>, <code class="docutils literal notranslate"><span class="pre">asterisk-conference-proxy</span></code>,
 <code class="docutils literal notranslate"><span class="pre">call-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code></p></td>
-<td><p>The three call-recording consumers have a working built-in
-default bucket name and keep running; <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> fails to
-start if <code class="docutils literal notranslate"><span class="pre">GCP_PROJECT_ID</span></code>/<code class="docutils literal notranslate"><span class="pre">GCP_REGION</span></code> are also unset (see
-above), <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code> degrades gracefully</p></td>
+<td><p>Optional for every consumer, including <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> itself;
+the three call-recording consumers have a working built-in
+default bucket name. <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>’s boot failure below is
+driven only by <code class="docutils literal notranslate"><span class="pre">GCP_PROJECT_ID</span></code>/<code class="docutils literal notranslate"><span class="pre">GCP_REGION</span></code>, not this var</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GCP_BUCKET_NAME_TMP</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">api-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code></p></td>
@@ -781,7 +781,9 @@ until real values are set in <code class="docutils literal notranslate"><span cl
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GCP_PROJECT_ID, GCP_REGION, GCP_BUCKET_NAME_MEDIA</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GCP_PROJECT_ID, GCP_BUCKET_NAME_TMP</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>storage-manager<span class="w">       </span><span class="c1"># GCP_PROJECT_ID, GCP_BUCKET_NAME_MEDIA, GCP_BUCKET_NAME_TMP</span>
-sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>asterisk-call-proxy<span class="w"> </span>asterisk-conference-proxy<span class="w"> </span>call-manager<span class="w">   </span><span class="c1"># GCP_BUCKET_NAME_MEDIA</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>asterisk-call<span class="w">         </span><span class="c1"># GCP_BUCKET_NAME_MEDIA (also restarts its -proxy sidecar)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>asterisk-conference<span class="w">   </span><span class="c1"># GCP_BUCKET_NAME_MEDIA (also restarts its -proxy sidecar)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>call-manager<span class="w">          </span><span class="c1"># GCP_BUCKET_NAME_MEDIA</span>
 </pre></div>
 </div>
 </section>

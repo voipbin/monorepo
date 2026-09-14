@@ -102,10 +102,10 @@ as required at boot, not optional:
    * - ``GCP_BUCKET_NAME_MEDIA``
      - ``asterisk-call-proxy``, ``asterisk-conference-proxy``,
        ``call-manager``, ``rag-manager``, ``storage-manager``
-     - The three call-recording consumers have a working built-in
-       default bucket name and keep running; ``rag-manager`` fails to
-       start if ``GCP_PROJECT_ID``/``GCP_REGION`` are also unset (see
-       above), ``storage-manager`` degrades gracefully
+     - Optional for every consumer, including ``rag-manager`` itself;
+       the three call-recording consumers have a working built-in
+       default bucket name. ``rag-manager``'s boot failure below is
+       driven only by ``GCP_PROJECT_ID``/``GCP_REGION``, not this var
    * - ``GCP_BUCKET_NAME_TMP``
      - ``api-manager``, ``storage-manager``
      - Both degrade gracefully
@@ -125,7 +125,9 @@ until real values are set in ``.env``.
     sudo ./voipbin restart rag-manager           # GCP_PROJECT_ID, GCP_REGION, GCP_BUCKET_NAME_MEDIA
     sudo ./voipbin restart api-manager           # GCP_PROJECT_ID, GCP_BUCKET_NAME_TMP
     sudo ./voipbin restart storage-manager       # GCP_PROJECT_ID, GCP_BUCKET_NAME_MEDIA, GCP_BUCKET_NAME_TMP
-    sudo ./voipbin restart asterisk-call-proxy asterisk-conference-proxy call-manager   # GCP_BUCKET_NAME_MEDIA
+    sudo ./voipbin restart asterisk-call         # GCP_BUCKET_NAME_MEDIA (also restarts its -proxy sidecar)
+    sudo ./voipbin restart asterisk-conference   # GCP_BUCKET_NAME_MEDIA (also restarts its -proxy sidecar)
+    sudo ./voipbin restart call-manager          # GCP_BUCKET_NAME_MEDIA
 
 Telephony and messaging providers
 --------------------------------------
