@@ -19,6 +19,10 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
+func stringPtr(v string) *string { return &v }
+
+func ringMethodPtr(v amagent.RingMethod) *amagent.RingMethod { return &v }
+
 func Test_AgentCreate(t *testing.T) {
 
 	tests := []struct {
@@ -380,9 +384,9 @@ func Test_AgentUpdate(t *testing.T) {
 
 		agent      *auth.AuthIdentity
 		agentID    uuid.UUID
-		agentName  string
-		detail     string
-		ringMethod amagent.RingMethod
+		agentName  *string
+		detail     *string
+		ringMethod *amagent.RingMethod
 
 		resAgentGet *amagent.Agent
 		resAgentPut *amagent.Agent
@@ -398,9 +402,9 @@ func Test_AgentUpdate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
-			"test1",
-			"detail",
-			amagent.RingMethodRingAll,
+			stringPtr("test1"),
+			stringPtr("detail"),
+			ringMethodPtr(amagent.RingMethodRingAll),
 
 			&amagent.Agent{
 				Identity: commonidentity.Identity{

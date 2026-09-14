@@ -108,10 +108,10 @@ func (r *requestHandler) FlowV1FlowDelete(ctx context.Context, flowID uuid.UUID)
 func (r *requestHandler) FlowV1FlowUpdate(
 	ctx context.Context,
 	flowID uuid.UUID,
-	name string,
-	detail string,
+	name *string,
+	detail *string,
 	actions []fmaction.Action,
-	onCompleteFlowID uuid.UUID,
+	onCompleteFlowID *uuid.UUID,
 ) (*fmflow.Flow, error) {
 	uri := fmt.Sprintf("/v1/flows/%s", flowID)
 

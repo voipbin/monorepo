@@ -9295,13 +9295,13 @@ type PutFlowsIdJSONBody struct {
 	// Actions Updated list of actions associated with the flow.
 	Actions []FlowManagerAction `json:"actions"`
 
-	// Detail The updated details of the flow.
-	Detail string `json:"detail"`
+	// Detail The updated details of the flow. Omit to leave unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// Name The updated name of the flow.
-	Name string `json:"name"`
+	// Name The updated name of the flow. Omit to leave unchanged.
+	Name *string `json:"name,omitempty"`
 
-	// OnCompleteFlowId ID of the flow to be executed on completion.
+	// OnCompleteFlowId ID of the flow to be executed on completion. Omit to leave unchanged.
 	OnCompleteFlowId *string `json:"on_complete_flow_id,omitempty"`
 }
 
@@ -10307,14 +10307,14 @@ type PostServiceAgentsFilesMultipartBodyType string
 
 // PutServiceAgentsMeJSONBody defines parameters for PutServiceAgentsMe.
 type PutServiceAgentsMeJSONBody struct {
-	// Detail Additional details about the agent.
-	Detail string `json:"detail"`
+	// Detail Additional details about the agent. Omit to leave unchanged.
+	Detail *string `json:"detail,omitempty"`
 
-	// Name The updated name of the agent.
-	Name string `json:"name"`
+	// Name The updated name of the agent. Omit to leave unchanged.
+	Name *string `json:"name,omitempty"`
 
 	// RingMethod Method used to ring the agent for incoming calls.
-	RingMethod AgentManagerAgentRingMethod `json:"ring_method"`
+	RingMethod *AgentManagerAgentRingMethod `json:"ring_method,omitempty"`
 }
 
 // PutServiceAgentsMeAddressesJSONBody defines parameters for PutServiceAgentsMeAddresses.

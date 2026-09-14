@@ -2,6 +2,7 @@ package agenthandler
 
 import (
 	"context"
+	reflect "reflect"
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -75,29 +76,82 @@ func Test_UpdateBasicInfo(t *testing.T) {
 		name string
 
 		id         uuid.UUID
-		agentName  string
-		detail     string
-		ringMethod agent.RingMethod
+		agentName  *string
+		detail     *string
+		ringMethod *agent.RingMethod
+
+		expectFields   map[agent.Field]any
+		expectNoUpdate bool
 
 		responseAgent *agent.Agent
 	}{
 		{
-			name: "normal",
+			name: "all fields set",
 
 			id:         uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
-			agentName:  "updated name",
-			detail:     "updated detail",
-			ringMethod: agent.RingMethodLinear,
+			agentName:  stringPtr("updated name"),
+			detail:     stringPtr("updated detail"),
+			ringMethod: ringMethodPtr(agent.RingMethodLinear),
+
+			expectFields: map[agent.Field]any{
+				agent.FieldName:       "updated name",
+				agent.FieldDetail:     "updated detail",
+				agent.FieldRingMethod: agent.RingMethod(agent.RingMethodLinear),
+			},
 
 			responseAgent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
-					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+					ID: uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
 				},
-				Username:   "test",
 				Name:       "updated name",
 				Detail:     "updated detail",
 				RingMethod: agent.RingMethodLinear,
+			},
+		},
+		{
+			name: "name only",
+
+			id:        uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+			agentName: stringPtr("renamed"),
+
+			expectFields: map[agent.Field]any{
+				agent.FieldName: "renamed",
+			},
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+				},
+				Name: "renamed",
+			},
+		},
+		{
+			name: "ring_method only",
+
+			id:         uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+			ringMethod: ringMethodPtr(agent.RingMethodLinear),
+
+			expectFields: map[agent.Field]any{
+				agent.FieldRingMethod: agent.RingMethod(agent.RingMethodLinear),
+			},
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+				},
+			},
+		},
+		{
+			name: "all omitted, no-op",
+
+			id: uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+
+			expectNoUpdate: true,
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83"),
+				},
 			},
 		},
 	}
@@ -118,17 +172,22 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetBasicInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod).Return(nil)
-			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
+			if tt.expectNoUpdate {
+				mockDB.EXPECT().AgentUpdate(ctx, tt.id, gomock.Any()).Times(0)
+				mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+			} else {
+				mockDB.EXPECT().AgentUpdate(ctx, tt.id, tt.expectFields).Return(nil)
+				mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
+				mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
+			}
 
 			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
 				t.Errorf("Wrong match. expect:ok, got:%v", err)
 			}
 
-			if res.Name != tt.agentName {
-				t.Errorf("Wrong name.\nexpect: %v\ngot: %v", tt.agentName, res.Name)
+			if !reflect.DeepEqual(res, tt.responseAgent) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAgent, res)
 			}
 		})
 	}

@@ -12921,11 +12921,11 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "description": "The updated name of the flow.",
+                    "description": "The updated name of the flow. Omit to leave unchanged.",
                     "type": "string"
                   },
                   "detail": {
-                    "description": "The updated details of the flow.",
+                    "description": "The updated details of the flow. Omit to leave unchanged.",
                     "type": "string"
                   },
                   "actions": {
@@ -12936,13 +12936,11 @@
                     }
                   },
                   "on_complete_flow_id": {
-                    "description": "ID of the flow to be executed on completion.",
+                    "description": "ID of the flow to be executed on completion. Omit to leave unchanged.",
                     "type": "string"
                   }
                 },
                 "required": [
-                  "name",
-                  "detail",
                   "actions"
                 ]
               }
@@ -19732,21 +19730,16 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "The updated name of the agent."
+                    "description": "The updated name of the agent. Omit to leave unchanged."
                   },
                   "detail": {
                     "type": "string",
-                    "description": "Additional details about the agent."
+                    "description": "Additional details about the agent. Omit to leave unchanged."
                   },
                   "ring_method": {
                     "$ref": "#/components/schemas/AgentManagerAgentRingMethod"
                   }
-                },
-                "required": [
-                  "name",
-                  "detail",
-                  "ring_method"
-                ]
+                }
               }
             }
           }

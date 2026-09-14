@@ -48,10 +48,10 @@ put:
           type: object
           properties:
             name:
-              description: The updated name of the flow.
+              description: The updated name of the flow. Omit to leave unchanged.
               type: string
             detail:
-              description: The updated details of the flow.
+              description: The updated details of the flow. Omit to leave unchanged.
               type: string
             actions:
               description: Updated list of actions associated with the flow.
@@ -59,11 +59,9 @@ put:
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
             on_complete_flow_id:
-              description: ID of the flow to be executed on completion.
+              description: ID of the flow to be executed on completion. Omit to leave unchanged.
               type: string
           required:
-            - name
-            - detail
             - actions
   responses:
     '200':

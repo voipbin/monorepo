@@ -52,10 +52,10 @@ type FlowHandler interface {
 	Update(
 		ctx context.Context,
 		id uuid.UUID,
-		name string,
-		detail string,
+		name *string,
+		detail *string,
 		actions []action.Action,
-		onCompleteFlowID uuid.UUID,
+		onCompleteFlowID *uuid.UUID,
 	) (*flow.Flow, error)
 	UpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*flow.Flow, error)
 

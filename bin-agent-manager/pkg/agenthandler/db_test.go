@@ -18,6 +18,10 @@ import (
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 )
 
+func stringPtr(v string) *string { return &v }
+
+func ringMethodPtr(v agent.RingMethod) *agent.RingMethod { return &v }
+
 func Test_dbList(t *testing.T) {
 
 	tests := []struct {
@@ -130,9 +134,11 @@ func Test_dbUpdateInfo(t *testing.T) {
 		name string
 
 		id         uuid.UUID
-		agentName  string
-		detail     string
-		ringMethod agent.RingMethod
+		agentName  *string
+		detail     *string
+		ringMethod *agent.RingMethod
+
+		expectFields map[agent.Field]any
 
 		responseAgent *agent.Agent
 	}{
@@ -140,9 +146,15 @@ func Test_dbUpdateInfo(t *testing.T) {
 			name: "normal",
 
 			id:         uuid.FromStringOrNil("e9dddd94-298e-11ee-9182-c37003ff92d7"),
-			agentName:  "update name",
-			detail:     "update detail",
-			ringMethod: agent.RingMethodRingAll,
+			agentName:  stringPtr("update name"),
+			detail:     stringPtr("update detail"),
+			ringMethod: ringMethodPtr(agent.RingMethodRingAll),
+
+			expectFields: map[agent.Field]any{
+				agent.FieldName:       "update name",
+				agent.FieldDetail:     "update detail",
+				agent.FieldRingMethod: agent.RingMethod(agent.RingMethodRingAll),
+			},
 
 			responseAgent: &agent.Agent{
 				Identity: commonidentity.Identity{
@@ -168,7 +180,7 @@ func Test_dbUpdateInfo(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentSetBasicInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod).Return(nil)
+			mockDB.EXPECT().AgentUpdate(ctx, tt.id, tt.expectFields).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 			res, err := h.dbUpdateInfo(ctx, tt.id, tt.agentName, tt.detail, tt.ringMethod)

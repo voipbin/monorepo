@@ -84,9 +84,9 @@ func Test_ServiceAgentMeUpdate(t *testing.T) {
 		name string
 
 		agent      *auth.AuthIdentity
-		agentName  string
-		detail     string
-		ringMethod amagent.RingMethod
+		agentName  *string
+		detail     *string
+		ringMethod *amagent.RingMethod
 
 		responseAgent *amagent.Agent
 		expectedRes   *amagent.WebhookMessage
@@ -99,9 +99,9 @@ func Test_ServiceAgentMeUpdate(t *testing.T) {
 					ID: uuid.FromStringOrNil("31cd5e88-b898-11ef-981c-b7b9c42c9e03"),
 				},
 			}),
-			agentName:  "update name",
-			detail:     "update detail",
-			ringMethod: amagent.RingMethodRingAll,
+			agentName:  stringPtr("update name"),
+			detail:     stringPtr("update detail"),
+			ringMethod: ringMethodPtr(amagent.RingMethodRingAll),
 
 			responseAgent: &amagent.Agent{
 				Identity: commonidentity.Identity{

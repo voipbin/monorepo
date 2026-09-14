@@ -170,7 +170,7 @@ type ServiceHandler interface {
 	AgentGet(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error)
 	AgentList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*amagent.WebhookMessage, error)
 	AgentDelete(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error)
-	AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
+	AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name *string, detail *string, ringMethod *amagent.RingMethod) (*amagent.WebhookMessage, error)
 	AgentUpdateAddresses(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error)
 	AgentUpdatePassword(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, password string) (*amagent.WebhookMessage, error)
 	AgentUpdatePermission(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, permission amagent.Permission) (*amagent.WebhookMessage, error)
@@ -759,10 +759,10 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		id uuid.UUID,
-		name string,
-		detail string,
+		name *string,
+		detail *string,
 		actions []fmaction.Action,
-		onCompleteID uuid.UUID,
+		onCompleteID *uuid.UUID,
 	) (*fmflow.WebhookMessage, error)
 
 	// grpupcall handlers
@@ -1166,7 +1166,7 @@ type ServiceHandler interface {
 
 	// service_agent me
 	ServiceAgentMeGet(ctx context.Context, a *auth.AuthIdentity) (*amagent.WebhookMessage, error)
-	ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthIdentity, name string, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error)
+	ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthIdentity, name *string, detail *string, ringMethod *amagent.RingMethod) (*amagent.WebhookMessage, error)
 	ServiceAgentMeUpdateAddresses(ctx context.Context, a *auth.AuthIdentity, addresses []commonaddress.Address) (*amagent.WebhookMessage, error)
 	ServiceAgentMeUpdateStatus(ctx context.Context, a *auth.AuthIdentity, status amagent.Status) (*amagent.WebhookMessage, error)
 	ServiceAgentMeUpdatePassword(ctx context.Context, a *auth.AuthIdentity, password string) (*amagent.WebhookMessage, error)

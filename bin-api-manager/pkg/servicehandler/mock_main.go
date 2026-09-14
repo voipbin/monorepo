@@ -866,7 +866,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentList(ctx, a, size, token, filters
 }
 
 // AgentUpdate mocks base method.
-func (m *MockServiceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name, detail *string, ringMethod *agent.RingMethod) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdate", ctx, a, agentID, name, detail, ringMethod)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -3105,7 +3105,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowList(ctx, a, pageSize, pageToken a
 }
 
 // FlowUpdate mocks base method.
-func (m *MockServiceHandler) FlowUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, actions []action.Action, onCompleteID uuid.UUID) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail *string, actions []action.Action, onCompleteID *uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowUpdate", ctx, a, id, name, detail, actions, onCompleteID)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
@@ -5284,7 +5284,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeGet(ctx, a any) *gomock.
 }
 
 // ServiceAgentMeUpdate mocks base method.
-func (m *MockServiceHandler) ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthIdentity, name, detail string, ringMethod agent.RingMethod) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthIdentity, name, detail *string, ringMethod *agent.RingMethod) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentMeUpdate", ctx, a, name, detail, ringMethod)
 	ret0, _ := ret[0].(*agent.WebhookMessage)

@@ -159,14 +159,24 @@ func (h *server) PutFlowsId(c *gin.Context, id string) {
 		return
 	}
 
+	// actions is a required field (Phase 7a hybrid migration): the generated
+	// binder does not reject a missing/null actions array, so guard explicitly
+	// here. A PUT without actions is a 400, not a silent action-list wipe.
+	if len(req.Actions) == 0 {
+		log.Error("The actions field is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ACTIONS", "The actions field is required and must not be empty."))
+		return
+	}
+
 	actions := []fmaction.Action{}
 	for _, v := range req.Actions {
 		actions = append(actions, ConvertFlowManagerAction(v))
 	}
 
-	onCompleteFlowID := uuid.Nil
+	var onCompleteFlowID *uuid.UUID
 	if req.OnCompleteFlowId != nil {
-		onCompleteFlowID = uuid.FromStringOrNil(*req.OnCompleteFlowId)
+		parsed := uuid.FromStringOrNil(*req.OnCompleteFlowId)
+		onCompleteFlowID = &parsed
 	}
 
 	res, err := h.serviceHandler.FlowUpdate(c.Request.Context(), a, target, req.Name, req.Detail, actions, onCompleteFlowID)

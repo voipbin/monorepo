@@ -205,10 +205,10 @@ func (h *serviceHandler) FlowUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	id uuid.UUID,
-	name string,
-	detail string,
+	name *string,
+	detail *string,
 	actions []fmaction.Action,
-	onCompleteID uuid.UUID,
+	onCompleteID *uuid.UUID,
 ) (*fmflow.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
@@ -224,8 +224,8 @@ func (h *serviceHandler) FlowUpdate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	if onCompleteID != uuid.Nil {
-		tmp, err := h.flowGet(ctx, onCompleteID)
+	if onCompleteID != nil && *onCompleteID != uuid.Nil {
+		tmp, err := h.flowGet(ctx, *onCompleteID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not get the onComplete flow")
 		}

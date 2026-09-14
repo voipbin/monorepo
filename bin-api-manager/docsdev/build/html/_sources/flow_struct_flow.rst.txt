@@ -42,6 +42,8 @@ Flow
 
    Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For ``tm_delete``, this means the flow is still active.
 
+   On ``PUT /flows/{id}``, ``name``, ``detail``, and ``on_complete_flow_id`` follow partial-update semantics: omit a field to leave its stored value unchanged. ``actions`` is required and is always fully replaced with the provided list, so a ``PUT`` without ``actions`` (or with an empty array) is rejected with ``400``. To keep the existing actions unchanged, resend the current action list.
+
 **Example**
 .. code::
 
