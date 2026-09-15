@@ -269,6 +269,12 @@ func Test_GetRecordingsIdTranscribes(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
 	}
+	// response must be wrapped as {"result":[...], "next_page_token":...},
+	// not a raw array, to match the OpenAPI spec.
+	expectRes := `{"result":[],"next_page_token":""}`
+	if w.Body.String() != expectRes {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expectRes, w.Body)
+	}
 }
 
 func Test_GetRecordingsIdTranscribes_InvalidID(t *testing.T) {
@@ -317,6 +323,12 @@ func Test_GetRecordingsIdTranscripts(t *testing.T) {
 	r.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+	// response must be wrapped as {"result":[...], "next_page_token":...},
+	// not a raw array, to match the OpenAPI spec.
+	expectRes := `{"result":[],"next_page_token":""}`
+	if w.Body.String() != expectRes {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expectRes, w.Body)
 	}
 }
 
