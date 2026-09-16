@@ -57,7 +57,7 @@ func Test_GetServiceAgentsTranscripts(t *testing.T) {
 			expectedPageSize:     10,
 			expectedPageToken:    "2020-09-20T03:23:20.995000Z",
 			expectedTranscribeID: uuid.FromStringOrNil("b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e"),
-			expectedRes:          `{"result":[{"id":"550e8400-e29b-41d4-a716-446655440000","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e","direction":"","message":"Hello, how can I help you?","tm_transcript":null,"tm_create":null}],"next_page_token":""}`,
+			expectedRes:          `{"result":[{"id":"550e8400-e29b-41d4-a716-446655440000","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e","direction":"","message":"Hello, how can I help you?","offset_ms":0,"tm_create":null}],"next_page_token":""}`,
 		},
 		{
 			// Regression test for the round-1 design review pagination fix

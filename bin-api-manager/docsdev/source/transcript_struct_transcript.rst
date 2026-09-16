@@ -16,7 +16,7 @@ Transcript
         "transcribe_id": "<string>",
         "direction": "<string>",
         "message": "<string>",
-        "tm_transcript": "<string>",
+        "offset_ms": <integer>,
         "tm_create": "<string>"
     }
 
@@ -25,7 +25,7 @@ Transcript
 * ``transcribe_id`` (UUID): The transcription session that produced this transcript. Obtained from the ``id`` field of ``GET /transcribes``.
 * ``direction`` (enum string): The audio direction that was transcribed. See :ref:`Direction <transcript-struct-transcript-direction>`.
 * ``message`` (string): The transcribed text content.
-* ``tm_transcript`` (string, ISO 8601): Timestamp when the speech was captured.
+* ``offset_ms`` (integer): Offset in milliseconds from the start of the transcription when this segment was spoken.
 * ``tm_create`` (string, ISO 8601): Timestamp when this transcript record was created.
 
 .. _transcript-struct-transcript-direction:
@@ -54,6 +54,6 @@ Example
         "transcribe_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "direction": "in",
         "message": "Hello, I would like to schedule an appointment.",
-        "tm_transcript": "2024-03-01T10:00:05.123456Z",
+        "offset_ms": 5123,
         "tm_create": "2024-03-01T10:00:05.200000Z"
     }

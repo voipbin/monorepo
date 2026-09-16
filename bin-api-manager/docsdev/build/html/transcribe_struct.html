@@ -801,7 +801,7 @@
     <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offset_ms&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
 <span class="p">},</span>
 </pre></div>
@@ -811,13 +811,13 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID): The parent transcribe session’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes</span></code> or the response of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): Whether the speech was incoming or outgoing. See <a class="reference internal" href="#transcribe-struct-transcription-direction"><span class="std std-ref">Direction</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (String): The transcribed text content of this speech segment.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_transcript</span></code> (String): Time offset within the call when this speech occurred. Uses <code class="docutils literal notranslate"><span class="pre">0001-01-01</span> <span class="pre">00:00:00</span></code> as epoch; the time portion represents the offset from the start of the transcription session (e.g., <code class="docutils literal notranslate"><span class="pre">0001-01-01</span> <span class="pre">00:01:04.441160</span></code> means 1 minute and 4 seconds into the call). Sort by this field to reconstruct conversation order.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset_ms</span></code> (Integer): Offset in milliseconds from the start of the transcription when this segment was spoken (e.g., <code class="docutils literal notranslate"><span class="pre">64441</span></code> means 1 minute and 4.441 seconds into the call). Sort by this field to reconstruct conversation order.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Absolute timestamp when this transcript segment was created.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">tm_transcript</span></code> field is a time offset, not an absolute timestamp. Its date part (<code class="docutils literal notranslate"><span class="pre">0001-01-01</span></code>) is a sentinel value meaning “relative to the start of the transcription session.” To reconstruct a conversation in order, sort all transcript segments by <code class="docutils literal notranslate"><span class="pre">tm_transcript</span></code>, not by <code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (which reflects delivery time, not speech time).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">offset_ms</span></code> field is a time offset in milliseconds, not an absolute timestamp. To reconstruct a conversation in order, sort all transcript segments by <code class="docutils literal notranslate"><span class="pre">offset_ms</span></code>, not by <code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (which reflects delivery time, not speech time).</p>
 </div>
 <section id="id3">
 <h3>Example<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
@@ -826,7 +826,7 @@
     <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
     <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, good to see you. How are you today.&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01T00:05:04.44116Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offset_ms&quot;</span><span class="p">:</span> <span class="mi">304441</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01T07:22:07.229309Z&quot;</span>
 <span class="p">}</span>
 </pre></div>

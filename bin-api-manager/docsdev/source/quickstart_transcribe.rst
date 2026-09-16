@@ -293,7 +293,7 @@ Within seconds of the call being answered, the WebSocket begins delivering ``tra
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
             "direction": "out",
             "message": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
-            "tm_transcript": "0001-01-01 00:00:08.991840",
+            "offset_ms": 8991,
             "tm_create": "2026-02-18 10:02:05.233415"
         }
     }
@@ -343,7 +343,7 @@ VoIPBin sends a ``POST`` request to your endpoint each time a transcript segment
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
             "direction": "in",
             "message": "Hi, this is a test of the transcription feature.",
-            "tm_transcript": "0001-01-01 00:00:15.500000",
+            "offset_ms": 15500,
             "tm_create": "2026-02-18 10:02:10.100000"
         }
     }
@@ -369,7 +369,7 @@ After the call ends, you can retrieve the full transcript via the API. Use the `
                 "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
                 "direction": "in",
                 "message": "Hi, this is a test of the transcription feature.",
-                "tm_transcript": "0001-01-01T00:00:15.5Z",
+                "offset_ms": 15500,
                 "tm_create": "2026-02-18T10:02:10.1Z"
             },
             {
@@ -377,7 +377,7 @@ After the call ends, you can retrieve the full transcript via the API. Use the `
                 "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
                 "direction": "out",
                 "message": "Hello. This is a VoIPBin transcription test. Everything you say will be transcribed in real time. Please speak now.",
-                "tm_transcript": "0001-01-01T00:00:08.99184Z",
+                "offset_ms": 8991,
                 "tm_create": "2026-02-18T10:02:05.233415Z"
             }
         ],

@@ -728,7 +728,7 @@ Transcribe call in real-time for live captioning or analysis:
             "transcribe_id": "transcribe-uuid",
             "direction": "in",
             "message": "I need help with my order",
-            "tm_transcript": "0001-01-01 00:00:05.123"
+            "offset_ms": 5123
         }
     }
 

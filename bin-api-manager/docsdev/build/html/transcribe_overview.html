@@ -919,7 +919,7 @@
         <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
         <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
         <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, this is transcribe test call.&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:08.991840&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;offset_ms&quot;</span><span class="p">:</span> <span class="mi">8991</span><span class="p">,</span>
         <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-04 07:15:59.233415&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1016,7 +1016,7 @@
         <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
         <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
         <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, good to see you. How are you today.&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:01:04.441160&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;offset_ms&quot;</span><span class="p">:</span> <span class="mi">64441</span><span class="p">,</span>
         <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:22:07.229309&quot;</span>
     <span class="p">},</span>
     <span class="p">{</span>
@@ -1024,7 +1024,7 @@
         <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
         <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;out&quot;</span><span class="p">,</span>
         <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Welcome to the transcribe test scenario.&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01 00:00:43.116830&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;offset_ms&quot;</span><span class="p">:</span> <span class="mi">43116</span><span class="p">,</span>
         <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:17:27.208337&quot;</span>
     <span class="p">}</span>
 <span class="p">]</span>
@@ -1042,7 +1042,7 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>tm_transcript</p></td>
+<tr class="row-even"><td><p>offset_ms</p></td>
 <td><p>Time offset within the call when speech occurred</p></td>
 </tr>
 <tr class="row-odd"><td><p>tm_create</p></td>
@@ -1052,14 +1052,14 @@
 </table>
 </div>
 <p><strong>Combining Transcripts into Conversation</strong></p>
-<p>To reconstruct a conversation, sort transcripts by <code class="docutils literal notranslate"><span class="pre">tm_transcript</span></code>:</p>
+<p>To reconstruct a conversation, sort transcripts by <code class="docutils literal notranslate"><span class="pre">offset_ms</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Transcripts</span> <span class="n">received</span> <span class="p">(</span><span class="n">order</span> <span class="n">of</span> <span class="n">delivery</span><span class="p">):</span>
 <span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">05</span> <span class="s2">&quot;Welcome to VoIPBin support&quot;</span>
 <span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span> <span class="s2">&quot;Hi, I have a billing question&quot;</span>
 <span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">18</span> <span class="s2">&quot;I&#39;d be happy to help&quot;</span>
 <span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">08</span> <span class="s2">&quot;Hello?&quot;</span>
 
-<span class="n">Sorted</span> <span class="n">by</span> <span class="n">tm_transcript</span><span class="p">:</span>
+<span class="n">Sorted</span> <span class="n">by</span> <span class="n">offset_ms</span><span class="p">:</span>
 <span class="p">[</span><span class="n">out</span><span class="p">]</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">05</span> <span class="s2">&quot;Welcome to VoIPBin support&quot;</span>
 <span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">08</span> <span class="s2">&quot;Hello?&quot;</span>
 <span class="p">[</span><span class="ow">in</span><span class="p">]</span>  <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span> <span class="s2">&quot;Hi, I have a billing question&quot;</span>
@@ -1318,7 +1318,7 @@
 <td><p>Implement idempotency using transcript <code class="docutils literal notranslate"><span class="pre">id</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Events out of order</p></td>
-<td><p>Sort by <code class="docutils literal notranslate"><span class="pre">tm_transcript</span></code> to reconstruct conversation order</p></td>
+<td><p>Sort by <code class="docutils literal notranslate"><span class="pre">offset_ms</span></code> to reconstruct conversation order</p></td>
 </tr>
 </tbody>
 </table>

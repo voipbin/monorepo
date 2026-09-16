@@ -55,7 +55,7 @@ func Test_transcriptsGET(t *testing.T) {
 			expectPageSize:     10,
 			expectPageToken:    "2020-09-20T03:23:20.995000Z",
 			expectTranscribeID: uuid.FromStringOrNil("8425d50e-828d-11ed-a91c-f77fe2ce8202"),
-			expectRes:          `{"result":[{"id":"844b118e-828d-11ed-84a3-fb13c2a499e9","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":null,"tm_create":null}],"next_page_token":""}`,
+			expectRes:          `{"result":[{"id":"844b118e-828d-11ed-84a3-fb13c2a499e9","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","offset_ms":0,"tm_create":null}],"next_page_token":""}`,
 		},
 		{
 			name: "no pagination params use the defaults",
@@ -153,7 +153,7 @@ func Test_transcriptsGET(t *testing.T) {
 			expectPageSize:     100,
 			expectPageToken:    "",
 			expectTranscribeID: uuid.FromStringOrNil("8425d50e-828d-11ed-a91c-f77fe2ce8202"),
-			expectRes:          `{"result":[{"id":"844b118e-828d-11ed-84a3-fb13c2a499e9","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":null,"tm_create":"2020-09-20T03:23:21.995Z"},{"id":"9f06037a-8284-11ed-8b1a-1f5800b90993","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","tm_transcript":null,"tm_create":"2020-09-20T03:23:20.995Z"}],"next_page_token":"2020-09-20T03:23:20.995000Z"}`,
+			expectRes:          `{"result":[{"id":"844b118e-828d-11ed-84a3-fb13c2a499e9","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","offset_ms":0,"tm_create":"2020-09-20T03:23:21.995Z"},{"id":"9f06037a-8284-11ed-8b1a-1f5800b90993","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"00000000-0000-0000-0000-000000000000","direction":"","message":"","offset_ms":0,"tm_create":"2020-09-20T03:23:20.995Z"}],"next_page_token":"2020-09-20T03:23:20.995000Z"}`,
 		},
 	}
 

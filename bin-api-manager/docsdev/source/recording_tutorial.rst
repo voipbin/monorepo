@@ -153,7 +153,7 @@ Example
                 "transcribe_id": "a1b2c3d4-0000-11eb-be45-000000000001",
                 "direction": "in",
                 "message": "Hello, thank you for calling.",
-                "tm_transcript": "2021-01-28 09:17:01.000000",
+                "offset_ms": 1000,
                 "tm_create": "2021-01-28 09:17:13.000000"
             }
         ],

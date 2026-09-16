@@ -17,8 +17,8 @@ type WebhookMessage struct {
 	Direction    Direction `json:"direction"` // direction. in/out
 	Message      string    `json:"message"`   // message
 
-	TMTranscript *time.Time `json:"tm_transcript"`
-	TMCreate     *time.Time `json:"tm_create"` // timestamp
+	OffsetMs int64 `json:"offset_ms"`
+	TMCreate *time.Time `json:"tm_create"` // timestamp
 }
 
 // ConvertWebhookMessage converts to the event
@@ -29,7 +29,7 @@ func (h *Transcript) ConvertWebhookMessage() *WebhookMessage {
 		TranscribeID: h.TranscribeID,
 		Direction:    h.Direction,
 		Message:      h.Message,
-		TMTranscript: h.TMTranscript,
+		OffsetMs:     h.OffsetMs,
 		TMCreate:     h.TMCreate,
 	}
 }

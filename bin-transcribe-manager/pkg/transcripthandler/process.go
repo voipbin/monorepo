@@ -67,7 +67,7 @@ func (h *transcriptHandler) processFromRecording(ctx context.Context, mediaLink 
 				res = append(res, &transcript.Transcript{
 					Direction:    direction,
 					Message:      strings.TrimSpace(currentSentence),
-					TMTranscript: convertTime(sentenceStart),
+					OffsetMs:     toOffsetMs(sentenceStart),
 				})
 
 				currentSentence = ""
@@ -79,17 +79,14 @@ func (h *transcriptHandler) processFromRecording(ctx context.Context, mediaLink 
 		res = append(res, &transcript.Transcript{
 			Direction:    direction,
 			Message:      strings.TrimSpace(currentSentence),
-			TMTranscript: convertTime(sentenceStart),
+			OffsetMs:     toOffsetMs(sentenceStart),
 		})
 	}
 
 	return res, nil
 }
 
-func convertTime(duration time.Duration) *time.Time {
-	// Use the zero date (0001-01-01) as the base, offset by the duration.
-	// This preserves the original semantic: the timestamp represents an offset
-	// from the beginning of the transcription.
-	t := time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC).Add(duration)
-	return &t
+func toOffsetMs(duration time.Duration) int64 {
+	// Offset in milliseconds from the start of the transcription.
+	return duration.Milliseconds()
 }

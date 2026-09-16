@@ -5,12 +5,11 @@ import (
 	"monorepo/bin-transcribe-manager/models/transcript"
 	reflect "reflect"
 	"testing"
-	"time"
 
 	"github.com/gofrs/uuid"
 )
 
-func Test_sortTranscriptsByTMTranscript(t *testing.T) {
+func Test_sortTranscriptsByOffset(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -27,19 +26,19 @@ func Test_sortTranscriptsByTMTranscript(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
 					},
-					TMTranscript: func() *time.Time { t := time.Date(2022, 1, 1, 0, 0, 1, 10000, time.UTC); return &t }(),
+					OffsetMs: 1010,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d1f9be6e-0b23-11f0-b828-37e1c878aff0"),
 					},
-					TMTranscript: func() *time.Time { t := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
+					OffsetMs: 0,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d21e19ee-0b23-11f0-aad2-73ff70024ad9"),
 					},
-					TMTranscript: func() *time.Time { t := time.Date(2022, 1, 1, 0, 0, 1, 0, time.UTC); return &t }(),
+					OffsetMs: 1000,
 				},
 			},
 			expectRes: []*transcript.Transcript{
@@ -47,19 +46,19 @@ func Test_sortTranscriptsByTMTranscript(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d1f9be6e-0b23-11f0-b828-37e1c878aff0"),
 					},
-					TMTranscript: func() *time.Time { t := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC); return &t }(),
+					OffsetMs: 0,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("d21e19ee-0b23-11f0-aad2-73ff70024ad9"),
 					},
-					TMTranscript: func() *time.Time { t := time.Date(2022, 1, 1, 0, 0, 1, 0, time.UTC); return &t }(),
+					OffsetMs: 1000,
 				},
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
 					},
-					TMTranscript: func() *time.Time { t := time.Date(2022, 1, 1, 0, 0, 1, 10000, time.UTC); return &t }(),
+					OffsetMs: 1010,
 				},
 			},
 		},
@@ -68,7 +67,7 @@ func Test_sortTranscriptsByTMTranscript(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			sortTranscriptsByTMTranscript(tt.transcripts)
+			sortTranscriptsByOffset(tt.transcripts)
 			if !reflect.DeepEqual(tt.transcripts, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, tt.transcripts)
 			}

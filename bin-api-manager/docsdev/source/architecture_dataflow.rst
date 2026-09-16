@@ -583,7 +583,7 @@ Real-time transcription processes audio streams:
     | transcribe_id: uuid                      |
     | direction: "in" | "out"                  |
     | message: "Hello, how can I help?"        |
-    | tm_transcript: relative timestamp        |
+    | offset_ms: relative offset (ms)          |
     | tm_create: absolute timestamp            |
     +------------------------------------------+
 

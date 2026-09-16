@@ -7970,12 +7970,12 @@ components:
           type: string
           description: Transcript message
           example: "Hello, thank you for calling. How can I help you?"
-        tm_transcript:
-          type: string
-          format: date-time
-          x-go-type: string
-          description: "Timestamp when this transcript was spoken."
-          example: "2026-01-15T09:31:15.000000Z"
+        offset_ms:
+          type: integer
+          format: int64
+          x-go-type: int64
+          description: "Offset in milliseconds from the start of the transcription when this segment was spoken."
+          example: 3500
         tm_create:
           type: string
           format: date-time

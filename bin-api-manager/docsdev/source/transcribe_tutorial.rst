@@ -167,7 +167,7 @@ Retrieve transcription data after the transcription completes or during real-tim
                 "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
                 "direction": "in",
                 "message": "Hi, good to see you. How are you today?",
-                "tm_transcript": "0001-01-01T00:01:04.44116Z",
+                "offset_ms": 64441,
                 "tm_create": "2024-04-01T07:22:07.229309Z"
             },
             {
@@ -175,7 +175,7 @@ Retrieve transcription data after the transcription completes or during real-tim
                 "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
                 "direction": "out",
                 "message": "Welcome to the transcribe test. All your voice will be transcribed.",
-                "tm_transcript": "0001-01-01T00:00:43.11683Z",
+                "offset_ms": 43116,
                 "tm_create": "2024-04-01T07:17:27.208337Z"
             }
         ],
@@ -292,7 +292,7 @@ Real-time events delivered over the WebSocket use the same envelope as webhooks:
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
             "direction": "out",
             "message": "Hello, this is a transcribe test call.",
-            "tm_transcript": "0001-01-01 00:00:08.991840",
+            "offset_ms": 8991,
             "tm_create": "2024-04-04 07:15:59.233415"
         }
     }
@@ -390,7 +390,7 @@ Every webhook is a JSON object with a common two-field envelope: ``type`` (the e
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
             "direction": "in",
             "message": "I need help with my account",
-            "tm_transcript": "0001-01-01 00:00:15.500000",
+            "offset_ms": 15500,
             "tm_create": "2024-04-04 07:16:05.100000"
         }
     }

@@ -15,7 +15,7 @@ func TestConvertWebhookMessage(t *testing.T) {
 	customerID := uuid.Must(uuid.NewV4())
 	transcribeID := uuid.Must(uuid.NewV4())
 
-	tmTranscript := time.Date(2023, 1, 1, 0, 0, 1, 0, time.UTC)
+	offsetMs := int64(1000)
 	tmCreate := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tr := &Transcript{
@@ -26,7 +26,7 @@ func TestConvertWebhookMessage(t *testing.T) {
 		TranscribeID: transcribeID,
 		Direction:    DirectionIn,
 		Message:      "test message",
-		TMTranscript: &tmTranscript,
+		OffsetMs:     offsetMs,
 		TMCreate:     &tmCreate,
 	}
 
@@ -46,6 +46,9 @@ func TestConvertWebhookMessage(t *testing.T) {
 	}
 	if msg.Message != "test message" {
 		t.Errorf("ConvertWebhookMessage().Message = %v, expected %v", msg.Message, "test message")
+	}
+	if msg.OffsetMs != offsetMs {
+		t.Errorf("ConvertWebhookMessage().OffsetMs = %v, expected %v", msg.OffsetMs, offsetMs)
 	}
 }
 

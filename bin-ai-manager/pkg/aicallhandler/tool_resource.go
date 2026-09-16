@@ -510,14 +510,10 @@ func (h *aicallHandler) renderTranscribe(ctx context.Context, r *tmtranscribe.Tr
 }
 
 // renderTranscriptLine renders one transcript as "[in 00:00:03] hello".
-// TMTranscript encodes an offset from the zero time (0001-01-01 00:00:00 =
-// transcribe start).
+// OffsetMs is the offset in milliseconds from the start of the transcription.
 func renderTranscriptLine(t *tmtranscript.Transcript) string {
-	offset := "--:--:--"
-	if t.TMTranscript != nil && !t.TMTranscript.IsZero() {
-		d := t.TMTranscript.UTC().Sub(time.Time{})
-		offset = fmt.Sprintf("%02d:%02d:%02d", int(d.Hours()), int(d.Minutes())%60, int(d.Seconds())%60)
-	}
+	sec := t.OffsetMs / 1000
+	offset := fmt.Sprintf("%02d:%02d:%02d", sec/3600, (sec%3600)/60, sec%60)
 	return fmt.Sprintf("[%s %s] %s", t.Direction, offset, t.Message)
 }
 

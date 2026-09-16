@@ -9777,15 +9777,15 @@ type TranscribeManagerTranscript struct {
 	// Example: Hello, thank you for calling. How can I help you?
 	Message *string `json:"message,omitempty"`
 
+	// OffsetMs Offset in milliseconds from the start of the transcription when this segment was spoken.
+	//
+	// Example: 3500
+	OffsetMs *int64 `json:"offset_ms,omitempty"`
+
 	// TmCreate Timestamp when the transcript record was created.
 	//
 	// Example: 2026-01-15T09:30:00.000000Z
 	TmCreate *string `json:"tm_create,omitempty"`
-
-	// TmTranscript Timestamp when this transcript was spoken.
-	//
-	// Example: 2026-01-15T09:31:15.000000Z
-	TmTranscript *string `json:"tm_transcript,omitempty"`
 
 	// TranscribeId The unique identifier of the parent transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response.
 	//
