@@ -10,6 +10,7 @@ import (
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
+	cmcontact "monorepo/bin-contact-manager/models/contact"
 )
 
 func (h *server) GetContactAddresses(c *gin.Context, params openapi_server.GetContactAddressesParams) {
@@ -45,13 +46,26 @@ func (h *server) GetContactAddresses(c *gin.Context, params openapi_server.GetCo
 		pageSize = uint64(*params.PageSize)
 	}
 
-	res, err := h.serviceHandler.ContactAddressList(c.Request.Context(), a, filters, pageToken, pageSize)
+	tmps, err := h.serviceHandler.ContactAddressList(c.Request.Context(), a, filters, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not list contact addresses. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}
 
+	items := make([]*cmcontact.Address, len(tmps))
+	for i := range tmps {
+		items[i] = &tmps[i]
+	}
+
+	nextToken := ""
+	if len(items) > 0 {
+		if items[len(items)-1].TMCreate != nil {
+			nextToken = items[len(items)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
+	}
+
+	res := GenerateListResponse(items, nextToken)
 	c.JSON(200, res)
 }
 

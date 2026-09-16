@@ -87,7 +87,7 @@ func Test_GetAggregatedEvents(t *testing.T) {
 			expectCallID:       uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
 			expectPageSize:     20,
 			expectPageToken:    "some-token",
-			expectRes:          `{"result":[{"timestamp":"2024-01-15T10:30:00.000Z","event_type":"call_created","data":{"id":"fe003a08-8f36-11ed-a01a-efb53befe93a"}}]}`,
+			expectRes:          `{"result":[{"timestamp":"2024-01-15T10:30:00.000Z","event_type":"call_created","data":{"id":"fe003a08-8f36-11ed-a01a-efb53befe93a"}}],"next_page_token":""}`,
 		},
 		{
 			name: "pagination defaults when no page_size or page_token",
@@ -107,7 +107,7 @@ func Test_GetAggregatedEvents(t *testing.T) {
 			expectCallID:       uuid.Nil,
 			expectPageSize:     100,
 			expectPageToken:    "",
-			expectRes:          `{"result":[]}`,
+			expectRes:          `{"result":[],"next_page_token":""}`,
 		},
 	}
 

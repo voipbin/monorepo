@@ -87,7 +87,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 			expectResourceID:   uuid.FromStringOrNil("a1b2c3d4-8f36-11ed-a01a-efb53befe93a"),
 			expectPageSize:     20,
 			expectPageToken:    "some-token",
-			expectRes:          `{"result":[{"timestamp":"2024-01-15T10:30:00.000Z","event_type":"conference_created","data":{"id":"a1b2c3d4-8f36-11ed-a01a-efb53befe93a"}}]}`,
+			expectRes:          `{"result":[{"timestamp":"2024-01-15T10:30:00.000Z","event_type":"conference_created","data":{"id":"a1b2c3d4-8f36-11ed-a01a-efb53befe93a"}}],"next_page_token":""}`,
 		},
 		{
 			name: "valid request with flows resource type",
@@ -107,7 +107,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 			expectResourceID:   uuid.FromStringOrNil("b2c3d4e5-8f36-11ed-a01a-efb53befe93a"),
 			expectPageSize:     100,
 			expectPageToken:    "",
-			expectRes:          `{"result":[]}`,
+			expectRes:          `{"result":[],"next_page_token":""}`,
 		},
 		{
 			name: "valid request with activeflows resource type",
@@ -133,7 +133,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 			expectResourceID:   uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a"),
 			expectPageSize:     100,
 			expectPageToken:    "",
-			expectRes:          `{"result":[{"timestamp":"2024-01-15T10:30:00.000Z","event_type":"activeflow_created","data":{"id":"c3d4e5f6-8f36-11ed-a01a-efb53befe93a"}}]}`,
+			expectRes:          `{"result":[{"timestamp":"2024-01-15T10:30:00.000Z","event_type":"activeflow_created","data":{"id":"c3d4e5f6-8f36-11ed-a01a-efb53befe93a"}}],"next_page_token":""}`,
 		},
 	}
 

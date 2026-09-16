@@ -73,14 +73,6 @@ func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resour
 		return
 	}
 
-	// Build response
-	res := struct {
-		Result        interface{} `json:"result"`
-		NextPageToken string      `json:"next_page_token,omitempty"`
-	}{
-		Result:        events,
-		NextPageToken: nextPageToken,
-	}
-
+	res := GenerateListResponse(events, nextPageToken)
 	c.JSON(http.StatusOK, res)
 }
