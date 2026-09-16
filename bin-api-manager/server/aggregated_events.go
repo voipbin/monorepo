@@ -70,14 +70,6 @@ func (h *server) GetAggregatedEvents(c *gin.Context, params openapi_server.GetAg
 		return
 	}
 
-	// Build response
-	res := struct {
-		Result        interface{} `json:"result"`
-		NextPageToken string      `json:"next_page_token,omitempty"`
-	}{
-		Result:        events,
-		NextPageToken: nextPageToken,
-	}
-
+	res := GenerateListResponse(events, nextPageToken)
 	c.JSON(http.StatusOK, res)
 }
