@@ -123,11 +123,26 @@ CPaaS 요약은 사람이 읽고 재사용하는 운영 데이터다. 고객은 
 - flow(TTS/SMS/Email)·webhook 소비처에도 긍정적 외부 영향(원본 개선).
 - 진행 타당.
 
-## 8. 프롬프트 내 language 변수명 교정 (이 PR 포함)
+## 8. Fallback 제거 및 항상-포맷-유지 (옵션 1, 배포 테스트 후 정정)
 
-프롬프트가 언어 변수를 `voipbin.summary.language`로 참조했으나 실제 코드 상수는
-`variableSummaryLanguage = "voipbin.ai_summary.language"`(main.go:112)로 불일치하는
-선존 버그가 있었다. 프롬프트를 plain text로 재작성하면서 이 줄을 필연적으로 다시
-쓰게 되므로, 잘못된 변수명을 그대로 복제하지 않고 올바른 값
-(`voipbin.ai_summary.language`)으로 함께 교정한다. 별도 티켓으로 분리하지 않고
-이 PR에 포함한다(같은 문자열 상수 1곳 내의 자명한 교정, 스코프 오염 아님).
+PR 브랜치를 프로덕션에 선배포해 테스트한 결과, 짧고 STT 품질이 낮은 통화
+(recording 882d1b70, transcript = "This is boyfriend's test." / "Call void
+been is an open source e PA s service." / "Thank you.")에서 요약이 통째로
+"No meaningful content available for summary."로 나오는 회귀가 확인됐다.
+
+원인: 재작성 과정에서 (1) 섹션이 "1~5 번호 출력 의무"에서 "하이픈 가이드"로
+약화되고 (2) 상단 "follow strictly" 규칙으로 전체 지시 톤이 엄격해지면서,
+프롬프트의 `Conditions` fallback("unrelated numbers or words without context")이
+과하게 트리거됐다. 같은 입력에 옛 프롬프트는 요약을, 새 프롬프트는 fallback을
+냈다.
+
+결정(옵션 1):
+- **fallback 문구 완전 제거**("No meaningful content..." / "do not generate").
+- **항상 5개 섹션을 정해진 순서로 출력**. transcript가 짧거나 비어도 포맷 유지.
+- 내용이 없는 섹션은 `- None`, Call Type을 못 정하면 `- Unknown`으로 채운다.
+- 섹션 출력 의무를 명시("Never skip a section and never replace the whole
+  summary with a single sentence")해 회귀 원인이던 섹션 약화를 되돌린다.
+- 마크다운 금지·plain text·하이픈 불릿·language 변수명 교정은 그대로 유지.
+
+코드 영향: 없음. fallback 문구는 프롬프트 문자열 안에만 있었고 content.go 등에서
+그 문자열을 특별 처리하는 로직이 없으므로(grep 확인), 프롬프트 상수만 수정한다.

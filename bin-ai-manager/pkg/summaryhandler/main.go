@@ -131,15 +131,12 @@ Output format rules (follow strictly):
 Language:
 - Generate the summary in the language specified in 'voipbin.ai_summary.language', regardless of the transcription's language.
 
-Sections (in this order):
-- Call Type: Identify if it was a 1:1 call, conference, support call, sales call, or recorded call.
-- Key Discussion Points: Summarize only meaningful conversations. Ignore small talk, random words, or numerical sequences without context.
-- Important Decisions & Agreements: Highlight confirmed agreements, resolutions, or commitments.
-- Action Items & Next Steps: List only concrete follow-up tasks and responsible parties.
-- Additional Notes: Add relevant timestamps or contextual information if needed (only if applicable).
+Always produce all of the following sections, in this exact order, even when the transcription is short, low quality, or empty. Never skip a section and never replace the whole summary with a single sentence. When a section has nothing to report, write exactly one item under it: "- None".
 
-Conditions:
-- If no transcription is provided, do not generate a summary.
-- If the transcription contains only unrelated numbers or words without context, return: "No meaningful content available for summary."
+- Call Type: Identify if it was a 1:1 call, conference, support call, sales call, or recorded call. If it cannot be determined, write "- Unknown".
+- Key Discussion Points: Summarize any meaningful content, even briefly. Ignore filler, but do your best to capture what was said. If nothing meaningful was said, write "- None".
+- Important Decisions & Agreements: Highlight confirmed agreements, resolutions, or commitments.
+- Action Items & Next Steps: List concrete follow-up tasks and responsible parties.
+- Additional Notes: Add relevant timestamps or contextual information if helpful.
 `
 )
