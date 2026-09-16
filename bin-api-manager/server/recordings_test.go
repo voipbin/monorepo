@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
@@ -250,6 +251,50 @@ func Test_GetRecordingsIdTranscribes(t *testing.T) {
 		},
 	})
 	recordingID := uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929")
+	tmCreate := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/recordings/%s/transcribes?page_size=10", recordingID), nil)
+	responseTranscribes := []*tmtranscribe.WebhookMessage{
+		{
+			Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("6e812ad0-828a-11ed-bfe8-9f9b344a834b"),
+			},
+			TMCreate: &tmCreate,
+		},
+	}
+	mockSvc.EXPECT().RecordingTranscribeList(req.Context(), agent, recordingID, uint64(10), "").Return(responseTranscribes, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+
+	// The response must be wrapped in the {result, next_page_token} envelope, not a raw array.
+	// next_page_token is computed from the last element's TMCreate at microsecond precision.
+	expectedRes := `{"result":[{"id":"6e812ad0-828a-11ed-bfe8-9f9b344a834b","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":"2020-09-20T03:23:20.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:20.995000Z"}`
+	if w.Body.String() != expectedRes {
+		t.Errorf("Wrong match.\nexpect: %s\ngot:    %s", expectedRes, w.Body.String())
+	}
+}
+
+func Test_GetRecordingsIdTranscribes_EmptyList(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	recordingID := uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929")
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -268,6 +313,12 @@ func Test_GetRecordingsIdTranscribes(t *testing.T) {
 	r.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+
+	// An empty list must serialize as result:[] (not null) with an empty token — locks the nil-coercion regression.
+	expectedRes := `{"result":[],"next_page_token":""}`
+	if w.Body.String() != expectedRes {
+		t.Errorf("Wrong match.\nexpect: %s\ngot:    %s", expectedRes, w.Body.String())
 	}
 }
 
@@ -300,6 +351,52 @@ func Test_GetRecordingsIdTranscripts(t *testing.T) {
 	})
 	recordingID := uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929")
 	transcribeID := uuid.FromStringOrNil("b2000000-0000-11eb-be45-000000000002")
+	tmCreate := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) { c.Set("auth_identity", agent) })
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/recordings/%s/transcripts?transcribe_id=%s&page_size=10", recordingID, transcribeID), nil)
+	responseTranscripts := []*tmtranscript.WebhookMessage{
+		{
+			Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("d266a155-a5ec-41f3-a075-bf8f95d0c7f8"),
+			},
+			TranscribeID: transcribeID,
+			Direction:    "out",
+			Message:      "hello",
+			OffsetMs:     6600,
+			TMCreate:     &tmCreate,
+		},
+	}
+	mockSvc.EXPECT().RecordingTranscriptList(req.Context(), agent, recordingID, transcribeID, uint64(10), "").Return(responseTranscripts, nil)
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+
+	// The response must be wrapped in the {result, next_page_token} envelope, not a raw array.
+	// offset_ms must be exposed; next_page_token is computed from the last element's TMCreate.
+	expectedRes := `{"result":[{"id":"d266a155-a5ec-41f3-a075-bf8f95d0c7f8","customer_id":"00000000-0000-0000-0000-000000000000","transcribe_id":"b2000000-0000-11eb-be45-000000000002","direction":"out","message":"hello","offset_ms":6600,"tm_create":"2020-09-20T03:23:20.995Z"}],"next_page_token":"2020-09-20T03:23:20.995000Z"}`
+	if w.Body.String() != expectedRes {
+		t.Errorf("Wrong match.\nexpect: %s\ngot:    %s", expectedRes, w.Body.String())
+	}
+}
+
+func Test_GetRecordingsIdTranscripts_EmptyList(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")},
+	})
+	recordingID := uuid.FromStringOrNil("31982926-61e3-11eb-a373-37c520973929")
+	transcribeID := uuid.FromStringOrNil("b2000000-0000-11eb-be45-000000000002")
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -317,6 +414,12 @@ func Test_GetRecordingsIdTranscripts(t *testing.T) {
 	r.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
 		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+	}
+
+	// An empty list must serialize as result:[] (not null) with an empty token — locks the nil-coercion regression.
+	expectedRes := `{"result":[],"next_page_token":""}`
+	if w.Body.String() != expectedRes {
+		t.Errorf("Wrong match.\nexpect: %s\ngot:    %s", expectedRes, w.Body.String())
 	}
 }
 
