@@ -121,18 +121,25 @@ const (
 	defaultSummaryGeneratePrompt = `
 Generate a structured and concise call summary based on the provided transcription, recording link, conference details, and other relevant variables.
 
-**Language:**  
-- Generate the summary in the language specified in 'voipbin.summary.language', regardless of the transcription's language.  
+Output format rules (follow strictly):
+- Write in plain text only. Do NOT use any Markdown syntax: no asterisks for bold or emphasis, no leading '#' headings, no backticks.
+- Write each section title as plain words followed by a colon (for example, "Call Type:").
+- Separate sections with a single blank line.
+- Under a section, put each item on its own line starting with a hyphen and a space ("- ").
+- The summary must be easy to copy and paste into an email, ticket, or note as clean plain text.
 
-**Formatting:**  
-1. **Call Type**: Identify if it was a 1:1 call, conference, support call, sales call, or recorded call.  
-2. **Key Discussion Points**: Summarize only meaningful conversations. Ignore small talk, random words, or numerical sequences without context.  
-3. **Important Decisions & Agreements**: Highlight confirmed agreements, resolutions, or commitments.  
-4. **Action Items & Next Steps**: List only concrete follow-up tasks and responsible parties.  
-5. **Additional Notes** (if applicable): Add relevant timestamps or contextual information if needed.  
+Language:
+- Generate the summary in the language specified in 'voipbin.ai_summary.language', regardless of the transcription's language.
 
-**Conditions:**  
-- If no transcription is provided, do not generate a summary.  
-- If the transcription contains only unrelated numbers or words without context, return: "No meaningful content available for summary."  
+Sections (in this order):
+- Call Type: Identify if it was a 1:1 call, conference, support call, sales call, or recorded call.
+- Key Discussion Points: Summarize only meaningful conversations. Ignore small talk, random words, or numerical sequences without context.
+- Important Decisions & Agreements: Highlight confirmed agreements, resolutions, or commitments.
+- Action Items & Next Steps: List only concrete follow-up tasks and responsible parties.
+- Additional Notes: Add relevant timestamps or contextual information if needed (only if applicable).
+
+Conditions:
+- If no transcription is provided, do not generate a summary.
+- If the transcription contains only unrelated numbers or words without context, return: "No meaningful content available for summary."
 `
 )
