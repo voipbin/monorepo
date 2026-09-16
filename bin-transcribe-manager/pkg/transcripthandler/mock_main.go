@@ -13,7 +13,6 @@ import (
 	context "context"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	reflect "reflect"
-	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -44,18 +43,18 @@ func (m *MockTranscriptHandler) EXPECT() *MockTranscriptHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockTranscriptHandler) Create(ctx context.Context, customerID, transcribeID uuid.UUID, direction transcript.Direction, message string, tmTranscript *time.Time) (*transcript.Transcript, error) {
+func (m *MockTranscriptHandler) Create(ctx context.Context, customerID, transcribeID uuid.UUID, direction transcript.Direction, message string, offsetMs int64) (*transcript.Transcript, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, transcribeID, direction, message, tmTranscript)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, transcribeID, direction, message, offsetMs)
 	ret0, _ := ret[0].(*transcript.Transcript)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockTranscriptHandlerMockRecorder) Create(ctx, customerID, transcribeID, direction, message, tmTranscript any) *gomock.Call {
+func (mr *MockTranscriptHandlerMockRecorder) Create(ctx, customerID, transcribeID, direction, message, offsetMs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTranscriptHandler)(nil).Create), ctx, customerID, transcribeID, direction, message, tmTranscript)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTranscriptHandler)(nil).Create), ctx, customerID, transcribeID, direction, message, offsetMs)
 }
 
 // Delete mocks base method.

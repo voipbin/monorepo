@@ -138,7 +138,7 @@ Transcription
         "transcribe_id": "<string>",
         "direction": "<string>",
         "message": "<string>",
-        "tm_transcript": "<string>",
+        "offset_ms": <integer>,
         "tm_create": "<string>",
     },
 
@@ -146,12 +146,12 @@ Transcription
 * ``transcribe_id`` (UUID): The parent transcribe session's ID. Obtained from ``GET /transcribes`` or the response of ``POST /transcribes``.
 * ``direction`` (enum string): Whether the speech was incoming or outgoing. See :ref:`Direction <transcribe-struct-transcription-direction>`.
 * ``message`` (String): The transcribed text content of this speech segment.
-* ``tm_transcript`` (String): Time offset within the call when this speech occurred. Uses ``0001-01-01 00:00:00`` as epoch; the time portion represents the offset from the start of the transcription session (e.g., ``0001-01-01 00:01:04.441160`` means 1 minute and 4 seconds into the call). Sort by this field to reconstruct conversation order.
+* ``offset_ms`` (Integer): Offset in milliseconds from the start of the transcription when this segment was spoken (e.g., ``64441`` means 1 minute and 4.441 seconds into the call). Sort by this field to reconstruct conversation order.
 * ``tm_create`` (string, ISO 8601): Absolute timestamp when this transcript segment was created.
 
 .. note:: **AI Implementation Hint**
 
-   The ``tm_transcript`` field is a time offset, not an absolute timestamp. Its date part (``0001-01-01``) is a sentinel value meaning "relative to the start of the transcription session." To reconstruct a conversation in order, sort all transcript segments by ``tm_transcript``, not by ``tm_create`` (which reflects delivery time, not speech time).
+   The ``offset_ms`` field is a time offset in milliseconds, not an absolute timestamp. To reconstruct a conversation in order, sort all transcript segments by ``offset_ms``, not by ``tm_create`` (which reflects delivery time, not speech time).
 
 Example
 +++++++
@@ -163,7 +163,7 @@ Example
         "transcribe_id": "bbf08426-3979-41bc-a544-5fc92c237848",
         "direction": "in",
         "message": "Hi, good to see you. How are you today.",
-        "tm_transcript": "0001-01-01T00:05:04.44116Z",
+        "offset_ms": 304441,
         "tm_create": "2024-04-01T07:22:07.229309Z"
     }
 

@@ -20,7 +20,7 @@ import (
 func Test_TranscriptCreate(t *testing.T) {
 
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
-	tmTranscript := func() *time.Time { t := time.Date(0, 1, 1, 0, 0, 1, 0, time.UTC); return &t }()
+	offsetMs := int64(1000)
 
 	type test struct {
 		name string
@@ -42,7 +42,7 @@ func Test_TranscriptCreate(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("60942350-7e2f-11ed-be15-9fea382cfa70"),
 				Direction:    transcript.DirectionIn,
 				Message:      "Hello, this is test message",
-				TMTranscript: tmTranscript,
+				OffsetMs:     offsetMs,
 			},
 
 			responseCurTime: curTime,
@@ -54,7 +54,7 @@ func Test_TranscriptCreate(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("60942350-7e2f-11ed-be15-9fea382cfa70"),
 				Direction:    transcript.DirectionIn,
 				Message:      "Hello, this is test message",
-				TMTranscript: tmTranscript,
+				OffsetMs:     offsetMs,
 				TMCreate:     curTime,
 				TMDelete:     nil,
 			},

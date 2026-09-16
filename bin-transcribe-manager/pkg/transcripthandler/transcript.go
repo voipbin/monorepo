@@ -2,7 +2,6 @@ package transcripthandler
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -18,7 +17,7 @@ func (h *transcriptHandler) Create(
 	transcribeID uuid.UUID,
 	direction transcript.Direction,
 	message string,
-	tmTranscript *time.Time,
+	offsetMs int64,
 ) (*transcript.Transcript, error) {
 
 	id := h.utilHandler.UUIDCreate()
@@ -32,7 +31,7 @@ func (h *transcriptHandler) Create(
 		Direction: direction,
 		Message:   message,
 
-		TMTranscript: tmTranscript,
+		OffsetMs: offsetMs,
 	}
 
 	if errCreate := h.db.TranscriptCreate(ctx, tr); errCreate != nil {

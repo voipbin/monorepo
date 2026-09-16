@@ -21,7 +21,7 @@ func TestTranscriptStruct(t *testing.T) {
 	customerID := uuid.Must(uuid.NewV4())
 	transcribeID := uuid.Must(uuid.NewV4())
 
-	tmTranscript := time.Date(2023, 1, 1, 0, 0, 1, 123456000, time.UTC)
+	offsetMs := int64(1123)
 	tmCreate := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tr := Transcript{
@@ -32,7 +32,7 @@ func TestTranscriptStruct(t *testing.T) {
 		TranscribeID: transcribeID,
 		Direction:    DirectionIn,
 		Message:      "Hello, this is a test message.",
-		TMTranscript: &tmTranscript,
+		OffsetMs:     offsetMs,
 		TMCreate:     &tmCreate,
 		TMDelete:     nil,
 	}
@@ -52,8 +52,8 @@ func TestTranscriptStruct(t *testing.T) {
 	if tr.Message != "Hello, this is a test message." {
 		t.Errorf("Transcript.Message = %v, expected %v", tr.Message, "Hello, this is a test message.")
 	}
-	if tr.TMTranscript == nil || !tr.TMTranscript.Equal(tmTranscript) {
-		t.Errorf("Transcript.TMTranscript = %v, expected %v", tr.TMTranscript, tmTranscript)
+	if tr.OffsetMs != offsetMs {
+		t.Errorf("Transcript.OffsetMs = %v, expected %v", tr.OffsetMs, offsetMs)
 	}
 }
 

@@ -278,7 +278,7 @@ Configure a webhook URL in your customer settings to receive ``transcript_create
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
             "direction": "out",
             "message": "Hello, this is transcribe test call.",
-            "tm_transcript": "0001-01-01 00:00:08.991840",
+            "offset_ms": 8991,
             "tm_create": "2024-04-04 07:15:59.233415"
         }
     }
@@ -375,7 +375,7 @@ Each transcript includes a ``direction`` field indicating whether the speech was
             "transcribe_id": "bbf08426-3979-41bc-a544-5fc92c237848",
             "direction": "in",
             "message": "Hi, good to see you. How are you today.",
-            "tm_transcript": "0001-01-01 00:01:04.441160",
+            "offset_ms": 64441,
             "tm_create": "2024-04-01 07:22:07.229309"
         },
         {
@@ -383,7 +383,7 @@ Each transcript includes a ``direction`` field indicating whether the speech was
             "transcribe_id": "bbf08426-3979-41bc-a544-5fc92c237848",
             "direction": "out",
             "message": "Welcome to the transcribe test scenario.",
-            "tm_transcript": "0001-01-01 00:00:43.116830",
+            "offset_ms": 43116,
             "tm_create": "2024-04-01 07:17:27.208337"
         }
     ]
@@ -399,7 +399,7 @@ Working with Transcripts
 
    * - Field
      - Description
-   * - tm_transcript
+   * - offset_ms
      - Time offset within the call when speech occurred
    * - tm_create
      - Absolute timestamp when transcript was created
@@ -407,7 +407,7 @@ Working with Transcripts
 
 **Combining Transcripts into Conversation**
 
-To reconstruct a conversation, sort transcripts by ``tm_transcript``:
+To reconstruct a conversation, sort transcripts by ``offset_ms``:
 
 ::
 
@@ -417,7 +417,7 @@ To reconstruct a conversation, sort transcripts by ``tm_transcript``:
     [out] 00:00:18 "I'd be happy to help"
     [in]  00:00:08 "Hello?"
 
-    Sorted by tm_transcript:
+    Sorted by offset_ms:
     [out] 00:00:05 "Welcome to VoIPBin support"
     [in]  00:00:08 "Hello?"
     [in]  00:00:12 "Hi, I have a billing question"
@@ -656,7 +656,7 @@ Troubleshooting
    * - Duplicate events
      - Implement idempotency using transcript ``id``
    * - Events out of order
-     - Sort by ``tm_transcript`` to reconstruct conversation order
+     - Sort by ``offset_ms`` to reconstruct conversation order
 
 
 

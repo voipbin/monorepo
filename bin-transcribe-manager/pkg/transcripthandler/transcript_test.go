@@ -20,7 +20,7 @@ import (
 
 func Test_Create(t *testing.T) {
 
-	tmTranscript := time.Date(0, 0, 0, 0, 0, 1, 0, time.UTC)
+	offsetMs := int64(1000)
 
 	tests := []struct {
 		name string
@@ -29,7 +29,7 @@ func Test_Create(t *testing.T) {
 		transcribeID uuid.UUID
 		direction    transcript.Direction
 		message      string
-		tmTranscript *time.Time
+		offsetMs     int64
 
 		responseUUID       uuid.UUID
 		responseTranscript *transcript.Transcript
@@ -43,7 +43,7 @@ func Test_Create(t *testing.T) {
 			uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 			transcript.DirectionIn,
 			"test transcript",
-			&tmTranscript,
+			offsetMs,
 
 			uuid.FromStringOrNil("494f5bfc-7eb5-11ed-a6d7-07162f18f28e"),
 			&transcript.Transcript{
@@ -54,7 +54,7 @@ func Test_Create(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 				Direction:    transcript.DirectionIn,
 				Message:      "test transcript",
-				TMTranscript: &tmTranscript,
+				OffsetMs:     offsetMs,
 			},
 
 			&transcript.Transcript{
@@ -65,7 +65,7 @@ func Test_Create(t *testing.T) {
 				TranscribeID: uuid.FromStringOrNil("0da54c10-7eb5-11ed-b190-43412cc32f80"),
 				Direction:    transcript.DirectionIn,
 				Message:      "test transcript",
-				TMTranscript: &tmTranscript,
+				OffsetMs:     offsetMs,
 			},
 		},
 	}
@@ -92,7 +92,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().TranscriptGet(ctx, tt.responseUUID).Return(tt.responseTranscript, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscript.CustomerID, transcript.EventTypeTranscriptCreated, tt.responseTranscript)
 
-			res, err := h.Create(ctx, tt.customerID, tt.transcribeID, tt.direction, tt.message, tt.tmTranscript)
+			res, err := h.Create(ctx, tt.customerID, tt.transcribeID, tt.direction, tt.message, tt.offsetMs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

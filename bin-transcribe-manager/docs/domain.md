@@ -29,11 +29,10 @@ An individual transcribed text segment from an STT provider.
 | `id` | UUID | Primary key |
 | `transcribe_id` | UUID | FK to parent session |
 | `direction` | enum | `in` or `out` |
-| `text` | string | Transcribed text |
-| `start_time` | float | Segment start (seconds from call start) |
-| `end_time` | float | Segment end (seconds) |
-| `confidence` | float | Provider confidence score |
+| `message` | string | Transcribed text |
+| `offset_ms` | int64 | Offset in milliseconds from the start of the transcription when this segment was spoken |
 | `tm_create` | timestamp | When segment was received |
+| `tm_delete` | timestamp | Soft-delete timestamp (NULL = active) |
 
 ## Key Business Rules
 

@@ -12,7 +12,7 @@ const (
 	FieldDirection Field = "direction" // direction
 	FieldMessage   Field = "message"   // message
 
-	FieldTMTranscript Field = "tm_transcript" // tm_transcript
+	FieldOffsetMs Field = "offset_ms" // offset_ms
 
 	FieldTMCreate Field = "tm_create" // tm_create
 	FieldTMDelete Field = "tm_delete" // tm_delete

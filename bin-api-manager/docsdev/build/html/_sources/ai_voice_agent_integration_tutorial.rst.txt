@@ -199,7 +199,7 @@ When the caller responds, VoIPBin delivers a ``transcript_created`` event to you
             "transcribe_id": "550e8400-e29b-41d4-a716-446655440000",
             "direction": "in",
             "message": "Hi, I need help with my account balance.",
-            "tm_transcript": "0001-01-01 00:00:08.991840",
+            "offset_ms": 8991,
             "tm_create": "2026-01-15T09:30:15.000000Z"
         }
     }

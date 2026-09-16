@@ -161,19 +161,17 @@ func Test_toolHandleGetResource_success(t *testing.T) {
 					HostID:   uuid.FromStringOrNil("66666666-0000-4000-8000-000000000001"),
 				}, nil)
 				// dbhandler order: tm_create DESC (most recent first)
-				offset1 := time.Time{}.Add(3 * time.Second)
-				offset2 := time.Time{}.Add(8 * time.Second)
 				mockReq.EXPECT().TranscribeV1TranscriptList(gomock.Any(), "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
 					tmtranscript.FieldTranscribeID: uuid.FromStringOrNil(trResourceID),
 					tmtranscript.FieldDeleted:      false,
 				}).Return([]tmtranscript.Transcript{
-					{Direction: tmtranscript.DirectionOut, Message: "how can I help", TMTranscript: &offset2},
-					{Direction: tmtranscript.DirectionIn, Message: "hello there", TMTranscript: &offset1},
-					{Direction: tmtranscript.DirectionIn, Message: "very first words", TMTranscript: nil},
+					{Direction: tmtranscript.DirectionOut, Message: "how can I help", OffsetMs: 8000},
+					{Direction: tmtranscript.DirectionIn, Message: "hello there", OffsetMs: 3000},
+					{Direction: tmtranscript.DirectionIn, Message: "very first words", OffsetMs: 0},
 				}, nil)
 			},
-			// chronological order after reversal; nil TMTranscript renders --:--:--
-			expectContains:    []string{"status: done", "language: en-US", "[in --:--:--] very first words", "[in 00:00:03] hello there", "[out 00:00:08] how can I help"},
+			// chronological order after reversal; zero OffsetMs renders 00:00:00
+			expectContains:    []string{"status: done", "language: en-US", "[in 00:00:00] very first words", "[in 00:00:03] hello there", "[out 00:00:08] how can I help"},
 			expectNotContains: []string{"66666666-0000-4000-8000-000000000001"},
 		},
 		{

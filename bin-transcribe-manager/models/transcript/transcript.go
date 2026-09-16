@@ -17,7 +17,7 @@ type Transcript struct {
 	Direction Direction `json:"direction" db:"direction"` // direction. in/out
 	Message   string    `json:"message" db:"message"`     // message
 
-	TMTranscript *time.Time `json:"tm_transcript" db:"tm_transcript"` // timestamp transcripted. 0001-01-01 00:00:00.00000 points begining of the transcribe craete time.
+	OffsetMs int64 `json:"offset_ms" db:"offset_ms"` // offset in milliseconds from the start of the transcription when this segment was spoken.
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"` // timestamp create
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"` // timestamp delete

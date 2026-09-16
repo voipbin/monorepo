@@ -15,7 +15,7 @@ func TestFieldConstants(t *testing.T) {
 		{"field_transcribe_id", FieldTranscribeID, "transcribe_id"},
 		{"field_direction", FieldDirection, "direction"},
 		{"field_message", FieldMessage, "message"},
-		{"field_tm_transcript", FieldTMTranscript, "tm_transcript"},
+		{"field_offset_ms", FieldOffsetMs, "offset_ms"},
 		{"field_tm_create", FieldTMCreate, "tm_create"},
 		{"field_tm_delete", FieldTMDelete, "tm_delete"},
 		{"field_deleted", FieldDeleted, "deleted"},

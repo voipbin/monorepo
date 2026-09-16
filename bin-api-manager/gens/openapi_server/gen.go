@@ -7661,11 +7661,11 @@ type TranscribeManagerTranscript struct {
 	// Message Transcript message
 	Message *string `json:"message,omitempty"`
 
+	// OffsetMs Offset in milliseconds from the start of the transcription when this segment was spoken.
+	OffsetMs *int64 `json:"offset_ms,omitempty"`
+
 	// TmCreate Timestamp when the transcript record was created.
 	TmCreate *string `json:"tm_create,omitempty"`
-
-	// TmTranscript Timestamp when this transcript was spoken.
-	TmTranscript *string `json:"tm_transcript,omitempty"`
 
 	// TranscribeId The unique identifier of the parent transcribe session. Returned from the `POST /transcribes` or `GET /transcribes` response.
 	TranscribeId *string `json:"transcribe_id,omitempty"`

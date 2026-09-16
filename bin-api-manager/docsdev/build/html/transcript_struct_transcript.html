@@ -648,7 +648,7 @@
     <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offset_ms&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
@@ -659,7 +659,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID): The transcription session that produced this transcript. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): The audio direction that was transcribed. See <a class="reference internal" href="#transcript-struct-transcript-direction"><span class="std std-ref">Direction</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (string): The transcribed text content.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_transcript</span></code> (string, ISO 8601): Timestamp when the speech was captured.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset_ms</span></code> (integer): Offset in milliseconds from the start of the transcription when this segment was spoken.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when this transcript record was created.</p></li>
 </ul>
 </section>
@@ -695,7 +695,7 @@
     <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
     <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, I would like to schedule an appointment.&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_transcript&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-01T10:00:05.123456Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;offset_ms&quot;</span><span class="p">:</span> <span class="mi">5123</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-01T10:00:05.200000Z&quot;</span>
 <span class="p">}</span>
 </pre></div>

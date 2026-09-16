@@ -39,12 +39,12 @@ func (h *transcriptHandler) Recording(ctx context.Context, customerID uuid.UUID,
 	}
 	log.Debugf("Transcripted the recording. recording_id: %s, len: %d", recordingID, len(tmpTranscripts))
 
-	// sort by tm_transcript
-	sortTranscriptsByTMTranscript(tmpTranscripts)
+	// sort by offset_ms
+	sortTranscriptsByOffset(tmpTranscripts)
 
 	res := []*transcript.Transcript{}
 	for _, tmp := range tmpTranscripts {
-		t, err := h.Create(ctx, customerID, transcribeID, tmp.Direction, tmp.Message, tmp.TMTranscript)
+		t, err := h.Create(ctx, customerID, transcribeID, tmp.Direction, tmp.Message, tmp.OffsetMs)
 		if err != nil {
 			// we could not create transcript here, but we should not return an error
 			log.Errorf("Could not create a tracript. message: %s, err: %v", tmp.Message, err)
@@ -99,14 +99,8 @@ func parseDirection(filename string) transcript.Direction {
 	}
 }
 
-func sortTranscriptsByTMTranscript(transcripts []*transcript.Transcript) {
+func sortTranscriptsByOffset(transcripts []*transcript.Transcript) {
 	sort.SliceStable(transcripts, func(i, j int) bool {
-		if transcripts[i].TMTranscript == nil {
-			return true
-		}
-		if transcripts[j].TMTranscript == nil {
-			return false
-		}
-		return transcripts[i].TMTranscript.Before(*transcripts[j].TMTranscript)
+		return transcripts[i].OffsetMs < transcripts[j].OffsetMs
 	})
 }

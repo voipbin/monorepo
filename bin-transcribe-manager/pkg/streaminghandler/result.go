@@ -77,10 +77,9 @@ func (rp *resultProcessor) process(ctx context.Context, r sttResult) {
 	log.Debugf("Received transcript message. transcribe_id: %s, direction: %s, message: %s", rp.st.TranscribeID, rp.st.Direction, r.message)
 
 	t2 := time.Now()
-	t3 := t2.Sub(rp.t1)
-	tmGap := time.Time{}.Add(t3)
+	offsetMs := t2.Sub(rp.t1).Milliseconds()
 
-	ts, err := rp.transcriptHandler.Create(ctx, rp.st.CustomerID, rp.st.TranscribeID, rp.st.Direction, r.message, &tmGap)
+	ts, err := rp.transcriptHandler.Create(ctx, rp.st.CustomerID, rp.st.TranscribeID, rp.st.Direction, r.message, offsetMs)
 	if err != nil {
 		log.Errorf("Could not create transcript. err: %v", err)
 		return

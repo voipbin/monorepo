@@ -8,7 +8,7 @@ create table transcribe_transcripts(
   message   text,
 
   -- timestamps
-  tm_transcript datetime(6),
+  offset_ms bigint,
 
   tm_create     datetime(6),  --
   tm_delete     datatime(6),  --

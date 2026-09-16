@@ -4,7 +4,6 @@ package transcripthandler
 
 import (
 	"context"
-	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -51,7 +50,7 @@ type TranscriptHandler interface {
 		transcribeID uuid.UUID,
 		direction transcript.Direction,
 		message string,
-		tmTranscript *time.Time,
+		offsetMs int64,
 	) (*transcript.Transcript, error)
 	List(ctx context.Context, size uint64, token string, filters map[transcript.Field]any) ([]*transcript.Transcript, error)
 	Delete(ctx context.Context, id uuid.UUID) (*transcript.Transcript, error)
