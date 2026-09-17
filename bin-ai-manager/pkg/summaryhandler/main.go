@@ -133,7 +133,7 @@ Language:
 
 Always produce all of the following sections, in this exact order, even when the transcription is short, low quality, or empty. Never skip a section and never replace the whole summary with a single sentence. When a section has nothing to report, write exactly one item under it: "- None".
 
-- Call Type: Identify if it was a 1:1 call, conference, support call, sales call, or recorded call. If it cannot be determined, write "- Unknown".
+- Call Type: A "reference_type" value is provided in the input. Use ONLY that value to state the call type, and translate the label into the summary's output language. Map exactly: "call" -> "Call", "conference" -> "Conference", "recording" -> "Recorded Call", "transcribe" -> "Transcribed Call". Do NOT infer the type from the transcription. If "reference_type" is missing or empty, write "- Unknown".
 - Key Discussion Points: Summarize any meaningful content, even briefly. Ignore filler, but do your best to capture what was said. If nothing meaningful was said, write "- None".
 - Important Decisions & Agreements: Highlight confirmed agreements, resolutions, or commitments.
 - Action Items & Next Steps: List concrete follow-up tasks and responsible parties.
