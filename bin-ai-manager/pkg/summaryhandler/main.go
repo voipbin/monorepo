@@ -129,7 +129,7 @@ Output format rules (follow strictly):
 - The summary must be easy to copy and paste into an email, ticket, or note as clean plain text.
 
 Language:
-- Generate the summary in the language specified in 'voipbin.ai_summary.language', regardless of the transcription's language.
+- Generate the summary in the language specified by the output_language field (top-level of the input JSON). If output_language is empty, fall back to voipbin.ai_summary.language, and if that is also empty, use en-US.
 
 Always produce all of the following sections, in this exact order, even when the transcription is short, low quality, or empty. Never skip a section and never replace the whole summary with a single sentence. When a section has nothing to report, write exactly one item under it: "- None".
 

@@ -31,6 +31,7 @@ func Test_contentGet(t *testing.T) {
 		activeflowID  uuid.UUID
 		referenceType summary.ReferenceType
 		transcripts   []tmtranscript.Transcript
+		outputLanguage string
 
 		responseVariable *fmvariable.Variable
 		responseOpenai   *openai.ChatCompletionResponse
@@ -55,6 +56,7 @@ func Test_contentGet(t *testing.T) {
 					},
 				},
 			},
+			outputLanguage: "en-US",
 
 			responseVariable: &fmvariable.Variable{
 				Variables: map[string]string{
@@ -72,8 +74,9 @@ func Test_contentGet(t *testing.T) {
 			},
 
 			expectedRequestContent: RequestContent{
-				Prompt:        defaultSummaryGeneratePrompt,
-				ReferenceType: "call",
+				Prompt:         defaultSummaryGeneratePrompt,
+				ReferenceType:  "call",
+				OutputLanguage: "en-US",
 				Transcripts: []tmtranscript.Transcript{
 					{
 						Identity: commonidentity.Identity{
@@ -98,6 +101,7 @@ func Test_contentGet(t *testing.T) {
 			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
 			referenceType: summary.ReferenceTypeConference,
 			transcripts:   []tmtranscript.Transcript{},
+			outputLanguage: "ko-KR",
 
 			responseVariable: &fmvariable.Variable{
 				Variables: map[string]string{},
@@ -113,10 +117,11 @@ func Test_contentGet(t *testing.T) {
 			},
 
 			expectedRequestContent: RequestContent{
-				Prompt:        defaultSummaryGeneratePrompt,
-				ReferenceType: "conference",
-				Transcripts:   []tmtranscript.Transcript{},
-				Variables:     map[string]string{},
+				Prompt:         defaultSummaryGeneratePrompt,
+				ReferenceType:  "conference",
+				OutputLanguage: "ko-KR",
+				Transcripts:    []tmtranscript.Transcript{},
+				Variables:      map[string]string{},
 			},
 			expectedRes: "response content",
 		},
@@ -126,6 +131,7 @@ func Test_contentGet(t *testing.T) {
 			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
 			referenceType: summary.ReferenceTypeRecording,
 			transcripts:   []tmtranscript.Transcript{},
+			outputLanguage: "ko-KR",
 
 			responseVariable: &fmvariable.Variable{
 				Variables: map[string]string{},
@@ -141,10 +147,11 @@ func Test_contentGet(t *testing.T) {
 			},
 
 			expectedRequestContent: RequestContent{
-				Prompt:        defaultSummaryGeneratePrompt,
-				ReferenceType: "recording",
-				Transcripts:   []tmtranscript.Transcript{},
-				Variables:     map[string]string{},
+				Prompt:         defaultSummaryGeneratePrompt,
+				ReferenceType:  "recording",
+				OutputLanguage: "ko-KR",
+				Transcripts:    []tmtranscript.Transcript{},
+				Variables:      map[string]string{},
 			},
 			expectedRes: "response content",
 		},
@@ -154,6 +161,7 @@ func Test_contentGet(t *testing.T) {
 			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
 			referenceType: summary.ReferenceTypeTranscribe,
 			transcripts:   []tmtranscript.Transcript{},
+			outputLanguage: "en-US",
 
 			responseVariable: &fmvariable.Variable{
 				Variables: map[string]string{},
@@ -169,10 +177,11 @@ func Test_contentGet(t *testing.T) {
 			},
 
 			expectedRequestContent: RequestContent{
-				Prompt:        defaultSummaryGeneratePrompt,
-				ReferenceType: "transcribe",
-				Transcripts:   []tmtranscript.Transcript{},
-				Variables:     map[string]string{},
+				Prompt:         defaultSummaryGeneratePrompt,
+				ReferenceType:  "transcribe",
+				OutputLanguage: "en-US",
+				Transcripts:    []tmtranscript.Transcript{},
+				Variables:      map[string]string{},
 			},
 			expectedRes: "response content",
 		},
@@ -244,7 +253,7 @@ func Test_contentGet(t *testing.T) {
 			}
 			mockOpenai.EXPECT().Send(ctx, tmpRequestContent).Return(tt.responseOpenai, nil)
 
-			res, err := h.contentGet(ctx, tt.activeflowID, tt.referenceType, tt.transcripts)
+			res, err := h.contentGet(ctx, tt.activeflowID, tt.referenceType, tt.transcripts, tt.outputLanguage)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

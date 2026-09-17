@@ -2867,7 +2867,7 @@
                   },
                   "language": {
                     "type": "string",
-                    "description": "The language of the ai summary."
+                    "description": "BCP47 language code for the summary output (e.g., en-US, ko-KR). Controls only the language the summary is written in; it is independent of the transcription (STT) language. When an existing transcription for the reference is available it is reused, and the summary is translated into this output language. Defaults to en-US when omitted."
                   }
                 },
                 "required": [
@@ -28460,7 +28460,7 @@
           },
           "language": {
             "type": "string",
-            "description": "Language used for the AI summary.",
+            "description": "BCP47 language code for the summary output (e.g., en-US, ko-KR). This controls only the language the summary is written in; it is independent of the transcription (STT) language. The server reuses an existing transcription when available and translates the summary into this output language.",
             "example": "en-US"
           },
           "content": {
@@ -30423,7 +30423,7 @@
           },
           "language": {
             "type": "string",
-            "description": "BCP47 language code for the summary.",
+            "description": "BCP47 language code for the summary output. Controls only the language the summary is written in, independent of the STT language.",
             "example": "en-US"
           }
         }

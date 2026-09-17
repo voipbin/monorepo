@@ -4489,7 +4489,7 @@ type AIManagerSummary struct {
 	// Example: 550e8400-e29b-41d4-a716-446655440000
 	Id *string `json:"id,omitempty"`
 
-	// Language Language used for the AI summary.
+	// Language BCP47 language code for the summary output (e.g., en-US, ko-KR). This controls only the language the summary is written in; it is independent of the transcription (STT) language. The server reuses an existing transcription when available and translates the summary into this output language.
 	//
 	// Example: en-US
 	Language *string `json:"language,omitempty"`
@@ -7316,7 +7316,7 @@ type FlowManagerAction struct {
 
 // FlowManagerActionOptionAISummary defines model for FlowManagerActionOptionAISummary.
 type FlowManagerActionOptionAISummary struct {
-	// Language BCP47 language code for the summary.
+	// Language BCP47 language code for the summary output. Controls only the language the summary is written in, independent of the STT language.
 	//
 	// Example: en-US
 	Language *string `json:"language,omitempty"`
@@ -10670,7 +10670,7 @@ type GetAisummariesParams struct {
 
 // PostAisummariesJSONBody defines parameters for PostAisummaries.
 type PostAisummariesJSONBody struct {
-	// Language The language of the ai summary.
+	// Language BCP47 language code for the summary output (e.g., en-US, ko-KR). Controls only the language the summary is written in; it is independent of the transcription (STT) language. When an existing transcription for the reference is available it is reused, and the summary is translated into this output language. Defaults to en-US when omitted.
 	Language string `json:"language"`
 
 	// OnEndFlowId The ID of the flow to be executed when the ai summary ends.

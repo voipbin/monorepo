@@ -16,10 +16,11 @@ import (
 )
 
 type RequestContent struct {
-	Prompt        string                    `json:"prompt,omitempty"`
-	ReferenceType string                    `json:"reference_type,omitempty"`
-	Transcripts   []tmtranscript.Transcript `json:"transcripts,omitempty"`
-	Variables     map[string]string         `json:"variables,omitempty"`
+	Prompt         string                    `json:"prompt,omitempty"`
+	ReferenceType  string                    `json:"reference_type,omitempty"`
+	OutputLanguage string                    `json:"output_language,omitempty"`
+	Transcripts    []tmtranscript.Transcript `json:"transcripts,omitempty"`
+	Variables      map[string]string         `json:"variables,omitempty"`
 }
 
 func (h *summaryHandler) ContentProcess(ctx context.Context, sm *summary.Summary) {
@@ -62,7 +63,7 @@ func (h *summaryHandler) contentProcessReferenceTypeCall(ctx context.Context, ca
 		return errors.Wrapf(err, "could not get the transcripts")
 	}
 
-	content, err := h.contentGet(ctx, sm.ActiveflowID, sm.ReferenceType, transcripts)
+	content, err := h.contentGet(ctx, sm.ActiveflowID, sm.ReferenceType, transcripts, sm.Language)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the request")
 	}
@@ -109,7 +110,7 @@ func (h *summaryHandler) contentProcessReferenceTypeConference(ctx context.Conte
 		return errors.Wrapf(err, "could not get the transcripts")
 	}
 
-	content, err := h.contentGet(ctx, sm.ActiveflowID, sm.ReferenceType, transcripts)
+	content, err := h.contentGet(ctx, sm.ActiveflowID, sm.ReferenceType, transcripts, sm.Language)
 	if err != nil {
 		return errors.Wrapf(err, "could not send the request")
 	}
@@ -172,7 +173,7 @@ func (h *summaryHandler) contentGetTranscripts(ctx context.Context, referenceID 
 	return res, nil
 }
 
-func (h *summaryHandler) contentGet(ctx context.Context, activeflowID uuid.UUID, referenceType summary.ReferenceType, ts []tmtranscript.Transcript) (string, error) {
+func (h *summaryHandler) contentGet(ctx context.Context, activeflowID uuid.UUID, referenceType summary.ReferenceType, ts []tmtranscript.Transcript, outputLanguage string) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "contentGet",
 		"activeflow_id": activeflowID,
@@ -191,10 +192,11 @@ func (h *summaryHandler) contentGet(ctx context.Context, activeflowID uuid.UUID,
 	}
 
 	requestContent := RequestContent{
-		Prompt:        defaultSummaryGeneratePrompt,
-		ReferenceType: string(referenceType),
-		Transcripts:   ts,
-		Variables:     variables,
+		Prompt:         defaultSummaryGeneratePrompt,
+		ReferenceType:  string(referenceType),
+		OutputLanguage: outputLanguage,
+		Transcripts:    ts,
+		Variables:      variables,
 	}
 
 	tmpContent, err := json.Marshal(requestContent)
