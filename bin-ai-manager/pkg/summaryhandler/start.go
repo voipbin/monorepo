@@ -211,7 +211,7 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 		return nil, errors.Wrapf(err, "could not get the transcribe data")
 	}
 
-	content, err := h.contentGet(ctx, activeflowID, ts)
+	content, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeTranscribe, ts)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
@@ -279,7 +279,7 @@ func (h *summaryHandler) startReferenceTypeRecording(
 		return nil, errors.Wrapf(err, "could not get the transcribe data")
 	}
 
-	content, err := h.contentGet(ctx, activeflowID, transcripts)
+	content, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeRecording, transcripts)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}

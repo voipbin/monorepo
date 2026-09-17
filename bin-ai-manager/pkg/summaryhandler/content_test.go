@@ -28,8 +28,9 @@ func Test_contentGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		activeflowID uuid.UUID
-		transcripts  []tmtranscript.Transcript
+		activeflowID  uuid.UUID
+		referenceType summary.ReferenceType
+		transcripts   []tmtranscript.Transcript
 
 		responseVariable *fmvariable.Variable
 		responseOpenai   *openai.ChatCompletionResponse
@@ -38,9 +39,10 @@ func Test_contentGet(t *testing.T) {
 		expectedRes            string
 	}{
 		{
-			name: "normal",
+			name: "reference type call",
 
-			activeflowID: uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			referenceType: summary.ReferenceTypeCall,
 			transcripts: []tmtranscript.Transcript{
 				{
 					Identity: commonidentity.Identity{
@@ -70,7 +72,8 @@ func Test_contentGet(t *testing.T) {
 			},
 
 			expectedRequestContent: RequestContent{
-				Prompt: defaultSummaryGeneratePrompt,
+				Prompt:        defaultSummaryGeneratePrompt,
+				ReferenceType: "call",
 				Transcripts: []tmtranscript.Transcript{
 					{
 						Identity: commonidentity.Identity{
@@ -86,6 +89,118 @@ func Test_contentGet(t *testing.T) {
 				Variables: map[string]string{
 					"key1": "value1",
 				},
+			},
+			expectedRes: "response content",
+		},
+		{
+			name: "reference type conference",
+
+			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			referenceType: summary.ReferenceTypeConference,
+			transcripts:   []tmtranscript.Transcript{},
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{},
+			},
+			responseOpenai: &openai.ChatCompletionResponse{
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Message: openai.ChatCompletionMessage{
+							Content: "response content",
+						},
+					},
+				},
+			},
+
+			expectedRequestContent: RequestContent{
+				Prompt:        defaultSummaryGeneratePrompt,
+				ReferenceType: "conference",
+				Transcripts:   []tmtranscript.Transcript{},
+				Variables:     map[string]string{},
+			},
+			expectedRes: "response content",
+		},
+		{
+			name: "reference type recording",
+
+			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			referenceType: summary.ReferenceTypeRecording,
+			transcripts:   []tmtranscript.Transcript{},
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{},
+			},
+			responseOpenai: &openai.ChatCompletionResponse{
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Message: openai.ChatCompletionMessage{
+							Content: "response content",
+						},
+					},
+				},
+			},
+
+			expectedRequestContent: RequestContent{
+				Prompt:        defaultSummaryGeneratePrompt,
+				ReferenceType: "recording",
+				Transcripts:   []tmtranscript.Transcript{},
+				Variables:     map[string]string{},
+			},
+			expectedRes: "response content",
+		},
+		{
+			name: "reference type transcribe",
+
+			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			referenceType: summary.ReferenceTypeTranscribe,
+			transcripts:   []tmtranscript.Transcript{},
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{},
+			},
+			responseOpenai: &openai.ChatCompletionResponse{
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Message: openai.ChatCompletionMessage{
+							Content: "response content",
+						},
+					},
+				},
+			},
+
+			expectedRequestContent: RequestContent{
+				Prompt:        defaultSummaryGeneratePrompt,
+				ReferenceType: "transcribe",
+				Transcripts:   []tmtranscript.Transcript{},
+				Variables:     map[string]string{},
+			},
+			expectedRes: "response content",
+		},
+		{
+			name: "reference type none defaults to empty string",
+
+			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			referenceType: summary.ReferenceTypeNone,
+			transcripts:   []tmtranscript.Transcript{},
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{},
+			},
+			responseOpenai: &openai.ChatCompletionResponse{
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Message: openai.ChatCompletionMessage{
+							Content: "response content",
+						},
+					},
+				},
+			},
+
+			expectedRequestContent: RequestContent{
+				Prompt:        defaultSummaryGeneratePrompt,
+				ReferenceType: "",
+				Transcripts:   []tmtranscript.Transcript{},
+				Variables:     map[string]string{},
 			},
 			expectedRes: "response content",
 		},
@@ -129,7 +244,7 @@ func Test_contentGet(t *testing.T) {
 			}
 			mockOpenai.EXPECT().Send(ctx, tmpRequestContent).Return(tt.responseOpenai, nil)
 
-			res, err := h.contentGet(ctx, tt.activeflowID, tt.transcripts)
+			res, err := h.contentGet(ctx, tt.activeflowID, tt.referenceType, tt.transcripts)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
