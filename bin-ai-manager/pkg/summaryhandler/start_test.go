@@ -418,19 +418,22 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 		referenceID  uuid.UUID
 		language     string
 
-		responseTranscribe  *tmtranscribe.Transcribe
-		responseTranscripts []tmtranscript.Transcript
-		responseVariable    *fmvariable.Variable
-		responseOpenai      *openai.ChatCompletionResponse
-		responseUUID        uuid.UUID
-		responseActiveflow  *fmactiveflow.Activeflow
+		// setupTranscribeMocks sets up the transcribe-reuse / creation portion
+		// (getRecordingTranscripts) for the case. gomock's strict controller
+		// makes the presence/absence of TranscribeV1TranscribeStart the assertion
+		// for reuse vs new-creation.
+		setupTranscribeMocks func(ctx context.Context, mockReq *requesthandler.MockRequestHandler, tt testCaseRecording)
 
-		expectedFiltersTranscripts map[tmtranscript.Field]any
-		expectedSummary            *summary.Summary
-		expectedVariables          map[string]string
+		responseVariable   *fmvariable.Variable
+		responseOpenai     *openai.ChatCompletionResponse
+		responseUUID       uuid.UUID
+		responseActiveflow *fmactiveflow.Activeflow
+
+		expectedSummary   *summary.Summary
+		expectedVariables map[string]string
 	}{
 		{
-			name: "normal",
+			name: "normal - no reusable transcribe, new creation",
 
 			customerID:   uuid.FromStringOrNil("7852ac5e-0b96-11f0-a61f-afb2360f9d5b"),
 			activeflowID: uuid.FromStringOrNil("78896fdc-0b96-11f0-8ec3-db055fa6d92f"),
@@ -438,23 +441,41 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 			referenceID:  uuid.FromStringOrNil("58618082-0b9b-11f0-bd70-b74a9214cd07"),
 			language:     "en-US",
 
-			responseTranscribe: &tmtranscribe.Transcribe{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("5885ec42-0b9b-11f0-99ba-4b3106d01f9b"),
-				},
-			},
-			responseTranscripts: []tmtranscript.Transcript{
-				{
+			setupTranscribeMocks: func(ctx context.Context, mockReq *requesthandler.MockRequestHandler, tt testCaseRecording) {
+				// reuse lookup returns nothing -> new creation path.
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(100), map[tmtranscribe.Field]any{
+					tmtranscribe.FieldReferenceID:   tt.referenceID.String(),
+					tmtranscribe.FieldReferenceType: tmtranscribe.ReferenceTypeRecording,
+					tmtranscribe.FieldStatus:        tmtranscribe.StatusDone,
+					tmtranscribe.FieldDeleted:       false,
+				}).Return([]tmtranscribe.Transcribe{}, nil)
+
+				newTranscribe := &tmtranscribe.Transcribe{
 					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("78cdacd8-0b96-11f0-83d8-e71b47975e9a"),
+						ID: uuid.FromStringOrNil("5885ec42-0b9b-11f0-99ba-4b3106d01f9b"),
 					},
-				},
-				{
-					Identity: commonidentity.Identity{
-						ID: uuid.FromStringOrNil("79ee469a-0b96-11f0-ad07-37789426e403"),
-					},
-				},
+				}
+				mockReq.EXPECT().TranscribeV1TranscribeStart(
+					ctx,
+					uuid.Nil,
+					cmcustomer.IDAIManager,
+					tt.activeflowID,
+					uuid.Nil,
+					tmtranscribe.ReferenceTypeRecording,
+					tt.referenceID,
+					defaultSTTFallbackLanguage,
+					tmtranscribe.DirectionBoth,
+					tmtranscribe.ProviderEmpty,
+					300000,
+				).Return(newTranscribe, nil)
+				mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), map[tmtranscript.Field]any{
+					tmtranscript.FieldDeleted:      false,
+					tmtranscript.FieldTranscribeID: "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
+				}).Return([]tmtranscript.Transcript{
+					{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("78cdacd8-0b96-11f0-83d8-e71b47975e9a")}},
+				}, nil)
 			},
+
 			responseVariable: &fmvariable.Variable{
 				Variables: map[string]string{
 					"key1": "value1",
@@ -476,10 +497,6 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				},
 			},
 
-			expectedFiltersTranscripts: map[tmtranscript.Field]any{
-				tmtranscript.FieldDeleted:      false,
-				tmtranscript.FieldTranscribeID: "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
-			},
 			expectedSummary: &summary.Summary{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("58aa4c9a-0b9b-11f0-a701-a706590d3061"),
@@ -498,6 +515,279 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				variableSummaryReferenceType: string(summary.ReferenceTypeRecording),
 				variableSummaryReferenceID:   "58618082-0b9b-11f0-bd70-b74a9214cd07",
 				variableSummaryLanguage:      "en-US",
+				variableSummaryContent:       "response content",
+			},
+		},
+		{
+			name: "reuse - original transcribe with transcripts",
+
+			customerID:   uuid.FromStringOrNil("7852ac5e-0b96-11f0-a61f-afb2360f9d5b"),
+			activeflowID: uuid.FromStringOrNil("78896fdc-0b96-11f0-8ec3-db055fa6d92f"),
+			onEndFlowID:  uuid.FromStringOrNil("0ecd2b36-0bde-11f0-bb42-3f48eb4490e1"),
+			referenceID:  uuid.FromStringOrNil("58618082-0b9b-11f0-bd70-b74a9214cd07"),
+			language:     "ko-KR",
+
+			setupTranscribeMocks: func(ctx context.Context, mockReq *requesthandler.MockRequestHandler, tt testCaseRecording) {
+				// reuse lookup returns an IDAIManager (skipped) then an original
+				// transcribe with transcripts (adopted). No TranscribeStart.
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(100), map[tmtranscribe.Field]any{
+					tmtranscribe.FieldReferenceID:   tt.referenceID.String(),
+					tmtranscribe.FieldReferenceType: tmtranscribe.ReferenceTypeRecording,
+					tmtranscribe.FieldStatus:        tmtranscribe.StatusDone,
+					tmtranscribe.FieldDeleted:       false,
+				}).Return([]tmtranscribe.Transcribe{
+					{
+						Identity: commonidentity.Identity{
+							ID:         uuid.FromStringOrNil("c1a1b2c4-0b9b-11f0-99ba-4b3106d01f9b"),
+							CustomerID: cmcustomer.IDAIManager,
+						},
+					},
+					{
+						Identity: commonidentity.Identity{
+							ID:         uuid.FromStringOrNil("c2a1b2c4-0b9b-11f0-99ba-4b3106d01f9b"),
+							CustomerID: uuid.FromStringOrNil("d0000000-0b9b-11f0-99ba-4b3106d01f9b"),
+						},
+					},
+				}, nil)
+				// only the non-IDAIManager candidate's transcripts are fetched
+				// (short-circuit stops there).
+				mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), map[tmtranscript.Field]any{
+					tmtranscript.FieldDeleted:      false,
+					tmtranscript.FieldTranscribeID: "c2a1b2c4-0b9b-11f0-99ba-4b3106d01f9b",
+				}).Return([]tmtranscript.Transcript{
+					{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("78cdacd8-0b96-11f0-83d8-e71b47975e9a")}},
+				}, nil)
+			},
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{
+					"key1": "value1",
+				},
+			},
+			responseOpenai: &openai.ChatCompletionResponse{
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Message: openai.ChatCompletionMessage{
+							Content: "response content",
+						},
+					},
+				},
+			},
+			responseUUID: uuid.FromStringOrNil("58aa4c9a-0b9b-11f0-a701-a706590d3061"),
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a6ef9afc-0bf2-11f0-9371-13e70123d868"),
+				},
+			},
+
+			expectedSummary: &summary.Summary{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("58aa4c9a-0b9b-11f0-a701-a706590d3061"),
+					CustomerID: uuid.FromStringOrNil("7852ac5e-0b96-11f0-a61f-afb2360f9d5b"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("78896fdc-0b96-11f0-8ec3-db055fa6d92f"),
+				OnEndFlowID:   uuid.FromStringOrNil("0ecd2b36-0bde-11f0-bb42-3f48eb4490e1"),
+				ReferenceType: summary.ReferenceTypeRecording,
+				ReferenceID:   uuid.FromStringOrNil("58618082-0b9b-11f0-bd70-b74a9214cd07"),
+				Status:        summary.StatusDone,
+				Language:      "ko-KR",
+				Content:       "response content",
+			},
+			expectedVariables: map[string]string{
+				variableSummaryID:            "58aa4c9a-0b9b-11f0-a701-a706590d3061",
+				variableSummaryReferenceType: string(summary.ReferenceTypeRecording),
+				variableSummaryReferenceID:   "58618082-0b9b-11f0-bd70-b74a9214cd07",
+				variableSummaryLanguage:      "ko-KR",
+				variableSummaryContent:       "response content",
+			},
+		},
+		{
+			name: "reuse - only IDAIManager transcribe exists, new creation",
+
+			customerID:   uuid.FromStringOrNil("7852ac5e-0b96-11f0-a61f-afb2360f9d5b"),
+			activeflowID: uuid.FromStringOrNil("78896fdc-0b96-11f0-8ec3-db055fa6d92f"),
+			onEndFlowID:  uuid.FromStringOrNil("0ecd2b36-0bde-11f0-bb42-3f48eb4490e1"),
+			referenceID:  uuid.FromStringOrNil("58618082-0b9b-11f0-bd70-b74a9214cd07"),
+			language:     "ko-KR",
+
+			setupTranscribeMocks: func(ctx context.Context, mockReq *requesthandler.MockRequestHandler, tt testCaseRecording) {
+				// only IDAIManager candidate -> excluded -> new creation.
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(100), map[tmtranscribe.Field]any{
+					tmtranscribe.FieldReferenceID:   tt.referenceID.String(),
+					tmtranscribe.FieldReferenceType: tmtranscribe.ReferenceTypeRecording,
+					tmtranscribe.FieldStatus:        tmtranscribe.StatusDone,
+					tmtranscribe.FieldDeleted:       false,
+				}).Return([]tmtranscribe.Transcribe{
+					{
+						Identity: commonidentity.Identity{
+							ID:         uuid.FromStringOrNil("c1a1b2c4-0b9b-11f0-99ba-4b3106d01f9b"),
+							CustomerID: cmcustomer.IDAIManager,
+						},
+					},
+				}, nil)
+
+				newTranscribe := &tmtranscribe.Transcribe{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5885ec42-0b9b-11f0-99ba-4b3106d01f9b"),
+					},
+				}
+				mockReq.EXPECT().TranscribeV1TranscribeStart(
+					ctx,
+					uuid.Nil,
+					cmcustomer.IDAIManager,
+					tt.activeflowID,
+					uuid.Nil,
+					tmtranscribe.ReferenceTypeRecording,
+					tt.referenceID,
+					defaultSTTFallbackLanguage,
+					tmtranscribe.DirectionBoth,
+					tmtranscribe.ProviderEmpty,
+					300000,
+				).Return(newTranscribe, nil)
+				mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), map[tmtranscript.Field]any{
+					tmtranscript.FieldDeleted:      false,
+					tmtranscript.FieldTranscribeID: "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
+				}).Return([]tmtranscript.Transcript{
+					{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("78cdacd8-0b96-11f0-83d8-e71b47975e9a")}},
+				}, nil)
+			},
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{
+					"key1": "value1",
+				},
+			},
+			responseOpenai: &openai.ChatCompletionResponse{
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Message: openai.ChatCompletionMessage{
+							Content: "response content",
+						},
+					},
+				},
+			},
+			responseUUID: uuid.FromStringOrNil("58aa4c9a-0b9b-11f0-a701-a706590d3061"),
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a6ef9afc-0bf2-11f0-9371-13e70123d868"),
+				},
+			},
+
+			expectedSummary: &summary.Summary{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("58aa4c9a-0b9b-11f0-a701-a706590d3061"),
+					CustomerID: uuid.FromStringOrNil("7852ac5e-0b96-11f0-a61f-afb2360f9d5b"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("78896fdc-0b96-11f0-8ec3-db055fa6d92f"),
+				OnEndFlowID:   uuid.FromStringOrNil("0ecd2b36-0bde-11f0-bb42-3f48eb4490e1"),
+				ReferenceType: summary.ReferenceTypeRecording,
+				ReferenceID:   uuid.FromStringOrNil("58618082-0b9b-11f0-bd70-b74a9214cd07"),
+				Status:        summary.StatusDone,
+				Language:      "ko-KR",
+				Content:       "response content",
+			},
+			expectedVariables: map[string]string{
+				variableSummaryID:            "58aa4c9a-0b9b-11f0-a701-a706590d3061",
+				variableSummaryReferenceType: string(summary.ReferenceTypeRecording),
+				variableSummaryReferenceID:   "58618082-0b9b-11f0-bd70-b74a9214cd07",
+				variableSummaryLanguage:      "ko-KR",
+				variableSummaryContent:       "response content",
+			},
+		},
+		{
+			name: "reuse - original transcribe with no transcripts, new creation",
+
+			customerID:   uuid.FromStringOrNil("7852ac5e-0b96-11f0-a61f-afb2360f9d5b"),
+			activeflowID: uuid.FromStringOrNil("78896fdc-0b96-11f0-8ec3-db055fa6d92f"),
+			onEndFlowID:  uuid.FromStringOrNil("0ecd2b36-0bde-11f0-bb42-3f48eb4490e1"),
+			referenceID:  uuid.FromStringOrNil("58618082-0b9b-11f0-bd70-b74a9214cd07"),
+			language:     "ko-KR",
+
+			setupTranscribeMocks: func(ctx context.Context, mockReq *requesthandler.MockRequestHandler, tt testCaseRecording) {
+				// original candidate but with empty transcripts -> new creation.
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(100), map[tmtranscribe.Field]any{
+					tmtranscribe.FieldReferenceID:   tt.referenceID.String(),
+					tmtranscribe.FieldReferenceType: tmtranscribe.ReferenceTypeRecording,
+					tmtranscribe.FieldStatus:        tmtranscribe.StatusDone,
+					tmtranscribe.FieldDeleted:       false,
+				}).Return([]tmtranscribe.Transcribe{
+					{
+						Identity: commonidentity.Identity{
+							ID:         uuid.FromStringOrNil("c2a1b2c4-0b9b-11f0-99ba-4b3106d01f9b"),
+							CustomerID: uuid.FromStringOrNil("d0000000-0b9b-11f0-99ba-4b3106d01f9b"),
+						},
+					},
+				}, nil)
+				mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), map[tmtranscript.Field]any{
+					tmtranscript.FieldDeleted:      false,
+					tmtranscript.FieldTranscribeID: "c2a1b2c4-0b9b-11f0-99ba-4b3106d01f9b",
+				}).Return([]tmtranscript.Transcript{}, nil)
+
+				newTranscribe := &tmtranscribe.Transcribe{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5885ec42-0b9b-11f0-99ba-4b3106d01f9b"),
+					},
+				}
+				mockReq.EXPECT().TranscribeV1TranscribeStart(
+					ctx,
+					uuid.Nil,
+					cmcustomer.IDAIManager,
+					tt.activeflowID,
+					uuid.Nil,
+					tmtranscribe.ReferenceTypeRecording,
+					tt.referenceID,
+					defaultSTTFallbackLanguage,
+					tmtranscribe.DirectionBoth,
+					tmtranscribe.ProviderEmpty,
+					300000,
+				).Return(newTranscribe, nil)
+				mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), map[tmtranscript.Field]any{
+					tmtranscript.FieldDeleted:      false,
+					tmtranscript.FieldTranscribeID: "5885ec42-0b9b-11f0-99ba-4b3106d01f9b",
+				}).Return([]tmtranscript.Transcript{
+					{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("78cdacd8-0b96-11f0-83d8-e71b47975e9a")}},
+				}, nil)
+			},
+
+			responseVariable: &fmvariable.Variable{
+				Variables: map[string]string{
+					"key1": "value1",
+				},
+			},
+			responseOpenai: &openai.ChatCompletionResponse{
+				Choices: []openai.ChatCompletionChoice{
+					{
+						Message: openai.ChatCompletionMessage{
+							Content: "response content",
+						},
+					},
+				},
+			},
+			responseUUID: uuid.FromStringOrNil("58aa4c9a-0b9b-11f0-a701-a706590d3061"),
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a6ef9afc-0bf2-11f0-9371-13e70123d868"),
+				},
+			},
+
+			expectedSummary: &summary.Summary{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("58aa4c9a-0b9b-11f0-a701-a706590d3061"),
+					CustomerID: uuid.FromStringOrNil("7852ac5e-0b96-11f0-a61f-afb2360f9d5b"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("78896fdc-0b96-11f0-8ec3-db055fa6d92f"),
+				OnEndFlowID:   uuid.FromStringOrNil("0ecd2b36-0bde-11f0-bb42-3f48eb4490e1"),
+				ReferenceType: summary.ReferenceTypeRecording,
+				ReferenceID:   uuid.FromStringOrNil("58618082-0b9b-11f0-bd70-b74a9214cd07"),
+				Status:        summary.StatusDone,
+				Language:      "ko-KR",
+				Content:       "response content",
+			},
+			expectedVariables: map[string]string{
+				variableSummaryID:            "58aa4c9a-0b9b-11f0-a701-a706590d3061",
+				variableSummaryReferenceType: string(summary.ReferenceTypeRecording),
+				variableSummaryReferenceID:   "58618082-0b9b-11f0-bd70-b74a9214cd07",
+				variableSummaryLanguage:      "ko-KR",
 				variableSummaryContent:       "response content",
 			},
 		},
@@ -524,20 +814,11 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().TranscribeV1TranscribeStart(
-				ctx,
-				uuid.Nil,
-				cmcustomer.IDAIManager,
-				tt.activeflowID,
-				uuid.Nil,
-				tmtranscribe.ReferenceTypeRecording,
-				tt.referenceID,
-				tt.language,
-				tmtranscribe.DirectionBoth,
-				tmtranscribe.ProviderEmpty,
-				300000,
-			).Return(tt.responseTranscribe, nil)
-			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), tt.expectedFiltersTranscripts).Return(tt.responseTranscripts, nil)
+			// getRecordingTranscripts (reuse lookup / new creation)
+			tt.setupTranscribeMocks(ctx, mockReq, testCaseRecording{
+				referenceID:  tt.referenceID,
+				activeflowID: tt.activeflowID,
+			})
 
 			// getContent
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
@@ -561,8 +842,8 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 					tt.expectedSummary.ID,
 					tt.expectedSummary.ActiveflowID,
 					nil,
-				gomock.Any(),
-				gomock.Any(),
+					gomock.Any(),
+					gomock.Any(),
 				).Return(tt.responseActiveflow, nil)
 				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables).Return(nil)
 				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
@@ -577,6 +858,68 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedSummary, res)
 			}
 		})
+	}
+}
+
+// testCaseRecording carries the case-specific values the transcribe-mock setup
+// closures need.
+type testCaseRecording struct {
+	referenceID  uuid.UUID
+	activeflowID uuid.UUID
+}
+
+// Test_Start_normalizeOutputLanguage verifies that Start normalizes an empty
+// output language to en-US BEFORE the dedup lookup, so that an empty language
+// and its normalized default do not diverge into two separate summaries. The
+// dedup lookup (SummaryList) must be called with FieldLanguage == "en-US".
+func Test_Start_normalizeOutputLanguage(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+
+	h := summaryHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+
+		engineOpenaiHandler: mockOpenai,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("6f6b0a1c-0000-11f0-9d2e-4b7c8f2a5d70")
+	referenceID := uuid.FromStringOrNil("6f6b0a1c-0001-11f0-9d2e-4b7c8f2a5d70")
+
+	existing := &summary.Summary{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("6f6b0a1c-0002-11f0-9d2e-4b7c8f2a5d70"),
+			CustomerID: customerID,
+		},
+		ReferenceID: referenceID,
+		Language:    "en-US",
+	}
+
+	// dedup lookup must use the normalized language (en-US), not the empty input.
+	expectedFilters := map[summary.Field]any{
+		summary.FieldDeleted:     false,
+		summary.FieldCustomerID:  customerID,
+		summary.FieldReferenceID: referenceID,
+		summary.FieldLanguage:    "en-US",
+	}
+	mockDB.EXPECT().SummaryList(ctx, uint64(1000), "", expectedFilters).Return([]*summary.Summary{existing}, nil)
+
+	// empty language passed in -> normalized to en-US -> dedup hit -> returns existing.
+	res, err := h.Start(ctx, customerID, uuid.Nil, uuid.Nil, summary.ReferenceTypeRecording, referenceID, "")
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !reflect.DeepEqual(res, existing) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", existing, res)
 	}
 }
 

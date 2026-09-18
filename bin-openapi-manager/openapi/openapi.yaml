@@ -3313,7 +3313,12 @@ components:
           example: "progressing"
         language:
           type: string
-          description: Language used for the AI summary.
+          description: >-
+            BCP47 language code for the summary output (e.g., en-US, ko-KR).
+            This controls only the language the summary is written in; it is
+            independent of the transcription (STT) language. The server reuses
+            an existing transcription when available and translates the summary
+            into this output language.
           example: "en-US"
         content:
           type: string
@@ -4982,7 +4987,9 @@ components:
           example: "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
         language:
           type: string
-          description: BCP47 language code for the summary.
+          description: >-
+            BCP47 language code for the summary output. Controls only the
+            language the summary is written in, independent of the STT language.
           example: "en-US"
 
     FlowManagerActionOptionAITalk:

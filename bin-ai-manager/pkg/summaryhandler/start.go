@@ -16,6 +16,27 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	// defaultOutputLanguage is the fallback summary output language when the
+	// caller does not specify one.
+	defaultOutputLanguage = "en-US"
+
+	// defaultSTTFallbackLanguage is the STT language used only when no existing
+	// transcribe can be reused for a recording. It is intentionally independent
+	// of the output language (reusing the output language for STT would regress
+	// empty-transcript behaviour). See §4.2 of the design doc.
+	defaultSTTFallbackLanguage = "en-US"
+)
+
+// normalizeOutputLanguage returns the confirmed summary output language,
+// defaulting to en-US when the caller passes an empty value.
+func normalizeOutputLanguage(language string) string {
+	if language == "" {
+		return defaultOutputLanguage
+	}
+	return language
+}
+
 func (h *summaryHandler) Start(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -25,6 +46,12 @@ func (h *summaryHandler) Start(
 	referenceID uuid.UUID,
 	language string,
 ) (*summary.Summary, error) {
+
+	// normalize the output language before the dedup lookup so that an empty
+	// language and its normalized default (en-US) do not diverge into two
+	// separate summaries. All downstream points (dedup, startReferenceType*,
+	// Create) use this confirmed value.
+	language = normalizeOutputLanguage(language)
 
 	tmp, err := h.GetByCustomerIDAndReferenceIDAndLanguage(ctx, customerID, referenceID, language)
 	if err == nil {
@@ -211,7 +238,7 @@ func (h *summaryHandler) startReferenceTypeTranscribe(
 		return nil, errors.Wrapf(err, "could not get the transcribe data")
 	}
 
-	content, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeTranscribe, ts)
+	content, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeTranscribe, ts, language)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
@@ -240,46 +267,20 @@ func (h *summaryHandler) startReferenceTypeRecording(
 ) (*summary.Summary, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "startReferenceTypeRecording",
-		"activeflow_id":  "activeflowID",
+		"activeflow_id":  activeflowID,
 		"on_end_flow_id": onEndFlowID,
 		"reference_id":   referenceID,
 		"language":       language,
 	})
 
-	log.Debugf("Start the transcribe.")
+	log.Debugf("Getting the transcripts for the recording summary.")
 
-	// note: here, we set the customer id as the ai manager id
-	// thie is required becasue if we use the customer id, the created transcribe will be shown to the
-	// customer's transcribe list.
-	tr, err := h.reqHandler.TranscribeV1TranscribeStart(
-		ctx,
-		uuid.Nil,
-		cmcustomer.IDAIManager,
-		activeflowID,
-		uuid.Nil,
-		tmtranscribe.ReferenceTypeRecording,
-		referenceID,
-		language,
-		tmtranscribe.DirectionBoth,
-		tmtranscribe.ProviderEmpty,
-		300000,
-	)
+	transcripts, err := h.getRecordingTranscripts(ctx, activeflowID, referenceID)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not start the transcribe")
-	}
-	log.WithField("transcribe", tr).Debugf("Finished transcribe. transcribe_id: %s", tr.ID)
-
-	// get transcripts
-	filters := map[tmtranscript.Field]any{
-		tmtranscript.FieldDeleted:      false,
-		tmtranscript.FieldTranscribeID: tr.ID.String(),
-	}
-	transcripts, err := h.reqHandler.TranscribeV1TranscriptList(ctx, "", 1000, filters)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get the transcribe data")
+		return nil, errors.Wrapf(err, "could not get the transcripts")
 	}
 
-	content, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeRecording, transcripts)
+	content, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeRecording, transcripts, language)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the request")
 	}
@@ -296,6 +297,101 @@ func (h *summaryHandler) startReferenceTypeRecording(
 	}
 
 	return res, nil
+}
+
+// getRecordingTranscripts returns the transcripts to summarize for a recording.
+//
+// It first tries to reuse an existing (original/admin) transcribe for the
+// recording rather than always creating a new one. The reuse candidate must be:
+//  1. a transcribe whose customer_id is NOT cmcustomer.IDAIManager (i.e. an
+//     original transcribe created by the user/admin, not one that a previous
+//     summary created). This exclusion is done in code, not via a DB filter:
+//     the List NotEq filter is string-kind only and silently misbehaves on the
+//     uuid.UUID customer_id (see bin-common-handler/databasehandler/main.go
+//     SCOPE WARNING), and the reuse query intentionally does NOT filter by
+//     customer_id (contentGetTranscripts filters by IDAIManager, which would
+//     hide the admin transcribe).
+//  2. a transcribe that actually has at least one transcript.
+//
+// TranscribeV1TranscribeList returns tm_create DESC, so the candidates are
+// walked newest-first and the first non-IDAIManager candidate with transcripts
+// is adopted immediately (short-circuit, N+1 mitigation). If no candidate
+// qualifies, a new transcribe is created with the STT fallback language
+// (en-US, independent of the output language) and its transcripts are used.
+func (h *summaryHandler) getRecordingTranscripts(ctx context.Context, activeflowID uuid.UUID, referenceID uuid.UUID) ([]tmtranscript.Transcript, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "getRecordingTranscripts",
+		"reference_id": referenceID,
+	})
+
+	// look for an existing (original) transcribe to reuse.
+	// note: no customer_id filter here -- original transcribes carry the real
+	// customer_id, and only summary-created ones are IDAIManager. The IDAIManager
+	// exclusion is done in code below.
+	reuseFilters := map[tmtranscribe.Field]any{
+		tmtranscribe.FieldReferenceID:   referenceID.String(),
+		tmtranscribe.FieldReferenceType: tmtranscribe.ReferenceTypeRecording,
+		tmtranscribe.FieldStatus:        tmtranscribe.StatusDone,
+		tmtranscribe.FieldDeleted:       false,
+	}
+	candidates, err := h.reqHandler.TranscribeV1TranscribeList(ctx, "", 100, reuseFilters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not list the existing transcribes")
+	}
+
+	for _, cand := range candidates {
+		if cand.CustomerID == cmcustomer.IDAIManager {
+			// skip summary-created transcribes (potential empty/polluted source).
+			continue
+		}
+
+		transcriptFilters := map[tmtranscript.Field]any{
+			tmtranscript.FieldDeleted:      false,
+			tmtranscript.FieldTranscribeID: cand.ID.String(),
+		}
+		transcripts, err := h.reqHandler.TranscribeV1TranscriptList(ctx, "", 1000, transcriptFilters)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get the transcripts for the candidate transcribe")
+		}
+		if len(transcripts) > 0 {
+			// short-circuit: first original candidate with transcripts wins.
+			log.Debugf("Reusing existing transcribe. transcribe_id: %s", cand.ID)
+			return transcripts, nil
+		}
+	}
+
+	// no reusable transcribe -- create a new one with the STT fallback language.
+	// note: here, we set the customer id as the ai manager id
+	// thie is required becasue if we use the customer id, the created transcribe will be shown to the
+	// customer's transcribe list.
+	tr, err := h.reqHandler.TranscribeV1TranscribeStart(
+		ctx,
+		uuid.Nil,
+		cmcustomer.IDAIManager,
+		activeflowID,
+		uuid.Nil,
+		tmtranscribe.ReferenceTypeRecording,
+		referenceID,
+		defaultSTTFallbackLanguage,
+		tmtranscribe.DirectionBoth,
+		tmtranscribe.ProviderEmpty,
+		300000,
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not start the transcribe")
+	}
+	log.WithField("transcribe", tr).Debugf("Finished transcribe. transcribe_id: %s", tr.ID)
+
+	transcriptFilters := map[tmtranscript.Field]any{
+		tmtranscript.FieldDeleted:      false,
+		tmtranscript.FieldTranscribeID: tr.ID.String(),
+	}
+	transcripts, err := h.reqHandler.TranscribeV1TranscriptList(ctx, "", 1000, transcriptFilters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the transcribe data")
+	}
+
+	return transcripts, nil
 }
 
 func (h *summaryHandler) startOnEndFlow(ctx context.Context, sm *summary.Summary) error {
