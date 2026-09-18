@@ -3,6 +3,7 @@ package summaryhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
@@ -16,6 +17,7 @@ import (
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -28,9 +30,9 @@ func Test_contentGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		activeflowID  uuid.UUID
-		referenceType summary.ReferenceType
-		transcripts   []tmtranscript.Transcript
+		activeflowID   uuid.UUID
+		referenceType  summary.ReferenceType
+		transcripts    []tmtranscript.Transcript
 		outputLanguage string
 
 		responseVariable *fmvariable.Variable
@@ -98,9 +100,9 @@ func Test_contentGet(t *testing.T) {
 		{
 			name: "reference type conference",
 
-			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
-			referenceType: summary.ReferenceTypeConference,
-			transcripts:   []tmtranscript.Transcript{},
+			activeflowID:   uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			referenceType:  summary.ReferenceTypeConference,
+			transcripts:    []tmtranscript.Transcript{},
 			outputLanguage: "ko-KR",
 
 			responseVariable: &fmvariable.Variable{
@@ -128,9 +130,9 @@ func Test_contentGet(t *testing.T) {
 		{
 			name: "reference type recording",
 
-			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
-			referenceType: summary.ReferenceTypeRecording,
-			transcripts:   []tmtranscript.Transcript{},
+			activeflowID:   uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			referenceType:  summary.ReferenceTypeRecording,
+			transcripts:    []tmtranscript.Transcript{},
 			outputLanguage: "ko-KR",
 
 			responseVariable: &fmvariable.Variable{
@@ -158,9 +160,9 @@ func Test_contentGet(t *testing.T) {
 		{
 			name: "reference type transcribe",
 
-			activeflowID:  uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
-			referenceType: summary.ReferenceTypeTranscribe,
-			transcripts:   []tmtranscript.Transcript{},
+			activeflowID:   uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724"),
+			referenceType:  summary.ReferenceTypeTranscribe,
+			transcripts:    []tmtranscript.Transcript{},
 			outputLanguage: "en-US",
 
 			responseVariable: &fmvariable.Variable{
@@ -206,10 +208,11 @@ func Test_contentGet(t *testing.T) {
 			},
 
 			expectedRequestContent: RequestContent{
-				Prompt:        defaultSummaryGeneratePrompt,
-				ReferenceType: "",
-				Transcripts:   []tmtranscript.Transcript{},
-				Variables:     map[string]string{},
+				Prompt:         defaultSummaryGeneratePrompt,
+				ReferenceType:  "",
+				OutputLanguage: "en-US",
+				Transcripts:    []tmtranscript.Transcript{},
+				Variables:      map[string]string{},
 			},
 			expectedRes: "response content",
 		},
@@ -238,6 +241,11 @@ func Test_contentGet(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseVariable, nil)
 
+			effectiveLang := tt.outputLanguage
+			if effectiveLang == "" {
+				effectiveLang = defaultOutputLanguage
+			}
+
 			tmpContent, err := json.Marshal(tt.expectedRequestContent)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -246,12 +254,21 @@ func Test_contentGet(t *testing.T) {
 				Model: defaultModel,
 				Messages: []openai.ChatCompletionMessage{
 					{
+						Role:    openai.ChatMessageRoleSystem,
+						Content: fmt.Sprintf(languageSystemPromptFmt, effectiveLang),
+					},
+					{
 						Role:    openai.ChatMessageRoleUser,
 						Content: string(tmpContent),
 					},
 				},
 			}
 			mockOpenai.EXPECT().Send(ctx, tmpRequestContent).Return(tt.responseOpenai, nil)
+
+			// Note: the shared fixtures use "response content" (16 runes of prose),
+			// which is below languageVerifyMinProse, so the second-pass verifier is
+			// skipped even for non-English targets. The verification harness itself
+			// is covered by Test_contentGet_verificationHarness.
 
 			res, err := h.contentGet(ctx, tt.activeflowID, tt.referenceType, tt.transcripts, tt.outputLanguage)
 			if err != nil {
@@ -263,6 +280,294 @@ func Test_contentGet(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_contentGet_verificationHarness exercises the second-pass output-language
+// verification harness (design §7). Generation uses Send, verification uses
+// SendOnce; gomock.InOrder pins the call sequence so the response-to-call
+// mapping is deterministic.
+func Test_contentGet_verificationHarness(t *testing.T) {
+	activeflowID := uuid.FromStringOrNil("77b6f188-0b96-11f0-8f7a-e3ffa3666724")
+	koProse := "Call Type:\n- 통화\n\nKey Discussion Points:\n- 고객이 환불을 요청했고 상담원이 절차를 안내했습니다."
+	enProse := "Call Type:\n- Call\n\nKey Discussion Points:\n- The customer asked for a refund and the agent explained the process."
+
+	genResp := func(content string) *openai.ChatCompletionResponse {
+		return &openai.ChatCompletionResponse{
+			Choices: []openai.ChatCompletionChoice{{Message: openai.ChatCompletionMessage{Content: content}}},
+		}
+	}
+	verifyResp := func(answer string) *openai.ChatCompletionResponse {
+		return &openai.ChatCompletionResponse{
+			Choices: []openai.ChatCompletionChoice{{Message: openai.ChatCompletionMessage{Content: answer}}},
+		}
+	}
+
+	// genDo returns a DoAndReturn for a first-pass generation Send that asserts
+	// the request uses defaultModel and a [system, user] message pair whose system
+	// message pins the requested output language by value, then returns content.
+	genDo := func(lang, content string) func(context.Context, *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+		return func(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+			if req.Model != defaultModel {
+				t.Errorf("generate: expect model %q, got %q", defaultModel, req.Model)
+			}
+			if len(req.Messages) != 2 {
+				t.Errorf("generate: expect 2 messages, got %d", len(req.Messages))
+			} else {
+				if req.Messages[0].Role != openai.ChatMessageRoleSystem {
+					t.Errorf("generate: expect first message system, got %q", req.Messages[0].Role)
+				}
+				if !strings.Contains(req.Messages[0].Content, lang) {
+					t.Errorf("generate: expect system message to contain %q, got %q", lang, req.Messages[0].Content)
+				}
+				if req.Messages[1].Role != openai.ChatMessageRoleUser {
+					t.Errorf("generate: expect second message user, got %q", req.Messages[1].Role)
+				}
+			}
+			return genResp(content), nil
+		}
+	}
+
+	// verifyDo returns a DoAndReturn for a second-pass verification SendOnce that
+	// asserts the verifier uses defaultVerifyModel and a single user message built
+	// from languageVerifyPrompt (containing the "language detector" prompt, the
+	// requested BCP47 code, and the sampled prose), then returns answer. This is
+	// what turns the harness assertions from "a SendOnce happened" into "the right
+	// verify payload was sent" (catches R4-* mutations on model/prompt).
+	verifyDo := func(lang, sample, answer string) func(context.Context, *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+		return func(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+			if req.Model != defaultVerifyModel {
+				t.Errorf("verify: expect model %q, got %q", defaultVerifyModel, req.Model)
+			}
+			if len(req.Messages) != 1 {
+				t.Errorf("verify: expect 1 message, got %d", len(req.Messages))
+			} else {
+				if req.Messages[0].Role != openai.ChatMessageRoleUser {
+					t.Errorf("verify: expect user role, got %q", req.Messages[0].Role)
+				}
+				want := fmt.Sprintf(languageVerifyPrompt, lang, sample)
+				if req.Messages[0].Content != want {
+					t.Errorf("verify: expect prompt %q, got %q", want, req.Messages[0].Content)
+				}
+				if !strings.Contains(req.Messages[0].Content, "language detector") {
+					t.Errorf("verify: expect prompt to contain languageVerifyPrompt fragment, got %q", req.Messages[0].Content)
+				}
+			}
+			return verifyResp(answer), nil
+		}
+	}
+
+	t.Run("verification passes on first attempt", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		gomock.InOrder(
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", koProse)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", koProse, "yes")),
+		)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "ko-KR")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != koProse {
+			t.Errorf("expect: %q, got: %q", koProse, res)
+		}
+	})
+
+	t.Run("mismatch then regenerate passes", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		gomock.InOrder(
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", enProse)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", enProse, "no")),
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", koProse)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", koProse, "yes")),
+		)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "ko-KR")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != koProse {
+			t.Errorf("expect: %q, got: %q", koProse, res)
+		}
+	})
+
+	t.Run("cap reached returns last non-empty", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		last := enProse + " third attempt"
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		gomock.InOrder(
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", enProse)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", enProse, "no")),
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", enProse+" second")),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", enProse+" second", "no")),
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", last)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", last, "no")),
+		)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "ko-KR")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != last {
+			t.Errorf("expect: %q, got: %q", last, res)
+		}
+	})
+
+	t.Run("indeterminate verification treated as pass", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		gomock.InOrder(
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", koProse)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", koProse, "")),
+		)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "ko-KR")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != koProse {
+			t.Errorf("expect: %q, got: %q", koProse, res)
+		}
+	})
+
+	t.Run("empty regeneration preserves earlier non-empty", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		gomock.InOrder(
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", enProse)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", enProse, "no")),
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", "")),
+		)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "ko-KR")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != enProse {
+			t.Errorf("expect: %q, got: %q", enProse, res)
+		}
+	})
+
+	t.Run("regeneration send hard failure falls back", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		gomock.InOrder(
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", enProse)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", enProse, "no")),
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(nil, fmt.Errorf("send failed")),
+		)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "ko-KR")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != enProse {
+			t.Errorf("expect: %q, got: %q", enProse, res)
+		}
+	})
+
+	t.Run("minimal prose skips verification", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		headersOnly := "Call Type:\n- None\n\nKey Discussion Points:\n- None\n\nAdditional Notes:\n- None"
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		// Only one Send, no SendOnce (verification skipped by min-prose guard).
+		mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(genResp(headersOnly), nil)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "ko-KR")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != headersOnly {
+			t.Errorf("expect: %q, got: %q", headersOnly, res)
+		}
+	})
+
+	t.Run("english target skips verification", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		// English target: single Send, no SendOnce.
+		mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(genResp(enProse), nil)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "en-US")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != enProse {
+			t.Errorf("expect: %q, got: %q", enProse, res)
+		}
+	})
+
+	t.Run("first pass pins output language in system message", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		ctx := context.Background()
+
+		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
+		gomock.InOrder(
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(genDo("ko-KR", koProse)),
+			mockOpenai.EXPECT().SendOnce(gomock.Any(), gomock.Any()).DoAndReturn(verifyDo("ko-KR", koProse, "yes")),
+		)
+
+		res, err := h.contentGet(ctx, activeflowID, summary.ReferenceTypeCall, []tmtranscript.Transcript{}, "ko-KR")
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+		if res != koProse {
+			t.Errorf("expect: %q, got: %q", koProse, res)
+		}
+	})
 }
 
 func Test_contentProcessReferenceTypeConference(t *testing.T) {

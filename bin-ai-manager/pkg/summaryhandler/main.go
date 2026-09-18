@@ -4,6 +4,8 @@ package summaryhandler
 
 import (
 	"context"
+	"time"
+
 	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
@@ -115,6 +117,43 @@ const (
 
 const (
 	defaultModel = openai.GPT4Turbo
+
+	// defaultVerifyModel is the cheaper model used for the summary output-language
+	// verification harness (yes/no detection). Kept separate from defaultModel:
+	// a top-tier model is unnecessary for a one-word judgement.
+	defaultVerifyModel = openai.GPT4oMini
+
+	// maxSummaryRegenerations bounds the output-language retry loop. Total
+	// generation attempts = 1 + maxSummaryRegenerations (= 3).
+	maxSummaryRegenerations = 2
+
+	// languageVerifySampleLen caps how many leading runes of the summary are
+	// sent to the verifier (rune-based, never byte-sliced).
+	languageVerifySampleLen = 1500
+
+	// languageVerifyMinProse is the minimum prose length (in runes, excluding
+	// section headers and "- None" items) required to run verification. Below
+	// this, verification is skipped and treated as a pass.
+	languageVerifyMinProse = 20
+
+	// verifyTimeout bounds a single verification call (via SendOnce, which has
+	// no backoff so this deadline actually holds).
+	verifyTimeout = 10 * time.Second
+
+	// englishPrimarySubtag: when the effective output language's canonical
+	// primary subtag equals this, verification is skipped (see design §5.1.1).
+	englishPrimarySubtag = "en"
+)
+
+const (
+	// languageSystemPromptFmt is the first-pass (primary) enforcement: a system
+	// message that pins the output language by value (%s = effective BCP47 lang),
+	// removing the previous self-reference indirection.
+	languageSystemPromptFmt = "You are a call summary assistant. You MUST write the ENTIRE summary, including every section body, in %s (BCP47). This language requirement is absolute and overrides the language of the transcript or any other input. Section labels follow the user instructions."
+
+	// languageVerifyPrompt is the second-pass (safety net) verifier prompt.
+	// %s (1) = BCP47 code, %s (2) = sampled prose.
+	languageVerifyPrompt = "You are a strict language detector. Answer with exactly one word: yes or no. Ignore section headings/labels, proper nouns, product names, URLs, code, and technical terms — judge only the natural-language prose. Is the following text written mainly in the language with BCP47 code %s? TEXT:\n%s"
 )
 
 const (
@@ -129,7 +168,7 @@ Output format rules (follow strictly):
 - The summary must be easy to copy and paste into an email, ticket, or note as clean plain text.
 
 Language:
-- Generate the summary in the language specified by the output_language field (top-level of the input JSON). If output_language is empty, fall back to voipbin.ai_summary.language, and if that is also empty, use en-US.
+- Follow the system message's language requirement.
 
 Always produce all of the following sections, in this exact order, even when the transcription is short, low quality, or empty. Never skip a section and never replace the whole summary with a single sentence. When a section has nothing to report, write exactly one item under it: "- None".
 
