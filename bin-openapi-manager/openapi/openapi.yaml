@@ -8501,6 +8501,8 @@ paths:
 
   /aisummaries/{id}:
     $ref: './paths/aisummaries/id.yaml'
+  /aisummaries/{id}/regenerate:
+    $ref: './paths/aisummaries/id_regenerate.yaml'
   /aisummaries:
     $ref: './paths/aisummaries/main.yaml'
 

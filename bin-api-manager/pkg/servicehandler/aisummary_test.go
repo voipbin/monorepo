@@ -356,3 +356,125 @@ func Test_AISummaryDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_AISummaryRegenerate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent       *auth.AuthIdentity
+		aisummaryID uuid.UUID
+		language    string
+
+		responseAISummary    *amsummary.Summary
+		regeneratedAISummary *amsummary.Summary
+		expectRes            *amsummary.WebhookMessage
+	}{
+		{
+			name: "normal",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			aisummaryID: uuid.FromStringOrNil("b54b6336-0ccb-11f0-818d-07adf86344ed"),
+			language:    "ko-KR",
+
+			responseAISummary: &amsummary.Summary{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b54b6336-0ccb-11f0-818d-07adf86344ed"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			regeneratedAISummary: &amsummary.Summary{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b54b6336-0ccb-11f0-818d-07adf86344ed"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Language: "ko-KR",
+				Content:  "regenerated",
+			},
+			expectRes: &amsummary.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b54b6336-0ccb-11f0-818d-07adf86344ed"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Language: "ko-KR",
+				Content:  "regenerated",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().AIV1SummaryGet(ctx, tt.aisummaryID).Return(tt.responseAISummary, nil)
+			mockReq.EXPECT().AIV1SummaryRegenerate(ctx, tt.aisummaryID, tt.language).Return(tt.regeneratedAISummary, nil)
+
+			res, err := h.AISummaryRegenerate(ctx, tt.agent, tt.aisummaryID, tt.language)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_AISummaryRegenerate_permissionDenied verifies the ownership gate: when the
+// target summary belongs to a different customer, AISummaryRegenerate rejects with
+// ErrPermissionDenied and never calls AIV1SummaryRegenerate (enforced by gomock's
+// strict controller).
+func Test_AISummaryRegenerate_permissionDenied(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+	ctx := context.Background()
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+	aisummaryID := uuid.FromStringOrNil("b54b6336-0ccb-11f0-818d-07adf86344ed")
+
+	// the summary belongs to a DIFFERENT customer.
+	mockReq.EXPECT().AIV1SummaryGet(ctx, aisummaryID).Return(&amsummary.Summary{
+		Identity: commonidentity.Identity{
+			ID:         aisummaryID,
+			CustomerID: uuid.FromStringOrNil("ffffffff-8e5f-11ee-97b2-cfe7337b701c"),
+		},
+	}, nil)
+
+	res, err := h.AISummaryRegenerate(ctx, agent, aisummaryID, "")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
+	}
+}

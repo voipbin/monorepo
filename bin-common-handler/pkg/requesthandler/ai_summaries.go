@@ -119,3 +119,32 @@ func (r *requestHandler) AIV1SummaryDelete(ctx context.Context, aiID uuid.UUID) 
 
 	return &res, nil
 }
+
+// AIV1SummaryRegenerate sends a request to ai-manager
+// to regenerate an existing summary in place (VOIP-1535).
+// language is the BCP47 output language; an empty value keeps the existing
+// summary's language. It returns the updated summary if it succeeds.
+func (r *requestHandler) AIV1SummaryRegenerate(ctx context.Context, summaryID uuid.UUID, language string) (*amsummary.Summary, error) {
+	uri := fmt.Sprintf("/v1/summaries/%s/regenerate", summaryID.String())
+
+	data := &amrequest.V1DataSummariesIDRegeneratePost{
+		Language: language,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/summaries/<summary-id>/regenerate", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amsummary.Summary
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}

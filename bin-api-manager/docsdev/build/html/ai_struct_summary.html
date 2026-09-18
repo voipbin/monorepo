@@ -678,6 +678,22 @@
 <p>Summary generation is asynchronous. After creating a summary via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/summaries</span></code>, poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/summaries/{id}</span></code> until the <code class="docutils literal notranslate"><span class="pre">status</span></code> changes from <code class="docutils literal notranslate"><span class="pre">progressing</span></code> to <code class="docutils literal notranslate"><span class="pre">done</span></code>. The <code class="docutils literal notranslate"><span class="pre">content</span></code> field will be empty until processing completes.</p>
 </div>
 </section>
+<section id="regenerate">
+<span id="ai-struct-summary-regenerate"></span><h2>Regenerate<a class="headerlink" href="#regenerate" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/summaries/{id}/regenerate</span></code> re-generates the content of an existing summary in place. The summary keeps the same <code class="docutils literal notranslate"><span class="pre">id</span></code> and its <code class="docutils literal notranslate"><span class="pre">content</span></code> is overwritten with a freshly generated result; the record is only replaced on success, so a failed regeneration leaves the previous content untouched.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string, optional&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">language</span></code> (string, optional): The BCP47 language code for the regenerated summary output (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>). If omitted, the summary’s existing <code class="docutils literal notranslate"><span class="pre">language</span></code> is kept. If a different language is provided, the same record is updated to the new language (the summary is replaced, not duplicated).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Regenerate is currently supported for the <code class="docutils literal notranslate"><span class="pre">recording</span></code> reference type only. Requests targeting other reference types are rejected.</p>
+</div>
+</section>
 <section id="reference-type">
 <span id="ai-struct-summary-reference-type"></span><h2>Reference Type<a class="headerlink" href="#reference-type" title="Link to this heading">¶</a></h2>
 <p>All possible values for the <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> field:</p>
@@ -807,6 +823,7 @@
             <ul>
 <li><a class="reference internal" href="#">AI Summary</a><ul>
 <li><a class="reference internal" href="#summary">Summary</a></li>
+<li><a class="reference internal" href="#regenerate">Regenerate</a></li>
 <li><a class="reference internal" href="#reference-type">Reference Type</a></li>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#example">Example</a></li>

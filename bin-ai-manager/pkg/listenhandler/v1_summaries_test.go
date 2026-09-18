@@ -274,3 +274,89 @@ func Test_processV1SummariesIDDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_processV1SummariesIDRegeneratePost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseSummary *summary.Summary
+
+		expectedID       uuid.UUID
+		expectedLanguage string
+		expectedRes      *sock.Response
+	}{
+		{
+			name: "with language",
+			request: &sock.Request{
+				URI:      "/v1/summaries/4520a2ac-0bad-11f0-a428-679c2b6f1888/regenerate",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"language":"ko-KR"}`),
+			},
+
+			responseSummary: &summary.Summary{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("4520a2ac-0bad-11f0-a428-679c2b6f1888"),
+				},
+			},
+
+			expectedID:       uuid.FromStringOrNil("4520a2ac-0bad-11f0-a428-679c2b6f1888"),
+			expectedLanguage: "ko-KR",
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"4520a2ac-0bad-11f0-a428-679c2b6f1888","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			name: "empty language keeps existing",
+			request: &sock.Request{
+				URI:      "/v1/summaries/93f1f214-0bad-11f0-980a-bba7be7d0493/regenerate",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{}`),
+			},
+
+			responseSummary: &summary.Summary{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("93f1f214-0bad-11f0-980a-bba7be7d0493"),
+				},
+			},
+
+			expectedID:       uuid.FromStringOrNil("93f1f214-0bad-11f0-980a-bba7be7d0493"),
+			expectedLanguage: "",
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"93f1f214-0bad-11f0-980a-bba7be7d0493","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockSummary := summaryhandler.NewMockSummaryHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:    mockSock,
+				summaryHandler: mockSummary,
+			}
+
+			mockSummary.EXPECT().Regenerate(gomock.Any(), tt.expectedID, tt.expectedLanguage).Return(tt.responseSummary, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectedRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}

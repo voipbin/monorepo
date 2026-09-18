@@ -20,3 +20,12 @@ type V1DataSummariesPost struct {
 
 	Language string `json:"language,omitempty"`
 }
+
+// V1DataSummariesIDRegeneratePost is
+// v1 data type request struct for
+// /v1/summaries/<summary-id>/regenerate POST
+type V1DataSummariesIDRegeneratePost struct {
+	// Language is the BCP47 output language for the regenerated summary.
+	// Empty keeps the existing summary's language (no re-selection).
+	Language string `json:"language,omitempty"`
+}

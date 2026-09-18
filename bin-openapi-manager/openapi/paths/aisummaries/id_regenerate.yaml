@@ -1,0 +1,58 @@
+post:
+  summary: Regenerate an ai summary.
+  description: >
+    Regenerates the content of an existing ai summary in place, keeping the same
+    summary ID. Unlike creating a new summary, this always re-runs the summary
+    generation for the referenced resource (bypassing the create-path
+    deduplication), so an explicit Regenerate reliably produces fresh content.
+    Optionally re-select the output language: when a different `language` is
+    supplied the existing summary is replaced with the new-language summary on
+    the same record (one summary per recording is kept); when `language` is
+    omitted the existing summary's language is preserved. Regeneration runs the
+    content generation first and only overwrites the record on success, so a
+    failed regeneration leaves the existing content intact. Supported only for
+    summaries whose `reference_type` is `recording`.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      description: "The ID of the ai summary to regenerate. Returned from `GET /aisummaries`."
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            language:
+              type: string
+              description: >-
+                BCP47 language code for the regenerated summary output (e.g.,
+                en-US, ko-KR). Controls only the language the summary is written
+                in; it is independent of the transcription (STT) language. When
+                omitted the existing summary's language is preserved; when a
+                different value is supplied the summary is replaced with the
+                new-language summary on the same record.
+  responses:
+    '200':
+      description: Details of the regenerated ai summary.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerSummary'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

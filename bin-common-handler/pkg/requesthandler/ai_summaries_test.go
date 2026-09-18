@@ -291,3 +291,94 @@ func Test_AIV1SummaryDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_AIV1SummaryRegenerate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		summaryID uuid.UUID
+		language  string
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *amsummary.Summary
+	}{
+		{
+			name: "language specified",
+
+			summaryID: uuid.FromStringOrNil("432b67fc-0bb2-11f0-8ffb-f3f90e210b16"),
+			language:  "ko-KR",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"432b67fc-0bb2-11f0-8ffb-f3f90e210b16"}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:      "/v1/summaries/432b67fc-0bb2-11f0-8ffb-f3f90e210b16/regenerate",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"language":"ko-KR"}`),
+			},
+			expectRes: &amsummary.Summary{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("432b67fc-0bb2-11f0-8ffb-f3f90e210b16"),
+				},
+			},
+		},
+		{
+			name: "empty language keeps existing",
+
+			summaryID: uuid.FromStringOrNil("5b6a1e2c-0bb2-11f0-9a1a-2ff0c9e8b7aa"),
+			language:  "",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"5b6a1e2c-0bb2-11f0-9a1a-2ff0c9e8b7aa"}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:      "/v1/summaries/5b6a1e2c-0bb2-11f0-9a1a-2ff0c9e8b7aa/regenerate",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{}`),
+			},
+			expectRes: &amsummary.Summary{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("5b6a1e2c-0bb2-11f0-9a1a-2ff0c9e8b7aa"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AIV1SummaryRegenerate(ctx, tt.summaryID, tt.language)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

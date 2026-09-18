@@ -10685,6 +10685,12 @@ type PostAisummariesJSONBody struct {
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
 }
 
+// PostAisummariesIdRegenerateJSONBody defines parameters for PostAisummariesIdRegenerate.
+type PostAisummariesIdRegenerateJSONBody struct {
+	// Language BCP47 language code for the regenerated summary output (e.g., en-US, ko-KR). Controls only the language the summary is written in; it is independent of the transcription (STT) language. When omitted the existing summary's language is preserved; when a different value is supplied the summary is replaced with the new-language summary on the same record.
+	Language *string `json:"language,omitempty"`
+}
+
 // GetAuthPasswordResetParams defines parameters for GetAuthPasswordReset.
 type GetAuthPasswordResetParams struct {
 	// Token 64-character lowercase hexadecimal password reset token from the reset email.
@@ -13558,6 +13564,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
+
+// PostAisummariesIdRegenerateJSONRequestBody defines body for PostAisummariesIdRegenerate for application/json ContentType.
+type PostAisummariesIdRegenerateJSONRequestBody PostAisummariesIdRegenerateJSONBody
 
 // PostAuthBootJSONRequestBody defines body for PostAuthBoot for application/json ContentType.
 type PostAuthBootJSONRequestBody = RequestBodyAuthBootPOST

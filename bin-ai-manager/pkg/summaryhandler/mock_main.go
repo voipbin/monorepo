@@ -114,6 +114,21 @@ func (mr *MockSummaryHandlerMockRecorder) List(ctx, size, token, filters any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockSummaryHandler)(nil).List), ctx, size, token, filters)
 }
 
+// Regenerate mocks base method.
+func (m *MockSummaryHandler) Regenerate(ctx context.Context, summaryID uuid.UUID, language string) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Regenerate", ctx, summaryID, language)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Regenerate indicates an expected call of Regenerate.
+func (mr *MockSummaryHandlerMockRecorder) Regenerate(ctx, summaryID, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Regenerate", reflect.TypeOf((*MockSummaryHandler)(nil).Regenerate), ctx, summaryID, language)
+}
+
 // ServiceStart mocks base method.
 func (m *MockSummaryHandler) ServiceStart(ctx context.Context, customerID, activeflowID, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string) (*service.Service, error) {
 	m.ctrl.T.Helper()
@@ -142,4 +157,19 @@ func (m *MockSummaryHandler) Start(ctx context.Context, customerID, activeflowID
 func (mr *MockSummaryHandlerMockRecorder) Start(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSummaryHandler)(nil).Start), ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language)
+}
+
+// UpdateContentLanguage mocks base method.
+func (m *MockSummaryHandler) UpdateContentLanguage(ctx context.Context, id uuid.UUID, content, language string) (*summary.Summary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateContentLanguage", ctx, id, content, language)
+	ret0, _ := ret[0].(*summary.Summary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateContentLanguage indicates an expected call of UpdateContentLanguage.
+func (mr *MockSummaryHandlerMockRecorder) UpdateContentLanguage(ctx, id, content, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateContentLanguage", reflect.TypeOf((*MockSummaryHandler)(nil).UpdateContentLanguage), ctx, id, content, language)
 }
