@@ -34,6 +34,8 @@ type SummaryHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
 	List(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error)
 	Delete(ctx context.Context, id uuid.UUID) (*summary.Summary, error)
+	Regenerate(ctx context.Context, summaryID uuid.UUID, language string) (*summary.Summary, error)
+	UpdateContentLanguage(ctx context.Context, id uuid.UUID, content string, language string) (*summary.Summary, error)
 
 	ServiceStart(
 		ctx context.Context,

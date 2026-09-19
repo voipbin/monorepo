@@ -355,6 +355,7 @@ type RequestHandler interface {
 	) (*amsummary.Summary, error)
 	AIV1SummaryGet(ctx context.Context, summaryID uuid.UUID) (*amsummary.Summary, error)
 	AIV1SummaryDelete(ctx context.Context, aiID uuid.UUID) (*amsummary.Summary, error)
+	AIV1SummaryRegenerate(ctx context.Context, summaryID uuid.UUID, language string) (*amsummary.Summary, error)
 
 	// ai-manager aiaudit
 	AIV1AIAuditCreate(ctx context.Context, customerID uuid.UUID, aicallID uuid.UUID, language string) ([]*amaiaudit.AIAudit, error)

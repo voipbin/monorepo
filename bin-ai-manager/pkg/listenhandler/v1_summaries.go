@@ -148,6 +148,51 @@ func (h *listenHandler) processV1SummariesIDGet(ctx context.Context, m *sock.Req
 	return res, nil
 }
 
+// processV1SummariesIDRegeneratePost handles POST /v1/summaries/<summary-id>/regenerate request
+func (h *listenHandler) processV1SummariesIDRegeneratePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1SummariesIDRegeneratePost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid summary ID.")
+		return simpleResponse(400), nil
+	}
+
+	var req request.V1DataSummariesIDRegeneratePost
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.summaryHandler.Regenerate(ctx, id, req.Language)
+	if err != nil {
+		log.Errorf("Could not regenerate item. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1SummariesIDDelete handles DELETE /v1/summaries/<summary-id> request
 func (h *listenHandler) processV1SummariesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

@@ -4233,7 +4233,7 @@ type AIManagerSummary struct {
 	// Id The unique identifier of the summary.
 	Id *string `json:"id,omitempty"`
 
-	// Language Language used for the AI summary.
+	// Language BCP47 language code for the summary output (e.g., en-US, ko-KR). This controls only the language the summary is written in; it is independent of the transcription (STT) language. The server reuses an existing transcription when available and translates the summary into this output language.
 	Language *string `json:"language,omitempty"`
 
 	// OnEndFlowId The unique identifier of the flow to execute when the summary completes. Returned from the `POST /flows` or `GET /flows` response.
@@ -6055,7 +6055,7 @@ type FlowManagerAction struct {
 
 // FlowManagerActionOptionAISummary defines model for FlowManagerActionOptionAISummary.
 type FlowManagerActionOptionAISummary struct {
-	// Language BCP47 language code for the summary.
+	// Language BCP47 language code for the summary output. Controls only the language the summary is written in, independent of the STT language.
 	Language *string `json:"language,omitempty"`
 
 	// OnEndFlowId The unique identifier of the flow to execute when AI summary completes. Returned from the `POST /flows` or `GET /flows` response.
@@ -8348,7 +8348,7 @@ type GetAisummariesParams struct {
 
 // PostAisummariesJSONBody defines parameters for PostAisummaries.
 type PostAisummariesJSONBody struct {
-	// Language The language of the ai summary.
+	// Language BCP47 language code for the summary output (e.g., en-US, ko-KR). Controls only the language the summary is written in; it is independent of the transcription (STT) language. When an existing transcription for the reference is available it is reused, and the summary is translated into this output language. Defaults to en-US when omitted.
 	Language string `json:"language"`
 
 	// OnEndFlowId The ID of the flow to be executed when the ai summary ends.
@@ -8359,6 +8359,12 @@ type PostAisummariesJSONBody struct {
 
 	// ReferenceType Type of reference for the AI summary.
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
+}
+
+// PostAisummariesIdRegenerateJSONBody defines parameters for PostAisummariesIdRegenerate.
+type PostAisummariesIdRegenerateJSONBody struct {
+	// Language BCP47 language code for the regenerated summary output (e.g., en-US, ko-KR). Controls only the language the summary is written in; it is independent of the transcription (STT) language. When omitted the existing summary's language is preserved; when a different value is supplied the summary is replaced with the new-language summary on the same record.
+	Language *string `json:"language,omitempty"`
 }
 
 // GetAuthPasswordResetParams defines parameters for GetAuthPasswordReset.
@@ -10909,6 +10915,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
+// PostAisummariesIdRegenerateJSONRequestBody defines body for PostAisummariesIdRegenerate for application/json ContentType.
+type PostAisummariesIdRegenerateJSONRequestBody PostAisummariesIdRegenerateJSONBody
+
 // PostAuthBootJSONRequestBody defines body for PostAuthBoot for application/json ContentType.
 type PostAuthBootJSONRequestBody = RequestBodyAuthBootPOST
 
@@ -11523,6 +11532,9 @@ type ServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(c *gin.Context, id string)
+	// Regenerate an ai summary.
+	// (POST /aisummaries/{id}/regenerate)
+	PostAisummariesIdRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Generate a resource-scoped JWT from a direct hash.
 	// (POST /auth/boot)
 	PostAuthBoot(c *gin.Context)
@@ -14194,6 +14206,31 @@ func (siw *ServerInterfaceWrapper) GetAisummariesId(c *gin.Context) {
 	}
 
 	siw.Handler.GetAisummariesId(c, id)
+}
+
+// PostAisummariesIdRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostAisummariesIdRegenerate(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAisummariesIdRegenerate(c, id)
 }
 
 // PostAuthBoot operation middleware
@@ -24037,6 +24074,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
+	router.POST(options.BaseURL+"/aisummaries/:id/regenerate", wrapper.PostAisummariesIdRegenerate)
 	router.POST(options.BaseURL+"/auth/boot", wrapper.PostAuthBoot)
 	router.POST(options.BaseURL+"/auth/boot/refresh", wrapper.PostAuthBootRefresh)
 	router.POST(options.BaseURL+"/auth/email-verify", wrapper.PostAuthEmailVerify)
@@ -29116,6 +29154,99 @@ func (response GetAisummariesId404JSONResponse) VisitGetAisummariesIdResponse(w 
 type GetAisummariesId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetAisummariesId500JSONResponse) VisitGetAisummariesIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAisummariesIdRegenerateRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostAisummariesIdRegenerateJSONRequestBody
+}
+
+type PostAisummariesIdRegenerateResponseObject interface {
+	VisitPostAisummariesIdRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostAisummariesIdRegenerate200JSONResponse AIManagerSummary
+
+func (response PostAisummariesIdRegenerate200JSONResponse) VisitPostAisummariesIdRegenerateResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAisummariesIdRegenerate400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostAisummariesIdRegenerate400JSONResponse) VisitPostAisummariesIdRegenerateResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAisummariesIdRegenerate401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostAisummariesIdRegenerate401JSONResponse) VisitPostAisummariesIdRegenerateResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAisummariesIdRegenerate403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostAisummariesIdRegenerate403JSONResponse) VisitPostAisummariesIdRegenerateResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAisummariesIdRegenerate404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostAisummariesIdRegenerate404JSONResponse) VisitPostAisummariesIdRegenerateResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAisummariesIdRegenerate500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostAisummariesIdRegenerate500JSONResponse) VisitPostAisummariesIdRegenerateResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -59794,6 +59925,9 @@ type StrictServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(ctx context.Context, request GetAisummariesIdRequestObject) (GetAisummariesIdResponseObject, error)
+	// Regenerate an ai summary.
+	// (POST /aisummaries/{id}/regenerate)
+	PostAisummariesIdRegenerate(ctx context.Context, request PostAisummariesIdRegenerateRequestObject) (PostAisummariesIdRegenerateResponseObject, error)
 	// Generate a resource-scoped JWT from a direct hash.
 	// (POST /auth/boot)
 	PostAuthBoot(ctx context.Context, request PostAuthBootRequestObject) (PostAuthBootResponseObject, error)
@@ -62523,6 +62657,42 @@ func (sh *strictHandler) GetAisummariesId(ctx *gin.Context, id string) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetAisummariesIdResponseObject); ok {
 		if err := validResponse.VisitGetAisummariesIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAisummariesIdRegenerate operation middleware
+func (sh *strictHandler) PostAisummariesIdRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostAisummariesIdRegenerateRequestObject
+
+	request.Id = id
+
+	var body PostAisummariesIdRegenerateJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		if !errors.Is(err, io.EOF) {
+			sh.options.RequestErrorHandlerFunc(ctx, err)
+			return
+		}
+	} else {
+		request.Body = &body
+	}
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAisummariesIdRegenerate(ctx, request.(PostAisummariesIdRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAisummariesIdRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostAisummariesIdRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostAisummariesIdRegenerateResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

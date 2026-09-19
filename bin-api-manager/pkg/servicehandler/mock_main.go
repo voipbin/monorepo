@@ -460,6 +460,21 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryList(ctx, a, size, token, ref
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryList", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryList), ctx, a, size, token, referenceType, referenceID)
 }
 
+// AISummaryRegenerate mocks base method.
+func (m *MockServiceHandler) AISummaryRegenerate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, language string) (*summary.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AISummaryRegenerate", ctx, a, id, language)
+	ret0, _ := ret[0].(*summary.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AISummaryRegenerate indicates an expected call of AISummaryRegenerate.
+func (mr *MockServiceHandlerMockRecorder) AISummaryRegenerate(ctx, a, id, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AISummaryRegenerate", reflect.TypeOf((*MockServiceHandler)(nil).AISummaryRegenerate), ctx, a, id, language)
+}
+
 // AIUpdate mocks base method.
 func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, mcpServerIDs *[]uuid.UUID, autoAICallAuditEnabled bool) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()

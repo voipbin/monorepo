@@ -216,3 +216,31 @@ func (h *serviceHandler) AISummaryDelete(ctx context.Context, a *auth.AuthIdenti
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
+
+// AISummaryRegenerate regenerates an existing ai summary in place (VOIP-1535).
+// Ownership is enforced here as the single gate (fetch-then-permission, same as
+// AISummaryDelete): ai-manager's Regenerate receives no customerID and trusts this
+// layer. language is the BCP47 output language; an empty value keeps the existing
+// summary's language.
+func (h *serviceHandler) AISummaryRegenerate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, language string) (*amsummary.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	c, err := h.aisummaryGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get ai summary info")
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	tmp, err := h.reqHandler.AIV1SummaryRegenerate(ctx, id, language)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not regenerate the ai summary")
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}

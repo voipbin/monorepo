@@ -42,6 +42,25 @@ Summary
 
    Summary generation is asynchronous. After creating a summary via ``POST /summaries``, poll ``GET /summaries/{id}`` until the ``status`` changes from ``progressing`` to ``done``. The ``content`` field will be empty until processing completes.
 
+.. _ai-struct-summary-regenerate:
+
+Regenerate
+----------
+
+``POST /summaries/{id}/regenerate`` re-generates the content of an existing summary in place. The summary keeps the same ``id`` and its ``content`` is overwritten with a freshly generated result; the record is only replaced on success, so a failed regeneration leaves the previous content untouched.
+
+.. code::
+
+    {
+        "language": "<string, optional>"
+    }
+
+* ``language`` (string, optional): The BCP47 language code for the regenerated summary output (e.g., ``en-US``, ``ko-KR``). If omitted, the summary's existing ``language`` is kept. If a different language is provided, the same record is updated to the new language (the summary is replaced, not duplicated).
+
+.. note::
+
+   Regenerate is currently supported for the ``recording`` reference type only. Requests targeting other reference types are rejected.
+
 .. _ai-struct-summary-reference-type:
 
 Reference Type

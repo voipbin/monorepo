@@ -20,8 +20,8 @@ import (
 	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
 	"monorepo/bin-ai-manager/pkg/analysishandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
-	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 	"monorepo/bin-ai-manager/pkg/mcpoauthhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
@@ -120,9 +120,10 @@ var (
 	regV1ServicesTypeAnalysis = regexp.MustCompile("/v1/services/type/analysis$")
 
 	// summary
-	regV1SummariesGet = regexp.MustCompile(`/v1/summaries\?`)
-	regV1Summaries    = regexp.MustCompile("/v1/summaries$")
-	regV1SummariesID  = regexp.MustCompile("/v1/summaries/" + regUUID + "$")
+	regV1SummariesGet          = regexp.MustCompile(`/v1/summaries\?`)
+	regV1Summaries             = regexp.MustCompile("/v1/summaries$")
+	regV1SummariesIDRegenerate = regexp.MustCompile("/v1/summaries/" + regUUID + "/regenerate$")
+	regV1SummariesID           = regexp.MustCompile("/v1/summaries/" + regUUID + "$")
 
 	// tools
 	regV1Tools = regexp.MustCompile("/v1/tools$")
@@ -134,12 +135,12 @@ var (
 	regV1TeamsID                     = regexp.MustCompile("/v1/teams/" + regUUID + "$")
 
 	// mcp_servers
-	regV1McpServersGet             = regexp.MustCompile(`/v1/mcp_servers\?`)
-	regV1McpServers                = regexp.MustCompile("/v1/mcp_servers$")
-	regV1McpServersOAuthStart      = regexp.MustCompile("/v1/mcp_servers/oauth/start$")
-	regV1McpServersOAuthCallback   = regexp.MustCompile(`/v1/mcp_servers/oauth/callback\?`)
-	regV1McpServersOAuthComplete   = regexp.MustCompile("/v1/mcp_servers/oauth/complete$")
-	regV1McpServersID              = regexp.MustCompile("/v1/mcp_servers/" + regUUID + "$")
+	regV1McpServersGet           = regexp.MustCompile(`/v1/mcp_servers\?`)
+	regV1McpServers              = regexp.MustCompile("/v1/mcp_servers$")
+	regV1McpServersOAuthStart    = regexp.MustCompile("/v1/mcp_servers/oauth/start$")
+	regV1McpServersOAuthCallback = regexp.MustCompile(`/v1/mcp_servers/oauth/callback\?`)
+	regV1McpServersOAuthComplete = regexp.MustCompile("/v1/mcp_servers/oauth/complete$")
+	regV1McpServersID            = regexp.MustCompile("/v1/mcp_servers/" + regUUID + "$")
 )
 
 var (
@@ -500,6 +501,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Summaries.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1SummariesPost(ctx, m)
 		requestType = "/v1/summaries"
+
+	// POST /summaries/<summary-id>/regenerate
+	case regV1SummariesIDRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1SummariesIDRegeneratePost(ctx, m)
+		requestType = "/v1/summaries/<summary-id>/regenerate"
 
 	// GET /summaries/<summary-id>
 	case regV1SummariesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

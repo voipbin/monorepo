@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -175,6 +176,48 @@ func (h *server) DeleteAisummariesId(c *gin.Context, id string) {
 	res, err := h.serviceHandler.AISummaryDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the ai summary. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostAisummariesIdRegenerate(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostAisummariesIdRegenerate",
+		"request_address": c.ClientIP,
+		"ai_summary_id":   id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"auth": a,
+	})
+
+	target := uuid.UUID(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
+		return
+	}
+
+	language := ""
+	// the request body is optional; a missing/invalid body is treated as "no
+	// language re-selection" (keep the existing summary's language).
+	var req openapi_server.PostAisummariesIdRegenerateJSONBody
+	if err := c.ShouldBindJSON(&req); err == nil && req.Language != nil {
+		language = *req.Language
+	}
+
+	res, err := h.serviceHandler.AISummaryRegenerate(c.Request.Context(), a, target, language)
+	if err != nil {
+		log.Errorf("Could not regenerate the ai summary. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}

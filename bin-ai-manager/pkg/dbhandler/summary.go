@@ -193,12 +193,13 @@ func (h *handler) SummaryList(ctx context.Context, size uint64, token string, fi
 }
 
 // SummaryUpdate updates the summary fields unconditionally (no rows-affected check).
-// As of VOIP-1422, its only production caller (summaryhandler.UpdateStatusDone) was
-// rewired to the conditional SummaryUpdateStatusDoneIfNotDone below, since an
-// unconditional update cannot protect against bin-conference-manager's double
-// conference_deleted delivery. Retained as general-purpose infrastructure for any
-// future non-status field update that does not need that guard; currently unreferenced
-// outside its own test.
+// As of VOIP-1422, the automatic (non-regenerate) completion path
+// (summaryhandler.UpdateStatusDone) uses the conditional SummaryUpdateStatusDoneIfNotDone
+// below instead, since an unconditional update cannot protect against
+// bin-conference-manager's double conference_deleted delivery. This unconditional
+// update is the explicit-regenerate write path (VOIP-1535): its production caller
+// summaryhandler.UpdateContentLanguage deliberately needs to overwrite an
+// already-done summary (content + language) without that guard.
 func (h *handler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[summary.Field]any) error {
 	updateFields := make(map[string]any)
 	for k, v := range fields {

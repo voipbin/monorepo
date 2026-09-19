@@ -150,6 +150,32 @@ func (h *summaryHandler) Delete(ctx context.Context, id uuid.UUID) (*summary.Sum
 	return res, nil
 }
 
+// UpdateContentLanguage updates the summary's content and output language and marks
+// it done, using the unconditional dbhandler.SummaryUpdate (no IfNotDone status guard).
+// This is the explicit-regenerate write path (VOIP-1535): a manual Regenerate must be
+// able to overwrite a summary that is already StatusDone, which SummaryUpdateStatusDoneIfNotDone
+// (VOIP-1422's double conference_deleted guard) intentionally refuses. It publishes
+// EventTypeUpdated (not Deleted/Created) and does NOT touch the start/done Prometheus
+// counters, since a regenerate is neither a fresh start nor a first completion.
+func (h *summaryHandler) UpdateContentLanguage(ctx context.Context, id uuid.UUID, content string, language string) (*summary.Summary, error) {
+	fields := map[summary.Field]any{
+		summary.FieldContent:  content,
+		summary.FieldLanguage: language,
+		summary.FieldStatus:   summary.StatusDone,
+	}
+	if err := h.db.SummaryUpdate(ctx, id, fields); err != nil {
+		return nil, errors.Wrapf(err, "could not update the summary")
+	}
+
+	res, err := h.db.SummaryGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated summary")
+	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, summary.EventTypeUpdated, res)
+
+	return res, nil
+}
+
 // ErrSummaryAlreadyDone is returned by UpdateStatusDone when the conditional DB update
 // affected zero rows: either the summary was already StatusDone at write time (VOIP-
 // 1422: bin-conference-manager can publish conference_deleted twice for one
