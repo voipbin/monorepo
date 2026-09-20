@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -73,7 +74,7 @@ func (h *serviceHandler) AISummaryCreate(
 		referenceType,
 		referenceID,
 		language,
-		50000,
+		requesthandler.RequestTimeoutSummary,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create ai summary")

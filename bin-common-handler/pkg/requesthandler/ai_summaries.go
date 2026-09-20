@@ -136,7 +136,7 @@ func (r *requestHandler) AIV1SummaryRegenerate(ctx context.Context, summaryID uu
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/summaries/<summary-id>/regenerate", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/summaries/<summary-id>/regenerate", RequestTimeoutSummary, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}
