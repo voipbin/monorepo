@@ -25179,13 +25179,13 @@
               "type": "number",
               "format": "double"
             },
-            "description": "Precomputed, normalized (-1..1) waveform peak values for the whole file, for rendering a waveform without downloading the audio. Empty when peak computation failed; playback still works via uri_download.",
+            "description": "Precomputed waveform peak values (absolute amplitude magnitude, 0.0 to 1.0) for the whole file, for rendering a waveform without downloading the audio. Empty when peak computation failed; playback still works via uri_download.",
             "example": [
               0,
               0.12,
-              -0.34,
+              0.34,
               0.56,
-              -0.21,
+              0.21,
               0.08
             ]
           }

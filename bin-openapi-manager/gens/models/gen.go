@@ -4810,9 +4810,9 @@ type ApiManagerRecordingPlayfile struct {
 	// Example: 573440
 	Filesize *int64 `json:"filesize,omitempty"`
 
-	// Peaks Precomputed, normalized (-1..1) waveform peak values for the whole file, for rendering a waveform without downloading the audio. Empty when peak computation failed; playback still works via uri_download.
+	// Peaks Precomputed waveform peak values (absolute amplitude magnitude, 0.0 to 1.0) for the whole file, for rendering a waveform without downloading the audio. Empty when peak computation failed; playback still works via uri_download.
 	//
-	// Example: [0,0.12,-0.34,0.56,-0.21,0.08]
+	// Example: [0,0.12,0.34,0.56,0.21,0.08]
 	Peaks *[]float64 `json:"peaks,omitempty"`
 
 	// TmDownloadExpire Timestamp when the download URL expires.
