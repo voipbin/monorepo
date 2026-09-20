@@ -251,7 +251,8 @@ func Test_contentGet(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 			tmpRequestContent := &openai.ChatCompletionRequest{
-				Model: defaultModel,
+				Model:       defaultModel,
+				Temperature: 0.2, // literal, not summaryTemperature: guards against the constant being set to 0 (VOIP-1536)
 				Messages: []openai.ChatCompletionMessage{
 					{
 						Role:    openai.ChatMessageRoleSystem,
@@ -310,6 +311,10 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 			if req.Model != defaultModel {
 				t.Errorf("generate: expect model %q, got %q", defaultModel, req.Model)
 			}
+			// literal 0.2, not summaryTemperature: guards against the constant being set to 0 (VOIP-1536)
+			if req.Temperature != 0.2 {
+				t.Errorf("generate: expect temperature 0.2, got %v", req.Temperature)
+			}
 			if len(req.Messages) != 2 {
 				t.Errorf("generate: expect 2 messages, got %d", len(req.Messages))
 			} else {
@@ -337,6 +342,10 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		return func(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 			if req.Model != defaultVerifyModel {
 				t.Errorf("verify: expect model %q, got %q", defaultVerifyModel, req.Model)
+			}
+			// literal 0.2, not summaryTemperature: guards against the constant being set to 0 (VOIP-1536)
+			if req.Temperature != 0.2 {
+				t.Errorf("verify: expect temperature 0.2, got %v", req.Temperature)
 			}
 			if len(req.Messages) != 1 {
 				t.Errorf("verify: expect 1 message, got %d", len(req.Messages))

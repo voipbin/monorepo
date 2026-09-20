@@ -219,7 +219,8 @@ func (h *summaryHandler) contentGet(ctx context.Context, activeflowID uuid.UUID,
 	// First-pass enforcement: pin the output language by value in a system
 	// message ([system, user]), removing the previous self-reference indirection.
 	req := &openai.ChatCompletionRequest{
-		Model: defaultModel,
+		Model:       defaultModel,
+		Temperature: summaryTemperature,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
@@ -341,7 +342,8 @@ func (h *summaryHandler) verifyOutputLanguage(ctx context.Context, content strin
 	defer cancel()
 
 	req := &openai.ChatCompletionRequest{
-		Model: defaultVerifyModel,
+		Model:       defaultVerifyModel,
+		Temperature: summaryTemperature,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,

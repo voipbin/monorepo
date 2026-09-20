@@ -120,6 +120,14 @@ const (
 const (
 	defaultModel = openai.GPT4Turbo
 
+	// summaryTemperature pins the sampling temperature for summary generation
+	// and language verification. Summaries must be consistent, not creative, so
+	// a low value curbs the nondeterminism that intermittently produced
+	// all-"None" output (VOIP-1536). Must be non-zero: go-openai's Temperature
+	// field is `json:"temperature,omitempty"`, so a 0 value is dropped from the
+	// request and OpenAI re-applies its default of 1.0.
+	summaryTemperature float32 = 0.2
+
 	// defaultVerifyModel is the cheaper model used for the summary output-language
 	// verification harness (yes/no detection). Kept separate from defaultModel:
 	// a top-tier model is unnecessary for a one-word judgement.
