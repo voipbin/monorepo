@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	smfile "monorepo/bin-storage-manager/models/file"
+	smrecordingpeak "monorepo/bin-storage-manager/models/recordingpeak"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -14,6 +16,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
@@ -118,6 +121,134 @@ func Test_RecordingList(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res[0])
 			}
 		})
+	}
+}
+
+func Test_RecordingPlayfilesGet(t *testing.T) {
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	recordingID := uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9")
+	fileInID := uuid.FromStringOrNil("11111111-6146-11eb-be45-83bc6e54dfb9")
+	fileOutID := uuid.FromStringOrNil("22222222-6146-11eb-be45-83bc6e54dfb9")
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+	ctx := context.Background()
+
+	mockReq.EXPECT().CallV1RecordingGet(ctx, recordingID).Return(&cmrecording.Recording{
+		Identity: commonidentity.Identity{
+			ID:         recordingID,
+			CustomerID: customerID,
+		},
+		ReferenceType: cmrecording.ReferenceTypeCall,
+	}, nil)
+
+	mockReq.EXPECT().StorageV1FileList(ctx, "", uint64(100), gomock.Any()).Return([]smfile.File{
+		{
+			Identity:    commonidentity.Identity{ID: fileInID, CustomerID: customerID},
+			Filename:    "call_rec_in.wav",
+			Filesize:    100,
+			URIDownload: "https://example.com/in",
+		},
+		{
+			Identity:    commonidentity.Identity{ID: fileOutID, CustomerID: customerID},
+			Filename:    "call_rec_out.wav",
+			Filesize:    200,
+			URIDownload: "https://example.com/out",
+		},
+	}, nil)
+
+	mockReq.EXPECT().StorageV1RecordingPeaks(ctx, recordingID, 30000).Return(map[string]smrecordingpeak.RecordingFilePeak{
+		"call_rec_in.wav":  {Peaks: []float64{0.1, 0.2}, Duration: 1.5},
+		"call_rec_out.wav": {Peaks: []float64{0.3, 0.4}, Duration: 2.5},
+	}, nil)
+
+	res, err := h.RecordingPlayfilesGet(ctx, agent, recordingID)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if len(res) != 2 {
+		t.Fatalf("Wrong count. expect: 2, got: %d", len(res))
+	}
+	// in first, out second (sort order)
+	if res[0].Direction == nil || *res[0].Direction != openapi_server.ApiManagerRecordingPlayfileDirectionIn {
+		t.Errorf("Wrong direction[0]. expect: in, got: %v", res[0].Direction)
+	}
+	if res[1].Direction == nil || *res[1].Direction != openapi_server.ApiManagerRecordingPlayfileDirectionOut {
+		t.Errorf("Wrong direction[1]. expect: out, got: %v", res[1].Direction)
+	}
+	if res[0].Peaks == nil || len(*res[0].Peaks) != 2 {
+		t.Errorf("Wrong peaks[0]. got: %v", res[0].Peaks)
+	}
+	if res[0].Duration == nil || *res[0].Duration != 1.5 {
+		t.Errorf("Wrong duration[0]. got: %v", res[0].Duration)
+	}
+}
+
+func Test_RecordingPlayfilesGet_confbridgeNoDirection(t *testing.T) {
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	recordingID := uuid.FromStringOrNil("34a87712-6146-11eb-be45-83bc6e54dfb9")
+	fileID := uuid.FromStringOrNil("11111111-6146-11eb-be45-83bc6e54dfb9")
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+	ctx := context.Background()
+
+	// confbridge single file named with an _in suffix must NOT be labeled "in".
+	mockReq.EXPECT().CallV1RecordingGet(ctx, recordingID).Return(&cmrecording.Recording{
+		Identity:      commonidentity.Identity{ID: recordingID, CustomerID: customerID},
+		ReferenceType: cmrecording.ReferenceTypeConfbridge,
+	}, nil)
+	mockReq.EXPECT().StorageV1FileList(ctx, "", uint64(100), gomock.Any()).Return([]smfile.File{
+		{
+			Identity:    commonidentity.Identity{ID: fileID, CustomerID: customerID},
+			Filename:    "confbridge_rec_in.wav",
+			URIDownload: "https://example.com/cb",
+		},
+	}, nil)
+	mockReq.EXPECT().StorageV1RecordingPeaks(ctx, recordingID, 30000).Return(map[string]smrecordingpeak.RecordingFilePeak{}, nil)
+
+	res, err := h.RecordingPlayfilesGet(ctx, agent, recordingID)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if len(res) != 1 {
+		t.Fatalf("Wrong count. expect: 1, got: %d", len(res))
+	}
+	if res[0].Direction == nil || *res[0].Direction != openapi_server.ApiManagerRecordingPlayfileDirectionNone {
+		t.Errorf("confbridge file should have no direction. got: %v", res[0].Direction)
 	}
 }
 

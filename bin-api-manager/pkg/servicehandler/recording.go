@@ -2,10 +2,15 @@ package servicehandler
 
 import (
 	"context"
+	"sort"
+	"strings"
+	"time"
 
+	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmrecording "monorepo/bin-call-manager/models/recording"
+	smfile "monorepo/bin-storage-manager/models/file"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -15,6 +20,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
+
+// recordingPlayfileRefreshThreshold is the minimum remaining lifetime of a
+// file's signed download URL below which it is proactively refreshed on a
+// playfiles request, reducing the chance of mid-playback expiry.
+const recordingPlayfileRefreshThreshold = 30 * time.Minute
 
 // recordingGet validates the recording's ownership and returns the recording info.
 func (h *serviceHandler) recordingGet(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error) {
@@ -68,7 +78,142 @@ func (h *serviceHandler) RecordingGet(ctx context.Context, a *auth.AuthIdentity,
 	return res, nil
 }
 
-// RecordingGets sends a request to call-manager
+// RecordingPlayfilesGet returns the recording's individual playable audio files
+// with streaming download URLs and precomputed waveform peaks for inline playback.
+func (h *serviceHandler) RecordingPlayfilesGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) ([]openapi_server.ApiManagerRecordingPlayfile, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "RecordingPlayfilesGet",
+		"customer_id":  a.CustomerID,
+		"recording_id": id,
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	// gate: the caller must be admin/manager of the recording's owning customer.
+	rec, err := h.recordingGet(ctx, id)
+	if err != nil {
+		log.Infof("Could not get recording info. err: %v", err)
+		return nil, err
+	}
+	if !h.hasPermission(ctx, a, rec.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// list the recording's storage files (the individual directional wavs).
+	fileFilters := map[smfile.Field]any{
+		smfile.FieldReferenceType: smfile.ReferenceTypeRecording,
+		smfile.FieldReferenceID:   id,
+		smfile.FieldDeleted:       false,
+	}
+	files, err := h.reqHandler.StorageV1FileList(ctx, "", 100, fileFilters)
+	if err != nil {
+		log.Errorf("Could not get storage files for the recording. err: %v", err)
+		return nil, err
+	}
+
+	// waveform peaks, keyed by filename. Failure is non-fatal: playback works
+	// without peaks, so an error here degrades to empty peaks.
+	peaksByFile, err := h.reqHandler.StorageV1RecordingPeaks(ctx, id, 30000)
+	if err != nil {
+		log.Warnf("Could not get recording peaks; returning files without waveforms. err: %v", err)
+		peaksByFile = nil
+	}
+
+	// direction is only meaningful for call recordings that have separate
+	// in/out files; confbridge (single file, named with an _in suffix) and any
+	// single-file recording must not be labeled with a direction.
+	assignDirection := rec.ReferenceType == cmrecording.ReferenceTypeCall && len(files) == 2
+
+	res := make([]openapi_server.ApiManagerRecordingPlayfile, 0, len(files))
+	for i := range files {
+		f := files[i]
+
+		// proactively refresh a soon-to-expire signed URL (design §5.4 1st line).
+		uriDownload := f.URIDownload
+		if f.TMDownloadExpire != nil && time.Until(*f.TMDownloadExpire) < recordingPlayfileRefreshThreshold {
+			if refreshed, errRefresh := h.reqHandler.StorageV1FileDownloadURIRefresh(ctx, f.ID); errRefresh != nil {
+				log.Warnf("Could not refresh the download uri. file_id: %s, err: %v", f.ID, errRefresh)
+			} else if refreshed != "" {
+				uriDownload = refreshed
+			}
+		}
+
+		item := openapi_server.ApiManagerRecordingPlayfile{
+			Filename:    strPtr(f.Filename),
+			UriDownload: strPtr(uriDownload),
+			Filesize:    int64Ptr(f.Filesize),
+			Direction:   directionPtr(fileDirection(f.Filename, assignDirection)),
+		}
+		if f.TMDownloadExpire != nil {
+			item.TmDownloadExpire = strPtr(f.TMDownloadExpire.Format(time.RFC3339Nano))
+		}
+		if peak, ok := peaksByFile[f.Filename]; ok {
+			peaks := peak.Peaks
+			item.Peaks = &peaks
+			item.Duration = float64Ptr(peak.Duration)
+		} else {
+			empty := []float64{}
+			item.Peaks = &empty
+			item.Duration = float64Ptr(0)
+		}
+
+		res = append(res, item)
+	}
+
+	// stable order: in, out, then remaining by filename.
+	sort.SliceStable(res, func(i, j int) bool {
+		return playfileSortKey(res[i]) < playfileSortKey(res[j])
+	})
+
+	return res, nil
+}
+
+// fileDirection derives the audio direction from the filename suffix, but only
+// when the recording is eligible (call with two directional files). Otherwise
+// it returns an empty direction so single/confbridge files are not mislabeled.
+func fileDirection(filename string, eligible bool) openapi_server.ApiManagerRecordingPlayfileDirection {
+	if !eligible {
+		return openapi_server.ApiManagerRecordingPlayfileDirectionNone
+	}
+	base := strings.TrimSuffix(filename, ".wav")
+	switch {
+	case strings.HasSuffix(base, "_in"):
+		return openapi_server.ApiManagerRecordingPlayfileDirectionIn
+	case strings.HasSuffix(base, "_out"):
+		return openapi_server.ApiManagerRecordingPlayfileDirectionOut
+	default:
+		return openapi_server.ApiManagerRecordingPlayfileDirectionNone
+	}
+}
+
+// playfileSortKey orders in(0) before out(1) before everything else(2).
+func playfileSortKey(p openapi_server.ApiManagerRecordingPlayfile) int {
+	if p.Direction == nil {
+		return 2
+	}
+	switch *p.Direction {
+	case openapi_server.ApiManagerRecordingPlayfileDirectionIn:
+		return 0
+	case openapi_server.ApiManagerRecordingPlayfileDirectionOut:
+		return 1
+	default:
+		return 2
+	}
+}
+
+func strPtr(s string) *string { return &s }
+func int64Ptr(i int64) *int64 { return &i }
+func float64Ptr(f float64) *float64 {
+	return &f
+}
+func directionPtr(d openapi_server.ApiManagerRecordingPlayfileDirection) *openapi_server.ApiManagerRecordingPlayfileDirection {
+	return &d
+}
+
+// RecordingList sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
 func (h *serviceHandler) RecordingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmrecording.WebhookMessage, error) {

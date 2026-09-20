@@ -110,6 +110,47 @@ func (h *server) GetRecordingsId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
+// GetRecordingsIdPlayfiles handles GET /recordings/{id}/playfiles.
+func (h *server) GetRecordingsIdPlayfiles(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetRecordingsIdPlayfiles",
+		"request_address": c.ClientIP,
+		"recording_id":    id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
+		return
+	}
+	log = log.WithField("agent", a)
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
+		return
+	}
+
+	res, err := h.serviceHandler.RecordingPlayfilesGet(c.Request.Context(), a, target)
+	if err != nil {
+		log.Errorf("Could not get recording playfiles. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) DeleteRecordingsId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "DeleteRecordingsId",

@@ -664,6 +664,27 @@ func (e AgentManagerAgentStatus) Valid() bool {
 	}
 }
 
+// Defines values for ApiManagerRecordingPlayfileDirection.
+const (
+	ApiManagerRecordingPlayfileDirectionIn   ApiManagerRecordingPlayfileDirection = "in"
+	ApiManagerRecordingPlayfileDirectionNone ApiManagerRecordingPlayfileDirection = ""
+	ApiManagerRecordingPlayfileDirectionOut  ApiManagerRecordingPlayfileDirection = "out"
+)
+
+// Valid indicates whether the value is a known member of the ApiManagerRecordingPlayfileDirection enum.
+func (e ApiManagerRecordingPlayfileDirection) Valid() bool {
+	switch e {
+	case ApiManagerRecordingPlayfileDirectionIn:
+		return true
+	case ApiManagerRecordingPlayfileDirectionNone:
+		return true
+	case ApiManagerRecordingPlayfileDirectionOut:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AuthBootResponseType.
 const (
 	Direct AuthBootResponseType = "direct"
@@ -4410,6 +4431,33 @@ type ApiManagerExtensionProvisioningToken struct {
 	// Url Complete public provisioning URL to be rendered as a QR code. Scanning it with the Linphone mobile app fetches the extension's SIP configuration.
 	Url *string `json:"url,omitempty"`
 }
+
+// ApiManagerRecordingPlayfile A single playable audio file of a recording, with a streaming download URL and precomputed waveform peaks. Returned from the `GET /recordings/{id}/playfiles` response. Synthesized by api-manager by joining the recording's storage files with server-computed waveform data.
+type ApiManagerRecordingPlayfile struct {
+	// Direction The audio direction of the file. Populated as `in` or `out` only when the recording references a call and has separate directional files; empty for confbridge or single-file recordings.
+	Direction *ApiManagerRecordingPlayfileDirection `json:"direction,omitempty"`
+
+	// Duration The duration of this audio file in seconds, computed from the WAV header. 0 when the header could not be parsed.
+	Duration *float64 `json:"duration,omitempty"`
+
+	// Filename The original filename of the recording file.
+	Filename *string `json:"filename,omitempty"`
+
+	// Filesize The size of the audio file in bytes.
+	Filesize *int64 `json:"filesize,omitempty"`
+
+	// Peaks Precomputed, normalized (-1..1) waveform peak values for the whole file, for rendering a waveform without downloading the audio. Empty when peak computation failed; playback still works via uri_download.
+	Peaks *[]float64 `json:"peaks,omitempty"`
+
+	// TmDownloadExpire Timestamp when the download URL expires.
+	TmDownloadExpire *string `json:"tm_download_expire,omitempty"`
+
+	// UriDownload Signed streaming URL for the audio file, suitable as an HTML audio element source.
+	UriDownload *string `json:"uri_download,omitempty"`
+}
+
+// ApiManagerRecordingPlayfileDirection The audio direction of the file. Populated as `in` or `out` only when the recording references a call and has separate directional files; empty for confbridge or single-file recordings.
+type ApiManagerRecordingPlayfileDirection string
 
 // AuthBootResponse Result of a successful boot request. Contains a resource-scoped JWT and metadata about the scoped resource.
 type AuthBootResponse struct {
@@ -12210,6 +12258,9 @@ type ServerInterface interface {
 	// Get recording details
 	// (GET /recordings/{id})
 	GetRecordingsId(c *gin.Context, id string)
+	// Get recording playfiles
+	// (GET /recordings/{id}/playfiles)
+	GetRecordingsIdPlayfiles(c *gin.Context, id string)
 	// List transcribes for a recording
 	// (GET /recordings/{id}/transcribes)
 	GetRecordingsIdTranscribes(c *gin.Context, id string, params GetRecordingsIdTranscribesParams)
@@ -20002,6 +20053,31 @@ func (siw *ServerInterfaceWrapper) GetRecordingsId(c *gin.Context) {
 	siw.Handler.GetRecordingsId(c, id)
 }
 
+// GetRecordingsIdPlayfiles operation middleware
+func (siw *ServerInterfaceWrapper) GetRecordingsIdPlayfiles(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetRecordingsIdPlayfiles(c, id)
+}
+
 // GetRecordingsIdTranscribes operation middleware
 func (siw *ServerInterfaceWrapper) GetRecordingsIdTranscribes(c *gin.Context) {
 
@@ -24300,6 +24376,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/recordings", wrapper.GetRecordings)
 	router.DELETE(options.BaseURL+"/recordings/:id", wrapper.DeleteRecordingsId)
 	router.GET(options.BaseURL+"/recordings/:id", wrapper.GetRecordingsId)
+	router.GET(options.BaseURL+"/recordings/:id/playfiles", wrapper.GetRecordingsIdPlayfiles)
 	router.GET(options.BaseURL+"/recordings/:id/transcribes", wrapper.GetRecordingsIdTranscribes)
 	router.GET(options.BaseURL+"/recordings/:id/transcripts", wrapper.GetRecordingsIdTranscripts)
 	router.GET(options.BaseURL+"/routes", wrapper.GetRoutes)
@@ -47856,6 +47933,112 @@ func (response GetRecordingsId503JSONResponse) VisitGetRecordingsIdResponse(w ht
 	return err
 }
 
+type GetRecordingsIdPlayfilesRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetRecordingsIdPlayfilesResponseObject interface {
+	VisitGetRecordingsIdPlayfilesResponse(w http.ResponseWriter) error
+}
+
+type GetRecordingsIdPlayfiles200JSONResponse []ApiManagerRecordingPlayfile
+
+func (response GetRecordingsIdPlayfiles200JSONResponse) VisitGetRecordingsIdPlayfilesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdPlayfiles400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetRecordingsIdPlayfiles400JSONResponse) VisitGetRecordingsIdPlayfilesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdPlayfiles401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetRecordingsIdPlayfiles401JSONResponse) VisitGetRecordingsIdPlayfilesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdPlayfiles403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetRecordingsIdPlayfiles403JSONResponse) VisitGetRecordingsIdPlayfilesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdPlayfiles404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetRecordingsIdPlayfiles404JSONResponse) VisitGetRecordingsIdPlayfilesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdPlayfiles500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetRecordingsIdPlayfiles500JSONResponse) VisitGetRecordingsIdPlayfilesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordingsIdPlayfiles503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetRecordingsIdPlayfiles503JSONResponse) VisitGetRecordingsIdPlayfilesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetRecordingsIdTranscribesRequestObject struct {
 	Id     string `json:"id"`
 	Params GetRecordingsIdTranscribesParams
@@ -60603,6 +60786,9 @@ type StrictServerInterface interface {
 	// Get recording details
 	// (GET /recordings/{id})
 	GetRecordingsId(ctx context.Context, request GetRecordingsIdRequestObject) (GetRecordingsIdResponseObject, error)
+	// Get recording playfiles
+	// (GET /recordings/{id}/playfiles)
+	GetRecordingsIdPlayfiles(ctx context.Context, request GetRecordingsIdPlayfilesRequestObject) (GetRecordingsIdPlayfilesResponseObject, error)
 	// List transcribes for a recording
 	// (GET /recordings/{id}/transcribes)
 	GetRecordingsIdTranscribes(ctx context.Context, request GetRecordingsIdTranscribesRequestObject) (GetRecordingsIdTranscribesResponseObject, error)
@@ -69169,6 +69355,32 @@ func (sh *strictHandler) GetRecordingsId(ctx *gin.Context, id string) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetRecordingsIdResponseObject); ok {
 		if err := validResponse.VisitGetRecordingsIdResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetRecordingsIdPlayfiles operation middleware
+func (sh *strictHandler) GetRecordingsIdPlayfiles(ctx *gin.Context, id string) {
+	var request GetRecordingsIdPlayfilesRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetRecordingsIdPlayfiles(ctx, request.(GetRecordingsIdPlayfilesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetRecordingsIdPlayfiles")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetRecordingsIdPlayfilesResponseObject); ok {
+		if err := validResponse.VisitGetRecordingsIdPlayfilesResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

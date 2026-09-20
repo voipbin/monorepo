@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"time"
 
+	"monorepo/bin-api-manager/gens/openapi_server"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
@@ -976,6 +977,7 @@ type ServiceHandler interface {
 
 	// recording handlers
 	RecordingGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmrecording.WebhookMessage, error)
+	RecordingPlayfilesGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) ([]openapi_server.ApiManagerRecordingPlayfile, error)
 	RecordingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmrecording.WebhookMessage, error)
 	RecordingDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmrecording.WebhookMessage, error)
 	RecordingTranscribeList(ctx context.Context, a *auth.AuthIdentity, recordingID uuid.UUID, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error)
