@@ -60,6 +60,8 @@ type FileHandler interface {
 	DownloadURIGet(ctx context.Context, bucketName string, filepath string, expire time.Duration) (string, string, error)
 	DownloadURIRefresh(ctx context.Context, id uuid.UUID) (string, error)
 
+	PeaksComputeByFile(ctx context.Context, f *file.File, bucketCount int) ([]float64, float64, error)
+
 	IsExist(ctx context.Context, bucketName string, filepath string) bool
 
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error

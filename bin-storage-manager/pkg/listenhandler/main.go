@@ -57,7 +57,8 @@ var (
 	regV1Compressfiles = regexp.MustCompile("/v1/compressfiles$")
 
 	// recordings
-	regV1RecordingsID = regexp.MustCompile("/v1/recordings/(.*)")
+	regV1RecordingsIDPeaks = regexp.MustCompile("/v1/recordings/" + regUUID + "/peaks$")
+	regV1RecordingsID      = regexp.MustCompile("/v1/recordings/" + regUUID + "$")
 )
 
 var (
@@ -209,6 +210,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.v1FilesIDDelete(ctx, m)
 
 	// recordings /////////////
+	case regV1RecordingsIDPeaks.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/recordings/<recording-id>/peaks"
+		response, err = h.v1RecordingsIDPeaksGet(ctx, m)
+
 	case regV1RecordingsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/recordings"
 		response, err = h.v1RecordingsIDGet(ctx, m)

@@ -104,7 +104,7 @@ func initHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (storagehandler
 		return nil, errors.Wrapf(errFileHandler, "could not create the file handler")
 	}
 
-	return storagehandler.NewStorageHandler(reqHandler, fileHandler, config.Get().GCPBucketNameMedia), nil
+	return storagehandler.NewStorageHandler(reqHandler, fileHandler, cache, config.Get().GCPBucketNameMedia), nil
 }
 
 func initCommand() *cobra.Command {

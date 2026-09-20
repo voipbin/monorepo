@@ -14,6 +14,7 @@ import (
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	compress_file "monorepo/bin-storage-manager/models/compressfile"
 	file "monorepo/bin-storage-manager/models/file"
+	recordingpeak "monorepo/bin-storage-manager/models/recordingpeak"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -161,4 +162,19 @@ func (m *MockStorageHandler) RecordingGet(ctx context.Context, id uuid.UUID) (*b
 func (mr *MockStorageHandlerMockRecorder) RecordingGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingGet", reflect.TypeOf((*MockStorageHandler)(nil).RecordingGet), ctx, id)
+}
+
+// RecordingPeaks mocks base method.
+func (m *MockStorageHandler) RecordingPeaks(ctx context.Context, id uuid.UUID) (map[string]recordingpeak.RecordingFilePeak, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingPeaks", ctx, id)
+	ret0, _ := ret[0].(map[string]recordingpeak.RecordingFilePeak)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingPeaks indicates an expected call of RecordingPeaks.
+func (mr *MockStorageHandlerMockRecorder) RecordingPeaks(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingPeaks", reflect.TypeOf((*MockStorageHandler)(nil).RecordingPeaks), ctx, id)
 }

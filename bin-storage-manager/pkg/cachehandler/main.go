@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/models/file"
+	"monorepo/bin-storage-manager/models/recordingpeak"
 )
 
 type handler struct {
@@ -35,6 +36,9 @@ type CacheHandler interface {
 	FileSet(ctx context.Context, f *file.File) error
 	FileGet(ctx context.Context, id uuid.UUID) (*file.File, error)
 	FileDel(ctx context.Context, id uuid.UUID) error
+
+	RecordingPeaksSet(ctx context.Context, recordingID uuid.UUID, peaks map[string]recordingpeak.RecordingFilePeak) error
+	RecordingPeaksGet(ctx context.Context, recordingID uuid.UUID) (map[string]recordingpeak.RecordingFilePeak, error)
 }
 
 // NewHandler creates DBHandler

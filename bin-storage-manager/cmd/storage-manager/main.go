@@ -163,7 +163,12 @@ func runService(dbHandler dbhandler.DBHandler) error {
 		log.Errorf("Could not create the file handler. err: %v", errFileHandler)
 		return errFileHandler
 	}
-	storageHandler := storagehandler.NewStorageHandler(reqHandler, fileHandler, cfg.GCPBucketNameMedia)
+	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
+	if err := cache.Connect(); err != nil {
+		log.Errorf("Could not connect to cache server. err: %v", err)
+		return err
+	}
+	storageHandler := storagehandler.NewStorageHandler(reqHandler, fileHandler, cache, cfg.GCPBucketNameMedia)
 
 	// run listener
 	if errListen := runListen(sockHandler, storageHandler, accountHandler); errListen != nil {

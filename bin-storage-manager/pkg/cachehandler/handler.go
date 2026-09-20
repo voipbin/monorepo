@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-storage-manager/models/account"
 	"monorepo/bin-storage-manager/models/file"
+	"monorepo/bin-storage-manager/models/recordingpeak"
 )
 
 // getSerialize returns cached serialized info.
@@ -102,4 +103,27 @@ func (h *handler) AccountGet(ctx context.Context, id uuid.UUID) (*account.Accoun
 	}
 
 	return &res, nil
+}
+
+// RecordingPeaksSet sets the recording's per-file waveform peaks into the cache.
+func (h *handler) RecordingPeaksSet(ctx context.Context, recordingID uuid.UUID, peaks map[string]recordingpeak.RecordingFilePeak) error {
+	key := fmt.Sprintf("storage:recording_peaks:%s", recordingID)
+
+	if err := h.setSerialize(ctx, key, peaks); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RecordingPeaksGet returns the cached recording's per-file waveform peaks.
+func (h *handler) RecordingPeaksGet(ctx context.Context, recordingID uuid.UUID) (map[string]recordingpeak.RecordingFilePeak, error) {
+	key := fmt.Sprintf("storage:recording_peaks:%s", recordingID)
+
+	var res map[string]recordingpeak.RecordingFilePeak
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

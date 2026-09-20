@@ -49,8 +49,42 @@ func (h *listenHandler) v1RecordingsIDGet(ctx context.Context, req *sock.Request
 	return res, nil
 }
 
+// v1RecordingsIDPeaksGet handles /v1/recordings/<id>/peaks GET request.
+// It returns the recording's per-file waveform peaks and durations, keyed by filename.
+func (h *listenHandler) v1RecordingsIDPeaksGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
+	uriItems := strings.Split(req.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), fmt.Errorf("wrong uri")
+	}
+
+	tmpRecordingID, err := url.QueryUnescape(uriItems[3])
+	if err != nil {
+		return nil, fmt.Errorf("could not unescape the recording id. err: %v", err)
+	}
+	recordingID := uuid.FromStringOrNil(tmpRecordingID)
+
+	peaks, err := h.storageHandler.RecordingPeaks(ctx, recordingID)
+	if err != nil {
+		logrus.Errorf("Could not get peaks for recording. err: %v", err)
+		return nil, err
+	}
+
+	data, err := json.Marshal(peaks)
+	if err != nil {
+		logrus.Errorf("Could not marshal the res. err: %v", err)
+		return nil, err
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // v1RecordingsIDDelete handles /v1/recordings/<id> DELETE request
-// it deletes a given recording file.
 func (h *listenHandler) v1RecordingsIDDelete(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1RecordingsIDDelete",
