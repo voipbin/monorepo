@@ -390,6 +390,54 @@ components:
           description: "Timestamp when the provisioning token expires (10 minutes after issuance)."
           example: "2026-08-24T12:10:00.000000Z"
 
+    ApiManagerRecordingPlayfile:
+      type: object
+      description: "A single playable audio file of a recording, with a streaming download URL and precomputed waveform peaks. Returned from the `GET /recordings/{id}/playfiles` response. Synthesized by api-manager by joining the recording's storage files with server-computed waveform data."
+      properties:
+        filename:
+          type: string
+          description: "The original filename of the recording file."
+          example: "call_852def0e-f24a-11ed-845f-e32a849e7338_2023-01-05T14:58:05Z_in.wav"
+        direction:
+          type: string
+          description: "The audio direction of the file. Populated as `in` or `out` only when the recording references a call and has separate directional files; empty for confbridge or single-file recordings."
+          example: "in"
+          enum:
+            - ""
+            - in
+            - out
+          x-enum-varnames:
+            - ApiManagerRecordingPlayfileDirectionNone
+            - ApiManagerRecordingPlayfileDirectionIn
+            - ApiManagerRecordingPlayfileDirectionOut
+        uri_download:
+          type: string
+          description: "Signed streaming URL for the audio file, suitable as an HTML audio element source."
+          example: "https://storage.googleapis.com/voipbin-media/bin/852def0e-f24a-11ed-845f-e32a849e7338?X-Goog-Signature=abc123"
+        tm_download_expire:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the download URL expires."
+          example: "2026-01-15T10:30:00.000000Z"
+        filesize:
+          type: integer
+          format: int64
+          description: "The size of the audio file in bytes."
+          example: 573440
+        duration:
+          type: number
+          format: double
+          description: "The duration of this audio file in seconds, computed from the WAV header. 0 when the header could not be parsed."
+          example: 35.84
+        peaks:
+          type: array
+          items:
+            type: number
+            format: double
+          description: "Precomputed, normalized (-1..1) waveform peak values for the whole file, for rendering a waveform without downloading the audio. Empty when peak computation failed; playback still works via uri_download."
+          example: [0.0, 0.12, -0.34, 0.56, -0.21, 0.08]
+
 
 #########################################
 # Billing Manager
@@ -8873,6 +8921,8 @@ paths:
 
   /recordings/{id}:
     $ref: './paths/recordings/id.yaml'
+  /recordings/{id}/playfiles:
+    $ref: './paths/recordings/id_playfiles.yaml'
   /recordings/{id}/transcribes:
     $ref: './paths/recordings/id_transcribes.yaml'
   /recordings/{id}/transcripts:

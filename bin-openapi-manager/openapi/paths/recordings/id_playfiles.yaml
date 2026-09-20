@@ -1,0 +1,35 @@
+get:
+  summary: Get recording playfiles
+  description: >-
+    Retrieves the recording's individual playable audio files with streaming
+    download URLs and precomputed waveform peaks for inline playback.
+  tags:
+    - Recording
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The recording's ID.
+      schema:
+        type: string
+  responses:
+    '200':
+      description: The recording's playable files.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ApiManagerRecordingPlayfile'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+    '503':
+      $ref: '#/components/responses/Unavailable'
