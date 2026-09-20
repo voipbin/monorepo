@@ -67,7 +67,7 @@ GCS (wav)  +  Redis (peak 캐시)
 ### 5.2 peak 계산 상세
 
 - 대상: `StorageV1FileList(reference_type=recording, reference_id=id)`가 반환한 각 File(방향별 wav).
-- 계산: storage-manager가 `bucketFile.NewReader`(`bucketfile.go:102`)로 wav 스트림을 읽어 고정 개수 버킷(예: 1000 샘플)으로 다운샘플, 각 버킷 min/max(또는 절대값 max) 정규화 배열 생성. wavesurfer `peaks` 포맷(−1..1 float 배열) 준수.
+- 계산: storage-manager가 `bucketFile.NewReader`(`bucketfile.go:102`)로 wav 스트림을 읽어 고정 개수 버킷(예: 1000 샘플)으로 다운샘플, 각 버킷 절대값 max 배열 생성(0.0~1.0). wavesurfer `peaks` 포맷(float 배열, 0.0~1.0은 유효 부분집합) 준수.
 - 포맷: VoIPBin wav = Asterisk `format=wav` 기본 8kHz/16bit mono(실측은 구현 시 wav 헤더로 확정). 헤더의 samplerate/channels/bits를 파싱해 하드코딩하지 않는다.
 - 캐시: Redis key `recording_peaks:{recording_id}`, TTL 24h(기존 파일 캐시와 동일 관례, `cachehandler/handler.go:36`). 녹음은 종료 후 불변이므로 캐시 안전.
 - 캐시 스탬피드(백엔드 리뷰 5): 긴 녹음 첫 요청이 동시에 오면 각 요청이 wav를 중복 디코딩할 수 있다. v1은 계산 자체가 idempotent하고 결과가 동일하므로 정합성 문제는 없으며, 중복 디코딩 비용은 실측 신호(동시 요청 폭주) 확인 시 singleflight 도입으로 대응한다(현재 선제 도입 안 함, 오버엔지니어링 지양). 이 유보를 §9 리스크에 명기.
@@ -90,7 +90,7 @@ GCS (wav)  +  Redis (peak 캐시)
   - `tm_download_expire` (date-time: 만료. 분석 R3/R3b)
   - `filesize` (integer)
   - `duration` (number, seconds: 파형/재생 duration의 권위 출처. **파일별 wav 헤더에서 서버가 산출**(프론트 리뷰 4). in/out 파일 길이가 다를 수 있어 recording 전체 duration이 아닌 파일별 duration을 제공. peak 실패로 빈 peaks면 0 또는 헤더 실패 시 0.)
-  - `peaks` (array[number]: −1..1 정규화 파형. 전체 파일. 실패 시 빈 배열.)
+  - `peaks` (array[number]: 절대값 크기 파형 0.0~1.0. 전체 파일. 실패 시 빈 배열.)
 - **direction 규칙 (재작성 — 프론트 리뷰 1/3, confbridge `_in` 단일 오태깅 방지)**: direction은 **`recording.reference_type == call` 이고 파일이 2개일 때만** filename 접미(`_in`/`_out`)로 부여한다. `reference_type == confbridge`(단일 파일, 파일명이 `_in`이지만 방향 의미 없음)나 파일이 1개면 direction=빈값으로 두고 단일 플레이어로 렌더한다. 즉 `_in` 접미 존재만으로 direction을 부여하지 않는다.
 - 정렬: direction 있으면 in→out, 없으면 filename 순.
 
