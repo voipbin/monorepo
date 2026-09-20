@@ -93,6 +93,7 @@ import (
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	smcompressfile "monorepo/bin-storage-manager/models/compressfile"
 	smfile "monorepo/bin-storage-manager/models/file"
+	smrecordingpeak "monorepo/bin-storage-manager/models/recordingpeak"
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
@@ -1412,6 +1413,7 @@ type RequestHandler interface {
 
 	// storage-manager recording
 	StorageV1RecordingGet(ctx context.Context, id uuid.UUID, requestTimeout int) (*smbucketfile.BucketFile, error)
+	StorageV1RecordingPeaks(ctx context.Context, id uuid.UUID, requestTimeout int) (map[string]smrecordingpeak.RecordingFilePeak, error)
 	StorageV1RecordingDelete(ctx context.Context, recordingID uuid.UUID) error
 
 	// storage-manager file

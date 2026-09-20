@@ -6,6 +6,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
+	smrecordingpeak "monorepo/bin-storage-manager/models/recordingpeak"
 
 	"github.com/gofrs/uuid"
 )
@@ -28,6 +29,25 @@ func (r *requestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.UUID
 	}
 
 	return &res, nil
+}
+
+// StorageV1RecordingPeaks sends a request to storage-manager to get the
+// recording's per-file waveform peaks and durations, keyed by filename.
+// requestTimeout: milliseconds
+func (r *requestHandler) StorageV1RecordingPeaks(ctx context.Context, id uuid.UUID, requestTimeout int) (map[string]smrecordingpeak.RecordingFilePeak, error) {
+	uri := fmt.Sprintf("/v1/recordings/%s/peaks", id)
+
+	tmp, err := r.sendRequestStorage(ctx, uri, sock.RequestMethodGet, "storage/recording", requestTimeout, 0, ContentTypeJSON, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res map[string]smrecordingpeak.RecordingFilePeak
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }
 
 // StorageV1RecordingDelete sends a request to storage-manager

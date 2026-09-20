@@ -87,6 +87,7 @@ import (
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	compress_file "monorepo/bin-storage-manager/models/compressfile"
 	file "monorepo/bin-storage-manager/models/file"
+	recordingpeak "monorepo/bin-storage-manager/models/recordingpeak"
 	tag "monorepo/bin-tag-manager/models/tag"
 	chat "monorepo/bin-talk-manager/models/chat"
 	message3 "monorepo/bin-talk-manager/models/message"
@@ -7060,6 +7061,21 @@ func (m *MockRequestHandler) StorageV1RecordingGet(ctx context.Context, id uuid.
 func (mr *MockRequestHandlerMockRecorder) StorageV1RecordingGet(ctx, id, requestTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1RecordingGet", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1RecordingGet), ctx, id, requestTimeout)
+}
+
+// StorageV1RecordingPeaks mocks base method.
+func (m *MockRequestHandler) StorageV1RecordingPeaks(ctx context.Context, id uuid.UUID, requestTimeout int) (map[string]recordingpeak.RecordingFilePeak, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StorageV1RecordingPeaks", ctx, id, requestTimeout)
+	ret0, _ := ret[0].(map[string]recordingpeak.RecordingFilePeak)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StorageV1RecordingPeaks indicates an expected call of StorageV1RecordingPeaks.
+func (mr *MockRequestHandlerMockRecorder) StorageV1RecordingPeaks(ctx, id, requestTimeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorageV1RecordingPeaks", reflect.TypeOf((*MockRequestHandler)(nil).StorageV1RecordingPeaks), ctx, id, requestTimeout)
 }
 
 // TTSV1SpeakingCreate mocks base method.
