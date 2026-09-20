@@ -119,3 +119,18 @@ func Test_decodeWavPeaks_invalid(t *testing.T) {
 		})
 	}
 }
+
+// Test_decodeWavPeaks_zeroSampleRate guards against a WAV header declaring a
+// zero sample rate, which would otherwise make duration +Inf and break JSON
+// marshaling of the peaks response.
+func Test_decodeWavPeaks_zeroSampleRate(t *testing.T) {
+	wav := buildTestWav(0, []int16{100, -100, 200, -200})
+
+	peaks, dur := decodeWavPeaks(bytes.NewReader(wav), 100)
+	if peaks != nil {
+		t.Errorf("expected nil peaks for zero sample rate. got: %v", peaks)
+	}
+	if dur != 0 {
+		t.Errorf("expected 0 duration for zero sample rate (not +Inf). got: %f", dur)
+	}
+}

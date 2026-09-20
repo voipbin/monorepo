@@ -24,10 +24,10 @@ type wavFormat struct {
 }
 
 // PeaksComputeByFile reads the given file's WAV bytes from the bucket and
-// returns the normalized (-1..1) downsampled waveform peaks and the audio
-// duration in seconds. It never fails the caller for a bad file: on any decode
-// error it returns empty peaks and 0 duration so playback (which does not need
-// peaks) is unaffected.
+// returns the absolute-magnitude (0.0 to 1.0) downsampled waveform peaks and
+// the audio duration in seconds. It never fails the caller for a bad file: on
+// any decode error it returns empty peaks and 0 duration so playback (which
+// does not need peaks) is unaffected.
 func (h *fileHandler) PeaksComputeByFile(ctx context.Context, f *file.File, bucketCount int) ([]float64, float64, error) {
 	if bucketCount <= 0 {
 		bucketCount = peakBucketCount
@@ -50,8 +50,10 @@ func (h *fileHandler) PeaksComputeByFile(ctx context.Context, f *file.File, buck
 // waveform must not break playback.
 func decodeWavPeaks(r io.Reader, bucketCount int) ([]float64, float64) {
 	format, dataSize, ok := readWavHeader(r)
-	if !ok || format.bitsPerSample != 16 || format.audioFormat != 1 || format.numChannels == 0 {
-		// Only linear 16-bit PCM is supported; anything else yields no waveform.
+	if !ok || format.bitsPerSample != 16 || format.audioFormat != 1 || format.numChannels == 0 || format.sampleRate == 0 {
+		// Only linear 16-bit PCM is supported; anything else (including a zero
+		// sample rate, which would make duration +Inf and break JSON marshaling)
+		// yields no waveform.
 		return nil, 0
 	}
 
