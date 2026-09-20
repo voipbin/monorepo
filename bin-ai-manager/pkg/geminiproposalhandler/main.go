@@ -16,9 +16,15 @@ import (
 
 const (
 	geminiEndpoint         = "https://generativelanguage.googleapis.com/v1beta/openai/"
-	geminiModel            = "gemini-2.5-pro"
+	geminiModel            = "gemini-3.8-flash"
 	maxProposedPromptChars = 32000
 	maxRationaleChars      = 4000
+
+	// geminiReasoningEffort="none" disables Gemini "thinking" so the whole output
+	// budget is available for the JSON-schema response. Without it, thinking can
+	// consume the budget and truncate the JSON (finish_reason=length -> unmarshal
+	// failure). Matches the analysis gateway (analysishandler/run.go) behavior.
+	geminiReasoningEffort = "none"
 )
 
 // proposalJSONSchema is the JSON Schema passed to Gemini via response_format.json_schema.
@@ -162,7 +168,8 @@ func (h *geminiProposalHandler) Evaluate(ctx context.Context, originalPrompt str
 	logrus.Debugf("geminiProposalHandler.Evaluate: model=%s prompt_len=%d audits=%d language=%s", geminiModel, len(originalPrompt), len(audits), language)
 
 	resp, err := h.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model: geminiModel,
+		Model:           geminiModel,
+		ReasoningEffort: geminiReasoningEffort,
 		Messages: []openai.ChatCompletionMessage{
 			{Role: openai.ChatMessageRoleUser, Content: fullPrompt},
 		},

@@ -74,6 +74,10 @@ type Config struct {
 	AnalysisMaxInputBytes   int    // AnalysisMaxInputBytes caps the prompt+data byte size accepted by the analysis gateway.
 	AnalysisMaxOutputTokens int    // AnalysisMaxOutputTokens caps the output tokens of the analysis gateway (runaway guard).
 
+	SummaryModel           string // SummaryModel is the model used for AI summary generation and language verification (Gemini flash by default; set to an OpenAI model for rollback).
+	SummaryEngineBaseURL   string // SummaryEngineBaseURL is the base URL for the summary LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI).
+	SummaryReasoningEffort string // SummaryReasoningEffort is sent as reasoning_effort on the summary request ("none" disables Gemini thinking; empty omits the field).
+
 	// Customer-Configured MCP Tool Integration (docs/plans/
 	// 2026-09-11-mcp-tool-integration-design.md §6, §13).
 	McpSecretEncryptionKeys     string // Comma-separated "<version>:<base64-32-byte-key>" pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows.
@@ -132,10 +136,13 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("aicall_listen_start_lock_release_timeout_seconds", 3, "Timeout (seconds) on the detached context the listen-start lock's release runs under")
 	f.Int("aicall_listen_conversation_max_message_chars", 2000, "Per-field character cap (subject, text and the joined media tokens each) applied before a conversation line is buffered for listening")
 	f.Int("aicall_listen_conversation_flush_jitter_ms", 1000, "Upper bound (milliseconds) of the random jitter added to the conversation listen deferred-flush delay")
-	f.String("analysis_default_model", "gemini-2.5-flash", "Default model for the generic analysis gateway")
-	f.String("analysis_allowed_models", "gemini-2.5-flash,gemini-2.5-pro", "Comma-separated allow-set of models for the analysis gateway")
+	f.String("analysis_default_model", "gemini-3.8-flash", "Default model for the generic analysis gateway")
+	f.String("analysis_allowed_models", "gemini-3.8-flash", "Comma-separated allow-set of models for the analysis gateway")
 	f.String("analysis_engine_base_url", "https://generativelanguage.googleapis.com/v1beta/openai/", "Base URL for the analysis gateway LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI)")
 	f.String("analysis_reasoning_effort", "none", "reasoning_effort for the analysis gateway (none disables Gemini thinking; empty omits the field)")
+	f.String("summary_model", "gemini-3.8-flash", "Model for AI summary generation and language verification (set an OpenAI model to roll back)")
+	f.String("summary_engine_base_url", "https://generativelanguage.googleapis.com/v1beta/openai/", "Base URL for the summary LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI)")
+	f.String("summary_reasoning_effort", "none", "reasoning_effort for the summary request (none disables Gemini thinking; empty omits the field)")
 	f.Int("analysis_max_input_bytes", 262144, "Max prompt+data bytes accepted by the analysis gateway")
 	f.Int("analysis_max_output_tokens", 16384, "Max output tokens for the analysis gateway (runaway guard)")
 	f.String("mcp_secret_encryption_keys", "", "Comma-separated <version>:<base64-32-byte-key> pairs for MCP server secret envelope encryption")
@@ -182,6 +189,9 @@ func bindConfig(cmd *cobra.Command) error {
 		"analysis_allowed_models":    "ANALYSIS_ALLOWED_MODELS",
 		"analysis_engine_base_url":   "ANALYSIS_ENGINE_BASE_URL",
 		"analysis_reasoning_effort":  "ANALYSIS_REASONING_EFFORT",
+		"summary_model":              "SUMMARY_MODEL",
+		"summary_engine_base_url":    "SUMMARY_ENGINE_BASE_URL",
+		"summary_reasoning_effort":   "SUMMARY_REASONING_EFFORT",
 		"analysis_max_input_bytes":   "ANALYSIS_MAX_INPUT_BYTES",
 		"analysis_max_output_tokens": "ANALYSIS_MAX_OUTPUT_TOKENS",
 
@@ -256,6 +266,9 @@ func LoadGlobalConfig() {
 			AnalysisAllowedModels:   viper.GetString("analysis_allowed_models"),
 			AnalysisEngineBaseURL:   viper.GetString("analysis_engine_base_url"),
 			AnalysisReasoningEffort: viper.GetString("analysis_reasoning_effort"),
+			SummaryModel:            viper.GetString("summary_model"),
+			SummaryEngineBaseURL:    viper.GetString("summary_engine_base_url"),
+			SummaryReasoningEffort:  viper.GetString("summary_reasoning_effort"),
 			AnalysisMaxInputBytes:   viper.GetInt("analysis_max_input_bytes"),
 			AnalysisMaxOutputTokens: viper.GetInt("analysis_max_output_tokens"),
 

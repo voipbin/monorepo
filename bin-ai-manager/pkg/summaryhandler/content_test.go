@@ -25,6 +25,14 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+// testModel/testReasoningEffort are the injected values used across summaryhandler
+// tests. They stand in for the config-provided model and reasoning_effort so the
+// request-building assertions do not depend on any package-level default.
+const (
+	testModel           = "gemini-3.8-flash"
+	testReasoningEffort = "none"
+)
+
 func Test_contentGet(t *testing.T) {
 
 	tests := []struct {
@@ -236,6 +244,8 @@ func Test_contentGet(t *testing.T) {
 				reqHandler:    mockReq,
 
 				engineOpenaiHandler: mockOpenai,
+				model:               testModel,
+				reasoningEffort:     testReasoningEffort,
 			}
 			ctx := context.Background()
 
@@ -251,8 +261,9 @@ func Test_contentGet(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 			tmpRequestContent := &openai.ChatCompletionRequest{
-				Model:       defaultModel,
-				Temperature: 0.2, // literal, not summaryTemperature: guards against the constant being set to 0 (VOIP-1536)
+				Model:           testModel,
+				Temperature:     0.2, // literal, not summaryTemperature: guards against the constant being set to 0 (VOIP-1536)
+				ReasoningEffort: "none",
 				Messages: []openai.ChatCompletionMessage{
 					{
 						Role:    openai.ChatMessageRoleSystem,
@@ -304,12 +315,16 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 	}
 
 	// genDo returns a DoAndReturn for a first-pass generation Send that asserts
-	// the request uses defaultModel and a [system, user] message pair whose system
-	// message pins the requested output language by value, then returns content.
+	// the request uses the injected model and a [system, user] message pair whose
+	// system message pins the requested output language by value, then returns content.
 	genDo := func(lang, content string) func(context.Context, *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 		return func(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
-			if req.Model != defaultModel {
-				t.Errorf("generate: expect model %q, got %q", defaultModel, req.Model)
+			if req.Model != testModel {
+				t.Errorf("generate: expect model %q, got %q", testModel, req.Model)
+			}
+			// literal "none", not h.reasoningEffort: guards against the injected value being dropped (VOIP-1537)
+			if req.ReasoningEffort != "none" {
+				t.Errorf("generate: expect reasoning_effort none, got %q", req.ReasoningEffort)
 			}
 			// literal 0.2, not summaryTemperature: guards against the constant being set to 0 (VOIP-1536)
 			if req.Temperature != 0.2 {
@@ -333,15 +348,19 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 	}
 
 	// verifyDo returns a DoAndReturn for a second-pass verification SendOnce that
-	// asserts the verifier uses defaultVerifyModel and a single user message built
+	// asserts the verifier uses the injected model and a single user message built
 	// from languageVerifyPrompt (containing the "language detector" prompt, the
 	// requested BCP47 code, and the sampled prose), then returns answer. This is
 	// what turns the harness assertions from "a SendOnce happened" into "the right
 	// verify payload was sent" (catches R4-* mutations on model/prompt).
 	verifyDo := func(lang, sample, answer string) func(context.Context, *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 		return func(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
-			if req.Model != defaultVerifyModel {
-				t.Errorf("verify: expect model %q, got %q", defaultVerifyModel, req.Model)
+			if req.Model != testModel {
+				t.Errorf("verify: expect model %q, got %q", testModel, req.Model)
+			}
+			// literal "none", not h.reasoningEffort: guards against the injected value being dropped (VOIP-1537)
+			if req.ReasoningEffort != "none" {
+				t.Errorf("verify: expect reasoning_effort none, got %q", req.ReasoningEffort)
 			}
 			// literal 0.2, not summaryTemperature: guards against the constant being set to 0 (VOIP-1536)
 			if req.Temperature != 0.2 {
@@ -370,7 +389,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
@@ -393,7 +412,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
@@ -418,7 +437,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		last := enProse + " third attempt"
@@ -446,7 +465,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
@@ -469,7 +488,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
@@ -493,7 +512,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
@@ -517,7 +536,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		headersOnly := "Call Type:\n- None\n\nKey Discussion Points:\n- None\n\nAdditional Notes:\n- None"
@@ -539,7 +558,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
@@ -560,7 +579,7 @@ func Test_contentGet_verificationHarness(t *testing.T) {
 		defer mc.Finish()
 		mockReq := requesthandler.NewMockRequestHandler(mc)
 		mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
-		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai}
+		h := summaryHandler{reqHandler: mockReq, engineOpenaiHandler: mockOpenai, model: testModel, reasoningEffort: testReasoningEffort}
 		ctx := context.Background()
 
 		mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(&fmvariable.Variable{Variables: map[string]string{}}, nil)
@@ -691,6 +710,8 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 				reqHandler:    mockReq,
 
 				engineOpenaiHandler: mockOpenai,
+				model:               testModel,
+				reasoningEffort:     testReasoningEffort,
 			}
 			ctx := context.Background()
 

@@ -165,7 +165,17 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	participantHandler := participanthandler.New(db)
 	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler, participantHandler)
 	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, cache, aiHandler, teamHandler, messageHandler, participantHandler, mcptoolHandler, mcpServerHandler, toolhandler.NewToolHandler())
-	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
+	// Build a dedicated engine for summaries. Like the analysis gateway, the
+	// provider is selectable by base URL (Gemini OpenAI-compat by default) and
+	// the API key is selected to match the provider so an OpenAI rollback is
+	// fully env-driven. The conversational engineOpenaiHandler (OpenAI) is
+	// unchanged.
+	summaryKey := cfg.EngineKeyChatGPT // OpenAI default (rollback)
+	if strings.Contains(cfg.SummaryEngineBaseURL, "generativelanguage") {
+		summaryKey = cfg.GoogleAPIKey
+	}
+	summaryEngine := engine_openai_handler.NewEngineOpenaiHandlerWithConfig(summaryKey, cfg.SummaryEngineBaseURL)
+	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, summaryEngine, cfg.SummaryModel, cfg.SummaryReasoningEffort)
 
 	// Build a dedicated engine for the analysis gateway. The provider is
 	// selectable by base URL (Gemini OpenAI-compat by default), and the API key

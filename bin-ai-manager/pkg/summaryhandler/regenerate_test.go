@@ -160,6 +160,8 @@ func Test_Regenerate(t *testing.T) {
 				notifyHandler:       mockNotify,
 				reqHandler:          mockReq,
 				engineOpenaiHandler: mockOpenai,
+				model:               testModel,
+				reasoningEffort:     testReasoningEffort,
 			}
 			ctx := context.Background()
 
@@ -168,7 +170,16 @@ func Test_Regenerate(t *testing.T) {
 
 			// 2) content regenerate (getRecordingTranscripts reuse + Send)
 			setupRegenerateTranscribeReuse(ctx, mockReq, tt.existing.ReferenceID)
-			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseOpenai, nil)
+			mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(
+				func(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+					if req.Model != testModel {
+						t.Errorf("regenerate: expect model %q, got %q", testModel, req.Model)
+					}
+					if req.ReasoningEffort != testReasoningEffort {
+						t.Errorf("regenerate: expect reasoning_effort %q, got %q", testReasoningEffort, req.ReasoningEffort)
+					}
+					return tt.responseOpenai, nil
+				})
 
 			// 3) in-place update (SummaryUpdate + SummaryGet + EventTypeUpdated)
 			expectedFields := map[summary.Field]any{
@@ -210,6 +221,8 @@ func Test_Regenerate_contentFailurePreservesRecord(t *testing.T) {
 		notifyHandler:       mockNotify,
 		reqHandler:          mockReq,
 		engineOpenaiHandler: mockOpenai,
+		model:               testModel,
+		reasoningEffort:     testReasoningEffort,
 	}
 	ctx := context.Background()
 
@@ -260,6 +273,8 @@ func Test_Regenerate_emptyContentPreservesRecord(t *testing.T) {
 		notifyHandler:       mockNotify,
 		reqHandler:          mockReq,
 		engineOpenaiHandler: mockOpenai,
+		model:               testModel,
+		reasoningEffort:     testReasoningEffort,
 	}
 	ctx := context.Background()
 
@@ -283,7 +298,16 @@ func Test_Regenerate_emptyContentPreservesRecord(t *testing.T) {
 	//    yields ("", nil). en-US is not verified (shouldVerify=false), so generateOnce
 	//    returns the empty string directly.
 	setupRegenerateTranscribeReuse(ctx, mockReq, referenceID)
-	mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(&openai.ChatCompletionResponse{}, nil)
+	mockOpenai.EXPECT().Send(ctx, gomock.Any()).DoAndReturn(
+		func(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+			if req.Model != testModel {
+				t.Errorf("regenerate: expect model %q, got %q", testModel, req.Model)
+			}
+			if req.ReasoningEffort != testReasoningEffort {
+				t.Errorf("regenerate: expect reasoning_effort %q, got %q", testReasoningEffort, req.ReasoningEffort)
+			}
+			return &openai.ChatCompletionResponse{}, nil
+		})
 	// No SummaryUpdate / SummaryGet(update) / PublishWebhookEvent expected: the guard
 	// must skip the write and preserve the existing record.
 

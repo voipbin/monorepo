@@ -18,7 +18,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/sashabaranov/go-openai"
 )
 
 type SummaryHandler interface {
@@ -58,6 +57,15 @@ type summaryHandler struct {
 	db            dbhandler.DBHandler
 
 	engineOpenaiHandler engine_openai_handler.EngineOpenaiHandler
+
+	// model is used for both summary generation and language verification. The
+	// verify request shares the same engine (engineOpenaiHandler), so it cannot
+	// use a different provider's model; a single model is therefore required.
+	model string
+	// reasoningEffort is sent as reasoning_effort on both requests. "none"
+	// disables Gemini "thinking" so the output budget is not consumed by
+	// internal reasoning; empty omits the field (e.g. for an OpenAI rollback).
+	reasoningEffort string
 }
 
 var (
@@ -97,6 +105,8 @@ func NewSummaryHandler(
 	db dbhandler.DBHandler,
 
 	engineOpenaiHandler engine_openai_handler.EngineOpenaiHandler,
+	model string,
+	reasoningEffort string,
 ) SummaryHandler {
 	return &summaryHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -105,6 +115,8 @@ func NewSummaryHandler(
 		db:            db,
 
 		engineOpenaiHandler: engineOpenaiHandler,
+		model:               model,
+		reasoningEffort:     reasoningEffort,
 	}
 }
 
@@ -118,8 +130,6 @@ const (
 )
 
 const (
-	defaultModel = openai.GPT4Turbo
-
 	// summaryTemperature pins the sampling temperature for summary generation
 	// and language verification. Summaries must be consistent, not creative, so
 	// a low value curbs the nondeterminism that intermittently produced
@@ -127,11 +137,6 @@ const (
 	// field is `json:"temperature,omitempty"`, so a 0 value is dropped from the
 	// request and OpenAI re-applies its default of 1.0.
 	summaryTemperature float32 = 0.2
-
-	// defaultVerifyModel is the cheaper model used for the summary output-language
-	// verification harness (yes/no detection). Kept separate from defaultModel:
-	// a top-tier model is unnecessary for a one-word judgement.
-	defaultVerifyModel = openai.GPT4oMini
 
 	// maxSummaryRegenerations bounds the output-language retry loop. Total
 	// generation attempts = 1 + maxSummaryRegenerations (= 3).
