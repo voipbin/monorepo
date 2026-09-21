@@ -15,7 +15,13 @@ import (
 
 const (
 	geminiEndpoint = "https://generativelanguage.googleapis.com/v1beta/openai/"
-	geminiModel    = "gemini-2.5-flash"
+	geminiModel    = "gemini-3.8-flash"
+
+	// geminiReasoningEffort="none" disables Gemini "thinking" so the whole output
+	// budget is available for the JSON-schema response. Without it, thinking can
+	// consume the budget and truncate the JSON (finish_reason=length -> unmarshal
+	// failure). Matches the analysis gateway (analysishandler/run.go) behavior.
+	geminiReasoningEffort = "none"
 )
 
 // evaluationJSONSchema is the JSON Schema passed to Gemini via response_format.json_schema,
@@ -244,7 +250,8 @@ func (h *geminiAuditHandler) Evaluate(ctx context.Context, promptText, transcrip
 
 	logrus.Debugf("gemini Evaluate: calling API with json_schema response format")
 	resp, err := h.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model: geminiModel,
+		Model:           geminiModel,
+		ReasoningEffort: geminiReasoningEffort,
 		Messages: []openai.ChatCompletionMessage{
 			{Role: openai.ChatMessageRoleUser, Content: fullPrompt},
 		},

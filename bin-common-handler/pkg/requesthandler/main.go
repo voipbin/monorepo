@@ -152,6 +152,12 @@ const requestTimeoutDefault int = 3000   // default request timeout(3 sec)
 const requestTimeoutLong int = 30000     // long request timeout(30 sec) for operations involving external fetches (e.g., GCS + merge)
 const requestTimeoutKamailio int = 10000 // kamailio RPC timeout(10 sec) — exceeds 5s SIP UDP read deadline
 
+// RequestTimeoutSummary is the timeout for AI summary generate/regenerate. The
+// request is synchronous and waits for transcript fetch + LLM summarization, so
+// it needs far more than the default. Exported so the create call site (in
+// bin-api-manager) and the regenerate RPC share a single source of truth.
+const RequestTimeoutSummary int = 50000 // ai summary generate/regenerate timeout(50 sec)
+
 // delay units
 const (
 	DelayNow    int = 0

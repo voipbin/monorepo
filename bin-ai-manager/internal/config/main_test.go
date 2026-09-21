@@ -155,14 +155,14 @@ func TestBootstrap(t *testing.T) {
 			flagAnalysisModel := rootCmd.PersistentFlags().Lookup("analysis_default_model")
 			if flagAnalysisModel == nil {
 				t.Errorf("Expected analysis_default_model flag to be registered")
-			} else if flagAnalysisModel.DefValue != "gemini-2.5-flash" {
-				t.Errorf("Wrong analysis_default_model default. expect: gemini-2.5-flash, got: %s", flagAnalysisModel.DefValue)
+			} else if flagAnalysisModel.DefValue != "gemini-3.8-flash" {
+				t.Errorf("Wrong analysis_default_model default. expect: gemini-3.8-flash, got: %s", flagAnalysisModel.DefValue)
 			}
 			flagAnalysisAllowed := rootCmd.PersistentFlags().Lookup("analysis_allowed_models")
 			if flagAnalysisAllowed == nil {
 				t.Errorf("Expected analysis_allowed_models flag to be registered")
-			} else if flagAnalysisAllowed.DefValue != "gemini-2.5-flash,gemini-2.5-pro" {
-				t.Errorf("Wrong analysis_allowed_models default. expect: gemini-2.5-flash,gemini-2.5-pro, got: %s", flagAnalysisAllowed.DefValue)
+			} else if flagAnalysisAllowed.DefValue != "gemini-3.8-flash" {
+				t.Errorf("Wrong analysis_allowed_models default. expect: gemini-3.8-flash, got: %s", flagAnalysisAllowed.DefValue)
 			}
 			flagAnalysisBaseURL := rootCmd.PersistentFlags().Lookup("analysis_engine_base_url")
 			if flagAnalysisBaseURL == nil {
@@ -175,6 +175,24 @@ func TestBootstrap(t *testing.T) {
 				t.Errorf("Expected analysis_reasoning_effort flag to be registered")
 			} else if flagAnalysisReasoning.DefValue != "none" {
 				t.Errorf("Wrong analysis_reasoning_effort default. expect: none, got: %s", flagAnalysisReasoning.DefValue)
+			}
+			flagSummaryModel := rootCmd.PersistentFlags().Lookup("summary_model")
+			if flagSummaryModel == nil {
+				t.Errorf("Expected summary_model flag to be registered")
+			} else if flagSummaryModel.DefValue != "gemini-3.8-flash" {
+				t.Errorf("Wrong summary_model default. expect: gemini-3.8-flash, got: %s", flagSummaryModel.DefValue)
+			}
+			flagSummaryBaseURL := rootCmd.PersistentFlags().Lookup("summary_engine_base_url")
+			if flagSummaryBaseURL == nil {
+				t.Errorf("Expected summary_engine_base_url flag to be registered")
+			} else if flagSummaryBaseURL.DefValue != "https://generativelanguage.googleapis.com/v1beta/openai/" {
+				t.Errorf("Wrong summary_engine_base_url default. got: %s", flagSummaryBaseURL.DefValue)
+			}
+			flagSummaryReasoning := rootCmd.PersistentFlags().Lookup("summary_reasoning_effort")
+			if flagSummaryReasoning == nil {
+				t.Errorf("Expected summary_reasoning_effort flag to be registered")
+			} else if flagSummaryReasoning.DefValue != "none" {
+				t.Errorf("Wrong summary_reasoning_effort default. expect: none, got: %s", flagSummaryReasoning.DefValue)
 			}
 			flagAnalysisMaxOut := rootCmd.PersistentFlags().Lookup("analysis_max_output_tokens")
 			if flagAnalysisMaxOut == nil {
