@@ -19,18 +19,14 @@ func (h *engineOpenaiHandler) send(ctx context.Context, req *openai.ChatCompleti
 	expBackoff.MaxElapsedTime = 1 * time.Minute
 
 	var resp openai.ChatCompletionResponse
-	var err error
 	operation := func() error {
-		var err error
-		resp, err = h.client.CreateChatCompletion(ctx, *req)
-		if err != nil {
-			return err
-		}
-		return nil
+		var errOp error
+		resp, errOp = h.client.CreateChatCompletion(ctx, *req)
+		return errOp
 	}
 
 	if errRetry := backoff.Retry(operation, expBackoff); errRetry != nil {
-		return nil, err
+		return nil, errRetry
 	}
 
 	return &resp, nil
