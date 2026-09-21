@@ -13,6 +13,7 @@ import (
 	context "context"
 	account "monorepo/bin-storage-manager/models/account"
 	file "monorepo/bin-storage-manager/models/file"
+	recordingpeak "monorepo/bin-storage-manager/models/recordingpeak"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -127,4 +128,33 @@ func (m *MockCacheHandler) FileSet(ctx context.Context, f *file.File) error {
 func (mr *MockCacheHandlerMockRecorder) FileSet(ctx, f any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileSet", reflect.TypeOf((*MockCacheHandler)(nil).FileSet), ctx, f)
+}
+
+// RecordingPeaksGet mocks base method.
+func (m *MockCacheHandler) RecordingPeaksGet(ctx context.Context, recordingID uuid.UUID) (map[string]recordingpeak.RecordingFilePeak, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingPeaksGet", ctx, recordingID)
+	ret0, _ := ret[0].(map[string]recordingpeak.RecordingFilePeak)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingPeaksGet indicates an expected call of RecordingPeaksGet.
+func (mr *MockCacheHandlerMockRecorder) RecordingPeaksGet(ctx, recordingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingPeaksGet", reflect.TypeOf((*MockCacheHandler)(nil).RecordingPeaksGet), ctx, recordingID)
+}
+
+// RecordingPeaksSet mocks base method.
+func (m *MockCacheHandler) RecordingPeaksSet(ctx context.Context, recordingID uuid.UUID, peaks map[string]recordingpeak.RecordingFilePeak) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingPeaksSet", ctx, recordingID, peaks)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordingPeaksSet indicates an expected call of RecordingPeaksSet.
+func (mr *MockCacheHandlerMockRecorder) RecordingPeaksSet(ctx, recordingID, peaks any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingPeaksSet", reflect.TypeOf((*MockCacheHandler)(nil).RecordingPeaksSet), ctx, recordingID, peaks)
 }

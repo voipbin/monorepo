@@ -192,3 +192,19 @@ func (mr *MockFileHandlerMockRecorder) List(ctx, token, size, filters any) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockFileHandler)(nil).List), ctx, token, size, filters)
 }
+
+// PeaksComputeByFile mocks base method.
+func (m *MockFileHandler) PeaksComputeByFile(ctx context.Context, f *file.File, bucketCount int) ([]float64, float64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PeaksComputeByFile", ctx, f, bucketCount)
+	ret0, _ := ret[0].([]float64)
+	ret1, _ := ret[1].(float64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// PeaksComputeByFile indicates an expected call of PeaksComputeByFile.
+func (mr *MockFileHandlerMockRecorder) PeaksComputeByFile(ctx, f, bucketCount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeaksComputeByFile", reflect.TypeOf((*MockFileHandler)(nil).PeaksComputeByFile), ctx, f, bucketCount)
+}

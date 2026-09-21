@@ -25,6 +25,7 @@ import (
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
 	tool "monorepo/bin-ai-manager/models/tool"
+	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
 	auth "monorepo/bin-api-manager/models/auth"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
@@ -4395,6 +4396,21 @@ func (m *MockServiceHandler) RecordingList(ctx context.Context, a *auth.AuthIden
 func (mr *MockServiceHandlerMockRecorder) RecordingList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingList", reflect.TypeOf((*MockServiceHandler)(nil).RecordingList), ctx, a, size, token)
+}
+
+// RecordingPlayfilesGet mocks base method.
+func (m *MockServiceHandler) RecordingPlayfilesGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) ([]openapi_server.ApiManagerRecordingPlayfile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordingPlayfilesGet", ctx, a, id)
+	ret0, _ := ret[0].([]openapi_server.ApiManagerRecordingPlayfile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RecordingPlayfilesGet indicates an expected call of RecordingPlayfilesGet.
+func (mr *MockServiceHandlerMockRecorder) RecordingPlayfilesGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingPlayfilesGet", reflect.TypeOf((*MockServiceHandler)(nil).RecordingPlayfilesGet), ctx, a, id)
 }
 
 // RecordingTranscribeList mocks base method.

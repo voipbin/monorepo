@@ -13,6 +13,8 @@ import (
 	"monorepo/bin-storage-manager/models/bucketfile"
 	compressfile "monorepo/bin-storage-manager/models/compressfile"
 	"monorepo/bin-storage-manager/models/file"
+	"monorepo/bin-storage-manager/models/recordingpeak"
+	"monorepo/bin-storage-manager/pkg/cachehandler"
 	"monorepo/bin-storage-manager/pkg/filehandler"
 )
 
@@ -38,25 +40,28 @@ type StorageHandler interface {
 
 	RecordingGet(ctx context.Context, id uuid.UUID) (*bucketfile.BucketFile, error)
 	RecordingDelete(ctx context.Context, id uuid.UUID) error
+	RecordingPeaks(ctx context.Context, id uuid.UUID) (map[string]recordingpeak.RecordingFilePeak, error)
 
 	CompressfileCreate(ctx context.Context, referenceIDs []uuid.UUID, fileIDs []uuid.UUID) (*compressfile.CompressFile, error)
 }
 
 type storageHandler struct {
-	utilHandler utilhandler.UtilHandler
-	reqHandler  requesthandler.RequestHandler
-	fileHandler filehandler.FileHandler
+	utilHandler  utilhandler.UtilHandler
+	reqHandler   requesthandler.RequestHandler
+	fileHandler  filehandler.FileHandler
+	cacheHandler cachehandler.CacheHandler
 
 	bucketNameMedia string
 }
 
 // NewStorageHandler creates StorageHandler
-func NewStorageHandler(reqHandler requesthandler.RequestHandler, fileHandler filehandler.FileHandler, bucketNameMedia string) StorageHandler {
+func NewStorageHandler(reqHandler requesthandler.RequestHandler, fileHandler filehandler.FileHandler, cacheHandler cachehandler.CacheHandler, bucketNameMedia string) StorageHandler {
 
 	h := &storageHandler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		reqHandler:  reqHandler,
-		fileHandler: fileHandler,
+		utilHandler:  utilhandler.NewUtilHandler(),
+		reqHandler:   reqHandler,
+		fileHandler:  fileHandler,
+		cacheHandler: cacheHandler,
 
 		bucketNameMedia: bucketNameMedia,
 	}

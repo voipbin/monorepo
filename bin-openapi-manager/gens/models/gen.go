@@ -656,6 +656,27 @@ func (e AgentManagerAgentStatus) Valid() bool {
 	}
 }
 
+// Defines values for ApiManagerRecordingPlayfileDirection.
+const (
+	ApiManagerRecordingPlayfileDirectionIn   ApiManagerRecordingPlayfileDirection = "in"
+	ApiManagerRecordingPlayfileDirectionNone ApiManagerRecordingPlayfileDirection = ""
+	ApiManagerRecordingPlayfileDirectionOut  ApiManagerRecordingPlayfileDirection = "out"
+)
+
+// Valid indicates whether the value is a known member of the ApiManagerRecordingPlayfileDirection enum.
+func (e ApiManagerRecordingPlayfileDirection) Valid() bool {
+	switch e {
+	case ApiManagerRecordingPlayfileDirectionIn:
+		return true
+	case ApiManagerRecordingPlayfileDirectionNone:
+		return true
+	case ApiManagerRecordingPlayfileDirectionOut:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AuthBootResponseType.
 const (
 	Direct AuthBootResponseType = "direct"
@@ -4766,6 +4787,49 @@ type ApiManagerExtensionProvisioningToken struct {
 	// Example: https://api.voipbin.net/provisioning/extension?token=3f7a1c9e5b2d8f04a6c1e9b3d7f2a58c0e4b6d19f83c25a7e1b09d4f6a2c8e35
 	Url *string `json:"url,omitempty"`
 }
+
+// ApiManagerRecordingPlayfile A single playable audio file of a recording, with a streaming download URL and precomputed waveform peaks. Returned from the `GET /recordings/{id}/playfiles` response. Synthesized by api-manager by joining the recording's storage files with server-computed waveform data.
+type ApiManagerRecordingPlayfile struct {
+	// Direction The audio direction of the file. Populated as `in` or `out` only when the recording references a call and has separate directional files; empty for confbridge or single-file recordings.
+	//
+	// Example: in
+	Direction *ApiManagerRecordingPlayfileDirection `json:"direction,omitempty"`
+
+	// Duration The duration of this audio file in seconds, computed from the WAV header. 0 when the header could not be parsed.
+	//
+	// Example: 35.84
+	Duration *float64 `json:"duration,omitempty"`
+
+	// Filename The original filename of the recording file.
+	//
+	// Example: call_852def0e-f24a-11ed-845f-e32a849e7338_2023-01-05T14:58:05Z_in.wav
+	Filename *string `json:"filename,omitempty"`
+
+	// Filesize The size of the audio file in bytes.
+	//
+	// Example: 573440
+	Filesize *int64 `json:"filesize,omitempty"`
+
+	// Peaks Precomputed waveform peak values (absolute amplitude magnitude, 0.0 to 1.0) for the whole file, for rendering a waveform without downloading the audio. Empty when peak computation failed; playback still works via uri_download.
+	//
+	// Example: [0,0.12,0.34,0.56,0.21,0.08]
+	Peaks *[]float64 `json:"peaks,omitempty"`
+
+	// TmDownloadExpire Timestamp when the download URL expires.
+	//
+	// Example: 2026-01-15T10:30:00.000000Z
+	TmDownloadExpire *string `json:"tm_download_expire,omitempty"`
+
+	// UriDownload Signed streaming URL for the audio file, suitable as an HTML audio element source.
+	//
+	// Example: https://storage.googleapis.com/voipbin-media/bin/852def0e-f24a-11ed-845f-e32a849e7338?X-Goog-Signature=abc123
+	UriDownload *string `json:"uri_download,omitempty"`
+}
+
+// ApiManagerRecordingPlayfileDirection The audio direction of the file. Populated as `in` or `out` only when the recording references a call and has separate directional files; empty for confbridge or single-file recordings.
+//
+// Example: in
+type ApiManagerRecordingPlayfileDirection string
 
 // AuthBootResponse Result of a successful boot request. Contains a resource-scoped JWT and metadata about the scoped resource.
 type AuthBootResponse struct {
