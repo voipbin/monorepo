@@ -327,10 +327,11 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
 // returns the number of affected rows: 1 when this call won the CAS, 0 when the
 // queuecall was not in the waiting status (already connecting/serviced/ended by
 // a racing writer).
-func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) (int64, error) {
+func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID, groupcallID uuid.UUID) (int64, error) {
 	fields, err := commondatabasehandler.PrepareFields(map[queuecall.Field]any{
 		queuecall.FieldStatus:         queuecall.StatusConnecting,
 		queuecall.FieldServiceAgentID: serviceAgentID,
+		queuecall.FieldGroupcallID:    groupcallID,
 		queuecall.FieldTMUpdate:       h.utilHandler.TimeNow(),
 	})
 	if err != nil {

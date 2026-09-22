@@ -469,6 +469,7 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 
 		id             uuid.UUID
 		serviceAgentID uuid.UUID
+		groupcallID    uuid.UUID
 
 		responseCurTime *time.Time
 		expectRes       *queuecall.Queuecall
@@ -484,6 +485,7 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 
 			uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
 			uuid.FromStringOrNil("85b89f08-5ab8-11ec-94ea-5bed0069b7e9"),
+			uuid.FromStringOrNil("a1b2c3d4-5ab8-11ec-94ea-5bed0069b7e9"),
 
 			timePtr(time.Date(2023, time.February, 14, 3, 22, 17, 994000000, time.UTC)),
 			&queuecall.Queuecall{
@@ -494,6 +496,7 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 				Source:         commonaddress.Address{},
 				TagIDs:         []uuid.UUID{},
 				ServiceAgentID: uuid.FromStringOrNil("85b89f08-5ab8-11ec-94ea-5bed0069b7e9"),
+				GroupcallID:    uuid.FromStringOrNil("a1b2c3d4-5ab8-11ec-94ea-5bed0069b7e9"),
 				TMCreate:       timePtr(time.Date(2023, time.February, 14, 3, 22, 17, 994000000, time.UTC)),
 				TMService:      nil,
 				TMUpdate:       timePtr(time.Date(2023, time.February, 14, 3, 22, 17, 994000000, time.UTC)),
@@ -525,7 +528,7 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			affected, err := h.QueuecallSetStatusConnecting(ctx, tt.id, tt.serviceAgentID)
+			affected, err := h.QueuecallSetStatusConnecting(ctx, tt.id, tt.serviceAgentID, tt.groupcallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

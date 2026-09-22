@@ -43,7 +43,7 @@ type DBHandler interface {
 	QueuecallDelete(ctx context.Context, id uuid.UUID) error
 
 	// Queuecall status operations
-	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) (int64, error)
+	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID, groupcallID uuid.UUID) (int64, error)
 	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error)
 	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error)
 	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) (int64, error)
