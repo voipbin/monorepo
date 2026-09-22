@@ -18,6 +18,10 @@ create table agent_agents(
   direct_id   binary(16),
   direct_hash varchar(255),
 
+  reserve_reference_type varchar(255), -- reservation reference type. '' = not reserved
+  reserve_reference_id   binary(16),   -- reservation correlation token. zero = not reserved
+  tm_reserve             datetime(6),  -- reservation time (zombie sweep basis)
+
   tm_create datetime(6),
   tm_update datetime(6),
   tm_delete datetime(6),
