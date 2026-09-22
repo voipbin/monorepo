@@ -48,17 +48,19 @@ var (
 
 	// v1
 	// agents
-	regV1AgentsCountByCustomer      = regexp.MustCompile("/v1/agents/count_by_customer$")
-	regV1Agents                     = regexp.MustCompile("/v1/agents$")
-	regV1AgentsGet                  = regexp.MustCompile(`/v1/agents\?(.*)$`)
-	regV1AgentsUsernameLogin        = regexp.MustCompile("/v1/agents/" + regAny + "/login$")
-	regV1AgentsID                   = regexp.MustCompile("/v1/agents/" + regUUID + "$")
-	regV1AgentsIDAddresses          = regexp.MustCompile("/v1/agents/" + regUUID + "/addresses$")
-	regV1AgentsIDTagIDs             = regexp.MustCompile("/v1/agents/" + regUUID + "/tag_ids$")
-	regV1AgentsIDStatus             = regexp.MustCompile("/v1/agents/" + regUUID + "/status$")
-	regV1AgentsIDPassword           = regexp.MustCompile("/v1/agents/" + regUUID + "/password$")
-	regV1AgentsIDPermission         = regexp.MustCompile("/v1/agents/" + regUUID + "/permission$")
+	regV1AgentsCountByCustomer        = regexp.MustCompile("/v1/agents/count_by_customer$")
+	regV1Agents                       = regexp.MustCompile("/v1/agents$")
+	regV1AgentsGet                    = regexp.MustCompile(`/v1/agents\?(.*)$`)
+	regV1AgentsUsernameLogin          = regexp.MustCompile("/v1/agents/" + regAny + "/login$")
+	regV1AgentsID                     = regexp.MustCompile("/v1/agents/" + regUUID + "$")
+	regV1AgentsIDAddresses            = regexp.MustCompile("/v1/agents/" + regUUID + "/addresses$")
+	regV1AgentsIDTagIDs               = regexp.MustCompile("/v1/agents/" + regUUID + "/tag_ids$")
+	regV1AgentsIDStatus               = regexp.MustCompile("/v1/agents/" + regUUID + "/status$")
+	regV1AgentsIDPassword             = regexp.MustCompile("/v1/agents/" + regUUID + "/password$")
+	regV1AgentsIDPermission           = regexp.MustCompile("/v1/agents/" + regUUID + "/permission$")
 	regV1AgentsIDDirectHashRegenerate = regexp.MustCompile("/v1/agents/" + regUUID + "/direct-hash-regenerate$")
+	regV1AgentsIDReserve              = regexp.MustCompile("/v1/agents/" + regUUID + "/reserve$")
+	regV1AgentsIDReserveRelease       = regexp.MustCompile("/v1/agents/" + regUUID + "/reserve_release$")
 	regV1AgentsGetCustomerIDAddress   = regexp.MustCompile("/v1/agents/get_by_customer_id_address$")
 
 	// login
@@ -179,6 +181,16 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AgentsIDDirectHashRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AgentsIDDirectHashRegenerate(ctx, m)
 		requestType = "/v1/agents/<agent-id>/direct-hash-regenerate"
+
+	// POST /agents/<agent-id>/reserve_release
+	case regV1AgentsIDReserveRelease.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AgentsIDReserveReleasePost(ctx, m)
+		requestType = "/v1/agents/<agent-id>/reserve_release"
+
+	// POST /agents/<agent-id>/reserve
+	case regV1AgentsIDReserve.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AgentsIDReservePost(ctx, m)
+		requestType = "/v1/agents/<agent-id>/reserve"
 
 	// GET /agents/<agent-id>
 	case regV1AgentsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

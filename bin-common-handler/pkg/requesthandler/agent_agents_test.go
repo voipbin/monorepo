@@ -80,13 +80,13 @@ func Test_AgentV1AgentCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
 					CustomerID: uuid.FromStringOrNil("7fdb8e66-7fe7-11ec-ac90-878b581c2615"),
 				},
-				Username: "test1",
-				Name:     "test agent1",
-				Detail:       "test agent1 detail",
-				RingMethod:   "ringall",
-				Status:       amagent.StatusOffline,
-				Permission:   1,
-				TagIDs:       []uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
+				Username:   "test1",
+				Name:       "test agent1",
+				Detail:     "test agent1 detail",
+				RingMethod: "ringall",
+				Status:     amagent.StatusOffline,
+				Permission: 1,
+				TagIDs:     []uuid.UUID{uuid.FromStringOrNil("27d3bc3e-4d88-11ec-a61d-af78fdede455")},
 				Addresses: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeTel,
@@ -1053,6 +1053,146 @@ func Test_AgentV1AgentUpdatePermission(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AgentV1AgentReserve(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id            uuid.UUID
+		referenceType string
+		referenceID   uuid.UUID
+
+		expectTarget  string
+		expectRequest *sock.Request
+
+		response  *sock.Response
+		expectRes bool
+	}{
+		{
+			"reserved true",
+
+			uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
+			"queuecall",
+			uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
+
+			"bin-manager.agent-manager.request",
+			&sock.Request{
+				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/reserve",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_type":"queuecall","reference_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"}`),
+			},
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"reserved":true}`),
+			},
+			true,
+		},
+		{
+			"reserved false",
+
+			uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
+			"queuecall",
+			uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
+
+			"bin-manager.agent-manager.request",
+			&sock.Request{
+				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/reserve",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_type":"queuecall","reference_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"}`),
+			},
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"reserved":false}`),
+			},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AgentV1AgentReserve(ctx, tt.id, tt.referenceType, tt.referenceID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AgentV1AgentReserveRelease(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		referenceID uuid.UUID
+
+		expectTarget  string
+		expectRequest *sock.Request
+
+		response *sock.Response
+	}{
+		{
+			"normal",
+
+			uuid.FromStringOrNil("1e60cb12-4e7b-11ec-9d7b-532466c1faf1"),
+			uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
+
+			"bin-manager.agent-manager.request",
+			&sock.Request{
+				URI:      "/v1/agents/1e60cb12-4e7b-11ec-9d7b-532466c1faf1/reserve_release",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"}`),
+			},
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			if err := reqHandler.AgentV1AgentReserveRelease(ctx, tt.id, tt.referenceID); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

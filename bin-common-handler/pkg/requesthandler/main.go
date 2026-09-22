@@ -487,6 +487,8 @@ type RequestHandler interface {
 	AgentV1AgentUpdatePassword(ctx context.Context, timeout int, id uuid.UUID, password string) (*amagent.Agent, error)
 	AgentV1AgentUpdatePermission(ctx context.Context, id uuid.UUID, permission amagent.Permission) (*amagent.Agent, error)
 	AgentV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error)
+	AgentV1AgentReserve(ctx context.Context, id uuid.UUID, referenceType string, referenceID uuid.UUID) (bool, error)
+	AgentV1AgentReserveRelease(ctx context.Context, id uuid.UUID, referenceID uuid.UUID) error
 	AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error)
 	AgentV1AgentCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 	AgentV1AgentDirectHashRegenerate(ctx context.Context, agentID uuid.UUID) (*amagent.Agent, error)
