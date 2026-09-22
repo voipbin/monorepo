@@ -126,6 +126,10 @@ func Test_Kick(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
 
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.queuecallID, 0).Return(nil)
+
+			// re-read after the flow-stop (VOIP-1539 §5.1)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
+
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, tt.expectDurationWaiting, tt.responseCurTime).Return(int64(1), nil)
@@ -220,6 +224,10 @@ func Test_KickByReferenceID(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID, 0).Return(nil)
+
+			// re-read after the flow-stop (VOIP-1539 §5.1)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
+
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(int64(1), nil)
@@ -341,6 +349,9 @@ func Test_kickForce(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
 
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID, 0).Return(nil)
+
+			// re-read after the flow-stop (VOIP-1539 §5.1)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
 
 			if tt.responseQueuecall.Status == queuecall.StatusService {
 				// update status done

@@ -30,19 +30,31 @@ func (h *queuecallHandler) Kick(ctx context.Context, id uuid.UUID) (*queuecall.Q
 		return nil, fmt.Errorf("invalid queuecall status. status: %s", qc.Status)
 	}
 
-	// send the forward request
+	// send the forward request.
+	// this is done before the status transition, so the queuecall status may
+	// change (e.g. race to service) while the flow is being stopped.
 	if errStop := h.reqHandler.FlowV1ActiveflowServiceStop(ctx, qc.ReferenceActiveflowID, qc.ID, 0); errStop != nil {
 		return nil, errors.Wrapf(errStop, "Could not stop the activeflow. activeflow_id: %s", qc.ReferenceActiveflowID)
 	}
 
-	if qc.Status == queuecall.StatusService {
+	// re-read the queuecall after the flow-stop (VOIP-1539 §5.1): the flow-stop
+	// runs outside the status-transition CAS gate, so the status read before it
+	// is stale. Branch on the fresh status to avoid tearing down a live call or
+	// mis-branching a serviced queuecall.
+	qcFresh, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the fresh queuecall after the flow-stop. err: %v", err)
+		return nil, err
+	}
+
+	if qcFresh.Status == queuecall.StatusService {
 		// nothing to do more.
 		// the call-manager's confbridge_leaved message event subscriber will handle it.
-		return qc, nil
+		return qcFresh, nil
 	}
 
 	// update status to abandoned
-	res, err := h.UpdateStatusAbandoned(ctx, qc)
+	res, err := h.UpdateStatusAbandoned(ctx, qcFresh)
 	if err != nil {
 		log.Errorf("Could not update the queuecall status to abandoned. err: %v", err)
 		return nil, err
@@ -102,11 +114,20 @@ func (h *queuecallHandler) kickForce(ctx context.Context, id uuid.UUID) (*queuec
 		log.Errorf("Could not stop the activeflow. err: %v", errStop)
 	}
 
+	// re-read the queuecall after the flow-stop (VOIP-1539 §5.1): the flow-stop
+	// runs outside the status-transition CAS gate, so the status read before it
+	// is stale. Branch on the fresh status.
+	qcFresh, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get the fresh queuecall after the flow-stop. err: %v", err)
+		return nil, err
+	}
+
 	var res *queuecall.Queuecall
-	if qc.Status == queuecall.StatusService {
-		res, err = h.UpdateStatusDone(ctx, qc)
+	if qcFresh.Status == queuecall.StatusService {
+		res, err = h.UpdateStatusDone(ctx, qcFresh)
 	} else {
-		res, err = h.UpdateStatusAbandoned(ctx, qc)
+		res, err = h.UpdateStatusAbandoned(ctx, qcFresh)
 	}
 	if err != nil {
 		log.Errorf("Could not update the queuecall status. err: %v", err)
