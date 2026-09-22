@@ -2,14 +2,14 @@
 
 ## Overview
 
-`bin-agent-manager` manages call-center agents in VoIPbin: their identity, authentication, SIP contact addresses, permissions, real-time status (available/away/busy/offline/ringing), and tag-based routing membership. It is a Class A standard Go RPC manager.
+`bin-agent-manager` manages call-center agents in VoIPbin: their identity, authentication, SIP contact addresses, permissions, real-time status (available/away/busy/offline), and tag-based routing membership. It is a Class A standard Go RPC manager.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-agent-manager`.
 
 ## Key Concepts
 
 - **Agent**: A call-center operator with status, SIP addresses, permission flags, ring method, and tag IDs
-- **Status**: Real-time availability — `available`, `away`, `busy`, `offline`, `ringing`; driven by call-manager events
+- **Status**: Real-time availability — `available`, `away`, `busy`, `offline`; driven by call-manager events
 - **Ring method**: `ringall` (all addresses simultaneously) or `linear` (addresses tried in sequence)
 - **Permission**: Bitfield with project-level and customer-level flags (agent/admin/manager)
 - **Tag IDs**: Used by queue-manager to filter eligible agents for routing; changing tags immediately affects queue membership
@@ -41,7 +41,7 @@
 
 ### Status is Event-Driven
 
-Agent status changes from `ringing` → `available` are driven by call-manager events received in `subscribehandler`. Do not rely on polling or timeouts for status recovery. If subscribehandler is down, agents can remain stuck in incorrect states.
+Agent status changes to/from `busy` are driven by call-manager events received in `subscribehandler` (`groupcall_progressing` sets `busy` on answer; call-end returns to `available`). During dial before answer, the agent is excluded from re-selection by the method B reservation fields (`reserve_reference_id`), not by a status change. Do not rely on polling or timeouts for status recovery. If subscribehandler is down, agents can remain stuck in incorrect states.
 
 ### Password Reset Base URL
 
