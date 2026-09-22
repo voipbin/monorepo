@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Variable" href="variable_variable.html"><link rel="prev" title="Variable" href="variable.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -710,10 +710,10 @@
 <h2>Manually via variable_set action<a class="headerlink" href="#manually-via-variable-set-action" title="Link to this heading">¶</a></h2>
 <p>Developers can explicitly define or override values in the flow.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;variable_set&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;user_selected_option&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;some_value&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"variable_set"</span><span class="p">,</span>
+    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"key"</span><span class="p">:</span> <span class="s2">"user_selected_option"</span><span class="p">,</span>
+        <span class="s2">"value"</span><span class="p">:</span> <span class="s2">"some_value"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -725,12 +725,12 @@
 <p>When you start a new flow through the API, you can seed custom variables directly in the request body using the optional <code class="docutils literal notranslate"><span class="pre">variables</span></code> field. This is the recommended way to pass per-request context (campaign IDs, customer names, tracking tokens) into a flow without hard-coding them into the flow definition.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">variables</span></code> field is a flat key-value object. Each value must be a string, and each key becomes referenceable inside the flow as <code class="docutils literal notranslate"><span class="pre">${&lt;key&gt;}</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+155****4567&quot;</span> <span class="p">},</span>
-    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+155****6543&quot;</span> <span class="p">}</span> <span class="p">],</span>
-    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-flow-id&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;summer-2026&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;customer_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Jane Doe&quot;</span>
+    <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+155****4567"</span> <span class="p">},</span>
+    <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tel"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="s2">"+155****6543"</span> <span class="p">}</span> <span class="p">],</span>
+    <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"&lt;your-flow-id&gt;"</span><span class="p">,</span>
+    <span class="s2">"variables"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"campaign_id"</span><span class="p">:</span> <span class="s2">"summer-2026"</span><span class="p">,</span>
+        <span class="s2">"customer_name"</span><span class="p">:</span> <span class="s2">"Jane Doe"</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -858,8 +858,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

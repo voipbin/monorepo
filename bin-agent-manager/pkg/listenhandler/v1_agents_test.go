@@ -50,9 +50,9 @@ func Test_ProcessV1AgentsGet(t *testing.T) {
 			pageToken: "2021-11-23T17:55:39.712000Z",
 
 			convertedFilters: map[agent.Field]any{
-				agent.FieldCustomerID: uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
-				agent.FieldDeleted:    false,
-				agent.FieldStatus:     agent.StatusAvailable,
+				agent.FieldCustomerID:  uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
+				agent.FieldDeleted:     false,
+				agent.FieldStatus:      agent.StatusAvailable,
 				agent.Field("tag_ids"): "f768910c-4d8f-11ec-b5ec-ab5be5e8ef8a,08789a66-b236-11ee-8a51-b31bbd98fe91",
 			},
 			responseAgents: []*agent.Agent{
@@ -1306,6 +1306,145 @@ func Test_processV1AgentsGetByCustomerIDAddressPost(t *testing.T) {
 			}
 
 			mockAgent.EXPECT().GetByCustomerIDAndAddress(gomock.Any(), tt.expectCustomerID, tt.expectAddress).Return(tt.responseAgent, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1AgentsIDReservePost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		id            uuid.UUID
+		referenceType string
+		referenceID   uuid.UUID
+
+		responseReserved bool
+		expectRes        *sock.Response
+	}{
+		{
+			name: "reserved true",
+			request: &sock.Request{
+				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/reserve",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_type":"queuecall","reference_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"}`),
+			},
+
+			id:            uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+			referenceType: "queuecall",
+			referenceID:   uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
+
+			responseReserved: true,
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"reserved":true}`),
+			},
+		},
+		{
+			name: "reserved false",
+			request: &sock.Request{
+				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/reserve",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_type":"queuecall","reference_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"}`),
+			},
+
+			id:            uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+			referenceType: "queuecall",
+			referenceID:   uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
+
+			responseReserved: false,
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"reserved":false}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:  mockSock,
+				agentHandler: mockAgent,
+			}
+
+			mockAgent.EXPECT().Reserve(gomock.Any(), tt.id, tt.referenceType, tt.referenceID).Return(tt.responseReserved, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1AgentsIDReserveReleasePost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		id          uuid.UUID
+		referenceID uuid.UUID
+
+		expectRes *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/agents/bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a/reserve_release",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"reference_id":"5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"}`),
+			},
+
+			id:          uuid.FromStringOrNil("bbb3bed0-4d89-11ec-9cf7-4351c0fdbd4a"),
+			referenceID: uuid.FromStringOrNil("5fd7f9b8-cb37-11ee-bd29-f30560a6ac86"),
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:  mockSock,
+				agentHandler: mockAgent,
+			}
+
+			mockAgent.EXPECT().ReserveRelease(gomock.Any(), tt.id, tt.referenceID).Return(nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

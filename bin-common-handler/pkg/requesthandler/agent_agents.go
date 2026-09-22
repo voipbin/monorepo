@@ -438,3 +438,57 @@ func (r *requestHandler) AgentV1AgentCountByCustomerID(ctx context.Context, cust
 
 	return res.Count, nil
 }
+
+// AgentV1AgentReserve sends a request to agent-manager to atomically reserve
+// the agent for the given reference (method B, VOIP-1539 §3.2). It returns true
+// when this caller won the reservation CAS, false when the agent was not
+// eligible (not available, or already reserved by another reference).
+func (r *requestHandler) AgentV1AgentReserve(ctx context.Context, id uuid.UUID, referenceType string, referenceID uuid.UUID) (bool, error) {
+	uri := fmt.Sprintf("/v1/agents/%s/reserve", id)
+
+	data := &amrequest.V1DataAgentsIDReservePost{
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return false, err
+	}
+
+	tmp, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPost, "agent/agents/<agent-id>/reserve", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return false, err
+	}
+
+	var res struct {
+		Reserved bool `json:"reserved"`
+	}
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return false, errParse
+	}
+
+	return res.Reserved, nil
+}
+
+// AgentV1AgentReserveRelease sends a request to agent-manager to clear the
+// agent's reservation, restricted to the owning reference token (method B,
+// VOIP-1539 §3.2). A stale/losing caller with a different token is a no-op.
+func (r *requestHandler) AgentV1AgentReserveRelease(ctx context.Context, id uuid.UUID, referenceID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/agents/%s/reserve_release", id)
+
+	data := &amrequest.V1DataAgentsIDReserveReleasePost{
+		ReferenceID: referenceID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	if _, err := r.sendRequestAgent(ctx, uri, sock.RequestMethodPost, "agent/agents/<agent-id>/reserve_release", requestTimeoutDefault, 0, ContentTypeJSON, m); err != nil {
+		return err
+	}
+
+	return nil
+}

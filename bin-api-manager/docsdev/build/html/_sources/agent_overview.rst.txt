@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Medium
    * **Cost:** Free (agent management operations incur no charges; calls routed to agents are billed per call minute)
-   * **Async:** No. Agent CRUD operations are synchronous. However, agent status changes due to incoming calls (e.g., ``available`` to ``ringing`` to ``busy``) happen asynchronously via the queue routing system.
+   * **Async:** No. Agent CRUD operations are synchronous. However, an agent's status change to ``busy`` when a routed call is answered happens asynchronously via the call routing system.
 
 The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.
 
@@ -39,14 +39,7 @@ Every agent has a status that reflects their current availability. The status de
         | (ready)   |              | (break)   |              |(logged out)|
         +-----+-----+              +-----------+              +-----------+
               |
-              | Call routed to agent
-              v
-        +-----------+
-        |  ringing  |
-        | (incoming)|
-        +-----+-----+
-              |
-              | Agent answers
+              | Routed call answered
               v
         +-----------+
         |   busy    |
@@ -72,8 +65,6 @@ Every agent has a status that reflects their current availability. The status de
 +-----------+-----------------------------------------------------------------+------------------+
 | offline   | Agent is logged out of the system                               | No               |
 +-----------+-----------------------------------------------------------------+------------------+
-| ringing   | System is attempting to deliver a call to the agent             | No               |
-+-----------+-----------------------------------------------------------------+------------------+
 
 **Status Transitions**
 
@@ -91,15 +82,13 @@ Every agent has a status that reflects their current availability. The status de
     +-----------+                                    +-----------+
 
     Automatic transitions (system controls):
-    +-----------+        Call routed         +-----------+
-    | available |--------------------------->|  ringing  |
-    +-----------+                            +-----+-----+
-                                                    |
-                                                    | Agent answers
-                                                    v
-                                              +-----------+
-                                              |   busy    |
-                                              +-----------+
+    +-----------+   Routed call answered    +-----------+
+    | available |-------------------------->|   busy    |
+    +-----------+                           +-----------+
+
+    Note: during dial (before the call is answered) the agent is temporarily
+    excluded from re-selection by an internal reservation, not by a status
+    change, so the status stays "available" until the call is answered.
 
     Note: there is no automatic transition back to "available" when the
     call ends. The agent (or your application) must explicitly call
@@ -397,7 +386,8 @@ The complete flow of how a call is routed from a queue to an agent:
     Step 4: Route call to agent
     +----------------------+
     | Agent C status:      |
-    | available -> ringing  |
+    | available (reserved  |
+    | during dial)         |
     +----------+-----------+
                |
                | Agent's phones ring
@@ -405,7 +395,7 @@ The complete flow of how a call is routed from a queue to an agent:
     Step 5: Agent answers
     +----------------------+
     | Agent C status:      |
-    | ringing -> busy       |
+    | available -> busy     |
     |                      |
     | Queuecall status:    |
     | waiting -> service    |
@@ -542,7 +532,7 @@ Best Practices
     Common flow:
     1. Agent logs in → Status: offline
     2. Agent sets available → Status: available
-    3. Call comes in → Status: ringing (automatic)
+    3. Call comes in → Status stays available (agent reserved during dial)
     4. Agent answers → Status: busy (automatic)
     5. Call ends → Status stays "busy"; the agent must manually set it
        back to available via PUT /agents/{id}/status
@@ -569,7 +559,7 @@ Common Scenarios
 ::
 
     Agent is available, receives call
-           Status: available → ringing → busy
+           Status: available → busy
 
     Call ends
            Status stays "busy" (no automatic revert)
@@ -609,7 +599,7 @@ Troubleshooting
 |                           | addresses (tags are not consulted -- see the   |
 |                           | Tag Issues row below)                          |
 +---------------------------+------------------------------------------------+
-| Stuck in "ringing" status | Check if call was properly terminated; may     |
+| Stuck in "busy" status    | Check if call was properly terminated; may     |
 |                           | need to manually reset status                  |
 +---------------------------+------------------------------------------------+
 | Status changes not        | Verify webhook endpoint is configured; check   |

@@ -14,52 +14,6 @@ import (
 	"monorepo/bin-agent-manager/pkg/agenthandler"
 )
 
-func Test_processEvent_processEventCMGroupcallCreated(t *testing.T) {
-
-	tests := []struct {
-		name  string
-		event *sock.Event
-
-		expectGroupcall *cmgroupcall.Groupcall
-	}{
-		{
-			name: "normal",
-
-			event: &sock.Event{
-				Publisher: "call-manager",
-				Type:      cmgroupcall.EventTypeGroupcallCreated,
-				DataType:  "application/json",
-				Data:      []byte(`{"id":"1a7889cc-8493-4bad-90ee-b80f944349cb"}`),
-			},
-
-			expectGroupcall: &cmgroupcall.Groupcall{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("1a7889cc-8493-4bad-90ee-b80f944349cb"),
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSock := sockhandler.NewMockSockHandler(mc)
-			mockAgent := agenthandler.NewMockAgentHandler(mc)
-
-			h := subscribeHandler{
-				sockHandler:  mockSock,
-				agentHandler: mockAgent,
-			}
-
-			mockAgent.EXPECT().EventGroupcallCreated(gomock.Any(), tt.expectGroupcall).Return(nil)
-
-			h.processEvent(tt.event)
-		})
-	}
-}
-
 func Test_processEvent_processEventCMGroupcallAnswered(t *testing.T) {
 
 	tests := []struct {

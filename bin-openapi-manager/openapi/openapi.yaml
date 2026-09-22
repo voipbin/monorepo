@@ -280,14 +280,12 @@ components:
         - away
         - busy
         - offline
-        - ringing
       x-enum-varnames:
         - AgentManagerAgentStatusNone
         - AgentManagerAgentStatusAvailable
         - AgentManagerAgentStatusAway
         - AgentManagerAgentStatusBusy
         - AgentManagerAgentStatusOffline
-        - AgentManagerAgentStatusRinging
 
     AgentManagerAgent:
       type: object

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Case Management" href="service_agent_case_overview.html"><link rel="prev" title="Agent Console" href="service_agent.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -806,36 +806,36 @@
 </div>
 <p>Every <code class="docutils literal notranslate"><span class="pre">me</span></code> response is the same <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-agent"><span class="std std-ref">Agent</span></a> object returned by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents/{id}</span></code>. <code class="docutils literal notranslate"><span class="pre">ring_method</span></code> and <code class="docutils literal notranslate"><span class="pre">status</span></code> use the same enums documented there – see <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-ring-method"><span class="std std-ref">Ring method</span></a> and <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-status"><span class="std std-ref">Status</span></a>.</p>
 <p><strong>Get own profile:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/me?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/me?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Set status to available:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/service_agents/me/status?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;status&quot;: &quot;available&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/me/status?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "status": "available"
+    }'
 </pre></div>
 </div>
 <p><strong>Change own password:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/service_agents/me/password?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;password&quot;: &quot;&lt;new-password&gt;&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/me/password?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "password": "&lt;new-password&gt;"
+    }'
 </pre></div>
 </div>
 <p><strong>Update own addresses:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/service_agents/me/addresses?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;addresses&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/service_agents/me/addresses?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "addresses": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+155****1234&quot;
+                "type": "tel",
+                "target": "+155****1234"
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -869,11 +869,11 @@
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code> (documented on the <a class="reference internal" href="talk.html#talk-main"><span class="std std-ref">Talk</span></a> page) returns only chats the caller has already joined. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_channels</span></code> is the discovery endpoint: it returns every public channel for the customer so an agent’s UI can present a “browse channels” list, independent of participation.</p>
 <p><strong>List public channels:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/talk_channels?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/talk_channels?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Join a channel:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;channel-id&gt;/join?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;channel-id&gt;/join?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p>The join endpoint only works for <code class="docutils literal notranslate"><span class="pre">talk</span></code>-type chats. For <code class="docutils literal notranslate"><span class="pre">direct</span></code> and <code class="docutils literal notranslate"><span class="pre">group</span></code> chats, add participants explicitly via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/talk_chats/{id}/participants</span></code> (see <a class="reference internal" href="talk_overview.html#talk-overview"><span class="std std-ref">Talk</span></a>).</p>
@@ -881,7 +881,7 @@
 <section id="websocket-connection">
 <h2>WebSocket connection<a class="headerlink" href="#websocket-connection" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/ws</span></code> upgrades the connection to a WebSocket, scoped to the authenticated agent, using the same protocol documented in <a class="reference internal" href="websocket.html#websocket-main"><span class="std std-ref">WebSocket</span></a>. Use this path (rather than the top-level <code class="docutils literal notranslate"><span class="pre">/ws</span></code>) from agent-facing consoles so that event delivery stays consistent with the rest of the <code class="docutils literal notranslate"><span class="pre">/service_agents/*</span></code> surface.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ wscat -c &#39;wss://api.voipbin.net/v1.0/service_agents/ws?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ wscat -c 'wss://api.voipbin.net/v1.0/service_agents/ws?token=&lt;token&gt;'
 </pre></div>
 </div>
 </section>
@@ -964,8 +964,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -89,3 +89,18 @@ type V1DataAgentsIDDialPost struct {
 	FlowID       uuid.UUID             `json:"flow_id"`
 	MasterCallID uuid.UUID             `json:"master_call_id"`
 }
+
+// V1DataAgentsIDReservePost is
+// v1 data type request struct for
+// /v1/agents/<agent-id>/reserve POST (method B reservation, VOIP-1539 §3.2)
+type V1DataAgentsIDReservePost struct {
+	ReferenceType string    `json:"reference_type"`
+	ReferenceID   uuid.UUID `json:"reference_id"`
+}
+
+// V1DataAgentsIDReserveReleasePost is
+// v1 data type request struct for
+// /v1/agents/<agent-id>/reserve_release POST (method B reservation, VOIP-1539 §3.2)
+type V1DataAgentsIDReserveReleasePost struct {
+	ReferenceID uuid.UUID `json:"reference_id"`
+}

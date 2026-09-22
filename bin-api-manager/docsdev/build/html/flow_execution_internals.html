@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Advanced Flow Patterns" href="flow_advanced_patterns.html"><link rel="prev" title="Tutorial scenario" href="flow_tutorial_scenario.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Flow Execution Internals - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -704,7 +704,7 @@
 <span class="o">|</span> <span class="nb">id</span><span class="p">:</span> <span class="n">uuid</span>                    <span class="o">|</span> <span class="n">Unique</span> <span class="n">activeflow</span> <span class="n">identifier</span>       <span class="o">|</span>
 <span class="o">|</span> <span class="n">flow_id</span><span class="p">:</span> <span class="n">uuid</span>               <span class="o">|</span> <span class="n">Reference</span> <span class="n">to</span> <span class="n">flow</span> <span class="n">definition</span>       <span class="o">|</span>
 <span class="o">|</span> <span class="n">customer_id</span><span class="p">:</span> <span class="n">uuid</span>           <span class="o">|</span> <span class="n">Owner</span> <span class="n">of</span> <span class="n">this</span> <span class="n">execution</span>            <span class="o">|</span>
-<span class="o">|</span> <span class="n">reference_type</span><span class="p">:</span> <span class="n">string</span>      <span class="o">|</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;api&quot;</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">reference_type</span><span class="p">:</span> <span class="n">string</span>      <span class="o">|</span> <span class="s2">"call"</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">,</span> <span class="s2">"api"</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">reference_id</span><span class="p">:</span> <span class="n">uuid</span>          <span class="o">|</span> <span class="n">Associated</span> <span class="n">call</span><span class="o">/</span><span class="n">message</span> <span class="n">ID</span>         <span class="o">|</span>
 <span class="o">|</span> <span class="n">current_action_id</span><span class="p">:</span> <span class="n">uuid</span>     <span class="o">|</span> <span class="n">Cursor</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">flow</span>            <span class="o">|</span>
 <span class="o">|</span> <span class="n">status</span><span class="p">:</span> <span class="n">string</span>              <span class="o">|</span> <span class="n">Current</span> <span class="n">execution</span> <span class="n">state</span>            <span class="o">|</span>
@@ -915,16 +915,16 @@
 <span class="o">|</span> <span class="n">Storage</span><span class="p">:</span> <span class="n">JSON</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">activeflows</span> <span class="n">table</span>                        <span class="o">|</span>
 <span class="o">|</span>                                                                  <span class="o">|</span>
 <span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;voipbin.activeflow.id&quot;</span><span class="p">:</span> <span class="s2">&quot;abc-123&quot;</span><span class="p">,</span>                           <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;voipbin.activeflow.reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-456&quot;</span><span class="p">,</span>                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;voipbin.call.id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-456&quot;</span><span class="p">,</span>                                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;voipbin.call.source.target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>                 <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;voipbin.call.destination.target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">,</span>            <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;voipbin.call.digits&quot;</span><span class="p">:</span> <span class="s2">&quot;123&quot;</span><span class="p">,</span>                                 <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;voipbin.call.status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>                         <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;voipbin.recording.id&quot;</span><span class="p">:</span> <span class="s2">&quot;rec-789&quot;</span><span class="p">,</span>                            <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;customer.tier&quot;</span><span class="p">:</span> <span class="s2">&quot;premium&quot;</span><span class="p">,</span>                 <span class="o">&lt;-</span> <span class="n">custom</span>          <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;order.id&quot;</span><span class="p">:</span> <span class="s2">&quot;ORD-12345&quot;</span>                     <span class="o">&lt;-</span> <span class="n">custom</span>          <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"voipbin.activeflow.id"</span><span class="p">:</span> <span class="s2">"abc-123"</span><span class="p">,</span>                           <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"voipbin.activeflow.reference_id"</span><span class="p">:</span> <span class="s2">"call-456"</span><span class="p">,</span>                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"voipbin.call.id"</span><span class="p">:</span> <span class="s2">"call-456"</span><span class="p">,</span>                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"voipbin.call.source.target"</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">,</span>                 <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"voipbin.call.destination.target"</span><span class="p">:</span> <span class="s2">"+15559876543"</span><span class="p">,</span>            <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"voipbin.call.digits"</span><span class="p">:</span> <span class="s2">"123"</span><span class="p">,</span>                                 <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"voipbin.call.status"</span><span class="p">:</span> <span class="s2">"progressing"</span><span class="p">,</span>                         <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"voipbin.recording.id"</span><span class="p">:</span> <span class="s2">"rec-789"</span><span class="p">,</span>                            <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"customer.tier"</span><span class="p">:</span> <span class="s2">"premium"</span><span class="p">,</span>                 <span class="o">&lt;-</span> <span class="n">custom</span>          <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"order.id"</span><span class="p">:</span> <span class="s2">"ORD-12345"</span>                     <span class="o">&lt;-</span> <span class="n">custom</span>          <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
 <span class="o">|</span>                                                                  <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
@@ -932,7 +932,7 @@
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Variable Resolution Process:
 
-Input: &quot;Hello ${customer.name}, your order ${order.id} is ready&quot;
+Input: "Hello ${customer.name}, your order ${order.id} is ready"
 
 +------------------------------------------------------------------+
 |                     Variable Resolver                            |
@@ -940,21 +940,21 @@ Input: &quot;Hello ${customer.name}, your order ${order.id} is ready&quot;
 
 Step 1: Find all ${...} patterns
 +------------------+
-| Pattern scanner  |---&gt; [&quot;${customer.name}&quot;, &quot;${order.id}&quot;]
+| Pattern scanner  |---&gt; ["${customer.name}", "${order.id}"]
 +------------------+
 
 Step 2: Look up each variable
 +------------------+     +------------------+
-| customer.name    |----&gt;| activeflow.vars  |---&gt; &quot;John Smith&quot;
+| customer.name    |----&gt;| activeflow.vars  |---&gt; "John Smith"
 +------------------+     +------------------+
 
 +------------------+     +------------------+
-| order.id         |----&gt;| activeflow.vars  |---&gt; &quot;ORD-12345&quot;
+| order.id         |----&gt;| activeflow.vars  |---&gt; "ORD-12345"
 +------------------+     +------------------+
 
 Step 3: Substitute values
 +------------------------------------------------------------------+
-| Output: &quot;Hello John Smith, your order ORD-12345 is ready&quot;        |
+| Output: "Hello John Smith, your order ORD-12345 is ready"        |
 +------------------------------------------------------------------+
 
 
@@ -998,16 +998,16 @@ Variable Set Timing:
 <span class="n">Main</span> <span class="n">Flow</span> <span class="p">(</span><span class="n">stack</span> <span class="n">depth</span> <span class="mi">0</span><span class="p">)</span>
 <span class="o">+------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">action</span> <span class="mi">1</span><span class="p">:</span> <span class="n">answer</span>                                                 <span class="o">|</span>
-<span class="o">|</span> <span class="n">action</span> <span class="mi">2</span><span class="p">:</span> <span class="n">talk</span> <span class="s2">&quot;Welcome&quot;</span>                                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">action</span> <span class="mi">2</span><span class="p">:</span> <span class="n">talk</span> <span class="s2">"Welcome"</span>                                         <span class="o">|</span>
 <span class="o">|</span> <span class="n">action</span> <span class="mi">3</span><span class="p">:</span> <span class="n">queue_join</span>  <span class="o">----+</span>                                      <span class="o">|</span>
-<span class="o">|</span> <span class="n">action</span> <span class="mi">4</span><span class="p">:</span> <span class="n">talk</span> <span class="s2">&quot;Goodbye&quot;</span>  <span class="o">|</span>                                      <span class="o">|</span>
+<span class="o">|</span> <span class="n">action</span> <span class="mi">4</span><span class="p">:</span> <span class="n">talk</span> <span class="s2">"Goodbye"</span>  <span class="o">|</span>                                      <span class="o">|</span>
 <span class="o">+---------------------------|--------------------------------------+</span>
                             <span class="o">|</span>
                             <span class="o">|</span> <span class="n">Fork</span> <span class="n">creates</span> <span class="n">new</span> <span class="n">stack</span> <span class="n">frame</span>
                             <span class="n">v</span>
 <span class="n">Forked</span> <span class="n">Flow</span> <span class="p">(</span><span class="n">stack</span> <span class="n">depth</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">Wait</span> <span class="n">Flow</span>
 <span class="o">+------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">action</span> <span class="mi">1</span><span class="p">:</span> <span class="n">talk</span> <span class="s2">&quot;Please hold...&quot;</span>                                  <span class="o">|</span>
+<span class="o">|</span> <span class="n">action</span> <span class="mi">1</span><span class="p">:</span> <span class="n">talk</span> <span class="s2">"Please hold..."</span>                                  <span class="o">|</span>
 <span class="o">|</span> <span class="n">action</span> <span class="mi">2</span><span class="p">:</span> <span class="n">play</span> <span class="n">music</span><span class="o">.</span><span class="n">mp3</span>                                         <span class="o">|</span>
 <span class="o">|</span> <span class="n">action</span> <span class="mi">3</span><span class="p">:</span> <span class="n">goto</span> <span class="n">action</span> <span class="mi">1</span> <span class="p">(</span><span class="n">loop</span><span class="p">)</span>                                   <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
@@ -1017,7 +1017,7 @@ Variable Set Timing:
                             <span class="n">v</span>
 <span class="n">Returns</span> <span class="n">to</span> <span class="n">Main</span> <span class="n">Flow</span>
 <span class="o">+------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">action</span> <span class="mi">4</span><span class="p">:</span> <span class="n">talk</span> <span class="s2">&quot;Goodbye&quot;</span>  <span class="o">&lt;--</span> <span class="n">continues</span> <span class="n">here</span>                     <span class="o">|</span>
+<span class="o">|</span> <span class="n">action</span> <span class="mi">4</span><span class="p">:</span> <span class="n">talk</span> <span class="s2">"Goodbye"</span>  <span class="o">&lt;--</span> <span class="n">continues</span> <span class="n">here</span>                     <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
 </pre></div>
 </div>
@@ -1028,20 +1028,20 @@ Variable Set Timing:
 <span class="o">+------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Main</span> <span class="n">Activeflow</span>                                                  <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="nb">id</span><span class="p">:</span> <span class="s2">&quot;main-af-123&quot;</span>                                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">current_action_id</span><span class="p">:</span> <span class="s2">&quot;queue-join-action&quot;</span>                           <span class="o">|</span>
-<span class="o">|</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;executing&quot;</span>                                              <span class="o">|</span>
+<span class="o">|</span> <span class="nb">id</span><span class="p">:</span> <span class="s2">"main-af-123"</span>                                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">current_action_id</span><span class="p">:</span> <span class="s2">"queue-join-action"</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">status</span><span class="p">:</span> <span class="s2">"executing"</span>                                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">stack_depth</span><span class="p">:</span> <span class="mi">0</span>                                                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">forward_action_id</span><span class="p">:</span> <span class="s2">&quot;goodbye-action&quot;</span>  <span class="o">&lt;-</span> <span class="k">return</span> <span class="n">point</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">forward_action_id</span><span class="p">:</span> <span class="s2">"goodbye-action"</span>  <span class="o">&lt;-</span> <span class="k">return</span> <span class="n">point</span>             <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
 
 <span class="o">+------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Forked</span> <span class="n">Activeflow</span> <span class="p">(</span><span class="n">Wait</span> <span class="n">Flow</span><span class="p">)</span>                                    <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
-<span class="o">|</span> <span class="nb">id</span><span class="p">:</span> <span class="s2">&quot;forked-af-456&quot;</span>                                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">parent_activeflow_id</span><span class="p">:</span> <span class="s2">&quot;main-af-123&quot;</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">current_action_id</span><span class="p">:</span> <span class="s2">&quot;play-music-action&quot;</span>                           <span class="o">|</span>
-<span class="o">|</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;executing&quot;</span>                                              <span class="o">|</span>
+<span class="o">|</span> <span class="nb">id</span><span class="p">:</span> <span class="s2">"forked-af-456"</span>                                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">parent_activeflow_id</span><span class="p">:</span> <span class="s2">"main-af-123"</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">current_action_id</span><span class="p">:</span> <span class="s2">"play-music-action"</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="n">status</span><span class="p">:</span> <span class="s2">"executing"</span>                                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">stack_depth</span><span class="p">:</span> <span class="mi">1</span>                                                   <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
 </pre></div>
@@ -1102,9 +1102,9 @@ Variable Set Timing:
 <span class="o">+------------------+</span>
 <span class="o">|</span> <span class="n">RabbitMQ</span> <span class="n">Event</span>   <span class="o">|</span>
 <span class="o">|</span> <span class="p">{</span>                <span class="o">|</span>
-<span class="o">|</span>   <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;media&quot;</span>  <span class="o">|</span>
-<span class="o">|</span>   <span class="n">call_id</span><span class="p">:</span> <span class="s2">&quot;xyz&quot;</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="n">event</span><span class="p">:</span> <span class="s2">&quot;done&quot;</span>  <span class="o">|</span>
+<span class="o">|</span>   <span class="nb">type</span><span class="p">:</span> <span class="s2">"media"</span>  <span class="o">|</span>
+<span class="o">|</span>   <span class="n">call_id</span><span class="p">:</span> <span class="s2">"xyz"</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="n">event</span><span class="p">:</span> <span class="s2">"done"</span>  <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                <span class="o">|</span>
 <span class="o">+--------+---------+</span>
          <span class="o">|</span>
@@ -1114,7 +1114,7 @@ Variable Set Timing:
 <span class="o">|</span> <span class="n">SELECT</span> <span class="o">*</span> <span class="n">FROM</span>    <span class="o">|</span>
 <span class="o">|</span> <span class="n">activeflows</span>      <span class="o">|</span>
 <span class="o">|</span> <span class="n">WHERE</span> <span class="n">ref_id</span> <span class="o">=</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="s2">&quot;xyz&quot;</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="s2">"xyz"</span>            <span class="o">|</span>
 <span class="o">+--------+---------+</span>
          <span class="o">|</span>
          <span class="n">v</span>
@@ -1176,10 +1176,10 @@ Variable Set Timing:
 <span class="o">|</span> <span class="n">The</span> <span class="n">goto</span> <span class="n">action</span> <span class="n">has</span> <span class="n">a</span> <span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">loop_count</span> <span class="n">parameter</span>              <span class="o">|</span>
 <span class="o">|</span>                                                                  <span class="o">|</span>
 <span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;goto&quot;</span><span class="p">,</span>                                                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>                                                    <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">&quot;target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;action-123&quot;</span><span class="p">,</span>                                   <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">&quot;loop_count&quot;</span><span class="p">:</span> <span class="mi">3</span>   <span class="o">&lt;-</span> <span class="n">Maximum</span> <span class="n">times</span> <span class="n">to</span> <span class="n">execute</span> <span class="n">this</span> <span class="n">goto</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"goto"</span><span class="p">,</span>                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span>                                                    <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">"target_id"</span><span class="p">:</span> <span class="s2">"action-123"</span><span class="p">,</span>                                   <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">"loop_count"</span><span class="p">:</span> <span class="mi">3</span>   <span class="o">&lt;-</span> <span class="n">Maximum</span> <span class="n">times</span> <span class="n">to</span> <span class="n">execute</span> <span class="n">this</span> <span class="n">goto</span>     <span class="o">|</span>
 <span class="o">|</span>   <span class="p">}</span>                                                              <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
 <span class="o">|</span>                                                                  <span class="o">|</span>
@@ -1204,7 +1204,7 @@ Variable Set Timing:
 <span class="n">Problem</span><span class="p">:</span> <span class="n">Two</span> <span class="n">events</span> <span class="n">arrive</span> <span class="n">simultaneously</span>
 <span class="o">+-------------+</span>                    <span class="o">+-------------+</span>
 <span class="o">|</span> <span class="n">Event</span> <span class="n">A</span><span class="p">:</span>    <span class="o">|</span>                    <span class="o">|</span> <span class="n">Event</span> <span class="n">B</span><span class="p">:</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">DTMF</span> <span class="s2">&quot;1&quot;</span>    <span class="o">|</span>                    <span class="o">|</span> <span class="n">Timeout</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">DTMF</span> <span class="s2">"1"</span>    <span class="o">|</span>                    <span class="o">|</span> <span class="n">Timeout</span>     <span class="o">|</span>
 <span class="o">+------+------+</span>                    <span class="o">+------+------+</span>
        <span class="o">|</span>                                  <span class="o">|</span>
        <span class="n">v</span>                                  <span class="n">v</span>
@@ -1246,12 +1246,12 @@ Variable Set Timing:
 <span class="n">Request</span> <span class="n">Message</span> <span class="n">Format</span><span class="p">:</span>
 <span class="o">+------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;/v1/activeflows&quot;</span><span class="p">,</span>                                      <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>                                              <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>                                                      <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;flow-123&quot;</span><span class="p">,</span>                                       <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>                                    <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-456&quot;</span>                                   <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"uri"</span><span class="p">:</span> <span class="s2">"/v1/activeflows"</span><span class="p">,</span>                                      <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"POST"</span><span class="p">,</span>                                              <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>                                                      <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">"flow_id"</span><span class="p">:</span> <span class="s2">"flow-123"</span><span class="p">,</span>                                       <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">"reference_type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>                                    <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"call-456"</span>                                   <span class="o">|</span>
 <span class="o">|</span>   <span class="p">}</span>                                                              <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
@@ -1260,11 +1260,11 @@ Variable Set Timing:
 <span class="n">Event</span> <span class="n">Message</span> <span class="n">Format</span><span class="p">:</span>
 <span class="o">+------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="p">{</span>                                                                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>                                                <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;event&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>                                             <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-456&quot;</span><span class="p">,</span>                                    <span class="o">|</span>
-<span class="o">|</span>   <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>                                                      <span class="o">|</span>
-<span class="o">|</span>     <span class="s2">&quot;hangup_cause&quot;</span><span class="p">:</span> <span class="s2">&quot;normal_clearing&quot;</span>                            <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"call"</span><span class="p">,</span>                                                <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"event"</span><span class="p">:</span> <span class="s2">"hangup"</span><span class="p">,</span>                                             <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"reference_id"</span><span class="p">:</span> <span class="s2">"call-456"</span><span class="p">,</span>                                    <span class="o">|</span>
+<span class="o">|</span>   <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>                                                      <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">"hangup_cause"</span><span class="p">:</span> <span class="s2">"normal_clearing"</span>                            <span class="o">|</span>
 <span class="o">|</span>   <span class="p">}</span>                                                              <span class="o">|</span>
 <span class="o">|</span> <span class="p">}</span>                                                                <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
@@ -1296,7 +1296,7 @@ Variable Set Timing:
 <span class="o">|</span> <span class="nb">id</span>                   <span class="o">|</span> <span class="n">uuid</span>          <span class="o">|</span> <span class="n">Activeflow</span> <span class="n">instance</span> <span class="n">ID</span>    <span class="o">|</span>
 <span class="o">|</span> <span class="n">customer_id</span>          <span class="o">|</span> <span class="n">uuid</span>          <span class="o">|</span> <span class="n">Owner</span>                     <span class="o">|</span>
 <span class="o">|</span> <span class="n">flow_id</span>              <span class="o">|</span> <span class="n">uuid</span>          <span class="o">|</span> <span class="n">Flow</span> <span class="n">definition</span> <span class="n">reference</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">reference_type</span>       <span class="o">|</span> <span class="n">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>   <span class="o">|</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;api&quot;</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">reference_type</span>       <span class="o">|</span> <span class="n">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>   <span class="o">|</span> <span class="s2">"call"</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">,</span> <span class="s2">"api"</span>  <span class="o">|</span>
 <span class="o">|</span> <span class="n">reference_id</span>         <span class="o">|</span> <span class="n">uuid</span>          <span class="o">|</span> <span class="n">Associated</span> <span class="n">resource</span> <span class="n">ID</span>    <span class="o">|</span>
 <span class="o">|</span> <span class="n">current_action_id</span>    <span class="o">|</span> <span class="n">uuid</span>          <span class="o">|</span> <span class="n">Cursor</span> <span class="n">position</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">status</span>               <span class="o">|</span> <span class="n">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>   <span class="o">|</span> <span class="n">Execution</span> <span class="n">state</span>           <span class="o">|</span>
@@ -1398,8 +1398,8 @@ Variable Set Timing:
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -552,3 +552,83 @@ func (h *listenHandler) processV1AgentsIDPermissionPut(ctx context.Context, m *s
 
 	return res, nil
 }
+
+// processV1AgentsIDReservePost handles POST /v1/agents/<agent_id>/reserve request.
+// It attempts the method B reservation CAS and returns {"reserved": <bool>}:
+// true when this caller won the reservation, false when the agent was not
+// eligible (not available, or already reserved by another reference).
+func (h *listenHandler) processV1AgentsIDReservePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDReservePost",
+		"agent_id": id,
+	})
+	log.Debug("Executing processV1AgentsIDReservePost.")
+
+	var reqData request.V1DataAgentsIDReservePost
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	reserved, err := h.agentHandler.Reserve(ctx, id, reqData.ReferenceType, reqData.ReferenceID)
+	if err != nil {
+		log.Errorf("Could not reserve the agent. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	data, err := json.Marshal(struct {
+		Reserved bool `json:"reserved"`
+	}{Reserved: reserved})
+	if err != nil {
+		log.Debugf("Could not marshal the response message. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AgentsIDReserveReleasePost handles POST /v1/agents/<agent_id>/reserve_release request.
+// It clears the agent's reservation, restricted to the owning reference token.
+func (h *listenHandler) processV1AgentsIDReserveReleasePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "processV1AgentsIDReserveReleasePost",
+		"agent_id": id,
+	})
+	log.Debug("Executing processV1AgentsIDReserveReleasePost.")
+
+	var reqData request.V1DataAgentsIDReserveReleasePost
+	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	if err := h.agentHandler.ReserveRelease(ctx, id, reqData.ReferenceID); err != nil {
+		log.Errorf("Could not release the agent reservation. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+	}
+
+	return res, nil
+}

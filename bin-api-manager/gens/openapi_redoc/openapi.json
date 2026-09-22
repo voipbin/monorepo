@@ -24993,16 +24993,14 @@
           "available",
           "away",
           "busy",
-          "offline",
-          "ringing"
+          "offline"
         ],
         "x-enum-varnames": [
           "AgentManagerAgentStatusNone",
           "AgentManagerAgentStatusAvailable",
           "AgentManagerAgentStatusAway",
           "AgentManagerAgentStatusBusy",
-          "AgentManagerAgentStatusOffline",
-          "AgentManagerAgentStatusRinging"
+          "AgentManagerAgentStatusOffline"
         ]
       },
       "AgentManagerAgent": {

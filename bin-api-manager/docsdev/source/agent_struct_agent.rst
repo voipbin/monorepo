@@ -80,7 +80,6 @@ available  Agent is logged in and ready to receive queue calls.
 away       Agent is temporarily unavailable (e.g., break, meeting). Cannot receive queue calls.
 busy       Agent is currently handling a call. Set automatically by the system. Cannot receive additional queue calls.
 offline    Agent is logged out of the system. Cannot receive queue calls.
-ringing    A call is being delivered to the agent. Set automatically by the system. Cannot receive additional queue calls.
 ========== ============
 
 .. _agent-struct-agent-permission:

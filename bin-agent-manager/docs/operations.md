@@ -4,7 +4,8 @@
 
 | Symptom | Likely Cause | Resolution |
 |---------|--------------|------------|
-| Agent status stuck in `ringing` after call ends | call-manager event was not received (RabbitMQ delivery failure or subscribehandler crash) | Check subscribehandler logs; verify RabbitMQ queue `bin-manager.call-manager.event` has no backlog; manually update agent status via PUT `/v1/agents/{id}/status` |
+| Agent status stuck in `busy` after call ends | call-manager event was not received (RabbitMQ delivery failure or subscribehandler crash) | Check subscribehandler logs; verify RabbitMQ queue `bin-manager.call-manager.event` has no backlog; manually update agent status via PUT `/v1/agents/{id}/status` |
+| Agent stuck reserved (never re-selected for routing) | reserve fields not released after a losing/failed match | The reserve zombie sweep reclaims reservations older than the reserve timeout; verify the sweep is running; a reservation can also be cleared via the reserve_release RPC |
 | Login returns 401 despite correct credentials | Password hash mismatch after migration; agent account disabled | Verify agent exists and is active; check for bcrypt version compatibility; reset password via admin flow |
 | Password reset email not sent | `password_reset_base_url` config not set, or email service (bin-email-manager) unavailable | Verify `RESET_BASE_URL` is configured; check email-manager health; inspect logs for RPC errors to email-manager |
 | Queue not routing to agent | Agent tags do not match queue tag filter; agent status not `available` | Verify agent `tag_ids` match the queue's required tags; check agent status is `available`; check `rpc_call_total` for queue-manager → agent-manager calls |
@@ -20,7 +21,7 @@
 kubectl logs -n voipbin deploy/bin-agent-manager | grep <agent-uuid>
 
 # Find status update events from call-manager
-kubectl logs -n voipbin deploy/bin-agent-manager | grep "subscribehandler" | grep -E "status|call|ringing"
+kubectl logs -n voipbin deploy/bin-agent-manager | grep "subscribehandler" | grep -E "status|call"
 
 # Find login failures
 kubectl logs -n voipbin deploy/bin-agent-manager | grep "login" | grep -i "error\|fail\|unauthorized"
@@ -36,7 +37,7 @@ kubectl logs -n voipbin deploy/bin-agent-manager | grep "password" | grep -i "re
    curl -H "Authorization: Bearer <token>" https://api.voipbin.net/v1/agents/<uuid>
    ```
 
-2. **Check the agent's current status** — if stuck in `ringing` or `busy`, check call-manager for any active calls referencing this agent.
+2. **Check the agent's current status** — if stuck in `busy`, check call-manager for any active calls referencing this agent.
 
 3. **Check RabbitMQ event delivery** — if call-manager events are not arriving, the subscribehandler will not update agent status. Check `receive_subscribe_event_process_time` metric.
 

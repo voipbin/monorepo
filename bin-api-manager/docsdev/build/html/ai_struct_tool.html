@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="AIcall" href="aicall_struct_aicall.html"><link rel="prev" title="AIPromptHistory" href="ai_struct_aiprompthistory.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tool Functions - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -650,7 +650,7 @@
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>                      <span class="n">AI</span> <span class="n">Engine</span>                    <span class="n">VoIPBin</span> <span class="n">Platform</span>
   <span class="o">|</span>                            <span class="o">|</span>                              <span class="o">|</span>
-  <span class="o">|</span>  <span class="s2">&quot;Transfer me to sales&quot;</span>    <span class="o">|</span>                              <span class="o">|</span>
+  <span class="o">|</span>  <span class="s2">"Transfer me to sales"</span>    <span class="o">|</span>                              <span class="o">|</span>
   <span class="o">+---------------------------&gt;|</span>                              <span class="o">|</span>
   <span class="o">|</span>                            <span class="o">|</span>                              <span class="o">|</span>
   <span class="o">|</span>                            <span class="o">|</span>  <span class="n">Detects</span> <span class="n">intent</span>              <span class="o">|</span>
@@ -660,7 +660,7 @@
   <span class="o">|</span>                            <span class="o">|</span>                   <span class="n">Tool</span> <span class="n">result</span><span class="o">|</span>
   <span class="o">|</span>                            <span class="o">|&lt;-----------------------------+</span>
   <span class="o">|</span>                            <span class="o">|</span>                              <span class="o">|</span>
-  <span class="o">|</span>   <span class="s2">&quot;Connecting you now...&quot;</span>  <span class="o">|</span>                              <span class="o">|</span>
+  <span class="o">|</span>   <span class="s2">"Connecting you now..."</span>  <span class="o">|</span>                              <span class="o">|</span>
   <span class="o">|&lt;---------------------------+</span>                              <span class="o">|</span>
   <span class="o">|</span>                            <span class="o">|</span>                              <span class="o">|</span>
   <span class="o">+--------------</span> <span class="n">Call</span> <span class="n">transferred</span> <span class="n">to</span> <span class="n">sales</span> <span class="o">-----------------&gt;|</span>
@@ -770,43 +770,43 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to speak after connecting. Set false for silent transfer.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to speak after connecting. Set false for silent transfer."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">false</span>
         <span class="p">},</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;agent, conference, extension, sip, or tel&quot;</span> <span class="p">},</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Source address/identifier&quot;</span> <span class="p">},</span>
-                <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Display name (optional)&quot;</span> <span class="p">}</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+            <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"agent, conference, extension, sip, or tel"</span> <span class="p">},</span>
+                <span class="s2">"target"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Source address/identifier"</span> <span class="p">},</span>
+                <span class="s2">"target_name"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Display name (optional)"</span> <span class="p">}</span>
             <span class="p">},</span>
-            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
+            <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">]</span>
         <span class="p">},</span>
-        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;agent, conference, extension, line, sip, tel&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Destination address&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Display name (optional)&quot;</span> <span class="p">}</span>
+        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+            <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"agent, conference, extension, line, sip, tel"</span> <span class="p">},</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Destination address"</span> <span class="p">},</span>
+                    <span class="s2">"target_name"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Display name (optional)"</span> <span class="p">}</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">]</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;destinations&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"destinations"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Examples:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;Transfer me to sales&quot;</span>      <span class="o">-&gt;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;extension&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;sales&quot;</span>
-<span class="s2">&quot;Call my wife at 555-1234&quot;</span>  <span class="o">-&gt;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;+15551234&quot;</span>
-<span class="s2">&quot;I need a human agent&quot;</span>      <span class="o">-&gt;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">appropriate</span> <span class="n">agent</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"Transfer me to sales"</span>      <span class="o">-&gt;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"extension"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"sales"</span>
+<span class="s2">"Call my wife at 555-1234"</span>  <span class="o">-&gt;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"tel"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"+15551234"</span>
+<span class="s2">"I need a human agent"</span>      <span class="o">-&gt;</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"agent"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">appropriate</span> <span class="n">agent</span>
 </pre></div>
 </div>
 </section>
@@ -821,39 +821,39 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to confirm verbally after sending.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to confirm verbally after sending."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">false</span>
         <span class="p">},</span>
-        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">]</span> <span class="p">},</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Email address&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Recipient name (optional)&quot;</span> <span class="p">}</span>
+        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+            <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"email"</span><span class="p">]</span> <span class="p">},</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Email address"</span> <span class="p">},</span>
+                    <span class="s2">"target_name"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Recipient name (optional)"</span> <span class="p">}</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">]</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Email subject line&quot;</span> <span class="p">},</span>
-        <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Email body content&quot;</span> <span class="p">},</span>
-        <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;recording&quot;</span><span class="p">]</span> <span class="p">},</span>
-                    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;UUID of the attachment&quot;</span> <span class="p">}</span>
+        <span class="s2">"subject"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Email subject line"</span> <span class="p">},</span>
+        <span class="s2">"content"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Email body content"</span> <span class="p">},</span>
+        <span class="s2">"attachments"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+            <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"reference_type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"recording"</span><span class="p">]</span> <span class="p">},</span>
+                    <span class="s2">"reference_id"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"UUID of the attachment"</span> <span class="p">}</span>
                 <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;destinations&quot;</span><span class="p">,</span> <span class="s2">&quot;subject&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"destinations"</span><span class="p">,</span> <span class="s2">"subject"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -874,37 +874,37 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to confirm verbally after sending.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to confirm verbally after sending."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">false</span>
         <span class="p">},</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;tel&quot;</span><span class="p">]</span> <span class="p">},</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Source phone number (+E.164)&quot;</span> <span class="p">},</span>
-                <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Display name (optional)&quot;</span> <span class="p">}</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+            <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"tel"</span><span class="p">]</span> <span class="p">},</span>
+                <span class="s2">"target"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Source phone number (+E.164)"</span> <span class="p">},</span>
+                <span class="s2">"target_name"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Display name (optional)"</span> <span class="p">}</span>
             <span class="p">},</span>
-            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
+            <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">]</span>
         <span class="p">},</span>
-        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;tel&quot;</span><span class="p">]</span> <span class="p">},</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Destination phone number (+E.164)&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Recipient name (optional)&quot;</span> <span class="p">}</span>
+        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+            <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"tel"</span><span class="p">]</span> <span class="p">},</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Destination phone number (+E.164)"</span> <span class="p">},</span>
+                    <span class="s2">"target_name"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Recipient name (optional)"</span> <span class="p">}</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">]</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;SMS message content&quot;</span> <span class="p">}</span>
+        <span class="s2">"text"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"SMS message content"</span> <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;destinations&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"destinations"</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -920,12 +920,12 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to speak after stopping media.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to speak after stopping media."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">false</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -935,7 +935,7 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Tool</span>        <span class="o">|</span> <span class="n">Effect</span>                                   <span class="o">|</span>
 <span class="o">+=============+==========================================+</span>
-<span class="o">|</span> <span class="n">stop_media</span>  <span class="o">|</span> <span class="n">Stop</span> <span class="n">previous</span> <span class="n">action</span><span class="s1">&#39;s media playback    |</span>
+<span class="o">|</span> <span class="n">stop_media</span>  <span class="o">|</span> <span class="n">Stop</span> <span class="n">previous</span> <span class="n">action</span><span class="s1">'s media playback    |</span>
 <span class="o">|</span>             <span class="o">|</span> <span class="n">AI</span> <span class="n">conversation</span> <span class="n">continues</span>                <span class="o">|</span>
 <span class="o">+-------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">stop_service</span><span class="o">|</span> <span class="n">End</span> <span class="n">AI</span> <span class="n">conversation</span>                      <span class="o">|</span>
@@ -965,16 +965,16 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{}</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Examples:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;Thanks, bye!&quot;</span>                 <span class="o">-&gt;</span> <span class="n">stop_service</span> <span class="p">(</span><span class="n">natural</span> <span class="n">end</span><span class="p">)</span>
-<span class="s2">&quot;I&#39;m done here&quot;</span>                <span class="o">-&gt;</span> <span class="n">stop_service</span> <span class="p">(</span><span class="n">completion</span> <span class="n">signal</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"Thanks, bye!"</span>                 <span class="o">-&gt;</span> <span class="n">stop_service</span> <span class="p">(</span><span class="n">natural</span> <span class="n">end</span><span class="p">)</span>
+<span class="s2">"I'm done here"</span>                <span class="o">-&gt;</span> <span class="n">stop_service</span> <span class="p">(</span><span class="n">completion</span> <span class="n">signal</span><span class="p">)</span>
 <span class="n">After</span> <span class="n">booking</span> <span class="n">appointment</span>      <span class="o">-&gt;</span> <span class="n">stop_service</span> <span class="p">(</span><span class="n">task</span> <span class="n">complete</span><span class="p">)</span>
-<span class="s2">&quot;Great, that&#39;s all I needed&quot;</span>   <span class="o">-&gt;</span> <span class="n">stop_service</span>
+<span class="s2">"Great, that's all I needed"</span>   <span class="o">-&gt;</span> <span class="n">stop_service</span>
 </pre></div>
 </div>
 </section>
@@ -995,15 +995,15 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{}</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Examples:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;Hang up now&quot;</span>                  <span class="o">-&gt;</span> <span class="n">stop_flow</span>
-<span class="s2">&quot;End this call immediately&quot;</span>    <span class="o">-&gt;</span> <span class="n">stop_flow</span>
-<span class="s2">&quot;Terminate the call&quot;</span>           <span class="o">-&gt;</span> <span class="n">stop_flow</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"Hang up now"</span>                  <span class="o">-&gt;</span> <span class="n">stop_flow</span>
+<span class="s2">"End this call immediately"</span>    <span class="o">-&gt;</span> <span class="n">stop_flow</span>
+<span class="s2">"Terminate the call"</span>           <span class="o">-&gt;</span> <span class="n">stop_flow</span>
 </pre></div>
 </div>
 </section>
@@ -1023,28 +1023,28 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to continue conversation after saving.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to continue conversation after saving."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">false</span>
         <span class="p">},</span>
-        <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Key-value pairs to save&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="p">}</span>
+        <span class="s2">"variables"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Key-value pairs to save"</span><span class="p">,</span>
+            <span class="s2">"additionalProperties"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span> <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"variables"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Examples:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;My name is John Smith&quot;</span>        <span class="o">-&gt;</span> <span class="n">set_variables</span><span class="p">({</span><span class="s2">&quot;customer_name&quot;</span><span class="p">:</span> <span class="s2">&quot;John Smith&quot;</span><span class="p">})</span>
-<span class="s2">&quot;3pm works for me&quot;</span>             <span class="o">-&gt;</span> <span class="n">set_variables</span><span class="p">({</span><span class="s2">&quot;appointment_time&quot;</span><span class="p">:</span> <span class="s2">&quot;15:00&quot;</span><span class="p">})</span>
-<span class="n">Issue</span> <span class="n">categorized</span> <span class="k">as</span> <span class="n">billing</span>   <span class="o">-&gt;</span> <span class="n">set_variables</span><span class="p">({</span><span class="s2">&quot;issue_category&quot;</span><span class="p">:</span> <span class="s2">&quot;billing&quot;</span><span class="p">})</span>
-<span class="n">Account</span> <span class="n">number</span> <span class="n">provided</span>        <span class="o">-&gt;</span> <span class="n">set_variables</span><span class="p">({</span><span class="s2">&quot;account_number&quot;</span><span class="p">:</span> <span class="s2">&quot;12345&quot;</span><span class="p">})</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"My name is John Smith"</span>        <span class="o">-&gt;</span> <span class="n">set_variables</span><span class="p">({</span><span class="s2">"customer_name"</span><span class="p">:</span> <span class="s2">"John Smith"</span><span class="p">})</span>
+<span class="s2">"3pm works for me"</span>             <span class="o">-&gt;</span> <span class="n">set_variables</span><span class="p">({</span><span class="s2">"appointment_time"</span><span class="p">:</span> <span class="s2">"15:00"</span><span class="p">})</span>
+<span class="n">Issue</span> <span class="n">categorized</span> <span class="k">as</span> <span class="n">billing</span>   <span class="o">-&gt;</span> <span class="n">set_variables</span><span class="p">({</span><span class="s2">"issue_category"</span><span class="p">:</span> <span class="s2">"billing"</span><span class="p">})</span>
+<span class="n">Account</span> <span class="n">number</span> <span class="n">provided</span>        <span class="o">-&gt;</span> <span class="n">set_variables</span><span class="p">({</span><span class="s2">"account_number"</span><span class="p">:</span> <span class="s2">"12345"</span><span class="p">})</span>
 </pre></div>
 </div>
 </section>
@@ -1060,12 +1060,12 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to respond using retrieved data.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to respond using retrieved data."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">false</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1073,7 +1073,7 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </div>
 <p><strong>Examples:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Need</span> <span class="n">customer</span> <span class="n">name</span> <span class="kn">from</span><span class="w"> </span><span class="nn">earlier</span> <span class="o">-&gt;</span> <span class="n">get_variables</span>
-<span class="s2">&quot;What was my confirmation?&quot;</span>     <span class="o">-&gt;</span> <span class="n">get_variables</span>
+<span class="s2">"What was my confirmation?"</span>     <span class="o">-&gt;</span> <span class="n">get_variables</span>
 <span class="n">Before</span> <span class="n">sending</span> <span class="n">SMS</span>              <span class="o">-&gt;</span> <span class="n">get_variables</span> <span class="p">(</span><span class="n">to</span> <span class="n">get</span> <span class="n">phone</span> <span class="n">number</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1101,19 +1101,19 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to respond based on retrieved messages.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to respond based on retrieved messages."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">false</span>
         <span class="p">},</span>
-        <span class="s2">&quot;aicall_id&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;UUID of the AI call to retrieve messages from&quot;</span>
+        <span class="s2">"aicall_id"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"UUID of the AI call to retrieve messages from"</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;aicall_id&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"aicall_id"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1141,35 +1141,35 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The search query to find relevant information in the knowledge base&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"query"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"The search query to find relevant information in the knowledge base"</span>
         <span class="p">},</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to respond using retrieved knowledge.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to respond using retrieved knowledge."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"query"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Response format:</strong></p>
 <p>The tool returns matching document sections with metadata:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Source</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;Product Guide&quot;</span> <span class="o">&gt;</span> <span class="s2">&quot;Return Policy&quot;</span> <span class="p">(</span><span class="n">relevance</span><span class="p">:</span> <span class="mf">0.92</span><span class="p">)]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Source</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">"Product Guide"</span> <span class="o">&gt;</span> <span class="s2">"Return Policy"</span> <span class="p">(</span><span class="n">relevance</span><span class="p">:</span> <span class="mf">0.92</span><span class="p">)]</span>
 <span class="n">Items</span> <span class="n">may</span> <span class="n">be</span> <span class="n">returned</span> <span class="n">within</span> <span class="mi">30</span> <span class="n">days</span> <span class="n">of</span> <span class="n">purchase</span><span class="o">...</span>
 
-<span class="p">[</span><span class="n">Source</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;FAQ&quot;</span> <span class="o">&gt;</span> <span class="s2">&quot;Refunds&quot;</span> <span class="p">(</span><span class="n">relevance</span><span class="p">:</span> <span class="mf">0.85</span><span class="p">)]</span>
+<span class="p">[</span><span class="n">Source</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"FAQ"</span> <span class="o">&gt;</span> <span class="s2">"Refunds"</span> <span class="p">(</span><span class="n">relevance</span><span class="p">:</span> <span class="mf">0.85</span><span class="p">)]</span>
 <span class="n">Refunds</span> <span class="n">are</span> <span class="n">processed</span> <span class="n">within</span> <span class="mi">5</span><span class="o">-</span><span class="mi">7</span> <span class="n">business</span> <span class="n">days</span><span class="o">...</span>
 </pre></div>
 </div>
 <p><strong>Examples:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;What&#39;s your return policy?&quot;</span>        <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;return policy&quot;</span><span class="p">)</span>
-<span class="s2">&quot;How do I set up the widget?&quot;</span>       <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;widget setup instructions&quot;</span><span class="p">)</span>
-<span class="s2">&quot;What are the pricing tiers?&quot;</span>       <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;pricing tiers plans&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"What's your return policy?"</span>        <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">"return policy"</span><span class="p">)</span>
+<span class="s2">"How do I set up the widget?"</span>       <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">"widget setup instructions"</span><span class="p">)</span>
+<span class="s2">"What are the pricing tiers?"</span>       <span class="o">-&gt;</span> <span class="n">search_knowledge</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">"pricing tiers plans"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1204,69 +1204,69 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true (default) to confirm verbally after placing the call.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true (default) to confirm verbally after placing the call."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;UUID of a pre-existing flow the new call will execute. Provide EITHER flow_id OR actions, not both. Must belong to the account.&quot;</span>
+        <span class="s2">"flow_id"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"UUID of a pre-existing flow the new call will execute. Provide EITHER flow_id OR actions, not both. Must belong to the account."</span>
         <span class="p">},</span>
-        <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Ordered list of inline flow actions, assembled INSTEAD OF flow_id. Each item has a &#39;type&#39;, optional &#39;id&#39;/&#39;next_id&#39; for branching, and a type-specific &#39;option&#39; object.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional UUID assigned to this action so other actions can target it via target_id/false_target_id/default_target_id/target_ids.&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional UUID of the action to run next instead of the following array item.&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Flow action type (e.g. talk, play, hangup, connect, variable_set, branch, goto, sleep, digits_receive). Use describe_action to look up option fields first.&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Action-type-specific options; shape depends on type.&quot;</span> <span class="p">}</span>
+        <span class="s2">"actions"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Ordered list of inline flow actions, assembled INSTEAD OF flow_id. Each item has a 'type', optional 'id'/'next_id' for branching, and a type-specific 'option' object."</span><span class="p">,</span>
+            <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"id"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Optional UUID assigned to this action so other actions can target it via target_id/false_target_id/default_target_id/target_ids."</span> <span class="p">},</span>
+                    <span class="s2">"next_id"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Optional UUID of the action to run next instead of the following array item."</span> <span class="p">},</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Flow action type (e.g. talk, play, hangup, connect, variable_set, branch, goto, sleep, digits_receive). Use describe_action to look up option fields first."</span> <span class="p">},</span>
+                    <span class="s2">"option"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Action-type-specific options; shape depends on type."</span> <span class="p">}</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"type"</span><span class="p">]</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional source endpoint. If omitted, a default account number is used.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Source endpoint type: tel or sip&quot;</span> <span class="p">},</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Source address (e.g., +E.164 phone number)&quot;</span> <span class="p">},</span>
-                <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Display name (optional)&quot;</span> <span class="p">}</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Optional source endpoint. If omitted, a default account number is used."</span><span class="p">,</span>
+            <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Source endpoint type: tel or sip"</span> <span class="p">},</span>
+                <span class="s2">"target"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Source address (e.g., +E.164 phone number)"</span> <span class="p">},</span>
+                <span class="s2">"target_name"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Display name (optional)"</span> <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Destination type: tel, sip, extension, agent&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Destination address&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Display name (optional)&quot;</span> <span class="p">}</span>
+        <span class="s2">"destinations"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+            <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Destination type: tel, sip, extension, agent"</span> <span class="p">},</span>
+                    <span class="s2">"target"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Destination address"</span> <span class="p">},</span>
+                    <span class="s2">"target_name"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Display name (optional)"</span> <span class="p">}</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"type"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">]</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional caller-ID privacy: yes | no | auto (default auto).&quot;</span>
+        <span class="s2">"anonymous"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Optional caller-ID privacy: yes | no | auto (default auto)."</span>
         <span class="p">},</span>
-        <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional flat key-value context seeded into the new call&#39;s flow as runtime variables (readable via $</span><span class="si">{key}</span><span class="s2">). String values only. Keys starting with &#39;voipbin.&#39; are reserved and ignored. Max 100 keys, 64KB total.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span> <span class="p">}</span>
+        <span class="s2">"variables"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Optional flat key-value context seeded into the new call's flow as runtime variables (readable via $</span><span class="si">{key}</span><span class="s2">). String values only. Keys starting with 'voipbin.' are reserved and ignored. Max 100 keys, 64KB total."</span><span class="p">,</span>
+            <span class="s2">"additionalProperties"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span> <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;destinations&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"destinations"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Examples:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;Call John and tell him the meeting moved to 3pm&quot;</span> <span class="o">-&gt;</span> <span class="n">actions</span><span class="o">=</span><span class="p">[</span><span class="n">talk</span><span class="p">,</span> <span class="n">hangup</span><span class="p">]</span>
-<span class="s2">&quot;Run the appointment-reminder flow on +15551234567&quot;</span> <span class="o">-&gt;</span> <span class="n">flow_id</span><span class="o">=&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">destinations</span><span class="o">=</span><span class="p">[{</span><span class="nb">type</span><span class="p">:</span> <span class="n">tel</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">}]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"Call John and tell him the meeting moved to 3pm"</span> <span class="o">-&gt;</span> <span class="n">actions</span><span class="o">=</span><span class="p">[</span><span class="n">talk</span><span class="p">,</span> <span class="n">hangup</span><span class="p">]</span>
+<span class="s2">"Run the appointment-reminder flow on +15551234567"</span> <span class="o">-&gt;</span> <span class="n">flow_id</span><span class="o">=&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">destinations</span><span class="o">=</span><span class="p">[{</span><span class="nb">type</span><span class="p">:</span> <span class="n">tel</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="s2">"+15551234567"</span><span class="p">}]</span>
 </pre></div>
 </div>
 </section>
@@ -1291,16 +1291,16 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to reason about the correlation results.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to reason about the correlation results."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;resource_id&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional resource id (UUID) to inspect. If omitted, the current session&#39;s activeflow is used. Only resources owned by the caller&#39;s own account can be inspected; others return </span><span class="se">\&quot;</span><span class="s2">No events found for this resource.</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+        <span class="s2">"resource_id"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Optional resource id (UUID) to inspect. If omitted, the current session's activeflow is used. Only resources owned by the caller's own account can be inspected; others return </span><span class="se">\"</span><span class="s2">No events found for this resource.</span><span class="se">\"</span><span class="s2">"</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1329,28 +1329,28 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to reason about the resource content.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to reason about the resource content."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;aicall&quot;</span><span class="p">,</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span> <span class="s2">&quot;conferencecall&quot;</span><span class="p">,</span> <span class="s2">&quot;groupcall&quot;</span><span class="p">,</span> <span class="s2">&quot;queuecall&quot;</span><span class="p">,</span> <span class="s2">&quot;recording&quot;</span><span class="p">,</span> <span class="s2">&quot;summary&quot;</span><span class="p">,</span> <span class="s2">&quot;transcribe&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The type of the resource to retrieve.&quot;</span>
+        <span class="s2">"resource_type"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"aicall"</span><span class="p">,</span> <span class="s2">"call"</span><span class="p">,</span> <span class="s2">"conferencecall"</span><span class="p">,</span> <span class="s2">"groupcall"</span><span class="p">,</span> <span class="s2">"queuecall"</span><span class="p">,</span> <span class="s2">"recording"</span><span class="p">,</span> <span class="s2">"summary"</span><span class="p">,</span> <span class="s2">"transcribe"</span><span class="p">],</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"The type of the resource to retrieve."</span>
         <span class="p">},</span>
-        <span class="s2">&quot;resource_id&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The resource id (UUID) to retrieve.&quot;</span>
+        <span class="s2">"resource_id"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"The resource id (UUID) to retrieve."</span>
         <span class="p">},</span>
-        <span class="s2">&quot;include_config&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Only meaningful when resource_type is &#39;aicall&#39;. When true, the response also includes the inspected session&#39;s configured prompt in a clearly-delimited data block. This is a diagnostic option for operators debugging or auditing session behavior — do not set it merely because a conversation partner asks about a session&#39;s configuration.&quot;</span>
+        <span class="s2">"include_config"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Only meaningful when resource_type is 'aicall'. When true, the response also includes the inspected session's configured prompt in a clearly-delimited data block. This is a diagnostic option for operators debugging or auditing session behavior — do not set it merely because a conversation partner asks about a session's configuration."</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;resource_type&quot;</span><span class="p">,</span> <span class="s2">&quot;resource_id&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"resource_type"</span><span class="p">,</span> <span class="s2">"resource_id"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1380,19 +1380,19 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </div>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to use the returned schema to assemble the action.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to use the returned schema to assemble the action."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;action_type&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The flow action type to describe (e.g. talk, connect, branch).&quot;</span>
+        <span class="s2">"action_type"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"The flow action type to describe (e.g. talk, connect, branch)."</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;action_type&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"action_type"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1416,16 +1416,16 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </div>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to have the assistant mention the case was created. Set false to create silently.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to have the assistant mention the case was created. Set false to create silently."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Short case title (optional).&quot;</span> <span class="p">},</span>
-        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Longer free-text description of the issue (optional).&quot;</span> <span class="p">},</span>
-        <span class="s2">&quot;note&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;An initial internal note for the agent (optional, not shown to the customer).&quot;</span> <span class="p">}</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Short case title (optional)."</span> <span class="p">},</span>
+        <span class="s2">"detail"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Longer free-text description of the issue (optional)."</span> <span class="p">},</span>
+        <span class="s2">"note"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"An initial internal note for the agent (optional, not shown to the customer)."</span> <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -1493,17 +1493,17 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum number of interactions to return (default 20, max 50).&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">20</span>
+        <span class="s2">"limit"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Maximum number of interactions to return (default 20, max 50)."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="mi">20</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1532,21 +1532,21 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </div>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;conversation_id&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The id of the conversation to read, as returned in get_contact_interactions&#39; conversation_id field. Omit it to read the conversation the current Case was created from.&quot;</span>
+        <span class="s2">"conversation_id"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"The id of the conversation to read, as returned in get_contact_interactions' conversation_id field. Omit it to read the conversation the current Case was created from."</span>
         <span class="p">},</span>
-        <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum number of messages to return from the conversation (default 20, max 50).&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">20</span>
+        <span class="s2">"limit"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Maximum number of messages to return from the conversation (default 20, max 50)."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="mi">20</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1566,12 +1566,12 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1591,17 +1591,17 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum number of most-recent notes to return (default 20, max 50).&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">20</span>
+        <span class="s2">"limit"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Maximum number of most-recent notes to return (default 20, max 50)."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="mi">20</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1624,12 +1624,12 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1655,19 +1655,19 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"When answering the agent, keep it true (the default) to continue after the result, answering or calling another tool. False ends the turn with no further tool call and no answer."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The id of a call, as returned by get_contact_interactions.&quot;</span>
+        <span class="s2">"call_id"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"The id of a call, as returned by get_contact_interactions."</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_id&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"call_id"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1691,35 +1691,35 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to add a brief follow-up after the card renders. Do not restate the card&#39;s field values in the follow-up text.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"run_llm"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Set true to add a brief follow-up after the card renders. Do not restate the card's field values in the follow-up text."</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="n">true</span>
         <span class="p">},</span>
-        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Card title (required, &lt;=200 chars).&quot;</span>
+        <span class="s2">"title"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Card title (required, &lt;=200 chars)."</span>
         <span class="p">},</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional supporting text shown under the title (&lt;=1000 chars).&quot;</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Optional supporting text shown under the title (&lt;=1000 chars)."</span>
         <span class="p">},</span>
-        <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Key/value rows rendered in the card (at most 20 entries).&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Field label (&lt;=50 chars).&quot;</span> <span class="p">},</span>
-                    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Field value (&lt;=500 chars).&quot;</span> <span class="p">}</span>
+        <span class="s2">"fields"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Key/value rows rendered in the card (at most 20 entries)."</span><span class="p">,</span>
+            <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"label"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Field label (&lt;=50 chars)."</span> <span class="p">},</span>
+                    <span class="s2">"value"</span><span class="p">:</span> <span class="p">{</span> <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Field value (&lt;=500 chars)."</span> <span class="p">}</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"label"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">]</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"title"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1745,14 +1745,14 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </ul>
 <p><strong>Parameters:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The note to show the agent. One or two sentences.&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"The note to show the agent. One or two sentences."</span>
         <span class="p">}</span>
     <span class="p">},</span>
-    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"message"</span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1769,7 +1769,7 @@ individual tool call by passing <code class="docutils literal notranslate"><span
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+--------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">run_llm</span> <span class="o">=</span> <span class="n">true</span>    <span class="o">|</span> <span class="n">Tool</span> <span class="n">result</span> <span class="ow">is</span> <span class="n">fed</span> <span class="n">back</span> <span class="n">to</span> <span class="n">the</span> <span class="n">LLM</span><span class="o">.</span>              <span class="o">|</span>
 <span class="o">|</span>                   <span class="o">|</span> <span class="n">LLM</span> <span class="n">generates</span> <span class="n">a</span> <span class="n">response</span> <span class="n">based</span> <span class="n">on</span> <span class="n">the</span> <span class="n">result</span><span class="o">.</span>    <span class="o">|</span>
-<span class="o">|</span>                   <span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="s2">&quot;Based on our policy, returns are...&quot;</span>   <span class="o">|</span>
+<span class="o">|</span>                   <span class="o">|</span> <span class="n">Example</span><span class="p">:</span> <span class="s2">"Based on our policy, returns are..."</span>   <span class="o">|</span>
 <span class="o">+-------------------+--------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">run_llm</span> <span class="o">=</span> <span class="n">false</span>   <span class="o">|</span> <span class="n">Tool</span> <span class="n">executes</span> <span class="n">silently</span><span class="o">.</span>                          <span class="o">|</span>
 <span class="o">|</span>                   <span class="o">|</span> <span class="n">LLM</span> <span class="n">does</span> <span class="n">NOT</span> <span class="n">generate</span> <span class="n">a</span> <span class="n">response</span> <span class="n">after</span> <span class="n">execution</span><span class="o">.|</span>
@@ -1901,8 +1901,8 @@ retrieved results are silently discarded and the caller or agent never hears an 
 
 <span class="n">Caller</span> <span class="n">speaks</span>          <span class="n">Python</span> <span class="n">Pipecat</span>              <span class="n">Go</span> <span class="n">AIcallHandler</span>
      <span class="o">|</span>                      <span class="o">|</span>                            <span class="o">|</span>
-     <span class="o">|</span>  <span class="s2">&quot;Transfer me to     |                            |</span>
-     <span class="o">|</span>   <span class="n">sales</span> <span class="n">please</span><span class="s2">&quot;      |                            |</span>
+     <span class="o">|</span>  <span class="s2">"Transfer me to     |                            |</span>
+     <span class="o">|</span>   <span class="n">sales</span> <span class="n">please</span><span class="s2">"      |                            |</span>
      <span class="o">+---------------------&gt;|</span>                            <span class="o">|</span>
      <span class="o">|</span>                      <span class="o">|</span>                            <span class="o">|</span>
      <span class="o">|</span>               <span class="n">STT</span> <span class="n">converts</span>                        <span class="o">|</span>
@@ -1924,8 +1924,8 @@ retrieved results are silently discarded and the caller or agent never hears an 
      <span class="o">|</span>               <span class="n">LLM</span> <span class="n">generates</span>                       <span class="o">|</span>
      <span class="o">|</span>               <span class="n">response</span>                            <span class="o">|</span>
      <span class="o">|</span>                      <span class="o">|</span>                            <span class="o">|</span>
-     <span class="o">|</span>  <span class="n">TTS</span><span class="p">:</span> <span class="s2">&quot;Connecting    |                            |</span>
-     <span class="o">|</span>   <span class="n">you</span> <span class="n">to</span> <span class="n">sales</span> <span class="n">now</span><span class="s2">&quot;  |                            |</span>
+     <span class="o">|</span>  <span class="n">TTS</span><span class="p">:</span> <span class="s2">"Connecting    |                            |</span>
+     <span class="o">|</span>   <span class="n">you</span> <span class="n">to</span> <span class="n">sales</span> <span class="n">now</span><span class="s2">"  |                            |</span>
      <span class="o">|&lt;---------------------+</span>                            <span class="o">|</span>
      <span class="o">|</span>                      <span class="o">|</span>                            <span class="o">|</span>
 </pre></div>
@@ -1935,25 +1935,25 @@ retrieved results are silently discarded and the caller or agent never hears an 
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
 <p><strong>1. Enable only needed tools</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Good</span><span class="p">:</span> <span class="n">Only</span> <span class="n">enable</span> <span class="n">tools</span> <span class="n">the</span> <span class="n">AI</span> <span class="n">actually</span> <span class="n">needs</span>
-<span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;connect_call&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_service&quot;</span><span class="p">]</span>
+<span class="s2">"tool_names"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"connect_call"</span><span class="p">,</span> <span class="s2">"stop_service"</span><span class="p">]</span>
 
 <span class="o">//</span> <span class="n">Avoid</span><span class="p">:</span> <span class="n">Enabling</span> <span class="nb">all</span> <span class="n">tools</span> <span class="n">when</span> <span class="n">only</span> <span class="n">some</span> <span class="n">are</span> <span class="n">needed</span>
-<span class="s2">&quot;tool_names&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]</span>
+<span class="s2">"tool_names"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"all"</span><span class="p">]</span>
 </pre></div>
 </div>
 <p><strong>2. Use stop_service vs stop_flow correctly</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">stop_service</span> <span class="o">=</span> <span class="n">Soft</span> <span class="n">stop</span> <span class="p">(</span><span class="n">AI</span> <span class="n">ends</span><span class="p">,</span> <span class="n">flow</span> <span class="n">continues</span><span class="p">)</span>
-    <span class="o">-</span> <span class="n">User</span> <span class="n">says</span> <span class="s2">&quot;goodbye&quot;</span>
+    <span class="o">-</span> <span class="n">User</span> <span class="n">says</span> <span class="s2">"goodbye"</span>
     <span class="o">-</span> <span class="n">Task</span> <span class="n">completed</span> <span class="n">successfully</span>
 
 <span class="n">stop_flow</span> <span class="o">=</span> <span class="n">Hard</span> <span class="n">stop</span> <span class="p">(</span><span class="n">everything</span> <span class="n">ends</span><span class="p">)</span>
-    <span class="o">-</span> <span class="n">User</span> <span class="n">says</span> <span class="s2">&quot;hang up&quot;</span>
+    <span class="o">-</span> <span class="n">User</span> <span class="n">says</span> <span class="s2">"hang up"</span>
     <span class="o">-</span> <span class="n">Critical</span> <span class="n">error</span>
 </pre></div>
 </div>
 <p><strong>3. Clarify ambiguous requests</strong></p>
 <p>When a user says “send me that information,” the AI should ask:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;Would you like that by email or text message?&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"Would you like that by email or text message?"</span>
 </pre></div>
 </div>
 <p>This ensures the correct tool (send_email vs send_message) is used.</p>
@@ -2069,8 +2069,8 @@ may override it on an individual tool call. It determines whether the LLM contin
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

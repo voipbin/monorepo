@@ -1127,6 +1127,35 @@ func (mr *MockRequestHandlerMockRecorder) AgentV1AgentList(ctx, pageToken, pageS
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentList", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentList), ctx, pageToken, pageSize, filters)
 }
 
+// AgentV1AgentReserve mocks base method.
+func (m *MockRequestHandler) AgentV1AgentReserve(ctx context.Context, id uuid.UUID, referenceType string, referenceID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1AgentReserve", ctx, id, referenceType, referenceID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentV1AgentReserve indicates an expected call of AgentV1AgentReserve.
+func (mr *MockRequestHandlerMockRecorder) AgentV1AgentReserve(ctx, id, referenceType, referenceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentReserve", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentReserve), ctx, id, referenceType, referenceID)
+}
+
+// AgentV1AgentReserveRelease mocks base method.
+func (m *MockRequestHandler) AgentV1AgentReserveRelease(ctx context.Context, id, referenceID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentV1AgentReserveRelease", ctx, id, referenceID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AgentV1AgentReserveRelease indicates an expected call of AgentV1AgentReserveRelease.
+func (mr *MockRequestHandlerMockRecorder) AgentV1AgentReserveRelease(ctx, id, referenceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentV1AgentReserveRelease", reflect.TypeOf((*MockRequestHandler)(nil).AgentV1AgentReserveRelease), ctx, id, referenceID)
+}
+
 // AgentV1AgentUpdate mocks base method.
 func (m *MockRequestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name, detail *string, ringMethod *agent.RingMethod) (*agent.Agent, error) {
 	m.ctrl.T.Helper()

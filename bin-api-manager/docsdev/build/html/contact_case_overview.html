@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Structures" href="contact_case_struct.html"><link rel="prev" title="Structures" href="contact_address_struct.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Case Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -692,11 +692,11 @@
 <section id="assigning-a-case">
 <h2>Assigning a Case<a class="headerlink" href="#assigning-a-case" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/assign</span></code> lets an admin or manager reassign a case’s owner agent directly, without needing to sign in as the target agent. <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is always fixed to <code class="docutils literal notranslate"><span class="pre">&quot;agent&quot;</span></code> server-side (the request body only accepts <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>, matching the <code class="docutils literal notranslate"><span class="pre">/service_agents/contact_cases/{id}/assign</span></code> behavior below).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/assign?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;owner_id&quot;: &quot;2a2ec0ba-8004-11ec-aea5-439829c92a7c&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/assign?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "owner_id": "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+    }'
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> must reference an existing agent of the <strong>same customer</strong> as the case. A cross-tenant or nonexistent agent ID and a nonexistent case ID both return the same <code class="docutils literal notranslate"><span class="pre">404</span></code> – the API deliberately does not reveal which one failed. Assigning a <code class="docutils literal notranslate"><span class="pre">closed</span></code> case returns <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code>; reopen it first via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/continue</span></code>.</p>
@@ -705,7 +705,7 @@
 <section id="unassigning-a-case">
 <h2>Unassigning a Case<a class="headerlink" href="#unassigning-a-case" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/unassign</span></code> clears a case’s owner. Admin and manager callers may unassign any case; the owning agent may unassign themselves. There is no request body.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/unassign?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/unassign?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 <p>A caller who is neither an admin/manager nor the current owner gets <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>. Unassigning a <code class="docutils literal notranslate"><span class="pre">closed</span></code> case returns <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code>, matching <code class="docutils literal notranslate"><span class="pre">assign</span></code>’s behavior – a case’s owner is never cleared by closing it, since <code class="docutils literal notranslate"><span class="pre">/continue</span></code>’s authorization for re-opening a closed case depends on knowing who owned it.</p>
@@ -744,8 +744,8 @@
 <section id="attaching-a-contact">
 <h2>Attaching a Contact<a class="headerlink" href="#attaching-a-contact" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">contact_cases</span><span class="o">/&lt;</span><span class="n">case</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span>
-<span class="p">{</span> <span class="s2">&quot;contact_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;contact-id&gt;&quot;</span> <span class="p">}</span>   <span class="o">--</span> <span class="n">attach</span>
-<span class="p">{</span> <span class="s2">&quot;contact_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span> <span class="p">}</span>               <span class="o">--</span> <span class="n">detach</span> <span class="p">(</span><span class="n">empty</span> <span class="n">string</span><span class="p">,</span> <span class="ow">not</span> <span class="n">omitted</span><span class="p">)</span>
+<span class="p">{</span> <span class="s2">"contact_id"</span><span class="p">:</span> <span class="s2">"&lt;contact-id&gt;"</span> <span class="p">}</span>   <span class="o">--</span> <span class="n">attach</span>
+<span class="p">{</span> <span class="s2">"contact_id"</span><span class="p">:</span> <span class="s2">""</span> <span class="p">}</span>               <span class="o">--</span> <span class="n">detach</span> <span class="p">(</span><span class="n">empty</span> <span class="n">string</span><span class="p">,</span> <span class="ow">not</span> <span class="n">omitted</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The target <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> must belong to the same customer as the case; a cross-tenant <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> is rejected as not found. Every attach/detach is recorded as a <code class="docutils literal notranslate"><span class="pre">case_contact_attributed</span></code>/<code class="docutils literal notranslate"><span class="pre">case_contact_detached</span></code> audit event.</p>
@@ -753,13 +753,13 @@
 <section id="case-notes-internal-only">
 <h2>Case Notes (Internal Only)<a class="headerlink" href="#case-notes-internal-only" title="Link to this heading">¶</a></h2>
 <p>Notes (<code class="docutils literal notranslate"><span class="pre">GET</span></code>/<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contact_cases/{id}/notes</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/contact_cases/{id}/notes/{note_id}</span></code>) are agent-facing annotations on a case. They are <strong>never</strong> exposed in any customer-facing webhook or channel — they exist purely for internal agent handoff and audit (e.g. “Called the customer back, no answer.”).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/notes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;author_type&quot;: &quot;agent&quot;,
-        &quot;author_id&quot;: &quot;2a2ec0ba-8004-11ec-aea5-439829c92a7c&quot;,
-        &quot;text&quot;: &quot;Called the customer back, no answer.&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/notes?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "author_type": "agent",
+        "author_id": "2a2ec0ba-8004-11ec-aea5-439829c92a7c",
+        "text": "Called the customer back, no answer."
+    }'
 </pre></div>
 </div>
 </section>
@@ -771,13 +771,13 @@
 <li><p><strong>Destination-to-case binding</strong> — <code class="docutils literal notranslate"><span class="pre">destination</span></code> must be attributable to this specific case: either one of the resolved Contact’s addresses, or the case’s own <code class="docutils literal notranslate"><span class="pre">peer.target</span></code> if unresolved. Both failure modes return the same generic error, by design, so <code class="docutils literal notranslate"><span class="pre">case_id</span></code> cannot be used as a probe to determine which check failed.</p></li>
 <li><p><strong>Source-ownership validation</strong> — <code class="docutils literal notranslate"><span class="pre">source</span></code> must be an active, normal PSTN number owned by the case’s customer.</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;source&quot;: &quot;+15551234567&quot;,
-        &quot;destination&quot;: &quot;+15559876543&quot;,
-        &quot;text&quot;: &quot;Thanks for reaching out -- following up on your request.&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/contact_cases/&lt;case-id&gt;/messages?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "source": "+15551234567",
+        "destination": "+15559876543",
+        "text": "Thanks for reaching out -- following up on your request."
+    }'
 </pre></div>
 </div>
 <p>The response is a <a class="reference internal" href="conversation_struct_message.html#conversation-struct-message-message"><span class="std std-ref">Message</span></a> object (the same shape returned by the Conversation API), since the case is sent through the underlying conversation-message pipeline.</p>
@@ -912,8 +912,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

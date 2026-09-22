@@ -260,6 +260,28 @@ Recordings are stored securely in Google Cloud Storage and accessible via the Vo
     $ curl -X GET 'https://api.voipbin.net/v1.0/recordingfiles/<recording-id>?token=<token>' \
         --output recording.wav
 
+**Inline Playback and Waveforms**
+
+For applications that play recordings inline (in a browser or mobile client) rather than downloading a ZIP archive, use the ``playfiles`` endpoint. It returns the recording's individual audio files, each with a direct streaming download URL and precomputed waveform peaks for rendering an audio waveform without fetching the raw audio first.
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/recordings/<recording-id>/playfiles?token=<token>'
+
+Each entry in the response array contains:
+
+* ``filename`` (String): The audio file's original filename. Unique within the recording.
+* ``direction`` (String): ``in``, ``out``, or empty. Only call recordings that produce separate inbound and outbound files carry a direction; conference recordings and single-file recordings return an empty direction.
+* ``uri_download`` (String): A signed URL for streaming or downloading the individual audio file.
+* ``tm_download_expire`` (String): Timestamp when ``uri_download`` expires.
+* ``filesize`` (Integer): File size in bytes.
+* ``peaks`` (Array of numbers): Normalized waveform amplitude samples (0.0 to 1.0) for rendering the audio waveform. Empty when peak computation is unavailable; playback still works.
+* ``duration`` (Number): Audio duration in seconds, derived from the file header.
+
+.. note:: **AI Implementation Hint**
+
+   Issuing ``GET /recordings/{id}/playfiles`` may proactively re-issue a signed ``uri_download`` when the existing URL is close to expiry, so the URLs returned are always valid for immediate playback. This read has an idempotent write side effect (URL refresh only); it does not modify the recording. Waveform peaks are computed on demand from the stored WAV and cached, so the first request for a long recording may take slightly longer than subsequent ones.
+
 **Storage Details**
 
 .. list-table::

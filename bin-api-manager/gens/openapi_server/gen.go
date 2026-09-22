@@ -641,7 +641,6 @@ const (
 	AgentManagerAgentStatusBusy      AgentManagerAgentStatus = "busy"
 	AgentManagerAgentStatusNone      AgentManagerAgentStatus = ""
 	AgentManagerAgentStatusOffline   AgentManagerAgentStatus = "offline"
-	AgentManagerAgentStatusRinging   AgentManagerAgentStatus = "ringing"
 )
 
 // Valid indicates whether the value is a known member of the AgentManagerAgentStatus enum.
@@ -656,8 +655,6 @@ func (e AgentManagerAgentStatus) Valid() bool {
 	case AgentManagerAgentStatusNone:
 		return true
 	case AgentManagerAgentStatusOffline:
-		return true
-	case AgentManagerAgentStatusRinging:
 		return true
 	default:
 		return false

@@ -15,6 +15,7 @@ import (
 	agent "monorepo/bin-agent-manager/models/agent"
 	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -145,6 +146,50 @@ func (m *MockDBHandler) AgentList(ctx context.Context, size uint64, token string
 func (mr *MockDBHandlerMockRecorder) AgentList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentList", reflect.TypeOf((*MockDBHandler)(nil).AgentList), ctx, size, token, filters)
+}
+
+// AgentReserve mocks base method.
+func (m *MockDBHandler) AgentReserve(ctx context.Context, agentID uuid.UUID, refType string, refID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentReserve", ctx, agentID, refType, refID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentReserve indicates an expected call of AgentReserve.
+func (mr *MockDBHandlerMockRecorder) AgentReserve(ctx, agentID, refType, refID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentReserve", reflect.TypeOf((*MockDBHandler)(nil).AgentReserve), ctx, agentID, refType, refID)
+}
+
+// AgentReserveRelease mocks base method.
+func (m *MockDBHandler) AgentReserveRelease(ctx context.Context, agentID, refID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentReserveRelease", ctx, agentID, refID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AgentReserveRelease indicates an expected call of AgentReserveRelease.
+func (mr *MockDBHandlerMockRecorder) AgentReserveRelease(ctx, agentID, refID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentReserveRelease", reflect.TypeOf((*MockDBHandler)(nil).AgentReserveRelease), ctx, agentID, refID)
+}
+
+// AgentReserveSweep mocks base method.
+func (m *MockDBHandler) AgentReserveSweep(ctx context.Context, before time.Time) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AgentReserveSweep", ctx, before)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AgentReserveSweep indicates an expected call of AgentReserveSweep.
+func (mr *MockDBHandlerMockRecorder) AgentReserveSweep(ctx, before any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentReserveSweep", reflect.TypeOf((*MockDBHandler)(nil).AgentReserveSweep), ctx, before)
 }
 
 // AgentSetAddresses mocks base method.

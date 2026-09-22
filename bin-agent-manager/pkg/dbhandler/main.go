@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -32,6 +33,10 @@ type DBHandler interface {
 	AgentSetStatus(ctx context.Context, id uuid.UUID, status agent.Status) error
 	AgentSetTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) error
 	AgentUpdate(ctx context.Context, id uuid.UUID, fields map[agent.Field]any) error
+
+	AgentReserve(ctx context.Context, agentID uuid.UUID, refType string, refID uuid.UUID) (bool, error)
+	AgentReserveRelease(ctx context.Context, agentID uuid.UUID, refID uuid.UUID) error
+	AgentReserveSweep(ctx context.Context, before time.Time) (int, error)
 }
 
 // handler database handler
