@@ -196,7 +196,6 @@ The agent's status must be "available" to receive queue calls:
     Agent Statuses and Queue Eligibility:
 
     available  [x] Yes - Agent is ready to take calls
-    ringing    [ ] No  - A call is currently being delivered to the agent
     busy       [ ] No  - Agent is already handling another call
     away       [ ] No  - Agent is temporarily away
     offline    [ ] No  - Agent is not logged in
@@ -235,14 +234,9 @@ Agents move through a lifecycle as they handle queue calls.
     |  offline |-------- login -------->| available|
     +----------+                        +-----+----+
          ^                                    |
-         |                              call routed (automatic)
-         |                                    |
-         |                                    v
-         |                              +----------+
-         |                              | ringing  |
-         |                              +-----+----+
-         |                                    |
-         |                              agent answers (automatic)
+         |                       routed call answered (automatic)
+         |                       (agent reserved during dial, status
+         |                        stays available until answered)
          |                                    |
          |                                    v
          |                              +----------+
@@ -269,7 +263,7 @@ Agents move through a lifecycle as they handle queue calls.
    * - login
      - Agent becomes available to receive queue calls
    * - call routed
-     - Queue connects an available agent to a caller; status becomes ringing (automatic)
+     - Queue connects an available agent to a caller; the agent is reserved during dial and its status stays available until the call is answered
    * - agent answers
      - Status becomes busy (automatic)
    * - call ends
