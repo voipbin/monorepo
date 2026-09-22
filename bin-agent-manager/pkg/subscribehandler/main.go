@@ -26,7 +26,6 @@ import (
 // `bin-manager.event` (VOIP-1406): one pattern per dispatch pair handled in
 // processEvent. Pinned byte-for-byte by binding_golden_test.go.
 var topicPatterns = []string{
-	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmgroupcall.EventTypeGroupcallCreated),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmgroupcall.EventTypeGroupcallProgressing),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cmcustomer.EventTypeCustomerDeleted),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cmcustomer.EventTypeCustomerCreated),
@@ -152,9 +151,6 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 		switch m.Type {
 
 		// groupcall
-		case string(cmgroupcall.EventTypeGroupcallCreated):
-			err = h.processEventCMGroupcallCreated(ctx, m)
-
 		case string(cmgroupcall.EventTypeGroupcallProgressing):
 			err = h.processEventCMGroupcallProgressing(ctx, m)
 		}

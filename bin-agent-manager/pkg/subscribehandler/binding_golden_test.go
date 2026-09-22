@@ -15,14 +15,13 @@ import (
 // list, the dispatch switch in processEvent, and docs/architecture.md in sync.
 func Test_topicPatterns_Golden(t *testing.T) {
 	expectedPatterns := []string{
-		"call-manager.groupcall.*.created",
 		"call-manager.groupcall.*.progressing",
 		"customer-manager.customer.*.deleted",
 		"customer-manager.customer.*.created",
 	}
 
-	if len(topicPatterns) != 4 {
-		t.Fatalf("topicPatterns count mismatch. expected: 4, got: %d (%v)", len(topicPatterns), topicPatterns)
+	if len(topicPatterns) != 3 {
+		t.Fatalf("topicPatterns count mismatch. expected: 3, got: %d (%v)", len(topicPatterns), topicPatterns)
 	}
 
 	for i, expected := range expectedPatterns {

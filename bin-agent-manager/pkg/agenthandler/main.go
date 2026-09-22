@@ -4,6 +4,7 @@ package agenthandler
 
 import (
 	"context"
+	"time"
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
@@ -51,10 +52,13 @@ type AgentHandler interface {
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (*agent.Agent, error)
 	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 
+	Reserve(ctx context.Context, agentID uuid.UUID, refType string, refID uuid.UUID) (bool, error)
+	ReserveRelease(ctx context.Context, agentID uuid.UUID, refID uuid.UUID) error
+	ReserveSweep(ctx context.Context, before time.Time) (int, error)
+
 	PasswordForgot(ctx context.Context, username string, emailType PasswordResetEmailType) error
 	PasswordReset(ctx context.Context, token string, password string) error
 
-	EventGroupcallCreated(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventGroupcallProgressing(ctx context.Context, groupcall *cmgroupcall.Groupcall) error
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
 	EventCustomerCreated(ctx context.Context, cu *cmcustomer.Customer, headless bool) error

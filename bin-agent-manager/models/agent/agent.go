@@ -13,21 +13,28 @@ import (
 type Agent struct {
 	commonidentity.Identity
 
-	Username     string `json:"username" db:"username"`           // agent's username
-	PasswordHash string `json:"-" db:"password_hash"` // hashed Password - excluded from JSON/JWT
+	Username     string `json:"username" db:"username"` // agent's username
+	PasswordHash string `json:"-" db:"password_hash"`   // hashed Password - excluded from JSON/JWT
 
 	Name   string `json:"name" db:"name"`     // agent's name
 	Detail string `json:"detail" db:"detail"` // agent's detail
 
 	RingMethod RingMethod `json:"ring_method" db:"ring_method"` // agent's ring method
 
-	Status     Status                  `json:"status" db:"status"`           // agent's status
-	Permission Permission              `json:"permission" db:"permission"`   // agent's permission.
-	TagIDs     []uuid.UUID             `json:"tag_ids" db:"tag_ids,json"`    // agent's tag ids
-	Addresses  []commonaddress.Address `json:"addresses" db:"-"` // agent's endpoint addresses (stored in agent_addresses child table)
+	Status     Status                  `json:"status" db:"status"`         // agent's status
+	Permission Permission              `json:"permission" db:"permission"` // agent's permission.
+	TagIDs     []uuid.UUID             `json:"tag_ids" db:"tag_ids,json"`  // agent's tag ids
+	Addresses  []commonaddress.Address `json:"addresses" db:"-"`           // agent's endpoint addresses (stored in agent_addresses child table)
 
-	DirectID   uuid.UUID `json:"direct_id" db:"direct_id,uuid"`  // direct id for direct hash
-	DirectHash string    `json:"direct_hash" db:"direct_hash"`    // direct hash
+	DirectID   uuid.UUID `json:"direct_id" db:"direct_id,uuid"` // direct id for direct hash
+	DirectHash string    `json:"direct_hash" db:"direct_hash"`  // direct hash
+
+	// reservation correlation tokens (method B). Internal matching mechanism
+	// (see VOIP-1539 §3): persisted to DB but NOT exposed in API/webhook JSON
+	// (json:"-"), same as password_hash — an internal token, not customer-facing state.
+	ReserveReferenceType string     `json:"-" db:"reserve_reference_type"`    // reservation reference type. "" = not reserved
+	ReserveReferenceID   uuid.UUID  `json:"-" db:"reserve_reference_id,uuid"` // reservation correlation token. zero = not reserved
+	TMReserve            *time.Time `json:"-" db:"tm_reserve"`                // reservation time (zombie sweep basis)
 
 	TMCreate *time.Time `json:"tm_create,omitempty" db:"tm_create"` // Created timestamp.
 	TMUpdate *time.Time `json:"tm_update,omitempty" db:"tm_update"` // Updated timestamp.
@@ -92,7 +99,6 @@ const (
 	StatusAway      Status = "away"      // away
 	StatusBusy      Status = "busy"      // busy
 	StatusOffline   Status = "offline"   // offline
-	StatusRinging   Status = "ringing"   // voipbin is making a call to the agent
 )
 
 // List of guest account
