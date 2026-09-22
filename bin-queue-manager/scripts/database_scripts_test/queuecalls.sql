@@ -10,6 +10,7 @@ create table queue_queuecalls(
 
   forward_action_id binary(16),   -- action id for forward.
   confbridge_id     binary(16),
+  groupcall_id      binary(16),   -- agent-leg groupcall id (dial-then-CAS). zero = none
 
   source            json,
   routing_method    varchar(255),
@@ -38,3 +39,4 @@ create index idx_queue_queuecalls_queue_id on queue_queuecalls(queue_id);
 create index idx_queue_queuecalls_reference_id on queue_queuecalls(reference_id);
 create index idx_queue_queuecalls_reference_activeflow_id on queue_queuecalls(reference_activeflow_id);
 create index idx_queue_queuecalls_service_agent_id on queue_queuecalls(service_agent_id);
+create index idx_queue_queuecalls_queue_id_status on queue_queuecalls(queue_id, status);
