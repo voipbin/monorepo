@@ -479,6 +479,7 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
 				},
+				Status: queuecall.StatusWaiting,
 			},
 
 			uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
@@ -524,9 +525,12 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			err := h.QueuecallSetStatusConnecting(ctx, tt.id, tt.serviceAgentID)
+			affected, err := h.QueuecallSetStatusConnecting(ctx, tt.id, tt.serviceAgentID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if affected != 1 {
+				t.Errorf("Wrong match. expect: 1, got: %d", affected)
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)
@@ -562,6 +566,7 @@ func Test_QueuecallSetStatusService(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
 				},
+				Status: queuecall.StatusConnecting,
 			},
 
 			uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
@@ -607,9 +612,12 @@ func Test_QueuecallSetStatusService(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallSetStatusService(ctx, tt.id, tt.durationWaiting, tt.timestamp)
+			affected, err := h.QueuecallSetStatusService(ctx, tt.id, tt.durationWaiting, tt.timestamp)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if affected != 1 {
+				t.Errorf("Wrong match. expect: 1, got: %d", affected)
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)
@@ -721,6 +729,7 @@ func Test_QueuecallSetStatusAbandoned(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f3fce82c-518f-4fe9-ac78-d7b89c57c433"),
 				},
+				Status: queuecall.StatusWaiting,
 			},
 
 			uuid.FromStringOrNil("f3fce82c-518f-4fe9-ac78-d7b89c57c433"),
@@ -766,9 +775,12 @@ func Test_QueuecallSetStatusAbandoned(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallSetStatusAbandoned(ctx, tt.id, tt.durationWaiting, tt.timestamp)
+			affected, err := h.QueuecallSetStatusAbandoned(ctx, tt.id, tt.durationWaiting, tt.timestamp)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if affected != 1 {
+				t.Errorf("Wrong match. expect: 1, got: %d", affected)
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)
@@ -802,6 +814,7 @@ func Test_QueuecallSetStatusDone(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("aae34fc9-e298-401d-bfd4-d99eff5d5a43"),
 				},
+				Status: queuecall.StatusService,
 			},
 
 			uuid.FromStringOrNil("aae34fc9-e298-401d-bfd4-d99eff5d5a43"),
@@ -847,9 +860,12 @@ func Test_QueuecallSetStatusDone(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallSetStatusDone(ctx, tt.id, tt.durationWaiting, tt.timestamp)
+			affected, err := h.QueuecallSetStatusDone(ctx, tt.id, tt.durationWaiting, tt.timestamp)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if affected != 1 {
+				t.Errorf("Wrong match. expect: 1, got: %d", affected)
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)

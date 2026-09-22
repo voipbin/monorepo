@@ -92,6 +92,7 @@ type QueuecallHandler interface {
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	List(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error)
 	UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
+	UpdateStatusWaitingRollback(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 
 	Execute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error)

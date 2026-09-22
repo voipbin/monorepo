@@ -128,7 +128,7 @@ func Test_Kick(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.queuecallID, 0).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, tt.expectDurationWaiting, tt.responseCurTime)
+				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, tt.expectDurationWaiting, tt.responseCurTime).Return(int64(1), nil)
 
 				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
@@ -222,7 +222,7 @@ func Test_KickByReferenceID(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ID, 0).Return(nil)
 			if tt.responseQueuecall.Status != queuecall.StatusService {
 				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime)
+				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(int64(1), nil)
 
 				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
@@ -345,7 +345,7 @@ func Test_kickForce(t *testing.T) {
 			if tt.responseQueuecall.Status == queuecall.StatusService {
 				// update status done
 				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-				mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(nil)
+				mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(int64(1), nil)
 
 				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)
@@ -357,7 +357,7 @@ func Test_kickForce(t *testing.T) {
 			} else {
 				// update status abandoned
 				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(nil)
+				mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), tt.responseCurTime).Return(int64(1), nil)
 
 				mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)

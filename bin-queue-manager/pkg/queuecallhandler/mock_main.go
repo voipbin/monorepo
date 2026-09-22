@@ -281,3 +281,18 @@ func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusWaiting(ctx, id any) *go
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusWaiting", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusWaiting), ctx, id)
 }
+
+// UpdateStatusWaitingRollback mocks base method.
+func (m *MockQueuecallHandler) UpdateStatusWaitingRollback(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatusWaitingRollback", ctx, qc)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatusWaitingRollback indicates an expected call of UpdateStatusWaitingRollback.
+func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusWaitingRollback(ctx, qc any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusWaitingRollback", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusWaitingRollback), ctx, qc)
+}

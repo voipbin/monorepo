@@ -110,7 +110,7 @@ func Test_Execute(t *testing.T) {
 			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, tt.expectDestinations, false, false, "", nil, nil).Return([]*cmcall.Call{}, []*cmgroupcall.Groupcall{}, nil)
 
 			//UpdateStatusConnecting
-			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID).Return(nil)
+			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID).Return(int64(1), nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.responseQueuecall)
 			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ForwardActionID, true).Return(nil)
