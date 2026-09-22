@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial" href="billing_account_tutorial.html"><link rel="prev" title="Billing Account" href="billing_account.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -973,26 +973,26 @@ v                   v     v                   v
 <h2>Managing Balance<a class="headerlink" href="#managing-balance" title="Link to this heading">¶</a></h2>
 <p>Check and manage your account balance.</p>
 <p><strong>Check Balance</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billing_account?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/billing_account?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Response:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;billing-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My Account&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;plan_status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;balance_credit&quot;</span><span class="p">:</span> <span class="mi">150500000</span><span class="p">,</span>
-    <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">70</span><span class="p">,</span>
-    <span class="s2">&quot;payment_type&quot;</span><span class="p">:</span> <span class="s2">&quot;prepaid&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;payment_method&quot;</span><span class="p">:</span> <span class="s2">&quot;credit card&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_last_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_next_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"billing-uuid-123"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"customer-uuid-456"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"My Account"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="s2">"plan_type"</span><span class="p">:</span> <span class="s2">"free"</span><span class="p">,</span>
+    <span class="s2">"plan_status"</span><span class="p">:</span> <span class="s2">"active"</span><span class="p">,</span>
+    <span class="s2">"balance_credit"</span><span class="p">:</span> <span class="mi">150500000</span><span class="p">,</span>
+    <span class="s2">"balance_token"</span><span class="p">:</span> <span class="mi">70</span><span class="p">,</span>
+    <span class="s2">"payment_type"</span><span class="p">:</span> <span class="s2">"prepaid"</span><span class="p">,</span>
+    <span class="s2">"payment_method"</span><span class="p">:</span> <span class="s2">"credit card"</span><span class="p">,</span>
+    <span class="s2">"tm_last_topup"</span><span class="p">:</span> <span class="s2">"2024-01-01T00:00:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_next_topup"</span><span class="p">:</span> <span class="s2">"2024-02-01T00:00:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2024-01-01T00:00:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2024-01-15T10:30:00Z"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1016,7 +1016,7 @@ v                   v     v                   v
 <li><p><code class="docutils literal notranslate"><span class="pre">canceling</span></code>: Plan cancellation has been requested but is not yet effective.</p></li>
 </ul>
 <p><strong>View Billing Ledger</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billings?token=&lt;token&gt;&amp;page_size=10&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/billings?token=&lt;token&gt;&amp;page_size=10'
 </pre></div>
 </div>
 <p>Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).</p>
@@ -1339,8 +1339,8 @@ v                   v     v                   v
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

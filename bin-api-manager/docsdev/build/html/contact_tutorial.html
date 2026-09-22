@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Contact Addresses Overview" href="contact_address_overview.html"><link rel="prev" title="Structures" href="contact_struct_contact.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -656,98 +656,98 @@
 <section id="create-a-contact">
 <h3>Create a contact<a class="headerlink" href="#create-a-contact" title="Link to this heading">¶</a></h3>
 <p>Create a new contact with addresses (phone numbers and/or emails) and tags.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contacts?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;first_name&quot;: &quot;John&quot;,
-        &quot;last_name&quot;: &quot;Smith&quot;,
-        &quot;display_name&quot;: &quot;John Smith&quot;,
-        &quot;company&quot;: &quot;Acme Corp&quot;,
-        &quot;job_title&quot;: &quot;Account Manager&quot;,
-        &quot;source&quot;: &quot;manual&quot;,
-        &quot;notes&quot;: &quot;Key enterprise customer contact&quot;,
-        &quot;addresses&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/contacts?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "first_name": "John",
+        "last_name": "Smith",
+        "display_name": "John Smith",
+        "company": "Acme Corp",
+        "job_title": "Account Manager",
+        "source": "manual",
+        "notes": "Key enterprise customer contact",
+        "addresses": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15551234567&quot;,
-                &quot;name&quot;: &quot;Mobile&quot;,
-                &quot;is_primary&quot;: true
+                "type": "tel",
+                "target": "+15551234567",
+                "name": "Mobile",
+                "is_primary": true
             },
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15559876543&quot;,
-                &quot;name&quot;: &quot;Work&quot;,
-                &quot;is_primary&quot;: false
+                "type": "tel",
+                "target": "+15559876543",
+                "name": "Work",
+                "is_primary": false
             },
             {
-                &quot;type&quot;: &quot;email&quot;,
-                &quot;target&quot;: &quot;john@acme.com&quot;,
-                &quot;name&quot;: &quot;Work&quot;,
-                &quot;is_primary&quot;: true
+                "type": "email",
+                "target": "john@acme.com",
+                "name": "Work",
+                "is_primary": true
             }
         ],
-        &quot;tag_ids&quot;: [
-            &quot;uuid-for-enterprise-tag&quot;,
-            &quot;uuid-for-vip-tag&quot;
+        "tag_ids": [
+            "uuid-for-enterprise-tag",
+            "uuid-for-vip-tag"
         ]
-    }&#39;
+    }'
 
 {
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;first_name&quot;: &quot;John&quot;,
-    &quot;last_name&quot;: &quot;Smith&quot;,
-    &quot;display_name&quot;: &quot;John Smith&quot;,
-    &quot;company&quot;: &quot;Acme Corp&quot;,
-    &quot;job_title&quot;: &quot;Account Manager&quot;,
-    &quot;source&quot;: &quot;manual&quot;,
-    &quot;external_id&quot;: &quot;&quot;,
-    &quot;notes&quot;: &quot;Key enterprise customer contact&quot;,
-    &quot;addresses&quot;: [
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "first_name": "John",
+    "last_name": "Smith",
+    "display_name": "John Smith",
+    "company": "Acme Corp",
+    "job_title": "Account Manager",
+    "source": "manual",
+    "external_id": "",
+    "notes": "Key enterprise customer contact",
+    "addresses": [
         {
-            &quot;id&quot;: &quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;contact_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15551234567&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;Mobile&quot;,
-            &quot;detail&quot;: &quot;&quot;,
-            &quot;is_primary&quot;: true,
-            &quot;tm_create&quot;: &quot;2026-02-07T14:45:59.038962Z&quot;
+            "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "type": "tel",
+            "target": "+15551234567",
+            "target_name": "",
+            "name": "Mobile",
+            "detail": "",
+            "is_primary": true,
+            "tm_create": "2026-02-07T14:45:59.038962Z"
         },
         {
-            &quot;id&quot;: &quot;c3d4e5f6-a7b8-9012-cdef-123456789012&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;contact_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-            &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;Work&quot;,
-            &quot;detail&quot;: &quot;&quot;,
-            &quot;is_primary&quot;: false,
-            &quot;tm_create&quot;: &quot;2026-02-07T14:45:59.038962Z&quot;
+            "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "Work",
+            "detail": "",
+            "is_primary": false,
+            "tm_create": "2026-02-07T14:45:59.038962Z"
         },
         {
-            &quot;id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-234567890123&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;contact_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-            &quot;type&quot;: &quot;email&quot;,
-            &quot;target&quot;: &quot;john@acme.com&quot;,
-            &quot;target_name&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;Work&quot;,
-            &quot;detail&quot;: &quot;&quot;,
-            &quot;is_primary&quot;: true,
-            &quot;tm_create&quot;: &quot;2026-02-07T14:45:59.038962Z&quot;
+            "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "type": "email",
+            "target": "john@acme.com",
+            "target_name": "",
+            "name": "Work",
+            "detail": "",
+            "is_primary": true,
+            "tm_create": "2026-02-07T14:45:59.038962Z"
         }
     ],
-    &quot;tag_ids&quot;: [
-        &quot;uuid-for-enterprise-tag&quot;,
-        &quot;uuid-for-vip-tag&quot;
+    "tag_ids": [
+        "uuid-for-enterprise-tag",
+        "uuid-for-vip-tag"
     ],
-    &quot;tm_create&quot;: &quot;2026-02-07T14:45:59.038962Z&quot;,
-    &quot;tm_update&quot;: null,
-    &quot;tm_delete&quot;: null
+    "tm_create": "2026-02-07T14:45:59.038962Z",
+    "tm_update": null,
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -755,94 +755,94 @@
 <section id="get-a-list-of-contacts">
 <h3>Get a list of contacts<a class="headerlink" href="#get-a-list-of-contacts" title="Link to this heading">¶</a></h3>
 <p>Retrieve all contacts. Supports pagination with <code class="docutils literal notranslate"><span class="pre">page_size</span></code> and <code class="docutils literal notranslate"><span class="pre">page_token</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/contacts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/contacts?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;first_name&quot;: &quot;John&quot;,
-            &quot;last_name&quot;: &quot;Smith&quot;,
-            &quot;display_name&quot;: &quot;John Smith&quot;,
-            &quot;company&quot;: &quot;Acme Corp&quot;,
-            &quot;job_title&quot;: &quot;Account Manager&quot;,
-            &quot;source&quot;: &quot;manual&quot;,
-            &quot;external_id&quot;: &quot;&quot;,
-            &quot;notes&quot;: &quot;Key enterprise customer contact&quot;,
-            &quot;addresses&quot;: [
+            "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "first_name": "John",
+            "last_name": "Smith",
+            "display_name": "John Smith",
+            "company": "Acme Corp",
+            "job_title": "Account Manager",
+            "source": "manual",
+            "external_id": "",
+            "notes": "Key enterprise customer contact",
+            "addresses": [
                 {
-                    &quot;id&quot;: &quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;,
-                    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-                    &quot;contact_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-                    &quot;type&quot;: &quot;tel&quot;,
-                    &quot;target&quot;: &quot;+15551234567&quot;,
-                    &quot;target_name&quot;: &quot;&quot;,
-                    &quot;name&quot;: &quot;Mobile&quot;,
-                    &quot;detail&quot;: &quot;&quot;,
-                    &quot;is_primary&quot;: true,
-                    &quot;tm_create&quot;: &quot;2026-02-07T14:45:59.038962Z&quot;
+                    "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+                    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                    "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "type": "tel",
+                    "target": "+15551234567",
+                    "target_name": "",
+                    "name": "Mobile",
+                    "detail": "",
+                    "is_primary": true,
+                    "tm_create": "2026-02-07T14:45:59.038962Z"
                 },
                 {
-                    &quot;id&quot;: &quot;d4e5f6a7-b8c9-0123-defa-234567890123&quot;,
-                    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-                    &quot;contact_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-                    &quot;type&quot;: &quot;email&quot;,
-                    &quot;target&quot;: &quot;john@acme.com&quot;,
-                    &quot;target_name&quot;: &quot;&quot;,
-                    &quot;name&quot;: &quot;Work&quot;,
-                    &quot;detail&quot;: &quot;&quot;,
-                    &quot;is_primary&quot;: true,
-                    &quot;tm_create&quot;: &quot;2026-02-07T14:45:59.038962Z&quot;
+                    "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+                    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                    "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "type": "email",
+                    "target": "john@acme.com",
+                    "target_name": "",
+                    "name": "Work",
+                    "detail": "",
+                    "is_primary": true,
+                    "tm_create": "2026-02-07T14:45:59.038962Z"
                 }
             ],
-            &quot;tag_ids&quot;: [
-                &quot;uuid-for-enterprise-tag&quot;
+            "tag_ids": [
+                "uuid-for-enterprise-tag"
             ],
-            &quot;tm_create&quot;: &quot;2026-02-07T14:45:59.038962Z&quot;,
-            &quot;tm_update&quot;: &quot;2026-02-07T14:45:59.038962Z&quot;,
-            &quot;tm_delete&quot;: null
+            "tm_create": "2026-02-07T14:45:59.038962Z",
+            "tm_update": "2026-02-07T14:45:59.038962Z",
+            "tm_delete": null
         },
         ...
     ],
-    &quot;next_page_token&quot;: &quot;2026-02-07T14:30:00.038962Z&quot;
+    "next_page_token": "2026-02-07T14:30:00.038962Z"
 }
 </pre></div>
 </div>
 </section>
 <section id="get-a-specific-contact">
 <h3>Get a specific contact<a class="headerlink" href="#get-a-specific-contact" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="update-a-contact">
 <h3>Update a contact<a class="headerlink" href="#update-a-contact" title="Link to this heading">¶</a></h3>
 <p>Update contact fields. Only the provided fields are changed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;first_name&quot;: &quot;John&quot;,
-        &quot;last_name&quot;: &quot;Smith&quot;,
-        &quot;display_name&quot;: &quot;John Smith (VIP)&quot;,
-        &quot;company&quot;: &quot;Acme Corporation&quot;,
-        &quot;job_title&quot;: &quot;Senior Account Manager&quot;,
-        &quot;notes&quot;: &quot;Promoted to senior role in January&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "first_name": "John",
+        "last_name": "Smith",
+        "display_name": "John Smith (VIP)",
+        "company": "Acme Corporation",
+        "job_title": "Senior Account Manager",
+        "notes": "Promoted to senior role in January"
+    }'
 </pre></div>
 </div>
 </section>
 <section id="delete-a-contact">
 <h3>Delete a contact<a class="headerlink" href="#delete-a-contact" title="Link to this heading">¶</a></h3>
 <p>Soft-deletes the contact. The record is not permanently removed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE 'https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="lookup-a-contact-by-phone-number">
 <h3>Lookup a contact by phone number<a class="headerlink" href="#lookup-a-contact-by-phone-number" title="Link to this heading">¶</a></h3>
 <p>Find a contact by phone number in E.164 format.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/contacts/lookup?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;phone=%2B15551234567&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/contacts/lookup?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;phone=%2B15551234567'
 </pre></div>
 </div>
 <p>Note: The <code class="docutils literal notranslate"><span class="pre">+</span></code> in the phone number must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>.</p>
@@ -850,21 +850,21 @@
 <section id="lookup-a-contact-by-email">
 <h3>Lookup a contact by email<a class="headerlink" href="#lookup-a-contact-by-email" title="Link to this heading">¶</a></h3>
 <p>Find a contact by email address. Matching is case-insensitive.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/contacts/lookup?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;email=john@acme.com&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/contacts/lookup?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;email=john@acme.com'
 </pre></div>
 </div>
 </section>
 <section id="add-an-address-to-a-contact">
 <h3>Add an address to a contact<a class="headerlink" href="#add-an-address-to-a-contact" title="Link to this heading">¶</a></h3>
 <p>Add a new phone number or email address to an existing contact. <code class="docutils literal notranslate"><span class="pre">type</span></code> must be <code class="docutils literal notranslate"><span class="pre">tel</span></code> or <code class="docutils literal notranslate"><span class="pre">email</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/addresses?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15553334444&quot;,
-        &quot;name&quot;: &quot;Home&quot;,
-        &quot;is_primary&quot;: false
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/addresses?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "type": "tel",
+        "target": "+15553334444",
+        "name": "Home",
+        "is_primary": false
+    }'
 </pre></div>
 </div>
 <p>The response is the full updated <a class="reference internal" href="contact_struct_contact.html#contact-struct-contact-contact"><span class="std std-ref">Contact</span></a> object, including the newly added entry in <code class="docutils literal notranslate"><span class="pre">addresses</span></code>.</p>
@@ -872,19 +872,19 @@
 <section id="update-an-address-on-a-contact">
 <h3>Update an address on a contact<a class="headerlink" href="#update-an-address-on-a-contact" title="Link to this heading">¶</a></h3>
 <p>Update an existing address’s details. The address ID comes from a prior <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/contacts/{id}/addresses</span></code> call or from the contact’s <code class="docutils literal notranslate"><span class="pre">addresses</span></code> array.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/addresses/&lt;address-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;target&quot;: &quot;+15553334444&quot;,
-        &quot;name&quot;: &quot;Mobile&quot;,
-        &quot;is_primary&quot;: true
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT 'https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/addresses/&lt;address-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "target": "+15553334444",
+        "name": "Mobile",
+        "is_primary": true
+    }'
 </pre></div>
 </div>
 </section>
 <section id="remove-an-address-from-a-contact">
 <h3>Remove an address from a contact<a class="headerlink" href="#remove-an-address-from-a-contact" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/addresses/&lt;address-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE 'https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/addresses/&lt;address-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -896,17 +896,17 @@
 <section id="add-a-tag">
 <h3>Add a tag<a class="headerlink" href="#add-a-tag" title="Link to this heading">¶</a></h3>
 <p>Assign a tag to a contact for categorization or routing.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/tags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;tag_id&quot;: &quot;uuid-for-enterprise-tag&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/tags?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "tag_id": "uuid-for-enterprise-tag"
+    }'
 </pre></div>
 </div>
 </section>
 <section id="remove-a-tag">
 <h3>Remove a tag<a class="headerlink" href="#remove-a-tag" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/tags/&lt;tag-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE 'https://api.voipbin.net/v1.0/contacts/&lt;contact-id&gt;/tags/&lt;tag-id&gt;?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
@@ -999,8 +999,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

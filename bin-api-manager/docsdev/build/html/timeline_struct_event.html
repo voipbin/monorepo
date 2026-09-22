@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Timeline analysis" href="timeline_analysis.html"><link rel="prev" title="Overview" href="timeline_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Timeline event - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -644,9 +644,9 @@
 <span id="id1"></span><h2>Timeline event<a class="headerlink" href="#timeline-struct-event-timeline-event" title="Link to this heading">¶</a></h2>
 <p>The shape returned by both <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/timelines/{resource_type}/{resource_id}/events</span></code> and <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/aggregated-events</span></code>, in the <code class="docutils literal notranslate"><span class="pre">result</span></code> array.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -660,28 +660,28 @@
 <span id="timeline-struct-event-sip-analysis"></span><h2>SIP analysis<a class="headerlink" href="#sip-analysis" title="Link to this heading">¶</a></h2>
 <p>The response of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/timelines/calls/{call_id}/sip-analysis</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;sip_messages&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"sip_messages"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;src_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;src_port&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">&quot;dst_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;dst_port&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">&quot;raw&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+            <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+            <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+            <span class="s2">"src_ip"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+            <span class="s2">"src_port"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">"dst_ip"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span>
+            <span class="s2">"dst_port"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">"raw"</span><span class="p">:</span> <span class="s2">"&lt;string&gt;"</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">&quot;rtcp_stats&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;mos&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="s2">&quot;jitter&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;packet_loss_pct&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="s2">&quot;rtt&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;rtp_bytes&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;rtp_packets&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;rtp_errors&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;rtcp_bytes&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;rtcp_packets&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s2">&quot;rtcp_errors&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="s2">"rtcp_stats"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"mos"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"jitter"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"packet_loss_pct"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"rtt"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"rtp_bytes"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"rtp_packets"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"rtp_errors"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"rtcp_bytes"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"rtcp_packets"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">"rtcp_errors"</span><span class="p">:</span> <span class="mi">0</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -721,27 +721,27 @@
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:00.000Z&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_created&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span>
+            <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-01-15T09:30:00.000Z"</span><span class="p">,</span>
+            <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"call_created"</span><span class="p">,</span>
+            <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+                <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+                <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"dialing"</span>
             <span class="p">}</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-15T09:30:05.000Z&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span>
+            <span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"2026-01-15T09:30:05.000Z"</span><span class="p">,</span>
+            <span class="s2">"event_type"</span><span class="p">:</span> <span class="s2">"call_answered"</span><span class="p">,</span>
+            <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="p">,</span>
+                <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"5e4a0680-804e-11ec-8477-2fea5968d85b"</span><span class="p">,</span>
+                <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"progressing"</span>
             <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="s2">"next_page_token"</span><span class="p">:</span> <span class="s2">""</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -822,8 +822,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

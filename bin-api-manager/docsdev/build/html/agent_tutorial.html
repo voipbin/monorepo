@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Auth" href="auth.html"><link rel="prev" title="Struct" href="agent_struct_agent.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -657,34 +657,34 @@
 <section id="create-a-new-agent">
 <h3>Create a new agent<a class="headerlink" href="#create-a-new-agent" title="Link to this heading">¶</a></h3>
 <p>Create a new agent.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/agents?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --data-raw &#39;{
-        &quot;username&quot;: &quot;test2&quot;,
-        &quot;password&quot;: &quot;test2&quot;,
-        &quot;name&quot;: &quot;test tag&quot;,
-        &quot;detail&quot;: &quot;test tag example&quot;,
-        &quot;ring_method&quot;: &quot;ringall&quot;,
-        &quot;permission&quot;: 0,
-        &quot;tag_ids&quot;: [&quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;]
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST 'https://api.voipbin.net/v1.0/agents?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --header 'Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --data-raw '{
+        "username": "test2",
+        "password": "test2",
+        "name": "test tag",
+        "detail": "test tag example",
+        "ring_method": "ringall",
+        "permission": 0,
+        "tag_ids": ["d7450dda-21e0-4611-b09a-8d771c50a5e6"]
+    }'
 
 {
-    &quot;id&quot;: &quot;f1a2b3c4-d5e6-7890-abcd-ef1234567890&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;username&quot;: &quot;test2&quot;,
-    &quot;name&quot;: &quot;test tag&quot;,
-    &quot;detail&quot;: &quot;test tag example&quot;,
-    &quot;ring_method&quot;: &quot;ringall&quot;,
-    &quot;status&quot;: &quot;offline&quot;,
-    &quot;permission&quot;: 0,
-    &quot;tag_ids&quot;: [&quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;],
-    &quot;addresses&quot;: [],
-    &quot;direct_hash&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-22T16:16:16Z&quot;,
-    &quot;tm_update&quot;: null,
-    &quot;tm_delete&quot;: null
+    "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "username": "test2",
+    "name": "test tag",
+    "detail": "test tag example",
+    "ring_method": "ringall",
+    "status": "offline",
+    "permission": 0,
+    "tag_ids": ["d7450dda-21e0-4611-b09a-8d771c50a5e6"],
+    "addresses": [],
+    "direct_hash": "",
+    "tm_create": "2022-10-22T16:16:16Z",
+    "tm_update": null,
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -692,28 +692,28 @@
 <section id="get-list-of-agents">
 <h3>Get list of agents<a class="headerlink" href="#get-list-of-agents" title="Link to this heading">¶</a></h3>
 <p>Gets the list of agents. Supports filtering by <code class="docutils literal notranslate"><span class="pre">status</span></code> and by <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (comma-separated tag id list – only agents sharing at least one of the given tags are returned; the parameter must not be empty when present).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/agents?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/agents?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;f1a2b3c4-d5e6-7890-abcd-ef1234567890&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;username&quot;: &quot;test2&quot;,
-            &quot;name&quot;: &quot;test tag&quot;,
-            &quot;detail&quot;: &quot;test tag example&quot;,
-            &quot;ring_method&quot;: &quot;ringall&quot;,
-            &quot;status&quot;: &quot;offline&quot;,
-            &quot;permission&quot;: 0,
-            &quot;tag_ids&quot;: [&quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;],
-            &quot;addresses&quot;: [],
-            &quot;direct_hash&quot;: &quot;&quot;,
-            &quot;tm_create&quot;: &quot;2022-10-22T16:16:16Z&quot;,
-            &quot;tm_update&quot;: null,
-            &quot;tm_delete&quot;: null
+            "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "username": "test2",
+            "name": "test tag",
+            "detail": "test tag example",
+            "ring_method": "ringall",
+            "status": "offline",
+            "permission": 0,
+            "tag_ids": ["d7450dda-21e0-4611-b09a-8d771c50a5e6"],
+            "addresses": [],
+            "direct_hash": "",
+            "tm_create": "2022-10-22T16:16:16Z",
+            "tm_update": null,
+            "tm_delete": null
         }
     ],
-    &quot;next_page_token&quot;: &quot;2022-10-22T16:16:16Z&quot;
+    "next_page_token": "2022-10-22T16:16:16Z"
 }
 </pre></div>
 </div>
@@ -721,45 +721,45 @@
 <section id="get-an-agent">
 <h3>Get an agent<a class="headerlink" href="#get-an-agent" title="Link to this heading">¶</a></h3>
 <p>Get the details of an agent by its ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="update-an-agent">
 <h3>Update an agent<a class="headerlink" href="#update-an-agent" title="Link to this heading">¶</a></h3>
 <p>Update an agent’s name, detail, and ring method.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;updated name&quot;,
-        &quot;detail&quot;: &quot;updated detail&quot;,
-        &quot;ring_method&quot;: &quot;linear&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "updated name",
+        "detail": "updated detail",
+        "ring_method": "linear"
+    }'
 </pre></div>
 </div>
 </section>
 <section id="update-agent-s-tag-ids">
 <h3>Update agent’s tag IDs<a class="headerlink" href="#update-agent-s-tag-ids" title="Link to this heading">¶</a></h3>
 <p>Replace the full list of tag IDs assigned to the agent.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/tag_ids?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;tag_ids&quot;: [
-            &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
-            &quot;b1a2c3d4-e5f6-7890-abcd-ef1234567890&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/tag_ids?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "tag_ids": [
+            "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+            "b1a2c3d4-e5f6-7890-abcd-ef1234567890"
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 </section>
 <section id="update-agent-s-permission">
 <h3>Update agent’s permission<a class="headerlink" href="#update-agent-s-permission" title="Link to this heading">¶</a></h3>
 <p>Update an agent’s permission bitmask. See <a class="reference internal" href="agent_struct_agent.html#agent-struct-agent-permission"><span class="std std-ref">Permission</span></a> for valid values.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/permission?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;permission&quot;: 32
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/permission?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "permission": 32
+    }'
 </pre></div>
 </div>
 <div class="admonition note">
@@ -771,30 +771,30 @@
 <section id="update-agent-s-password">
 <h3>Update agent’s password<a class="headerlink" href="#update-agent-s-password" title="Link to this heading">¶</a></h3>
 <p>Update an agent’s password.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/password?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;password&quot;: &quot;new_secure_password&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/password?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "password": "new_secure_password"
+    }'
 </pre></div>
 </div>
 </section>
 <section id="delete-an-agent">
 <h3>Delete an agent<a class="headerlink" href="#delete-an-agent" title="Link to this heading">¶</a></h3>
 <p>Delete an agent by its ID.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;'
 </pre></div>
 </div>
 </section>
 <section id="update-agent-s-status">
 <h3>Update agent’s status<a class="headerlink" href="#update-agent-s-status" title="Link to this heading">¶</a></h3>
 <p>Update agent’s status to the available.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/status?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --data-raw &#39;{
-        &quot;status&quot;: &quot;available&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/status?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --header 'Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --data-raw '{
+        "status": "available"
+    }'
 </pre></div>
 </div>
 </section>
@@ -806,40 +806,40 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/addresses</span></code> endpoint replaces all addresses for the agent. To add a new address while keeping existing ones, first retrieve the current addresses via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents/{id}</span></code>, then include all desired addresses in the update request. Phone numbers in <code class="docutils literal notranslate"><span class="pre">tel</span></code> type addresses must be in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>).</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/addresses?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --data-raw &#39;{
-        &quot;addresses&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/addresses?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --header 'Content-Type: application/json' \
+    --header 'Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;' \
+    --data-raw '{
+        "addresses": [
             {
-                &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;+15559876543&quot;
+                "type": "tel",
+                "target": "+15559876543"
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 </section>
 <section id="regenerate-direct-agent-hash">
 <h3>Regenerate direct agent hash<a class="headerlink" href="#regenerate-direct-agent-hash" title="Link to this heading">¶</a></h3>
 <p>Regenerate the direct hash for an agent. This invalidates the previous SIP URI and creates a new one. If the agent has no existing direct hash, one is created automatically.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/agents/eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;username&quot;: &quot;test2&quot;,
-    &quot;name&quot;: &quot;test tag&quot;,
-    &quot;detail&quot;: &quot;test tag example&quot;,
-    &quot;ring_method&quot;: &quot;ringall&quot;,
-    &quot;status&quot;: &quot;offline&quot;,
-    &quot;permission&quot;: 0,
-    &quot;tag_ids&quot;: [],
-    &quot;addresses&quot;: [],
-    &quot;direct_hash&quot;: &quot;direct.e9f0a1b2c3d4&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-22T16:16:16Z&quot;,
-    &quot;tm_update&quot;: &quot;2022-10-22T16:20:00Z&quot;,
-    &quot;tm_delete&quot;: null
+    "id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "username": "test2",
+    "name": "test tag",
+    "detail": "test tag example",
+    "ring_method": "ringall",
+    "status": "offline",
+    "permission": 0,
+    "tag_ids": [],
+    "addresses": [],
+    "direct_hash": "direct.e9f0a1b2c3d4",
+    "tm_create": "2022-10-22T16:16:16Z",
+    "tm_update": "2022-10-22T16:20:00Z",
+    "tm_delete": null
 }
 </pre></div>
 </div>
@@ -937,8 +937,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

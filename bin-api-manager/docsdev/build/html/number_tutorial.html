@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Provider" href="provider.html"><link rel="prev" title="Available Number" href="availablenumber_struct.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -656,21 +656,21 @@
 <section id="get-list-of-available-numbers">
 <h3>Get list of available numbers<a class="headerlink" href="#get-list-of-available-numbers" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/available_numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;country_code=US&amp;page_size=5&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/available_numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;country_code=US&amp;page_size=5'
 
 {
-&quot;result&quot;: [
+"result": [
     {
-        &quot;number&quot;: &quot;+12182558711&quot;,
-        &quot;country&quot;: &quot;US&quot;,
-        &quot;region&quot;: &quot;MN&quot;,
-        &quot;postal_code&quot;: &quot;&quot;,
-        &quot;features&quot;: [
-            &quot;emergency&quot;,
-            &quot;fax&quot;,
-            &quot;voice&quot;,
-            &quot;sms&quot;,
-            &quot;mms&quot;
+        "number": "+12182558711",
+        "country": "US",
+        "region": "MN",
+        "postal_code": "",
+        "features": [
+            "emergency",
+            "fax",
+            "voice",
+            "sms",
+            "mms"
         ]
     },
     ...
@@ -682,16 +682,16 @@
 <section id="get-list-of-available-virtual-numbers">
 <h3>Get list of available virtual numbers<a class="headerlink" href="#get-list-of-available-virtual-numbers" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/available_numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;type=virtual&amp;page_size=5&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/available_numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;type=virtual&amp;page_size=5'
 
 {
-&quot;result&quot;: [
+"result": [
     {
-        &quot;number&quot;: &quot;+899100000001&quot;,
-        &quot;country&quot;: &quot;&quot;,
-        &quot;region&quot;: &quot;&quot;,
-        &quot;postal_code&quot;: &quot;&quot;,
-        &quot;features&quot;: []
+        "number": "+899100000001",
+        "country": "",
+        "region": "",
+        "postal_code": "",
+        "features": []
     },
     ...
 ]
@@ -703,32 +703,32 @@
 <h3>Create virtual number<a class="headerlink" href="#create-virtual-number" title="Link to this heading">¶</a></h3>
 <p>Virtual numbers use the +899 prefix and do not require a provider purchase.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;number&quot;: &quot;+899100000001&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/numbers?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "number": "+899100000001"
+}'
 
 {
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;number&quot;: &quot;+899100000001&quot;,
-    &quot;type&quot;: &quot;virtual&quot;,
-    &quot;call_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;t38_enabled&quot;: false,
-    &quot;emergency_enabled&quot;: false,
-    &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: false
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "number": "+899100000001",
+    "type": "virtual",
+    "call_flow_id": "00000000-0000-0000-0000-000000000000",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "name": "",
+    "detail": "",
+    "status": "active",
+    "t38_enabled": false,
+    "emergency_enabled": false,
+    "metadata": {
+        "rtp_debug": false
     },
-    &quot;tm_purchase&quot;: &quot;&quot;,
-    &quot;tm_renew&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2024-01-15 10:30:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    "tm_purchase": "",
+    "tm_renew": "",
+    "tm_create": "2024-01-15 10:30:00.000000",
+    "tm_update": "",
+    "tm_delete": ""
 }
 </pre></div>
 </div>
@@ -736,54 +736,54 @@
 <section id="get-list-of-numbers">
 <h3>Get list of numbers<a class="headerlink" href="#get-list-of-numbers" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;page_size=10'
 
 {
-    &quot;result&quot;: [
+    "result": [
         {
-            &quot;id&quot;: &quot;b7ee1086-fcbc-4f6f-96e5-7f9271e25279&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;number&quot;: &quot;+16062067563&quot;,
-            &quot;type&quot;: &quot;normal&quot;,
-            &quot;call_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;,
-            &quot;status&quot;: &quot;active&quot;,
-            &quot;t38_enabled&quot;: true,
-            &quot;emergency_enabled&quot;: false,
-            &quot;metadata&quot;: {
-                &quot;rtp_debug&quot;: false
+            "id": "b7ee1086-fcbc-4f6f-96e5-7f9271e25279",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "number": "+16062067563",
+            "type": "normal",
+            "call_flow_id": "00000000-0000-0000-0000-000000000000",
+            "message_flow_id": "00000000-0000-0000-0000-000000000000",
+            "name": "",
+            "detail": "",
+            "status": "active",
+            "t38_enabled": true,
+            "emergency_enabled": false,
+            "metadata": {
+                "rtp_debug": false
             },
-            &quot;tm_purchase&quot;: &quot;2021-03-03 06:34:09.000000&quot;,
-            &quot;tm_renew&quot;: &quot;&quot;,
-            &quot;tm_create&quot;: &quot;2021-03-03 06:34:09.733751&quot;,
-            &quot;tm_update&quot;: &quot;&quot;,
-            &quot;tm_delete&quot;: &quot;&quot;
+            "tm_purchase": "2021-03-03 06:34:09.000000",
+            "tm_renew": "",
+            "tm_create": "2021-03-03 06:34:09.733751",
+            "tm_update": "",
+            "tm_delete": ""
         },
         {
-            &quot;id&quot;: &quot;d5532488-0b2d-11eb-b18c-172ab8f2d3d8&quot;,
-            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-            &quot;number&quot;: &quot;+16195734778&quot;,
-            &quot;type&quot;: &quot;normal&quot;,
-            &quot;call_flow_id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
-            &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;,
-            &quot;status&quot;: &quot;active&quot;,
-            &quot;t38_enabled&quot;: false,
-            &quot;emergency_enabled&quot;: false,
-            &quot;metadata&quot;: {
-                &quot;rtp_debug&quot;: false
+            "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "number": "+16195734778",
+            "type": "normal",
+            "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+            "message_flow_id": "00000000-0000-0000-0000-000000000000",
+            "name": "",
+            "detail": "",
+            "status": "active",
+            "t38_enabled": false,
+            "emergency_enabled": false,
+            "metadata": {
+                "rtp_debug": false
             },
-            &quot;tm_purchase&quot;: &quot;&quot;,
-            &quot;tm_renew&quot;: &quot;&quot;,
-            &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
-            &quot;tm_update&quot;: &quot;&quot;,
-            &quot;tm_delete&quot;: &quot;&quot;
+            "tm_purchase": "",
+            "tm_renew": "",
+            "tm_create": "2020-10-11 01:00:00.000001",
+            "tm_update": "",
+            "tm_delete": ""
         }
     ],
-    &quot;next_page_token&quot;: &quot;2020-10-11 01:00:00.000001&quot;
+    "next_page_token": "2020-10-11 01:00:00.000001"
 }
 </pre></div>
 </div>
@@ -791,28 +791,28 @@
 <section id="get-detail-of-number">
 <h3>Get detail of number<a class="headerlink" href="#get-detail-of-number" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;d5532488-0b2d-11eb-b18c-172ab8f2d3d8&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;number&quot;: &quot;+16195734778&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;call_flow_id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;t38_enabled&quot;: false,
-    &quot;emergency_enabled&quot;: false,
-    &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: false
+    "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "number": "+16195734778",
+    "type": "normal",
+    "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "name": "",
+    "detail": "",
+    "status": "active",
+    "t38_enabled": false,
+    "emergency_enabled": false,
+    "metadata": {
+        "rtp_debug": false
     },
-    &quot;tm_purchase&quot;: &quot;&quot;,
-    &quot;tm_renew&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
-    &quot;tm_update&quot;: &quot;&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    "tm_purchase": "",
+    "tm_renew": "",
+    "tm_create": "2020-10-11 01:00:00.000001",
+    "tm_update": "",
+    "tm_delete": ""
 }
 </pre></div>
 </div>
@@ -820,28 +820,28 @@
 <section id="delete-number">
 <h3>Delete number<a class="headerlink" href="#delete-number" title="Link to this heading">¶</a></h3>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/numbers/b7ee1086-fcbc-4f6f-96e5-7f9271e25279?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/numbers/b7ee1086-fcbc-4f6f-96e5-7f9271e25279?token=&lt;YOUR_AUTH_TOKEN&gt;'
 
 {
-    &quot;id&quot;: &quot;b7ee1086-fcbc-4f6f-96e5-7f9271e25279&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;number&quot;: &quot;+16062067563&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;call_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;status&quot;: &quot;deleted&quot;,
-    &quot;t38_enabled&quot;: true,
-    &quot;emergency_enabled&quot;: false,
-    &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: false
+    "id": "b7ee1086-fcbc-4f6f-96e5-7f9271e25279",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "number": "+16062067563",
+    "type": "normal",
+    "call_flow_id": "00000000-0000-0000-0000-000000000000",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "name": "",
+    "detail": "",
+    "status": "deleted",
+    "t38_enabled": true,
+    "emergency_enabled": false,
+    "metadata": {
+        "rtp_debug": false
     },
-    &quot;tm_purchase&quot;: &quot;2021-03-03 06:34:09.000000&quot;,
-    &quot;tm_renew&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2021-03-03 06:34:09.733751&quot;,
-    &quot;tm_update&quot;: &quot;2021-03-03 06:52:53.848439&quot;,
-    &quot;tm_delete&quot;: &quot;2021-03-03 06:52:53.848439&quot;
+    "tm_purchase": "2021-03-03 06:34:09.000000",
+    "tm_renew": "",
+    "tm_create": "2021-03-03 06:34:09.733751",
+    "tm_update": "2021-03-03 06:52:53.848439",
+    "tm_delete": "2021-03-03 06:52:53.848439"
 }
 </pre></div>
 </div>
@@ -858,32 +858,32 @@ Use this when you need to debug audio issues on a specific number without enabli
 Disable after debugging to reduce storage usage.</p>
 </div>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8/metadata?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;rtp_debug&quot;: true
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8/metadata?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "rtp_debug": true
+}'
 
 {
-    &quot;id&quot;: &quot;d5532488-0b2d-11eb-b18c-172ab8f2d3d8&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;number&quot;: &quot;+16195734778&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;call_flow_id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;name&quot;: &quot;Support Line&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;t38_enabled&quot;: false,
-    &quot;emergency_enabled&quot;: false,
-    &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: true
+    "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "number": "+16195734778",
+    "type": "normal",
+    "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Support Line",
+    "detail": "",
+    "status": "active",
+    "t38_enabled": false,
+    "emergency_enabled": false,
+    "metadata": {
+        "rtp_debug": true
     },
-    &quot;tm_purchase&quot;: &quot;&quot;,
-    &quot;tm_renew&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
-    &quot;tm_update&quot;: &quot;2026-03-12 10:30:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "tm_purchase": "",
+    "tm_renew": "",
+    "tm_create": "2020-10-11 01:00:00.000001",
+    "tm_update": "2026-03-12 10:30:00.000000",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -896,32 +896,32 @@ Disable after debugging to reduce storage usage.</p>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> with a normal (non-virtual) number triggers a real provider purchase that costs money. For development and testing, use virtual numbers (<code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix) instead. Virtual numbers are free and do not require provider involvement.</p>
 </div>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/numbers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;number&quot;: &quot;+16062067563&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/numbers?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "number": "+16062067563"
+}'
 
 {
-    &quot;id&quot;: &quot;b7ee1086-fcbc-4f6f-96e5-7f9271e25279&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;number&quot;: &quot;+16062067563&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;call_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;t38_enabled&quot;: true,
-    &quot;emergency_enabled&quot;: false,
-    &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: false
+    "id": "b7ee1086-fcbc-4f6f-96e5-7f9271e25279",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "number": "+16062067563",
+    "type": "normal",
+    "call_flow_id": "00000000-0000-0000-0000-000000000000",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "name": "",
+    "detail": "",
+    "status": "active",
+    "t38_enabled": true,
+    "emergency_enabled": false,
+    "metadata": {
+        "rtp_debug": false
     },
-    &quot;tm_purchase&quot;: &quot;2021-03-03 18:41:23.000000&quot;,
-    &quot;tm_renew&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2021-03-03 18:41:24.657788&quot;,
-    &quot;tm_update&quot;: &quot;&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    "tm_purchase": "2021-03-03 18:41:23.000000",
+    "tm_renew": "",
+    "tm_create": "2021-03-03 18:41:24.657788",
+    "tm_update": "",
+    "tm_delete": ""
 }
 </pre></div>
 </div>
@@ -930,35 +930,35 @@ Disable after debugging to reduce storage usage.</p>
 <h3>Update number<a class="headerlink" href="#update-number" title="Link to this heading">¶</a></h3>
 <p>Update the number’s name, detail, and flow assignments. All four fields are required.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;call_flow_id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;name&quot;: &quot;Support Line&quot;,
-    &quot;detail&quot;: &quot;Primary inbound number for customer support&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Support Line",
+    "detail": "Primary inbound number for customer support"
+}'
 
 {
-    &quot;id&quot;: &quot;d5532488-0b2d-11eb-b18c-172ab8f2d3d8&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;number&quot;: &quot;+16195734778&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;call_flow_id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;name&quot;: &quot;Support Line&quot;,
-    &quot;detail&quot;: &quot;Primary inbound number for customer support&quot;,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;t38_enabled&quot;: false,
-    &quot;emergency_enabled&quot;: false,
-    &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: false
+    "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "number": "+16195734778",
+    "type": "normal",
+    "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Support Line",
+    "detail": "Primary inbound number for customer support",
+    "status": "active",
+    "t38_enabled": false,
+    "emergency_enabled": false,
+    "metadata": {
+        "rtp_debug": false
     },
-    &quot;tm_purchase&quot;: &quot;&quot;,
-    &quot;tm_renew&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
-    &quot;tm_update&quot;: &quot;2026-03-12 10:35:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "tm_purchase": "",
+    "tm_renew": "",
+    "tm_create": "2020-10-11 01:00:00.000001",
+    "tm_update": "2026-03-12 10:35:00.000000",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -967,33 +967,33 @@ Disable after debugging to reduce storage usage.</p>
 <h3>Update number flow IDs<a class="headerlink" href="#update-number-flow-ids" title="Link to this heading">¶</a></h3>
 <p>Update only the <code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code> and <code class="docutils literal notranslate"><span class="pre">message_flow_id</span></code> of a number without touching its name or detail. Both fields are required; use <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> to unassign a flow.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8/flow_ids?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;call_flow_id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8/flow_ids?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000"
+}'
 
 {
-    &quot;id&quot;: &quot;d5532488-0b2d-11eb-b18c-172ab8f2d3d8&quot;,
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;number&quot;: &quot;+16195734778&quot;,
-    &quot;type&quot;: &quot;normal&quot;,
-    &quot;call_flow_id&quot;: &quot;decc2634-0b2a-11eb-b38d-87a8f1051188&quot;,
-    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;name&quot;: &quot;Support Line&quot;,
-    &quot;detail&quot;: &quot;&quot;,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;t38_enabled&quot;: false,
-    &quot;emergency_enabled&quot;: false,
-    &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: false
+    "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+    "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+    "number": "+16195734778",
+    "type": "normal",
+    "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+    "message_flow_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Support Line",
+    "detail": "",
+    "status": "active",
+    "t38_enabled": false,
+    "emergency_enabled": false,
+    "metadata": {
+        "rtp_debug": false
     },
-    &quot;tm_purchase&quot;: &quot;&quot;,
-    &quot;tm_renew&quot;: &quot;&quot;,
-    &quot;tm_create&quot;: &quot;2020-10-11 01:00:00.000001&quot;,
-    &quot;tm_update&quot;: &quot;2026-03-12 10:40:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    "tm_purchase": "",
+    "tm_renew": "",
+    "tm_create": "2020-10-11 01:00:00.000001",
+    "tm_update": "2026-03-12 10:40:00.000000",
+    "tm_delete": "9999-01-01 00:00:00.000000"
 }
 </pre></div>
 </div>
@@ -1002,33 +1002,33 @@ Disable after debugging to reduce storage usage.</p>
 <h3>Renew numbers<a class="headerlink" href="#renew-numbers" title="Link to this heading">¶</a></h3>
 <p>Renew the numbers whose <code class="docutils literal notranslate"><span class="pre">tm_renew</span></code> matches the provided timestamp. Requires <code class="docutils literal notranslate"><span class="pre">ProjectSuperAdmin</span></code> permission; this is an administrative, platform-wide operation rather than a per-customer one.</p>
 <p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/numbers/renew?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;tm_renew&quot;: &quot;2023-02-01 00:00:00.000000&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/numbers/renew?token=&lt;YOUR_AUTH_TOKEN&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "tm_renew": "2023-02-01 00:00:00.000000"
+}'
 
 [
     {
-        &quot;id&quot;: &quot;0b266038-844b-11ec-97d8-63ba531361ce&quot;,
-        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-        &quot;number&quot;: &quot;+821100000001&quot;,
-        &quot;type&quot;: &quot;normal&quot;,
-        &quot;call_flow_id&quot;: &quot;d157ce07-0360-4cad-9007-c8ab89fccf9c&quot;,
-        &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;name&quot;: &quot;test talk&quot;,
-        &quot;detail&quot;: &quot;simple number for talk flow&quot;,
-        &quot;status&quot;: &quot;active&quot;,
-        &quot;t38_enabled&quot;: false,
-        &quot;emergency_enabled&quot;: false,
-        &quot;metadata&quot;: {
-            &quot;rtp_debug&quot;: false
+        "id": "0b266038-844b-11ec-97d8-63ba531361ce",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "number": "+821100000001",
+        "type": "normal",
+        "call_flow_id": "d157ce07-0360-4cad-9007-c8ab89fccf9c",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000",
+        "name": "test talk",
+        "detail": "simple number for talk flow",
+        "status": "active",
+        "t38_enabled": false,
+        "emergency_enabled": false,
+        "metadata": {
+            "rtp_debug": false
         },
-        &quot;tm_purchase&quot;: &quot;2022-02-01 00:00:00.000000&quot;,
-        &quot;tm_renew&quot;: &quot;2026-03-12 00:00:00.000000&quot;,
-        &quot;tm_create&quot;: &quot;2022-02-01 00:00:00.000000&quot;,
-        &quot;tm_update&quot;: &quot;2026-03-12 00:00:00.000000&quot;,
-        &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+        "tm_purchase": "2022-02-01 00:00:00.000000",
+        "tm_renew": "2026-03-12 00:00:00.000000",
+        "tm_create": "2022-02-01 00:00:00.000000",
+        "tm_update": "2026-03-12 00:00:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
     }
 ]
 </pre></div>
@@ -1122,8 +1122,8 @@ Disable after debugging to reduce storage usage.</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

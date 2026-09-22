@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Agent" href="agent.html"><link rel="prev" title="Struct" href="accesskey_struct.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -659,27 +659,27 @@
 <ol class="arabic">
 <li><p><strong>Create an Accesskey</strong></p>
 <p>Use the following command to create a new access key. The <code class="docutils literal notranslate"><span class="pre">expire</span></code> parameter specifies the duration in seconds before the key expires.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-access-key&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;name&quot;: &quot;My New Accesskey&quot;,
-    &quot;detail&quot;: &quot;This key is used for reporting&quot;,
-    &quot;expire&quot;: 31536000
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST 'https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-access-key&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "My New Accesskey",
+    "detail": "This key is used for reporting",
+    "expire": 31536000
+}'
 </pre></div>
 </div>
 <p>Example Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xKm&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"My New Accesskey"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"This key is used for reporting"</span><span class="p">,</span>
+    <span class="s2">"token"</span><span class="p">:</span> <span class="s2">"vb_a3Bf9xKmPq2nR7sT4wYzLp8mN5qR1xWe"</span><span class="p">,</span>
+    <span class="s2">"token_prefix"</span><span class="p">:</span> <span class="s2">"vb_a3Bf9xKm"</span><span class="p">,</span>
+    <span class="s2">"tm_expire"</span><span class="p">:</span> <span class="s2">"2027-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -691,90 +691,90 @@
 </li>
 <li><p><strong>Get a List of Accesskeys</strong></p>
 <p>Retrieve all existing access keys associated with your account. Include the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter in the request URL for authentication.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-access-key&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/accesskeys?accesskey=&lt;your-access-key&gt;'
 </pre></div>
 </div>
 <p>Example Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xKm&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc"</span><span class="p">,</span>
+            <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840"</span><span class="p">,</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"My New Accesskey"</span><span class="p">,</span>
+            <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"This key is used for reporting"</span><span class="p">,</span>
+            <span class="s2">"token_prefix"</span><span class="p">:</span> <span class="s2">"vb_a3Bf9xKm"</span><span class="p">,</span>
+            <span class="s2">"tm_expire"</span><span class="p">:</span> <span class="s2">"2027-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+            <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+            <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+            <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">"next_page_token"</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </li>
 <li><p><strong>Get a Specific Accesskey</strong></p>
 <p>Retrieve details of a specific access key using its unique ID. Include the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter for authentication.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/accesskeys/2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc?accesskey=&lt;your-access-key&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET 'https://api.voipbin.net/v1.0/accesskeys/2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc?accesskey=&lt;your-access-key&gt;'
 </pre></div>
 </div>
 <p>Example Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My New Accesskey&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;This key is used for reporting&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xKm&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"My New Accesskey"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"This key is used for reporting"</span><span class="p">,</span>
+    <span class="s2">"token_prefix"</span><span class="p">:</span> <span class="s2">"vb_a3Bf9xKm"</span><span class="p">,</span>
+    <span class="s2">"tm_expire"</span><span class="p">:</span> <span class="s2">"2027-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </li>
 <li><p><strong>Update an Accesskey</strong></p>
 <p>Update the <code class="docutils literal notranslate"><span class="pre">name</span></code> and/or <code class="docutils literal notranslate"><span class="pre">detail</span></code> of an existing access key using its unique ID. Include the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter for authentication. The <code class="docutils literal notranslate"><span class="pre">token</span></code> and <code class="docutils literal notranslate"><span class="pre">expire</span></code> cannot be changed via this endpoint.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT &#39;https://api.voipbin.net/v1.0/accesskeys/2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc?accesskey=&lt;your-access-key&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;name&quot;: &quot;My Renamed Accesskey&quot;,
-    &quot;detail&quot;: &quot;Updated description&quot;
-}&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/accesskeys/2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc?accesskey=&lt;your-access-key&gt;' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "My Renamed Accesskey",
+    "detail": "Updated description"
+}'
 </pre></div>
 </div>
 <p>Example Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My Renamed Accesskey&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Updated description&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xKm&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-02T09:00:00.000000Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"My Renamed Accesskey"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Updated description"</span><span class="p">,</span>
+    <span class="s2">"token_prefix"</span><span class="p">:</span> <span class="s2">"vb_a3Bf9xKm"</span><span class="p">,</span>
+    <span class="s2">"tm_expire"</span><span class="p">:</span> <span class="s2">"2027-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-12-02T09:00:00.000000Z"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </li>
 <li><p><strong>Delete an Accesskey</strong></p>
 <p>Permanently revoke an access key using its unique ID. Include the <code class="docutils literal notranslate"><span class="pre">accesskey</span></code> query parameter for authentication. Once deleted, the key can no longer be used for authentication.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/accesskeys/2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc?accesskey=&lt;your-access-key&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/accesskeys/2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc?accesskey=&lt;your-access-key&gt;'
 </pre></div>
 </div>
 <p>Example Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My Renamed Accesskey&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Updated description&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;token_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_a3Bf9xKm&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2027-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-01T10:15:30.123456Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-02T09:00:00.000000Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-12-02T09:05:00.000000Z&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"2f1f8f7e-9b3d-4c60-8465-b69e9f28b6dc"</span><span class="p">,</span>
+    <span class="s2">"customer_id"</span><span class="p">:</span> <span class="s2">"a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840"</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"My Renamed Accesskey"</span><span class="p">,</span>
+    <span class="s2">"detail"</span><span class="p">:</span> <span class="s2">"Updated description"</span><span class="p">,</span>
+    <span class="s2">"token_prefix"</span><span class="p">:</span> <span class="s2">"vb_a3Bf9xKm"</span><span class="p">,</span>
+    <span class="s2">"tm_expire"</span><span class="p">:</span> <span class="s2">"2027-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_create"</span><span class="p">:</span> <span class="s2">"2026-12-01T10:15:30.123456Z"</span><span class="p">,</span>
+    <span class="s2">"tm_update"</span><span class="p">:</span> <span class="s2">"2026-12-02T09:00:00.000000Z"</span><span class="p">,</span>
+    <span class="s2">"tm_delete"</span><span class="p">:</span> <span class="s2">"2026-12-02T09:05:00.000000Z"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -864,8 +864,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

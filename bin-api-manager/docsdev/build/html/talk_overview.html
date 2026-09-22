@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Talk" href="talk_struct_talk.html"><link rel="prev" title="Talk" href="talk.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -797,35 +797,35 @@
 <h2>Creating and Managing Chats<a class="headerlink" href="#creating-and-managing-chats" title="Link to this heading">¶</a></h2>
 <p>Create chats and manage participants through the Talk API.</p>
 <p><strong>Create a Chat</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;type&quot;: &quot;group&quot;,
-        &quot;name&quot;: &quot;Project Discussion&quot;,
-        &quot;participants&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "type": "group",
+        "name": "Project Discussion",
+        "participants": [
             {
-                &quot;owner_type&quot;: &quot;agent&quot;,
-                &quot;owner_id&quot;: &quot;agent-uuid-1&quot;
+                "owner_type": "agent",
+                "owner_id": "agent-uuid-1"
             },
             {
-                &quot;owner_type&quot;: &quot;agent&quot;,
-                &quot;owner_id&quot;: &quot;agent-uuid-2&quot;
+                "owner_type": "agent",
+                "owner_id": "agent-uuid-2"
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 <p><strong>Add Participant</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;chat-id&gt;/participants?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;owner_type&quot;: &quot;agent&quot;,
-        &quot;owner_id&quot;: &quot;agent-uuid-3&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;chat-id&gt;/participants?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "owner_type": "agent",
+        "owner_id": "agent-uuid-3"
+    }'
 </pre></div>
 </div>
 <p><strong>Remove Participant</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;chat-id&gt;/participants/&lt;participant-id&gt;?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE 'https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;chat-id&gt;/participants/&lt;participant-id&gt;?token=&lt;token&gt;'
 </pre></div>
 </div>
 </section>
@@ -834,12 +834,12 @@
 <p>Public <code class="docutils literal notranslate"><span class="pre">talk</span></code> type chats (e.g., <code class="docutils literal notranslate"><span class="pre">#general</span></code>) work differently from <code class="docutils literal notranslate"><span class="pre">direct</span></code> and <code class="docutils literal notranslate"><span class="pre">group</span></code> chats: any agent in the customer can discover and join them without an invitation.</p>
 <p><strong>List Public Channels</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_channels</span></code> returns every public <code class="docutils literal notranslate"><span class="pre">talk</span></code> type channel for the customer, regardless of whether the requesting agent has joined it. This differs from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_chats</span></code>, which only returns chats the agent already participates in.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/talk_channels?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/talk_channels?token=&lt;token&gt;'
 </pre></div>
 </div>
 <p><strong>Join a Public Channel</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/talk_chats/{id}/join</span></code> adds the authenticated agent as a participant of a <code class="docutils literal notranslate"><span class="pre">talk</span></code> type chat in a single call, without needing to know another participant’s ID. This endpoint only works for <code class="docutils literal notranslate"><span class="pre">talk</span></code> type chats; use the participants endpoint above for <code class="docutils literal notranslate"><span class="pre">direct</span></code>/<code class="docutils literal notranslate"><span class="pre">group</span></code> chats.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;chat-id&gt;/join?token=&lt;token&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats/&lt;chat-id&gt;/join?token=&lt;token&gt;'
 </pre></div>
 </div>
 </section>
@@ -859,40 +859,40 @@
 </pre></div>
 </div>
 <p><strong>Basic Message Example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;chat_id&quot;: &quot;&lt;chat-id&gt;&quot;,
-        &quot;type&quot;: &quot;normal&quot;,
-        &quot;text&quot;: &quot;Hello team, let&#39;\&#39;&#39;s discuss the project status.&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "chat_id": "&lt;chat-id&gt;",
+        "type": "normal",
+        "text": "Hello team, let'\''s discuss the project status."
+    }'
 </pre></div>
 </div>
 <p><strong>Reply to Message (Threading):</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;chat_id&quot;: &quot;&lt;chat-id&gt;&quot;,
-        &quot;type&quot;: &quot;normal&quot;,
-        &quot;text&quot;: &quot;I agree, we should prioritize the API work.&quot;,
-        &quot;parent_id&quot;: &quot;parent-message-id&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "chat_id": "&lt;chat-id&gt;",
+        "type": "normal",
+        "text": "I agree, we should prioritize the API work.",
+        "parent_id": "parent-message-id"
+    }'
 </pre></div>
 </div>
 <p><strong>Message with Media:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;chat_id&quot;: &quot;&lt;chat-id&gt;&quot;,
-        &quot;type&quot;: &quot;normal&quot;,
-        &quot;text&quot;: &quot;Here is the design document.&quot;,
-        &quot;medias&quot;: [
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "chat_id": "&lt;chat-id&gt;",
+        "type": "normal",
+        "text": "Here is the design document.",
+        "medias": [
             {
-                &quot;type&quot;: &quot;file&quot;,
-                &quot;file_id&quot;: &quot;&lt;file-uuid&gt;&quot;
+                "type": "file",
+                "file_id": "&lt;file-uuid&gt;"
             }
         ]
-    }&#39;
+    }'
 </pre></div>
 </div>
 </section>
@@ -901,20 +901,20 @@
 <p>Threading organizes conversations by grouping related messages.</p>
 <p><strong>Thread Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+---------------------------------------------------------------+</span>
-<span class="o">|</span>  <span class="n">Talk</span><span class="p">:</span> <span class="s2">&quot;Project Discussion&quot;</span>                                   <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Talk</span><span class="p">:</span> <span class="s2">"Project Discussion"</span>                                   <span class="o">|</span>
 <span class="o">+---------------------------------------------------------------+</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
-<span class="o">|</span>  <span class="p">[</span><span class="n">Message</span> <span class="mi">1</span><span class="p">]</span> <span class="s2">&quot;What&#39;s the status of the API integration?&quot;</span>      <span class="o">|</span>
+<span class="o">|</span>  <span class="p">[</span><span class="n">Message</span> <span class="mi">1</span><span class="p">]</span> <span class="s2">"What's the status of the API integration?"</span>      <span class="o">|</span>
 <span class="o">|</span>       <span class="o">|</span>                                                       <span class="o">|</span>
-<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.1</span><span class="p">]</span> <span class="s2">&quot;Working on authentication now&quot;</span>         <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.1</span><span class="p">]</span> <span class="s2">"Working on authentication now"</span>         <span class="o">|</span>
 <span class="o">|</span>       <span class="o">|</span>                                                       <span class="o">|</span>
-<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.2</span><span class="p">]</span> <span class="s2">&quot;Should be done by Friday&quot;</span>              <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.2</span><span class="p">]</span> <span class="s2">"Should be done by Friday"</span>              <span class="o">|</span>
 <span class="o">|</span>       <span class="o">|</span>                                                       <span class="o">|</span>
-<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.3</span><span class="p">]</span> <span class="s2">&quot;Great, let me know if you need help&quot;</span>   <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">1.3</span><span class="p">]</span> <span class="s2">"Great, let me know if you need help"</span>   <span class="o">|</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
-<span class="o">|</span>  <span class="p">[</span><span class="n">Message</span> <span class="mi">2</span><span class="p">]</span> <span class="s2">&quot;Meeting tomorrow at 2pm&quot;</span>                        <span class="o">|</span>
+<span class="o">|</span>  <span class="p">[</span><span class="n">Message</span> <span class="mi">2</span><span class="p">]</span> <span class="s2">"Meeting tomorrow at 2pm"</span>                        <span class="o">|</span>
 <span class="o">|</span>       <span class="o">|</span>                                                       <span class="o">|</span>
-<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">2.1</span><span class="p">]</span> <span class="s2">&quot;I&#39;ll be there&quot;</span>                         <span class="o">|</span>
+<span class="o">|</span>       <span class="o">+--</span> <span class="p">[</span><span class="n">Reply</span> <span class="mf">2.1</span><span class="p">]</span> <span class="s2">"I'll be there"</span>                         <span class="o">|</span>
 <span class="o">|</span>                                                               <span class="o">|</span>
 <span class="o">+---------------------------------------------------------------+</span>
 </pre></div>
@@ -930,16 +930,16 @@
 <h2>Message Reactions<a class="headerlink" href="#message-reactions" title="Link to this heading">¶</a></h2>
 <p>Add emoji reactions to messages for quick feedback.</p>
 <p><strong>Add Reaction</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages/&lt;message-id&gt;/reactions?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;emoji&quot;: &quot;thumbsup&quot;
-    }&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages/&lt;message-id&gt;/reactions?token=&lt;token&gt;' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "emoji": "thumbsup"
+    }'
 </pre></div>
 </div>
 <p><strong>Reaction Display</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------+
-| [Agent A] &quot;The deployment was successful!&quot;    |
+| [Agent A] "The deployment was successful!"    |
 |                                               |
 |  👍 3   🎉 2   ❤️ 1                           |
 +-----------------------------------------------+
@@ -982,22 +982,22 @@
 <p><strong>Normal Messages</strong></p>
 <p>Regular messages sent by agents.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Let&#39;s schedule a call tomorrow.&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"normal"</span><span class="p">,</span>
+    <span class="s2">"agent_id"</span><span class="p">:</span> <span class="s2">"agent-123"</span><span class="p">,</span>
+    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Let's schedule a call tomorrow."</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>System Messages</strong></p>
 <p>Automated notifications about talk events.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Agent B joined the conversation.&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Agent B joined the conversation."</span>
 <span class="p">}</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Agent C left the conversation.&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Agent C left the conversation."</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1063,20 +1063,20 @@
 <p>Create a group talk for project collaboration.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create chat with team members
    POST /service_agents/talk_chats
-   { &quot;type&quot;: &quot;group&quot;, &quot;name&quot;: &quot;Q1 Project&quot;, &quot;participants&quot;: [...] }
+   { "type": "group", "name": "Q1 Project", "participants": [...] }
 
 2. Send updates as messages
    POST /service_agents/talk_messages
-   { &quot;chat_id&quot;: &quot;&lt;chat-id&gt;&quot;, &quot;type&quot;: &quot;normal&quot;, &quot;text&quot;: &quot;Sprint 1 completed!&quot; }
+   { "chat_id": "&lt;chat-id&gt;", "type": "normal", "text": "Sprint 1 completed!" }
 
 3. Team reacts and replies in threads
    - Reactions: 🎉 👍
-   - Thread: &quot;Great work! What&#39;s next?&quot;
+   - Thread: "Great work! What's next?"
 </pre></div>
 </div>
 <p><strong>Scenario 2: Quick Decision</strong></p>
 <p>Use reactions for quick polls.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[Agent A] &quot;Should we deploy today? 👍 for yes, 👎 for no&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[Agent A] "Should we deploy today? 👍 for yes, 👎 for no"
      |
      +-- 👍 Agent B
      +-- 👍 Agent C
@@ -1089,17 +1089,17 @@ Result: 3-1, deploy approved
 <p><strong>Scenario 3: Support Escalation</strong></p>
 <p>Internal discussion about customer issue.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+------------------------------------------------+
-| Talk: &quot;Customer Issue #12345&quot;                  |
+| Talk: "Customer Issue #12345"                  |
 +------------------------------------------------+
 |                                                |
-| [Agent A] &quot;Customer reporting payment failure&quot; |
+| [Agent A] "Customer reporting payment failure" |
 |                                                |
-| [Agent B] &quot;Let me check the logs&quot;              |
+| [Agent B] "Let me check the logs"              |
 |     |                                          |
-|     +-- [Reply] &quot;Found it - gateway timeout&quot;   |
-|     +-- [Reply] &quot;Retrying the transaction&quot;     |
+|     +-- [Reply] "Found it - gateway timeout"   |
+|     +-- [Reply] "Retrying the transaction"     |
 |                                                |
-| [Agent A] &quot;Customer confirmed it works now&quot;    |
+| [Agent A] "Customer confirmed it works now"    |
 |     👍 Agent B                                 |
 |                                                |
 +------------------------------------------------+
@@ -1273,8 +1273,8 @@ subscription</p></td>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>
