@@ -646,7 +646,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Medium</p></li>
 <li><p><strong>Cost:</strong> Free (agent management operations incur no charges; calls routed to agents are billed per call minute)</p></li>
-<li><p><strong>Async:</strong> No. Agent CRUD operations are synchronous. However, agent status changes due to incoming calls (e.g., <code class="docutils literal notranslate"><span class="pre">available</span></code> to <code class="docutils literal notranslate"><span class="pre">ringing</span></code> to <code class="docutils literal notranslate"><span class="pre">busy</span></code>) happen asynchronously via the queue routing system.</p></li>
+<li><p><strong>Async:</strong> No. Agent CRUD operations are synchronous. However, an agent’s status change to <code class="docutils literal notranslate"><span class="pre">busy</span></code> when a routed call is answered happens asynchronously via the call routing system.</p></li>
 </ul>
 </div>
 <p>The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.</p>
@@ -672,14 +672,7 @@
     <span class="o">|</span> <span class="p">(</span><span class="n">ready</span><span class="p">)</span>   <span class="o">|</span>              <span class="o">|</span> <span class="p">(</span><span class="k">break</span><span class="p">)</span>   <span class="o">|</span>              <span class="o">|</span><span class="p">(</span><span class="n">logged</span> <span class="n">out</span><span class="p">)</span><span class="o">|</span>
     <span class="o">+-----+-----+</span>              <span class="o">+-----------+</span>              <span class="o">+-----------+</span>
           <span class="o">|</span>
-          <span class="o">|</span> <span class="n">Call</span> <span class="n">routed</span> <span class="n">to</span> <span class="n">agent</span>
-          <span class="n">v</span>
-    <span class="o">+-----------+</span>
-    <span class="o">|</span>  <span class="n">ringing</span>  <span class="o">|</span>
-    <span class="o">|</span> <span class="p">(</span><span class="n">incoming</span><span class="p">)</span><span class="o">|</span>
-    <span class="o">+-----+-----+</span>
-          <span class="o">|</span>
-          <span class="o">|</span> <span class="n">Agent</span> <span class="n">answers</span>
+          <span class="o">|</span> <span class="n">Routed</span> <span class="n">call</span> <span class="n">answered</span>
           <span class="n">v</span>
     <span class="o">+-----------+</span>
     <span class="o">|</span>   <span class="n">busy</span>    <span class="o">|</span>
@@ -719,10 +712,6 @@ queue calls?</p></th>
 <td><p>Agent is logged out of the system</p></td>
 <td><p>No</p></td>
 </tr>
-<tr class="row-even"><td><p>ringing</p></td>
-<td><p>System is attempting to deliver a call to the agent</p></td>
-<td><p>No</p></td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -739,15 +728,13 @@ queue calls?</p></th>
 <span class="o">+-----------+</span>                                    <span class="o">+-----------+</span>
 
 <span class="n">Automatic</span> <span class="n">transitions</span> <span class="p">(</span><span class="n">system</span> <span class="n">controls</span><span class="p">):</span>
-<span class="o">+-----------+</span>        <span class="n">Call</span> <span class="n">routed</span>         <span class="o">+-----------+</span>
-<span class="o">|</span> <span class="n">available</span> <span class="o">|---------------------------&gt;|</span>  <span class="n">ringing</span>  <span class="o">|</span>
-<span class="o">+-----------+</span>                            <span class="o">+-----+-----+</span>
-                                                <span class="o">|</span>
-                                                <span class="o">|</span> <span class="n">Agent</span> <span class="n">answers</span>
-                                                <span class="n">v</span>
-                                          <span class="o">+-----------+</span>
-                                          <span class="o">|</span>   <span class="n">busy</span>    <span class="o">|</span>
-                                          <span class="o">+-----------+</span>
+<span class="o">+-----------+</span>   <span class="n">Routed</span> <span class="n">call</span> <span class="n">answered</span>    <span class="o">+-----------+</span>
+<span class="o">|</span> <span class="n">available</span> <span class="o">|--------------------------&gt;|</span>   <span class="n">busy</span>    <span class="o">|</span>
+<span class="o">+-----------+</span>                           <span class="o">+-----------+</span>
+
+<span class="n">Note</span><span class="p">:</span> <span class="n">during</span> <span class="n">dial</span> <span class="p">(</span><span class="n">before</span> <span class="n">the</span> <span class="n">call</span> <span class="ow">is</span> <span class="n">answered</span><span class="p">)</span> <span class="n">the</span> <span class="n">agent</span> <span class="ow">is</span> <span class="n">temporarily</span>
+<span class="n">excluded</span> <span class="kn">from</span><span class="w"> </span><span class="nn">re</span><span class="o">-</span><span class="n">selection</span> <span class="n">by</span> <span class="n">an</span> <span class="n">internal</span> <span class="n">reservation</span><span class="p">,</span> <span class="ow">not</span> <span class="n">by</span> <span class="n">a</span> <span class="n">status</span>
+<span class="n">change</span><span class="p">,</span> <span class="n">so</span> <span class="n">the</span> <span class="n">status</span> <span class="n">stays</span> <span class="s2">"available"</span> <span class="n">until</span> <span class="n">the</span> <span class="n">call</span> <span class="ow">is</span> <span class="n">answered</span><span class="o">.</span>
 
 <span class="n">Note</span><span class="p">:</span> <span class="n">there</span> <span class="ow">is</span> <span class="n">no</span> <span class="n">automatic</span> <span class="n">transition</span> <span class="n">back</span> <span class="n">to</span> <span class="s2">"available"</span> <span class="n">when</span> <span class="n">the</span>
 <span class="n">call</span> <span class="n">ends</span><span class="o">.</span> <span class="n">The</span> <span class="n">agent</span> <span class="p">(</span><span class="ow">or</span> <span class="n">your</span> <span class="n">application</span><span class="p">)</span> <span class="n">must</span> <span class="n">explicitly</span> <span class="n">call</span>
@@ -1028,7 +1015,8 @@ Queue finds Agent Smith (available)
 <span class="n">Step</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Route</span> <span class="n">call</span> <span class="n">to</span> <span class="n">agent</span>
 <span class="o">+----------------------+</span>
 <span class="o">|</span> <span class="n">Agent</span> <span class="n">C</span> <span class="n">status</span><span class="p">:</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">available</span> <span class="o">-&gt;</span> <span class="n">ringing</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">available</span> <span class="p">(</span><span class="n">reserved</span>  <span class="o">|</span>
+<span class="o">|</span> <span class="n">during</span> <span class="n">dial</span><span class="p">)</span>         <span class="o">|</span>
 <span class="o">+----------+-----------+</span>
            <span class="o">|</span>
            <span class="o">|</span> <span class="n">Agent</span><span class="s1">'s phones ring</span>
@@ -1036,7 +1024,7 @@ Queue finds Agent Smith (available)
 <span class="n">Step</span> <span class="mi">5</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">answers</span>
 <span class="o">+----------------------+</span>
 <span class="o">|</span> <span class="n">Agent</span> <span class="n">C</span> <span class="n">status</span><span class="p">:</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">ringing</span> <span class="o">-&gt;</span> <span class="n">busy</span>       <span class="o">|</span>
+<span class="o">|</span> <span class="n">available</span> <span class="o">-&gt;</span> <span class="n">busy</span>     <span class="o">|</span>
 <span class="o">|</span>                      <span class="o">|</span>
 <span class="o">|</span> <span class="n">Queuecall</span> <span class="n">status</span><span class="p">:</span>    <span class="o">|</span>
 <span class="o">|</span> <span class="n">waiting</span> <span class="o">-&gt;</span> <span class="n">service</span>    <span class="o">|</span>
@@ -1157,7 +1145,7 @@ Queue finds Agent Smith (available)
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Common flow:
 1. Agent logs in → Status: offline
 2. Agent sets available → Status: available
-3. Call comes in → Status: ringing (automatic)
+3. Call comes in → Status stays available (agent reserved during dial)
 4. Agent answers → Status: busy (automatic)
 5. Call ends → Status stays "busy"; the agent must manually set it
    back to available via PUT /agents/{id}/status
@@ -1179,7 +1167,7 @@ Queue finds Agent Smith (available)
 </div>
 <p><strong>Scenario 2: Taking a Break</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent is available, receives call
-       Status: available → ringing → busy
+       Status: available → busy
 
 Call ends
        Status stays "busy" (no automatic revert)
@@ -1222,7 +1210,7 @@ Agent logs out for the day
 addresses (tags are not consulted – see the
 Tag Issues row below)</p></td>
 </tr>
-<tr class="row-odd"><td><p>Stuck in “ringing” status</p></td>
+<tr class="row-odd"><td><p>Stuck in “busy” status</p></td>
 <td><p>Check if call was properly terminated; may
 need to manually reset status</p></td>
 </tr>
