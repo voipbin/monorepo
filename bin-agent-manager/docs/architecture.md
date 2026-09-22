@@ -77,4 +77,4 @@ Every agent event is addressed by the agent's OWN id (the default top-level `id`
 | `agent.EventTypeAgentCreated` | Agent created | `PublishWebhookEvent` |
 | `agent.EventTypeAgentUpdated` | Agent info, addresses, tag IDs, password, or permission updated | `PublishEvent` + `PublishWebhookEvent` |
 | `agent.EventTypeAgentDeleted` | Agent deleted | `PublishWebhookEvent` |
-| `agent.EventTypeAgentStatusUpdated` | Agent status changed (available/away/busy/offline/ringing) | `PublishWebhookEvent` |
+| `agent.EventTypeAgentStatusUpdated` | Agent status changed (available/away/busy/offline) | `PublishWebhookEvent` |

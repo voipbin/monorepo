@@ -8,7 +8,7 @@ A person (call center operator) who handles inbound and outbound calls through t
 
 Key fields: `customer_id`, `name`, `extension`, `addresses` (SIP contact URIs), `status`, `ring_method`, `permission`, `tag_ids`, `direct_hash`.
 
-Statuses: `available`, `away`, `busy`, `offline`, `ringing`.
+Statuses: `available`, `away`, `busy`, `offline`.
 
 Ring methods: `ringall` (all addresses called simultaneously), `linear` (addresses tried in order).
 
@@ -23,7 +23,7 @@ Permissions are stored as integer bitmasks and checked bitwise.
 
 ## Key Business Rules
 
-1. **Status transitions are event-driven**: Agent status changes from `available` → `ringing` when an incoming call is routed; from `ringing` → `busy` when answered; and back to `available` when the call ends. This service subscribes to call-manager events to drive these transitions automatically.
+1. **Status transitions are event-driven**: Agent status changes from `available` → `busy` when a routed call is answered (driven by call-manager `groupcall_progressing`), and back to `available` when the call ends. This service subscribes to call-manager events to drive these transitions automatically. During dial (before answer) the agent is excluded from re-selection by the method B reservation fields (`reserve_reference_id`), not by a status change.
 
 2. **Password reset requires a configured base URL**: The `password_reset_base_url` config flag must be set for the password-forgot flow to function. If unset, password reset emails will not contain a valid link.
 
@@ -45,9 +45,7 @@ Permissions are stored as integer bitmasks and checked bitwise.
 stateDiagram-v2
     [*] --> offline : agent created
     offline --> available : agent logs in / sets available
-    available --> ringing : incoming call routed to agent
-    ringing --> busy : call answered
-    ringing --> available : call rejected / no answer / timeout
+    available --> busy : routed call answered
     busy --> available : call ends
     available --> away : agent sets away
     away --> available : agent sets available

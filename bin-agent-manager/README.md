@@ -71,7 +71,6 @@ Agent has status.
 	StatusAway      Status = "away"      // away
 	StatusBusy      Status = "busy"      // busy
 	StatusOffline   Status = "offline"   // offline
-	StatusRinging   Status = "ringing"   // voipbin is making a call to the agent
 ```
 
 # Tag
