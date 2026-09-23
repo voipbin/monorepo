@@ -588,6 +588,141 @@
           "legendFormat": "{{ type }}"
         }
       ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
+      "id": 600,
+      "panels": [],
+      "title": "Matching Backstop (VOIP-1539 \u00a75.2)",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": true,
+            "axisLabel": "events/sec"
+          },
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 60 },
+      "id": 15,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Entry-Point CAS Rate (UpdateStatusConnecting, won vs lost)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "rate(queue_manager_queuecall_connecting_cas_total[5m])",
+          "legendFormat": "{{ outcome }}"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": true,
+            "axisLabel": "%"
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 60 },
+      "id": 16,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Entry-Point CAS Loss Ratio (structural spike = double-match risk)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "rate(queue_manager_queuecall_connecting_cas_total{outcome=\"lost\"}[5m]) / (rate(queue_manager_queuecall_connecting_cas_total{outcome=\"won\"}[5m]) + rate(queue_manager_queuecall_connecting_cas_total{outcome=\"lost\"}[5m]))",
+          "legendFormat": "loss ratio"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": true,
+            "axisLabel": "events/sec"
+          },
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 68 },
+      "id": 17,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Backstop Rollback CAS Rate (connecting-stale recovery, won vs lost)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "rate(queue_manager_queuecall_reconcile_rollback_cas_total[5m])",
+          "legendFormat": "{{ outcome }}"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 68 },
+      "id": 18,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Backstop Rollback Win Rate (5m) -- sustained non-zero means events were actually lost",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "rate(queue_manager_queuecall_reconcile_rollback_cas_total{outcome=\"won\"}[5m])",
+          "legendFormat": "rollback wins/sec"
+        }
+      ]
     }
   ],
   "schemaVersion": 30,
