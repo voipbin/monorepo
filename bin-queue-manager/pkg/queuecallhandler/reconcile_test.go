@@ -14,6 +14,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/models/queuecall"
 	"monorepo/bin-queue-manager/pkg/cachehandler"
 	"monorepo/bin-queue-manager/pkg/dbhandler"
@@ -100,8 +101,11 @@ func Test_Reconcile_acquiredAndReleased(t *testing.T) {
 }
 
 // Test_reconcileConnectingStale_rollsBackAndHangsUp verifies recovery A
-// (VOIP-1539 §5.2 step 2): a stale connecting queuecall with a live
-// groupcall gets that groupcall hung up, then rolled back to waiting.
+// (VOIP-1539 §5.2 step 2): a stale connecting queuecall that wins the
+// rollback CAS gets its groupcall hung up AFTER the CAS win (Round 3
+// review fix) -- proving hangup is gated on this queuecall genuinely still
+// being connecting at CAS time, not fired unconditionally off the
+// pre-rollback snapshot.
 func Test_reconcileConnectingStale_rollsBackAndHangsUp(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -109,6 +113,7 @@ func Test_reconcileConnectingStale_rollsBackAndHangsUp(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockQueue := queuehandler.NewMockQueueHandler(mc)
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 
 	h := &queuecallHandler{
@@ -116,6 +121,7 @@ func Test_reconcileConnectingStale_rollsBackAndHangsUp(t *testing.T) {
 		reqHandler:    mockReq,
 		db:            mockDB,
 		notifyhandler: mockNotify,
+		queueHandler:  mockQueue,
 	}
 	ctx := context.Background()
 
@@ -130,22 +136,23 @@ func Test_reconcileConnectingStale_rollsBackAndHangsUp(t *testing.T) {
 
 	mockUtil.EXPECT().TimeNowAdd(-connectingStaleAfter).Return(&now)
 	mockDB.EXPECT().QueuecallListConnectingStale(ctx, now, uint64(reconcileScanLimit)).Return([]*queuecall.Queuecall{qc}, nil)
-	mockReq.EXPECT().CallV1GroupcallHangup(ctx, groupcallID).Return(nil, nil)
 
-	// UpdateStatusWaitingRollback's own internals (CAS setter, cache
-	// refresh, requeue) are exercised by pkg/queuecallhandler/db_test.go --
-	// here it's invoked through the exported method, so the CAS setter call
-	// alone (affected=0, no side effects) is enough to prove the wiring.
-	mockDB.EXPECT().QueuecallSetStatusWaitingIfConnecting(ctx, qcID).Return(int64(0), nil)
+	// CAS wins (affected=1) -- only then does hangup fire.
+	mockDB.EXPECT().QueuecallSetStatusWaitingIfConnecting(ctx, qcID).Return(int64(1), nil)
+	mockReq.EXPECT().CallV1GroupcallHangup(ctx, groupcallID).Return(nil, nil)
 	mockDB.EXPECT().QueuecallGet(ctx, qcID).Return(qc, nil)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, qc.CustomerID, queuecall.EventTypeQueuecallWaiting, qc)
+	mockQueue.EXPECT().AddWaitQueueCallID(gomock.Any(), qc.QueueID, qc.ID).Return(&queue.Queue{}, nil).AnyTimes()
 
 	h.reconcileConnectingStale(ctx)
 }
 
-// Test_reconcileConnectingStale_noGroupcall verifies a stale connecting
-// queuecall with no groupcall (GroupcallID == uuid.Nil) skips the hangup
-// call and goes straight to rollback.
-func Test_reconcileConnectingStale_noGroupcall(t *testing.T) {
+// Test_reconcileConnectingStale_casLostSkipsHangup verifies the exact
+// defect Round 3 review flagged: when the rollback CAS loses (the
+// queuecall already progressed past connecting on its own, e.g. a join
+// landed between the stale-list snapshot and this call), the groupcall
+// must NOT be hung up -- it may be a real, already-connected call.
+func Test_reconcileConnectingStale_casLostSkipsHangup(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -163,6 +170,60 @@ func Test_reconcileConnectingStale_noGroupcall(t *testing.T) {
 	ctx := context.Background()
 
 	now := time.Date(2025, 2, 1, 0, 0, 0, 0, time.UTC)
+	qcID := uuid.FromStringOrNil("aa000000-0000-0000-0000-000000000003")
+	groupcallID := uuid.FromStringOrNil("bb000000-0000-0000-0000-000000000003")
+	// This snapshot is stale by the time the CAS runs: qc still shows
+	// GroupcallID set (as it was when listed), but the queuecall has
+	// actually already moved to service via a winning join in the
+	// meantime.
+	qc := &queuecall.Queuecall{
+		Identity:    commonidentity.Identity{ID: qcID},
+		Status:      queuecall.StatusConnecting,
+		GroupcallID: groupcallID,
+	}
+	current := &queuecall.Queuecall{
+		Identity:    commonidentity.Identity{ID: qcID},
+		Status:      queuecall.StatusService,
+		GroupcallID: groupcallID,
+	}
+
+	mockUtil.EXPECT().TimeNowAdd(-connectingStaleAfter).Return(&now)
+	mockDB.EXPECT().QueuecallListConnectingStale(ctx, now, uint64(reconcileScanLimit)).Return([]*queuecall.Queuecall{qc}, nil)
+
+	// CAS loses (affected=0): no hangup, no reservation release, no
+	// webhook, no requeue -- a pure no-op that just re-fetches current state.
+	mockDB.EXPECT().QueuecallSetStatusWaitingIfConnecting(ctx, qcID).Return(int64(0), nil)
+	mockDB.EXPECT().QueuecallGet(ctx, qcID).Return(current, nil)
+	// No CallV1GroupcallHangup expectation: must not be called when the
+	// CAS loses, even though qc.GroupcallID (the stale snapshot) is set.
+
+	h.reconcileConnectingStale(ctx)
+}
+
+// Test_reconcileConnectingStale_noGroupcall verifies a stale connecting
+// queuecall with no groupcall (GroupcallID == uuid.Nil) that wins the
+// rollback CAS skips the hangup call entirely and proceeds straight to the
+// winner-only side effects.
+func Test_reconcileConnectingStale_noGroupcall(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockQueue := queuehandler.NewMockQueueHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &queuecallHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyhandler: mockNotify,
+		queueHandler:  mockQueue,
+	}
+	ctx := context.Background()
+
+	now := time.Date(2025, 2, 1, 0, 0, 0, 0, time.UTC)
 	qcID := uuid.FromStringOrNil("aa000000-0000-0000-0000-000000000002")
 	qc := &queuecall.Queuecall{
 		Identity: commonidentity.Identity{ID: qcID},
@@ -172,10 +233,13 @@ func Test_reconcileConnectingStale_noGroupcall(t *testing.T) {
 
 	mockUtil.EXPECT().TimeNowAdd(-connectingStaleAfter).Return(&now)
 	mockDB.EXPECT().QueuecallListConnectingStale(ctx, now, uint64(reconcileScanLimit)).Return([]*queuecall.Queuecall{qc}, nil)
+	// CAS wins (affected=1), but GroupcallID is Nil.
+	mockDB.EXPECT().QueuecallSetStatusWaitingIfConnecting(ctx, qcID).Return(int64(1), nil)
 	// No CallV1GroupcallHangup expectation: must not be called for a
-	// zero-value GroupcallID.
-	mockDB.EXPECT().QueuecallSetStatusWaitingIfConnecting(ctx, qcID).Return(int64(0), nil)
+	// zero-value GroupcallID even on a CAS win.
 	mockDB.EXPECT().QueuecallGet(ctx, qcID).Return(qc, nil)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, qc.CustomerID, queuecall.EventTypeQueuecallWaiting, qc)
+	mockQueue.EXPECT().AddWaitQueueCallID(gomock.Any(), qc.QueueID, qc.ID).Return(&queue.Queue{}, nil).AnyTimes()
 
 	h.reconcileConnectingStale(ctx)
 }

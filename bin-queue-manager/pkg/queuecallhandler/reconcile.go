@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -80,11 +79,16 @@ func (h *queuecallHandler) Reconcile(ctx context.Context) {
 }
 
 // reconcileConnectingStale is recovery A (design §5.2 step 2): queuecalls
-// stuck in the connecting status past connectingStaleAfter get their
-// groupcall hung up (if any) and rolled back to waiting via
-// UpdateStatusWaitingRollback, which is itself CAS-gated and therefore
-// idempotent against a queuecall that already progressed past connecting on
-// its own (join CAS win) between the list and the rollback call.
+// stuck in the connecting status past connectingStaleAfter are rolled back
+// to waiting via UpdateStatusWaitingRollback, which is itself CAS-gated and
+// therefore idempotent against a queuecall that already progressed past
+// connecting on its own (join CAS win) between the list and the rollback
+// call. UpdateStatusWaitingRollback only hangs up the queuecall's groupcall
+// AFTER winning that CAS (VOIP-1539 §5.2 PR #1331 Round 3 review) -- so a
+// queuecall that was actually joined and moved to service between this
+// list snapshot and the rollback attempt never gets its live call torn
+// down; the CAS loses, hangup never fires, this call is a pure no-op for
+// that row.
 func (h *queuecallHandler) reconcileConnectingStale(ctx context.Context) {
 	log := logrus.WithField("func", "reconcileConnectingStale")
 
@@ -97,23 +101,6 @@ func (h *queuecallHandler) reconcileConnectingStale(ctx context.Context) {
 	}
 
 	for _, qc := range qcs {
-		if qc.GroupcallID != uuid.Nil {
-			if _, errHangup := h.reqHandler.CallV1GroupcallHangup(ctx, qc.GroupcallID); errHangup != nil {
-				// The groupcall may already be gone (agent answered and
-				// hung up on their own, or a prior backstop pass already
-				// hung it up) -- that is an expected outcome, not a
-				// failure. But this call cannot distinguish "already
-				// gone" from a genuine RPC/infra failure that leaves a
-				// live groupcall behind while the queuecall below still
-				// rolls back to waiting -- log at Error (not Debug) so an
-				// operator can tell the two apart from call-manager's own
-				// logs/metrics, then continue the rollback regardless;
-				// UpdateStatusWaitingRollback's own CAS is the real
-				// safety net for the queuecall side of this.
-				log.Errorf("Could not hang up the stale groupcall (may already be gone, or may be a genuine RPC failure -- check call-manager). queuecall_id: %s, groupcall_id: %s, err: %v", qc.ID, qc.GroupcallID, errHangup)
-			}
-		}
-
 		if _, errRollback := h.UpdateStatusWaitingRollback(ctx, qc); errRollback != nil {
 			log.Errorf("Could not roll back the stale connecting queuecall. queuecall_id: %s, err: %v", qc.ID, errRollback)
 		}

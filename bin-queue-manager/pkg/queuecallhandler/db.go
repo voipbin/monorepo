@@ -523,17 +523,43 @@ func (h *queuecallHandler) UpdateStatusWaitingRollback(ctx context.Context, qc *
 		return res, nil
 	}
 
-	// release the agent reservation before re-queueing (winner only). The
-	// status flip and the service_agent_id/groupcall_id clear already
-	// happened atomically inside QueuecallSetStatusWaitingIfConnecting's
-	// single CAS UPDATE above (VOIP-1539 §5.2 PR #1331 review) -- no
-	// separate blind QueuecallUpdate follows, closing the race window
-	// where a concurrent entry-point-B match could land its own
+	// release the agent reservation and hang up the groupcall (winner
+	// only, and only now -- after the CAS has actually confirmed this
+	// queuecall is still connecting). The status flip and the
+	// service_agent_id/groupcall_id clear already happened atomically
+	// inside QueuecallSetStatusWaitingIfConnecting's single CAS UPDATE
+	// above (VOIP-1539 §5.2 PR #1331 Round 2 review) -- no separate blind
+	// QueuecallUpdate follows, closing the race window where a
+	// concurrent entry-point-B match could land its own
 	// connecting/service_agent_id/groupcall_id write in the gap between
 	// two writes.
+	//
+	// Hanging up qc.GroupcallID is deliberately gated behind this CAS win
+	// (VOIP-1539 §5.2 PR #1331 Round 3 review) -- the CAS is what proves
+	// this queuecall was actually still connecting (not already
+	// service'd by a join that landed between the caller's stale-list
+	// snapshot and this call). Hanging up unconditionally on the
+	// snapshot alone would risk tearing down a real, already-connected
+	// call: unlike the DB row (which the CAS protects), a live
+	// SIP/RTP session has no compare-and-swap of its own -- once the
+	// hangup RPC is sent, there is no undoing it.
 	if qc.ServiceAgentID != uuid.Nil {
 		if errRelease := h.reqHandler.AgentV1AgentReserveRelease(ctx, qc.ServiceAgentID, qc.ID); errRelease != nil {
 			log.Errorf("Could not release the agent reservation. err: %v", errRelease)
+		}
+	}
+	if qc.GroupcallID != uuid.Nil {
+		if _, errHangup := h.reqHandler.CallV1GroupcallHangup(ctx, qc.GroupcallID); errHangup != nil {
+			// The groupcall may already be gone (agent hung up on their
+			// own, or a prior backstop pass already hung it up) -- that is
+			// an expected outcome, not a failure. But this call cannot
+			// distinguish "already gone" from a genuine RPC/infra failure
+			// that leaves a live groupcall behind -- log at Error so an
+			// operator can tell the two apart from call-manager's own
+			// logs/metrics. Either way the queuecall's own status has
+			// already won the CAS above, so the rollback below proceeds
+			// regardless.
+			log.Errorf("Could not hang up the stale groupcall (may already be gone, or may be a genuine RPC failure -- check call-manager). queuecall_id: %s, groupcall_id: %s, err: %v", qc.ID, qc.GroupcallID, errHangup)
 		}
 	}
 
