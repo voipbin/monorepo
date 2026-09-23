@@ -169,9 +169,9 @@ func Test_toolHandleJoinQueue(t *testing.T) {
 		responseQueue  *qmqueue.Queue
 		responseGetErr error
 
-		skipAddActions   bool
-		responseAf       *fmactiveflow.Activeflow
-		responseAddErr   error
+		skipAddActions bool
+		responseAf     *fmactiveflow.Activeflow
+		responseAddErr error
 
 		expectRes *messageContent
 	}{
