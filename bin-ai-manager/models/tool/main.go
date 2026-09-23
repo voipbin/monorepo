@@ -21,6 +21,8 @@ const (
 	ToolNameGetResource       ToolName = "get_resource"
 	ToolNameDescribeAction    ToolName = "describe_action"
 	ToolNameCaseCreate        ToolName = "case_create"
+	ToolNameListQueues        ToolName = "list_queues"
+	ToolNameJoinQueue         ToolName = "join_queue"
 
 	// Insight AI tool set (VOIP-1234).
 	ToolNameGetContactInteractions ToolName = "get_contact_interactions"
@@ -65,6 +67,8 @@ var AllToolNames = []ToolName{
 	ToolNameGetResource,
 	ToolNameDescribeAction,
 	ToolNameCaseCreate,
+	ToolNameListQueues,
+	ToolNameJoinQueue,
 }
 
 // AllInsightToolNames defines the tool set available to ai.TypeInsight AIs.

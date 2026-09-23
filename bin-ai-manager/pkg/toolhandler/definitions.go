@@ -751,6 +751,70 @@ Optional name/detail/note describe the case for a human agent reviewing it later
 		RunLLM: true,
 	},
 	{
+		Name:   tool.ToolNameListQueues,
+		RunLLM: true,
+		Description: `Lists the Queues configured for this account, so you can decide which one best matches the caller's need before routing them with join_queue.
+
+WHEN TO USE:
+- Before calling join_queue, to see what Queues exist and pick the right one (e.g. "sales", "support", "billing").
+- User asks what departments/queues are available.
+
+WHEN NOT TO USE:
+- You already know the exact queue_id to use (e.g. from a prior list_queues call in this same session).
+
+Each queue entry has: id (UUID, pass this to join_queue), name, detail. An empty list means no Queues are configured for this account.
+
+run_llm: Always set true — you should choose a queue and act (or tell the user none is available) based on the result.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Always set true to act on the queue list.",
+					"default":     true,
+				},
+			},
+			"required": []string{},
+		},
+	},
+	{
+		Name:   tool.ToolNameJoinQueue,
+		RunLLM: false,
+		Description: `Places the CURRENT call into a Queue for routing to a human agent. This ends your (the AI's) participation in the call.
+
+WHEN TO USE:
+- You have determined (e.g. via list_queues) which department/queue matches the caller's need, and the caller should now wait for a human agent.
+- User asks to be connected to a queue/department and a matching queue_id is known.
+
+WHEN NOT TO USE:
+- You have not yet identified which queue is appropriate -- call list_queues first.
+- User wants to be transferred directly to a person, extension, or phone number (use connect_call instead; that is a direct transfer, not Queue-based routing with hold/wait handling).
+
+DIFFERS FROM connect_call:
+- join_queue = places the call into a Queue (hold music, wait timeout, agent matching by tag, then bridged when an agent is available)
+- connect_call = direct transfer/bridge to a specific endpoint (person, extension, phone number), no wait/queue mechanics
+
+ARGUMENTS:
+- queue_id (required): the UUID of the queue to join, from list_queues' id field. Must belong to your own account; an id from a different account is rejected.
+
+run_llm: Set false (default) -- the caller is being handed off to the queue's own wait experience (e.g. hold music/announcement), not a spoken confirmation from you.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to speak a brief confirmation before handing off. Set false (default) to hand off silently.",
+					"default":     false,
+				},
+				"queue_id": map[string]any{
+					"type":        "string",
+					"description": "UUID of the queue to join, as returned by list_queues' id field.",
+				},
+			},
+			"required": []string{"queue_id"},
+		},
+	},
+	{
 		Name:   tool.ToolNameGetContactInteractions,
 		RunLLM: true,
 		Description: `Lists past interactions (calls, conversation messages) with the contact/peer of the Case this Insight AI was opened for.

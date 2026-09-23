@@ -152,6 +152,8 @@ func TestAllToolNames(t *testing.T) {
 		tool.ToolNameGetResource,
 		tool.ToolNameDescribeAction,
 		tool.ToolNameCaseCreate,
+		tool.ToolNameListQueues,
+		tool.ToolNameJoinQueue,
 	}
 
 	if len(tool.AllToolNames) != len(expectedNames) {

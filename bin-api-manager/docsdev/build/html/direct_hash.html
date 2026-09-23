@@ -8,7 +8,7 @@
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Direct Hash - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -775,14 +775,14 @@
 <p><strong>Creating a Direct Hash</strong></p>
 <p>For extensions, conferences, teams, queues, flows, and webchat widgets, a direct hash is generated automatically when the resource is created. For agents and AIs, call the regenerate endpoint to create one:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST \
-    'https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;'
+    &#39;https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>The response contains the full resource with the <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> field populated.</p>
 <p><strong>Regenerating a Direct Hash</strong></p>
 <p>To invalidate the current hash and generate a new one, call the same regenerate endpoint. The old hash is permanently invalidated — any SIP URIs using the old hash will stop working immediately.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST \
-    'https://api.voipbin.net/v1.0/extensions/&lt;extension-id&gt;/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;'
+    &#39;https://api.voipbin.net/v1.0/extensions/&lt;extension-id&gt;/direct-hash-regenerate?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>
 <p>No request body is required. The response contains the updated resource with the new <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code>.</p>
