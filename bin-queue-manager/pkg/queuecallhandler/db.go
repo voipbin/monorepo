@@ -523,20 +523,18 @@ func (h *queuecallHandler) UpdateStatusWaitingRollback(ctx context.Context, qc *
 		return res, nil
 	}
 
-	// release the agent reservation before clearing the assignment (winner only).
+	// release the agent reservation before re-queueing (winner only). The
+	// status flip and the service_agent_id/groupcall_id clear already
+	// happened atomically inside QueuecallSetStatusWaitingIfConnecting's
+	// single CAS UPDATE above (VOIP-1539 §5.2 PR #1331 review) -- no
+	// separate blind QueuecallUpdate follows, closing the race window
+	// where a concurrent entry-point-B match could land its own
+	// connecting/service_agent_id/groupcall_id write in the gap between
+	// two writes.
 	if qc.ServiceAgentID != uuid.Nil {
 		if errRelease := h.reqHandler.AgentV1AgentReserveRelease(ctx, qc.ServiceAgentID, qc.ID); errRelease != nil {
 			log.Errorf("Could not release the agent reservation. err: %v", errRelease)
 		}
-	}
-
-	// clear the service_agent_id and groupcall_id assignment (winner only).
-	if errClear := h.db.QueuecallUpdate(ctx, qc.ID, map[queuecall.Field]any{
-		queuecall.FieldServiceAgentID: uuid.Nil,
-		queuecall.FieldGroupcallID:    uuid.Nil,
-	}); errClear != nil {
-		log.Errorf("Could not clear the service agent id. err: %v", errClear)
-		return nil, errClear
 	}
 
 	res, err := h.Get(ctx, qc.ID)

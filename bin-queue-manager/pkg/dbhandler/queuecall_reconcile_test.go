@@ -235,3 +235,112 @@ func Test_QueuecallListWaitingOldest(t *testing.T) {
 		t.Errorf("Wrong order. expect oldest < middle < newest, got indices oldest=%d middle=%d newest=%d", indexOf(oldest), indexOf(middle), indexOf(newest))
 	}
 }
+
+// Test_QueuecallSetStatusWaitingIfConnecting_clearsAssignmentAtomically
+// verifies the PR #1331 round-2 review fix (VOIP-1539 §5.2): the status
+// flip and the service_agent_id/groupcall_id clear happen in a single CAS
+// UPDATE, guarded by status='connecting'. A winning CAS clears both
+// assignment fields; a losing CAS (status already moved on, e.g. a
+// concurrent entry-point-B match already advanced it past connecting)
+// leaves the row completely untouched -- proving there is no separate
+// blind-write step that could land in the gap a race would otherwise open.
+func Test_QueuecallSetStatusWaitingIfConnecting_clearsAssignmentAtomically(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockCache.EXPECT().QueuecallSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockCache.EXPECT().QueuecallGet(gomock.Any(), gomock.Any()).Return(nil, context.DeadlineExceeded).AnyTimes()
+
+	h := &handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	agentID := uuid.FromStringOrNil("f0000000-0000-0000-0000-000000000001")
+	groupcallID := uuid.FromStringOrNil("f0000000-0000-0000-0000-000000000002")
+
+	t.Run("winning CAS clears status and assignment together", func(t *testing.T) {
+		id := uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111")
+		tmCreate := time.Date(2025, 5, 1, 0, 0, 0, 0, time.UTC)
+		mockUtil.EXPECT().TimeNow().Return(&tmCreate)
+		qc := &queuecall.Queuecall{
+			Identity:       commonidentity.Identity{ID: id},
+			Status:         queuecall.StatusConnecting,
+			ServiceAgentID: agentID,
+			GroupcallID:    groupcallID,
+		}
+		if err := h.QueuecallCreate(ctx, qc); err != nil {
+			t.Fatalf("Could not create the queuecall for setup. err: %v", err)
+		}
+
+		now := time.Date(2025, 5, 1, 0, 5, 0, 0, time.UTC)
+		mockUtil.EXPECT().TimeNow().Return(&now)
+		affected, err := h.QueuecallSetStatusWaitingIfConnecting(ctx, id)
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+		if affected != 1 {
+			t.Errorf("Wrong match. expect: 1, got: %d", affected)
+		}
+
+		res, err := h.QueuecallGet(ctx, id)
+		if err != nil {
+			t.Fatalf("Could not get the queuecall. err: %v", err)
+		}
+		if res.Status != queuecall.StatusWaiting {
+			t.Errorf("Wrong match. expect: %v, got: %v", queuecall.StatusWaiting, res.Status)
+		}
+		if res.ServiceAgentID != uuid.Nil {
+			t.Errorf("Wrong match. expect: %v, got: %v", uuid.Nil, res.ServiceAgentID)
+		}
+		if res.GroupcallID != uuid.Nil {
+			t.Errorf("Wrong match. expect: %v, got: %v", uuid.Nil, res.GroupcallID)
+		}
+	})
+
+	t.Run("losing CAS leaves the row untouched", func(t *testing.T) {
+		id := uuid.FromStringOrNil("f2222222-2222-2222-2222-222222222222")
+		tmCreate := time.Date(2025, 5, 1, 0, 0, 0, 0, time.UTC)
+		mockUtil.EXPECT().TimeNow().Return(&tmCreate)
+		qc := &queuecall.Queuecall{
+			Identity:       commonidentity.Identity{ID: id},
+			Status:         queuecall.StatusService,
+			ServiceAgentID: agentID,
+			GroupcallID:    groupcallID,
+		}
+		if err := h.QueuecallCreate(ctx, qc); err != nil {
+			t.Fatalf("Could not create the queuecall for setup. err: %v", err)
+		}
+
+		// QueuecallSetStatusWaitingIfConnecting always calls TimeNow to
+		// build the UPDATE statement's tm_update value, even though the
+		// CAS below loses and matches zero rows.
+		now := time.Date(2025, 5, 1, 0, 5, 0, 0, time.UTC)
+		mockUtil.EXPECT().TimeNow().Return(&now)
+		affected, err := h.QueuecallSetStatusWaitingIfConnecting(ctx, id)
+		if err != nil {
+			t.Fatalf("Wrong match. expect: ok, got: %v", err)
+		}
+		if affected != 0 {
+			t.Errorf("Wrong match. expect: 0, got: %d", affected)
+		}
+
+		res, err := h.QueuecallGet(ctx, id)
+		if err != nil {
+			t.Fatalf("Could not get the queuecall. err: %v", err)
+		}
+		if res.Status != queuecall.StatusService {
+			t.Errorf("Wrong match. expect: %v (untouched), got: %v", queuecall.StatusService, res.Status)
+		}
+		if res.ServiceAgentID != agentID {
+			t.Errorf("Wrong match. expect: %v (untouched), got: %v", agentID, res.ServiceAgentID)
+		}
+		if res.GroupcallID != groupcallID {
+			t.Errorf("Wrong match. expect: %v (untouched), got: %v", groupcallID, res.GroupcallID)
+		}
+	})
+}

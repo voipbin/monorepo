@@ -21,11 +21,16 @@ const (
 	// connectingStaleAfter is the design's Tconn: how long a queuecall can
 	// sit in the connecting status before the backstop treats it as
 	// abandoned by the agent-dial path and rolls it back to waiting.
-	// Deliberately generous relative to call-manager's own dial timeout
+	// Must exceed call-manager's own agent-dial timeout with margin
 	// (design §5.2: "Tconn > call-manager 최대 agent-dial 타임아웃 + 마진") --
-	// this is a backstop for a connecting queuecall that never resolved at
-	// all (crashed dial, lost webhook), not a fast-path timeout.
-	connectingStaleAfter = 60 * time.Second
+	// call-manager's defaultDialTimeout is 60s
+	// (bin-call-manager/pkg/callhandler/main.go), so 60s here would give
+	// zero margin and risk the backstop racing a dial that is still
+	// legitimately in flight. 150s (2.5x the dial timeout) leaves several
+	// reconcile ticks (30s cadence) of margin after the dial timeout
+	// fires and its own ARI/webhook teardown has had time to land, before
+	// the backstop treats the queuecall as abandoned.
+	connectingStaleAfter = 150 * time.Second
 
 	// reconcileScanLimit bounds how many rows each recovery path examines
 	// per tick, so one pass can never issue an unbounded number of RPCs.
@@ -96,10 +101,16 @@ func (h *queuecallHandler) reconcileConnectingStale(ctx context.Context) {
 			if _, errHangup := h.reqHandler.CallV1GroupcallHangup(ctx, qc.GroupcallID); errHangup != nil {
 				// The groupcall may already be gone (agent answered and
 				// hung up on their own, or a prior backstop pass already
-				// hung it up) -- log and continue the rollback regardless,
-				// UpdateStatusWaitingRollback's own CAS is the real safety
-				// net here.
-				log.Debugf("Could not hang up the stale groupcall. queuecall_id: %s, groupcall_id: %s, err: %v", qc.ID, qc.GroupcallID, errHangup)
+				// hung it up) -- that is an expected outcome, not a
+				// failure. But this call cannot distinguish "already
+				// gone" from a genuine RPC/infra failure that leaves a
+				// live groupcall behind while the queuecall below still
+				// rolls back to waiting -- log at Error (not Debug) so an
+				// operator can tell the two apart from call-manager's own
+				// logs/metrics, then continue the rollback regardless;
+				// UpdateStatusWaitingRollback's own CAS is the real
+				// safety net for the queuecall side of this.
+				log.Errorf("Could not hang up the stale groupcall (may already be gone, or may be a genuine RPC failure -- check call-manager). queuecall_id: %s, groupcall_id: %s, err: %v", qc.ID, qc.GroupcallID, errHangup)
 			}
 		}
 

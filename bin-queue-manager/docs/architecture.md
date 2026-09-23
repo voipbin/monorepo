@@ -60,7 +60,7 @@ unbounded number of RPCs):
 
 | Recovery | Scope | Action |
 |---|---|---|
-| A: connecting-stale | Queuecalls in `connecting` with `tm_update` older than `connectingStaleAfter` (60s) | Hang up the stale groupcall (if any), then `UpdateStatusWaitingRollback` (CAS-gated, so a queuecall that already progressed on its own between the list and the rollback is a safe no-op) |
+| A: connecting-stale | Queuecalls in `connecting` with `tm_update` older than `connectingStaleAfter` (150s, 2.5x call-manager's 60s dial timeout) | Hang up the stale groupcall (if any), then `UpdateStatusWaitingRollback` (CAS-gated, so a queuecall that already progressed on its own between the list and the rollback is a safe no-op) |
 | B: waiting sweep | Every queuecall in `waiting`, across all queues | Re-run `matchWaitingQueuecall` — the exact same one-shot logic entry point A uses, just re-triggered on a timer |
 
 There is no drain on shutdown: an in-flight pass dying with the process is

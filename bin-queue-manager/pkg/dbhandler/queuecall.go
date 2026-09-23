@@ -671,16 +671,61 @@ func (h *handler) QueuecallSetStatusWaitingIfInitiating(ctx context.Context, id 
 	return h.queuecallSetStatusWaitingIf(ctx, id, queuecall.StatusInitiating)
 }
 
-// QueuecallSetStatusWaitingIfConnecting sets the QueueCall's status to the
-// waiting, guarded by `status = 'connecting'` (VOIP-1539 §5.0 #2).
+// QueuecallSetStatusWaitingIfConnecting sets the QueueCall's status to
+// waiting and clears its service_agent_id/groupcall_id assignment in the
+// same statement, guarded by `status = 'connecting'` (VOIP-1539 §5.0 #2).
 //
-// It performs a compare-and-swap UPDATE: only a connecting queuecall can be
-// rolled back to waiting (the connecting-stale backstop rollback path). It
-// returns the number of affected rows: 1 when this call won the CAS, 0 when the
-// queuecall was not in the connecting status (e.g. join won and it is now in
-// service, so the rollback must be a no-op).
+// The status flip and the assignment clear are combined into one UPDATE
+// (not two separate writes) so a racing entry point B match on this same
+// queuecall cannot land its own connecting/service_agent_id/groupcall_id
+// write in the gap between them -- see VOIP-1539 §5.2 PR #1331 review: a
+// two-step version (CAS the status, then blind-clear the fields) lets a
+// winning race leave status=connecting with group_call_id wiped, and
+// re-enqueues an already-matched queuecall. One CAS UPDATE closes that
+// window entirely: if a race already moved the row out of connecting, this
+// statement's WHERE clause simply matches zero rows.
+//
+// It returns the number of affected rows: 1 when this call won the CAS, 0
+// when the queuecall was not in the connecting status (e.g. join won and it
+// is now in service, or another match already replaced it -- either way the
+// rollback must be a no-op).
 func (h *handler) QueuecallSetStatusWaitingIfConnecting(ctx context.Context, id uuid.UUID) (int64, error) {
-	return h.queuecallSetStatusWaitingIf(ctx, id, queuecall.StatusConnecting)
+	fields, err := commondatabasehandler.PrepareFields(map[queuecall.Field]any{
+		queuecall.FieldStatus:         queuecall.StatusWaiting,
+		queuecall.FieldServiceAgentID: uuid.Nil,
+		queuecall.FieldGroupcallID:    uuid.Nil,
+		queuecall.FieldTMUpdate:       h.utilHandler.TimeNow(),
+	})
+	if err != nil {
+		return 0, fmt.Errorf("could not prepare fields. QueuecallSetStatusWaitingIfConnecting. err: %v", err)
+	}
+
+	sqlStr, args, err := squirrel.
+		Update(queueQueuecallsTable).
+		SetMap(fields).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(queuecall.FieldStatus): string(queuecall.StatusConnecting)}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("could not build query. QueuecallSetStatusWaitingIfConnecting. err: %v", err)
+	}
+
+	res, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return 0, fmt.Errorf("could not execute query. QueuecallSetStatusWaitingIfConnecting. err: %v", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("could not get affected rows. QueuecallSetStatusWaitingIfConnecting. err: %v", err)
+	}
+
+	if affected > 0 {
+		_ = h.queuecallUpdateToCache(ctx, id)
+	}
+
+	return affected, nil
 }
 
 // queuecallSetStatusWaitingIf performs a compare-and-swap UPDATE that sets the
