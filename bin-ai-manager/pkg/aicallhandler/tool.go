@@ -14,6 +14,7 @@ import (
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
+	qmqueue "monorepo/bin-queue-manager/models/queue"
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 
 	"github.com/gofrs/uuid"
@@ -108,6 +109,8 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameGetResource:            h.toolHandleGetResource,
 		message.FunctionCallNameDescribeAction:         h.toolHandleDescribeAction,
 		message.FunctionCallNameCaseCreate:             h.toolHandleCaseCreate,
+		message.FunctionCallNameListQueues:             h.toolHandleListQueues,
+		message.FunctionCallNameJoinQueue:              h.toolHandleJoinQueue,
 		message.FunctionCallNameGetContactInteractions: h.toolHandleGetContactInteractions,
 		message.FunctionCallNameGetConversationContent: h.toolHandleGetConversationContent,
 		message.FunctionCallNameGetRelatedCases:        h.toolHandleGetRelatedCases,
@@ -317,6 +320,115 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		tmp, err := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
 		if err != nil {
 			log.Errorf("Could not terminate the aicall after sending the tool actions. err: %v", err)
+			return
+		}
+		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
+	}()
+
+	return res
+}
+
+// errQueueNotResolvable is the single masked error used for both
+// not-found and cross-customer paths in toolHandleJoinQueue, so the tool
+// cannot be used as a Queue-existence oracle. Mirrors errCouldNotResolveFlow.
+var errQueueNotResolvable = stderrors.New("could not resolve queue")
+
+func (h *aicallHandler) toolHandleListQueues(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
+	res := newToolResult(tool.ID)
+
+	tmp, err := h.reqHandler.QueueV1QueueList(ctx, "", 100, map[qmqueue.Field]any{
+		qmqueue.FieldCustomerID: c.CustomerID,
+		qmqueue.FieldDeleted:    false,
+	})
+	if err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	type queueSummary struct {
+		ID     string `json:"id"`
+		Name   string `json:"name"`
+		Detail string `json:"detail"`
+	}
+	out := make([]queueSummary, 0, len(tmp))
+	for _, q := range tmp {
+		out = append(out, queueSummary{ID: q.ID.String(), Name: q.Name, Detail: q.Detail})
+	}
+
+	body, errMarshal := json.Marshal(out)
+	if errMarshal != nil {
+		fillFailed(res, errMarshal)
+		return res
+	}
+
+	fillSuccess(res, "queue", "", string(body))
+	return res
+}
+
+func (h *aicallHandler) toolHandleJoinQueue(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleJoinQueue",
+		"aicall_id": c.ID,
+	})
+
+	res := newToolResult(tool.ID)
+	if c.ReferenceType != aicall.ReferenceTypeCall {
+		fillFailed(res, fmt.Errorf("join_queue is only supported for call reference type"))
+		return res
+	}
+
+	var args struct {
+		QueueID uuid.UUID `json:"queue_id"`
+	}
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &args); errUnmarshal != nil {
+		fillFailed(res, errUnmarshal)
+		return res
+	}
+	if args.QueueID == uuid.Nil {
+		fillFailed(res, fmt.Errorf("queue_id is required"))
+		return res
+	}
+
+	// SECURITY: ownership (IDOR prevention). Mirrors create_call's flow_id
+	// ownership check (errCouldNotResolveFlow) -- both not-found and
+	// cross-customer collapse to the same byte-identical masked error so
+	// the tool is not a Queue-existence oracle. Each branch logs its real
+	// cause at Warnf/Errorf (server-side observability), matching
+	// toolHandleCreateCall's own Warnf("Flow does not belong to the
+	// customer...") -- only the LLM-facing message is masked, not the log.
+	q, errGet := h.reqHandler.QueueV1QueueGet(ctx, args.QueueID)
+	if errGet != nil || q == nil {
+		log.Errorf("Could not get the queue. queue_id: %s, err: %v", args.QueueID, errGet)
+		fillFailed(res, errQueueNotResolvable)
+		return res
+	}
+	if q.CustomerID != c.CustomerID {
+		log.Warnf("Queue does not belong to the customer. queue_id: %s, queue_customer_id: %s, customer_id: %s", args.QueueID, q.CustomerID, c.CustomerID)
+		fillFailed(res, errQueueNotResolvable)
+		return res
+	}
+
+	opt := fmaction.OptionQueueJoin{QueueID: args.QueueID}
+	actions := []fmaction.Action{
+		{
+			Type:   fmaction.TypeQueueJoin,
+			Option: fmaction.ConvertOption(opt),
+		},
+	}
+
+	af, err := h.reqHandler.FlowV1ActiveflowAddActions(ctx, c.ActiveflowID, actions)
+	if err != nil {
+		fillFailed(res, err)
+		return res
+	}
+
+	log.WithField("activeflow", af).Debugf("Added actions to the activeflow. activeflow_id: %s", c.ActiveflowID)
+	fillSuccess(res, "activeflow", af.ID.String(), "Added queue_join action successfully.")
+
+	go func() {
+		tmp, errTerm := h.reqHandler.AIV1AIcallTerminate(context.Background(), c.ID)
+		if errTerm != nil {
+			log.Errorf("Could not terminate the aicall after sending the tool actions. err: %v", errTerm)
 			return
 		}
 		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)

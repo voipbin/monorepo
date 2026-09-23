@@ -42,6 +42,8 @@ const (
 	FunctionCallNameGetResource       FunctionCallName = "get_resource"
 	FunctionCallNameDescribeAction    FunctionCallName = "describe_action"
 	FunctionCallNameCaseCreate        FunctionCallName = "case_create"
+	FunctionCallNameListQueues        FunctionCallName = "list_queues"
+	FunctionCallNameJoinQueue         FunctionCallName = "join_queue"
 
 	FunctionCallNameGetContactInteractions FunctionCallName = "get_contact_interactions"
 	FunctionCallNameGetConversationContent FunctionCallName = "get_conversation_content"

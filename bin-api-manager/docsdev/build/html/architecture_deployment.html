@@ -8,7 +8,7 @@
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Deployment Architecture - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -738,11 +738,11 @@ manifests today only declare the metrics container port and do not define
         <span class="o">-</span> <span class="n">containerPort</span><span class="p">:</span> <span class="mi">2112</span>      <span class="c1"># Prometheus metrics</span>
         <span class="n">resources</span><span class="p">:</span>
           <span class="n">requests</span><span class="p">:</span>
-            <span class="n">memory</span><span class="p">:</span> <span class="s2">"256Mi"</span>
-            <span class="n">cpu</span><span class="p">:</span> <span class="s2">"100m"</span>
+            <span class="n">memory</span><span class="p">:</span> <span class="s2">&quot;256Mi&quot;</span>
+            <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;100m&quot;</span>
           <span class="n">limits</span><span class="p">:</span>
-            <span class="n">memory</span><span class="p">:</span> <span class="s2">"512Mi"</span>
-            <span class="n">cpu</span><span class="p">:</span> <span class="s2">"500m"</span>
+            <span class="n">memory</span><span class="p">:</span> <span class="s2">&quot;512Mi&quot;</span>
+            <span class="n">cpu</span><span class="p">:</span> <span class="s2">&quot;500m&quot;</span>
         <span class="n">env</span><span class="p">:</span>
         <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">DATABASE_DSN</span>
           <span class="n">valueFrom</span><span class="p">:</span>
@@ -1031,14 +1031,14 @@ scaling beyond the fixed replica count is a manual operation (edit
 <span class="o">|</span>                                           <span class="o">|</span>
 <span class="o">|</span>  <span class="n">Node</span> <span class="mi">2</span> <span class="p">(</span><span class="n">Mirror</span><span class="p">)</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span><span class="w"> </span><span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span> <span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">CPU</span><span class="p">:</span> <span class="mi">4</span> <span class="n">vCPU</span>                     <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">Memory</span><span class="p">:</span> <span class="mi">16</span> <span class="n">GB</span>                   <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
 <span class="o">|</span>                                           <span class="o">|</span>
 <span class="o">|</span>  <span class="n">Node</span> <span class="mi">3</span> <span class="p">(</span><span class="n">Mirror</span><span class="p">)</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span><span class="w"> </span><span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span> <span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">CPU</span><span class="p">:</span> <span class="mi">4</span> <span class="n">vCPU</span>                     <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">Memory</span><span class="p">:</span> <span class="mi">16</span> <span class="n">GB</span>                   <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
@@ -1262,7 +1262,7 @@ scaling beyond the fixed replica count is a manual operation (edit
 <span class="o">+-------------------------------------------+</span>
 <span class="o">|</span> <span class="mf">1.</span> <span class="n">New</span> <span class="n">pod</span> <span class="n">created</span> <span class="k">with</span> <span class="n">new</span> <span class="n">version</span>       <span class="o">|</span>
 <span class="o">|</span> <span class="mf">2.</span> <span class="n">Wait</span> <span class="k">for</span> <span class="n">readiness</span> <span class="n">probe</span> <span class="n">success</span>       <span class="o">|</span>
-<span class="o">|</span> <span class="mf">3.</span> <span class="n">Remove</span> <span class="n">old</span> <span class="n">pod</span> <span class="kn">from</span><span class="w"> </span><span class="nn">service</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Remove</span> <span class="n">old</span> <span class="n">pod</span> <span class="kn">from</span> <span class="nn">service</span>            <span class="o">|</span>
 <span class="o">|</span> <span class="mf">4.</span> <span class="n">Terminate</span> <span class="n">old</span> <span class="n">pod</span>                      <span class="o">|</span>
 <span class="o">|</span> <span class="mf">5.</span> <span class="n">Repeat</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">replicas</span>                <span class="o">|</span>
 <span class="o">+-------------------------------------------+</span>

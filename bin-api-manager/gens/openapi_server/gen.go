@@ -514,6 +514,8 @@ const (
 	AIManagerToolNameGetRelatedCases        AIManagerToolName = "get_related_cases"
 	AIManagerToolNameGetResource            AIManagerToolName = "get_resource"
 	AIManagerToolNameGetVariables           AIManagerToolName = "get_variables"
+	AIManagerToolNameJoinQueue              AIManagerToolName = "join_queue"
+	AIManagerToolNameListQueues             AIManagerToolName = "list_queues"
 	AIManagerToolNameNotifyAgent            AIManagerToolName = "notify_agent"
 	AIManagerToolNameSearchKnowledge        AIManagerToolName = "search_knowledge"
 	AIManagerToolNameSendEmail              AIManagerToolName = "send_email"
@@ -558,6 +560,10 @@ func (e AIManagerToolName) Valid() bool {
 	case AIManagerToolNameGetResource:
 		return true
 	case AIManagerToolNameGetVariables:
+		return true
+	case AIManagerToolNameJoinQueue:
+		return true
+	case AIManagerToolNameListQueues:
 		return true
 	case AIManagerToolNameNotifyAgent:
 		return true

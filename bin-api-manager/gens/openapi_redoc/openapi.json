@@ -28212,7 +28212,9 @@
           "get_contact_profile",
           "get_call_transcript",
           "emit_info_card",
-          "notify_agent"
+          "notify_agent",
+          "list_queues",
+          "join_queue"
         ],
         "x-enum-varnames": [
           "AIManagerToolNameAll",
@@ -28238,7 +28240,9 @@
           "AIManagerToolNameGetContactProfile",
           "AIManagerToolNameGetCallTranscript",
           "AIManagerToolNameEmitInfoCard",
-          "AIManagerToolNameNotifyAgent"
+          "AIManagerToolNameNotifyAgent",
+          "AIManagerToolNameListQueues",
+          "AIManagerToolNameJoinQueue"
         ]
       },
       "AIManagerAIcall": {

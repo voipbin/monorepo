@@ -2990,6 +2990,8 @@ components:
         - get_call_transcript
         - emit_info_card
         - notify_agent
+        - list_queues
+        - join_queue
       x-enum-varnames:
         - AIManagerToolNameAll
         - AIManagerToolNameConnectCall
@@ -3015,6 +3017,8 @@ components:
         - AIManagerToolNameGetCallTranscript
         - AIManagerToolNameEmitInfoCard
         - AIManagerToolNameNotifyAgent
+        - AIManagerToolNameListQueues
+        - AIManagerToolNameJoinQueue
 
     AIManagerAIcall:
       type: object

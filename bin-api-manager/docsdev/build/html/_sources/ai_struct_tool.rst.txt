@@ -58,11 +58,13 @@ get_correlation           List resources linked to an activeflow             ``t
 get_resource              Fetch the content of a related resource            ``true``
 describe_action           Look up a flow action's option schema              ``true``
 case_create               Create a CRM case for the current contact          ``true``
+list_queues               List the customer's configured Queues              ``true``
+join_queue                Place the current call into a Queue                ``false``
 ========================= ================================================= ===============
 
 .. note:: **AI Implementation Hint**
 
-   ``get_correlation``, ``get_resource``, and ``describe_action`` are diagnostic/orchestration tools intended for troubleshooting and assembling ``create_call`` action lists. ``create_call`` and ``case_create`` are only available for ``type=normal`` AIs (via ``tool_names``); they are not part of the Insight tool set. See :ref:`Insight Tools <ai-struct-tool-insight>` for the separate tool set used by ``type=insight`` AIs.
+   ``get_correlation``, ``get_resource``, and ``describe_action`` are diagnostic/orchestration tools intended for troubleshooting and assembling ``create_call`` action lists. ``create_call`` and ``case_create`` are only available for ``type=normal`` AIs (via ``tool_names``); they are not part of the Insight tool set. See :ref:`Insight Tools <ai-struct-tool-insight>` for the separate tool set used by ``type=insight`` AIs. ``list_queues`` and ``join_queue`` are likewise ``type=normal``-only: Queue routing is a call-control action outside the Insight Assistant's read-only, Case-panel scope.
 
 .. _ai-struct-tool-connect_call:
 
@@ -826,6 +828,83 @@ Creates a new CRM case for the current contact/interaction.
             "detail": { "type": "string", "description": "Longer free-text description of the issue (optional)." },
             "note": { "type": "string", "description": "An initial internal note for the agent (optional, not shown to the customer)." }
         }
+    }
+
+.. _ai-struct-tool-list_queues:
+
+list_queues
+-----------
+
+Lists the Queues configured for this account, so the AI can decide which one best matches the caller's need before routing them with ``join_queue``.
+
+**When to use:**
+
+* Before calling ``join_queue``, to see what Queues exist and pick the right one (e.g. "sales", "support", "billing")
+* User asks what departments/queues are available
+
+**When NOT to use:**
+
+* You already know the exact ``queue_id`` to use (e.g. from a prior ``list_queues`` call in this same session)
+
+.. note:: **AI Implementation Hint**
+
+   Each queue entry has: ``id`` (UUID, pass this to ``join_queue``), ``name``, ``detail``. An empty list means no Queues are configured for this account — this is not an error.
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Always set true to act on the queue list.",
+                "default": true
+            }
+        },
+        "required": []
+    }
+
+.. _ai-struct-tool-join_queue:
+
+join_queue
+----------
+
+Places the current call into a Queue for routing to a human agent. This ends the AI's participation in the call.
+
+**When to use:**
+
+* You have determined (e.g. via ``list_queues``) which department/queue matches the caller's need, and the caller should now wait for a human agent
+* User asks to be connected to a queue/department and a matching ``queue_id`` is known
+
+**When NOT to use:**
+
+* You have not yet identified which queue is appropriate — call ``list_queues`` first
+* User wants to be transferred directly to a person, extension, or phone number (use ``connect_call`` instead; that is a direct transfer, not Queue-based routing with hold/wait handling)
+
+.. note:: **AI Implementation Hint**
+
+   ``join_queue`` differs from ``connect_call``: ``join_queue`` places the call into a Queue (hold music, wait timeout, agent matching by tag, then bridged when an agent is available); ``connect_call`` is a direct transfer/bridge to a specific endpoint with no wait/queue mechanics. ``join_queue`` is only supported for ``ReferenceType=call`` AI sessions. The ``queue_id`` must belong to your own account; an id from a different account (or a nonexistent id) is rejected with the same error, so this tool cannot be used to discover another account's queue ids.
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to speak a brief confirmation before handing off. Set false (default) to hand off silently.",
+                "default": false
+            },
+            "queue_id": {
+                "type": "string",
+                "description": "UUID of the queue to join, as returned by list_queues' id field."
+            }
+        },
+        "required": ["queue_id"]
     }
 
 .. _ai-struct-tool-insight:

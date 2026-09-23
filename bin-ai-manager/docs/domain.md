@@ -148,6 +148,8 @@ Tool definitions live in `pkg/toolhandler/definitions.go`. Only tools listed in 
 | `get_resource` | Retrieve a curated summary of a single resource by type+id (call, groupcall, recording, transcribe incl. transcripts, summary, aicall incl. conversation history, conferencecall, queuecall); customer-ownership enforced. For `aicall`, an opt-in `include_config` boolean additionally renders the customer-authored session prompt snapshots in an escaped, capped config block (never the platform base prompt) |
 | `get_contact_profile` | Insight-only, read-only: returns the profile (name/company/job title + up to 5 reachable addresses, primary first) of the contact linked to the current Case. No arguments; always scoped to the current Case |
 | `get_call_transcript` | Insight-only, read-only: returns the merged, chronological transcript of a call's live in-call transcription (transcribe_start) sessions, given a `call_id`. Access is tenant-only (not scoped to the current Case's contact/peer) |
+| `list_queues` | Lists the customer's Queues (id, name, detail); read-only, used to discover which Queue to route to before calling `join_queue` |
+| `join_queue` | Places the current call into a Queue for human-agent routing by adding a `queue_join` action to the activeflow, then terminates the AIcall; `ReferenceTypeCall` only, mirrors `connect_call`'s add-action-then-terminate shape |
 
 Tool execution flow:
 1. LLM in Pipecat emits a function call
