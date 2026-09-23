@@ -199,6 +199,7 @@ func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.U
 	if affected == 0 {
 		// CAS lost: another writer already moved the queuecall out of waiting.
 		// Return the current queuecall with no side effects (idempotent no-op).
+		promQueuecallConnectingCASTotal.WithLabelValues("lost").Inc()
 		res, errGet := h.db.QueuecallGet(ctx, id)
 		if errGet != nil {
 			log.Errorf("Could not get updated queuecall. err: %v", errGet)
@@ -206,6 +207,7 @@ func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.U
 		}
 		return res, false, nil
 	}
+	promQueuecallConnectingCASTotal.WithLabelValues("won").Inc()
 
 	res, err := h.db.QueuecallGet(ctx, id)
 	if err != nil {
@@ -515,6 +517,7 @@ func (h *queuecallHandler) UpdateStatusWaitingRollback(ctx context.Context, qc *
 	if affected == 0 {
 		// CAS lost: the queuecall is no longer connecting (e.g. already serviced).
 		// Return the current queuecall with no side effects (idempotent no-op).
+		promQueuecallReconcileRollbackCASTotal.WithLabelValues("lost").Inc()
 		res, errGet := h.Get(ctx, qc.ID)
 		if errGet != nil {
 			log.Errorf("Could not get updated queuecall. err: %v", errGet)
@@ -522,6 +525,7 @@ func (h *queuecallHandler) UpdateStatusWaitingRollback(ctx context.Context, qc *
 		}
 		return res, nil
 	}
+	promQueuecallReconcileRollbackCASTotal.WithLabelValues("won").Inc()
 
 	// release the agent reservation and hang up the groupcall (winner
 	// only, and only now -- after the CAS has actually confirmed this
