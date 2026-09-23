@@ -482,7 +482,7 @@ func initQueuecallHandler() (queuecallhandler.QueuecallHandler, error) {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// For these operations, we pass nil for queueHandler since it's not used by Get/List/Delete
-	return queuecallhandler.NewQueuecallHandler(reqHandler, dbHandler, notifyHandler, nil), nil
+	return queuecallhandler.NewQueuecallHandler(reqHandler, dbHandler, cache, notifyHandler, nil), nil
 }
 
 func cmdQueuecallGet() *cobra.Command {

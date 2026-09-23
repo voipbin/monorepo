@@ -22,6 +22,7 @@ import (
 	commonservice "monorepo/bin-common-handler/models/service"
 	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/pkg/cachehandler"
 	"monorepo/bin-queue-manager/pkg/dbhandler"
 	"monorepo/bin-queue-manager/pkg/queuehandler"
 )
@@ -119,6 +120,8 @@ type QueuecallHandler interface {
 		referenceType queuecall.ReferenceType,
 		referenceID uuid.UUID,
 	) (*commonservice.Service, error)
+
+	Reconcile(ctx context.Context)
 }
 
 // queuecallHandler define
@@ -126,6 +129,7 @@ type queuecallHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
+	cache         cachehandler.CacheHandler
 	notifyhandler notifyhandler.NotifyHandler
 
 	queueHandler queuehandler.QueueHandler
@@ -135,6 +139,7 @@ type queuecallHandler struct {
 func NewQueuecallHandler(
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
+	cacheHandler cachehandler.CacheHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	queueHandler queuehandler.QueueHandler,
 ) QueuecallHandler {
@@ -142,6 +147,7 @@ func NewQueuecallHandler(
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
+		cache:         cacheHandler,
 		notifyhandler: notifyHandler,
 
 		queueHandler: queueHandler,

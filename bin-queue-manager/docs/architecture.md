@@ -42,6 +42,31 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 
 The `customer-manager.customer.*.deleted` pattern was activated by VOIP-1422: no other cleanup path into this service exists on customer deletion (no RPC, no sweep, no TTL), so leaving it unbound meant queue/queuecall records survived customer deletion indefinitely. `queuehandler.EventCUCustomerDeleted` and `queuecallhandler.EventCUCustomerDeleted` (the dispatch targets) each page through at most 1,000 undeleted rows per customer (`h.List(ctx, 1000, ...)`) — a pre-existing cap matching `bin-flow-manager`'s equivalent handler for the same event, not a new limitation introduced here. A customer with more than 1,000 live queues or queuecalls would only be partially cleaned per event; out of scope for this change.
 
+## Matching Backstop (VOIP-1539 §5.2)
+
+Since the event-driven match() entry points (§3.5 above) replaced the old
+polling scheduler entirely, a missed or lost trigger (a subscribehandler
+restart window, a dropped RabbitMQ delivery, a dial that crashed mid-flight)
+has no other safety net unless something actively re-checks. `Reconcile`
+(`pkg/queuecallhandler/reconcile.go`) is that safety net: every replica ticks
+every `reconcileTickInterval` (30s, `cmd/queue-manager/main.go`), and a Redis
+`SETNX`-based lease (`cachehandler.ReconcileLockAcquire`, key
+`queue:reconcile:match`, TTL 35s) ensures only one replica's pass actually
+runs a given tick — the rest skip silently.
+
+A successful pass runs two independent, idempotent recovery sweeps (bounded
+to `reconcileScanLimit` = 100 rows each, so one tick can never issue an
+unbounded number of RPCs):
+
+| Recovery | Scope | Action |
+|---|---|---|
+| A: connecting-stale | Queuecalls in `connecting` with `tm_update` older than `connectingStaleAfter` (150s, 2.5x call-manager's 60s dial timeout) | Hang up the stale groupcall (if any), then `UpdateStatusWaitingRollback` (CAS-gated, so a queuecall that already progressed on its own between the list and the rollback is a safe no-op) |
+| B: waiting sweep | Every queuecall in `waiting`, across all queues | Re-run `matchWaitingQueuecall` — the exact same one-shot logic entry point A uses, just re-triggered on a timer |
+
+There is no drain on shutdown: an in-flight pass dying with the process is
+fine, the next tick (on this or another replica) picks up the same rows
+again, and every recovery step above is independently idempotent.
+
 ## Event Publishing
 
 All three NotifyHandler construction sites — `cmd/queue-manager`, and both instances in `cmd/queue-control` — are built with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.queue-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. Events publish to the global topic exchange `bin-manager.event` with the routing key `queue-manager.<resource>.<queue-id>.<action>`. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Event Subscriptions section above). The three sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently). See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.

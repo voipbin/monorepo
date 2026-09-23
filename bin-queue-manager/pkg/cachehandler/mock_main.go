@@ -14,6 +14,7 @@ import (
 	queue "monorepo/bin-queue-manager/models/queue"
 	queuecall "monorepo/bin-queue-manager/models/queuecall"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -128,4 +129,33 @@ func (m *MockCacheHandler) QueuecallSet(ctx context.Context, u *queuecall.Queuec
 func (mr *MockCacheHandlerMockRecorder) QueuecallSet(ctx, u any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSet", reflect.TypeOf((*MockCacheHandler)(nil).QueuecallSet), ctx, u)
+}
+
+// ReconcileLockAcquire mocks base method.
+func (m *MockCacheHandler) ReconcileLockAcquire(ctx context.Context, instanceID string, ttl time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileLockAcquire", ctx, instanceID, ttl)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileLockAcquire indicates an expected call of ReconcileLockAcquire.
+func (mr *MockCacheHandlerMockRecorder) ReconcileLockAcquire(ctx, instanceID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileLockAcquire", reflect.TypeOf((*MockCacheHandler)(nil).ReconcileLockAcquire), ctx, instanceID, ttl)
+}
+
+// ReconcileLockRelease mocks base method.
+func (m *MockCacheHandler) ReconcileLockRelease(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileLockRelease", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileLockRelease indicates an expected call of ReconcileLockRelease.
+func (mr *MockCacheHandlerMockRecorder) ReconcileLockRelease(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileLockRelease", reflect.TypeOf((*MockCacheHandler)(nil).ReconcileLockRelease), ctx)
 }

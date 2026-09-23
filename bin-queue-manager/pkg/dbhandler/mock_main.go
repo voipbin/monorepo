@@ -274,6 +274,21 @@ func (mr *MockDBHandlerMockRecorder) QueuecallList(ctx, size, token, filters any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallList", reflect.TypeOf((*MockDBHandler)(nil).QueuecallList), ctx, size, token, filters)
 }
 
+// QueuecallListConnectingStale mocks base method.
+func (m *MockDBHandler) QueuecallListConnectingStale(ctx context.Context, before time.Time, limit uint64) ([]*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallListConnectingStale", ctx, before, limit)
+	ret0, _ := ret[0].([]*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallListConnectingStale indicates an expected call of QueuecallListConnectingStale.
+func (mr *MockDBHandlerMockRecorder) QueuecallListConnectingStale(ctx, before, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallListConnectingStale", reflect.TypeOf((*MockDBHandler)(nil).QueuecallListConnectingStale), ctx, before, limit)
+}
+
 // QueuecallListOldestWaiting mocks base method.
 func (m *MockDBHandler) QueuecallListOldestWaiting(ctx context.Context, queueID uuid.UUID, limit uint64) ([]*queuecall.Queuecall, error) {
 	m.ctrl.T.Helper()
@@ -287,6 +302,21 @@ func (m *MockDBHandler) QueuecallListOldestWaiting(ctx context.Context, queueID 
 func (mr *MockDBHandlerMockRecorder) QueuecallListOldestWaiting(ctx, queueID, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallListOldestWaiting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallListOldestWaiting), ctx, queueID, limit)
+}
+
+// QueuecallListWaitingOldest mocks base method.
+func (m *MockDBHandler) QueuecallListWaitingOldest(ctx context.Context, limit uint64) ([]*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallListWaitingOldest", ctx, limit)
+	ret0, _ := ret[0].([]*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallListWaitingOldest indicates an expected call of QueuecallListWaitingOldest.
+func (mr *MockDBHandlerMockRecorder) QueuecallListWaitingOldest(ctx, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallListWaitingOldest", reflect.TypeOf((*MockDBHandler)(nil).QueuecallListWaitingOldest), ctx, limit)
 }
 
 // QueuecallSetStatusAbandoned mocks base method.

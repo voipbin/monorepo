@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -28,6 +30,11 @@ import (
 	"monorepo/bin-queue-manager/pkg/queuehandler"
 	"monorepo/bin-queue-manager/pkg/subscribehandler"
 )
+
+// reconcileTickInterval is the matching backstop's sweep cadence (VOIP-1539
+// §5.2: "매 30초"). Every replica ticks independently; the Redis lease inside
+// Reconcile ensures only one replica's pass actually runs a given tick.
+const reconcileTickInterval = 30 * time.Second
 
 const serviceName = commonoutline.ServiceNameQueueManager
 
@@ -76,7 +83,7 @@ func runDaemon() error {
 
 	db := dbhandler.NewHandler(sqlDB, cache)
 
-	if errRun := run(db); errRun != nil {
+	if errRun := run(db, cache); errRun != nil {
 		return errors.Wrapf(errRun, "run func has finished")
 	}
 
@@ -105,7 +112,7 @@ func initProm(endpoint, listen string) {
 }
 
 // run runs the listen
-func run(db dbhandler.DBHandler) error {
+func run(db dbhandler.DBHandler, cache cachehandler.CacheHandler) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "run",
@@ -120,7 +127,7 @@ func run(db dbhandler.DBHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameQueueEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	queueHandler := queuehandler.NewQueueHandler(reqHandler, db, notifyHandler)
-	queuecallHandler := queuecallhandler.NewQueuecallHandler(reqHandler, db, notifyHandler, queueHandler)
+	queuecallHandler := queuecallhandler.NewQueuecallHandler(reqHandler, db, cache, notifyHandler, queueHandler)
 
 	// run listen
 	if err := runListen(sockHandler, queueHandler, queuecallHandler); err != nil {
@@ -134,7 +141,25 @@ func run(db dbhandler.DBHandler) error {
 		return err
 	}
 
+	// run the matching backstop (VOIP-1539 §5.2)
+	runReconcile(queuecallHandler)
+
 	return nil
+}
+
+// runReconcile starts the matching backstop's tick loop (VOIP-1539 §5.2) in
+// its own goroutine. There is no drain on shutdown -- an in-flight pass
+// dying with the process is fine, the next tick (on this or another
+// replica) picks up the same rows again; each recovery step is idempotent.
+func runReconcile(queuecallHandler queuecallhandler.QueuecallHandler) {
+	go func() {
+		ticker := time.NewTicker(reconcileTickInterval)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			queuecallHandler.Reconcile(context.Background())
+		}
+	}()
 }
 
 // runSubscribe runs the subscribed event handler

@@ -99,3 +99,28 @@ func (h *handler) QueuecallGetByReferenceID(ctx context.Context, referenceID uui
 
 	return &res, nil
 }
+
+// reconcileLockKey is the distributed lease key that serializes the matching
+// backstop (VOIP-1539 §5.2) across replicas -- only one replica runs a given
+// tick's recovery pass.
+const reconcileLockKey = "queue:reconcile:match"
+
+// ReconcileLockAcquire attempts to acquire the matching-backstop's per-tick
+// lease (VOIP-1539 §5.2: "SET reconcile:match {inst} NX EX 35"). Returns
+// false (no error) when another replica already holds the lease -- the
+// caller skips this tick silently, it is not a failure.
+func (h *handler) ReconcileLockAcquire(ctx context.Context, instanceID string, ttl time.Duration) (bool, error) {
+	ok, err := h.Cache.SetNX(ctx, reconcileLockKey, instanceID, ttl).Result()
+	if err != nil {
+		return false, err
+	}
+
+	return ok, nil
+}
+
+// ReconcileLockRelease releases the matching-backstop's per-tick lease
+// (VOIP-1539 §5.2, "리스 DEL"). Best-effort: the lease's TTL is the real
+// safety net if release itself fails or the process dies mid-pass.
+func (h *handler) ReconcileLockRelease(ctx context.Context) error {
+	return h.Cache.Del(ctx, reconcileLockKey).Err()
+}
