@@ -62,6 +62,40 @@ var (
 			Buckets:   []float64{1, 5, 10, 30, 60, 120, 300, 600},
 		},
 	)
+
+	// promQueuecallConnectingCASTotal tracks the win/loss outcome of the
+	// UpdateStatusConnecting compare-and-swap (VOIP-1539 §5.0 #2), the
+	// single CAS both entry points A (queuecall enqueue match) and B
+	// (agent-available reverse lookup) race through. A sustained rise in
+	// the "lost" count means the two entry points are routinely
+	// double-matching the same waiting queuecall -- expected at low,
+	// occasional rates under real concurrency, but a structural spike is
+	// an operational signal worth alerting on.
+	promQueuecallConnectingCASTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "queuecall_connecting_cas_total",
+			Help:      "Total UpdateStatusConnecting CAS attempts, labeled by outcome (won/lost).",
+		},
+		[]string{"outcome"},
+	)
+
+	// promQueuecallReconcileRollbackCASTotal tracks the win/loss outcome
+	// of the matching backstop's connecting-stale rollback CAS
+	// (VOIP-1539 §5.2, QueuecallSetStatusWaitingIfConnecting). A "lost"
+	// outcome means the queuecall progressed past connecting on its own
+	// before the backstop's rollback attempt landed -- expected, not an
+	// error; tracked so a structural spike (most backstop passes losing)
+	// is visible as a signal that connecting-stale detection is running
+	// too aggressively relative to real agent-answer latency.
+	promQueuecallReconcileRollbackCASTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "queuecall_reconcile_rollback_cas_total",
+			Help:      "Total matching-backstop connecting-stale rollback CAS attempts, labeled by outcome (won/lost).",
+		},
+		[]string{"outcome"},
+	)
 )
 
 func init() {
@@ -70,6 +104,8 @@ func init() {
 		promQueuecallDoneTotal,
 		promQueuecallAbandonedTotal,
 		promQueuecallWaitingDurationSeconds,
+		promQueuecallConnectingCASTotal,
+		promQueuecallReconcileRollbackCASTotal,
 	)
 }
 

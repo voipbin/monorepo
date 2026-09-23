@@ -25,7 +25,6 @@ func TestConvertStringMapToFieldMap(t *testing.T) {
 				"name":                    "Test Queue",
 				"detail":                  "Test Detail",
 				"routing_method":          "random",
-				"execute":                 "run",
 				"wait_flow_id":            waitFlowID.String(),
 				"wait_timeout":            60000,
 				"service_timeout":         300000,
