@@ -286,49 +286,6 @@ func (r *requestHandler) QueueV1QueueCreateQueuecall(
 	return &res, nil
 }
 
-// QueueV1QueueExecute sends the request to execute the queue.
-// executeDelay: ms
-func (r *requestHandler) QueueV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
-	uri := fmt.Sprintf("/v1/queues/%s/execute_run", queueID)
-
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPost, "queue/queues/<queue-id>/execute_run", requestTimeoutDefault, executeDelay, ContentTypeJSON, nil)
-	if err != nil {
-		return err
-	}
-
-	if errParse := parseResponse(tmp, nil); errParse != nil {
-		return errParse
-	}
-
-	return nil
-}
-
-// QueueV1QueueExecute sends the request to execute the queue.
-func (r *requestHandler) QueueV1QueueUpdateExecute(ctx context.Context, queueID uuid.UUID, execute qmqueue.Execute) (*qmqueue.Queue, error) {
-	uri := fmt.Sprintf("/v1/queues/%s/execute", queueID)
-
-	data := &qmrequest.V1DataQueuesIDExecutePut{
-		Execute: execute,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestQueue(ctx, uri, sock.RequestMethodPut, "queue/queues/<queue-id>/execute", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	if err != nil {
-		return nil, err
-	}
-
-	var res qmqueue.Queue
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return &res, nil
-}
-
 // QueueV1QueueDirectHashRegenerate sends a request to queue-manager
 // to regenerate (or create) the direct hash for the given queue.
 func (r *requestHandler) QueueV1QueueDirectHashRegenerate(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error) {

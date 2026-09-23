@@ -95,7 +95,6 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdUpdate())
 	cmdSub.AddCommand(cmdUpdateTagIDs())
 	cmdSub.AddCommand(cmdUpdateRoutingMethod())
-	cmdSub.AddCommand(cmdUpdateExecute())
 	cmdSub.AddCommand(cmdDelete())
 
 	// Queuecall subcommands
@@ -425,44 +424,6 @@ func runUpdateRoutingMethod(cmd *cobra.Command, args []string) error {
 	res, err := handler.UpdateRoutingMethod(context.Background(), queueID, queue.RoutingMethod(routingMethod))
 	if err != nil {
 		return errors.Wrap(err, "failed to update queue routing method")
-	}
-
-	return printJSON(res)
-}
-
-func cmdUpdateExecute() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "update-execute",
-		Short: "Update queue execute state",
-		RunE:  runUpdateExecute,
-	}
-
-	flags := cmd.Flags()
-	flags.String("id", "", "Queue ID (required)")
-	flags.String("execute", "", "Execute state (run, stop) (required)")
-
-	return cmd
-}
-
-func runUpdateExecute(cmd *cobra.Command, args []string) error {
-	handler, err := initHandler()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	queueID, err := resolveUUID("id", "Queue ID")
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve queue ID")
-	}
-
-	execute := viper.GetString("execute")
-	if execute == "" {
-		return fmt.Errorf("execute is required")
-	}
-
-	res, err := handler.UpdateExecute(context.Background(), queueID, queue.Execute(execute))
-	if err != nil {
-		return errors.Wrap(err, "failed to update queue execute state")
 	}
 
 	return printJSON(res)

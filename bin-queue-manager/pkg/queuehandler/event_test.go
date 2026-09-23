@@ -79,10 +79,6 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 				// fetch queue to get direct_id
 				mockDB.EXPECT().QueueGet(ctx, q.ID).Return(q, nil)
 
-				fields := map[queue.Field]any{
-					queue.FieldExecute: queue.ExecuteStop,
-				}
-				mockDB.EXPECT().QueueUpdate(ctx, q.ID, fields).Return(nil)
 				mockDB.EXPECT().QueueDelete(ctx, q.ID).Return(nil)
 				mockDB.EXPECT().QueueGet(ctx, q.ID).Return(q, nil)
 				mockNotify.EXPECT().PublishEvent(ctx, queue.EventTypeQueueDeleted, q)

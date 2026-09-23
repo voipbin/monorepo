@@ -15,6 +15,7 @@ const (
 
 	FieldForwardActionID Field = "forward_action_id" // forward_action_id
 	FieldConfbridgeID    Field = "confbridge_id"     // confbridge_id
+	FieldGroupcallID     Field = "groupcall_id"      // groupcall_id
 
 	FieldSource        Field = "source"         // source
 	FieldRoutingMethod Field = "routing_method" // routing_method

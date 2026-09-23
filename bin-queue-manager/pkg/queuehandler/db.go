@@ -189,50 +189,6 @@ func (h *queueHandler) UpdateRoutingMethod(ctx context.Context, id uuid.UUID, ro
 	return res, nil
 }
 
-// UpdateExecute updates the queue's execute.
-func (h *queueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "UpdateExecute",
-		"queue_id": id,
-		"execute":  execute,
-	})
-	log.Debug("Updating the queue's execute.")
-
-	q, err := h.db.QueueGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get queue info. err: %v", err)
-		return nil, err
-	}
-
-	if q.Execute == execute {
-		// already same execute. nothing to do.
-		return q, nil
-	}
-
-	fields := map[queue.Field]any{
-		queue.FieldExecute: execute,
-	}
-
-	if err := h.db.QueueUpdate(ctx, id, fields); err != nil {
-		log.Errorf("Could not set the execute. err: %v", err)
-		return nil, err
-	}
-
-	res, err := h.db.QueueGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated queue. err: %v", err)
-		return nil, err
-	}
-	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)
-
-	if execute == queue.ExecuteRun && q.Execute == queue.ExecuteStop {
-		log.Debugf("The queue execute need to be run.")
-		_ = h.reqHandler.QueueV1QueueExecuteRun(ctx, id, 100)
-	}
-
-	return res, nil
-}
-
 // AddWaitQueueCallID adds the queuecall to the wait queuecall ids.
 func (h *queueHandler) AddWaitQueueCallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -246,9 +202,9 @@ func (h *queueHandler) AddWaitQueueCallID(ctx context.Context, id uuid.UUID, que
 		return nil, errors.Wrap(errAdd, "Could not add the queuecall id to the queue.")
 	}
 
-	res, err := h.UpdateExecute(ctx, id, queue.ExecuteRun)
+	res, err := h.db.QueueGet(ctx, id)
 	if err != nil {
-		log.Errorf("Could not update queue execute info. err: %v", err)
+		log.Errorf("Could not get updated queue info. err: %v", err)
 		return nil, err
 	}
 	h.notifyhandler.PublishEvent(ctx, queue.EventTypeQueueUpdated, res)

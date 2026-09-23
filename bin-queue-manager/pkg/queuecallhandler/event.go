@@ -3,6 +3,8 @@ package queuecallhandler
 import (
 	"context"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
@@ -93,6 +95,51 @@ func (h *queuecallHandler) EventCallConfbridgeLeaved(ctx context.Context, refere
 		return
 	}
 	log.WithField("queuecall", res).Debugf("Updated queuecall status done. queuecall_id: %s", res.ID)
+}
+
+// EventAMAgentAvailable handles the agent-manager's agent_status_updated
+// event, filtered to status==available by the caller (VOIP-1539 §3.5, event
+// entry point B). It reverse-looks-up the queues this agent is eligible for
+// (queuehandler.GetQueuesByAgent, the OR/intersection-tag symmetric
+// counterpart of GetAgents), then tries match() once against the single
+// oldest-waiting queuecall in each of those queues (FIFO, tm_create ASC).
+// One available agent can win at most one dial -- the agent reservation CAS
+// inside Execute is what actually enforces that; this loop just offers each
+// eligible queue a shot. Any queuecall this loop doesn't reach (agent
+// reservation already lost to another queue's match, or 0 waiting in that
+// queue) is left for the next entry-point trigger or the matching backstop
+// (§5.2) -- entry points are a best-effort optimization, not the only path to
+// a match.
+func (h *queuecallHandler) EventAMAgentAvailable(ctx context.Context, agent amagent.Agent) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "EventAMAgentAvailable",
+		"agent_id": agent.ID,
+	})
+
+	qs, err := h.queueHandler.GetQueuesByAgent(ctx, agent)
+	if err != nil {
+		log.Errorf("Could not get queues for the agent. err: %v", err)
+		return
+	}
+
+	for _, q := range qs {
+		qcs, err := h.db.QueuecallListOldestWaiting(ctx, q.ID, 1)
+		if err != nil {
+			log.Errorf("Could not get the oldest waiting queuecall. queue_id: %s, err: %v", q.ID, err)
+			continue
+		}
+		if len(qcs) == 0 {
+			continue
+		}
+
+		if _, err := h.Execute(ctx, qcs[0].ID, agent.ID); err != nil {
+			// Losing the reservation/entry CAS is an expected outcome when
+			// multiple queues raced for the same agent, or a competing entry
+			// point already claimed this queuecall -- not an error worth
+			// logging above debug.
+			log.Debugf("Could not execute the match. queue_id: %s, queuecall_id: %s, err: %v", q.ID, qcs[0].ID, err)
+		}
+	}
 }
 
 // EventCUCustomerDeleted handles the customer-manager's customer_deleted event

@@ -17,7 +17,6 @@ import (
 	"monorepo/bin-queue-manager/pkg/cachehandler"
 )
 
-
 // DBHandler interface
 type DBHandler interface {
 	// Queue operations
@@ -40,15 +39,17 @@ type DBHandler interface {
 	QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallList(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error)
+	QueuecallListOldestWaiting(ctx context.Context, queueID uuid.UUID, limit uint64) ([]*queuecall.Queuecall, error)
 	QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[queuecall.Field]any) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID) error
 
 	// Queuecall status operations
-	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error
-	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error
-	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error
-	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) error
-	QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error
+	QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID, groupcallID uuid.UUID) (int64, error)
+	QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error)
+	QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error)
+	QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) (int64, error)
+	QueuecallSetStatusWaitingIfInitiating(ctx context.Context, id uuid.UUID) (int64, error)
+	QueuecallSetStatusWaitingIfConnecting(ctx context.Context, id uuid.UUID) (int64, error)
 	QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) error
 }
 

@@ -94,8 +94,6 @@ func (h *queueHandler) Create(
 		DirectID:   d.ID,
 		DirectHash: d.Hash,
 
-		Execute: queue.ExecuteStop,
-
 		WaitFlowID:          waitFlowID,
 		WaitQueuecallIDs:    []uuid.UUID{},
 		WaitTimeout:         waitTimeout,

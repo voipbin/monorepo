@@ -6,6 +6,8 @@ import (
 	"context"
 	"time"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -92,6 +94,7 @@ type QueuecallHandler interface {
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	List(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error)
 	UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
+	UpdateStatusWaitingRollback(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error)
 	Delete(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 
 	Execute(ctx context.Context, queuecallID uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error)
@@ -103,6 +106,7 @@ type QueuecallHandler interface {
 	EventCallCallHangup(ctx context.Context, referenceID uuid.UUID)
 	EventCallConfbridgeJoined(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
 	EventCallConfbridgeLeaved(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
+	EventAMAgentAvailable(ctx context.Context, agent amagent.Agent)
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)

@@ -469,6 +469,7 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 
 		id             uuid.UUID
 		serviceAgentID uuid.UUID
+		groupcallID    uuid.UUID
 
 		responseCurTime *time.Time
 		expectRes       *queuecall.Queuecall
@@ -479,10 +480,12 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
 				},
+				Status: queuecall.StatusWaiting,
 			},
 
 			uuid.FromStringOrNil("7f82cb36-5ab8-11ec-9c95-5bb7be87064f"),
 			uuid.FromStringOrNil("85b89f08-5ab8-11ec-94ea-5bed0069b7e9"),
+			uuid.FromStringOrNil("a1b2c3d4-5ab8-11ec-94ea-5bed0069b7e9"),
 
 			timePtr(time.Date(2023, time.February, 14, 3, 22, 17, 994000000, time.UTC)),
 			&queuecall.Queuecall{
@@ -493,6 +496,7 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 				Source:         commonaddress.Address{},
 				TagIDs:         []uuid.UUID{},
 				ServiceAgentID: uuid.FromStringOrNil("85b89f08-5ab8-11ec-94ea-5bed0069b7e9"),
+				GroupcallID:    uuid.FromStringOrNil("a1b2c3d4-5ab8-11ec-94ea-5bed0069b7e9"),
 				TMCreate:       timePtr(time.Date(2023, time.February, 14, 3, 22, 17, 994000000, time.UTC)),
 				TMService:      nil,
 				TMUpdate:       timePtr(time.Date(2023, time.February, 14, 3, 22, 17, 994000000, time.UTC)),
@@ -524,9 +528,12 @@ func Test_QueuecallSetStatusConnecting(t *testing.T) {
 			}
 
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			err := h.QueuecallSetStatusConnecting(ctx, tt.id, tt.serviceAgentID)
+			affected, err := h.QueuecallSetStatusConnecting(ctx, tt.id, tt.serviceAgentID, tt.groupcallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if affected != 1 {
+				t.Errorf("Wrong match. expect: 1, got: %d", affected)
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)
@@ -562,6 +569,7 @@ func Test_QueuecallSetStatusService(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
 				},
+				Status: queuecall.StatusConnecting,
 			},
 
 			uuid.FromStringOrNil("6eddc614-7624-11ec-a537-a358ff836d91"),
@@ -607,9 +615,12 @@ func Test_QueuecallSetStatusService(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallSetStatusService(ctx, tt.id, tt.durationWaiting, tt.timestamp)
+			affected, err := h.QueuecallSetStatusService(ctx, tt.id, tt.durationWaiting, tt.timestamp)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if affected != 1 {
+				t.Errorf("Wrong match. expect: 1, got: %d", affected)
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)
@@ -721,6 +732,7 @@ func Test_QueuecallSetStatusAbandoned(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f3fce82c-518f-4fe9-ac78-d7b89c57c433"),
 				},
+				Status: queuecall.StatusWaiting,
 			},
 
 			uuid.FromStringOrNil("f3fce82c-518f-4fe9-ac78-d7b89c57c433"),
@@ -766,9 +778,12 @@ func Test_QueuecallSetStatusAbandoned(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallSetStatusAbandoned(ctx, tt.id, tt.durationWaiting, tt.timestamp)
+			affected, err := h.QueuecallSetStatusAbandoned(ctx, tt.id, tt.durationWaiting, tt.timestamp)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if affected != 1 {
+				t.Errorf("Wrong match. expect: 1, got: %d", affected)
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)
@@ -802,6 +817,7 @@ func Test_QueuecallSetStatusDone(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("aae34fc9-e298-401d-bfd4-d99eff5d5a43"),
 				},
+				Status: queuecall.StatusService,
 			},
 
 			uuid.FromStringOrNil("aae34fc9-e298-401d-bfd4-d99eff5d5a43"),
@@ -847,9 +863,12 @@ func Test_QueuecallSetStatusDone(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			err := h.QueuecallSetStatusDone(ctx, tt.id, tt.durationWaiting, tt.timestamp)
+			affected, err := h.QueuecallSetStatusDone(ctx, tt.id, tt.durationWaiting, tt.timestamp)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if affected != 1 {
+				t.Errorf("Wrong match. expect: 1, got: %d", affected)
 			}
 
 			res, err := h.QueuecallGet(ctx, tt.id)

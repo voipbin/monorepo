@@ -89,7 +89,7 @@ func Test_EventCallCallHangup(t *testing.T) {
 
 			// UpdateStatusAbandoned
 			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
-			mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().QueuecallSetStatusAbandoned(ctx, tt.responseQueuecall.ID, gomock.Any(), gomock.Any()).Return(int64(1), nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallAbandoned, tt.responseQueuecall)
 			mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)
@@ -175,7 +175,7 @@ func Test_EventCallConfbridgeJoined(t *testing.T) {
 			mockDB.EXPECT().QueuecallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseQueuecall, nil)
 
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockDB.EXPECT().QueuecallSetStatusService(ctx, tt.responseQueuecall.ID, tt.expectDuration, tt.responseCurTime).Return(nil)
+			mockDB.EXPECT().QueuecallSetStatusService(ctx, tt.responseQueuecall.ID, tt.expectDuration, tt.responseCurTime).Return(int64(1), nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallServiced, tt.responseQueuecall)
@@ -256,7 +256,7 @@ func Test_EventCallConfbridgeLeaved(t *testing.T) {
 
 			// UpdateStatusDone
 			mockUtil.EXPECT().TimeNow().Return(utilhandler.TimeNow())
-			mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.responseQueuecall.ID, gomock.Any(), gomock.Any()).Return(nil)
+			mockDB.EXPECT().QueuecallSetStatusDone(ctx, tt.responseQueuecall.ID, gomock.Any(), gomock.Any()).Return(int64(1), nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallDone, tt.responseQueuecall)
 			mockQueue.EXPECT().RemoveQueuecallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil)

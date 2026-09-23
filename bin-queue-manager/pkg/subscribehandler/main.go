@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	"monorepo/bin-common-handler/models/eventtopic"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -35,12 +37,17 @@ const (
 // deletion has no other cleanup path into this service (no RPC, no sweep, no TTL), so
 // leaving it unbound meant queue/queuecall records survived customer deletion
 // indefinitely -- a genuine orphaned-data gap, not a behavior-preserving default.
+// The `agent-manager.agent.*.status_updated` pair was activated by VOIP-1539 §3.5
+// (event entry point B): the queue scheduler poll it replaces has no other way to
+// learn "an agent just became available", so leaving it unbound would silently drop
+// that trigger and rely entirely on the matching backstop (§5.2, up to ~30s late).
 // Pinned by the binding golden test.
 var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeJoined),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeLeaved),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerDeleted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameAgentManager), amagent.EventTypeAgentStatusUpdated),
 }
 
 // SubscribeHandler interface
@@ -172,6 +179,11 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	// customer
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cucustomer.EventTypeCustomerDeleted)):
 		err = h.processEventCUCustomerDeleted(ctx, m)
+
+	//// agent-manager
+	// agent
+	case m.Publisher == string(commonoutline.ServiceNameAgentManager) && (m.Type == string(amagent.EventTypeAgentStatusUpdated)):
+		err = h.processEventAMAgentStatusUpdated(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

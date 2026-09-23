@@ -18,6 +18,7 @@ func TestFieldConstants(t *testing.T) {
 		{"field_reference_activeflow_id", FieldReferenceActiveflowID, "reference_activeflow_id"},
 		{"field_forward_action_id", FieldForwardActionID, "forward_action_id"},
 		{"field_confbridge_id", FieldConfbridgeID, "confbridge_id"},
+		{"field_groupcall_id", FieldGroupcallID, "groupcall_id"},
 		{"field_source", FieldSource, "source"},
 		{"field_routing_method", FieldRoutingMethod, "routing_method"},
 		{"field_tag_ids", FieldTagIDs, "tag_ids"},

@@ -274,12 +274,28 @@ func (mr *MockDBHandlerMockRecorder) QueuecallList(ctx, size, token, filters any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallList", reflect.TypeOf((*MockDBHandler)(nil).QueuecallList), ctx, size, token, filters)
 }
 
+// QueuecallListOldestWaiting mocks base method.
+func (m *MockDBHandler) QueuecallListOldestWaiting(ctx context.Context, queueID uuid.UUID, limit uint64) ([]*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallListOldestWaiting", ctx, queueID, limit)
+	ret0, _ := ret[0].([]*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallListOldestWaiting indicates an expected call of QueuecallListOldestWaiting.
+func (mr *MockDBHandlerMockRecorder) QueuecallListOldestWaiting(ctx, queueID, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallListOldestWaiting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallListOldestWaiting), ctx, queueID, limit)
+}
+
 // QueuecallSetStatusAbandoned mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error {
+func (m *MockDBHandler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallSetStatusAbandoned", ctx, id, durationWaiting, ts)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // QueuecallSetStatusAbandoned indicates an expected call of QueuecallSetStatusAbandoned.
@@ -289,25 +305,27 @@ func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusAbandoned(ctx, id, durati
 }
 
 // QueuecallSetStatusConnecting mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusConnecting(ctx context.Context, id, serviceAgentID uuid.UUID) error {
+func (m *MockDBHandler) QueuecallSetStatusConnecting(ctx context.Context, id, serviceAgentID, groupcallID uuid.UUID) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallSetStatusConnecting", ctx, id, serviceAgentID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "QueuecallSetStatusConnecting", ctx, id, serviceAgentID, groupcallID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // QueuecallSetStatusConnecting indicates an expected call of QueuecallSetStatusConnecting.
-func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusConnecting(ctx, id, serviceAgentID any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusConnecting(ctx, id, serviceAgentID, groupcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusConnecting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusConnecting), ctx, id, serviceAgentID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusConnecting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusConnecting), ctx, id, serviceAgentID, groupcallID)
 }
 
 // QueuecallSetStatusDone mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) error {
+func (m *MockDBHandler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallSetStatusDone", ctx, id, durationService, ts)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // QueuecallSetStatusDone indicates an expected call of QueuecallSetStatusDone.
@@ -331,11 +349,12 @@ func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusKicking(ctx, id any) *gom
 }
 
 // QueuecallSetStatusService mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error {
+func (m *MockDBHandler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallSetStatusService", ctx, id, durationWaiting, ts)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // QueuecallSetStatusService indicates an expected call of QueuecallSetStatusService.
@@ -344,18 +363,34 @@ func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusService(ctx, id, duration
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusService", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusService), ctx, id, durationWaiting, ts)
 }
 
-// QueuecallSetStatusWaiting mocks base method.
-func (m *MockDBHandler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error {
+// QueuecallSetStatusWaitingIfConnecting mocks base method.
+func (m *MockDBHandler) QueuecallSetStatusWaitingIfConnecting(ctx context.Context, id uuid.UUID) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueuecallSetStatusWaiting", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "QueuecallSetStatusWaitingIfConnecting", ctx, id)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// QueuecallSetStatusWaiting indicates an expected call of QueuecallSetStatusWaiting.
-func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusWaiting(ctx, id any) *gomock.Call {
+// QueuecallSetStatusWaitingIfConnecting indicates an expected call of QueuecallSetStatusWaitingIfConnecting.
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusWaitingIfConnecting(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusWaiting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusWaiting), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusWaitingIfConnecting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusWaitingIfConnecting), ctx, id)
+}
+
+// QueuecallSetStatusWaitingIfInitiating mocks base method.
+func (m *MockDBHandler) QueuecallSetStatusWaitingIfInitiating(ctx context.Context, id uuid.UUID) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallSetStatusWaitingIfInitiating", ctx, id)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallSetStatusWaitingIfInitiating indicates an expected call of QueuecallSetStatusWaitingIfInitiating.
+func (mr *MockDBHandlerMockRecorder) QueuecallSetStatusWaitingIfInitiating(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallSetStatusWaitingIfInitiating", reflect.TypeOf((*MockDBHandler)(nil).QueuecallSetStatusWaitingIfInitiating), ctx, id)
 }
 
 // QueuecallUpdate mocks base method.

@@ -174,30 +174,56 @@ func (h *queuecallHandler) Delete(ctx context.Context, id uuid.UUID) (*queuecall
 }
 
 // UpdateStatusConnecting updates the queuecall's status to the connecting.
-func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.UUID, agentID uuid.UUID) (*queuecall.Queuecall, error) {
+//
+// The status transition is gated by a compare-and-swap (VOIP-1539 §5.0 #3): the
+// underlying setter only wins when the queuecall is still in the waiting status.
+// When the CAS loses (won == false) the method is a side-effect-free no-op and
+// returns the current queuecall; the winner's side effects run only when the CAS
+// wins. The bool return reports whether this call won the CAS so the caller
+// (match()) can decide whether to keep or unwind the agent dial.
+func (h *queuecallHandler) UpdateStatusConnecting(ctx context.Context, id uuid.UUID, agentID uuid.UUID, groupcallID uuid.UUID) (*queuecall.Queuecall, bool, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "UpdateStatusConnecting",
 		"queuecall_id": id,
 		"agent_id":     agentID,
+		"groupcall_id": groupcallID,
 	})
 	log.Debug("Creating a new queuecall.")
 
-	if err := h.db.QueuecallSetStatusConnecting(ctx, id, agentID); err != nil {
+	affected, err := h.db.QueuecallSetStatusConnecting(ctx, id, agentID, groupcallID)
+	if err != nil {
 		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
-		return nil, err
+		return nil, false, err
+	}
+
+	if affected == 0 {
+		// CAS lost: another writer already moved the queuecall out of waiting.
+		// Return the current queuecall with no side effects (idempotent no-op).
+		res, errGet := h.db.QueuecallGet(ctx, id)
+		if errGet != nil {
+			log.Errorf("Could not get updated queuecall. err: %v", errGet)
+			return nil, false, errGet
+		}
+		return res, false, nil
 	}
 
 	res, err := h.db.QueuecallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get updated queuecall. err: %v", err)
-		return nil, err
+		return nil, false, err
 	}
 	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallConnecting, res)
 
-	return res, nil
+	return res, true, nil
 }
 
 // UpdateStatusService updates the queuecall's status to the service.
+//
+// The status transition is gated by a compare-and-swap (VOIP-1539 §5.0 #4): the
+// underlying setter only wins when the queuecall is still in the connecting
+// status. When the CAS loses (affected == 0) the method is a side-effect-free
+// no-op and returns the current queuecall; the winner's side effects run only
+// when affected > 0.
 func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "UpdateStatusService",
@@ -208,9 +234,21 @@ func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecal
 	curTime := h.utilHandler.TimeNow()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
-	if errService := h.db.QueuecallSetStatusService(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
+	affected, errService := h.db.QueuecallSetStatusService(ctx, qc.ID, int(duration.Milliseconds()), curTime)
+	if errService != nil {
 		log.Errorf("Could not update queuecall's status to service. err: %v", errService)
 		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
+	}
+
+	if affected == 0 {
+		// CAS lost: another writer already moved the queuecall out of connecting.
+		// Return the current queuecall with no side effects (idempotent no-op).
+		res, err := h.Get(ctx, qc.ID)
+		if err != nil {
+			log.Errorf("Could not get updated queuecall. err: %v", err)
+			return nil, err
+		}
+		return res, nil
 	}
 
 	res, err := h.Get(ctx, qc.ID)
@@ -226,6 +264,13 @@ func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecal
 		log.Errorf("Could not add the service queuecall. queuecall_id: %s", res.ID)
 	}
 
+	// release the agent reservation now that the service is confirmed (winner only).
+	if res.ServiceAgentID != uuid.Nil {
+		if errRelease := h.reqHandler.AgentV1AgentReserveRelease(ctx, res.ServiceAgentID, res.ID); errRelease != nil {
+			log.Errorf("Could not release the agent reservation. err: %v", errRelease)
+		}
+	}
+
 	// send the queuecall timeout-service if it exists
 	if qc.TimeoutService > 0 {
 		if errTimeout := h.reqHandler.QueueV1QueuecallTimeoutService(ctx, res.ID, res.TimeoutService); errTimeout != nil {
@@ -237,6 +282,13 @@ func (h *queuecallHandler) UpdateStatusService(ctx context.Context, qc *queuecal
 }
 
 // UpdateStatusAbandoned updates the queuecall's status to the abandoned.
+//
+// The status transition is gated by a compare-and-swap (VOIP-1539 §5.0 #6): the
+// underlying setter only wins when the queuecall is not yet ended and not in the
+// service status. When the CAS loses (affected == 0) the method is a
+// side-effect-free no-op and returns the current queuecall; the winner's side
+// effects (including the confbridge delete) run only when affected > 0, so a
+// losing abandon never tears down a live serviced call.
 func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "UpdateStatusAbandoned",
@@ -247,9 +299,21 @@ func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuec
 	curTime := h.utilHandler.TimeNow()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
-	if errService := h.db.QueuecallSetStatusAbandoned(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
+	affected, errService := h.db.QueuecallSetStatusAbandoned(ctx, qc.ID, int(duration.Milliseconds()), curTime)
+	if errService != nil {
 		log.Errorf("Could not update queuecall's status to service. err: %v", errService)
 		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
+	}
+
+	if affected == 0 {
+		// CAS lost: another writer already ended or serviced the queuecall.
+		// Return the current queuecall with no side effects (idempotent no-op).
+		res, err := h.Get(ctx, qc.ID)
+		if err != nil {
+			log.Errorf("Could not get updated queuecall. err: %v", err)
+			return nil, err
+		}
+		return res, nil
 	}
 
 	res, err := h.Get(ctx, qc.ID)
@@ -281,10 +345,31 @@ func (h *queuecallHandler) UpdateStatusAbandoned(ctx context.Context, qc *queuec
 		log.Errorf("Could not delete variables. err: %v", errVariables)
 	}
 
+	// hang up the outstanding agent dial leg, if any (winner only).
+	if res.GroupcallID != uuid.Nil {
+		if _, errHangup := h.reqHandler.CallV1GroupcallHangup(ctx, res.GroupcallID); errHangup != nil {
+			log.Errorf("Could not hang up the agent groupcall. err: %v", errHangup)
+		}
+	}
+
+	// release the agent reservation, if any (winner only).
+	if res.ServiceAgentID != uuid.Nil {
+		if errRelease := h.reqHandler.AgentV1AgentReserveRelease(ctx, res.ServiceAgentID, res.ID); errRelease != nil {
+			log.Errorf("Could not release the agent reservation. err: %v", errRelease)
+		}
+	}
+
 	return res, nil
 }
 
 // UpdateStatusDone updates the queuecall's status to the done.
+//
+// The status transition is gated by a compare-and-swap (VOIP-1539 §5.0 #5): the
+// underlying setter only wins when the queuecall is still in the service status.
+// When the CAS loses (affected == 0) the method is a side-effect-free no-op and
+// returns the current queuecall; the winner's side effects (including the
+// confbridge delete) run only when affected > 0, so concurrent done writers do
+// not delete the confbridge twice.
 func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "UpdateStatusDone",
@@ -295,9 +380,21 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 	curTime := h.utilHandler.TimeNow()
 	duration := getDuration(ctx, qc.TMCreate, curTime)
 
-	if errService := h.db.QueuecallSetStatusDone(ctx, qc.ID, int(duration.Milliseconds()), curTime); errService != nil {
+	affected, errService := h.db.QueuecallSetStatusDone(ctx, qc.ID, int(duration.Milliseconds()), curTime)
+	if errService != nil {
 		log.Errorf("Could not update queuecall's status to service. err: %v", errService)
 		return nil, errors.Wrap(errService, "Could not update queuecall's status to service.")
+	}
+
+	if affected == 0 {
+		// CAS lost: another writer already moved the queuecall out of service.
+		// Return the current queuecall with no side effects (idempotent no-op).
+		res, err := h.Get(ctx, qc.ID)
+		if err != nil {
+			log.Errorf("Could not get updated queuecall. err: %v", err)
+			return nil, err
+		}
+		return res, nil
 	}
 
 	res, err := h.Get(ctx, qc.ID)
@@ -333,6 +430,14 @@ func (h *queuecallHandler) UpdateStatusDone(ctx context.Context, qc *queuecall.Q
 }
 
 // UpdateStatusWaiting updates the queuecall's status to the waiting.
+//
+// This is the initiating->waiting enqueue transition (VOIP-1539 §5.0 #1). The
+// status transition is gated by a compare-and-swap: the underlying setter only
+// wins when the queuecall is still in the initiating status. When the CAS loses
+// (affected == 0) the method is a side-effect-free no-op and returns the current
+// queuecall; the winner's side effects run only when affected > 0, so a blind
+// waiting-write never resurrects a queuecall that a racing customer hangup
+// already abandoned.
 func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "UpdateStatusWaiting",
@@ -340,9 +445,21 @@ func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID
 	})
 	log.Debug("Updating queuecall status to waiting.")
 
-	if err := h.db.QueuecallSetStatusWaiting(ctx, id); err != nil {
-		log.Errorf("Could not update the status to connecting. agent id. err: %v", err)
+	affected, err := h.db.QueuecallSetStatusWaitingIfInitiating(ctx, id)
+	if err != nil {
+		log.Errorf("Could not update the status to waiting. err: %v", err)
 		return nil, err
+	}
+
+	if affected == 0 {
+		// CAS lost: the queuecall is no longer initiating (e.g. already abandoned).
+		// Return the current queuecall with no side effects (idempotent no-op).
+		res, errGet := h.db.QueuecallGet(ctx, id)
+		if errGet != nil {
+			log.Errorf("Could not get updated queuecall. err: %v", errGet)
+			return nil, errGet
+		}
+		return res, nil
 	}
 
 	res, err := h.db.QueuecallGet(ctx, id)
@@ -358,6 +475,81 @@ func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID
 		_, err = h.queueHandler.AddWaitQueueCallID(ctx, res.QueueID, res.ID)
 		if err != nil {
 			log.Errorf("Could not add the queuecall to the queue. err: %v", err)
+			return
+		}
+
+		// VOIP-1539 §3.5, event entry point A: try match() once right after
+		// the queuecall is registered as waiting. One-shot -- a failed match
+		// here (no available agent, or a losing reservation/entry CAS) is
+		// left for entry point B or the matching backstop (§5.2), not
+		// retried inline.
+		h.matchWaitingQueuecall(ctx, res)
+	}()
+
+	return res, nil
+}
+
+// UpdateStatusWaitingRollback rolls a connecting queuecall back to waiting
+// (VOIP-1539 §5.0 #2, connecting-stale backstop rollback path).
+//
+// The status transition is gated by a compare-and-swap: the underlying setter
+// only wins when the queuecall is still in the connecting status. When the CAS
+// loses (affected == 0) the method is a side-effect-free no-op and returns the
+// current queuecall (e.g. join already won and moved it to service). When the
+// CAS wins the method releases the agent reservation, clears the
+// service_agent_id and groupcall_id assignment, and re-queues the queuecall for
+// a fresh match.
+func (h *queuecallHandler) UpdateStatusWaitingRollback(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "UpdateStatusWaitingRollback",
+		"queuecall_id": qc.ID,
+	})
+	log.Debug("Rolling back queuecall status to waiting.")
+
+	affected, err := h.db.QueuecallSetStatusWaitingIfConnecting(ctx, qc.ID)
+	if err != nil {
+		log.Errorf("Could not roll back the status to waiting. err: %v", err)
+		return nil, err
+	}
+
+	if affected == 0 {
+		// CAS lost: the queuecall is no longer connecting (e.g. already serviced).
+		// Return the current queuecall with no side effects (idempotent no-op).
+		res, errGet := h.Get(ctx, qc.ID)
+		if errGet != nil {
+			log.Errorf("Could not get updated queuecall. err: %v", errGet)
+			return nil, errGet
+		}
+		return res, nil
+	}
+
+	// release the agent reservation before clearing the assignment (winner only).
+	if qc.ServiceAgentID != uuid.Nil {
+		if errRelease := h.reqHandler.AgentV1AgentReserveRelease(ctx, qc.ServiceAgentID, qc.ID); errRelease != nil {
+			log.Errorf("Could not release the agent reservation. err: %v", errRelease)
+		}
+	}
+
+	// clear the service_agent_id and groupcall_id assignment (winner only).
+	if errClear := h.db.QueuecallUpdate(ctx, qc.ID, map[queuecall.Field]any{
+		queuecall.FieldServiceAgentID: uuid.Nil,
+		queuecall.FieldGroupcallID:    uuid.Nil,
+	}); errClear != nil {
+		log.Errorf("Could not clear the service agent id. err: %v", errClear)
+		return nil, errClear
+	}
+
+	res, err := h.Get(ctx, qc.ID)
+	if err != nil {
+		log.Errorf("Could not get updated queuecall. err: %v", err)
+		return nil, err
+	}
+	h.notifyhandler.PublishWebhookEvent(ctx, res.CustomerID, queuecall.EventTypeQueuecallWaiting, res)
+
+	// re-queue the queuecall for a fresh match.
+	go func() {
+		if _, errAdd := h.queueHandler.AddWaitQueueCallID(ctx, res.QueueID, res.ID); errAdd != nil {
+			log.Errorf("Could not add the queuecall to the queue. err: %v", errAdd)
 		}
 	}()
 

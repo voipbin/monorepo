@@ -11,6 +11,7 @@ package queuecallhandler
 
 import (
 	context "context"
+	agent "monorepo/bin-agent-manager/models/agent"
 	address "monorepo/bin-common-handler/models/address"
 	service "monorepo/bin-common-handler/models/service"
 	customer "monorepo/bin-customer-manager/models/customer"
@@ -74,6 +75,18 @@ func (m *MockQueuecallHandler) Delete(ctx context.Context, id uuid.UUID) (*queue
 func (mr *MockQueuecallHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockQueuecallHandler)(nil).Delete), ctx, id)
+}
+
+// EventAMAgentAvailable mocks base method.
+func (m *MockQueuecallHandler) EventAMAgentAvailable(ctx context.Context, arg1 agent.Agent) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventAMAgentAvailable", ctx, arg1)
+}
+
+// EventAMAgentAvailable indicates an expected call of EventAMAgentAvailable.
+func (mr *MockQueuecallHandlerMockRecorder) EventAMAgentAvailable(ctx, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventAMAgentAvailable", reflect.TypeOf((*MockQueuecallHandler)(nil).EventAMAgentAvailable), ctx, arg1)
 }
 
 // EventCUCustomerDeleted mocks base method.
@@ -280,4 +293,19 @@ func (m *MockQueuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.
 func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusWaiting(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusWaiting", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusWaiting), ctx, id)
+}
+
+// UpdateStatusWaitingRollback mocks base method.
+func (m *MockQueuecallHandler) UpdateStatusWaitingRollback(ctx context.Context, qc *queuecall.Queuecall) (*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatusWaitingRollback", ctx, qc)
+	ret0, _ := ret[0].(*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatusWaitingRollback indicates an expected call of UpdateStatusWaitingRollback.
+func (mr *MockQueuecallHandlerMockRecorder) UpdateStatusWaitingRollback(ctx, qc any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatusWaitingRollback", reflect.TypeOf((*MockQueuecallHandler)(nil).UpdateStatusWaitingRollback), ctx, qc)
 }

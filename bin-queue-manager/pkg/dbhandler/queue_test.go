@@ -45,8 +45,6 @@ func Test_QueueCreate(t *testing.T) {
 					uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
 				},
 
-				Execute: queue.ExecuteRun,
-
 				WaitFlowID:     uuid.FromStringOrNil("4dfaf278-205d-11f0-8be0-d74aed2ef0bc"),
 				WaitTimeout:    6000,
 				ServiceTimeout: 60000,
@@ -75,7 +73,6 @@ func Test_QueueCreate(t *testing.T) {
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
 				},
-				Execute:        queue.ExecuteRun,
 				WaitFlowID:     uuid.FromStringOrNil("4dfaf278-205d-11f0-8be0-d74aed2ef0bc"),
 				WaitTimeout:    6000,
 				ServiceTimeout: 60000,

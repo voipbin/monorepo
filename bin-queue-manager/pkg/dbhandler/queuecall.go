@@ -255,6 +255,52 @@ func (h *handler) QueuecallList(ctx context.Context, size uint64, token string, 
 	return res, nil
 }
 
+// QueuecallListOldestWaiting returns up to limit waiting queuecalls for the
+// given queue, ordered oldest-first (VOIP-1539 §3.5, event entry point B: the
+// FIFO pick used when an agent becomes available). Deliberately separate from
+// QueuecallList's DESC/tm_create-token pagination contract -- this is a
+// small, fixed-direction, non-paginated query.
+func (h *handler) QueuecallListOldestWaiting(ctx context.Context, queueID uuid.UUID, limit uint64) ([]*queuecall.Queuecall, error) {
+	fields := commondatabasehandler.GetDBFields(&queuecall.Queuecall{})
+	sb := squirrel.
+		Select(fields...).
+		From(queueQueuecallsTable).
+		Where(squirrel.Eq{
+			string(queuecall.FieldQueueID): queueID.Bytes(),
+			string(queuecall.FieldStatus):  string(queuecall.StatusWaiting),
+		}).
+		OrderBy(string(queuecall.FieldTMCreate) + " ASC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. QueuecallListOldestWaiting. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. QueuecallListOldestWaiting. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*queuecall.Queuecall{}
+	for rows.Next() {
+		u, err := h.queuecallGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. QueuecallListOldestWaiting, err: %v", err)
+		}
+		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. QueuecallListOldestWaiting. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // QueuecallUpdate updates queuecall fields.
 func (h *handler) QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[queuecall.Field]any) error {
 	if len(fields) == 0 {
@@ -321,21 +367,58 @@ func (h *handler) QueuecallDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // QueuecallSetStatusConnecting sets the QueueCall's status to the connecting.
-func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID) error {
-	fields := map[queuecall.Field]any{
+//
+// It performs a compare-and-swap UPDATE guarded by `status = 'waiting'`
+// (VOIP-1539 §5.0). Only a waiting queuecall can transition to connecting. It
+// returns the number of affected rows: 1 when this call won the CAS, 0 when the
+// queuecall was not in the waiting status (already connecting/serviced/ended by
+// a racing writer).
+func (h *handler) QueuecallSetStatusConnecting(ctx context.Context, id uuid.UUID, serviceAgentID uuid.UUID, groupcallID uuid.UUID) (int64, error) {
+	fields, err := commondatabasehandler.PrepareFields(map[queuecall.Field]any{
 		queuecall.FieldStatus:         queuecall.StatusConnecting,
 		queuecall.FieldServiceAgentID: serviceAgentID,
+		queuecall.FieldGroupcallID:    groupcallID,
+		queuecall.FieldTMUpdate:       h.utilHandler.TimeNow(),
+	})
+	if err != nil {
+		return 0, fmt.Errorf("could not prepare fields. QueuecallSetStatusConnecting. err: %v", err)
 	}
 
-	if err := h.QueuecallUpdate(ctx, id, fields); err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusConnecting. err: %v", err)
+	sqlStr, args, err := squirrel.
+		Update(queueQueuecallsTable).
+		SetMap(fields).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(queuecall.FieldStatus): string(queuecall.StatusWaiting)}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("could not build query. QueuecallSetStatusConnecting. err: %v", err)
 	}
 
-	return nil
+	res, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return 0, fmt.Errorf("could not execute query. QueuecallSetStatusConnecting. err: %v", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("could not get rows affected. QueuecallSetStatusConnecting. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return affected, nil
 }
 
 // QueuecallSetStatusService sets the Queuecall's status to the service.
-func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error {
+//
+// It performs a compare-and-swap UPDATE guarded by `status = 'connecting'`
+// (VOIP-1539 §5.0). Only a connecting queuecall can transition to service. It
+// returns the number of affected rows: 1 when this call won the CAS, 0 when the
+// queuecall was not in the connecting status (already serviced/abandoned/rolled
+// back by a racing writer).
+func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error) {
 	fields := map[queuecall.Field]any{
 		queuecall.FieldStatus:          queuecall.StatusService,
 		queuecall.FieldDurationWaiting: durationWaiting,
@@ -345,31 +428,45 @@ func (h *handler) QueuecallSetStatusService(ctx context.Context, id uuid.UUID, d
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("QueuecallSetStatusService: prepare fields failed: %w", err)
+		return 0, fmt.Errorf("QueuecallSetStatusService: prepare fields failed: %w", err)
 	}
 
 	q := squirrel.Update(queueQueuecallsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(queuecall.FieldStatus): string(queuecall.StatusConnecting)}).
 		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("QueuecallSetStatusService: build SQL failed: %w", err)
+		return 0, fmt.Errorf("QueuecallSetStatusService: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
-		return fmt.Errorf("QueuecallSetStatusService: exec failed: %w", err)
+	res, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return 0, fmt.Errorf("QueuecallSetStatusService: exec failed: %w", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("QueuecallSetStatusService: rows affected failed: %w", err)
 	}
 
 	// update the cache
 	_ = h.queuecallUpdateToCache(ctx, id)
 
-	return nil
+	return affected, nil
 }
 
 // QueuecallSetStatusAbandoned sets the Queuecall's status to the abandoned.
-func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) error {
+//
+// It performs a compare-and-swap UPDATE guarded by
+// `tm_end IS NULL AND status != 'service'` (VOIP-1539 §5.0). A queuecall can be
+// abandoned from any non-serviced, not-yet-ended status. It returns the number
+// of affected rows: 1 when this call won the CAS, 0 when the queuecall was
+// already serviced or ended by a racing writer (e.g. join won and it is now in
+// service, so its confbridge must not be torn down).
+func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error) {
 	fields := map[queuecall.Field]any{
 		queuecall.FieldStatus:          queuecall.StatusAbandoned,
 		queuecall.FieldDurationWaiting: durationWaiting,
@@ -379,31 +476,45 @@ func (h *handler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID,
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("QueuecallSetStatusAbandoned: prepare fields failed: %w", err)
+		return 0, fmt.Errorf("QueuecallSetStatusAbandoned: prepare fields failed: %w", err)
 	}
 
 	q := squirrel.Update(queueQueuecallsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(queuecall.FieldTMEnd): nil}).
+		Where(squirrel.NotEq{string(queuecall.FieldStatus): string(queuecall.StatusService)}).
 		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("QueuecallSetStatusAbandoned: build SQL failed: %w", err)
+		return 0, fmt.Errorf("QueuecallSetStatusAbandoned: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
-		return fmt.Errorf("QueuecallSetStatusAbandoned: exec failed: %w", err)
+	res, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return 0, fmt.Errorf("QueuecallSetStatusAbandoned: exec failed: %w", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("QueuecallSetStatusAbandoned: rows affected failed: %w", err)
 	}
 
 	// update the cache
 	_ = h.queuecallUpdateToCache(ctx, id)
 
-	return nil
+	return affected, nil
 }
 
 // QueuecallSetStatusDone sets the Queuecall's status to the done.
-func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) error {
+//
+// It performs a compare-and-swap UPDATE guarded by `status = 'service'`
+// (VOIP-1539 §5.0). Only a serviced queuecall can transition to done. It returns
+// the number of affected rows: 1 when this call won the CAS, 0 when the
+// queuecall was not in the service status (already done/abandoned by a racing
+// writer), so its confbridge is not deleted twice.
+func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, durationService int, ts *time.Time) (int64, error) {
 	fields := map[queuecall.Field]any{
 		queuecall.FieldStatus:          queuecall.StatusDone,
 		queuecall.FieldDurationService: durationService,
@@ -413,27 +524,34 @@ func (h *handler) QueuecallSetStatusDone(ctx context.Context, id uuid.UUID, dura
 
 	tmpFields, err := commondatabasehandler.PrepareFields(fields)
 	if err != nil {
-		return fmt.Errorf("QueuecallSetStatusDone: prepare fields failed: %w", err)
+		return 0, fmt.Errorf("QueuecallSetStatusDone: prepare fields failed: %w", err)
 	}
 
 	q := squirrel.Update(queueQueuecallsTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(queuecall.FieldStatus): string(queuecall.StatusService)}).
 		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := q.ToSql()
 	if err != nil {
-		return fmt.Errorf("QueuecallSetStatusDone: build SQL failed: %w", err)
+		return 0, fmt.Errorf("QueuecallSetStatusDone: build SQL failed: %w", err)
 	}
 
-	if _, err := h.db.ExecContext(ctx, sqlStr, args...); err != nil {
-		return fmt.Errorf("QueuecallSetStatusDone: exec failed: %w", err)
+	res, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return 0, fmt.Errorf("QueuecallSetStatusDone: exec failed: %w", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("QueuecallSetStatusDone: rows affected failed: %w", err)
 	}
 
 	// update the cache
 	_ = h.queuecallUpdateToCache(ctx, id)
 
-	return nil
+	return affected, nil
 }
 
 // QueuecallSetStatusKicking sets the QueueCall's status to the kicking.
@@ -449,15 +567,64 @@ func (h *handler) QueuecallSetStatusKicking(ctx context.Context, id uuid.UUID) e
 	return nil
 }
 
-// QueuecallSetStatusWaiting sets the QueueCall's status to the waiting.
-func (h *handler) QueuecallSetStatusWaiting(ctx context.Context, id uuid.UUID) error {
-	fields := map[queuecall.Field]any{
-		queuecall.FieldStatus: queuecall.StatusWaiting,
+// QueuecallSetStatusWaitingIfInitiating sets the QueueCall's status to the
+// waiting, guarded by `status = 'initiating'` (VOIP-1539 §5.0 #1).
+//
+// It performs a compare-and-swap UPDATE: only an initiating queuecall can
+// transition to waiting (the normal enqueue path). It returns the number of
+// affected rows: 1 when this call won the CAS, 0 when the queuecall was not in
+// the initiating status (e.g. already abandoned by a racing customer hangup, so
+// a blind waiting-write must not resurrect the abandoned call).
+func (h *handler) QueuecallSetStatusWaitingIfInitiating(ctx context.Context, id uuid.UUID) (int64, error) {
+	return h.queuecallSetStatusWaitingIf(ctx, id, queuecall.StatusInitiating)
+}
+
+// QueuecallSetStatusWaitingIfConnecting sets the QueueCall's status to the
+// waiting, guarded by `status = 'connecting'` (VOIP-1539 §5.0 #2).
+//
+// It performs a compare-and-swap UPDATE: only a connecting queuecall can be
+// rolled back to waiting (the connecting-stale backstop rollback path). It
+// returns the number of affected rows: 1 when this call won the CAS, 0 when the
+// queuecall was not in the connecting status (e.g. join won and it is now in
+// service, so the rollback must be a no-op).
+func (h *handler) QueuecallSetStatusWaitingIfConnecting(ctx context.Context, id uuid.UUID) (int64, error) {
+	return h.queuecallSetStatusWaitingIf(ctx, id, queuecall.StatusConnecting)
+}
+
+// queuecallSetStatusWaitingIf performs a compare-and-swap UPDATE that sets the
+// queuecall's status to waiting, guarded by the given expected current status.
+func (h *handler) queuecallSetStatusWaitingIf(ctx context.Context, id uuid.UUID, expectStatus queuecall.Status) (int64, error) {
+	fields, err := commondatabasehandler.PrepareFields(map[queuecall.Field]any{
+		queuecall.FieldStatus:   queuecall.StatusWaiting,
+		queuecall.FieldTMUpdate: h.utilHandler.TimeNow(),
+	})
+	if err != nil {
+		return 0, fmt.Errorf("could not prepare fields. queuecallSetStatusWaitingIf. err: %v", err)
 	}
 
-	if err := h.QueuecallUpdate(ctx, id, fields); err != nil {
-		return fmt.Errorf("could not execute. QueuecallSetStatusWaiting. err: %v", err)
+	sqlStr, args, err := squirrel.
+		Update(queueQueuecallsTable).
+		SetMap(fields).
+		Where(squirrel.Eq{string(queuecall.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(queuecall.FieldStatus): string(expectStatus)}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("could not build query. queuecallSetStatusWaitingIf. err: %v", err)
 	}
 
-	return nil
+	res, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return 0, fmt.Errorf("could not execute query. queuecallSetStatusWaitingIf. err: %v", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("could not get rows affected. queuecallSetStatusWaitingIf. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.queuecallUpdateToCache(ctx, id)
+
+	return affected, nil
 }

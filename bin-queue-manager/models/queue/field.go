@@ -16,8 +16,6 @@ const (
 	FieldDirectID   Field = "direct_id"   // direct_id
 	FieldDirectHash Field = "direct_hash" // direct_hash
 
-	FieldExecute Field = "execute" // execute
-
 	FieldWaitFlowID     Field = "wait_flow_id"     // wait_flow_id
 	FieldWaitTimeout    Field = "wait_timeout"     // wait_timeout
 	FieldServiceTimeout Field = "service_timeout"  // service_timeout

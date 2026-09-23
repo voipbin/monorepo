@@ -2,6 +2,7 @@ package queuecallhandler
 
 import (
 	"context"
+	"fmt"
 	reflect "reflect"
 	"testing"
 
@@ -31,11 +32,13 @@ func Test_Execute(t *testing.T) {
 		id      uuid.UUID
 		agentID uuid.UUID
 
-		responseQueuecall *queuecall.Queuecall
-		responseFlow      *fmflow.Flow
+		responseQueuecall  *queuecall.Queuecall
+		responseFlow       *fmflow.Flow
+		responseGroupcalls []*cmgroupcall.Groupcall
 
 		expcetFlowActions  []fmaction.Action
 		expectDestinations []commonaddress.Address
+		expectGroupcallID  uuid.UUID
 	}{
 		{
 			name: "normal",
@@ -54,7 +57,7 @@ func Test_Execute(t *testing.T) {
 				ConfbridgeID:    uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
 				Source: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
-					Target: "+821021656521",
+					Target: "+821****6521",
 				},
 				RoutingMethod: queue.RoutingMethodRandom,
 				TagIDs: []uuid.UUID{
@@ -66,6 +69,13 @@ func Test_Execute(t *testing.T) {
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("af9486dc-d1b1-11ec-b34e-8fea9e29488f"),
+				},
+			},
+			responseGroupcalls: []*cmgroupcall.Groupcall{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e1f0a2b4-5ee0-11ec-abd0-a7463d258061"),
+					},
 				},
 			},
 
@@ -83,6 +93,7 @@ func Test_Execute(t *testing.T) {
 					Target: "624e1cd6-d1b0-11ec-8b3b-db12aa2e35f6",
 				},
 			},
+			expectGroupcallID: uuid.FromStringOrNil("e1f0a2b4-5ee0-11ec-abd0-a7463d258061"),
 		},
 	}
 
@@ -107,10 +118,14 @@ func Test_Execute(t *testing.T) {
 			// generateFlowForAgentCall
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expcetFlowActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, tt.expectDestinations, false, false, "", nil, nil).Return([]*cmcall.Call{}, []*cmgroupcall.Groupcall{}, nil)
+			// reserve
+			mockReq.EXPECT().AgentV1AgentReserve(ctx, tt.agentID, "queuecall", tt.responseQueuecall.ID).Return(true, nil)
 
-			//UpdateStatusConnecting
-			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID).Return(nil)
+			// dial
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, tt.expectDestinations, false, false, "", nil, nil).Return([]*cmcall.Call{}, tt.responseGroupcalls, nil)
+
+			// UpdateStatusConnecting (entry CAS won)
+			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID, tt.expectGroupcallID).Return(int64(1), nil)
 			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallConnecting, tt.responseQueuecall)
 			mockReq.EXPECT().FlowV1ActiveflowUpdateForwardActionID(ctx, tt.responseQueuecall.ReferenceActiveflowID, tt.responseQueuecall.ForwardActionID, true).Return(nil)
@@ -120,6 +135,232 @@ func Test_Execute(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			if !reflect.DeepEqual(tt.responseQueuecall, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseQueuecall, res)
+			}
+		})
+	}
+}
+
+func Test_Execute_reserveFail(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id      uuid.UUID
+		agentID uuid.UUID
+
+		responseQueuecall  *queuecall.Queuecall
+		responseFlow       *fmflow.Flow
+		responseReserveOK  bool
+		responseReserveErr error
+	}{
+		{
+			name: "reserve returns false",
+
+			id:      uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+			agentID: uuid.FromStringOrNil("624e1cd6-d1b0-11ec-8b3b-db12aa2e35f6"),
+
+			responseQueuecall: &queuecall.Queuecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+				},
+				ConfbridgeID: uuid.FromStringOrNil("d7357136-5ee0-11ec-abd0-a7463d258061"),
+			},
+			responseFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af9486dc-d1b1-11ec-b34e-8fea9e29488f"),
+				},
+			},
+			responseReserveOK:  false,
+			responseReserveErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), uuid.Nil, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().AgentV1AgentReserve(ctx, tt.agentID, "queuecall", tt.responseQueuecall.ID).Return(tt.responseReserveOK, tt.responseReserveErr)
+
+			// no dial, no release (reservation never taken)
+			_, err := h.Execute(ctx, tt.id, tt.agentID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+		})
+	}
+}
+
+func Test_Execute_dialFail(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id      uuid.UUID
+		agentID uuid.UUID
+
+		responseQueuecall  *queuecall.Queuecall
+		responseFlow       *fmflow.Flow
+		responseGroupcalls []*cmgroupcall.Groupcall
+		responseDialErr    error
+	}{
+		{
+			name: "dial returns error",
+
+			id:      uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+			agentID: uuid.FromStringOrNil("624e1cd6-d1b0-11ec-8b3b-db12aa2e35f6"),
+
+			responseQueuecall: &queuecall.Queuecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+				},
+			},
+			responseFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af9486dc-d1b1-11ec-b34e-8fea9e29488f"),
+				},
+			},
+			responseDialErr: fmt.Errorf("dial failed"),
+		},
+		{
+			name: "dial returns empty groupcalls",
+
+			id:      uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+			agentID: uuid.FromStringOrNil("624e1cd6-d1b0-11ec-8b3b-db12aa2e35f6"),
+
+			responseQueuecall: &queuecall.Queuecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+				},
+			},
+			responseFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af9486dc-d1b1-11ec-b34e-8fea9e29488f"),
+				},
+			},
+			responseGroupcalls: []*cmgroupcall.Groupcall{},
+			responseDialErr:    nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), uuid.Nil, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().AgentV1AgentReserve(ctx, tt.agentID, "queuecall", tt.responseQueuecall.ID).Return(true, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, gomock.Any(), false, false, "", nil, nil).Return([]*cmcall.Call{}, tt.responseGroupcalls, tt.responseDialErr)
+
+			// failure path must release the reservation
+			mockReq.EXPECT().AgentV1AgentReserveRelease(ctx, tt.agentID, tt.responseQueuecall.ID).Return(nil)
+
+			_, err := h.Execute(ctx, tt.id, tt.agentID)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+		})
+	}
+}
+
+func Test_Execute_entryCASLost(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id      uuid.UUID
+		agentID uuid.UUID
+
+		responseQueuecall  *queuecall.Queuecall
+		responseFlow       *fmflow.Flow
+		responseGroupcalls []*cmgroupcall.Groupcall
+
+		expectGroupcallID uuid.UUID
+	}{
+		{
+			name: "entry CAS lost",
+
+			id:      uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+			agentID: uuid.FromStringOrNil("624e1cd6-d1b0-11ec-8b3b-db12aa2e35f6"),
+
+			responseQueuecall: &queuecall.Queuecall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b1c49460-5ede-11ec-9090-e3dad697e408"),
+				},
+			},
+			responseFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("af9486dc-d1b1-11ec-b34e-8fea9e29488f"),
+				},
+			},
+			responseGroupcalls: []*cmgroupcall.Groupcall{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("e1f0a2b4-5ee0-11ec-abd0-a7463d258061"),
+					},
+				},
+			},
+			expectGroupcallID: uuid.FromStringOrNil("e1f0a2b4-5ee0-11ec-abd0-a7463d258061"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &queuecallHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyhandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), gomock.Any(), uuid.Nil, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().AgentV1AgentReserve(ctx, tt.agentID, "queuecall", tt.responseQueuecall.ID).Return(true, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseQueuecall.CustomerID, tt.responseFlow.ID, tt.responseQueuecall.ReferenceID, &tt.responseQueuecall.Source, gomock.Any(), false, false, "", nil, nil).Return([]*cmcall.Call{}, tt.responseGroupcalls, nil)
+
+			// entry CAS lost (affected == 0), no webhook
+			mockDB.EXPECT().QueuecallSetStatusConnecting(ctx, tt.responseQueuecall.ID, tt.agentID, tt.expectGroupcallID).Return(int64(0), nil)
+			mockDB.EXPECT().QueuecallGet(ctx, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
+
+			// losing path must hang up the agent dial and release the reservation
+			mockReq.EXPECT().CallV1GroupcallHangup(ctx, tt.expectGroupcallID).Return(&cmgroupcall.Groupcall{}, nil)
+			mockReq.EXPECT().AgentV1AgentReserveRelease(ctx, tt.agentID, tt.responseQueuecall.ID).Return(nil)
+
+			res, err := h.Execute(ctx, tt.id, tt.agentID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 			if !reflect.DeepEqual(tt.responseQueuecall, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseQueuecall, res)
 			}
