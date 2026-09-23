@@ -4,6 +4,7 @@ package cachehandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
@@ -30,6 +31,9 @@ type CacheHandler interface {
 	QueuecallGet(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallSet(ctx context.Context, u *queuecall.Queuecall) error
+
+	ReconcileLockAcquire(ctx context.Context, instanceID string, ttl time.Duration) (bool, error)
+	ReconcileLockRelease(ctx context.Context) error
 }
 
 // NewHandler creates DBHandler

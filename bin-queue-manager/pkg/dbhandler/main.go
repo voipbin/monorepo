@@ -40,6 +40,8 @@ type DBHandler interface {
 	QueuecallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*queuecall.Queuecall, error)
 	QueuecallList(ctx context.Context, size uint64, token string, filters map[queuecall.Field]any) ([]*queuecall.Queuecall, error)
 	QueuecallListOldestWaiting(ctx context.Context, queueID uuid.UUID, limit uint64) ([]*queuecall.Queuecall, error)
+	QueuecallListConnectingStale(ctx context.Context, before time.Time, limit uint64) ([]*queuecall.Queuecall, error)
+	QueuecallListWaitingOldest(ctx context.Context, limit uint64) ([]*queuecall.Queuecall, error)
 	QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[queuecall.Field]any) error
 	QueuecallDelete(ctx context.Context, id uuid.UUID) error
 

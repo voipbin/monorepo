@@ -241,6 +241,18 @@ func (mr *MockQueuecallHandlerMockRecorder) List(ctx, size, token, filters any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockQueuecallHandler)(nil).List), ctx, size, token, filters)
 }
 
+// Reconcile mocks base method.
+func (m *MockQueuecallHandler) Reconcile(ctx context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Reconcile", ctx)
+}
+
+// Reconcile indicates an expected call of Reconcile.
+func (mr *MockQueuecallHandlerMockRecorder) Reconcile(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reconcile", reflect.TypeOf((*MockQueuecallHandler)(nil).Reconcile), ctx)
+}
+
 // ServiceStart mocks base method.
 func (m *MockQueuecallHandler) ServiceStart(ctx context.Context, queueID, activeflowID uuid.UUID, referenceType queuecall.ReferenceType, referenceID uuid.UUID) (*service.Service, error) {
 	m.ctrl.T.Helper()

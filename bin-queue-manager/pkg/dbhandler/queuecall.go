@@ -301,6 +301,98 @@ func (h *handler) QueuecallListOldestWaiting(ctx context.Context, queueID uuid.U
 	return res, nil
 }
 
+// QueuecallListConnectingStale returns up to limit queuecalls stuck in the
+// connecting status whose tm_update is older than before, ordered
+// oldest-stale-first (VOIP-1539 §5.2, matching backstop recovery A:
+// connecting-stale rollback).
+func (h *handler) QueuecallListConnectingStale(ctx context.Context, before time.Time, limit uint64) ([]*queuecall.Queuecall, error) {
+	fields := commondatabasehandler.GetDBFields(&queuecall.Queuecall{})
+	sb := squirrel.
+		Select(fields...).
+		From(queueQueuecallsTable).
+		Where(squirrel.Eq{
+			string(queuecall.FieldStatus): string(queuecall.StatusConnecting),
+		}).
+		Where(squirrel.Lt{
+			string(queuecall.FieldTMUpdate): before,
+		}).
+		OrderBy(string(queuecall.FieldTMUpdate) + " ASC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. QueuecallListConnectingStale. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. QueuecallListConnectingStale. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*queuecall.Queuecall{}
+	for rows.Next() {
+		u, err := h.queuecallGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. QueuecallListConnectingStale, err: %v", err)
+		}
+		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. QueuecallListConnectingStale. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// QueuecallListWaitingOldest returns up to limit waiting queuecalls across
+// all queues, ordered oldest-first (VOIP-1539 §5.2, matching backstop
+// recovery B: waiting queuecalls get a fresh match() attempt). Unlike
+// QueuecallListOldestWaiting this is not scoped to a single queue -- the
+// backstop sweeps every waiting queuecall in one pass.
+func (h *handler) QueuecallListWaitingOldest(ctx context.Context, limit uint64) ([]*queuecall.Queuecall, error) {
+	fields := commondatabasehandler.GetDBFields(&queuecall.Queuecall{})
+	sb := squirrel.
+		Select(fields...).
+		From(queueQueuecallsTable).
+		Where(squirrel.Eq{
+			string(queuecall.FieldStatus): string(queuecall.StatusWaiting),
+		}).
+		OrderBy(string(queuecall.FieldTMCreate) + " ASC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. QueuecallListWaitingOldest. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. QueuecallListWaitingOldest. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*queuecall.Queuecall{}
+	for rows.Next() {
+		u, err := h.queuecallGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. QueuecallListWaitingOldest, err: %v", err)
+		}
+		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. QueuecallListWaitingOldest. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // QueuecallUpdate updates queuecall fields.
 func (h *handler) QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[queuecall.Field]any) error {
 	if len(fields) == 0 {
