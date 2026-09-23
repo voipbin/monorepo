@@ -73,13 +73,6 @@ type V1DataQueuesIDWaitActionsPut struct {
 	ServiceTimeout int               `json:"service_timeout"`
 }
 
-// V1DataQueuesIDExecutePut is
-// v1 data type request struct for
-// /v1/queues/<queue-id>/execute PUT
-type V1DataQueuesIDExecutePut struct {
-	Execute queue.Execute `json:"execute"`
-}
-
 // V1DataQueuesIDAgentsGet is
 // v1 data type request struct for
 // /v1/queues/<queue-id>/agents GET

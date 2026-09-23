@@ -9,6 +9,5 @@ type FieldStruct struct {
 	CustomerID    uuid.UUID     `filter:"customer_id"`
 	Name          string        `filter:"name"`
 	RoutingMethod RoutingMethod `filter:"routing_method"`
-	Execute       Execute       `filter:"execute"`
 	Deleted       bool          `filter:"deleted"`
 }

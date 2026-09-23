@@ -55,8 +55,6 @@ var (
 	reqV1QueuesIDTagIDs        = regexp.MustCompile("/v1/queues/" + regUUID + "/tag_ids$")
 	reqV1QueuesIDRoutingMethod = regexp.MustCompile("/v1/queues/" + regUUID + "/routing_method$")
 	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents(\?.*)?$`)
-	reqV1QueuesIDExecute       = regexp.MustCompile("/v1/queues/" + regUUID + "/execute$")
-	reqV1QueuesIDExecuteRun              = regexp.MustCompile("/v1/queues/" + regUUID + "/execute_run$")
 	reqV1QueuesIDDirectHashRegenerate = regexp.MustCompile("/v1/queues/" + regUUID + "/direct-hash-regenerate$")
 
 	// queuecalls
@@ -235,16 +233,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case reqV1QueuesIDAgentsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1QueuesIDAgentsGet(ctx, m)
 		requestType = "/v1/queues/<queue-id>/agents"
-
-	// PUT /queues/<queue-id>/execute
-	case reqV1QueuesIDExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
-		response, err = h.processV1QueuesIDExecutePut(ctx, m)
-		requestType = "/v1/queues/<queue-id>/execute"
-
-	// POST /queues/<queue-id>/execute_run
-	case reqV1QueuesIDExecuteRun.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1QueuesIDExecuteRunPost(ctx, m)
-		requestType = "/v1/queues/<queue-id>/execute_run"
 
 	// POST /queues/<queue-id>/direct-hash-regenerate
 	case reqV1QueuesIDDirectHashRegenerate.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

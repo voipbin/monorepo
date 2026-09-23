@@ -16,7 +16,6 @@ func TestFieldConstants(t *testing.T) {
 		{"field_detail", FieldDetail, "detail"},
 		{"field_routing_method", FieldRoutingMethod, "routing_method"},
 		{"field_tag_ids", FieldTagIDs, "tag_ids"},
-		{"field_execute", FieldExecute, "execute"},
 		{"field_wait_flow_id", FieldWaitFlowID, "wait_flow_id"},
 		{"field_wait_timeout", FieldWaitTimeout, "wait_timeout"},
 		{"field_service_timeout", FieldServiceTimeout, "service_timeout"},

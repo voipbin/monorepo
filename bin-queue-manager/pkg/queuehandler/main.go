@@ -19,11 +19,6 @@ import (
 	"monorepo/bin-queue-manager/pkg/dbhandler"
 )
 
-// List of default values
-const (
-	defaultExecuteDelay = 1000 // 1000 ms(1 sec)
-)
-
 // QueueHandler interface
 type QueueHandler interface {
 	CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
@@ -39,7 +34,6 @@ type QueueHandler interface {
 		serviceTimeout int,
 	) (*queue.Queue, error)
 	Delete(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
-	Execute(ctx context.Context, id uuid.UUID)
 	Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 	List(ctx context.Context, size uint64, token string, filters map[queue.Field]any) ([]*queue.Queue, error)
 	UpdateBasicInfo(
@@ -55,7 +49,6 @@ type QueueHandler interface {
 	) (*queue.Queue, error)
 	UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*queue.Queue, error)
 	UpdateRoutingMethod(ctx context.Context, id uuid.UUID, routingMEthod queue.RoutingMethod) (*queue.Queue, error)
-	UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error)
 
 	AddWaitQueueCallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)
 	AddServiceQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)

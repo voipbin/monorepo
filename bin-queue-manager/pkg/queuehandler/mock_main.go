@@ -148,18 +148,6 @@ func (mr *MockQueueHandlerMockRecorder) EventCUCustomerDeleted(ctx, cu any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCUCustomerDeleted", reflect.TypeOf((*MockQueueHandler)(nil).EventCUCustomerDeleted), ctx, cu)
 }
 
-// Execute mocks base method.
-func (m *MockQueueHandler) Execute(ctx context.Context, id uuid.UUID) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Execute", ctx, id)
-}
-
-// Execute indicates an expected call of Execute.
-func (mr *MockQueueHandlerMockRecorder) Execute(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockQueueHandler)(nil).Execute), ctx, id)
-}
-
 // Get mocks base method.
 func (m *MockQueueHandler) Get(ctx context.Context, id uuid.UUID) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
@@ -263,21 +251,6 @@ func (m *MockQueueHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, na
 func (mr *MockQueueHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockQueueHandler)(nil).UpdateBasicInfo), ctx, id, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
-}
-
-// UpdateExecute mocks base method.
-func (m *MockQueueHandler) UpdateExecute(ctx context.Context, id uuid.UUID, execute queue.Execute) (*queue.Queue, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateExecute", ctx, id, execute)
-	ret0, _ := ret[0].(*queue.Queue)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateExecute indicates an expected call of UpdateExecute.
-func (mr *MockQueueHandlerMockRecorder) UpdateExecute(ctx, id, execute any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExecute", reflect.TypeOf((*MockQueueHandler)(nil).UpdateExecute), ctx, id, execute)
 }
 
 // UpdateRoutingMethod mocks base method.

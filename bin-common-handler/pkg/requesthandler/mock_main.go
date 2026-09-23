@@ -5855,20 +5855,6 @@ func (mr *MockRequestHandlerMockRecorder) QueueV1QueueDirectHashRegenerate(ctx, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueDirectHashRegenerate", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueDirectHashRegenerate), ctx, queueID)
 }
 
-// QueueV1QueueExecuteRun mocks base method.
-func (m *MockRequestHandler) QueueV1QueueExecuteRun(ctx context.Context, queueID uuid.UUID, executeDelay int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueueExecuteRun", ctx, queueID, executeDelay)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// QueueV1QueueExecuteRun indicates an expected call of QueueV1QueueExecuteRun.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueueExecuteRun(ctx, queueID, executeDelay any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueExecuteRun", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueExecuteRun), ctx, queueID, executeDelay)
-}
-
 // QueueV1QueueGet mocks base method.
 func (m *MockRequestHandler) QueueV1QueueGet(ctx context.Context, queueID uuid.UUID) (*queue.Queue, error) {
 	m.ctrl.T.Helper()
@@ -5927,21 +5913,6 @@ func (m *MockRequestHandler) QueueV1QueueUpdate(ctx context.Context, queueID uui
 func (mr *MockRequestHandlerMockRecorder) QueueV1QueueUpdate(ctx, queueID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueUpdate", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueUpdate), ctx, queueID, name, detail, routingMethod, tagIDs, waitFlowID, waitTimeout, serviceTimeout)
-}
-
-// QueueV1QueueUpdateExecute mocks base method.
-func (m *MockRequestHandler) QueueV1QueueUpdateExecute(ctx context.Context, queueID uuid.UUID, execute queue.Execute) (*queue.Queue, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QueueV1QueueUpdateExecute", ctx, queueID, execute)
-	ret0, _ := ret[0].(*queue.Queue)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// QueueV1QueueUpdateExecute indicates an expected call of QueueV1QueueUpdateExecute.
-func (mr *MockRequestHandlerMockRecorder) QueueV1QueueUpdateExecute(ctx, queueID, execute any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueV1QueueUpdateExecute", reflect.TypeOf((*MockRequestHandler)(nil).QueueV1QueueUpdateExecute), ctx, queueID, execute)
 }
 
 // QueueV1QueueUpdateRoutingMethod mocks base method.

@@ -24,9 +24,6 @@ type Queue struct {
 	DirectID   uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"`  // direct id for direct hash
 	DirectHash string    `json:"direct_hash,omitempty" db:"direct_hash"`   // direct hash
 
-	// execute
-	Execute Execute `json:"execute,omitempty" db:"execute"`
-
 	// wait/service info
 	WaitFlowID     uuid.UUID `json:"wait_flow_id,omitempty" db:"wait_flow_id,uuid"`    // flow id for queue waiting
 	WaitTimeout    int       `json:"wait_timeout,omitempty" db:"wait_timeout"`         // wait queue timeout.(ms)
@@ -52,13 +49,4 @@ type RoutingMethod string
 const (
 	RoutingMethodNone   RoutingMethod = ""
 	RoutingMethodRandom RoutingMethod = "random"
-)
-
-// Execute defines
-type Execute string
-
-// list of executes
-const (
-	ExecuteRun  Execute = "run"
-	ExecuteStop Execute = "stop"
 )

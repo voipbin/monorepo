@@ -72,7 +72,6 @@ func Test_Create(t *testing.T) {
 				TagIDs: []uuid.UUID{
 					uuid.FromStringOrNil("074b6e1e-60e6-11ec-9dc5-4bc92b81a572"),
 				},
-				Execute:             queue.ExecuteStop,
 				WaitFlowID:          uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30"),
 				WaitTimeout:         100000,
 				ServiceTimeout:      1000000,

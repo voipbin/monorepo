@@ -18,7 +18,6 @@ func TestQueueStruct(t *testing.T) {
 		Name:          "Support Queue",
 		Detail:        "Customer support queue",
 		RoutingMethod: RoutingMethodRandom,
-		Execute:       ExecuteRun,
 		WaitFlowID:    waitFlowID,
 		WaitTimeout:   60000,
 		ServiceTimeout: 300000,
@@ -43,9 +42,6 @@ func TestQueueStruct(t *testing.T) {
 	}
 	if q.RoutingMethod != RoutingMethodRandom {
 		t.Errorf("Queue.RoutingMethod = %v, expected %v", q.RoutingMethod, RoutingMethodRandom)
-	}
-	if q.Execute != ExecuteRun {
-		t.Errorf("Queue.Execute = %v, expected %v", q.Execute, ExecuteRun)
 	}
 	if q.WaitFlowID != waitFlowID {
 		t.Errorf("Queue.WaitFlowID = %v, expected %v", q.WaitFlowID, waitFlowID)
@@ -145,25 +141,6 @@ func TestRoutingMethodConstants(t *testing.T) {
 	}{
 		{"routing_method_none", RoutingMethodNone, ""},
 		{"routing_method_random", RoutingMethodRandom, "random"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if string(tt.constant) != tt.expected {
-				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
-			}
-		})
-	}
-}
-
-func TestExecuteConstants(t *testing.T) {
-	tests := []struct {
-		name     string
-		constant Execute
-		expected string
-	}{
-		{"execute_run", ExecuteRun, "run"},
-		{"execute_stop", ExecuteStop, "stop"},
 	}
 
 	for _, tt := range tests {
