@@ -4108,7 +4108,7 @@ type AIManagerMcpServer struct {
 	ApiKeyHeader *string `json:"api_key_header,omitempty"`
 
 	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. "oauth" is set implicitly by completing POST /mcpservers/oauth/complete -- never set directly via POST/PUT with a customer-supplied secret.
-	AuthType *AIManagerMcpServerAuthType `json:"auth_type,omitempty"`
+	AuthType AIManagerMcpServerAuthType `json:"auth_type"`
 
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`

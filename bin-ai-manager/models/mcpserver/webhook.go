@@ -20,7 +20,16 @@ type WebhookMessage struct {
 	URL    string `json:"url,omitempty"`
 	Status Status `json:"status,omitempty"`
 
-	AuthType     AuthType `json:"auth_type,omitempty"`
+	// AuthType deliberately omits ,omitempty -- AuthTypeNone is the empty
+	// string "" and is itself a meaningful value (no Authorization header
+	// sent), not the JSON-absent case. Same rationale/pattern as
+	// ai.WebhookMessage.IsInsightActive: without this, a no-auth server's
+	// auth_type vanishes from the wire entirely and callers cannot
+	// distinguish "no-auth" from "field missing". See openapi.yaml's
+	// AIManagerMcpServer.auth_type enum (includes "") and
+	// api-validator's test_list_mcpservers_schema, which asserts the
+	// field is always present.
+	AuthType     AuthType `json:"auth_type"`
 	APIKeyHeader string   `json:"api_key_header,omitempty"`
 
 	// OAuthVendor is exposed (never the tokens) so callers can render

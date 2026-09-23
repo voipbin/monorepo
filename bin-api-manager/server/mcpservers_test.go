@@ -60,7 +60,7 @@ func Test_PostMcpservers(t *testing.T) {
 			expectedAuthType:     ammcpserver.AuthTypeBearer,
 			expectedAPIKeyHeader: "",
 			expectedSecret:       "test-secret",
-			expectedRes:          `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","has_secret":false,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:          `{"id":"dbceb866-4506-4e86-9851-a82d4d3ced88","customer_id":"00000000-0000-0000-0000-000000000000","auth_type":"","has_secret":false,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

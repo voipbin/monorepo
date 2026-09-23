@@ -2352,7 +2352,13 @@ components:
           description: Timestamp when the MCP server was deleted.
           example: "2026-01-15T09:30:00.000000Z"
       required:
+        # has_secret is always emitted (bool without omitempty in the
+        # Go model). auth_type is likewise always emitted -- "" is a
+        # meaningful value (no-auth), not the JSON-absent case; see
+        # mcpserver.WebhookMessage.AuthType (no ,omitempty), same
+        # pattern as AIManagerAI.is_insight_active above.
         - has_secret
+        - auth_type
 
     AIManagerTeam:
       type: object
