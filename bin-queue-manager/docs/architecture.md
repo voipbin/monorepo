@@ -23,7 +23,7 @@ graph TD
 | `pkg/queuehandler` | Queue CRUD, routing configuration, agent membership management, queue execution logic | `queue.Queue`, `queue.RoutingMethod` |
 | `pkg/queuecallhandler` | Queuecall lifecycle: create, execute, kick, timeout handling, health checks, status transitions | `queuecall.Queuecall`, `queuecall.Status` |
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |
-| `pkg/subscribehandler` | Consumes call-manager and customer-manager events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407) | queue event structs |
+| `pkg/subscribehandler` | Consumes call-manager, customer-manager, and agent-manager events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407) | queue event structs |
 | `pkg/dbhandler` | MySQL CRUD operations | all model structs |
 | `pkg/cachehandler` | Redis fast-path lookups for queues and queuecalls | `queue.Queue`, `queuecall.Queuecall` |
 | `models/queue` | Queue data model, routing method constants | `queue.Queue`, `queue.RoutingMethod` |
@@ -31,13 +31,14 @@ graph TD
 
 ## Event Subscriptions
 
-SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.queue-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 4 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.agent-manager.event`, `bin-manager.conference-manager.event`) have been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind:
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.queue-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 5 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.agent-manager.event`, `bin-manager.conference-manager.event`) have been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind:
 
 | Pattern | Purpose |
 |---------|---------|
 | `call-manager.call.*.hangup` | Call hangup — kicks the queuecall out of the queue |
 | `call-manager.confbridge.*.joined` / `call-manager.confbridge.*.leaved` | Confbridge join/leave — drives queuecall service/done transitions |
 | `customer-manager.customer.*.deleted` | Customer deletion — cascades cleanup to the customer's queues and queuecalls |
+| `agent-manager.agent.*.status_updated` | Agent becomes available — event entry point B (VOIP-1539 §3.5): reverse-looks-up eligible queues via `queuehandler.GetQueuesByAgent` and attempts to match the oldest waiting queuecall in each |
 
 The `customer-manager.customer.*.deleted` pattern was activated by VOIP-1422: no other cleanup path into this service exists on customer deletion (no RPC, no sweep, no TTL), so leaving it unbound meant queue/queuecall records survived customer deletion indefinitely. `queuehandler.EventCUCustomerDeleted` and `queuecallhandler.EventCUCustomerDeleted` (the dispatch targets) each page through at most 1,000 undeleted rows per customer (`h.List(ctx, 1000, ...)`) — a pre-existing cap matching `bin-flow-manager`'s equivalent handler for the same event, not a new limitation introduced here. A customer with more than 1,000 live queues or queuecalls would only be partially cleaned per event; out of scope for this change.
 
@@ -58,8 +59,6 @@ Requests arrive via RabbitMQ queue `bin-manager.queue-manager.request`. The `lis
 | `/v1/queues/{{UUID}}/tag_ids$` | PUT | Update queue tag IDs (agent filter) |
 | `/v1/queues/{{UUID}}/routing_method$` | PUT | Update queue routing method |
 | `/v1/queues/{{UUID}}/agents(\\?.*)$` | GET | List agents eligible for this queue |
-| `/v1/queues/{{UUID}}/execute$` | POST | Trigger queue execution (attempt agent routing) |
-| `/v1/queues/{{UUID}}/execute_run$` | POST | Run queue execution loop |
 | `/v1/queues/{{UUID}}/direct-hash-regenerate$` | POST | Regenerate direct-access hash |
 | `/v1/queuecalls\?{{UUID}}$` | GET | List queuecalls with filters/pagination |
 | `/v1/queuecalls/{{UUID}}$` | GET/DELETE | Get or delete a queuecall |
