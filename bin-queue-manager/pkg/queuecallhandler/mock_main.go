@@ -11,6 +11,7 @@ package queuecallhandler
 
 import (
 	context "context"
+	agent "monorepo/bin-agent-manager/models/agent"
 	address "monorepo/bin-common-handler/models/address"
 	service "monorepo/bin-common-handler/models/service"
 	customer "monorepo/bin-customer-manager/models/customer"
@@ -74,6 +75,18 @@ func (m *MockQueuecallHandler) Delete(ctx context.Context, id uuid.UUID) (*queue
 func (mr *MockQueuecallHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockQueuecallHandler)(nil).Delete), ctx, id)
+}
+
+// EventAMAgentAvailable mocks base method.
+func (m *MockQueuecallHandler) EventAMAgentAvailable(ctx context.Context, arg1 agent.Agent) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventAMAgentAvailable", ctx, arg1)
+}
+
+// EventAMAgentAvailable indicates an expected call of EventAMAgentAvailable.
+func (mr *MockQueuecallHandlerMockRecorder) EventAMAgentAvailable(ctx, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventAMAgentAvailable", reflect.TypeOf((*MockQueuecallHandler)(nil).EventAMAgentAvailable), ctx, arg1)
 }
 
 // EventCUCustomerDeleted mocks base method.

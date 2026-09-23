@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
@@ -464,6 +466,7 @@ func Test_UpdateStatusWaiting(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(ctx, tt.queuecallID).Return(tt.responseQueuecall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseQueuecall.CustomerID, queuecall.EventTypeQueuecallWaiting, tt.responseQueuecall)
 			mockQueue.EXPECT().AddWaitQueueCallID(ctx, tt.responseQueuecall.QueueID, tt.responseQueuecall.ID).Return(&queue.Queue{}, nil).AnyTimes()
+			mockQueue.EXPECT().GetAgents(ctx, tt.responseQueuecall.QueueID, amagent.StatusAvailable).Return([]amagent.Agent{}, nil).AnyTimes()
 
 			res, err := h.UpdateStatusWaiting(ctx, tt.queuecallID)
 			if err != nil {

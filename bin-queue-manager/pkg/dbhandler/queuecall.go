@@ -255,6 +255,52 @@ func (h *handler) QueuecallList(ctx context.Context, size uint64, token string, 
 	return res, nil
 }
 
+// QueuecallListOldestWaiting returns up to limit waiting queuecalls for the
+// given queue, ordered oldest-first (VOIP-1539 §3.5, event entry point B: the
+// FIFO pick used when an agent becomes available). Deliberately separate from
+// QueuecallList's DESC/tm_create-token pagination contract -- this is a
+// small, fixed-direction, non-paginated query.
+func (h *handler) QueuecallListOldestWaiting(ctx context.Context, queueID uuid.UUID, limit uint64) ([]*queuecall.Queuecall, error) {
+	fields := commondatabasehandler.GetDBFields(&queuecall.Queuecall{})
+	sb := squirrel.
+		Select(fields...).
+		From(queueQueuecallsTable).
+		Where(squirrel.Eq{
+			string(queuecall.FieldQueueID): queueID.Bytes(),
+			string(queuecall.FieldStatus):  string(queuecall.StatusWaiting),
+		}).
+		OrderBy(string(queuecall.FieldTMCreate) + " ASC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question)
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. QueuecallListOldestWaiting. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. QueuecallListOldestWaiting. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*queuecall.Queuecall{}
+	for rows.Next() {
+		u, err := h.queuecallGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. QueuecallListOldestWaiting, err: %v", err)
+		}
+		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. QueuecallListOldestWaiting. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // QueuecallUpdate updates queuecall fields.
 func (h *handler) QueuecallUpdate(ctx context.Context, id uuid.UUID, fields map[queuecall.Field]any) error {
 	if len(fields) == 0 {

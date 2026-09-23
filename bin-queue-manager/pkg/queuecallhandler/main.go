@@ -6,6 +6,8 @@ import (
 	"context"
 	"time"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -104,6 +106,7 @@ type QueuecallHandler interface {
 	EventCallCallHangup(ctx context.Context, referenceID uuid.UUID)
 	EventCallConfbridgeJoined(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
 	EventCallConfbridgeLeaved(ctx context.Context, referenceID uuid.UUID, confbridgeID uuid.UUID)
+	EventAMAgentAvailable(ctx context.Context, agent amagent.Agent)
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 
 	TimeoutService(ctx context.Context, queuecallID uuid.UUID)

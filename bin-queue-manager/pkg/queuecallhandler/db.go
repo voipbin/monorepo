@@ -475,7 +475,15 @@ func (h *queuecallHandler) UpdateStatusWaiting(ctx context.Context, id uuid.UUID
 		_, err = h.queueHandler.AddWaitQueueCallID(ctx, res.QueueID, res.ID)
 		if err != nil {
 			log.Errorf("Could not add the queuecall to the queue. err: %v", err)
+			return
 		}
+
+		// VOIP-1539 §3.5, event entry point A: try match() once right after
+		// the queuecall is registered as waiting. One-shot -- a failed match
+		// here (no available agent, or a losing reservation/entry CAS) is
+		// left for entry point B or the matching backstop (§5.2), not
+		// retried inline.
+		h.matchWaitingQueuecall(ctx, res)
 	}()
 
 	return res, nil

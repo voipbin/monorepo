@@ -16,11 +16,12 @@ func Test_topicPatterns_golden(t *testing.T) {
 		"call-manager.confbridge.*.joined",
 		"call-manager.confbridge.*.leaved",
 		"customer-manager.customer.*.deleted",
+		"agent-manager.agent.*.status_updated",
 	}
 
-	// design §5 + VOIP-1422: queue-manager binds exactly 4 patterns.
-	if len(topicPatterns) != 4 {
-		t.Fatalf("topicPatterns count mismatch. expected: 4, got: %d (%v)", len(topicPatterns), topicPatterns)
+	// design §5 + VOIP-1422 + VOIP-1539 §3.5: queue-manager binds exactly 5 patterns.
+	if len(topicPatterns) != 5 {
+		t.Fatalf("topicPatterns count mismatch. expected: 5, got: %d (%v)", len(topicPatterns), topicPatterns)
 	}
 	if len(topicPatterns) != len(expected) {
 		t.Fatalf("topicPatterns count mismatch. expected: %d, got: %d (%v)", len(expected), len(topicPatterns), topicPatterns)

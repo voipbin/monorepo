@@ -2,6 +2,9 @@ package queuecallhandler
 
 import (
 	"context"
+	"math/rand"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
@@ -12,6 +15,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/models/queuecall"
 )
 
@@ -145,4 +149,37 @@ func (h *queuecallHandler) generateFlowForAgentCall(ctx context.Context, custome
 	}
 
 	return res, nil
+}
+
+// matchWaitingQueuecall tries a single match() attempt for the given
+// just-enqueued queuecall against the queue's currently available agents
+// (VOIP-1539 §3.5, event entry point A). One-shot: on failure (no available
+// agent, or a losing reservation/entry CAS) it does not retry -- the
+// queuecall is left for entry point B or the matching backstop (§5.2).
+func (h *queuecallHandler) matchWaitingQueuecall(ctx context.Context, qc *queuecall.Queuecall) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "matchWaitingQueuecall",
+		"queuecall_id": qc.ID,
+		"queue_id":     qc.QueueID,
+	})
+
+	agents, err := h.queueHandler.GetAgents(ctx, qc.QueueID, amagent.StatusAvailable)
+	if err != nil {
+		log.Errorf("Could not get available agents. err: %v", err)
+		return
+	}
+	if len(agents) == 0 {
+		return
+	}
+
+	target := agents[0]
+	if q, errGet := h.queueHandler.Get(ctx, qc.QueueID); errGet == nil && q.RoutingMethod == queue.RoutingMethodRandom {
+		target = agents[rand.Intn(len(agents))]
+	}
+
+	if _, errExec := h.Execute(ctx, qc.ID, target.ID); errExec != nil {
+		// Losing the reservation/entry CAS is an expected outcome, not an
+		// error worth logging above debug.
+		log.Debugf("Could not execute the match. agent_id: %s, err: %v", target.ID, errExec)
+	}
 }

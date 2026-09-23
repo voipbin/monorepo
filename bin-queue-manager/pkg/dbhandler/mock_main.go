@@ -274,6 +274,21 @@ func (mr *MockDBHandlerMockRecorder) QueuecallList(ctx, size, token, filters any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallList", reflect.TypeOf((*MockDBHandler)(nil).QueuecallList), ctx, size, token, filters)
 }
 
+// QueuecallListOldestWaiting mocks base method.
+func (m *MockDBHandler) QueuecallListOldestWaiting(ctx context.Context, queueID uuid.UUID, limit uint64) ([]*queuecall.Queuecall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueuecallListOldestWaiting", ctx, queueID, limit)
+	ret0, _ := ret[0].([]*queuecall.Queuecall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueuecallListOldestWaiting indicates an expected call of QueuecallListOldestWaiting.
+func (mr *MockDBHandlerMockRecorder) QueuecallListOldestWaiting(ctx, queueID, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueuecallListOldestWaiting", reflect.TypeOf((*MockDBHandler)(nil).QueuecallListOldestWaiting), ctx, queueID, limit)
+}
+
 // QueuecallSetStatusAbandoned mocks base method.
 func (m *MockDBHandler) QueuecallSetStatusAbandoned(ctx context.Context, id uuid.UUID, durationWaiting int, ts *time.Time) (int64, error) {
 	m.ctrl.T.Helper()

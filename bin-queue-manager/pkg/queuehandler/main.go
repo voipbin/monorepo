@@ -63,6 +63,7 @@ type QueueHandler interface {
 	RemoveQueuecallID(ctx context.Context, id uuid.UUID, queuecallID uuid.UUID) (*queue.Queue, error)
 
 	GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]amagent.Agent, error)
+	GetQueuesByAgent(ctx context.Context, agent amagent.Agent) ([]*queue.Queue, error)
 
 	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*queue.Queue, error)
 
