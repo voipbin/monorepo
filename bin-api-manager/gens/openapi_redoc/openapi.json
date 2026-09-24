@@ -27466,7 +27466,8 @@
           }
         },
         "required": [
-          "has_secret"
+          "has_secret",
+          "auth_type"
         ]
       },
       "AIManagerTeam": {
