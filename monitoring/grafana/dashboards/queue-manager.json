@@ -594,7 +594,7 @@
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
       "id": 600,
       "panels": [],
-      "title": "Matching Backstop (VOIP-1539 \u00a75.2)",
+      "title": "Matching Backstop",
       "type": "row"
     },
     {
@@ -698,7 +698,7 @@
             "steps": [
               { "color": "green", "value": null },
               { "color": "yellow", "value": 1 },
-              { "color": "red", "value": 5 }
+              { "color": "red", "value": 3 }
             ]
           },
           "unit": "ops"
@@ -710,9 +710,8 @@
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "textMode": "auto"
+        "textMode": "value_and_name",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
       },
       "title": "Backstop Rollback Win Rate (5m) -- sustained non-zero means events were actually lost",
       "type": "stat",
