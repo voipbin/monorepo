@@ -591,6 +591,31 @@ R9는 "mapping 추가로 해소"가 아니라 **"게이트를 무조건 실행�
 
 즉 실제 추가분은 **`run-lint-config-check` 파라미터 + mapping 1행 + workflow 1개 + job 1개**다.
 
+### 6.2.4 `lint-config-check`가 실제 코드를 린트하는 근거
+
+`golangci-lint config verify`는 스키마만 검사한다. 즉 린터 룰을 강화해
+실제 코드가 깨지는 변경이, 같은 PR이 해당 서비스 경로를 함께 건드리지
+않는 한 CI를 그대로 통과한다. `.golangci.yml`만 바꾸는 PR이 정확히 그 경우다.
+
+이 구멍을 대표 서비스 1개 린트로 막는다. 대상은 `bin-common-handler`다.
+38개 `bin-*` 서비스 전부가 의존하는 공유 라이브러리이므로, 이 코드가
+통과하면 룰이 fleet 공통 코드에서 유효함이 확인된다.
+
+**실측 (`GOGC=50 GOMEMLIMIT=1500MiB GOMAXPROCS=1`, `taskset -c` 1코어 고정, 콜드 캐시):**
+
+| 항목 | 값 |
+|---|---|
+| 결과 | 통과(위반 0) |
+| 소요 | 12.3s |
+| 피크 RSS | 0.55 GB (2 GB 상한의 27%) |
+
+**job 이미지 정정:** `lint-config-check`는 `cimg/go:1.25`를 쓰고 있었다.
+`bin-common-handler/go.mod`는 `go 1.27.1`이므로 그 이미지로는 빌드 자체가
+불가능하다. `*go_image`(`cimg/go:1.27.1`)로 교체했다. 기존에는 이 job이
+Go 코드를 빌드하지 않아 드러나지 않던 불일치다.
+
+`go mod vendor`가 만드는 `vendor/`는 `.gitignore` 대상이므로 저장소를 오염시키지 않는다.
+
 ### 6.3 gofmt 일괄 적용
 
 ```bash

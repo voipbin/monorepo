@@ -2239,8 +2239,7 @@ jobs:
           command: bash scripts/check-test-conventions.sh
 
   lint-config-check:
-    docker:
-      - image: cimg/go:1.25
+    docker: *go_image
     resource_class: small
     steps:
       - checkout
@@ -2258,6 +2257,22 @@ jobs:
       - run:
           name: Verify golangci-lint configuration
           command: golangci-lint config verify
+      - run:
+          name: Lint one service against the config
+          # `config verify` only checks the schema, so a rule change that
+          # breaks real code still reaches main unless the same PR happens
+          # to touch a service path. Linting one representative service
+          # here closes that gap. bin-common-handler is the choice: every
+          # bin-* service depends on it, so the config is exercised against
+          # code that the whole fleet shares.
+          environment:
+            GOGC: "50"
+            GOMEMLIMIT: 1500MiB
+            GOMAXPROCS: "1"
+          command: |
+            cd bin-common-handler
+            go mod vendor
+            golangci-lint run --timeout 10m
       - run:
           name: Check the convention gate script for syntax errors
           command: bash -n scripts/check-test-conventions.sh

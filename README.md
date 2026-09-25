@@ -40,7 +40,7 @@ It is a production-grade opensource CPaaS platform that you can fully self-host,
 - **Admin Console**: Manage flows, routing, agents, campaigns, and more.
 - **Programmable Flows**: Define rich call behaviors via flow JSON or API.
 - **AI Assistants**: Inject AI into your call flows with VoIPbin's chatbot integration.
-- **Conferencing**: Set up rooms with recording, moderator controls, and breakout support.
+- **Conferencing**: Set up rooms with recording, timeouts, and flows that run before and after each call joins.
 - **Multichannel Support**: Mix voice, SMS, email, and more.
 - **Modular Services**: Pick only the features you need. Everything runs independently.
 - **Self-hosting and Cloud-friendly**: Run the whole stack on a single host with Docker Compose, or spread it across Kubernetes when you need to scale.
