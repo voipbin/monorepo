@@ -2328,12 +2328,17 @@ commands:
                 name: Linting
                 # govet runs as part of linters.default: standard, so a
                 # separate `go vet` pass would only repeat the same analyzers.
-                # GOGC/GOMEMLIMIT/GOMAXPROCS keep peak RSS under the small
-                # resource_class limit that forced this step to be disabled.
+                #
+                # resource_class: small is 1 vCPU / 2 GB, so GOMEMLIMIT must
+                # sit below that ceiling to act as a soft limit at all; set
+                # above it, the kernel OOM killer fires first and the limit
+                # never engages. Measured on bin-api-manager (the largest
+                # service, 482 Go files, cold cache): these values peak at
+                # 1.08 GB, versus 1.66 GB at GOMAXPROCS=2.
                 environment:
                   GOGC: "50"
-                  GOMEMLIMIT: 3GiB
-                  GOMAXPROCS: "2"
+                  GOMEMLIMIT: 1500MiB
+                  GOMAXPROCS: "1"
                 command: |
                   cd << parameters.source-directory >>
                   golangci-lint run --timeout 10m
@@ -2393,12 +2398,17 @@ commands:
                 name: Linting
                 # govet runs as part of linters.default: standard, so a
                 # separate `go vet` pass would only repeat the same analyzers.
-                # GOGC/GOMEMLIMIT/GOMAXPROCS keep peak RSS under the small
-                # resource_class limit that forced this step to be disabled.
+                #
+                # resource_class: small is 1 vCPU / 2 GB, so GOMEMLIMIT must
+                # sit below that ceiling to act as a soft limit at all; set
+                # above it, the kernel OOM killer fires first and the limit
+                # never engages. Measured on bin-api-manager (the largest
+                # service, 482 Go files, cold cache): these values peak at
+                # 1.08 GB, versus 1.66 GB at GOMAXPROCS=2.
                 environment:
                   GOGC: "50"
-                  GOMEMLIMIT: 3GiB
-                  GOMAXPROCS: "2"
+                  GOMEMLIMIT: 1500MiB
+                  GOMAXPROCS: "1"
                 command: |
                   cd << parameters.source-directory >>
                   golangci-lint run --timeout 10m
@@ -2463,12 +2473,17 @@ commands:
                 name: Linting
                 # govet runs as part of linters.default: standard, so a
                 # separate `go vet` pass would only repeat the same analyzers.
-                # GOGC/GOMEMLIMIT/GOMAXPROCS keep peak RSS under the small
-                # resource_class limit that forced this step to be disabled.
+                #
+                # resource_class: small is 1 vCPU / 2 GB, so GOMEMLIMIT must
+                # sit below that ceiling to act as a soft limit at all; set
+                # above it, the kernel OOM killer fires first and the limit
+                # never engages. Measured on bin-api-manager (the largest
+                # service, 482 Go files, cold cache): these values peak at
+                # 1.08 GB, versus 1.66 GB at GOMAXPROCS=2.
                 environment:
                   GOGC: "50"
-                  GOMEMLIMIT: 3GiB
-                  GOMAXPROCS: "2"
+                  GOMEMLIMIT: 1500MiB
+                  GOMAXPROCS: "1"
                 command: |
                   cd << parameters.source-directory >>
                   golangci-lint run --timeout 10m

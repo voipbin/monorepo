@@ -43,7 +43,7 @@ It is a production-grade opensource CPaaS platform that you can fully self-host,
 - **Conferencing**: Set up rooms with recording, moderator controls, and breakout support.
 - **Multichannel Support**: Mix voice, SMS, email, and more.
 - **Modular Services**: Pick only the features you need. Everything runs independently.
-- **Self-hosting and Cloud-friendly**: Deploy on GCP (or any Kubernetes setup) with full customization.
+- **Self-hosting and Cloud-friendly**: Run the whole stack on a single host with Docker Compose, or spread it across Kubernetes when you need to scale.
 
 ---
 
@@ -147,10 +147,10 @@ Check each service’s README (or environment loader) for what it needs.
 
 ### Deploy It
 
-The [install repository](https://github.com/voipbin/install) provides a single-host
-deployment that brings up the full stack with Docker Compose, which is the
-fastest way to get a working system. Kubernetes manifests are used for the
-multi-node setup; reach out at support@voipbin.net if you need those blueprints.
+The [install directory](https://github.com/voipbin/voipbin/tree/main/install) brings up
+the full stack on a single host with Docker Compose, which is the fastest way to get a
+working system. Kubernetes manifests are used for the multi-node setup; reach out at
+support@voipbin.net if you need those blueprints.
 
 
 ## 📫 Questions or Feedback?

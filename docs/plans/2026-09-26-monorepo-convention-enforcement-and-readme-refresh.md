@@ -213,7 +213,7 @@ errcheck / govet / ineffassign / staticcheck / unused 위반이 **0건**이며, 
 따라서 §6.3의 gofmt 일괄 적용 후 표준 린터는 위반 0에 수렴한다. D2(보수적 강도)의 도입 비용은 사실상 없다.
 
 **핵심 소견 2 — OOM 리스크는 실재한다.** bin-api-manager 피크 2.18 GB는
-CircleCI `small`(2 vCPU / 4 GB)에서 Go 빌드 캐시·벤더 다운로드와 경합하면 위험 구간이다.
+CircleCI `small`은 **1 vCPU / 2 GB**다(공식 Configuration Reference). Go 빌드 캐시·벤더 다운로드와 경합하면 위험 구간이다.
 과거 주석 처리 사유("OOM on small resource_class")가 이 수치로 설명된다.
 
 **측정 무효 사례 (기록 목적).** `--concurrency 2 --GOMAXPROCS=2` 1차 측정이 0.80s / 135 MB로 나왔으나,
@@ -236,16 +236,48 @@ golangci-lint 결과 캐시 히트였다. **이 수치는 채택하지 않는다
 golangci-lint의 메모리는 린터 실행 병렬도가 아니라 **패키지 로딩과 타입 체크**가 지배하며,
 `concurrency`는 후자를 제어하지 않는다. 초안 설계의 "`concurrency: 2`가 OOM 완화의 핵심"은 **오류였고 철회한다.**
 
-**결론 2 — `GOGC=50`을 채택한다.** 4 GB 컨테이너에서 피크 1.66 GB는
+**결론 2 — `GOGC=50`을 채택한다.** 다만 아래 6.1.3의 재측정을 함께 읽을 것. 2 GB 컨테이너에서 피크 1.66 GB는
 Go 빌드 캐시·벤더 다운로드와 병존할 여유가 충분하며, 비용은 +18초에 그친다.
 `GOGC=20`은 0.22 GB를 더 줄이기 위해 33초를 추가로 지불하므로 교환비가 나쁘다.
 
-**결론 3 — `GOMEMLIMIT=3GiB`를 안전망으로 병기한다.** `GOGC=50` 단독으로 충분하지만,
+**결론 3 — `GOMEMLIMIT`을 안전망으로 병기한다.** (구체적 값은 6.1.3에서 재산정되었다.) `GOGC=50` 단독으로 충분하지만,
 향후 서비스가 커져 예상을 벗어날 때 `GOMEMLIMIT`은 프로세스를 OOM으로 죽이는 대신
 GC를 강제해 **감속하되 완주**하게 만든다. 추가 비용이 없으므로 넣지 않을 이유가 없다.
-값은 컨테이너 상한(4 GB)보다 낮되 정상 피크(1.66 GB)보다 충분히 높은 3 GiB로 둔다.
+값은 컨테이너 상한(2 GB)보다 **낮아야** 한다. 상한을 넘기면 소프트 리밋이 영영 발동하지 않고 커널 OOM killer가 먼저 프로세스를 죽인다. 6.1.3 참조.
 
 **결론 4 — resource_class 상향은 불필요하다. D4를 유지한다.**
+
+### 6.1.3 `small`의 실제 스펙과 재측정 (설계 값 철회)
+
+**6.1.2의 튜닝은 `small`을 2 vCPU / 4 GB로 오인한 상태에서 이루어졌다.**
+CircleCI 공식 Configuration Reference의 Docker x86 표는 다음과 같다.
+
+| resource_class | vCPU | RAM |
+|---|---|---|
+| **`small`** | **1** | **2 GB** |
+| `medium` | 2 | 4 GB |
+
+이 오인은 두 가지를 무효화한다.
+
+1. **`GOMEMLIMIT=3GiB`가 구조적으로 발동 불가다.** 컨테이너 상한 2 GB보다 큰 값이므로
+   소프트 리밋에 도달하기 전에 커널 OOM killer가 먼저 프로세스를 죽인다.
+   "감속하되 완주"라는 안전망이 작동하지 않는다.
+2. **`GOMAXPROCS=2`가 1 vCPU 환경과 어긋난다.** 6.1.2의 모든 수치가 이 전제 위에 있으므로
+   이전 가능성도 약하다.
+
+**재측정 (bin-api-manager, 482 Go 파일, 콜드 캐시):**
+
+| 설정 | 피크 RSS | 소요 | 2 GB 대비 |
+|---|---|---|---|
+| `GOGC=50` + `GOMEMLIMIT=3GiB` + `GOMAXPROCS=2` (기존안) | 1.66 GB | 61s | **83%** |
+| **`GOGC=50` + `GOMEMLIMIT=1500MiB` + `GOMAXPROCS=1`** | **1.08 GB** | 71s | **54%** |
+
+`GOMAXPROCS=1`이 병렬 분석 워커를 줄여 동시 상주 객체가 감소한 결과다.
+비용은 10초 증가이며, 이는 job 하나당 수치다.
+
+**채택: `GOGC=50` + `GOMEMLIMIT=1500MiB` + `GOMAXPROCS=1`.**
+`resource_class`는 `small`을 유지한다. 1.08 GB는 상한의 54%로 여유가 있고,
+상향(`medium`)은 37개 job의 비용을 올리므로 실측 신호가 없는 상태에서 선택하지 않는다.
 
 ### 6.2 `.circleci/config_work.yml` 수정
 
@@ -301,7 +333,7 @@ GC를 강제해 **감속하되 완주**하게 만든다. 추가 비용이 없으
             fi
       - run:
           name: Linting
-          # GOGC/GOMEMLIMIT keep the peak RSS inside the 4 GB `small` container.
+          # GOGC/GOMEMLIMIT keep the peak RSS inside the 2 GB `small` container.
           # Measured on bin-api-manager (the largest service, 482 Go files):
           # default 2.40 GB / 43 s  ->  GOGC=50 1.66 GB / 61 s.
           # `--concurrency` was measured and does NOT reduce memory (-1.8%).
@@ -313,8 +345,8 @@ GC를 강제해 **감속하되 완주**하게 만든다. 추가 비용이 없으
           # measured footprint would not reproduce.
           environment:
             GOGC: "50"
-            GOMEMLIMIT: 3GiB
-            GOMAXPROCS: "2"
+            GOMEMLIMIT: 1500MiB
+            GOMAXPROCS: "1"
           command: |
             cd << parameters.source-directory >>
             golangci-lint run --timeout 10m
@@ -329,9 +361,9 @@ GC를 강제해 **감속하되 완주**하게 만든다. 추가 비용이 없으
 2. **`-v` 플래그 제거.** verbose 출력은 메모리·로그 부담만 늘리고 실패 진단에 기여하지 않는다.
 3. **`--timeout 5m` → `10m`.** `GOGC=50`은 실행 시간을 43s → 61s로 늘린다(§6.1.2).
    타임아웃은 메모리를 쓰지 않으므로 여유를 둔다.
-4. **OOM 대응은 `GOGC=50` + `GOMEMLIMIT=3GiB`가 담당.** §6.1.2 실측 근거.
+4. **OOM 대응은 `GOGC=50` + `GOMEMLIMIT=1500MiB` + `GOMAXPROCS=1`이 담당.** §6.1.3 실측 근거.
    resource_class는 상향하지 않는다 (D4 유지).
-5. **`GOMAXPROCS: "2"` 고정.** §6.1.2의 측정이 `GOMAXPROCS=2` 조건에서 이루어졌는데,
+5. **`GOMAXPROCS: "1"` 고정.** §6.1.3의 재측정이 `GOMAXPROCS=1` 조건에서 이루어졌는데,
    CircleCI docker executor에서 Go 런타임은 cgroup 제한이 아니라 **호스트 코어 수**를 보는 경우가 있다.
    명시하지 않으면 측정 조건이 CI에 재현되지 않는다.
 6. **버전 핀 v2.5.0 → v2.14.0.** §6.2.2의 실측 근거. **원래 주석을 그대로 해제하면 37개 job이 전부 실패한다.**
@@ -541,8 +573,8 @@ workflow에는 `when:` 없이 등록하여 무조건 실행한다(경량 grep이
           # and then failed `run` with exit 3 on this repo's Go version.
           environment:
             GOGC: "50"
-            GOMEMLIMIT: 3GiB
-            GOMAXPROCS: "2"
+            GOMEMLIMIT: 1500MiB
+            GOMAXPROCS: "1"
           command: |
             golangci-lint config verify
             cd bin-tag-manager
@@ -1074,7 +1106,7 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 
 | # | 리스크 | 가능성 | 영향 | 완화 |
 |---|---|---|---|---|
-| R1 | CI에서 golangci-lint가 여전히 OOM | 낮 | lint job 실패 | §6.1.2 실측으로 `GOGC=50` 채택(2.40→1.66 GB). 실패 시 `GOGC=20`(1.44 GB)으로 강화하거나, §11의 `enable-lint` 파라미터를 `false`로 되돌려 즉시 무력화 |
+| R1 | CI에서 golangci-lint가 여전히 OOM | 낮 | lint job 실패 | `small`은 1 vCPU / 2 GB다(§6.1.3). `GOGC=50` + `GOMEMLIMIT=1500MiB` + `GOMAXPROCS=1`로 피크 **1.08 GB**(상한의 54%). 실패 시 `GOGC=20`으로 강화하거나 §11의 `enable-lint`를 `false`로 되돌려 즉시 무력화 |
 | R2 | golangci-lint 버전이 go.mod의 go directive보다 낮게 빌드되어 실행 거부 | **발생 확인됨** | **전 job 실패** | §6.2.2에서 실측. v2.5.0 → v2.14.0으로 교체하고 실제 `run` 성공 확인. 핀 변경 이유를 config 주석에 명시하여 재발 방지 |
 | R2b | 향후 go directive를 1.28+로 올릴 때 lint 핀을 함께 올리지 않아 전 job 실패 | 중 | 전 job 실패 | config 주석에 "go directive를 올리면 이 핀도 올릴 것" 명시. 근본 해결은 아니나 다음 작업자에게 원인을 즉시 알려준다 |
 | R2c | 릴리스 tarball URL/체크섬 파일명 규칙이 상류에서 바뀌면 설치 step 실패 | 낮 | 전 job 실패 | 설치 실패는 즉시 빨간불로 드러나며 조용한 오작동이 아니다. 버전 일치 가드가 추가 방어선 |
@@ -1086,7 +1118,7 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 | R7 | README 서비스 설명 문구가 실제 서비스 역할과 불일치 | 낮 | 문서 오류 | 구현 시 각 서비스 README/CLAUDE.md에서 직접 인용 |
 | R8 | 새 lint step이 일부 서비스에서 한 번도 실행되지 않은 채 머지됨 | 중 | 머지 후 첫 변경 시 실패 | `bin-email-manager`·`bin-sentinel-manager`는 gofmt 변경이 없어 이번 PR에서 job이 트리거되지 않는다(실측). 구현 시 두 서비스에 대해 **로컬에서 `golangci-lint run`을 선실행**하여 위반 0을 확인한다 |
 | R9 | `.golangci.yml` 단독 변경 PR이 어떤 lint job도 트리거하지 않음 | 중 | 튜닝 PR이 미검증 머지 | §6.2.1.1에서 `run-lint-config-check` 파라미터·workflow·`lint-config-check` job을 **신설**하고 mapping 1행을 추가하여 해소. 초안의 `scripts/.* → run-shell-tests` 매핑은 해당 job이 bats만 돌리므로 근거가 되지 못했다(철회). 게이트 스크립트 쪽은 §6.2.1에서 **무조건 실행**으로 등록되므로 트리거가 불필요하다 |
-| R10 | `GOMAXPROCS`가 CI에서 호스트 코어 수를 보아 측정 조건과 달라짐 | 중 | 메모리 초과 | Linting step environment에 `GOMAXPROCS: "2"` 명시(§6.2 변경점 5) |
+| R10 | `GOMAXPROCS`가 CI에서 호스트 코어 수를 보아 측정 조건과 달라짐 | 중 | 메모리 초과 | Linting step environment에 `GOMAXPROCS: "1"` 명시(§6.2 변경점 5). `small`은 1 vCPU이므로 이 값이 실제 스펙과도 일치한다(§6.1.3) |
 | R11 | **pre-commit hook이 gofmt 일괄 커밋을 거부** | 높 | 구현 착수 즉시 막힘 | 실측: `core.hooksPath`가 설정되어 있고 hook이 활성이다. gofmt가 `models/*/webhook.go` 6개를 건드리면 "WebhookMessage model changed without RST documentation update"로 커밋이 거부된다. **이 변경은 포맷 전용이므로 RST 갱신 대상이 아니다.** 포맷 커밋에 한해 `--no-verify`를 사용하고, PR 본문에 사유(포맷 전용, 필드 변경 없음)를 명시한다. `git diff --stat`으로 webhook.go 변경이 공백뿐임을 함께 첨부한다 |
 | R12 | lint가 영구히 적용되지 않는 서비스가 존재 | 낮 | 사각지대 | `bin-openapi-manager`(Go 2파일)와 `voip-asterisk-proxy`(21파일)는 **`go-test` command 호출부 자체가 없다**(호출 37 = go-test 35 + api 1 + pipecat 1, 이 둘은 목록에 없음). §6.2의 "3곳 수정으로 전량 반영"이 커버하지 못한다. 이번 범위에서는 손대지 않고 §4 Non-goals로 기록한다. 두 서비스에 test job을 신설하는 것은 별개 과제다 |
 | R13 | **shallow clone이 merge base 계산을 끊어 게이트가 무관한 PR을 죽임** | 높 | 머지 후 전면 발현 | 초안의 `--depth=200`은 저장소를 shallow로 전환한다. 실측: base 커밋 객체는 존재(`git cat-file -t` → `commit`)하는데 `git merge-base`는 **exit 1**이다. 게이트가 fail-closed·무조건 실행이므로 base가 fetch 윈도를 벗어난 브랜치는 **위반 0건이어도 CI 적색**이다. 현재 살아있는 원격 브랜치 23개(main 제외) 중 **21개가 200커밋 이상 뒤져** 있고 main은 월 ~121커밋으로 움직여, 약 7주만 지나면 걸린다. **조치: `--depth` 제거 + merge base 해석 실패 시에만 deepen**(§6.2.1). `--depth` 제거만으로는 checkout 자체가 shallow인 경우를 못 막는다는 점도 실측 확인했다. **V8b(CI 로그 확인)로는 걸러지지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 그냥 통과하기 때문이다. 이 결함만을 겨냥해 V8c를 신설했다 |
@@ -1133,7 +1165,7 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 ## 10. Open questions
 
 **Q1 — 해결됨 (§6.1.2).** `concurrency`는 메모리를 줄이지 못함이 실측되었고(-1.8%),
-`GOGC=50` + `GOMEMLIMIT=3GiB`로 2.40 GB → 1.66 GB(-31%)를 달성했다. D4(상향 없음) 유지 확정.
+`GOGC=50` + `GOMEMLIMIT=1500MiB` + `GOMAXPROCS=1`로 2.40 GB → 1.08 GB(-55%)를 달성했다. D4(상향 없음) 유지 확정.
 
 **Q2 — 해결됨 (§6.2.1).** 게이트를 독립 job으로 분리해 37회 중복 실행을 제거했다.
 
