@@ -470,7 +470,11 @@ workflow에는 `when:` 없이 등록하여 무조건 실행한다(경량 grep이
 | `.golangci.yml → run-lint-config-check true` | 이 파이프라인 파라미터가 **선언되어 있지 않다.** path-filtering이 미선언 파라미터를 continuation에 넘기면 continuation 자체가 실패한다 | `grep -c run-lint-config-check .circleci/config_work.yml` → `0` |
 | `scripts/.* → run-shell-tests true` | 이 파라미터가 켜는 `shell-tests` job은 **bats만 실행**한다. 신설 스크립트를 전혀 검증하지 않으므로 R9 완화 근거가 성립하지 않는다 | `config_work.yml:2202` = `bats .circleci/tests/*.bats docs/reference/tests/*.bats` |
 
-따라서 파라미터 선언·workflow·job을 **함께 신설**해야 한다. 완전 명세:
+따라서 파라미터 선언·workflow·job을 **함께 신설**해야 한다.
+
+> **먼저 읽을 것:** 아래 (1)~(4) 중 `run-convention-scripts` / `convention-scripts` /
+> `scripts/.*` 관련 부분은 **채택하지 않는다**(이유는 이 절 끝의 "결정" 참조).
+> 실제 추가분은 `run-lint-config-check` 파라미터 + mapping 1행 + workflow 1개 + job 1개다.
 
 **(1) `config_work.yml` 파라미터 선언** (기존 `run-shell-tests` L186 옆에 추가)
 
@@ -478,17 +482,15 @@ workflow에는 `when:` 없이 등록하여 무조건 실행한다(경량 grep이
   run-lint-config-check:
     type: boolean
     default: false
-
-  run-convention-scripts:
-    type: boolean
-    default: false
 ```
 
 **(2) `config.yml` mapping** (기존 L59-62 블록 옆)
 
+기존 행들과 동일한 `<정규식><공백정렬><파라미터> true` 단일 라인 형식이며,
+`docs/reference/extractor\.sh run-shell-tests true`(L61)처럼 `\.` 이스케이프 선례가 있다.
+
 ```
             \.golangci\.yml             run-lint-config-check true
-            scripts/.*                  run-convention-scripts true
 ```
 
 **(3) `config_work.yml` workflow**
@@ -498,11 +500,6 @@ workflow에는 `when:` 없이 등록하여 무조건 실행한다(경량 grep이
     when: << pipeline.parameters.run-lint-config-check >>
     jobs:
       - lint-config-check
-
-  convention-scripts:
-    when: << pipeline.parameters.run-convention-scripts >>
-    jobs:
-      - check-test-conventions
 ```
 
 **(4) `lint-config-check` job** — `.golangci.yml` 변경 시 대표 서비스 1개에서 실제 실행한다.
@@ -620,7 +617,10 @@ CI와 로컬이 영구히 어긋난다. 따라서 **코드 블록 변환만이 �
 | 2회차 `gofmt -l` (멱등성) | 출력 없음 = 안정, 루프 없음 |
 | `gofmt -e` 구문 검사 | 통과 |
 
-동일 파일 L60의 두 번째 occurrence도 같은 형태이며 함께 확인되었다.
+**손상되는 곳은 이 파일의 L40 한 곳뿐이다.** 같은 식이 L58에도 나오지만
+그쪽은 **이미 탭 들여쓰기 코드블록**(`//\tIF(json_search(...`)이라 doc comment 포맷터의
+스마트쿼트 변환 대상이 아니다. 313파일 전수 스캔에서 신규 비ASCII가 1건뿐인 이유가 이것이며,
+동시에 위 조치(백틱 인라인 → 코드블록)가 옳은 방향임을 저장소 자신이 보여주는 사례다.
 
 **V15의 단일 파일 범위 근거:** 313파일 전수에서 gofmt가 도입하는 비ASCII 문자를 스캔한 결과,
 신규 치환은 `json_expr.go` 1건뿐이다. 나머지 3건(`bin-billing-manager/.../deduction_test.go`의 `→`,
@@ -646,7 +646,39 @@ CI와 로컬이 영구히 어긋난다. 따라서 **코드 블록 변환만이 �
 `docs/conventions/testing.md`가 규정하지만 어떤 린터로도 잡히지 않는 3개 규칙을 강제한다.
 **변경된 파일만 검사**하여 존량(D6)에 걸리지 않게 한다.
 
-#### 6.4.1 Rule 1의 범위 축소 (실측에 따른 결정)
+#### 6.4.1 Rule 1의 범위 축소 및 검사 단위 (실측에 따른 결정)
+
+**검사 단위: 변경된 "파일"이 아니라 변경된 "라인"이다.**
+
+초안은 변경된 파일 전체를 grep했다. 이 방식은 **이번 PR 자체를 실패시킨다.**
+G3(gofmt 313파일)이 그 중 **테스트 파일 151개**를 변경 목록에 올리는데,
+그 파일들은 브랜치가 작성하지 않은 존량 위반을 이미 갖고 있다. 실측:
+
+| 규칙 | 위반 | 파일 |
+|---|---|---|
+| Rule 1 (`TestXxx_Case`) | 122 | 20 |
+| Rule 2 (testify) | 2 | 2 |
+| Rule 3 (`ctrl :=`) | 54 | 4 |
+| **합계** | **178** | — |
+
+게이트는 `when:` 없이 무조건 실행되므로 첫 파이프라인에서 확정적으로 적색이 된다.
+D6("존량은 범위 밖")과 G3+G4 동시 진행이 정면으로 충돌한다.
+
+**해결: `git diff -U0`의 추가(`+`) 라인만 검사한다.** 실측으로 확인했다.
+
+| 입력 | 기존(파일 단위) | 변경(라인 단위) |
+|---|---|---|
+| gofmt 전용 변경 | **178건 위반, exit 1** | **0건, exit 0** |
+| 실제 위반 신규 추가 | 검출 | **3종 전부 검출, exit 1** |
+
+gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므로, 포맷 전용 변경은
+추가 라인에 위반 패턴을 만들지 않는다. "브랜치가 실제로 쓴 것만 본다"는
+게이트의 본래 의도에 오히려 더 부합한다.
+
+이로써 D6(존량 미수정)과 G4(신규 차단)가 양립한다. **선택지 1·2(포맷 범위 축소, PR 분리)는
+채택하지 않는다.** 전자는 V1과 모순되고 후자는 D1(단일 PR)을 깬다.
+
+**Rule 1의 매칭 범위:**
 
 초안의 정규식 `^func Test[A-Z]`는 저장소 전역에서 **1,755건**을 매치한다. 분류하면:
 
@@ -701,7 +733,10 @@ fi
 # empty array is indistinguishable from "nothing changed". Capture the status
 # explicitly instead of relying on mapfile's, which reflects the redirect and
 # is always 0.
-if ! DIFF_OUT="$(git diff --name-only --diff-filter=d "${MERGE_BASE}" HEAD -- '*_test.go')"; then
+#
+# core.quotePath=false keeps non-ASCII paths usable; git would otherwise emit
+# them octal-escaped and quoted, and the name would not resolve on disk.
+if ! DIFF_OUT="$(git -c core.quotePath=false diff --name-only --diff-filter=d "${MERGE_BASE}" HEAD -- '*_test.go')"; then
   echo "check-test-conventions: FAILED to diff ${MERGE_BASE}..HEAD." >&2
   echo "The repository may be a shallow clone missing the base commit's objects." >&2
   exit 1
@@ -710,13 +745,31 @@ fi
 CHANGED=()
 while IFS= read -r line; do
   [ -n "${line}" ] || continue
-  case "${line}" in */vendor/*) continue ;; esac
+  case "${line}" in vendor/*|*/vendor/*) continue ;; esac
   CHANGED+=("${line}")
 done <<< "${DIFF_OUT}"
 
 if [ "${#CHANGED[@]}" -eq 0 ]; then
   echo "check-test-conventions: no changed test files."
   exit 0
+fi
+
+# Inspect ADDED LINES ONLY, not whole files.
+#
+# Checking whole files would make any repo-wide reformat fail this gate: a
+# gofmt-only pass rewrites 151 test files, and those files carry 178
+# pre-existing violations that the branch never introduced. Scoping to added
+# lines keeps the gate on what the branch actually wrote, which is what
+# "changed files only" was meant to express in the first place.
+#
+# -U0 emits no context lines, so every '+' line is genuinely new.
+# vendor/ is excluded here too: the pathspec, not the CHANGED array, is what
+# bounds this diff. Filtering only the file list would let a vendored test
+# file's added lines reach the rules.
+if ! DIFF_U0="$(git -c core.quotePath=false diff -U0 "${MERGE_BASE}" HEAD \
+  -- '*_test.go' ':(exclude)vendor/**' ':(exclude)*/vendor/**')"; then
+  echo "check-test-conventions: FAILED to produce a unified diff." >&2
+  exit 1
 fi
 
 fail=0
@@ -730,24 +783,45 @@ report() {
   fail=1
 }
 
-# `grep -H` forces the filename prefix even when only one file is checked;
-# without it a single-file change reports bare "12:func ..." with no path.
+# Report added-line violations with file:line. `git diff -U0` hunk headers
+# (@@ -a,b +c,d @@) carry the new-file line number, so walk the diff and keep
+# a running counter; a bare grep over added lines would lose the location.
+scan() {
+  # $1 = ERE to match against added lines.
+  # Note the patterns below are POSIX EREs as awk understands them: no \b, no
+  # \<, no \s. awk warns about (and ignores) unknown escapes, which silently
+  # disables a rule -- Rule 3 was lost this way during review.
+  awk -v pat="$1" '
+    /^\+\+\+ b\// { file = substr($0, 7); next }
+    /^@@ / {
+      # @@ -old,cnt +new,cnt @@
+      split($3, a, ",")
+      line = a[1]; sub(/^\+/, "", line)
+      next
+    }
+    /^\+/ {
+      body = substr($0, 2)
+      if (body ~ pat) printf "%s:%d:%s\n", file, line, body
+      line++
+    }
+  ' <<< "${DIFF_U0}"
+}
 
 # Rule 1 — Test_<MethodName>, not TestXxx_Case. See 6.4.1 for why bare
 # TestXxx (no underscore) is deliberately NOT matched.
-m="$(grep -HnE '^func Test[A-Z][A-Za-z0-9]*_' "${CHANGED[@]}" 2>/dev/null || true)"
+m="$(scan '^func Test[A-Z][A-Za-z0-9]*_')"
 [ -n "${m}" ] && report \
   "Test function must be named Test_<MethodName> (got TestXxx_Case)." \
   " (13.6 Test Function Naming)" "${m}"
 
 # Rule 2 — assertions use reflect.DeepEqual + t.Errorf, not testify.
-m="$(grep -HnE '"github\.com/stretchr/testify' "${CHANGED[@]}" 2>/dev/null || true)"
+m="$(scan '"github[.]com/stretchr/testify')"
 [ -n "${m}" ] && report \
   "testify is not used in this repository; use reflect.DeepEqual + t.Errorf." \
   " (13.3 Assertions)" "${m}"
 
 # Rule 3 — the gomock controller variable is named mc.
-m="$(grep -HnE '\bctrl\s*:=\s*gomock\.NewController' "${CHANGED[@]}" 2>/dev/null || true)"
+m="$(scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController')"
 [ -n "${m}" ] && report \
   "Name the gomock controller 'mc' (mc := gomock.NewController(t))." \
   " (13.1 Test Structure)" "${m}"
@@ -820,6 +894,22 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 `mapfile` fail-open도 별도 재현으로 확인했다: `git diff`를 잘못된 ref로 실행해도
 `mapfile`의 종료 상태는 **0**, 배열 길이 **0**, 스크립트 최종 **exit 0**이었다.
 수정본은 이 경로에서 exit 1을 반환한다.
+
+**라운드 4 수정(hunk 기반 전환) 후 재검증.**
+실제 monorepo의 gofmt 미준수 테스트 파일 60개를 임시 저장소에 복사해 실행:
+
+| 케이스 | 기대 | 결과 |
+|---|---|---|
+| **gofmt 전용 변경 (B1 시나리오)** | exit 0 | **OK (60 file(s) checked), exit 0** |
+| 위반 3종 신규 추가 | exit 1 | **3종 전부, 행번호 정확(L5/L3/L6), exit 1** |
+| 정통 표기(`TestMain`·`TestFieldConstants`·`TestGoldenRoutingKeys`) | exit 0 | **OK, exit 0** |
+| vendor 경로 테스트 파일 | 무시 | **OK, exit 0** |
+| merge base 해석 실패 | exit 1 | **exit 1 + 안내** |
+
+이 과정에서 **추가 결함 2건을 자체 발견**했다(§12에 기록):
+awk가 `\<`·`\.`를 무시해 **Rule 3이 조용히 비활성화**되어 있었고,
+hunk 전환으로 **vendor 필터가 무력화**되어 있었다. 둘 다 수정 후 위 표로 재확인했다.
+설계 리뷰나 코드 읽기로는 어느 쪽도 드러나지 않았다.
 
 ### 6.5 루트 `README.md`
 
@@ -948,6 +1038,8 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 | R8 | 새 lint step이 일부 서비스에서 한 번도 실행되지 않은 채 머지됨 | 중 | 머지 후 첫 변경 시 실패 | `bin-email-manager`·`bin-sentinel-manager`는 gofmt 변경이 없어 이번 PR에서 job이 트리거되지 않는다(실측). 구현 시 두 서비스에 대해 **로컬에서 `golangci-lint run`을 선실행**하여 위반 0을 확인한다 |
 | R9 | `.golangci.yml` 단독 변경 PR이 어떤 lint job도 트리거하지 않음 | 중 | 튜닝 PR이 미검증 머지 | §6.2.1.1에서 `run-lint-config-check` 파라미터·workflow·`lint-config-check` job을 **신설**하고 mapping 1행을 추가하여 해소. 초안의 `scripts/.* → run-shell-tests` 매핑은 해당 job이 bats만 돌리므로 근거가 되지 못했다(철회). 게이트 스크립트 쪽은 §6.2.1에서 **무조건 실행**으로 등록되므로 트리거가 불필요하다 |
 | R10 | `GOMAXPROCS`가 CI에서 호스트 코어 수를 보아 측정 조건과 달라짐 | 중 | 메모리 초과 | Linting step environment에 `GOMAXPROCS: "2"` 명시(§6.2 변경점 5) |
+| R11 | **pre-commit hook이 gofmt 일괄 커밋을 거부** | 높 | 구현 착수 즉시 막힘 | 실측: `core.hooksPath`가 설정되어 있고 hook이 활성이다. gofmt가 `models/*/webhook.go` 6개를 건드리면 "WebhookMessage model changed without RST documentation update"로 커밋이 거부된다. **이 변경은 포맷 전용이므로 RST 갱신 대상이 아니다.** 포맷 커밋에 한해 `--no-verify`를 사용하고, PR 본문에 사유(포맷 전용, 필드 변경 없음)를 명시한다. `git diff --stat`으로 webhook.go 변경이 공백뿐임을 함께 첨부한다 |
+| R12 | lint가 영구히 적용되지 않는 서비스가 존재 | 낮 | 사각지대 | `bin-openapi-manager`(Go 2파일)와 `voip-asterisk-proxy`(21파일)는 **`go-test` command 호출부 자체가 없다**(호출 37 = go-test 35 + api 1 + pipecat 1, 이 둘은 목록에 없음). §6.2의 "3곳 수정으로 전량 반영"이 커버하지 못한다. 이번 범위에서는 손대지 않고 §4 Non-goals로 기록한다. 두 서비스에 test job을 신설하는 것은 별개 과제다 |
 
 Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며, R2는 이미 설계에서 해소했다.
 
@@ -979,8 +1071,10 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 | V12b | 파이프라인 파라미터 선언 확인 | `grep -c 'run-lint-config-check' .circleci/config_work.yml` | `≥ 1`. mapping이 참조하는 파라미터가 선언되어 있지 않으면 continuation이 통째로 실패한다 |
 | V13 | 주석 잔여 확인 | `! grep -q 'Re-enable golangci-lint' .circleci/config_work.yml` | exit 0 (매치 없음) |
 | V14 | lint step 반영 범위 | `grep -c 'name: Linting' .circleci/config_work.yml` | `3` (commands 정의 3개) |
-| V14b | **롤백 파라미터 반영 범위** (§11.2) | `grep -c 'enable-lint' .circleci/config_work.yml` | 3개 command 전부에 존재. `go-test`에만 넣으면 bin-api-manager(유일한 OOM 후보)가 롤백 불가가 된다 |
+| V14b | **롤백 파라미터 반영 범위** (§11.2) | `grep -c 'enable-lint:' .circleci/config_work.yml` | `3` (선언만 셈. `enable-lint` 로 세면 참조 `<< parameters.enable-lint >>`까지 포함되어 6이 나오므로 판정 불가) |
 | V15 | **gofmt 주석 손상 확인** (§6.3.2) | `grep -c '”' bin-call-manager/pkg/dbhandler/json_expr.go` | `0` (스마트쿼트가 도입되지 않음) |
+| V15b | **게이트가 이 PR 자체를 통과하는지** (§6.4.1 B1) | 브랜치에서 `bash scripts/check-test-conventions.sh` | **exit 0.** gofmt가 테스트 파일 151개를 변경 목록에 올리고 그 안에 존량 위반 178건이 있으므로, 파일 단위 검사였다면 반드시 실패한다. 이 검증 없이 머지하지 않는다 |
+| V15c | 게이트가 신규 위반은 여전히 잡는지 | 임시 커밋으로 위반 3종을 추가한 뒤 실행 | 3종 전부 검출, exit 1. 확인 후 임시 커밋 폐기 |
 | V16 | **PR 브랜치 CI에서 lint step 실제 통과** | PR 생성 후 CircleCI 결과 확인 | 새 Linting step이 초록. path-filtering setup workflow도 PR 브랜치의 `config_work.yml`을 읽으므로 확인 가능 |
 
 ---
@@ -1098,23 +1192,26 @@ Draft — Design Review 루프 진행 중.
 |---|---|---|---|
 | 1 | 사실 정확성 | CHANGES_REQUESTED | 반영 완료 (§1.1 `go generate` 부분강제 정정, §1.2 집계범위 정정, §6.4 스크립트 결함 7건 수정) |
 | 2 | 운영 안전성·회귀 리스크 | CHANGES_REQUESTED | 반영 완료 (C1 goimports 제외, C2 주석 손상 문서화, C3 fail-closed 전환, M2 `go vet` 삭제, §11 롤백 신설) |
-| 3 | 반영 검증·신규 결함 | CHANGES_REQUESTED | 반영 완료 (10건, 아래) |
-| 4 | — | 대기 | — |
+| 3 | 반영 검증·신규 결함 | CHANGES_REQUESTED | 반영 완료 (10건) |
+| 4 | 반영 검증·CI 실행 가능성 | CHANGES_REQUESTED | 반영 완료 (B1 + M1~M3, 아래) |
+| 5 | — | 대기 | — |
 
-**라운드 3 조치 내역:**
+**라운드 4 조치 내역:**
 
 | # | 지적 | 조치 |
 |---|---|---|
-| 1 | §6.1 스니펫이 실제 `.golangci.yml`과 모순(goimports 잔존) | 스니펫 교체. 바이트 일치 확인 |
-| 2 | §6.1 "v2.5.0", "§11 리스크" 오기 | v2.14.0 / §8 R2로 정정 |
-| 3 | §6.5(c) 미존재, §9 V14 오참조 | (c)·(d) 절 신설 완료, V15로 정정 |
-| 4 | §6.2 스니펫에 `GOMAXPROCS` 누락 (R10 무방비) | environment에 추가 |
-| 5 | §6.2.1.1 mapping이 실현 불가 | 파라미터·workflow·job 완전 명세로 교체. `run-shell-tests` 매핑 철회 |
-| 6 | §6.4.2 `mapfile` fail-open 잔존 | `DIFF_OUT` 분리 + `while read` 대체. **실행 검증 완료** |
-| 7 | §6.3.2 ASCII 복원이 무한 루프 | 조건부 서술 삭제, 코드블록을 확정 조치로. **실행 검증 완료** |
-| 8 | §11.2가 3개 command 중 1개만 명세 | 3개 전부 적용 명시 + V14b 신설 |
-| 9 | §5 표 누락·부정확 | `.circleci/config.yml` 행 추가, voip-* 4파일 명시 |
-| 10 | §9 V12가 `yaml.safe_load` 허용 | `circleci config process`로 격상 + V12b 신설 |
+| B1 | **게이트가 이 PR 자체를 실패시킴.** gofmt가 테스트 151파일을 변경 목록에 올리고, 그 안에 존량 위반 178건이 있다 | 검사 단위를 **파일 → 추가 라인(`git diff -U0`)**으로 전환(§6.4.1). 실측: gofmt 전용 변경 178건→**0건**, 신규 위반은 여전히 3종 검출 |
+| M1 | §6.2.1.1 결론과 예시 YAML 모순 | 철회된 `run-convention-scripts`·`convention-scripts`·`scripts/.*` 블록 삭제 |
+| M2 | "L60의 두 번째 occurrence도 같은 형태" 부정확 | 실제 L58이며 **이미 코드블록**이라 gofmt 대상이 아님을 명시 |
+| M3 | V14b 기준이 기계 판정 불가(`enable-lint` = 6) | `enable-lint:`(선언만) = `3`으로 고정 |
+
+**라운드 4에서 자체 발견한 결함:**
+
+| 결함 | 발견 경위 | 조치 |
+|---|---|---|
+| **pre-commit hook이 gofmt 커밋을 거부** | B1 재현 중 실제 커밋 시도에서 발생 | R11 신설. 포맷 전용 커밋에 `--no-verify` + 사유 명시 |
+| **awk가 `\b`/`\<`/`\s`를 무시하여 Rule 3이 조용히 비활성화** | hunk 전환 후 실행 검증에서 Rule 3만 누락 | POSIX ERE로 교체(`(^\|[^A-Za-z0-9_])ctrl...`). 경고 소멸 및 검출 확인 |
+| **hunk 전환으로 vendor 필터 무력화** | vendor 경로 테스트에서 위반 검출됨 | `git diff` pathspec에 `:(exclude)vendor/**` 추가 |
 
 2회 연속 APPROVE 시 종료 (최대 20라운드).
 
