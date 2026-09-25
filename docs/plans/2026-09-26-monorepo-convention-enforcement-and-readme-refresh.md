@@ -708,6 +708,52 @@ images that the installer consumes; it is not deployed directly from a checkout 
 
 브랜드 규칙 준수 확인: em/en 대시 미사용, "opensource" 한 단어, 타사 언급 없음, 개인 연락처 노출 없음.
 
+#### (c) 기존 em dash 11건 정리 (대표님 확정)
+
+README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110, 146, 153.
+(b)가 손대는 것은 L146 하나뿐이므로 나머지 10건이 남는다.
+
+**결정: 11건 전부 정리한다.** 작성 규칙상 em/en 대시는 금지이며,
+일부만 고치면 규칙 준수 여부가 파일 내에서 일관되지 않는다.
+
+치환 방침: 마침표·쉼표·괄호·콜론으로 대체하며 문장 의미를 바꾸지 않는다. 예시:
+
+```
+- 3:   ...monorepo — it contains backend services...
++ 3:   ...monorepo. It contains backend services...
+
+- 52:  🔧 [Admin Console](...) — Manage everything visually
++ 52:  🔧 [Admin Console](...): Manage everything visually
+```
+
+아울러 L3·L23의 `open-source`(하이픈 표기)를 `opensource` 한 단어로 통일한다.
+
+#### (d) L110 "Kubernetes-based deployments" 서술 수정 (대표님 확정)
+
+현재 L110:
+
+```
+> It's a platform composed of multiple microservices, SIP/media infrastructure
+> (e.g., Asterisk, RTPEngine), Kubernetes-based deployments, and pluggable
+> third-party integrations ... You don't just "run it" — you assemble and deploy it
+> based on your architecture.
+```
+
+**(b)에서 셀프호스팅 정본을 Docker Compose 단일 서버로 현행화하는데, 이 문장은 K8s를 전제한다.**
+같은 문서 안에서 배포 모델이 충돌하므로 함께 고친다.
+또한 "you assemble and deploy it"은 설치 관리자가 제공되는 현 상태와 맞지 않는다.
+
+변경안:
+
+```
+> It's a platform composed of multiple microservices, SIP/media infrastructure
+> (e.g., Asterisk, RTPEngine), and pluggable third-party integrations for telephony,
+> AI, and other backends. The installer brings these up for you on a single host;
+> larger deployments can split the services across hosts.
+```
+
+> 이 문구는 잠정안이다. 구현 시 `voipbin/voipbin` README의 현행 서술과 대조하여 확정한다.
+
 ---
 
 ## 7. 왜 "컨벤션 문서 추가"를 하지 않는가
@@ -763,8 +809,10 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 | V8b | **게이트가 CI에서 실제로 merge base를 해석했는지** | CI 로그에서 `check-test-conventions: OK (N file(s) checked)` 확인 | N ≥ 1이며 skip/실패 메시지가 아님. **이 확인 없이는 G4 달성으로 간주하지 않는다** |
 | V9 | README 서비스 표 완전성 | `for d in bin-*/ voip-*/; do grep -q "\`${d%/}\`" README.md \|\| echo MISSING $d; done` | 출력 없음 |
 | V10 | README 역방향(유령 항목) | 표의 각 항목에 대응 디렉터리 존재 확인 | 전부 존재 |
-| V11 | 브랜드 규칙 — **본 PR이 추가·수정한 텍스트 한정** | `git diff main -- README.md \| grep -E '^\+' \| grep -E '—\|–'` | 출력 없음 |
-| V11b | README 기존 em dash 처리 | `grep -cE '—\|–' README.md` | §6.5(c) 결정에 따름 (현재 11건) |
+| V11 | 브랜드 규칙 — em/en 대시 | `grep -cE '—\|–' README.md` | `0` (§6.5(c)에 따라 11건 전부 정리) |
+| V11b | 브랜드 규칙 — opensource 표기 | `grep -ciE 'open.source' README.md` 결과 중 `open-source`/`open source` | `0` (전부 `opensource` 한 단어) |
+| V11c | 타사 언급 없음 | `grep -niE 'twilio\|vonage\|plivo\|messagebird\|fonoster' README.md` | 출력 없음 |
+| V11d | 배포 서술 일관성 (§6.5(d)) | `grep -n 'Kubernetes' README.md` | 셀프호스팅 정본(Docker Compose)과 모순되는 서술이 없음 |
 | V12 | CI YAML 유효성 | `circleci config validate` 또는 `python3 -c "import yaml;yaml.safe_load(open('.circleci/config_work.yml'))"` | 유효 |
 | V13 | 주석 잔여 확인 | `! grep -q 'Re-enable golangci-lint' .circleci/config_work.yml` | exit 0 (매치 없음) |
 | V14 | lint step 반영 범위 | `grep -c 'name: Linting' .circleci/config_work.yml` | `3` (commands 정의 3개) |
@@ -791,13 +839,13 @@ v2.14.0(go1.27.0 빌드)으로 교체하여 실제 `run` 성공을 확인했다.
 **Q6 — 해소됨 (§6.4.1).** Rule 1을 `TestXxx_Case`만 매치하도록 축소하여 `TestMain` 오탐이 사라졌다.
 예고했던 필터 `grep -vE '^func TestMain\('`은 애초에 동작하지 않는 코드였다(§6.4.3).
 
-남은 질문:
+**Q7 — 해결됨 (§6.5(c), 대표님 확정).** README의 em dash 11건을 **전부 정리**한다.
+`open-source`(하이픈) 2건도 `opensource` 한 단어로 통일한다.
 
-1. **Q7 (§6.5(c)).** README의 기존 em dash 11건 중 §6.5가 손대지 않는 9건을 이번에 함께 정리할 것인가?
-   D3은 "루트 README만"이므로 범위 내이나, §6.5에 작업 항목으로 없다.
-   함께 정리하면 V11b가 `0`이 되고, 미루면 V11b 기준을 완화해야 한다.
-2. **Q8 (§6.5(b)).** README L110의 "Kubernetes-based deployments" 서술도
-   셀프호스팅 현행화(Docker Compose 단일 서버 정본)와 어긋난다. 같은 PR에서 수정할 것인가?
+**Q8 — 해결됨 (§6.5(d), 대표님 확정).** L110의 "Kubernetes-based deployments" 서술을
+같은 PR에서 수정한다. 셀프호스팅 정본 변경과 같은 문서 안에서 충돌하기 때문이다.
+
+남은 질문: 없음. 구현 착수 가능 상태다.
 
 ---
 
