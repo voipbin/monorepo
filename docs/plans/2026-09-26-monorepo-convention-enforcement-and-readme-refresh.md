@@ -447,7 +447,7 @@ CI에서 이 경우 `sudo mv`가 실패하거나, 이전 버전 바이너리가 
           # reports the commit while `git merge-base` exits 1. With the gate
           # running unconditionally and fail-closed, that turns every PR whose
           # base is behind the fetched window red regardless of its contents.
-          # 21 of the repo's 63 branches are already more than 200 commits
+          # 21 of the repo's 64 branches are already more than 200 commits
           # behind, and main moves ~121 commits a month.
           #
           # The clone may also arrive shallow from checkout itself, so a plain
@@ -569,7 +569,8 @@ gofmt -w $(gofmt -l bin-*/ voip-*/ | grep -v /vendor/)
 
 #### 6.3.1 diff 성격 실측 (초안의 "대부분 빈 줄" 서술은 오류였다)
 
-전체 diff 9,550줄을 집계한 결과:
+전체 diff 9,550줄을 집계한 결과(`git diff` 기본 알고리즘 기준. `diff` 유틸리티로 세면
+1,708/1,704로 다르게 나오나 비공백이 대부분이라는 결론은 동일하다):
 
 | 분류 | 추가(+) | 삭제(-) |
 |---|---|---|
@@ -644,12 +645,15 @@ CI와 로컬이 영구히 어긋난다. 따라서 **코드 블록 변환만이 �
 
 ```
 $ for f in $(cat gofmt_list); do
-    a=$(grep -oP '[\x80-\xFF]' "$f" | sort | uniq -c | md5sum)
-    b=$(gofmt "$f" | grep -oP '[\x80-\xFF]' | sort | uniq -c | md5sum)
+    a=$(LC_ALL=C grep -oP '[\x80-\xFF]' "$f" | sort | uniq -c | md5sum)
+    b=$(gofmt "$f" | LC_ALL=C grep -oP '[\x80-\xFF]' | sort | uniq -c | md5sum)
     [ "$a" != "$b" ] && echo "MULTISET-CHANGED: $f"
   done
 MULTISET-CHANGED: bin-call-manager/pkg/dbhandler/json_expr.go
 ```
+
+`LC_ALL=C`는 생략하면 안 된다. UTF-8 로캘에서 `[\x80-\xFF]`는 **바이트가 아니라 문자**로
+해석되어 비교가 무의미해진다.
 
 다중집합 비교를 쓰는 이유는 **"문자가 새로 생겼는가"와 "기존 문자가 이동했는가"를 구분**하기
 위해서다. 단순 라인 카운트로는 `mcp_tool_test.go`·`convert.go`·`stop.go` 3개가 증가한 것처럼
@@ -863,13 +867,13 @@ m="$(scan '^func Test[A-Z][A-Za-z0-9]*_')"
 m="$(scan '"github[.]com/stretchr/testify')"
 [ -n "${m}" ] && report \
   "testify is not used in this repository; use reflect.DeepEqual + t.Errorf." \
-  " (13.3 Assertions)" "${m}"
+  " (13.5 Assertion Pattern)" "${m}"
 
 # Rule 3 — the gomock controller variable is named mc.
 m="$(scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController')"
 [ -n "${m}" ] && report \
   "Name the gomock controller 'mc' (mc := gomock.NewController(t))." \
-  " (13.1 Test Structure)" "${m}"
+  " (13.3 Test Structure Conventions)" "${m}"
 
 if [ "${fail}" -ne 0 ]; then
   echo ""
@@ -1085,7 +1089,7 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 | R10 | `GOMAXPROCS`가 CI에서 호스트 코어 수를 보아 측정 조건과 달라짐 | 중 | 메모리 초과 | Linting step environment에 `GOMAXPROCS: "2"` 명시(§6.2 변경점 5) |
 | R11 | **pre-commit hook이 gofmt 일괄 커밋을 거부** | 높 | 구현 착수 즉시 막힘 | 실측: `core.hooksPath`가 설정되어 있고 hook이 활성이다. gofmt가 `models/*/webhook.go` 6개를 건드리면 "WebhookMessage model changed without RST documentation update"로 커밋이 거부된다. **이 변경은 포맷 전용이므로 RST 갱신 대상이 아니다.** 포맷 커밋에 한해 `--no-verify`를 사용하고, PR 본문에 사유(포맷 전용, 필드 변경 없음)를 명시한다. `git diff --stat`으로 webhook.go 변경이 공백뿐임을 함께 첨부한다 |
 | R12 | lint가 영구히 적용되지 않는 서비스가 존재 | 낮 | 사각지대 | `bin-openapi-manager`(Go 2파일)와 `voip-asterisk-proxy`(21파일)는 **`go-test` command 호출부 자체가 없다**(호출 37 = go-test 35 + api 1 + pipecat 1, 이 둘은 목록에 없음). §6.2의 "3곳 수정으로 전량 반영"이 커버하지 못한다. 이번 범위에서는 손대지 않고 §4 Non-goals로 기록한다. 두 서비스에 test job을 신설하는 것은 별개 과제다 |
-| R13 | **shallow clone이 merge base 계산을 끊어 게이트가 무관한 PR을 죽임** | 높 | 머지 후 전면 발현 | 초안의 `--depth=200`은 저장소를 shallow로 전환한다. 실측: base 커밋 객체는 존재(`git cat-file -t` → `commit`)하는데 `git merge-base`는 **exit 1**이다. 게이트가 fail-closed·무조건 실행이므로 base가 fetch 윈도를 벗어난 브랜치는 **위반 0건이어도 CI 적색**이다. 현재 63개 브랜치 중 **21개가 200커밋 이상 뒤져** 있고 main은 월 ~121커밋으로 움직여, 약 7주만 지나면 걸린다. **조치: `--depth` 제거 + merge base 해석 실패 시에만 deepen**(§6.2.1). `--depth` 제거만으로는 checkout 자체가 shallow인 경우를 못 막는다는 점도 실측 확인했다. **이 결함은 §9의 어떤 항목으로도 걸러지지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 그냥 통과하기 때문이다 |
+| R13 | **shallow clone이 merge base 계산을 끊어 게이트가 무관한 PR을 죽임** | 높 | 머지 후 전면 발현 | 초안의 `--depth=200`은 저장소를 shallow로 전환한다. 실측: base 커밋 객체는 존재(`git cat-file -t` → `commit`)하는데 `git merge-base`는 **exit 1**이다. 게이트가 fail-closed·무조건 실행이므로 base가 fetch 윈도를 벗어난 브랜치는 **위반 0건이어도 CI 적색**이다. 현재 64개 브랜치 중 **21개가 200커밋 이상 뒤져** 있고 main은 월 ~121커밋으로 움직여, 약 7주만 지나면 걸린다. **조치: `--depth` 제거 + merge base 해석 실패 시에만 deepen**(§6.2.1). `--depth` 제거만으로는 checkout 자체가 shallow인 경우를 못 막는다는 점도 실측 확인했다. **V8b(CI 로그 확인)로는 걸러지지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 그냥 통과하기 때문이다. 이 결함만을 겨냥해 V8c를 신설했다 |
 
 Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며, R2는 이미 설계에서 해소했다.
 
@@ -1107,7 +1111,7 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 | V7 | 게이트 스크립트 검출 동작 | 위반 3종을 담은 임시 저장소로 실행 | 3건 모두 검출, exit 1 **(완료: §6.4.4)** |
 | V8 | **게이트 fail-closed 동작** | `origin/main` ref 삭제 후 실행 | **exit 1** + 조치 안내 출력 **(완료: §6.4.4)** |
 | V8b | **게이트가 CI에서 실제로 merge base를 해석했는지** | CI 로그에서 `check-test-conventions: OK (N file(s) checked)` 확인 | N ≥ 1이며 skip/실패 메시지가 아님. **이 확인 없이는 G4 달성으로 간주하지 않는다** |
-| V8c | **오래된 base 브랜치에서도 merge base가 풀리는지** (§8 R13) | 임시 저장소에서 base를 main보다 250커밋 뒤로 둔 뒤 fetch step을 그대로 실행 | `git merge-base` exit 0. **V8b로는 이 결함이 잡히지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 어떤 fetch 방식이든 통과하기 때문이다. shallow clone(`--depth=1`) 상태에서도 deepen 후 exit 0이어야 한다 |
+| V8c | **오래된 base 브랜치에서도 merge base가 풀리는지** (§8 R13) | 임시 저장소에서 base를 main보다 250커밋 뒤로 둔 뒤 fetch step을 그대로 실행 | `git merge-base` exit 0. **V8b로는 이 결함이 잡히지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 어떤 fetch 방식이든 통과하기 때문이다. shallow clone 상태에서도 deepen 후 exit 0이어야 한다. **재현 시 `git clone --depth=1`의 대상은 반드시 `file://` URL이어야 한다** — 로컬 경로로 clone하면 git이 `--depth`를 조용히 무시해(`warning: --depth is ignored in local clones`) shallow가 아닌 저장소가 만들어지고, 검증이 통과한 것처럼 보인다 |
 | V9 | README 서비스 표 완전성 | `for d in bin-*/ voip-*/; do grep -q "\`${d%/}\`" README.md \|\| echo MISSING $d; done` | 출력 없음 |
 | V10 | README 역방향(유령 항목) | 표의 각 항목에 대응 디렉터리 존재 확인 | 전부 존재 |
 | V11 | 브랜드 규칙 — em/en 대시 | `grep -cE '—\|–' README.md` | `0` (§6.5(c)에 따라 11건 전부 정리) |
@@ -1241,8 +1245,24 @@ Draft — Design Review 루프 진행 중.
 | 2 | 운영 안전성·회귀 리스크 | CHANGES_REQUESTED | 반영 완료 (C1 goimports 제외, C2 주석 손상 문서화, C3 fail-closed 전환, M2 `go vet` 삭제, §11 롤백 신설) |
 | 3 | 반영 검증·신규 결함 | CHANGES_REQUESTED | 반영 완료 (10건) |
 | 4 | 반영 검증·CI 실행 가능성 | CHANGES_REQUESTED | 반영 완료 (B1 + M1~M3) |
-| 5 | 반영 검증·게이트 환경 의존성 | CHANGES_REQUESTED | 반영 완료 (아래) |
-| 6 | — | 대기 | — |
+| 5 | 반영 검증·게이트 환경 의존성 | CHANGES_REQUESTED | 반영 완료 |
+| 6 | 반영 검증·fetch 안전성 | **APPROVED** | 비차단 지적 5건 반영 |
+| 7 | — | 대기 (2연속 APPROVE 필요) | — |
+
+**라운드 6 조치 내역** (전부 비차단, 정확성 보강):
+
+| # | 지적 | 조치 |
+|---|---|---|
+| N1 | §6.3.2 명령이 UTF-8 로캘에서 재현 불가(`[\x80-\xFF]`가 바이트가 아닌 문자로 해석) | `LC_ALL=C` 추가 + 생략 불가 사유 명시 |
+| N2 | 게이트 스크립트의 testing.md 앵커 오기 | Rule 2 → 13.5 Assertion Pattern, Rule 3 → 13.3 Test Structure Conventions로 정정 |
+| N3 | R13의 "§9의 어떤 항목으로도 걸러지지 않는다"가 V8c 신설로 낡음 | "V8b로는 걸러지지 않는다"로 정정 |
+| N4 | V8c 재현 함정: 로컬 경로 clone은 `--depth`를 조용히 무시 | `file://` URL 필수임을 명시 |
+| N5 | 브랜치 수 63 → 실제 64 | 정정(21개라는 핵심 수치는 일치) |
+
+라운드 6에서 fetch step을 5개 환경(full clone / shallow clone / merge base 해석 불가 /
+양쪽 fetch 실패 / 기존 `--depth=200`)에서 실행 검증했고 전부 의도대로 동작했다.
+
+2회 연속 APPROVE 시 종료 (최대 20라운드). **현재 1회 연속.**
 
 **라운드 5 조치 내역:**
 
