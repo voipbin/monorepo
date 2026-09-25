@@ -1,0 +1,29 @@
+version: "2"
+
+run:
+  timeout: 10m
+
+linters:
+  default: standard
+  exclusions:
+    generated: lax
+    paths:
+      - vendor
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
+
+# Only gofmt is enabled. goimports is intentionally NOT enabled here: it flags
+# 13 files beyond gofmt's 313, all of them cases where a third-party import is
+# not separated into its own group. Enabling it also forces a decision on
+# formatters.settings.goimports.local-prefixes, because without it goimports
+# treats this monorepo's own packages as third-party. Both belong to a
+# follow-up change, not to this one.
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - vendor
