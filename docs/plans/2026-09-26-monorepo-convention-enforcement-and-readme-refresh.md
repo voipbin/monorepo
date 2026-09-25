@@ -128,10 +128,12 @@ monorepo(Go 37 서비스, 31,291 파일)의 코드 컨벤션이 서비스 연령
 | 파일 | 변경 내용 | 목표 |
 |---|---|---|
 | `.golangci.yml` | **신규 생성** | G2, G3 |
-| `.circleci/config_work.yml` | `commands:` 3곳의 lint 주석 해제 + 수정 | G1, G2, G4 |
+| `.circleci/config_work.yml` | `commands:` 3곳의 lint 주석 해제 + 수정, `enable-lint` 파라미터 3곳, `run-lint-config-check` 파라미터·workflow·job 신설, `check-test-conventions` job·workflow 신설 | G1, G2, G4 |
+| `.circleci/config.yml` | path-filtering mapping에 `\.golangci\.yml` 1행 추가 (§6.2.1.1) | G2 |
 | `scripts/check-test-conventions.sh` | **신규 생성** (grep 게이트) | G4 |
-| `README.md` | 서비스 표 3행 추가 + 셀프호스팅 섹션 현행화 | G5 |
-| `bin-*/**/*.go` (313 파일) | `gofmt -w` 일괄 적용 | G3 |
+| `README.md` | 서비스 표 3행 추가, 셀프호스팅 섹션 현행화, em dash 11건 정리, L110 배포 서술 수정 | G5 |
+| `bin-*/`·`voip-*/` 하위 `*.go` (313 파일) | `gofmt -w` 일괄 적용. **313파일 중 4개는 `voip-*` 소속**이다(§1.2) | G3 |
+| `bin-call-manager/pkg/dbhandler/json_expr.go` | doc comment를 탭 들여쓰기 코드블록으로 변환 (§6.3.2). 위 313파일에 포함되나 별도 수작업이 필요하다 | G3 |
 | `docs/plans/2026-09-26-...md` | 본 설계 문서 | — |
 
 > **주의:** `commands:` 블록은 3개 정의(`go-test`, `go-test-api-manager`, `go-test-pipecat-manager`)만 존재하고
@@ -144,7 +146,7 @@ monorepo(Go 37 서비스, 31,291 파일)의 코드 컨벤션이 서비스 연령
 
 ### 6.1 `.golangci.yml` (신규)
 
-golangci-lint v2 스키마를 사용한다 (로컬 확인 버전: v2.13.2, CI 설치 대상: v2.5.0 — §11 리스크 참조).
+golangci-lint v2 스키마를 사용한다 (로컬 확인 버전: v2.13.2, **CI 설치 대상: v2.14.0** — §6.2.2 및 §8 R2 참조).
 
 ```yaml
 version: "2"
@@ -163,10 +165,15 @@ linters:
         linters:
           - errcheck
 
+# Only gofmt is enabled. goimports is intentionally NOT enabled here: it flags
+# 13 files beyond gofmt's 313, all of them cases where a third-party import is
+# not separated into its own group. Enabling it also forces a decision on
+# formatters.settings.goimports.local-prefixes, because without it goimports
+# treats this monorepo's own packages as third-party. Both belong to a
+# follow-up change, not to this one.
 formatters:
   enable:
     - gofmt
-    - goimports
   exclusions:
     generated: lax
     paths:
@@ -177,9 +184,17 @@ formatters:
 
 - `default: standard` — errcheck / govet / ineffassign / staticcheck / unused. D2의 "보수적" 요구에 부합.
 - `_test.go`에서 errcheck 제외 — 테스트의 `defer f.Close()` 관용구를 위반으로 잡지 않기 위함.
-- formatters에 gofmt/goimports — v2에서 포맷터는 `linters`가 아닌 `formatters` 블록에 선언한다.
+- v2에서 포맷터는 `linters`가 아닌 `formatters` 블록에 선언한다.
+- **`goimports`는 활성화하지 않는다.** 실측상 `goimports -l` 326파일 vs `gofmt -l` 313파일로
+  13파일이 추가 검출된다. 정리 명령(§6.3)과 검증(V1)이 gofmt 기준이므로,
+  goimports를 켜면 **V1이 0을 반환하고도 6개 서비스의 CI가 실패**한다.
+  또한 `local-prefixes` 정책 결정이 선행되어야 한다(미설정 시 monorepo 자기 패키지를 서드파티로 취급).
+  이번 범위에서 제외하고 §4 Non-goals에 명시한다.
 - **`concurrency` 키는 설정하지 않는다.** §6.1.2에서 실측으로 무효함이 확인되었다.
-- 메모리 제어는 설정 파일이 아니라 **CI step의 환경변수**(`GOGC`, `GOMEMLIMIT`)로 수행한다. §6.2 참조.
+- 메모리 제어는 설정 파일이 아니라 **CI step의 환경변수**(`GOGC`, `GOMEMLIMIT`, `GOMAXPROCS`)로 수행한다. §6.2 참조.
+
+> 이 스니펫은 커밋된 `.golangci.yml`과 **바이트 단위로 일치해야 한다.**
+> 둘이 갈라지면 구현자가 어느 쪽을 정본으로 볼지 알 수 없다.
 
 **실측 결과 (worktree에서 실제 실행, golangci-lint v2.13.2, 로컬 16코어):**
 
@@ -290,9 +305,16 @@ GC를 강제해 **감속하되 완주**하게 만든다. 추가 비용이 없으
           # Measured on bin-api-manager (the largest service, 482 Go files):
           # default 2.40 GB / 43 s  ->  GOGC=50 1.66 GB / 61 s.
           # `--concurrency` was measured and does NOT reduce memory (-1.8%).
+          #
+          # GOMAXPROCS is pinned because the measurements above were taken with
+          # GOMAXPROCS=2. Go's runtime reads the host CPU count, not the cgroup
+          # limit, on CircleCI's docker executor, so without this the container
+          # would run with far more Ps than the 2 vCPUs it actually has and the
+          # measured footprint would not reproduce.
           environment:
             GOGC: "50"
             GOMEMLIMIT: 3GiB
+            GOMAXPROCS: "2"
           command: |
             cd << parameters.source-directory >>
             golangci-lint run --timeout 10m
@@ -441,15 +463,87 @@ workflow에는 `when:` 없이 등록하여 무조건 실행한다(경량 grep이
 이번 PR은 35개 서비스에 `.go` 변경이 있어 우연히 넓게 돌지만,
 이후 린터 튜닝 PR은 검증 없이 머지된다. 이는 조용한 사각지대다.
 
-mapping에 다음을 추가한다:
+**초안의 mapping 두 줄은 그대로 쓸 수 없다. 실측으로 확인된 문제:**
+
+| 초안 | 문제 | 실측 근거 |
+|---|---|---|
+| `.golangci.yml → run-lint-config-check true` | 이 파이프라인 파라미터가 **선언되어 있지 않다.** path-filtering이 미선언 파라미터를 continuation에 넘기면 continuation 자체가 실패한다 | `grep -c run-lint-config-check .circleci/config_work.yml` → `0` |
+| `scripts/.* → run-shell-tests true` | 이 파라미터가 켜는 `shell-tests` job은 **bats만 실행**한다. 신설 스크립트를 전혀 검증하지 않으므로 R9 완화 근거가 성립하지 않는다 | `config_work.yml:2202` = `bats .circleci/tests/*.bats docs/reference/tests/*.bats` |
+
+따라서 파라미터 선언·workflow·job을 **함께 신설**해야 한다. 완전 명세:
+
+**(1) `config_work.yml` 파라미터 선언** (기존 `run-shell-tests` L186 옆에 추가)
+
+```yaml
+  run-lint-config-check:
+    type: boolean
+    default: false
+
+  run-convention-scripts:
+    type: boolean
+    default: false
+```
+
+**(2) `config.yml` mapping** (기존 L59-62 블록 옆)
 
 ```
-.golangci.yml               run-lint-config-check true
-scripts/.*                  run-shell-tests true
+            \.golangci\.yml             run-lint-config-check true
+            scripts/.*                  run-convention-scripts true
 ```
 
-`.golangci.yml` 변경 시 무엇을 돌릴지는 구현 시 확정한다. 최소한 대표 서비스 1개에서
-`golangci-lint run`이 실행되어야 한다.
+**(3) `config_work.yml` workflow**
+
+```yaml
+  lint-config-check:
+    when: << pipeline.parameters.run-lint-config-check >>
+    jobs:
+      - lint-config-check
+
+  convention-scripts:
+    when: << pipeline.parameters.run-convention-scripts >>
+    jobs:
+      - check-test-conventions
+```
+
+**(4) `lint-config-check` job** — `.golangci.yml` 변경 시 대표 서비스 1개에서 실제 실행한다.
+`config verify`만으로는 불충분함이 이미 증명되었다(v2.5.0이 verify 통과 후 run에서 exit 3).
+
+```yaml
+  lint-config-check:
+    docker:
+      - image: cimg/go:1.27.1
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install golangci-lint
+          command: |
+            # same pinned install block as the lint step in 6.2.2
+      - run:
+          name: Verify config and run against a representative service
+          # bin-tag-manager is the smallest service (50 Go files, 398 MB peak,
+          # 6.3 s) yet exercises the full config. Running it catches schema
+          # errors that `config verify` alone does not: v2.5.0 passed verify
+          # and then failed `run` with exit 3 on this repo's Go version.
+          environment:
+            GOGC: "50"
+            GOMEMLIMIT: 3GiB
+            GOMAXPROCS: "2"
+          command: |
+            golangci-lint config verify
+            cd bin-tag-manager
+            go mod vendor
+            golangci-lint run --timeout 10m
+```
+
+**주의:** `check-test-conventions` job은 §6.2.1에서 이미 "무조건 실행"으로 등록된다.
+위 (3)의 `convention-scripts` workflow는 **스크립트 자체가 수정될 때** 추가로 도는 것이 아니라,
+`check-test-conventions`가 이미 무조건 실행되므로 **중복이다.**
+→ **결정: (1)의 `run-convention-scripts`와 (3)의 `convention-scripts` workflow는 만들지 않는다.**
+`scripts/.*` mapping 행도 추가하지 않는다. 게이트가 항상 돌기 때문에 트리거가 불필요하다.
+R9는 "mapping 추가로 해소"가 아니라 **"게이트를 무조건 실행으로 등록하여 해소"**로 근거를 바꾼다.
+
+즉 실제 추가분은 **`run-lint-config-check` 파라미터 + mapping 1행 + workflow 1개 + job 1개**다.
 
 ### 6.3 gofmt 일괄 적용
 
@@ -491,10 +585,49 @@ Go 1.19+ doc comment 포맷터의 스마트쿼트 변환이다.
 컴파일 의미는 바뀌지 않지만 **문서화된 SQL 식이 복사·붙여넣기 불가 상태로 손상**된다.
 9,550줄 diff 안에서 리뷰어가 이를 발견할 확률은 사실상 0이므로, 기계적 확인이 필요하다.
 
-**조치:** `gofmt -w` 적용 후 해당 파일의 주석을 원래 ASCII `''`로 되돌린다.
-되돌린 상태가 gofmt를 다시 통과하지 못한다면(즉 gofmt가 재차 치환한다면),
-그 줄을 코드 블록(들여쓰기) 형태로 바꾸어 doc comment 포맷터의 대상에서 제외한다.
-§9 V14에 검증 항목을 둔다.
+**조치 (실험으로 확정, 조건부가 아니다):**
+
+초안은 "ASCII로 되돌린다. 되돌린 상태가 gofmt를 통과하지 못하면 코드 블록으로 바꾼다"고
+조건부로 기술했으나, **ASCII 복원은 항상 실패한다.** 실측:
+
+```
+$ gofmt -w json_expr.go          # L40에 U+201D 도입
+$ sed -i "s/”/''/g" json_expr.go # ASCII로 복원
+$ gofmt -l json_expr.go
+json_expr.go                     # <- 다시 미준수. gofmt가 재차 치환한다
+```
+
+즉 ASCII 복원 분기는 **무한 반복**이며 채택할 수 없다. 구현자가 첫 번째 분기를 시도하면
+CI와 로컬이 영구히 어긋난다. 따라서 **코드 블록 변환만이 유일한 조치**다.
+
+백틱 인라인 코드는 doc comment 포맷터의 스마트쿼트 변환 대상이다.
+탭 들여쓰기 코드 블록으로 바꾸면 대상에서 제외된다:
+
+```go
+// exprJSONArrayRemoveByValue builds
+//
+//	json_remove(<column>, replace(json_search(<column>, 'one', ?), '"', ''))
+//
+// deleting the first array element equal to the given value.
+```
+
+검증 완료 (스크래치 사본에서 실행):
+
+| 확인 | 결과 |
+|---|---|
+| `gofmt -l` (변환 직후) | 출력 없음 = 이미 준수 |
+| `gofmt -w` 후 ASCII `''` 보존 | L41에 `'"', ''` 그대로 유지 |
+| 2회차 `gofmt -l` (멱등성) | 출력 없음 = 안정, 루프 없음 |
+| `gofmt -e` 구문 검사 | 통과 |
+
+동일 파일 L60의 두 번째 occurrence도 같은 형태이며 함께 확인되었다.
+
+**V15의 단일 파일 범위 근거:** 313파일 전수에서 gofmt가 도입하는 비ASCII 문자를 스캔한 결과,
+신규 치환은 `json_expr.go` 1건뿐이다. 나머지 3건(`bin-billing-manager/.../deduction_test.go`의 `→`,
+`bin-conversation-manager/.../db_test.go`·`event_test.go`의 `·`)은 **기존 문자열이 재정렬로
+이동한 것**이지 gofmt가 새로 만든 문자가 아니다. 따라서 V15가 이 파일 하나만 검사해도 충분하다.
+
+§9 V15에 검증 항목을 둔다.
 
 나머지 2건은 무해하다:
 - `bin-common-handler/pkg/databasehandler/convert.go` — 코드블록 들여쓰기 재구성
@@ -563,10 +696,23 @@ if ! MERGE_BASE="$(git merge-base "${BASE_REF}" HEAD 2>/dev/null)" || [ -z "${ME
   exit 1
 fi
 
-mapfile -t CHANGED < <(
-  git diff --name-only --diff-filter=d "${MERGE_BASE}" HEAD -- '*_test.go' \
-    | grep -v '/vendor/' || true
-)
+# Resolve the changed test files. `git diff` failure must NOT be swallowed:
+# a shallow clone can resolve the merge base and still fail to diff it, and an
+# empty array is indistinguishable from "nothing changed". Capture the status
+# explicitly instead of relying on mapfile's, which reflects the redirect and
+# is always 0.
+if ! DIFF_OUT="$(git diff --name-only --diff-filter=d "${MERGE_BASE}" HEAD -- '*_test.go')"; then
+  echo "check-test-conventions: FAILED to diff ${MERGE_BASE}..HEAD." >&2
+  echo "The repository may be a shallow clone missing the base commit's objects." >&2
+  exit 1
+fi
+
+CHANGED=()
+while IFS= read -r line; do
+  [ -n "${line}" ] || continue
+  case "${line}" in */vendor/*) continue ;; esac
+  CHANGED+=("${line}")
+done <<< "${DIFF_OUT}"
 
 if [ "${#CHANGED[@]}" -eq 0 ]; then
   echo "check-test-conventions: no changed test files."
@@ -628,6 +774,10 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 | 5 | 마지막 줄 `(${CHANGED} checked)`가 파일 목록 전체를 개행 포함 출력 | `${#CHANGED[@]}` 개수로 변경 |
 | 6 | Rule 3의 `mockCtrl` 분기가 사문 (저장소 내 **0건**) | 제거 |
 | 7 | Rule 1이 `TestMain` 31건과 비메서드 테스트 1,098건을 오탐 | §6.4.1대로 `TestXxx_Case`만 매치하도록 축소 |
+| 8 | `mapfile -t CHANGED < <(... \|\| true)`가 **fail-open을 되살림**. `mapfile`의 종료 상태는 프로세스 치환 내부 파이프라인이 아니라 리다이렉트 결과라 항상 0이다. `git diff`가 실패해도(shallow clone에서 merge base는 풀렸으나 objects 미확보 등) 배열이 비어 `exit 0`으로 조용히 통과 | `DIFF_OUT="$(git diff ...)"` 로 분리하여 상태를 명시 검사. `\|\| true`는 `set -e`가 없어 애초에 죽은 표현이었다 |
+| 9 | `mapfile`은 bash 4+ 전용이며 CI 이미지의 bash 버전을 확인하지 못함 | `while IFS= read -r` 루프로 대체하여 의존 제거. vendor 필터도 `case` 문으로 옮겨 `grep` 프로세스 하나를 줄였다 |
+
+**수정된 스크립트는 실행으로 검증했다** (§6.4.4).
 
 참고로 §10 Q6이 예고했던 수정안 `grep -vE '^func TestMain\('`은 **동작하지 않는다**.
 `grep -n`은 다중 파일에서 `경로:행번호:본문`을 출력하므로 `^func` 앵커가 결코 매치되지 않는다
@@ -658,6 +808,18 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 | 단일 파일 리포트 | 변경 파일 1개 | `pkg/d_test.go:3:` — **파일명 출력됨** |
 | fail-closed | `origin/main` ref 삭제 | **exit 1 + 조치 안내 출력** |
 | 실저장소 오탐 | 정통 테스트 파일 100개 | **Rule 1/2/3 전부 0건** |
+
+**라운드 3 수정(§6.4.3 #8·#9) 후 재검증 (`while read` 방식):**
+
+| 케이스 | 결과 |
+|---|---|
+| 위반 3종 검출 | **3건 전부, 파일명·행번호 정상, exit 1** |
+| 정통 파일 오탐 (`TestMain`·`TestGoldenRoutingKeys`) | **OK (1 file(s) checked), exit 0** |
+| merge base 해석 실패 | **exit 1 + 조치 안내** |
+
+`mapfile` fail-open도 별도 재현으로 확인했다: `git diff`를 잘못된 ref로 실행해도
+`mapfile`의 종료 상태는 **0**, 배열 길이 **0**, 스크립트 최종 **exit 0**이었다.
+수정본은 이 경로에서 exit 1을 반환한다.
 
 ### 6.5 루트 `README.md`
 
@@ -784,7 +946,7 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 | R6 | 313파일 포맷 변경이 diff를 키워 리뷰 부담 | 높 | 리뷰 품질 저하 | 포맷 커밋을 **별도 커밋으로 분리**(PR은 단일 유지, D1). **추가 필수 조치**: 비공백 변경 57파일 목록을 PR 본문에 첨부하여 리뷰어가 순수 정렬 변경을 건너뛸 수 있게 한다(§6.3.1). 이 목록이 없으면 §6.3.2의 주석 손상류 변경이 통과한다 |
 | R7 | README 서비스 설명 문구가 실제 서비스 역할과 불일치 | 낮 | 문서 오류 | 구현 시 각 서비스 README/CLAUDE.md에서 직접 인용 |
 | R8 | 새 lint step이 일부 서비스에서 한 번도 실행되지 않은 채 머지됨 | 중 | 머지 후 첫 변경 시 실패 | `bin-email-manager`·`bin-sentinel-manager`는 gofmt 변경이 없어 이번 PR에서 job이 트리거되지 않는다(실측). 구현 시 두 서비스에 대해 **로컬에서 `golangci-lint run`을 선실행**하여 위반 0을 확인한다 |
-| R9 | `.golangci.yml` 단독 변경 PR이 어떤 lint job도 트리거하지 않음 | 중 | 튜닝 PR이 미검증 머지 | §6.2.1.1의 path-filtering mapping 보강으로 해소 |
+| R9 | `.golangci.yml` 단독 변경 PR이 어떤 lint job도 트리거하지 않음 | 중 | 튜닝 PR이 미검증 머지 | §6.2.1.1에서 `run-lint-config-check` 파라미터·workflow·`lint-config-check` job을 **신설**하고 mapping 1행을 추가하여 해소. 초안의 `scripts/.* → run-shell-tests` 매핑은 해당 job이 bats만 돌리므로 근거가 되지 못했다(철회). 게이트 스크립트 쪽은 §6.2.1에서 **무조건 실행**으로 등록되므로 트리거가 불필요하다 |
 | R10 | `GOMAXPROCS`가 CI에서 호스트 코어 수를 보아 측정 조건과 달라짐 | 중 | 메모리 초과 | Linting step environment에 `GOMAXPROCS: "2"` 명시(§6.2 변경점 5) |
 
 Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며, R2는 이미 설계에서 해소했다.
@@ -813,9 +975,11 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 | V11b | 브랜드 규칙 — opensource 표기 | `grep -ciE 'open.source' README.md` 결과 중 `open-source`/`open source` | `0` (전부 `opensource` 한 단어) |
 | V11c | 타사 언급 없음 | `grep -niE 'twilio\|vonage\|plivo\|messagebird\|fonoster' README.md` | 출력 없음 |
 | V11d | 배포 서술 일관성 (§6.5(d)) | `grep -n 'Kubernetes' README.md` | 셀프호스팅 정본(Docker Compose)과 모순되는 서술이 없음 |
-| V12 | CI YAML 유효성 | `circleci config validate` 또는 `python3 -c "import yaml;yaml.safe_load(open('.circleci/config_work.yml'))"` | 유효 |
+| V12 | CI 설정 전개 검증 | `circleci config process .circleci/config_work.yml > /dev/null` | 성공. **`yaml.safe_load`로 대체하지 않는다** — 그것은 파싱만 볼 뿐 `when:` 블록·파라미터 참조·미선언 파라미터(§6.2.1.1)를 잡지 못한다. 이 환경에는 `circleci` CLI가 없으므로 구현자가 설치해야 한다 |
+| V12b | 파이프라인 파라미터 선언 확인 | `grep -c 'run-lint-config-check' .circleci/config_work.yml` | `≥ 1`. mapping이 참조하는 파라미터가 선언되어 있지 않으면 continuation이 통째로 실패한다 |
 | V13 | 주석 잔여 확인 | `! grep -q 'Re-enable golangci-lint' .circleci/config_work.yml` | exit 0 (매치 없음) |
 | V14 | lint step 반영 범위 | `grep -c 'name: Linting' .circleci/config_work.yml` | `3` (commands 정의 3개) |
+| V14b | **롤백 파라미터 반영 범위** (§11.2) | `grep -c 'enable-lint' .circleci/config_work.yml` | 3개 command 전부에 존재. `go-test`에만 넣으면 bin-api-manager(유일한 OOM 후보)가 롤백 불가가 된다 |
 | V15 | **gofmt 주석 손상 확인** (§6.3.2) | `grep -c '”' bin-call-manager/pkg/dbhandler/json_expr.go` | `0` (스마트쿼트가 도입되지 않음) |
 | V16 | **PR 브랜치 CI에서 lint step 실제 통과** | PR 생성 후 CircleCI 결과 확인 | 새 Linting step이 초록. path-filtering setup workflow도 PR 브랜치의 `config_work.yml`을 읽으므로 확인 가능 |
 
@@ -891,6 +1055,17 @@ v2.14.0(go1.27.0 빌드)으로 교체하여 실제 `run` 성공을 확인했다.
   주어 나머지 36개의 강제는 유지한다.
 - 비용은 YAML 파라미터 1개와 `when` 블록 1개뿐이다.
 
+**반드시 3개 command 전부에 적용한다.** §5에서 확인했듯 command 정의는
+`go-test`(35 호출) / `go-test-api-manager`(1) / `go-test-pipecat-manager`(1) 3개이고,
+§6.2의 lint step도 3곳에 동일 적용된다(V14 기준 = 3).
+`go-test`에만 넣으면 **bin-api-manager와 bin-pipecat-manager가 롤백 불가**가 된다.
+하필 `bin-api-manager`는 §6.1.2에서 피크 2.18~2.40 GB로 측정된 **유일한 OOM 후보**다.
+롤백 수단이 정확히 가장 필요한 곳에서만 빠지는 구성이 되므로, V14b로 기계 확인한다.
+
+**37개 호출부는 수정하지 않는다.** `default: true`가 있으므로 기존 호출부
+(`config_work.yml:879-880` 등 `source-directory`만 전달)는 그대로 유효하다.
+`when`은 command의 steps 안에서 쓸 수 있는 logic step이며 boolean 파라미터를 condition으로 받는다.
+
 단계적 롤아웃(처음에 `default: false`로 두고 1~2개만 true)은 **채택하지 않는다.**
 7개 서비스 실측에서 gofmt 외 위반이 0이고(§6.1), 가장 큰 미지수였던 OOM과 버전 호환성이
 모두 실측으로 해소되었으므로, 점진 도입의 추가 정보 획득량이 적다.
@@ -923,7 +1098,23 @@ Draft — Design Review 루프 진행 중.
 |---|---|---|---|
 | 1 | 사실 정확성 | CHANGES_REQUESTED | 반영 완료 (§1.1 `go generate` 부분강제 정정, §1.2 집계범위 정정, §6.4 스크립트 결함 7건 수정) |
 | 2 | 운영 안전성·회귀 리스크 | CHANGES_REQUESTED | 반영 완료 (C1 goimports 제외, C2 주석 손상 문서화, C3 fail-closed 전환, M2 `go vet` 삭제, §11 롤백 신설) |
-| 3 | — | 대기 | — |
+| 3 | 반영 검증·신규 결함 | CHANGES_REQUESTED | 반영 완료 (10건, 아래) |
+| 4 | — | 대기 | — |
+
+**라운드 3 조치 내역:**
+
+| # | 지적 | 조치 |
+|---|---|---|
+| 1 | §6.1 스니펫이 실제 `.golangci.yml`과 모순(goimports 잔존) | 스니펫 교체. 바이트 일치 확인 |
+| 2 | §6.1 "v2.5.0", "§11 리스크" 오기 | v2.14.0 / §8 R2로 정정 |
+| 3 | §6.5(c) 미존재, §9 V14 오참조 | (c)·(d) 절 신설 완료, V15로 정정 |
+| 4 | §6.2 스니펫에 `GOMAXPROCS` 누락 (R10 무방비) | environment에 추가 |
+| 5 | §6.2.1.1 mapping이 실현 불가 | 파라미터·workflow·job 완전 명세로 교체. `run-shell-tests` 매핑 철회 |
+| 6 | §6.4.2 `mapfile` fail-open 잔존 | `DIFF_OUT` 분리 + `while read` 대체. **실행 검증 완료** |
+| 7 | §6.3.2 ASCII 복원이 무한 루프 | 조건부 서술 삭제, 코드블록을 확정 조치로. **실행 검증 완료** |
+| 8 | §11.2가 3개 command 중 1개만 명세 | 3개 전부 적용 명시 + V14b 신설 |
+| 9 | §5 표 누락·부정확 | `.circleci/config.yml` 행 추가, voip-* 4파일 명시 |
+| 10 | §9 V12가 `yaml.safe_load` 허용 | `circleci config process`로 격상 + V12b 신설 |
 
 2회 연속 APPROVE 시 종료 (최대 20라운드).
 
