@@ -439,10 +439,27 @@ CI에서 이 경우 `sudo mv`가 실패하거나, 이전 버전 바이너리가 
           name: Fetch base branch
           # CircleCI's checkout only fetches the current branch's refspec, so
           # origin/main may not exist in the clone. The gate is fail-closed and
-          # would abort without this. Depth is bounded: we only need a merge
-          # base, not full history.
+          # would abort without this.
+          #
+          # Do NOT add --depth here. `--depth` marks the whole repository
+          # shallow, and a shallow boundary breaks ancestry computation even
+          # when the base commit object is present: measured, `git cat-file -t`
+          # reports the commit while `git merge-base` exits 1. With the gate
+          # running unconditionally and fail-closed, that turns every PR whose
+          # base is behind the fetched window red regardless of its contents.
+          # 21 of the repo's 63 branches are already more than 200 commits
+          # behind, and main moves ~121 commits a month.
+          #
+          # The clone may also arrive shallow from checkout itself, so a plain
+          # fetch is not always enough; deepen only when the merge base cannot
+          # be resolved, to avoid paying for full history on every run.
           command: |
-            git fetch --no-tags --depth=200 origin '+refs/heads/main:refs/remotes/origin/main'
+            git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+            if ! git merge-base origin/main HEAD >/dev/null 2>&1; then
+              echo "Merge base unreachable; deepening the clone."
+              git fetch --no-tags --unshallow origin '+refs/heads/main:refs/remotes/origin/main' \
+                || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
+            fi
       - run:
           name: Check test conventions
           command: bash scripts/check-test-conventions.sh
@@ -622,10 +639,22 @@ CI와 로컬이 영구히 어긋난다. 따라서 **코드 블록 변환만이 �
 스마트쿼트 변환 대상이 아니다. 313파일 전수 스캔에서 신규 비ASCII가 1건뿐인 이유가 이것이며,
 동시에 위 조치(백틱 인라인 → 코드블록)가 옳은 방향임을 저장소 자신이 보여주는 사례다.
 
-**V15의 단일 파일 범위 근거:** 313파일 전수에서 gofmt가 도입하는 비ASCII 문자를 스캔한 결과,
-신규 치환은 `json_expr.go` 1건뿐이다. 나머지 3건(`bin-billing-manager/.../deduction_test.go`의 `→`,
-`bin-conversation-manager/.../db_test.go`·`event_test.go`의 `·`)은 **기존 문자열이 재정렬로
-이동한 것**이지 gofmt가 새로 만든 문자가 아니다. 따라서 V15가 이 파일 하나만 검사해도 충분하다.
+**V15의 단일 파일 범위 근거:** 313파일 전수에서 gofmt 전후의 **비ASCII 바이트 다중집합**을
+비교한 결과, 변하는 파일은 `json_expr.go` **1건뿐**이다.
+
+```
+$ for f in $(cat gofmt_list); do
+    a=$(grep -oP '[\x80-\xFF]' "$f" | sort | uniq -c | md5sum)
+    b=$(gofmt "$f" | grep -oP '[\x80-\xFF]' | sort | uniq -c | md5sum)
+    [ "$a" != "$b" ] && echo "MULTISET-CHANGED: $f"
+  done
+MULTISET-CHANGED: bin-call-manager/pkg/dbhandler/json_expr.go
+```
+
+다중집합 비교를 쓰는 이유는 **"문자가 새로 생겼는가"와 "기존 문자가 이동했는가"를 구분**하기
+위해서다. 단순 라인 카운트로는 `mcp_tool_test.go`·`convert.go`·`stop.go` 3개가 증가한 것처럼
+보이지만, 이는 구조체 필드 정렬로 비ASCII를 포함한 줄이 재배치된 결과이며 새 문자는 없다.
+따라서 V15가 `json_expr.go` 하나만 검사해도 충분하다.
 
 §9 V15에 검증 항목을 둔다.
 
@@ -677,6 +706,22 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 
 이로써 D6(존량 미수정)과 G4(신규 차단)가 양립한다. **선택지 1·2(포맷 범위 축소, PR 분리)는
 채택하지 않는다.** 전자는 V1과 모순되고 후자는 D1(단일 PR)을 깬다.
+
+**이 방식의 한계 (알고 채택한다):**
+
+라인 단위 검사는 다음 두 경우를 놓친다. 실측으로 확인했다.
+
+| 우회 경로 | 동작 | 빈도 |
+|---|---|---|
+| 기존 위반 함수의 **본문만** 수정 | 함수 선언 줄이 `+`에 없으므로 통과 | 상시 가능 |
+| 위반 함수가 있는 파일을 **rename** | `git diff -U0`이 rename을 유사도로 압축해 `+` 라인을 내지 않음 | 최근 180일 `*_test.go` rename **6건** |
+
+둘 다 **G4를 손상시키지 않는다고 판단한다.** 전자는 새 위반을 만드는 것이 아니라 존량을
+건드리는 것이며 D6과 일관된다. 후자는 빈도가 낮고 우회하려면 의도적이어야 한다.
+반대로 파일 **분할**은 새 경로가 추가(`A`)로 잡혀 존량 위반이 검출되는데,
+이는 "새 파일에는 규약을 지켜라"는 게이트 취지에 부합하므로 그대로 둔다.
+
+존량 정리는 애초에 이번 범위가 아니다(D6). 게이트의 목적은 **유입 차단**이지 소급 청소가 아니다.
 
 **Rule 1의 매칭 범위:**
 
@@ -1040,6 +1085,7 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 | R10 | `GOMAXPROCS`가 CI에서 호스트 코어 수를 보아 측정 조건과 달라짐 | 중 | 메모리 초과 | Linting step environment에 `GOMAXPROCS: "2"` 명시(§6.2 변경점 5) |
 | R11 | **pre-commit hook이 gofmt 일괄 커밋을 거부** | 높 | 구현 착수 즉시 막힘 | 실측: `core.hooksPath`가 설정되어 있고 hook이 활성이다. gofmt가 `models/*/webhook.go` 6개를 건드리면 "WebhookMessage model changed without RST documentation update"로 커밋이 거부된다. **이 변경은 포맷 전용이므로 RST 갱신 대상이 아니다.** 포맷 커밋에 한해 `--no-verify`를 사용하고, PR 본문에 사유(포맷 전용, 필드 변경 없음)를 명시한다. `git diff --stat`으로 webhook.go 변경이 공백뿐임을 함께 첨부한다 |
 | R12 | lint가 영구히 적용되지 않는 서비스가 존재 | 낮 | 사각지대 | `bin-openapi-manager`(Go 2파일)와 `voip-asterisk-proxy`(21파일)는 **`go-test` command 호출부 자체가 없다**(호출 37 = go-test 35 + api 1 + pipecat 1, 이 둘은 목록에 없음). §6.2의 "3곳 수정으로 전량 반영"이 커버하지 못한다. 이번 범위에서는 손대지 않고 §4 Non-goals로 기록한다. 두 서비스에 test job을 신설하는 것은 별개 과제다 |
+| R13 | **shallow clone이 merge base 계산을 끊어 게이트가 무관한 PR을 죽임** | 높 | 머지 후 전면 발현 | 초안의 `--depth=200`은 저장소를 shallow로 전환한다. 실측: base 커밋 객체는 존재(`git cat-file -t` → `commit`)하는데 `git merge-base`는 **exit 1**이다. 게이트가 fail-closed·무조건 실행이므로 base가 fetch 윈도를 벗어난 브랜치는 **위반 0건이어도 CI 적색**이다. 현재 63개 브랜치 중 **21개가 200커밋 이상 뒤져** 있고 main은 월 ~121커밋으로 움직여, 약 7주만 지나면 걸린다. **조치: `--depth` 제거 + merge base 해석 실패 시에만 deepen**(§6.2.1). `--depth` 제거만으로는 checkout 자체가 shallow인 경우를 못 막는다는 점도 실측 확인했다. **이 결함은 §9의 어떤 항목으로도 걸러지지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 그냥 통과하기 때문이다 |
 
 Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며, R2는 이미 설계에서 해소했다.
 
@@ -1061,6 +1107,7 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 | V7 | 게이트 스크립트 검출 동작 | 위반 3종을 담은 임시 저장소로 실행 | 3건 모두 검출, exit 1 **(완료: §6.4.4)** |
 | V8 | **게이트 fail-closed 동작** | `origin/main` ref 삭제 후 실행 | **exit 1** + 조치 안내 출력 **(완료: §6.4.4)** |
 | V8b | **게이트가 CI에서 실제로 merge base를 해석했는지** | CI 로그에서 `check-test-conventions: OK (N file(s) checked)` 확인 | N ≥ 1이며 skip/실패 메시지가 아님. **이 확인 없이는 G4 달성으로 간주하지 않는다** |
+| V8c | **오래된 base 브랜치에서도 merge base가 풀리는지** (§8 R13) | 임시 저장소에서 base를 main보다 250커밋 뒤로 둔 뒤 fetch step을 그대로 실행 | `git merge-base` exit 0. **V8b로는 이 결함이 잡히지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 어떤 fetch 방식이든 통과하기 때문이다. shallow clone(`--depth=1`) 상태에서도 deepen 후 exit 0이어야 한다 |
 | V9 | README 서비스 표 완전성 | `for d in bin-*/ voip-*/; do grep -q "\`${d%/}\`" README.md \|\| echo MISSING $d; done` | 출력 없음 |
 | V10 | README 역방향(유령 항목) | 표의 각 항목에 대응 디렉터리 존재 확인 | 전부 존재 |
 | V11 | 브랜드 규칙 — em/en 대시 | `grep -cE '—\|–' README.md` | `0` (§6.5(c)에 따라 11건 전부 정리) |
@@ -1070,7 +1117,7 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 | V12 | CI 설정 전개 검증 | `circleci config process .circleci/config_work.yml > /dev/null` | 성공. **`yaml.safe_load`로 대체하지 않는다** — 그것은 파싱만 볼 뿐 `when:` 블록·파라미터 참조·미선언 파라미터(§6.2.1.1)를 잡지 못한다. 이 환경에는 `circleci` CLI가 없으므로 구현자가 설치해야 한다 |
 | V12b | 파이프라인 파라미터 선언 확인 | `grep -c 'run-lint-config-check' .circleci/config_work.yml` | `≥ 1`. mapping이 참조하는 파라미터가 선언되어 있지 않으면 continuation이 통째로 실패한다 |
 | V13 | 주석 잔여 확인 | `! grep -q 'Re-enable golangci-lint' .circleci/config_work.yml` | exit 0 (매치 없음) |
-| V14 | lint step 반영 범위 | `grep -c 'name: Linting' .circleci/config_work.yml` | `3` (commands 정의 3개) |
+| V14 | lint step 반영 범위 | `grep -cE '^[[:space:]]+name: Linting' .circleci/config_work.yml` | `3` (commands 정의 3개). **주석을 세지 않는 패턴이어야 한다** — `grep -c 'name: Linting'`은 현재도 3(전부 `#     name: Linting and vet`)이라 주석 해제 여부를 판별하지 못한다. 실측: 현재 비주석 매치 `0` |
 | V14b | **롤백 파라미터 반영 범위** (§11.2) | `grep -c 'enable-lint:' .circleci/config_work.yml` | `3` (선언만 셈. `enable-lint` 로 세면 참조 `<< parameters.enable-lint >>`까지 포함되어 6이 나오므로 판정 불가) |
 | V15 | **gofmt 주석 손상 확인** (§6.3.2) | `grep -c '”' bin-call-manager/pkg/dbhandler/json_expr.go` | `0` (스마트쿼트가 도입되지 않음) |
 | V15b | **게이트가 이 PR 자체를 통과하는지** (§6.4.1 B1) | 브랜치에서 `bash scripts/check-test-conventions.sh` | **exit 0.** gofmt가 테스트 파일 151개를 변경 목록에 올리고 그 안에 존량 위반 178건이 있으므로, 파일 단위 검사였다면 반드시 실패한다. 이 검증 없이 머지하지 않는다 |
@@ -1193,8 +1240,19 @@ Draft — Design Review 루프 진행 중.
 | 1 | 사실 정확성 | CHANGES_REQUESTED | 반영 완료 (§1.1 `go generate` 부분강제 정정, §1.2 집계범위 정정, §6.4 스크립트 결함 7건 수정) |
 | 2 | 운영 안전성·회귀 리스크 | CHANGES_REQUESTED | 반영 완료 (C1 goimports 제외, C2 주석 손상 문서화, C3 fail-closed 전환, M2 `go vet` 삭제, §11 롤백 신설) |
 | 3 | 반영 검증·신규 결함 | CHANGES_REQUESTED | 반영 완료 (10건) |
-| 4 | 반영 검증·CI 실행 가능성 | CHANGES_REQUESTED | 반영 완료 (B1 + M1~M3, 아래) |
-| 5 | — | 대기 | — |
+| 4 | 반영 검증·CI 실행 가능성 | CHANGES_REQUESTED | 반영 완료 (B1 + M1~M3) |
+| 5 | 반영 검증·게이트 환경 의존성 | CHANGES_REQUESTED | 반영 완료 (아래) |
+| 6 | — | 대기 | — |
+
+**라운드 5 조치 내역:**
+
+| # | 지적 | 조치 |
+|---|---|---|
+| B1 | **`--depth=200` fetch가 저장소를 shallow로 만들어 merge base 계산을 끊는다.** base가 200커밋 이상 뒤진 브랜치(63개 중 21개)는 위반 0건이어도 CI 적색 | `--depth` 제거 + 실패 시에만 deepen(§6.2.1). R13 신설, V8c 신설. **3환경 전부 실측 검증**: 비shallow(1차 fetch로 충분) / shallow clone(unshallow 후 OK) / depth=200(재현된 실패) |
+| M1 | hunk 방식의 한계를 문서가 인정하지 않음 | §6.4.1에 한계표 추가(본문만 수정·rename 통과). G4 손상 아님을 근거와 함께 명시 |
+| M2 | §6.3.2 근거 파일 목록 부정확 | 바이트 다중집합 비교로 재측정. 결론(`json_expr.go` 1건)은 유지, 근거를 실행 명령과 함께 교체 |
+| M3 | V14가 주석/비주석을 구분하지 못해 판정력 없음(변경 전후 모두 3) | `grep -cE '^[[:space:]]+name: Linting'`으로 교체. 실측 현재값 `0` |
+
 
 **라운드 4 조치 내역:**
 
