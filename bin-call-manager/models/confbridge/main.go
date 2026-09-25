@@ -12,9 +12,9 @@ import (
 type Confbridge struct {
 	commonidentity.Identity
 
-	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`  // activeflow id
-	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`     // reference type
-	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`    // reference id
+	ActiveflowID  uuid.UUID     `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"` // activeflow id
+	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`    // reference type
+	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`   // reference id
 
 	Type     Type   `json:"type" db:"type"`
 	Status   Status `json:"status" db:"status"`

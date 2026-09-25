@@ -80,10 +80,10 @@ type AIcall struct {
 	AssistanceType AssistanceType `json:"assistance_type,omitempty" db:"assistance_type"`
 	AssistanceID   uuid.UUID      `json:"assistance_id,omitempty" db:"assistance_id,uuid"`
 
-	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty" db:"ai_engine_model"`
-	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty" db:"ai_tts_type"`
-	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty" db:"ai_tts_voice_id"`
-	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty" db:"ai_stt_type"`
+	AIEngineModel      ai.EngineModel `json:"ai_engine_model,omitempty" db:"ai_engine_model"`
+	AITTSType          ai.TTSType     `json:"ai_tts_type,omitempty" db:"ai_tts_type"`
+	AITTSVoiceID       string         `json:"ai_tts_voice_id,omitempty" db:"ai_tts_voice_id"`
+	AISTTType          ai.STTType     `json:"ai_stt_type,omitempty" db:"ai_stt_type"`
 	AIVADConfig        *ai.VADConfig  `json:"ai_vad_config,omitempty" db:"ai_vad_config,json"`
 	AISmartTurnEnabled bool           `json:"ai_smart_turn_enabled,omitempty" db:"ai_smart_turn_enabled"`
 
@@ -93,7 +93,7 @@ type AIcall struct {
 	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`
 
-	ConfbridgeID  uuid.UUID `json:"confbridge_id,omitempty" db:"confbridge_id,uuid"`
+	ConfbridgeID    uuid.UUID `json:"confbridge_id,omitempty" db:"confbridge_id,uuid"`
 	PipecatcallID   uuid.UUID `json:"pipecatcall_id,omitempty" db:"pipecatcall_id,uuid"`
 	CurrentMemberID uuid.UUID `json:"current_member_id,omitempty" db:"current_member_id,uuid"`
 

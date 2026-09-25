@@ -19,7 +19,7 @@ const (
 
 	FieldEmailVerified Field = "email_verified"
 
-	FieldStatus                      Field = "status"
+	FieldStatus                     Field = "status"
 	FieldIdentityVerificationStatus Field = "identity_verification_status"
 	FieldTMDeletionScheduled        Field = "tm_deletion_scheduled"
 

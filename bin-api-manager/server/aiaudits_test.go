@@ -187,7 +187,7 @@ func Test_GetAiauditsId(t *testing.T) {
 
 		responseAIAudit *amaiaudit.WebhookMessage
 
-		expectedID uuid.UUID
+		expectedID  uuid.UUID
 		expectedRes string
 	}{
 		{

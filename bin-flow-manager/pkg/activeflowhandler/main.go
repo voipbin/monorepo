@@ -238,18 +238,18 @@ var (
 
 // actionDispatchTarget maps action types to the service they dispatch to.
 var actionDispatchTarget = map[action.Type]string{
-	action.TypeAISummary:          "ai-manager",
-	action.TypeAITalk:             "ai-manager",
-	action.TypeAITask:             "ai-manager",
-	action.TypeConferenceJoin:     "conference-manager",
-	action.TypeConnect:            "call-manager",
-	action.TypeConversationSend:   "conversation-manager",
-	action.TypeEmailSend:          "email-manager",
-	action.TypeMessageSend:        "message-manager",
-	action.TypeQueueJoin:          "queue-manager",
+	action.TypeAISummary:           "ai-manager",
+	action.TypeAITalk:              "ai-manager",
+	action.TypeAITask:              "ai-manager",
+	action.TypeConferenceJoin:      "conference-manager",
+	action.TypeConnect:             "call-manager",
+	action.TypeConversationSend:    "conversation-manager",
+	action.TypeEmailSend:           "email-manager",
+	action.TypeMessageSend:         "message-manager",
+	action.TypeQueueJoin:           "queue-manager",
 	action.TypeTranscribeRecording: "transcribe-manager",
-	action.TypeTranscribeStart:    "transcribe-manager",
-	action.TypeWebhookSend:        "webhook-manager",
+	action.TypeTranscribeStart:     "transcribe-manager",
+	action.TypeWebhookSend:         "webhook-manager",
 }
 
 func init() {

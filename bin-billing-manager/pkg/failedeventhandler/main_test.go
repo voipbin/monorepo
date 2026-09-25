@@ -492,9 +492,9 @@ func Test_RetryPending_backoff_calculation(t *testing.T) {
 		expectMinBackoffMinutes float64
 	}{
 		{name: "first retry", retryCount: 0, expectMinBackoffMinutes: 5},    // 5^1
-		{name: "second retry", retryCount: 1, expectMinBackoffMinutes: 25},   // 5^2
-		{name: "third retry", retryCount: 2, expectMinBackoffMinutes: 125},   // 5^3
-		{name: "fourth retry", retryCount: 3, expectMinBackoffMinutes: 625},  // 5^4
+		{name: "second retry", retryCount: 1, expectMinBackoffMinutes: 25},  // 5^2
+		{name: "third retry", retryCount: 2, expectMinBackoffMinutes: 125},  // 5^3
+		{name: "fourth retry", retryCount: 3, expectMinBackoffMinutes: 625}, // 5^4
 	}
 
 	for _, tt := range tests {

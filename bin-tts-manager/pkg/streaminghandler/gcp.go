@@ -31,11 +31,11 @@ type GCPConfig struct {
 	Ctx    context.Context
 	Cancel context.CancelFunc
 
-	StreamCtx    context.Context    // per-stream sub-context, cancelled by SayFlush
+	StreamCtx    context.Context // per-stream sub-context, cancelled by SayFlush
 	StreamCancel context.CancelFunc
 
-	Client  *texttospeech.Client
-	Stream  texttospeechpb.TextToSpeech_StreamingSynthesizeClient
+	Client      *texttospeech.Client
+	Stream      texttospeechpb.TextToSpeech_StreamingSynthesizeClient
 	ConnAst     *websocket.Conn
 	ConnAstDone chan struct{} // closed when Asterisk WebSocket disconnects
 
@@ -44,15 +44,15 @@ type GCPConfig struct {
 
 	Message *message.Message
 
-	lastSendTime time.Time    // last time we sent input to GCP stream (for keepalive)
+	lastSendTime time.Time     // last time we sent input to GCP stream (for keepalive)
 	processDone  chan struct{} // closed when runProcess exits
-	muStream     sync.Mutex   // protects Stream, Client, StreamCtx/StreamCancel, lastSendTime
+	muStream     sync.Mutex    // protects Stream, Client, StreamCtx/StreamCancel, lastSendTime
 }
 
 const (
 	defaultGCPStreamingEndpoint   = "eu-texttospeech.googleapis.com:443"
 	defaultGCPStreamingSampleRate = int32(8000)
-	defaultGCPDefaultVoiceID     = "en-US-Chirp3-HD-Charon"
+	defaultGCPDefaultVoiceID      = "en-US-Chirp3-HD-Charon"
 
 	// gcpKeepaliveInterval is the interval between keepalive pings to prevent
 	// GCP's 5-second inactivity timeout on StreamingSynthesize.

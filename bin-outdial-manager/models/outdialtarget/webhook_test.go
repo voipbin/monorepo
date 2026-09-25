@@ -222,8 +222,8 @@ func TestWebhookMessage_JSONMarshaling(t *testing.T) {
 
 func TestWebhookMessage_AllDestinations(t *testing.T) {
 	target := &OutdialTarget{
-		ID:        uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
-		OutdialID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
+		ID:           uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+		OutdialID:    uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
 		Destination0: &commonaddress.Address{Type: "phone", Target: "+10000000000"},
 		Destination1: &commonaddress.Address{Type: "phone", Target: "+10000000001"},
 		Destination2: &commonaddress.Address{Type: "phone", Target: "+10000000002"},

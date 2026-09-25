@@ -17,7 +17,6 @@ type V1DataServicesTypeAIcallPost struct {
 	ActiveflowID  uuid.UUID            `json:"activeflow_id"`
 	ReferenceType aicall.ReferenceType `json:"reference_type"`
 	ReferenceID   uuid.UUID            `json:"reference_id"`
-
 }
 
 // V1DataServicesTypeSummaryPost is

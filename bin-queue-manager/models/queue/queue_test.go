@@ -15,12 +15,12 @@ func TestQueueStruct(t *testing.T) {
 	waitFlowID := uuid.Must(uuid.NewV4())
 
 	q := Queue{
-		Name:          "Support Queue",
-		Detail:        "Customer support queue",
-		RoutingMethod: RoutingMethodRandom,
-		WaitFlowID:    waitFlowID,
-		WaitTimeout:   60000,
-		ServiceTimeout: 300000,
+		Name:                "Support Queue",
+		Detail:              "Customer support queue",
+		RoutingMethod:       RoutingMethodRandom,
+		WaitFlowID:          waitFlowID,
+		WaitTimeout:         60000,
+		ServiceTimeout:      300000,
 		TotalIncomingCount:  100,
 		TotalServicedCount:  80,
 		TotalAbandonedCount: 20,

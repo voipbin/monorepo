@@ -35,8 +35,8 @@ func TestCampaigncallStruct(t *testing.T) {
 		Result:           ResultNone,
 		DestinationIndex: 0,
 		TryCount:         1,
-		TMCreate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
-		TMUpdate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMCreate:         ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate:         ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 	cc.ID = id
 

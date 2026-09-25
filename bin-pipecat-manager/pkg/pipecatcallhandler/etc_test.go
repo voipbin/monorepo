@@ -24,10 +24,10 @@ func TestSendMessage(t *testing.T) {
 		runImmediately bool
 		audioResponse  bool
 
-		session        *pipecatcall.Session
-		sessionGetErr  error
-		sendRTVIErr    error
-		createdUUID    uuid.UUID
+		session       *pipecatcall.Session
+		sessionGetErr error
+		sendRTVIErr   error
+		createdUUID   uuid.UUID
 
 		expectErr bool
 	}{
@@ -104,8 +104,8 @@ func TestSendMessage(t *testing.T) {
 			mockPipecatframe := NewMockPipecatframeHandler(mc)
 
 			h := &pipecatcallHandler{
-				utilHandler:         mockUtil,
-				pipecatframeHandler: mockPipecatframe,
+				utilHandler:           mockUtil,
+				pipecatframeHandler:   mockPipecatframe,
 				mapPipecatcallSession: map[uuid.UUID]*pipecatcall.Session{},
 				muPipecatcallSession:  sync.Mutex{},
 			}

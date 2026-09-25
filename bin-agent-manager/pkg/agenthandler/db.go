@@ -7,8 +7,8 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 

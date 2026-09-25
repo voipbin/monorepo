@@ -45,18 +45,18 @@ func Test_processV1MessagesPost(t *testing.T) {
 			},
 
 			createReq: messagehandler.MessageCreateRequest{
-				ChatID:     uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-				ParentID:   nil,
-				OwnerType:  "agent",
-				OwnerID:    uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
-				Type:       "normal",
-				Text:       "Hello world",
-				Medias:     []message.Media{},
+				ChatID:    uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+				ParentID:  nil,
+				OwnerType: "agent",
+				OwnerID:   uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
+				Type:      "normal",
+				Text:      "Hello world",
+				Medias:    []message.Media{},
 			},
 			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
-				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerType: "agent",
@@ -88,18 +88,18 @@ func Test_processV1MessagesPost(t *testing.T) {
 			},
 
 			createReq: messagehandler.MessageCreateRequest{
-				ChatID:     uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
-				ParentID:   &parentID,
-				OwnerType:  "agent",
-				OwnerID:    uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
-				Type:       "normal",
-				Text:       "Reply to message",
-				Medias:     []message.Media{},
+				ChatID:    uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795"),
+				ParentID:  &parentID,
+				OwnerType: "agent",
+				OwnerID:   uuid.FromStringOrNil("7fcd7990-42eb-11ed-9fa6-b4cd93af9796"),
+				Type:      "normal",
+				Text:      "Reply to message",
+				Medias:    []message.Media{},
 			},
 			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("aaef9c20-75fe-11ed-c2d9-e7f006af9799"),
-				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerType: "agent",
@@ -254,7 +254,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 				{
 					Identity: commonidentity.Identity{
 						ID:         uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
-				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+						CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -351,7 +351,7 @@ func Test_processV1MessagesIDGet(t *testing.T) {
 			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
-				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerType: "agent",
@@ -423,7 +423,7 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 			responseMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798"),
-				CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerType: "agent",
@@ -526,26 +526,26 @@ func Test_processV1MessagesIDDelete_notFound(t *testing.T) {
 // 			},
 // 		},
 // 	}
-// 
+//
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
 // 			mc := gomock.NewController(t)
 // 			defer mc.Finish()
-// 
+//
 // 			mockSock := sockhandler.NewMockSockHandler(mc)
 // 			mockMessage := messagehandler.NewMockMessageHandler(mc)
-// 
+//
 // 			h := &listenHandler{
 // 				sockHandler:    mockSock,
 // 				messageHandler: mockMessage,
 // 			}
-// 
+//
 // 			ctx := context.Background()
 // 			res, err := h.v1MessagesIDGet(ctx, *tt.request)
 // 			if err != nil {
 // 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 // 			}
-// 
+//
 // 			if !reflect.DeepEqual(res, tt.expectRes) {
 // 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 // 			}

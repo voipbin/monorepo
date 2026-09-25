@@ -74,15 +74,15 @@ var (
 
 func Test_channelOf_total(t *testing.T) {
 	cases := map[fmactiveflow.ReferenceType]string{
-		fmactiveflow.ReferenceTypeCall:         "voice",
-		fmactiveflow.ReferenceTypeConversation: "chat",
-		fmactiveflow.ReferenceTypeAI:           "ai",
-		fmactiveflow.ReferenceTypeAPI:          "api",
-		fmactiveflow.ReferenceTypeCampaign:     "voice",
+		fmactiveflow.ReferenceTypeCall:           "voice",
+		fmactiveflow.ReferenceTypeConversation:   "chat",
+		fmactiveflow.ReferenceTypeAI:             "ai",
+		fmactiveflow.ReferenceTypeAPI:            "api",
+		fmactiveflow.ReferenceTypeCampaign:       "voice",
 		fmactiveflow.ReferenceType("confbridge"): "voice",
-		fmactiveflow.ReferenceTypeNone:         "",
-		fmactiveflow.ReferenceTypeTranscribe:   "",
-		fmactiveflow.ReferenceTypeRecording:    "",
+		fmactiveflow.ReferenceTypeNone:           "",
+		fmactiveflow.ReferenceTypeTranscribe:     "",
+		fmactiveflow.ReferenceTypeRecording:      "",
 	}
 	for rt, want := range cases {
 		if got := channelOf(rt); got != want {

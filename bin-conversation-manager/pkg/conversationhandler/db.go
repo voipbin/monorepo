@@ -89,7 +89,7 @@ func (h *conversationHandler) GetOrCreateBySelfAndPeer(
 // List returns list of conversations
 func (h *conversationHandler) List(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "List",
+		"func":   "List",
 		"filers": filters,
 	})
 	log.Debugf("Getting a list of conversations.")
@@ -230,8 +230,8 @@ func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields m
 				// for diagnostic purposes; operators can correlate via server-side logs which
 				// retain the full triple (id is logged in the structured fields).
 				log.WithFields(logrus.Fields{
-					"owner_id":               ownerID,
-					"agent_customer_id":      ag.CustomerID,
+					"owner_id":                 ownerID,
+					"agent_customer_id":        ag.CustomerID,
 					"conversation_customer_id": cv.CustomerID,
 				}).Info("Agent customer mismatch on assignment.")
 				return nil, cerrors.InvalidArgument(

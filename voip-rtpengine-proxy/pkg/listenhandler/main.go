@@ -60,8 +60,8 @@ func (h *listenHandler) Run() error {
 
 func (h *listenHandler) listenRun() error {
 	queues := []struct {
-		name   string
-		qType  string
+		name  string
+		qType string
 	}{
 		{h.rabbitQueueListenRequestPermanent, "normal"},
 		{h.rabbitQueueListenRequestVolatile, "volatile"},

@@ -21,13 +21,13 @@ type Queue struct {
 	TagIDs        []uuid.UUID   `json:"tag_ids,omitempty" db:"tag_ids,json"`          // queue's tag ids
 
 	// direct hash
-	DirectID   uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"`  // direct id for direct hash
-	DirectHash string    `json:"direct_hash,omitempty" db:"direct_hash"`   // direct hash
+	DirectID   uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"` // direct id for direct hash
+	DirectHash string    `json:"direct_hash,omitempty" db:"direct_hash"`  // direct hash
 
 	// wait/service info
-	WaitFlowID     uuid.UUID `json:"wait_flow_id,omitempty" db:"wait_flow_id,uuid"`    // flow id for queue waiting
-	WaitTimeout    int       `json:"wait_timeout,omitempty" db:"wait_timeout"`         // wait queue timeout.(ms)
-	ServiceTimeout int       `json:"service_timeout,omitempty" db:"service_timeout"`   // service queue timeout(ms).
+	WaitFlowID     uuid.UUID `json:"wait_flow_id,omitempty" db:"wait_flow_id,uuid"`  // flow id for queue waiting
+	WaitTimeout    int       `json:"wait_timeout,omitempty" db:"wait_timeout"`       // wait queue timeout.(ms)
+	ServiceTimeout int       `json:"service_timeout,omitempty" db:"service_timeout"` // service queue timeout(ms).
 
 	// queuecall info
 	WaitQueuecallIDs    []uuid.UUID `json:"wait_queuecall_ids,omitempty" db:"wait_queue_call_ids,json"`       // waiting queue call ids.

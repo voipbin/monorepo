@@ -20,13 +20,13 @@ import (
 // ChatCreate creates a new talk
 func (h *chatHandler) ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name string, detail string, creatorType string, creatorID uuid.UUID, participants []participant.ParticipantInput) (*chat.Chat, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "ChatCreate",
-		"customer_id":       customerID,
-		"type":              chatType,
-		"name":              name,
-		"detail":            detail,
-		"creator_type":      creatorType,
-		"creator_id":        creatorID,
+		"func":               "ChatCreate",
+		"customer_id":        customerID,
+		"type":               chatType,
+		"name":               name,
+		"detail":             detail,
+		"creator_type":       creatorType,
+		"creator_id":         creatorID,
 		"participants_count": len(participants),
 	})
 	log.Debug("Creating a new talk")

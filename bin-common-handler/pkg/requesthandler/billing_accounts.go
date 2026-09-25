@@ -272,4 +272,3 @@ func (r *requestHandler) BillingV1AccountPaddlePortalSession(ctx context.Context
 
 	return res.URL, nil
 }
-

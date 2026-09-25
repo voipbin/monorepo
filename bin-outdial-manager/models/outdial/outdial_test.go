@@ -47,26 +47,26 @@ func TestOutdial(t *testing.T) {
 	tests := []struct {
 		name string
 
-		campaignID uuid.UUID
+		campaignID  uuid.UUID
 		outdialName string
-		detail     string
-		data       string
+		detail      string
+		data        string
 	}{
 		{
 			name: "creates_outdial_with_all_fields",
 
-			campaignID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
+			campaignID:  uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
 			outdialName: "Test Outdial",
-			detail:     "Test Detail",
-			data:       `{"key": "value"}`,
+			detail:      "Test Detail",
+			data:        `{"key": "value"}`,
 		},
 		{
 			name: "creates_outdial_with_empty_fields",
 
-			campaignID: uuid.Nil,
+			campaignID:  uuid.Nil,
 			outdialName: "",
-			detail:     "",
-			data:       "",
+			detail:      "",
+			data:        "",
 		},
 	}
 

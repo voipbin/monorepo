@@ -128,9 +128,9 @@ func (h *server) GetAipromptproposals(c *gin.Context, params openapi_server.GetA
 
 func (h *server) GetAipromptproposalsId(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":                   "GetAipromptproposalsId",
-		"request_address":        c.ClientIP,
-		"aipromptproposal_id":    id,
+		"func":                "GetAipromptproposalsId",
+		"request_address":     c.ClientIP,
+		"aipromptproposal_id": id,
 	})
 
 	a, ok := getAuthIdentity(c)

@@ -97,10 +97,10 @@ func TestIsRSTUnderline(t *testing.T) {
 		{"----", true},
 		{"~~~~", true},
 		{"===", true},
-		{"==", false},     // too short
-		{"abc", false},    // not underline chars
-		{"==a=", false},   // mixed chars
-		{"", false},       // empty
+		{"==", false},   // too short
+		{"abc", false},  // not underline chars
+		{"==a=", false}, // mixed chars
+		{"", false},     // empty
 	}
 
 	for _, tt := range tests {

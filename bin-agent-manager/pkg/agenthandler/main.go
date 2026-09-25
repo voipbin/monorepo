@@ -31,7 +31,7 @@ type PasswordResetEmailType int
 
 const (
 	PasswordResetEmailTypeForgot  PasswordResetEmailType = iota // user-initiated forgot password
-	PasswordResetEmailTypeWelcome                                // new customer welcome email
+	PasswordResetEmailTypeWelcome                               // new customer welcome email
 )
 
 // AgentHandler interface

@@ -286,4 +286,3 @@ func (h *notifyHandler) publishDelayedEvent(ctx context.Context, delay int, evt 
 
 	return err
 }
-

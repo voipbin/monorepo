@@ -125,4 +125,3 @@ func (m *Message) CreateWebhookEvent() ([]byte, error) {
 
 	return data, nil
 }
-

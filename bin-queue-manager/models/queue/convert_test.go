@@ -20,17 +20,17 @@ func TestConvertStringMapToFieldMap(t *testing.T) {
 		{
 			name: "valid_conversion_with_all_fields",
 			input: map[string]any{
-				"id":                      queueID.String(),
-				"customer_id":             customerID.String(),
-				"name":                    "Test Queue",
-				"detail":                  "Test Detail",
-				"routing_method":          "random",
-				"wait_flow_id":            waitFlowID.String(),
-				"wait_timeout":            60000,
-				"service_timeout":         300000,
-				"total_incoming_count":    100,
-				"total_serviced_count":    80,
-				"total_abandoned_count":   20,
+				"id":                    queueID.String(),
+				"customer_id":           customerID.String(),
+				"name":                  "Test Queue",
+				"detail":                "Test Detail",
+				"routing_method":        "random",
+				"wait_flow_id":          waitFlowID.String(),
+				"wait_timeout":          60000,
+				"service_timeout":       300000,
+				"total_incoming_count":  100,
+				"total_serviced_count":  80,
+				"total_abandoned_count": 20,
 			},
 			expectErr: false,
 			validate: func(t *testing.T, result map[Field]any) {
@@ -62,8 +62,8 @@ func TestConvertStringMapToFieldMap(t *testing.T) {
 			},
 		},
 		{
-			name: "empty_map",
-			input: map[string]any{},
+			name:      "empty_map",
+			input:     map[string]any{},
 			expectErr: false,
 			validate: func(t *testing.T, result map[Field]any) {
 				if len(result) != 0 {

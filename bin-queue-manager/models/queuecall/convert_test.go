@@ -53,8 +53,8 @@ func TestConvertStringMapToFieldMap(t *testing.T) {
 			},
 		},
 		{
-			name: "empty_map",
-			input: map[string]any{},
+			name:      "empty_map",
+			input:     map[string]any{},
 			expectErr: false,
 			validate: func(t *testing.T, result map[Field]any) {
 				if len(result) != 0 {

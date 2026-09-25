@@ -199,7 +199,7 @@ func (h *handler) OutplanList(ctx context.Context, token string, size uint64, fi
 		Select(fields...).
 		From(outplansTable).
 		Where(squirrel.Lt{string(outplan.FieldTMCreate): token}).
-		OrderBy(string(outplan.FieldTMCreate) + " DESC", string(outplan.FieldID) + " DESC").
+		OrderBy(string(outplan.FieldTMCreate)+" DESC", string(outplan.FieldID)+" DESC").
 		Limit(size).
 		PlaceholderFormat(squirrel.Question)
 

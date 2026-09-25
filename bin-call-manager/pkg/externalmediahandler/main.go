@@ -51,7 +51,7 @@ type ExternalMediaHandler interface {
 const (
 	ChannelValiableExternalMediaLocalPort    = "UNICASTRTP_LOCAL_PORT"
 	ChannelValiableExternalMediaLocalAddress = "UNICASTRTP_LOCAL_ADDRESS"
-	ChannelVariableWebSocketConnectionID    = "MEDIA_WEBSOCKET_CONNECTION_ID"
+	ChannelVariableWebSocketConnectionID     = "MEDIA_WEBSOCKET_CONNECTION_ID"
 )
 
 const (

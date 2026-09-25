@@ -154,17 +154,17 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 
 		responseContact *cmcontact.WebhookMessage
 
-		expectFirstName    string
-		expectLastName     string
-		expectDisplayName  string
-		expectCompany      string
-		expectJobTitle     string
-		expectSource       string
-		expectExternalID   string
-		expectNotes        string
-		expectAddresses    []cmrequest.AddressCreate
-		expectTagIDs       []uuid.UUID
-		expectRes          string
+		expectFirstName   string
+		expectLastName    string
+		expectDisplayName string
+		expectCompany     string
+		expectJobTitle    string
+		expectSource      string
+		expectExternalID  string
+		expectNotes       string
+		expectAddresses   []cmrequest.AddressCreate
+		expectTagIDs      []uuid.UUID
+		expectRes         string
 	}{
 		{
 			name: "normal",
@@ -194,17 +194,17 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 				TMCreate:    timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 
-			expectFirstName:    "John",
-			expectLastName:     "Doe",
-			expectDisplayName:  "John Doe",
-			expectCompany:      "Acme",
-			expectJobTitle:     "Engineer",
-			expectSource:       "api",
-			expectExternalID:   "ext-123",
-			expectNotes:        "test note",
-			expectAddresses: []cmrequest.AddressCreate{},
-			expectTagIDs:       []uuid.UUID{},
-			expectRes:          `{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"Acme","job_title":"Engineer","source":"api","external_id":"ext-123","notes":"test note","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+			expectFirstName:   "John",
+			expectLastName:    "Doe",
+			expectDisplayName: "John Doe",
+			expectCompany:     "Acme",
+			expectJobTitle:    "Engineer",
+			expectSource:      "api",
+			expectExternalID:  "ext-123",
+			expectNotes:       "test note",
+			expectAddresses:   []cmrequest.AddressCreate{},
+			expectTagIDs:      []uuid.UUID{},
+			expectRes:         `{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"Acme","job_title":"Engineer","source":"api","external_id":"ext-123","notes":"test note","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -873,12 +873,6 @@ func Test_DeleteServiceAgentsContactsIdAddressesAddressId(t *testing.T) {
 		})
 	}
 }
-
-
-
-
-
-
 
 func Test_PostServiceAgentsContactsIdTags(t *testing.T) {
 

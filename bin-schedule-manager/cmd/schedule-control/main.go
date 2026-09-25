@@ -12,8 +12,8 @@ import (
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	"github.com/gofrs/uuid"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

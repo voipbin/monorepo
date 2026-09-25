@@ -55,7 +55,6 @@ func (h *subscribeHandler) processEventCMCustomerCreated(ctx context.Context, m 
 	return nil
 }
 
-
 // processEventCUCustomerFrozen handles the customer-manager's customer_frozen event
 func (h *subscribeHandler) processEventCUCustomerFrozen(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{

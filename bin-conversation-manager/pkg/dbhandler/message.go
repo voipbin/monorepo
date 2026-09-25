@@ -213,7 +213,7 @@ func (h *handler) MessageGetsByTransactionID(ctx context.Context, transactionID 
 		Where(squirrel.Eq{string(message.FieldTMDelete): nil}).
 		Where(squirrel.Eq{string(message.FieldTransactionID): transactionID}).
 		Where(squirrel.Lt{string(message.FieldTMCreate): token}).
-		OrderBy(string(message.FieldTMCreate) + " DESC", string(message.FieldID) + " DESC").
+		OrderBy(string(message.FieldTMCreate)+" DESC", string(message.FieldID)+" DESC").
 		Limit(limit).
 		PlaceholderFormat(squirrel.Question)
 

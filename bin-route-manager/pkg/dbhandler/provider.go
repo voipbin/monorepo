@@ -171,7 +171,7 @@ func (h *handler) ProviderList(ctx context.Context, token string, limit uint64, 
 		From(providersTable).
 		Where(squirrel.Eq{string(provider.FieldTMDelete): nil}).
 		Where(squirrel.Lt{string(provider.FieldTMCreate): token}).
-		OrderBy(string(provider.FieldTMCreate) + " DESC", string(provider.FieldID) + " DESC").
+		OrderBy(string(provider.FieldTMCreate)+" DESC", string(provider.FieldID)+" DESC").
 		Limit(limit).
 		PlaceholderFormat(squirrel.Question)
 

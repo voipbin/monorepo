@@ -34,9 +34,9 @@ func Test_websocketAsteriskConnect(t *testing.T) {
 	tests := []struct {
 		name string
 
-		dialErr    error
-		msgType    int
-		readErr    error
+		dialErr error
+		msgType int
+		readErr error
 
 		expectErr       bool
 		expectErrSubstr string

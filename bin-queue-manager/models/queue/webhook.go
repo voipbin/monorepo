@@ -51,7 +51,7 @@ func (h *Queue) ConvertWebhookMessage() *WebhookMessage {
 		Detail:        h.Detail,
 		RoutingMethod: h.RoutingMethod,
 		TagIDs:        h.TagIDs,
-		DirectHash: h.DirectHash,
+		DirectHash:    h.DirectHash,
 
 		WaitFlowID:     h.WaitFlowID,
 		WaitTimeout:    h.WaitTimeout,

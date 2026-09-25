@@ -448,8 +448,8 @@ func (h *handler) BillingConsumeAndRecord(ctx context.Context, bill *billing.Bil
 		billableUnits,
 		costInfo.TokenPerUnit,
 		costInfo.CreditPerUnit,
-		-tokenDeducted,   // Negative: usage deducts
-		-creditDeducted,  // Negative: usage deducts
+		-tokenDeducted,  // Negative: usage deducts
+		-creditDeducted, // Negative: usage deducts
 		newBalanceToken,
 		newBalanceCredit,
 		tmBillingEnd,

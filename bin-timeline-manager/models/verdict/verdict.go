@@ -162,10 +162,10 @@ type RawVerdict struct {
 
 // RawIssue is an issue as emitted by the LLM (evidence = indices).
 type RawIssue struct {
-	Severity       Severity `json:"severity"`
-	Area           string   `json:"area"`
-	Summary        string   `json:"summary"`
-	EvidenceIndex  []int    `json:"evidence_index"`
+	Severity      Severity `json:"severity"`
+	Area          string   `json:"area"`
+	Summary       string   `json:"summary"`
+	EvidenceIndex []int    `json:"evidence_index"`
 }
 
 func validOverallStatus(s OverallStatus) bool {

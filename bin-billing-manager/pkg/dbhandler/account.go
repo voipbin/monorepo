@@ -450,7 +450,6 @@ func (h *handler) AccountDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-
 // AccountSetStatus sets the account status
 func (h *handler) AccountSetStatus(ctx context.Context, id uuid.UUID, status account.Status) error {
 	ts := h.utilHandler.TimeNow()

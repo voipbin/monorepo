@@ -600,8 +600,8 @@ func Test_ChatUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id     uuid.UUID
-		upName *string
+		id       uuid.UUID
+		upName   *string
 		upDetail *string
 
 		responseChat        *chat.Chat

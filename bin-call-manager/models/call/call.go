@@ -32,25 +32,25 @@ type Call struct {
 	Type Type `json:"type,omitempty" db:"type"` // call type
 
 	// etc info
-	MasterCallID    uuid.UUID   `json:"master_call_id,omitempty" db:"master_call_id,uuid"`     // master call id
-	ChainedCallIDs  []uuid.UUID `json:"chained_call_ids,omitempty" db:"chained_call_ids,json"` // chained call ids
-	RecordingID     uuid.UUID   `json:"recording_id,omitempty" db:"recording_id,uuid"`         // recording id(current)
-	RecordingIDs    []uuid.UUID `json:"recording_ids,omitempty" db:"recording_ids,json"`       // recording ids
+	MasterCallID     uuid.UUID   `json:"master_call_id,omitempty" db:"master_call_id,uuid"`         // master call id
+	ChainedCallIDs   []uuid.UUID `json:"chained_call_ids,omitempty" db:"chained_call_ids,json"`     // chained call ids
+	RecordingID      uuid.UUID   `json:"recording_id,omitempty" db:"recording_id,uuid"`             // recording id(current)
+	RecordingIDs     []uuid.UUID `json:"recording_ids,omitempty" db:"recording_ids,json"`           // recording ids
 	ExternalMediaIDs []uuid.UUID `json:"external_media_ids,omitempty" db:"external_media_ids,json"` // external media ids
-	GroupcallID     uuid.UUID   `json:"groupcall_id,omitempty" db:"groupcall_id,uuid"`           // groupcall id
+	GroupcallID      uuid.UUID   `json:"groupcall_id,omitempty" db:"groupcall_id,uuid"`             // groupcall id
 
 	// source/destination
 	Source      commonaddress.Address `json:"source,omitempty" db:"source,json"`
 	Destination commonaddress.Address `json:"destination,omitempty" db:"destination,json"`
 
 	// info
-	Status         Status              `json:"status,omitempty" db:"status"`
+	Status         Status                 `json:"status,omitempty" db:"status"`
 	Data           map[DataType]string    `json:"data,omitempty" db:"data,json"`
 	Metadata       map[string]interface{} `json:"metadata,omitempty" db:"metadata,json"`
-	Action         fmaction.Action        `json:"action,omitempty" db:"action,json"` // call's current action.
-	ActionNextHold bool                `json:"action_next_hold,omitempty" db:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
-	Direction      Direction           `json:"direction,omitempty" db:"direction"`               //  direction of call. incoming/outgoing
-	MuteDirection  MuteDirection       `json:"mute_direction,omitempty" db:"mute_direction"`     // mute direction
+	Action         fmaction.Action        `json:"action,omitempty" db:"action,json"`                // call's current action.
+	ActionNextHold bool                   `json:"action_next_hold,omitempty" db:"action_next_hold"` // call's next action hold. if true, don't allow to go next action
+	Direction      Direction              `json:"direction,omitempty" db:"direction"`               //  direction of call. incoming/outgoing
+	MuteDirection  MuteDirection          `json:"mute_direction,omitempty" db:"mute_direction"`     // mute direction
 
 	HangupBy     HangupBy     `json:"hangup_by,omitempty" db:"hangup_by"`
 	HangupReason HangupReason `json:"hangup_reason,omitempty" db:"hangup_reason"`

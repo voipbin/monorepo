@@ -87,14 +87,14 @@ func TestGroupcallStruct(t *testing.T) {
 	masterCallID := uuid.Must(uuid.NewV4())
 
 	g := Groupcall{
-		Status:           StatusProgressing,
-		FlowID:           flowID,
-		MasterCallID:     masterCallID,
-		RingMethod:       RingMethodRingAll,
-		AnswerMethod:     AnswerMethodHangupOthers,
-		CallCount:        5,
-		GroupcallCount:   2,
-		DialIndex:        1,
+		Status:         StatusProgressing,
+		FlowID:         flowID,
+		MasterCallID:   masterCallID,
+		RingMethod:     RingMethodRingAll,
+		AnswerMethod:   AnswerMethodHangupOthers,
+		CallCount:      5,
+		GroupcallCount: 2,
+		DialIndex:      1,
 	}
 	g.ID = id
 
@@ -216,21 +216,21 @@ func TestConvertWebhookMessage(t *testing.T) {
 			OwnerType: commonidentity.OwnerTypeAgent,
 			OwnerID:   ownerID,
 		},
-		Status:         StatusProgressing,
-		FlowID:         flowID,
-		Source:         source,
-		Destinations:   []commonaddress.Address{dest1},
-		MasterCallID:   masterCallID,
-		RingMethod:     RingMethodRingAll,
-		AnswerMethod:   AnswerMethodHangupOthers,
+		Status:            StatusProgressing,
+		FlowID:            flowID,
+		Source:            source,
+		Destinations:      []commonaddress.Address{dest1},
+		MasterCallID:      masterCallID,
+		RingMethod:        RingMethodRingAll,
+		AnswerMethod:      AnswerMethodHangupOthers,
 		AnswerCallID:      answerCallID,
 		AnswerGroupcallID: answerGroupcallID,
 		CallIDs:           []uuid.UUID{callID1, callID2},
-		CallCount:      2,
-		GroupcallCount: 1,
-		DialIndex:      0,
-		TMCreate:       &now,
-		TMUpdate:       &now,
+		CallCount:         2,
+		GroupcallCount:    1,
+		DialIndex:         0,
+		TMCreate:          &now,
+		TMUpdate:          &now,
 	}
 
 	webhook := g.ConvertWebhookMessage()
@@ -280,7 +280,7 @@ func TestCreateWebhookEvent(t *testing.T) {
 			ID:         id,
 			CustomerID: customerID,
 		},
-		Owner: commonidentity.Owner{},
+		Owner:  commonidentity.Owner{},
 		Status: StatusProgressing,
 		FlowID: flowID,
 	}

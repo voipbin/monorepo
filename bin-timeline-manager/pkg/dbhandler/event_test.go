@@ -261,12 +261,12 @@ func TestBuildEventQuery_ComplexScenario(t *testing.T) {
 
 func TestBuildAggregatedEventQuery(t *testing.T) {
 	tests := []struct {
-		name          string
-		activeflowID  string
-		pageToken     string
-		pageSize      int
-		wantArgCount  int
-		wantPaginate  bool
+		name         string
+		activeflowID string
+		pageToken    string
+		pageSize     int
+		wantArgCount int
+		wantPaginate bool
 	}{
 		{
 			name:         "basic query without page token",

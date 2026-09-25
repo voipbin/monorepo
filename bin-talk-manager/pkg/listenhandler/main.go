@@ -11,16 +11,16 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-talk-manager/pkg/chathandler"
-	"monorepo/bin-talk-manager/pkg/dbhandler"
-	"monorepo/bin-talk-manager/pkg/messagehandler"
-	"monorepo/bin-talk-manager/pkg/participanthandler"
-	"monorepo/bin-talk-manager/pkg/reactionhandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commonsock "monorepo/bin-common-handler/models/sock"
 	commonsockhandler "monorepo/bin-common-handler/pkg/sockhandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-talk-manager/pkg/chathandler"
+	"monorepo/bin-talk-manager/pkg/dbhandler"
+	"monorepo/bin-talk-manager/pkg/messagehandler"
+	"monorepo/bin-talk-manager/pkg/participanthandler"
+	"monorepo/bin-talk-manager/pkg/reactionhandler"
 )
 
 // Regex patterns for URI matching (allow optional query parameters)
@@ -36,12 +36,12 @@ var (
 )
 
 type listenHandler struct {
-	sockHandler         commonsockhandler.SockHandler
-	chatHandler         chathandler.ChatHandler
-	messageHandler      messagehandler.MessageHandler
-	participantHandler  participanthandler.ParticipantHandler
-	reactionHandler     reactionhandler.ReactionHandler
-	utilHandler         commonutil.UtilHandler
+	sockHandler        commonsockhandler.SockHandler
+	chatHandler        chathandler.ChatHandler
+	messageHandler     messagehandler.MessageHandler
+	participantHandler participanthandler.ParticipantHandler
+	reactionHandler    reactionhandler.ReactionHandler
+	utilHandler        commonutil.UtilHandler
 }
 
 // New creates a new listen handler
@@ -54,12 +54,12 @@ func New(
 	util commonutil.UtilHandler,
 ) *listenHandler {
 	return &listenHandler{
-		sockHandler:         sock,
-		chatHandler:         talk,
-		messageHandler:      msg,
-		participantHandler:  part,
-		reactionHandler:     react,
-		utilHandler:         util,
+		sockHandler:        sock,
+		chatHandler:        talk,
+		messageHandler:     msg,
+		participantHandler: part,
+		reactionHandler:    react,
+		utilHandler:        util,
 	}
 }
 

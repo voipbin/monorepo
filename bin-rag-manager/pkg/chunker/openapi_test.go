@@ -201,10 +201,10 @@ func TestFormatEndpoint(t *testing.T) {
 
 func TestFormatSchema(t *testing.T) {
 	tests := []struct {
-		name     string
+		name       string
 		schemaName string
-		schema   any
-		expected []string
+		schema     any
+		expected   []string
 	}{
 		{
 			name:       "full schema",

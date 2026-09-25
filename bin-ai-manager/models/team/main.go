@@ -14,9 +14,9 @@ import (
 type Team struct {
 	identity.Identity
 
-	Name          string    `json:"name,omitempty" db:"name"`
-	Detail        string    `json:"detail,omitempty" db:"detail"`
-	StartMemberID uuid.UUID `json:"start_member_id,omitempty" db:"start_member_id,uuid"`
+	Name          string         `json:"name,omitempty" db:"name"`
+	Detail        string         `json:"detail,omitempty" db:"detail"`
+	StartMemberID uuid.UUID      `json:"start_member_id,omitempty" db:"start_member_id,uuid"`
 	Members       []Member       `json:"members,omitempty" db:"members,json"`
 	Parameter     map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 

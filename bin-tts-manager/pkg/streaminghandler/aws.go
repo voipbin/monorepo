@@ -155,9 +155,9 @@ func (h *awsHandler) Init(ctx context.Context, st *streaming.Streaming) (any, er
 
 	cfCtx, cancel := context.WithCancel(context.Background())
 	res := &AWSConfig{
-		Streaming: st,
-		Ctx:       cfCtx,
-		Cancel:    cancel,
+		Streaming:   st,
+		Ctx:         cfCtx,
+		Cancel:      cancel,
 		Client:      client,
 		ConnAst:     st.ConnAst,
 		ConnAstDone: st.ConnAstDone,

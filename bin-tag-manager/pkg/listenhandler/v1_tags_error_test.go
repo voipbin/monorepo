@@ -332,9 +332,9 @@ func TestProcessRequest_NotFound(t *testing.T) {
 
 func TestSimpleResponse(t *testing.T) {
 	tests := []struct {
-		name           string
-		code           int
-		expectedCode   int
+		name         string
+		code         int
+		expectedCode int
 	}{
 		{
 			name:         "status_200",

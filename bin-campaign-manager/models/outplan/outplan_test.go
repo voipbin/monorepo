@@ -20,8 +20,8 @@ func TestOutplanStruct(t *testing.T) {
 		MaxTryCount2: 2,
 		MaxTryCount3: 1,
 		MaxTryCount4: 1,
-		TMCreate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
-		TMUpdate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMCreate:     ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate:     ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 	o.ID = id
 

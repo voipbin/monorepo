@@ -53,11 +53,11 @@ var (
 	regV1AvailableNumbers = regexp.MustCompile("/v1/available_numbers")
 
 	// numbers
-	regV1NumbersGet       = regexp.MustCompile(`/v1/numbers\?`)
-	regV1Numbers          = regexp.MustCompile(`/v1/numbers$`)
-	regV1NumbersID        = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
-	regV1NumbersIDFlowIDs  = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
-	regV1NumbersIDMetadata = regexp.MustCompile("/v1/numbers/" + regUUID + "/metadata$")
+	regV1NumbersGet                    = regexp.MustCompile(`/v1/numbers\?`)
+	regV1Numbers                       = regexp.MustCompile(`/v1/numbers$`)
+	regV1NumbersID                     = regexp.MustCompile("/v1/numbers/" + regUUID + "$")
+	regV1NumbersIDFlowIDs              = regexp.MustCompile("/v1/numbers/" + regUUID + "/flow_ids$")
+	regV1NumbersIDMetadata             = regexp.MustCompile("/v1/numbers/" + regUUID + "/metadata$")
 	regV1NumbersRenew                  = regexp.MustCompile(`/v1/numbers/renew$`)
 	regV1NumbersCountVirtualByCustomer = regexp.MustCompile(`/v1/numbers/count_virtual_by_customer$`)
 )

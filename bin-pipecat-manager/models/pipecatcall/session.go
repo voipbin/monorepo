@@ -26,8 +26,8 @@ type Session struct {
 	// asterisk info
 	AsteriskStreamingID uuid.UUID       `json:"-"`
 	ConnAst             *websocket.Conn `json:"-"`
-	ConnAstDone         chan struct{}    `json:"-"`
-	ConnAstReady        chan struct{}    `json:"-"` // closed when ConnAst is set
+	ConnAstDone         chan struct{}   `json:"-"`
+	ConnAstReady        chan struct{}   `json:"-"` // closed when ConnAst is set
 	connAstOnce         sync.Once
 
 	// llm

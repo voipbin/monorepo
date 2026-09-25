@@ -25,7 +25,8 @@ var (
 // It uses reflection to automatically determine the correct type for each field based on the struct's db tags.
 //
 // Example usage:
-//   typed, err := ConvertMapToTypedMap(filters, agent.Agent{})
+//
+//	typed, err := ConvertMapToTypedMap(filters, agent.Agent{})
 //
 // The function handles:
 // - uuid.UUID fields (converts string to UUID)

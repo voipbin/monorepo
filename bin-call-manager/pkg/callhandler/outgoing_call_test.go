@@ -1,10 +1,10 @@
 package callhandler
 
 import (
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	stderrors "errors"
 	"fmt"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"strings"
 	"testing"
@@ -12,10 +12,10 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
@@ -113,8 +113,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
 				Type:      call.TypeFlow,
 
-				ChainedCallIDs:  []uuid.UUID{},
-				RecordingIDs:    []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Status:      call.StatusDialing,
@@ -141,7 +141,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: testhelper.TimePtr("2021-02-19T06:32:14.621Z"),
+				TMCreate:      testhelper.TimePtr("2021-02-19T06:32:14.621Z"),
 				TMUpdate:      nil,
 				TMRinging:     nil,
 				TMProgressing: nil,
@@ -751,14 +751,14 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 					OwnerType: commonidentity.OwnerTypeAgent,
 					OwnerID:   uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
 				},
-				ChannelID:      "d948969e-5de3-11ed-94f5-137ec429b6b6",
-				FlowID:         uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
-				ActiveflowID:   uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
-				Type:           call.TypeFlow,
-				ChainedCallIDs:  []uuid.UUID{},
-				RecordingIDs:    []uuid.UUID{},
+				ChannelID:        "d948969e-5de3-11ed-94f5-137ec429b6b6",
+				FlowID:           uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+				ActiveflowID:     uuid.FromStringOrNil("11e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+				Type:             call.TypeFlow,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Status:          call.StatusDialing,
+				Status:           call.StatusDialing,
 				Data: map[call.DataType]string{
 					call.DataTypeEarlyExecution:            "true",
 					call.DataTypeExecuteNextMasterOnHangup: "true",
@@ -787,7 +787,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 					},
 				},
 
-				TMCreate: testhelper.TimePtr("2021-02-19T06:32:14.621Z"),
+				TMCreate:      testhelper.TimePtr("2021-02-19T06:32:14.621Z"),
 				TMUpdate:      nil,
 				TMRinging:     nil,
 				TMProgressing: nil,
@@ -1766,9 +1766,9 @@ func Test_createChannel(t *testing.T) {
 			expectArgs:       "context_type=call,context=call-out,call_id=c1c1c1c1-0000-0000-0000-000000000001,transport=udp,direction=outgoing",
 			expectDialURI:    "pjsip/call-out/sip:001115551234#@carrier.example.com;transport=udp",
 			expectVariables: map[string]string{
-				"PJSIP_HEADER(add,X-Route-Hint)":                         "premium",
-				"CALLERID(name)":                                         "",
-				"CALLERID(num)":                                          "+821100000002",
+				"PJSIP_HEADER(add,X-Route-Hint)": "premium",
+				"CALLERID(name)":                 "",
+				"CALLERID(num)":                  "+821100000002",
 				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
@@ -3581,7 +3581,6 @@ func Test_createChannelOutgoing_ProviderCodecs(t *testing.T) {
 		})
 	}
 }
-
 
 // Test_CreateCallOutgoing_whitelistRejectedEvent pins the payload of the
 // `call.outbound_whitelist_rejected` publish. VOIP-1405 replaced the inline

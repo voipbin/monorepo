@@ -51,17 +51,17 @@ var (
 
 	// v1
 	// conferences
-	regV1ConferencesCountByCustomer   = regexp.MustCompile("/v1/conferences/count_by_customer$")
-	regV1Conferences                  = regexp.MustCompile("/v1/conferences$")
-	regV1ConferencesGet               = regexp.MustCompile(`/v1/conferences\?`)
+	regV1ConferencesCountByCustomer        = regexp.MustCompile("/v1/conferences/count_by_customer$")
+	regV1Conferences                       = regexp.MustCompile("/v1/conferences$")
+	regV1ConferencesGet                    = regexp.MustCompile(`/v1/conferences\?`)
 	regV1ConferencesIDDirectHashRegenerate = regexp.MustCompile("/v1/conferences/" + regUUID + "/direct-hash-regenerate$")
 	regV1ConferencesID                     = regexp.MustCompile("/v1/conferences/" + regUUID + "$")
-	regV1ConferencesIDRecordingID     = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_id$")
-	regV1ConferencesIDRecordingStart  = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_start$")
-	regV1ConferencesIDRecordingStop   = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_stop$")
-	regV1ConferencesIDStop            = regexp.MustCompile("/v1/conferences/" + regUUID + "/stop$")
-	regV1ConferencesIDTranscribeStart = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_start$")
-	regV1ConferencesIDTranscribeStop  = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_stop$")
+	regV1ConferencesIDRecordingID          = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_id$")
+	regV1ConferencesIDRecordingStart       = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_start$")
+	regV1ConferencesIDRecordingStop        = regexp.MustCompile("/v1/conferences/" + regUUID + "/recording_stop$")
+	regV1ConferencesIDStop                 = regexp.MustCompile("/v1/conferences/" + regUUID + "/stop$")
+	regV1ConferencesIDTranscribeStart      = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_start$")
+	regV1ConferencesIDTranscribeStop       = regexp.MustCompile("/v1/conferences/" + regUUID + "/transcribe_stop$")
 
 	// conferencecalls
 	regV1ConferencecallsGet           = regexp.MustCompile(`/v1/conferencecalls\?`)

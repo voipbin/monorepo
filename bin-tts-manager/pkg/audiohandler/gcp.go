@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	defaultGCPEndpoint     = "texttospeech.googleapis.com:443"
-	gcpSynthesizeTimeout   = 5 * time.Second
+	defaultGCPEndpoint   = "texttospeech.googleapis.com:443"
+	gcpSynthesizeTimeout = 5 * time.Second
 )
 
 var promGCPSynthesizeDuration = prometheus.NewHistogramVec(

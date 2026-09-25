@@ -1,12 +1,12 @@
 package dbhandler
 
 import (
-	"time"
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -64,7 +64,7 @@ func Test_RecordingCreate(t *testing.T) {
 				},
 
 				TMStart: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
-				TMEnd: testhelper.TimePtr("2020-04-18T03:22:19.995000Z"),
+				TMEnd:   testhelper.TimePtr("2020-04-18T03:22:19.995000Z"),
 			},
 
 			responseCurTime: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
@@ -99,8 +99,8 @@ func Test_RecordingCreate(t *testing.T) {
 					"125a1ea4-8cb9-11ed-b34c-336ac5eeeec4",
 				},
 
-				TMStart: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
-				TMEnd: testhelper.TimePtr("2020-04-18T03:22:19.995000Z"),
+				TMStart:  testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMEnd:    testhelper.TimePtr("2020-04-18T03:22:19.995000Z"),
 				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate: nil,
 				TMDelete: nil,

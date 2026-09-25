@@ -23,11 +23,11 @@ import (
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
-	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
@@ -148,18 +148,18 @@ type CallHandler interface {
 
 // callHandler structure for service handle
 type callHandler struct {
-	utilHandler            utilhandler.UtilHandler
-	reqHandler             requesthandler.RequestHandler
-	db                     dbhandler.DBHandler
-	notifyHandler          notifyhandler.NotifyHandler
-	confbridgeHandler      confbridgehandler.ConfbridgeHandler
-	channelHandler         channelhandler.ChannelHandler
-	bridgeHandler          bridgehandler.BridgeHandler
-	recordingHandler       recordinghandler.RecordingHandler
-	externalMediaHandler   externalmediahandler.ExternalMediaHandler
-	groupcallHandler       groupcallhandler.GroupcallHandler
-	recoveryHandler        RecoveryHandler
-	outboundConfigHandler  outboundconfighandler.OutboundConfigHandler
+	utilHandler           utilhandler.UtilHandler
+	reqHandler            requesthandler.RequestHandler
+	db                    dbhandler.DBHandler
+	notifyHandler         notifyhandler.NotifyHandler
+	confbridgeHandler     confbridgehandler.ConfbridgeHandler
+	channelHandler        channelhandler.ChannelHandler
+	bridgeHandler         bridgehandler.BridgeHandler
+	recordingHandler      recordinghandler.RecordingHandler
+	externalMediaHandler  externalmediahandler.ExternalMediaHandler
+	groupcallHandler      groupcallhandler.GroupcallHandler
+	recoveryHandler       RecoveryHandler
+	outboundConfigHandler outboundconfighandler.OutboundConfigHandler
 }
 
 // contextType

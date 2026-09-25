@@ -28,12 +28,12 @@ func newStartTestHandler(t *testing.T) (*analysisHandler, *requesthandler.MockRe
 	evMock := eventhandler.NewMockEventHandler(mc)
 
 	h := &analysisHandler{
-		utilHandler:  utilhandler.NewUtilHandler(),
-		reqHandler:   reqMock,
-		dbHandler:    dbMock,
-		eventHandler: evMock,
-		models:       StageModels{Stage1: "m1", Stage2: "m2", Stage3: "m3"},
-		sem:          make(chan struct{}, analysisMaxConcurrentJobs),
+		utilHandler:     utilhandler.NewUtilHandler(),
+		reqHandler:      reqMock,
+		dbHandler:       dbMock,
+		eventHandler:    evMock,
+		models:          StageModels{Stage1: "m1", Stage2: "m2", Stage3: "m3"},
+		sem:             make(chan struct{}, analysisMaxConcurrentJobs),
 		metricStarted:   promAnalysisStarted,
 		metricCompleted: promAnalysisCompleted,
 		metricDuration:  promAnalysisDuration,

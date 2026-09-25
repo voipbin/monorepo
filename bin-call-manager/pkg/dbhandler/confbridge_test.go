@@ -1,12 +1,12 @@
 package dbhandler
 
 import (
-	"time"
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -45,7 +45,7 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 				ChannelCallIDs:   map[string]uuid.UUID{},
 				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMCreate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 				TMUpdate:         nil,
 				TMDelete:         nil,
 			},
@@ -99,9 +99,9 @@ func Test_ConfbridgeCreateAndGet(t *testing.T) {
 					uuid.FromStringOrNil("f4bb44a8-972c-11ed-b242-d37f337f0809"),
 				},
 				ExternalMediaIDs: []uuid.UUID{uuid.FromStringOrNil("f4deecf0-972c-11ed-8ad1-1b7b0c5441ac")},
-				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
-				TMUpdate:        nil,
-				TMDelete:        nil,
+				TMCreate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMUpdate:         nil,
+				TMDelete:         nil,
 			},
 		},
 	}
@@ -175,7 +175,7 @@ func Test_ConfbridgeGetByBridgeID(t *testing.T) {
 				ChannelCallIDs:   map[string]uuid.UUID{},
 				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMCreate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 				TMUpdate:         nil,
 				TMDelete:         nil,
 			},
@@ -361,13 +361,13 @@ func Test_ConfbridgeSetRecordingID(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("75b1275e-3305-11ec-8dba-8bf525336b2b"),
 				},
-				Flags:          []confbridge.Flag{},
-				ChannelCallIDs: map[string]uuid.UUID{},
+				Flags:            []confbridge.Flag{},
+				ChannelCallIDs:   map[string]uuid.UUID{},
 				RecordingID:      uuid.FromStringOrNil("760b193a-3305-11ec-a9af-0fbbe717a04f"),
 				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
-				TMUpdate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMCreate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMUpdate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 				TMDelete:         nil,
 			},
 		},
@@ -454,8 +454,8 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 				ChannelCallIDs:   map[string]uuid.UUID{},
 				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
-				TMUpdate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMCreate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMUpdate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 				TMDelete:         nil,
 			},
 		},
@@ -481,8 +481,8 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 				ChannelCallIDs:   map[string]uuid.UUID{},
 				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
-				TMUpdate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMCreate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMUpdate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 				TMDelete:         nil,
 			},
 		},
@@ -562,8 +562,8 @@ func Test_ConfbridgeSetStatus(t *testing.T) {
 				ChannelCallIDs:   map[string]uuid.UUID{},
 				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
-				TMUpdate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMCreate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMUpdate:         testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 				TMDelete:         nil,
 			},
 		},

@@ -56,4 +56,3 @@ func websocketConnect(ctx context.Context, mediaURI string) (*websocket.Conn, er
 
 	return conn, nil
 }
-

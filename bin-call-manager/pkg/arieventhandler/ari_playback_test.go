@@ -1,8 +1,8 @@
 package arieventhandler
 
 import (
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"testing"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -188,7 +188,7 @@ func TestEventHandlerPlaybackFinishedChannelGone(t *testing.T) {
 				AsteriskID: "42:01:0a:a4:0f:d0",
 				ID:         "ec552c6c-2757-11eb-b12c-9f77f7c7cb07",
 				State:      "Down",
-				TMEnd: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMEnd:      testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 			},
 			"ec552c6c-2757-11eb-b12c-9f77f7c7cb07",
 			"a41baef4-04b9-403d-a9f5-8ea82c8b1749",

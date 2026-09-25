@@ -13,9 +13,9 @@ func TestConvertStringMapToFieldMap(t *testing.T) {
 		{
 			name: "valid_conversion",
 			src: map[string]any{
-				"name":           "Test Outplan",
-				"detail":         "Test detail",
-				"dial_timeout":   30000,
+				"name":            "Test Outplan",
+				"detail":          "Test detail",
+				"dial_timeout":    30000,
 				"max_try_count_0": 3,
 			},
 			wantErr: false,

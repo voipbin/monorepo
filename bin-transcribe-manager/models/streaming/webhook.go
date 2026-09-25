@@ -14,11 +14,11 @@ import (
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	StreamingID  uuid.UUID           `json:"streaming_id"`
-	TranscribeID uuid.UUID           `json:"transcribe_id"`
+	StreamingID  uuid.UUID            `json:"streaming_id"`
+	TranscribeID uuid.UUID            `json:"transcribe_id"`
 	Direction    transcript.Direction `json:"direction"`
-	Message      string              `json:"message,omitempty"`
-	TMEvent      *time.Time          `json:"tm_event"`
+	Message      string               `json:"message,omitempty"`
+	TMEvent      *time.Time           `json:"tm_event"`
 
 	TMCreate *time.Time `json:"tm_create"`
 }

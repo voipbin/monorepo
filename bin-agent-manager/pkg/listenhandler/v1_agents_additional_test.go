@@ -230,7 +230,6 @@ func Test_processV1AgentsIDTagIDsPut(t *testing.T) {
 	}
 }
 
-
 func Test_processV1AgentsUsernameLogin(t *testing.T) {
 	tests := []struct {
 		name string
@@ -379,7 +378,6 @@ func Test_processV1AgentsIDAddressesPut(t *testing.T) {
 		})
 	}
 }
-
 
 func Test_processV1AgentsPost_invalid_ring_method(t *testing.T) {
 	mc := gomock.NewController(t)

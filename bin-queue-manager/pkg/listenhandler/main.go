@@ -48,13 +48,13 @@ var (
 
 	// v1
 	// queues
-	regV1QueuesCountByCustomer = regexp.MustCompile("/v1/queues/count_by_customer$")
-	regV1Queues                = regexp.MustCompile("/v1/queues$")
-	regV1QueuesGet             = regexp.MustCompile(`/v1/queues\?` + regAny + "$")
-	reqV1QueuesID              = regexp.MustCompile("/v1/queues/" + regUUID + "$")
-	reqV1QueuesIDTagIDs        = regexp.MustCompile("/v1/queues/" + regUUID + "/tag_ids$")
-	reqV1QueuesIDRoutingMethod = regexp.MustCompile("/v1/queues/" + regUUID + "/routing_method$")
-	reqV1QueuesIDAgentsGet     = regexp.MustCompile("/v1/queues/" + regUUID + `/agents(\?.*)?$`)
+	regV1QueuesCountByCustomer        = regexp.MustCompile("/v1/queues/count_by_customer$")
+	regV1Queues                       = regexp.MustCompile("/v1/queues$")
+	regV1QueuesGet                    = regexp.MustCompile(`/v1/queues\?` + regAny + "$")
+	reqV1QueuesID                     = regexp.MustCompile("/v1/queues/" + regUUID + "$")
+	reqV1QueuesIDTagIDs               = regexp.MustCompile("/v1/queues/" + regUUID + "/tag_ids$")
+	reqV1QueuesIDRoutingMethod        = regexp.MustCompile("/v1/queues/" + regUUID + "/routing_method$")
+	reqV1QueuesIDAgentsGet            = regexp.MustCompile("/v1/queues/" + regUUID + `/agents(\?.*)?$`)
 	reqV1QueuesIDDirectHashRegenerate = regexp.MustCompile("/v1/queues/" + regUUID + "/direct-hash-regenerate$")
 
 	// queuecalls

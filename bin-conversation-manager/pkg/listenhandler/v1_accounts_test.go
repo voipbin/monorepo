@@ -160,13 +160,13 @@ func Test_processV1AccountsPost(t *testing.T) {
 	tests := []struct {
 		name string
 
-		expectCustomerID      uuid.UUID
-		expectType            account.Type
-		expectName            string
-		expectDetail          string
-		expectSecret          string
-		expectToken           string
-		expectMessageFlowID   uuid.UUID
+		expectCustomerID    uuid.UUID
+		expectType          account.Type
+		expectName          string
+		expectDetail        string
+		expectSecret        string
+		expectToken         string
+		expectMessageFlowID uuid.UUID
 
 		responseAccount *account.Account
 
@@ -434,7 +434,7 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				},
 			},
 
-			expectID: uuid.FromStringOrNil("28d2d837-fecd-11ed-8139-dff04db7fa05"),
+			expectID:       uuid.FromStringOrNil("28d2d837-fecd-11ed-8139-dff04db7fa05"),
 			expectedFields: map[account.Field]any{
 				// Fields contain provider_data as json.RawMessage — validated via gomock.Any()
 			},

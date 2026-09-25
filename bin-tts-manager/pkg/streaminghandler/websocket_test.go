@@ -210,7 +210,7 @@ func Test_websocketWrite_fragmentsData(t *testing.T) {
 		{
 			name:              "slin16 frame size - partial",
 			dataLen:           frameSizeSlin16 + 100, // 740
-			frameSize:         frameSizeSlin16,        // 640
+			frameSize:         frameSizeSlin16,       // 640
 			expectedFragments: 2,
 			lastFragmentSize:  100,
 		},

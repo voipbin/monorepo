@@ -46,13 +46,13 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("paddle_webhook_secret_key", "", "Paddle webhook signature verification secret")
 
 	bindings := map[string]string{
-		"database_dsn":               "DATABASE_DSN",
-		"prometheus_endpoint":        "PROMETHEUS_ENDPOINT",
-		"prometheus_listen_address":  "PROMETHEUS_LISTEN_ADDRESS",
-		"rabbitmq_address":           "RABBITMQ_ADDRESS",
-		"ssl_privkey_base64":         "SSL_PRIVKEY_BASE64",
-		"ssl_cert_base64":            "SSL_CERT_BASE64",
-		"paddle_webhook_secret_key":  "PADDLE_WEBHOOK_SECRET_KEY",
+		"database_dsn":              "DATABASE_DSN",
+		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
+		"rabbitmq_address":          "RABBITMQ_ADDRESS",
+		"ssl_privkey_base64":        "SSL_PRIVKEY_BASE64",
+		"ssl_cert_base64":           "SSL_CERT_BASE64",
+		"paddle_webhook_secret_key": "PADDLE_WEBHOOK_SECRET_KEY",
 	}
 
 	for flagKey, envKey := range bindings {

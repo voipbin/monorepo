@@ -5,9 +5,9 @@ type CostMode int
 
 const (
 	CostModeDisabled   CostMode = iota // Service not available — requests rejected
-	CostModeFree                        // Allowed, no charge
-	CostModeCreditOnly                  // Credit only, tokens not accepted
-	CostModeTokenFirst                  // Token first, overflow to credits
+	CostModeFree                       // Allowed, no charge
+	CostModeCreditOnly                 // Credit only, tokens not accepted
+	CostModeTokenFirst                 // Token first, overflow to credits
 )
 
 // CostInfo holds the billing mode and rates for a cost type.

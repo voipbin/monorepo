@@ -9,16 +9,16 @@ const (
 	FieldOwnerType  Field = "owner_type"  // owner_type
 	FieldOwnerID    Field = "owner_id"    // owner_id
 
-	FieldActiveflowID  Field = "activeflow_id"   // activeflow_id
-	FieldReferenceType Field = "reference_type"  // reference_type
-	FieldReferenceID   Field = "reference_id"    // reference_id
-	FieldStatus        Field = "status"          // status
-	FieldFormat        Field = "format"          // format
-	FieldOnEndFlowID   Field = "on_end_flow_id"  // on_end_flow_id
-	FieldRecordingName Field = "recording_name"  // recording_name
-	FieldFilenames     Field = "filenames"       // filenames
-	FieldAsteriskID    Field = "asterisk_id"     // asterisk_id
-	FieldChannelIDs    Field = "channel_ids"     // channel_ids
+	FieldActiveflowID  Field = "activeflow_id"  // activeflow_id
+	FieldReferenceType Field = "reference_type" // reference_type
+	FieldReferenceID   Field = "reference_id"   // reference_id
+	FieldStatus        Field = "status"         // status
+	FieldFormat        Field = "format"         // format
+	FieldOnEndFlowID   Field = "on_end_flow_id" // on_end_flow_id
+	FieldRecordingName Field = "recording_name" // recording_name
+	FieldFilenames     Field = "filenames"      // filenames
+	FieldAsteriskID    Field = "asterisk_id"    // asterisk_id
+	FieldChannelIDs    Field = "channel_ids"    // channel_ids
 
 	FieldTMStart  Field = "tm_start"  // tm_start
 	FieldTMEnd    Field = "tm_end"    // tm_end

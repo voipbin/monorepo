@@ -41,7 +41,7 @@ func Test_NumberV1AvailableNumberList(t *testing.T) {
 				URI:      "/v1/available_numbers?page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
-			Data:     []byte(`{"country_code":"US","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"}`),
+				Data:     []byte(`{"country_code":"US","customer_id":"b7041f62-7ff5-11ec-b1dd-d7e05b3c5096"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -74,7 +74,7 @@ func Test_NumberV1AvailableNumberList(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			filters := map[string]any{
-				"customer_id": tt.customerID,
+				"customer_id":  tt.customerID,
 				"country_code": tt.countryCode,
 			}
 			res, err := reqHandler.NumberV1AvailableNumberList(ctx, tt.pageSize, filters)

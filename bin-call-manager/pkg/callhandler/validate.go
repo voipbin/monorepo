@@ -114,10 +114,10 @@ func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, cu *
 
 // validateOutgoingCallPermission checks whether the given customer is eligible to make
 // an outgoing call. It validates:
-// 1. Customer is not nil (caller must fetch the customer before calling this function).
-// 2. Customer account status is active.
-// 3. For PSTN (TypeTel) destinations, customer identity must be verified.
-//    Internal system customer IDs bypass the identity verification check.
+//  1. Customer is not nil (caller must fetch the customer before calling this function).
+//  2. Customer account status is active.
+//  3. For PSTN (TypeTel) destinations, customer identity must be verified.
+//     Internal system customer IDs bypass the identity verification check.
 func (h *callHandler) validateOutgoingCallPermission(ctx context.Context, cu *cucustomer.Customer, destination commonaddress.Address) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "validateOutgoingCallPermission",

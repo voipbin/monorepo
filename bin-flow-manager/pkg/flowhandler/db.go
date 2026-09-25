@@ -179,7 +179,7 @@ func (h *flowHandler) Create(
 // List returns list of flows
 func (h *flowHandler) List(ctx context.Context, token string, size uint64, filters map[flow.Field]any) ([]*flow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "List",
+		"func":  "List",
 		"token": token,
 		"size":  size,
 		"limit": size,

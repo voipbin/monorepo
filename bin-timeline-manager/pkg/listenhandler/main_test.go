@@ -75,10 +75,10 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
-		Publisher: commonoutline.ServiceName("flow-manager"),
+		Publisher:  commonoutline.ServiceName("flow-manager"),
 		ResourceID: testID,
-		Events:    []string{"activeflow_*"},
-		PageSize:  10,
+		Events:     []string{"activeflow_*"},
+		PageSize:   10,
 	}
 	reqData, _ := json.Marshal(req)
 
@@ -168,10 +168,10 @@ func TestProcessRequest_V1EventsPost_HandlerError(t *testing.T) {
 
 	testID := uuid.Must(uuid.NewV4())
 	req := &request.V1DataEventsPost{
-		Publisher: commonoutline.ServiceName("flow-manager"),
+		Publisher:  commonoutline.ServiceName("flow-manager"),
 		ResourceID: testID,
-		Events:    []string{"activeflow_*"},
-		PageSize:  10,
+		Events:     []string{"activeflow_*"},
+		PageSize:   10,
 	}
 	reqData, _ := json.Marshal(req)
 

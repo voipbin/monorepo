@@ -62,12 +62,12 @@ var (
 	regV1ActiveflowsIDServiceStop     = regexp.MustCompile("/v1/activeflows/" + regUUID + "/service_stop$")
 
 	// flows
-	regV1FlowsCountByCustomer = regexp.MustCompile("/v1/flows/count_by_customer$")
-	regV1FlowsGet             = regexp.MustCompile(`/v1/flows\?`)
-	regV1Flows                = regexp.MustCompile("/v1/flows$")
-	regV1FlowsID          = regexp.MustCompile("/v1/flows/" + regUUID + "$")
-	regV1FlowsIDActions   = regexp.MustCompile("/v1/flows/" + regUUID + "/actions$")
-	regV1FlowsIDActionsID              = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
+	regV1FlowsCountByCustomer        = regexp.MustCompile("/v1/flows/count_by_customer$")
+	regV1FlowsGet                    = regexp.MustCompile(`/v1/flows\?`)
+	regV1Flows                       = regexp.MustCompile("/v1/flows$")
+	regV1FlowsID                     = regexp.MustCompile("/v1/flows/" + regUUID + "$")
+	regV1FlowsIDActions              = regexp.MustCompile("/v1/flows/" + regUUID + "/actions$")
+	regV1FlowsIDActionsID            = regexp.MustCompile("/v1/flows/" + regUUID + "/actions/" + regUUID + "$")
 	regV1FlowsIDDirectHashRegenerate = regexp.MustCompile("/v1/flows/" + regUUID + "/direct-hash-regenerate$")
 
 	// variables

@@ -50,7 +50,7 @@ func Test_CampaignV1CampaigncallList(t *testing.T) {
 				URI:      fmt.Sprintf("/v1/campaigncalls?page_token=%s&page_size=10", url.QueryEscape("2020-09-20T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
-			Data:     []byte(`{"customer_id":"61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0"}`),
+				Data:     []byte(`{"customer_id":"61e0b6f6-6e2a-11ee-8da5-ef7ab5511ed0"}`),
 			},
 			[]cacampaigncall.Campaigncall{
 				{
@@ -76,9 +76,9 @@ func Test_CampaignV1CampaigncallList(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			filters := map[cacampaigncall.Field]any{
-			cacampaigncall.FieldCustomerID: tt.customerID,
-		}
-		res, err := reqHandler.CampaignV1CampaigncallList(ctx, tt.pageToken, tt.pageSize, filters)
+				cacampaigncall.FieldCustomerID: tt.customerID,
+			}
+			res, err := reqHandler.CampaignV1CampaigncallList(ctx, tt.pageToken, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

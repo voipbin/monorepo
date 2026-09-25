@@ -31,14 +31,14 @@ func Test_Create(t *testing.T) {
 		voiceID       string
 		direction     streaming.Direction
 
-		responseExisting []*speaking.Speaking
-		responseExistErr error
+		responseExisting  []*speaking.Speaking
+		responseExistErr  error
 		responseCreateErr error
 		responseStreaming *streaming.Streaming
 		responseStreamErr error
 		responseUpdateErr error
-		responseGet      *speaking.Speaking
-		responseGetErr   error
+		responseGet       *speaking.Speaking
+		responseGetErr    error
 
 		expectErr bool
 	}{
@@ -53,7 +53,7 @@ func Test_Create(t *testing.T) {
 			voiceID:       "voice123",
 			direction:     streaming.DirectionIncoming,
 
-			responseExisting: []*speaking.Speaking{},
+			responseExisting:  []*speaking.Speaking{},
 			responseStreaming: &streaming.Streaming{},
 			responseGet: &speaking.Speaking{
 				Identity: commonidentity.Identity{
@@ -182,7 +182,7 @@ func Test_Create(t *testing.T) {
 			voiceID:       "",
 			direction:     streaming.DirectionIncoming,
 
-			responseExisting: []*speaking.Speaking{},
+			responseExisting:  []*speaking.Speaking{},
 			responseStreaming: &streaming.Streaming{},
 			responseGet: &speaking.Speaking{
 				Identity: commonidentity.Identity{
@@ -708,13 +708,13 @@ func Test_Stop(t *testing.T) {
 
 		id uuid.UUID
 
-		responseSpeaking    *speaking.Speaking
-		responseGetErr      error
+		responseSpeaking      *speaking.Speaking
+		responseGetErr        error
 		responseStopStreaming *streaming.Streaming
-		responseStopErr     error
-		responseUpdateErr   error
-		responseGetAfter    *speaking.Speaking
-		responseGetAfterErr error
+		responseStopErr       error
+		responseUpdateErr     error
+		responseGetAfter      *speaking.Speaking
+		responseGetAfterErr   error
 
 		expectErr bool
 	}{
@@ -837,10 +837,10 @@ func Test_Delete(t *testing.T) {
 
 		id uuid.UUID
 
-		responseSpeaking  *speaking.Speaking
-		responseGetErr    error
-		responseDeleteErr error
-		responseGetAfter  *speaking.Speaking
+		responseSpeaking    *speaking.Speaking
+		responseGetErr      error
+		responseDeleteErr   error
+		responseGetAfter    *speaking.Speaking
 		responseGetAfterErr error
 
 		expectErr bool

@@ -672,26 +672,26 @@ func Test_processV1TalkChatsIDDelete_notFound(t *testing.T) {
 // 			},
 // 		},
 // 	}
-// 
+//
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
 // 			mc := gomock.NewController(t)
 // 			defer mc.Finish()
-// 
+//
 // 			mockSock := sockhandler.NewMockSockHandler(mc)
 // 			mockChat := chathandler.NewMockChatHandler(mc)
-// 
+//
 // 			h := &listenHandler{
 // 				sockHandler: mockSock,
 // 				chatHandler: mockChat,
 // 			}
-// 
+//
 // 			ctx := context.Background()
 // 			res, err := h.processV1TalkChatsID(ctx, *tt.request)
 // 			if err != nil {
 // 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 // 			}
-// 
+//
 // 			if !reflect.DeepEqual(res, tt.expectRes) {
 // 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 // 			}

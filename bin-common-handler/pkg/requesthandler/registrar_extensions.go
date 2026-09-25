@@ -215,4 +215,3 @@ func (r *requestHandler) RegistrarV1ExtensionCountByCustomerID(ctx context.Conte
 
 	return res.Count, nil
 }
-

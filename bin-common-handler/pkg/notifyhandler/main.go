@@ -281,4 +281,3 @@ func (h *notifyHandler) initGlobalTopicExchange() {
 		logrus.Fatalf("Could not declare the global topic exchange. err: %v", err)
 	}
 }
-

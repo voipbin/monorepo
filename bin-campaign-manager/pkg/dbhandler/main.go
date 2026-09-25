@@ -101,7 +101,6 @@ var (
 	ErrNotFound = errors.New("record not found")
 )
 
-
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{

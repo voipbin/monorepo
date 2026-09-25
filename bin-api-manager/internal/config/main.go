@@ -174,8 +174,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"rate_limit_v1_burst":                  "RATE_LIMIT_V1_BURST",
 		"rate_limit_provisioning_public_rps":   "RATE_LIMIT_PROVISIONING_PUBLIC_RPS",
 		"rate_limit_provisioning_public_burst": "RATE_LIMIT_PROVISIONING_PUBLIC_BURST",
-		"rate_limit_mcp_oauth_public_rps":       "RATE_LIMIT_MCP_OAUTH_PUBLIC_RPS",
-		"rate_limit_mcp_oauth_public_burst":     "RATE_LIMIT_MCP_OAUTH_PUBLIC_BURST",
+		"rate_limit_mcp_oauth_public_rps":      "RATE_LIMIT_MCP_OAUTH_PUBLIC_RPS",
+		"rate_limit_mcp_oauth_public_burst":    "RATE_LIMIT_MCP_OAUTH_PUBLIC_BURST",
 
 		"rate_limit_customer_v1_rps":            "RATE_LIMIT_CUSTOMER_V1_RPS",
 		"rate_limit_customer_v1_burst":          "RATE_LIMIT_CUSTOMER_V1_BURST",

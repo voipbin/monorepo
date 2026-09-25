@@ -203,9 +203,9 @@ func Test_RegistrarV1ExtensionGet(t *testing.T) {
 				Password:  "password",
 				Name:      "test domain",
 				Detail:    "test domain detail",
-				TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
-				TMUpdate: nil,
-				TMDelete: nil,
+				TMCreate:  func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+				TMUpdate:  nil,
+				TMDelete:  nil,
 			},
 		},
 	}
@@ -397,10 +397,10 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 
 			"bin-manager.registrar-manager.request",
 			&sock.Request{
-			URI:      "/v1/extensions/extension/test-exten",
-			Method:   sock.RequestMethodGet,
-			DataType: ContentTypeJSON,
-			Data:     []byte(`{"customer_id":"5703f08a-5710-11ee-9295-77eb098ad269","extension":"test-exten"}`),
+				URI:      "/v1/extensions/extension/test-exten",
+				Method:   sock.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"5703f08a-5710-11ee-9295-77eb098ad269","extension":"test-exten"}`),
 			},
 			&rmextension.Extension{
 				Identity: identity.Identity{
@@ -411,9 +411,9 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 				Detail:    "test detail",
 				Extension: "test",
 				Password:  "password",
-				TMCreate: func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
-				TMUpdate: nil,
-				TMDelete: nil,
+				TMCreate:  func() *time.Time { t := time.Date(2020, 9, 20, 3, 23, 20, 995000000, time.UTC); return &t }(),
+				TMUpdate:  nil,
+				TMDelete:  nil,
 			},
 		},
 	}
@@ -430,12 +430,12 @@ func Test_RegistrarV1ExtensionGetsByExtension(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-		filters := map[rmextension.Field]any{
-			rmextension.FieldCustomerID: tt.customerID,
-			rmextension.FieldExtension: tt.extension,
-		}
+			filters := map[rmextension.Field]any{
+				rmextension.FieldCustomerID: tt.customerID,
+				rmextension.FieldExtension:  tt.extension,
+			}
 
-		res, err := reqHandler.RegistrarV1ExtensionGetByExtension(ctx, tt.extension, filters)
+			res, err := reqHandler.RegistrarV1ExtensionGetByExtension(ctx, tt.extension, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -32,15 +32,15 @@ func TestMessageHandlerTelnyx_SendMessage(t *testing.T) {
 	messageID := uuid.FromStringOrNil("123e4567-e89b-12d3-a456-426614174000")
 
 	tests := []struct {
-		name         string
-		messageID    uuid.UUID
-		source       *commonaddress.Address
-		targets      []target.Target
-		text         string
-		telnyxResp   *telnyx.MessageResponse
-		telnyxErr    error
-		expectError  bool
-		expectCount  int
+		name        string
+		messageID   uuid.UUID
+		source      *commonaddress.Address
+		targets     []target.Target
+		text        string
+		telnyxResp  *telnyx.MessageResponse
+		telnyxErr   error
+		expectError bool
+		expectCount int
 	}{
 		{
 			name:      "successful_single_send",

@@ -16,9 +16,9 @@ import (
 type Speech struct {
 	commonidentity.Identity
 
-	StreamingID  uuid.UUID           `json:"streaming_id"`
-	TranscribeID uuid.UUID           `json:"transcribe_id"`
-	Language     string              `json:"language"`
+	StreamingID  uuid.UUID            `json:"streaming_id"`
+	TranscribeID uuid.UUID            `json:"transcribe_id"`
+	Language     string               `json:"language"`
 	Direction    transcript.Direction `json:"direction"`
 
 	Message string     `json:"message,omitempty"`

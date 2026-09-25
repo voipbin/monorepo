@@ -7,11 +7,11 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
+	commonsock "monorepo/bin-common-handler/pkg/sockhandler"
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
-	commonsock "monorepo/bin-common-handler/pkg/sockhandler"
-	commonnotify "monorepo/bin-common-handler/pkg/notifyhandler"
-	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // ReactionHandler defines business logic for reactions

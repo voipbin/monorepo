@@ -33,9 +33,9 @@ const (
 type AIAudit struct {
 	commonidentity.Identity
 
-	AIcallID        uuid.UUID       `json:"aicall_id,omitempty"         db:"aicall_id,uuid"`
-	AIID            uuid.UUID       `json:"ai_id,omitempty"             db:"ai_id,uuid"`
-	PromptHistoryID uuid.UUID       `json:"prompt_history_id,omitempty" db:"prompt_history_id,uuid"`
+	AIcallID        uuid.UUID `json:"aicall_id,omitempty"         db:"aicall_id,uuid"`
+	AIID            uuid.UUID `json:"ai_id,omitempty"             db:"ai_id,uuid"`
+	PromptHistoryID uuid.UUID `json:"prompt_history_id,omitempty" db:"prompt_history_id,uuid"`
 
 	Status       Status          `json:"status,omitempty"  db:"status"`
 	OverallScore *int            `json:"overall_score"     db:"overall_score"`

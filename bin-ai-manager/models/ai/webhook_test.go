@@ -12,9 +12,9 @@ func TestConvertWebhookMessage_CurrentPromptHistoryID(t *testing.T) {
 	historyID := uuid.Must(uuid.NewV4())
 
 	tests := []struct {
-		name      string
-		ai        *AI
-		expectID  uuid.UUID
+		name       string
+		ai         *AI
+		expectID   uuid.UUID
 		wantInJSON bool
 	}{
 		{

@@ -15,16 +15,16 @@ func TestAIcall(t *testing.T) {
 		assistanceType AssistanceType
 		assistanceID   uuid.UUID
 		aiEngineModel  ai.EngineModel
-		aiTTSType     ai.TTSType
-		aiTTSVoiceID  string
-		aiSTTType     ai.STTType
-		activeflowID  uuid.UUID
-		referenceType ReferenceType
-		referenceID   uuid.UUID
-		confbridgeID  uuid.UUID
-		pipecatcallID uuid.UUID
-		status        Status
-		language      string
+		aiTTSType      ai.TTSType
+		aiTTSVoiceID   string
+		aiSTTType      ai.STTType
+		activeflowID   uuid.UUID
+		referenceType  ReferenceType
+		referenceID    uuid.UUID
+		confbridgeID   uuid.UUID
+		pipecatcallID  uuid.UUID
+		status         Status
+		language       string
 	}{
 		{
 			name: "creates_aicall_with_all_fields",
@@ -32,16 +32,16 @@ func TestAIcall(t *testing.T) {
 			assistanceType: AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001"),
 			aiEngineModel:  ai.EngineModelOpenaiGPT5,
-			aiTTSType:     ai.TTSTypeElevenLabs,
-			aiTTSVoiceID:  "voice-123",
-			aiSTTType:     ai.STTTypeDeepgram,
-			activeflowID:  uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440002"),
-			referenceType: ReferenceTypeCall,
-			referenceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440003"),
-			confbridgeID:  uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440004"),
-			pipecatcallID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440005"),
-			status:        StatusProgressing,
-			language:      "en-US",
+			aiTTSType:      ai.TTSTypeElevenLabs,
+			aiTTSVoiceID:   "voice-123",
+			aiSTTType:      ai.STTTypeDeepgram,
+			activeflowID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440002"),
+			referenceType:  ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440003"),
+			confbridgeID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440004"),
+			pipecatcallID:  uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440005"),
+			status:         StatusProgressing,
+			language:       "en-US",
 		},
 		{
 			name: "creates_aicall_with_empty_fields",
@@ -49,16 +49,16 @@ func TestAIcall(t *testing.T) {
 			assistanceType: "",
 			assistanceID:   uuid.Nil,
 			aiEngineModel:  "",
-			aiTTSType:     "",
-			aiTTSVoiceID:  "",
-			aiSTTType:     "",
-			activeflowID:  uuid.Nil,
-			referenceType: ReferenceTypeNone,
-			referenceID:   uuid.Nil,
-			confbridgeID:  uuid.Nil,
-			pipecatcallID: uuid.Nil,
-			status:        "",
-			language:      "",
+			aiTTSType:      "",
+			aiTTSVoiceID:   "",
+			aiSTTType:      "",
+			activeflowID:   uuid.Nil,
+			referenceType:  ReferenceTypeNone,
+			referenceID:    uuid.Nil,
+			confbridgeID:   uuid.Nil,
+			pipecatcallID:  uuid.Nil,
+			status:         "",
+			language:       "",
 		},
 		{
 			name: "creates_aicall_for_conversation",
@@ -66,16 +66,16 @@ func TestAIcall(t *testing.T) {
 			assistanceType: AssistanceTypeTeam,
 			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440006"),
 			aiEngineModel:  ai.EngineModelGeminiGemini2Dot5Flash,
-			aiTTSType:     ai.TTSTypeGoogle,
-			aiTTSVoiceID:  "",
-			aiSTTType:     ai.STTTypeCartesia,
-			activeflowID:  uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440007"),
-			referenceType: ReferenceTypeConversation,
-			referenceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440008"),
-			confbridgeID:  uuid.Nil,
-			pipecatcallID: uuid.Nil,
-			status:        StatusInitiating,
-			language:      "ko-KR",
+			aiTTSType:      ai.TTSTypeGoogle,
+			aiTTSVoiceID:   "",
+			aiSTTType:      ai.STTTypeCartesia,
+			activeflowID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440007"),
+			referenceType:  ReferenceTypeConversation,
+			referenceID:    uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440008"),
+			confbridgeID:   uuid.Nil,
+			pipecatcallID:  uuid.Nil,
+			status:         StatusInitiating,
+			language:       "ko-KR",
 		},
 		{
 			name: "creates_aicall_for_task",
@@ -83,16 +83,16 @@ func TestAIcall(t *testing.T) {
 			assistanceType: AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440009"),
 			aiEngineModel:  ai.EngineModelOpenaiGPT5Mini,
-			aiTTSType:     ai.TTSTypeNone,
-			aiTTSVoiceID:  "",
-			aiSTTType:     ai.STTTypeNone,
-			activeflowID:  uuid.Nil,
-			referenceType: ReferenceTypeTask,
-			referenceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440010"),
-			confbridgeID:  uuid.Nil,
-			pipecatcallID: uuid.Nil,
-			status:        StatusTerminated,
-			language:      "ja-JP",
+			aiTTSType:      ai.TTSTypeNone,
+			aiTTSVoiceID:   "",
+			aiSTTType:      ai.STTTypeNone,
+			activeflowID:   uuid.Nil,
+			referenceType:  ReferenceTypeTask,
+			referenceID:    uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440010"),
+			confbridgeID:   uuid.Nil,
+			pipecatcallID:  uuid.Nil,
+			status:         StatusTerminated,
+			language:       "ja-JP",
 		},
 	}
 
@@ -102,16 +102,16 @@ func TestAIcall(t *testing.T) {
 				AssistanceType: tt.assistanceType,
 				AssistanceID:   tt.assistanceID,
 				AIEngineModel:  tt.aiEngineModel,
-				AITTSType:     tt.aiTTSType,
-				AITTSVoiceID:  tt.aiTTSVoiceID,
-				AISTTType:     tt.aiSTTType,
-				ActiveflowID:  tt.activeflowID,
-				ReferenceType: tt.referenceType,
-				ReferenceID:   tt.referenceID,
-				ConfbridgeID:  tt.confbridgeID,
-				PipecatcallID: tt.pipecatcallID,
-				Status:        tt.status,
-				STTLanguage:   tt.language,
+				AITTSType:      tt.aiTTSType,
+				AITTSVoiceID:   tt.aiTTSVoiceID,
+				AISTTType:      tt.aiSTTType,
+				ActiveflowID:   tt.activeflowID,
+				ReferenceType:  tt.referenceType,
+				ReferenceID:    tt.referenceID,
+				ConfbridgeID:   tt.confbridgeID,
+				PipecatcallID:  tt.pipecatcallID,
+				Status:         tt.status,
+				STTLanguage:    tt.language,
 			}
 
 			if ac.AssistanceType != tt.assistanceType {

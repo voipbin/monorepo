@@ -39,7 +39,7 @@ func Test_RegistrarV1ContactList(t *testing.T) {
 				URI:      "/v1/contacts",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
-			Data:     []byte(`{"customer_id":"390f34ba-57a4-11ee-a22c-d3dbf1f5af19","extension":"test_exten"}`),
+				Data:     []byte(`{"customer_id":"390f34ba-57a4-11ee-a22c-d3dbf1f5af19","extension":"test_exten"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -72,12 +72,12 @@ func Test_RegistrarV1ContactList(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-		filters := map[string]any{
-			"customer_id": tt.customerID,
-			"extension": tt.extension,
-		}
+			filters := map[string]any{
+				"customer_id": tt.customerID,
+				"extension":   tt.extension,
+			}
 
-		res, err := reqHandler.RegistrarV1ContactList(ctx, filters)
+			res, err := reqHandler.RegistrarV1ContactList(ctx, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -114,7 +114,7 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 				URI:      "/v1/contacts",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-			Data:     []byte(`{"customer_id":"e168826a-57a4-11ee-818c-73dfee4986c0","extension":"test_exten"}`),
+				Data:     []byte(`{"customer_id":"e168826a-57a4-11ee-818c-73dfee4986c0","extension":"test_exten"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -134,12 +134,12 @@ func Test_RegistrarV1ContactRefresh(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-		filters := map[string]any{
-			"customer_id": tt.customerID,
-			"extension": tt.extension,
-		}
+			filters := map[string]any{
+				"customer_id": tt.customerID,
+				"extension":   tt.extension,
+			}
 
-		if err := reqHandler.RegistrarV1ContactRefresh(ctx, filters); err != nil {
+			if err := reqHandler.RegistrarV1ContactRefresh(ctx, filters); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 

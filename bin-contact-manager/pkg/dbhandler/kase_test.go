@@ -36,7 +36,7 @@ func Test_CaseInsert_And_CaseGetByID(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110001"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110001"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -89,7 +89,7 @@ func Test_CaseUpdateTagIDs_SetOverwriteClear(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110010"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110010"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -168,7 +168,7 @@ func Test_CaseUpdateTagIDs_CustomerScoped_WrongCustomerNoOp(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    victimCustomerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110011"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110011"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -215,7 +215,7 @@ func Test_CaseInsert_DuplicateOpenPeer_ReturnsConflict(t *testing.T) {
 	c1 := &kase.Case{
 		ID:            uuid.FromStringOrNil("f1b2c3d4-5002-5002-5002-000000000002"),
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110002"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110002"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -229,7 +229,7 @@ func Test_CaseInsert_DuplicateOpenPeer_ReturnsConflict(t *testing.T) {
 	c2 := &kase.Case{
 		ID:            uuid.FromStringOrNil("f1b2c3d4-5002-5002-5002-000000000003"),
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110002"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110002"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -340,7 +340,7 @@ func Test_CaseUpdateStatusClosed(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110004"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110004"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -414,7 +414,7 @@ func Test_CaseUpdateContactID(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110006"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110006"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -459,7 +459,7 @@ func Test_CaseUpdateOwner(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0020"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0020"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -507,7 +507,7 @@ func Test_CaseUpdateOwner_CrossTenant(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    victimCustomerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0021"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0021"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -550,7 +550,7 @@ func Test_CaseClearContactID(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110008"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110008"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -599,7 +599,7 @@ func Test_CaseClearContactID_CrossTenant(t *testing.T) {
 	c := &kase.Case{
 		ID:            caseID,
 		CustomerID:    victimCustomerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110009"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110009"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -651,7 +651,7 @@ func Test_CaseListUnresolved(t *testing.T) {
 	unresolved := &kase.Case{
 		ID:            unresolvedCaseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110007"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110007"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -661,7 +661,7 @@ func Test_CaseListUnresolved(t *testing.T) {
 	resolved := &kase.Case{
 		ID:            resolvedCaseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110008"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110008"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		ContactID:     &contactID,
@@ -719,7 +719,7 @@ func Test_CaseListByOwner(t *testing.T) {
 	owned := &kase.Case{
 		ID:            ownedCaseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110009"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110009"},
 		ReferenceType: "call",
 		Owner: commonidentity.Owner{
 			OwnerType: commonidentity.OwnerTypeAgent,
@@ -733,7 +733,7 @@ func Test_CaseListByOwner(t *testing.T) {
 	unowned := &kase.Case{
 		ID:            unownedCaseID,
 		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110010"},
+		Peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110010"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -769,4 +769,3 @@ func Test_CaseListByOwner(t *testing.T) {
 		t.Errorf("expected unowned case to NOT appear in CaseListByOwner()")
 	}
 }
-

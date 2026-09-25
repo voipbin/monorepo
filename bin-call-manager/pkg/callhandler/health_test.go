@@ -1,8 +1,8 @@
 package callhandler
 
 import (
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"testing"
 
 	"monorepo/bin-call-manager/models/call"
@@ -72,7 +72,7 @@ func Test_HealthCheck(t *testing.T) {
 			},
 			responseChannel: &channel.Channel{
 				ID:       "cba7edf9-8586-40c0-992b-5885103228c1",
-				TMEnd: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMEnd:    testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 				TMDelete: nil,
 			},
 

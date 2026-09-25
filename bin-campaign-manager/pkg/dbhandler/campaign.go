@@ -209,7 +209,7 @@ func (h *handler) CampaignList(ctx context.Context, token string, size uint64, f
 		Select(fields...).
 		From(campaignsTable).
 		Where(squirrel.Lt{string(campaign.FieldTMCreate): token}).
-		OrderBy(string(campaign.FieldTMCreate) + " DESC", string(campaign.FieldID) + " DESC").
+		OrderBy(string(campaign.FieldTMCreate)+" DESC", string(campaign.FieldID)+" DESC").
 		Limit(size).
 		PlaceholderFormat(squirrel.Question)
 

@@ -1406,4 +1406,3 @@ func (h *activeflowHandler) actionHandleCaseCreate(ctx context.Context, af *acti
 	}
 	return nil
 }
-

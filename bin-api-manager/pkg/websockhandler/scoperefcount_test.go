@@ -5,8 +5,8 @@ import (
 
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
-	gomock "go.uber.org/mock/gomock"
 	"github.com/stretchr/testify/require"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func TestScopeRefCount_BindOnFirstSubscribe(t *testing.T) {

@@ -286,10 +286,11 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			wantCallToolHit: true,
 		},
 		{
-			name:            "fail closed: unresolvable namespaced name (not in the metadata map at all)",
-			aicall:          baseAIcall(goValueToolMap),
-			toolName:        message.FunctionCallName("mcp_ffffffff_some_other_tool"),
-			setupMock:       func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {},
+			name:     "fail closed: unresolvable namespaced name (not in the metadata map at all)",
+			aicall:   baseAIcall(goValueToolMap),
+			toolName: message.FunctionCallName("mcp_ffffffff_some_other_tool"),
+			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+			},
 			wantResult:      "failed",
 			wantCallToolHit: false,
 		},

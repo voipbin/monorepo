@@ -17,7 +17,7 @@ type WebhookMessage struct {
 	Direction    Direction `json:"direction"` // direction. in/out
 	Message      string    `json:"message"`   // message
 
-	OffsetMs int64 `json:"offset_ms"`
+	OffsetMs int64      `json:"offset_ms"`
 	TMCreate *time.Time `json:"tm_create"` // timestamp
 }
 

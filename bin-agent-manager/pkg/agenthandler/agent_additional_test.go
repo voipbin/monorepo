@@ -484,4 +484,3 @@ func Test_UpdateAddresses_errors(t *testing.T) {
 		})
 	}
 }
-

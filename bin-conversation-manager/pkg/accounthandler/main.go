@@ -36,7 +36,7 @@ type accountHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	lineHandler    linehandler.LineHandler
+	lineHandler     linehandler.LineHandler
 	whatsappHandler whatsapphandler.WhatsAppHandler
 }
 

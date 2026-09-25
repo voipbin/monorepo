@@ -31,8 +31,8 @@ var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// rag routes
-	regV1Rags          = regexp.MustCompile(`^/v1/rags(\?.*)?$`)
-	regV1RagsID        = regexp.MustCompile(`^/v1/rags/` + regUUID + `(\?.*)?$`)
+	regV1Rags            = regexp.MustCompile(`^/v1/rags(\?.*)?$`)
+	regV1RagsID          = regexp.MustCompile(`^/v1/rags/` + regUUID + `(\?.*)?$`)
 	regV1RagsIDSources   = regexp.MustCompile(`^/v1/rags/` + regUUID + `/sources(\?.*)?$`)
 	regV1RagsIDSourcesID = regexp.MustCompile(`^/v1/rags/` + regUUID + `/sources/` + regUUID + `(\?.*)?$`)
 

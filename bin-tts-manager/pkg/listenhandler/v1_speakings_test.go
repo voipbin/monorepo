@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"monorepo/bin-common-handler/models/sock"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-tts-manager/models/speaking"
 	"monorepo/bin-tts-manager/models/streaming"

@@ -4,8 +4,8 @@ import (
 	reflect "reflect"
 	"testing"
 
-	cerrors "monorepo/bin-common-handler/models/errors"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"

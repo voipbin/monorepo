@@ -13,10 +13,10 @@ var contentTypeToExt = map[string]string{
 	"application/pdf":  ".pdf",
 	"application/json": ".json",
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
-	"text/x-rst":           ".rst",
+	"text/x-rst":            ".rst",
 	"text/restructuredtext": ".rst",
-	"application/x-yaml":   ".yaml",
-	"text/yaml":            ".yaml",
+	"application/x-yaml":    ".yaml",
+	"text/yaml":             ".yaml",
 }
 
 func GetChunkerByExtension(ext string) Chunker {

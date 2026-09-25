@@ -33,7 +33,6 @@ type handler struct {
 	cache       cachehandler.CacheHandler
 }
 
-
 // handler errors
 var (
 	ErrNotFound = errors.New("record not found")

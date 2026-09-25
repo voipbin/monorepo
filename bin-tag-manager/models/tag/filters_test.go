@@ -8,11 +8,11 @@ import (
 
 func TestFieldStruct(t *testing.T) {
 	tests := []struct {
-		name     string
-		field    FieldStruct
-		expectID uuid.UUID
-		expectCID uuid.UUID
-		expectName string
+		name          string
+		field         FieldStruct
+		expectID      uuid.UUID
+		expectCID     uuid.UUID
+		expectName    string
 		expectDeleted bool
 	}{
 		{
@@ -23,9 +23,9 @@ func TestFieldStruct(t *testing.T) {
 				Name:       "test name",
 				Deleted:    false,
 			},
-			expectID:   uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
-			expectCID:  uuid.FromStringOrNil("350bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
-			expectName: "test name",
+			expectID:      uuid.FromStringOrNil("250bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
+			expectCID:     uuid.FromStringOrNil("350bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
+			expectName:    "test name",
 			expectDeleted: false,
 		},
 		{
@@ -36,9 +36,9 @@ func TestFieldStruct(t *testing.T) {
 				Name:       "deleted tag",
 				Deleted:    true,
 			},
-			expectID:   uuid.FromStringOrNil("450bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
-			expectCID:  uuid.FromStringOrNil("550bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
-			expectName: "deleted tag",
+			expectID:      uuid.FromStringOrNil("450bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
+			expectCID:     uuid.FromStringOrNil("550bbfa4-50d7-11ec-a6b1-8f9671a9e70e"),
+			expectName:    "deleted tag",
 			expectDeleted: true,
 		},
 	}

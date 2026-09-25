@@ -86,7 +86,6 @@ func (h *handler) withTx(ctx context.Context, fn func(tx *sql.Tx) error) error {
 	return nil
 }
 
-
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{

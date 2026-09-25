@@ -78,12 +78,12 @@ func TestActiveflowStruct(t *testing.T) {
 	onCompleteFlowID := uuid.Must(uuid.NewV4())
 
 	a := Activeflow{
-		FlowID:            flowID,
-		Status:            StatusRunning,
-		ReferenceType:     ReferenceTypeCall,
-		ReferenceID:       referenceID,
-		OnCompleteFlowID:  onCompleteFlowID,
-		ExecuteCount:      5,
+		FlowID:           flowID,
+		Status:           StatusRunning,
+		ReferenceType:    ReferenceTypeCall,
+		ReferenceID:      referenceID,
+		OnCompleteFlowID: onCompleteFlowID,
+		ExecuteCount:     5,
 	}
 	a.ID = id
 	a.CustomerID = customerID

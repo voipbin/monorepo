@@ -6,10 +6,10 @@ import (
 
 func TestValidateVirtualNumber(t *testing.T) {
 	tests := []struct {
-		name         string
-		num          string
+		name          string
+		num           string
 		allowReserved bool
-		expectErr    bool
+		expectErr     bool
 	}{
 		// valid cases
 		{"valid virtual number", "+899001000001", false, false},

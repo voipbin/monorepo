@@ -150,13 +150,13 @@ func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
 
 func Test_ARIChannelStateChangeTypeJoin(t *testing.T) {
 	tests := []struct {
-		name         string
-		channel      *channel.Channel
-		bridgeGetErr error
-		responseBridge *bridge.Bridge
-		responsePeer   *channel.Channel
-		peerGetErr     error
-		answerErr      error
+		name            string
+		channel         *channel.Channel
+		bridgeGetErr    error
+		responseBridge  *bridge.Bridge
+		responsePeer    *channel.Channel
+		peerGetErr      error
+		answerErr       error
 		expectGetBridge bool
 		expectGetPeer   bool
 		expectAnswer    bool

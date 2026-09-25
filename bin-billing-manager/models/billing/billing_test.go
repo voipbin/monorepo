@@ -199,4 +199,3 @@ func TestCalculateBillableUnits(t *testing.T) {
 		})
 	}
 }
-

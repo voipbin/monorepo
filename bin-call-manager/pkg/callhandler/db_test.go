@@ -1,8 +1,8 @@
 package callhandler
 
 import (
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
 
@@ -131,9 +131,9 @@ func Test_Create(t *testing.T) {
 				ConfbridgeID: uuid.FromStringOrNil("dd43df70-5d15-11ed-9eb2-7f19e0311fa0"),
 				Type:         call.TypeFlow,
 
-				MasterCallID:   uuid.Nil,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingID:    uuid.Nil,
+				MasterCallID:     uuid.Nil,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingID:      uuid.Nil,
 				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 				GroupcallID:      uuid.FromStringOrNil("4029e38a-b781-11ed-adc4-6b40017ae4c5"),
@@ -173,7 +173,7 @@ func Test_Create(t *testing.T) {
 					},
 				},
 
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:      testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:      nil,
 				TMProgressing: nil,
 				TMRinging:     nil,

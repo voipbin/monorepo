@@ -141,12 +141,12 @@ func (h *analysisHandler) chaseOrigin(ctx context.Context, customerID uuid.UUID,
 	}
 
 	// Build the card from the ORIGIN's body but keep the OUTER reference_type.
-	sc.ReferenceType = string(refType)            // stays "transcribe"/"recording" (F3)
-	sc.OriginKind = markerFor(refType)            // "transcription" | "recording"
-	sc.OriginType = originType                    // immediate origin: call|conversation|confbridge (#6)
+	sc.ReferenceType = string(refType)                             // stays "transcribe"/"recording" (F3)
+	sc.OriginKind = markerFor(refType)                             // "transcription" | "recording"
+	sc.OriginType = originType                                     // immediate origin: call|conversation|confbridge (#6)
 	sc.Channel = channelOf(fmactiveflow.ReferenceType(originType)) // channel of the underlying medium (F5)
-	sc.FlowName = ""                              // origin's flow is a different activeflow; omit (F2)
-	return sc, outcome, true                      // chased -> enrich() suppresses metrics/flags
+	sc.FlowName = ""                                               // origin's flow is a different activeflow; omit (F2)
+	return sc, outcome, true                                       // chased -> enrich() suppresses metrics/flags
 }
 
 // chaseRecord fetches the transcribe/recording record itself, ownership-checks

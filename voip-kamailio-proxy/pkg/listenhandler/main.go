@@ -19,11 +19,11 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	sockHandler                   sockhandler.SockHandler
-	rabbitQueueListenPermanent    string
-	rabbitQueueListenVolatile     string
-	sipTimeout                    time.Duration
-	sipChecker                    siphandler.SIPChecker
+	sockHandler                sockhandler.SockHandler
+	rabbitQueueListenPermanent string
+	rabbitQueueListenVolatile  string
+	sipTimeout                 time.Duration
+	sipChecker                 siphandler.SIPChecker
 }
 
 var (

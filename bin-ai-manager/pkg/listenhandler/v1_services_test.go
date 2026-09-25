@@ -32,7 +32,7 @@ func Test_processV1ServicesTypeAIcallPost(t *testing.T) {
 		expectedActiveflowID   uuid.UUID
 		expectedReferenceType  aicall.ReferenceType
 		expectedReferenceID    uuid.UUID
-		expectRes *sock.Response
+		expectRes              *sock.Response
 	}
 
 	tests := []test{

@@ -207,13 +207,13 @@ func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status a
 	`, aiauditTable)
 
 	result, err := h.db.ExecContext(ctx, query,
-		string(status),  // 1
-		overallScore,    // 2
-		evalJSON,        // 3
-		msgIDsJSON,      // 4
-		errStr,          // 5
-		ts,              // 6
-		id.Bytes(),      // 7 (WHERE)
+		string(status), // 1
+		overallScore,   // 2
+		evalJSON,       // 3
+		msgIDsJSON,     // 4
+		errStr,         // 5
+		ts,             // 6
+		id.Bytes(),     // 7 (WHERE)
 	)
 	if err != nil {
 		return 0, fmt.Errorf("AIAuditUpdateFinal: could not execute. err: %v", err)

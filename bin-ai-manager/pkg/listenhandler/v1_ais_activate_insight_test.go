@@ -105,7 +105,7 @@ func Test_processV1AIsGet_IsInsightActiveFilterSurvivesConversion(t *testing.T) 
 		URI:      "/v1/ais?page_size=1",
 		Method:   sock.RequestMethodGet,
 		DataType: "application/json",
-		Data: []byte(`{"customer_id":"d2d2d2d2-0000-0000-0000-000000000001","type":"insight","is_insight_active":true,"deleted":false}`),
+		Data:     []byte(`{"customer_id":"d2d2d2d2-0000-0000-0000-000000000001","type":"insight","is_insight_active":true,"deleted":false}`),
 	}
 
 	expectFilters := map[ai.Field]any{

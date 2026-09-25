@@ -33,9 +33,9 @@ func Test_Conversation(t *testing.T) {
 			body:   []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:      "hook.voipbin.net/v1.0/conversation",
-				ReceivedData:     []byte(`{"key1":"val1"}`),
-				ReceivedMethod:   "POST",
+				ReceviedURI:       "hook.voipbin.net/v1.0/conversation",
+				ReceivedData:      []byte(`{"key1":"val1"}`),
+				ReceivedMethod:    "POST",
 				ReceivedSignature: "",
 			},
 		},
@@ -48,9 +48,9 @@ func Test_Conversation(t *testing.T) {
 			body:   []byte(`{"test":"data"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:      "hook.voipbin.net/v1.0/conversation/customers/id/line",
-				ReceivedData:     []byte(`{"test":"data"}`),
-				ReceivedMethod:   "POST",
+				ReceviedURI:       "hook.voipbin.net/v1.0/conversation/customers/id/line",
+				ReceivedData:      []byte(`{"test":"data"}`),
+				ReceivedMethod:    "POST",
 				ReceivedSignature: "",
 			},
 		},
@@ -88,11 +88,11 @@ func Test_Conversation_GET(t *testing.T) {
 	tests := []struct {
 		name string
 
-		host              string
-		path              string
-		signature         string
-		expectReq         *hmhook.Hook
-		expectChallenge   string
+		host            string
+		path            string
+		signature       string
+		expectReq       *hmhook.Hook
+		expectChallenge string
 	}{
 		{
 			name: "GET with challenge",
@@ -101,9 +101,9 @@ func Test_Conversation_GET(t *testing.T) {
 			path:      "/v1.0/conversation/customers/id/whatsapp?hub.mode=subscribe&hub.challenge=chal123&hub.verify_token=token",
 			signature: "",
 			expectReq: &hmhook.Hook{
-				ReceviedURI:      "hook.voipbin.net/v1.0/conversation/customers/id/whatsapp?hub.mode=subscribe&hub.challenge=chal123&hub.verify_token=token",
-				ReceivedData:     []byte{},
-				ReceivedMethod:   "GET",
+				ReceviedURI:       "hook.voipbin.net/v1.0/conversation/customers/id/whatsapp?hub.mode=subscribe&hub.challenge=chal123&hub.verify_token=token",
+				ReceivedData:      []byte{},
+				ReceivedMethod:    "GET",
 				ReceivedSignature: "",
 			},
 			expectChallenge: "chal123",
@@ -161,9 +161,9 @@ func Test_Conversation_POST_WithSignature(t *testing.T) {
 			signature: "sha256=abc123",
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:      "hook.voipbin.net/v1.0/conversation/customers/id/whatsapp",
-				ReceivedData:     []byte(`{"object":"whatsapp_business_account"}`),
-				ReceivedMethod:   "POST",
+				ReceviedURI:       "hook.voipbin.net/v1.0/conversation/customers/id/whatsapp",
+				ReceivedData:      []byte(`{"object":"whatsapp_business_account"}`),
+				ReceivedMethod:    "POST",
 				ReceivedSignature: "sha256=abc123",
 			},
 		},
@@ -217,9 +217,9 @@ func Test_Conversation_Error(t *testing.T) {
 			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:      "hook.voipbin.net/v1.0/conversation",
-				ReceivedData:     []byte(`{"key1":"val1"}`),
-				ReceivedMethod:   "POST",
+				ReceviedURI:       "hook.voipbin.net/v1.0/conversation",
+				ReceivedData:      []byte(`{"key1":"val1"}`),
+				ReceivedMethod:    "POST",
 				ReceivedSignature: "",
 			},
 			expectError: fmt.Errorf("request handler error"),

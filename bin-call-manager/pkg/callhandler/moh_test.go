@@ -26,9 +26,9 @@ func Test_MOHOn(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall    *call.Call
+		responseCall     *call.Call
 		responseMOHOnErr error
-		expectError     bool
+		expectError      bool
 	}{
 		{
 			name: "normal",
@@ -101,9 +101,9 @@ func Test_MOHOff(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall     *call.Call
+		responseCall      *call.Call
 		responseMOHOffErr error
-		expectError      bool
+		expectError       bool
 	}{
 		{
 			name: "normal",

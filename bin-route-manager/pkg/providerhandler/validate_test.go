@@ -6,9 +6,9 @@ import (
 
 func Test_validateCodecs(t *testing.T) {
 	tests := []struct {
-		name          string
-		input         string
-		wantErr       bool
+		name           string
+		input          string
+		wantErr        bool
 		wantNormalized string
 	}{
 		{name: "empty is valid", input: "", wantErr: false},

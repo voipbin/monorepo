@@ -37,7 +37,9 @@ func exprJSONArrayAppend(column string, value any) squirrel.Sqlizer {
 }
 
 // exprJSONArrayRemoveByValue builds
-// `json_remove(<column>, replace(json_search(<column>, 'one', ?), '"', ''))`,
+//
+//	json_remove(<column>, replace(json_search(<column>, 'one', ?), '"', ''))
+//
 // deleting the first array element equal to the given value.
 //
 // Note this form is not null-safe: if the value is absent, json_search returns

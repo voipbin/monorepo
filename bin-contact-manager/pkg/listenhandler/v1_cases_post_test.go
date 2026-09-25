@@ -27,12 +27,12 @@ func Test_ProcessV1CasesPost_CreatesCase(t *testing.T) {
 	caseID := uuid.FromStringOrNil("aaaaaaaa-0101-0101-0101-000000000002")
 
 	reqBody := map[string]any{
-		"customer_id": customerID.String(),
-		"self":        map[string]any{"type": "tel", "target": "+155****0101"},
-		"peer":        map[string]any{"type": "tel", "target": "+155****9101"},
+		"customer_id":    customerID.String(),
+		"self":           map[string]any{"type": "tel", "target": "+155****0101"},
+		"peer":           map[string]any{"type": "tel", "target": "+155****9101"},
 		"reference_type": "call",
-		"name":   "VIP",
-		"detail": "escalated",
+		"name":           "VIP",
+		"detail":         "escalated",
 	}
 	body, _ := json.Marshal(reqBody)
 	req := &sock.Request{

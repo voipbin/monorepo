@@ -12,8 +12,8 @@ import (
 	"monorepo/bin-api-manager/pkg/pubsubhandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
-	gomock "go.uber.org/mock/gomock"
 	"github.com/stretchr/testify/require"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // newSuperAdminIdentity returns an AuthIdentity that always passes validateTopics, so tests

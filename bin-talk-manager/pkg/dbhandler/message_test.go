@@ -90,7 +90,7 @@ func Test_MessageCreate(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -170,7 +170,7 @@ func Test_MessageGet(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -351,7 +351,7 @@ func Test_MessageList(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -437,7 +437,7 @@ func Test_MessageUpdate(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -494,7 +494,7 @@ func Test_MessageDelete(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -571,7 +571,7 @@ func Test_MessageAddReactionAtomic(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -615,7 +615,7 @@ func Test_MessageAddReactionAtomic_Concurrent(t *testing.T) {
 	h := &dbHandler{
 		db:          dbTest,
 		redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+		utilHandler: commonutil.NewUtilHandler(),
 	}
 	ctx := context.Background()
 
@@ -683,13 +683,13 @@ func Test_MessageAddReactionAtomic_Concurrent(t *testing.T) {
 
 func Test_MessageRemoveReactionAtomic(t *testing.T) {
 	tests := []struct {
-		name          string
-		createMessage *message.Message
-		addReaction   message.Reaction
-		removeEmoji   string
+		name            string
+		createMessage   *message.Message
+		addReaction     message.Reaction
+		removeEmoji     string
 		removeOwnerType string
-		removeOwnerID uuid.UUID
-		expectCount   int
+		removeOwnerID   uuid.UUID
+		expectCount     int
 	}{
 		{
 			name: "remove reaction",
@@ -726,7 +726,7 @@ func Test_MessageRemoveReactionAtomic(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	cerrors "monorepo/bin-common-handler/models/errors"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
@@ -150,7 +150,7 @@ func (h *callHandler) Create(
 // List returns list of calls.
 func (h *callHandler) List(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "List",
+		"func":    "List",
 		"filters": filters,
 	})
 
