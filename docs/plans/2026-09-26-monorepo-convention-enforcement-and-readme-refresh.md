@@ -447,7 +447,7 @@ CI에서 이 경우 `sudo mv`가 실패하거나, 이전 버전 바이너리가 
           # reports the commit while `git merge-base` exits 1. With the gate
           # running unconditionally and fail-closed, that turns every PR whose
           # base is behind the fetched window red regardless of its contents.
-          # 21 of the repo's 64 branches are already more than 200 commits
+          # 21 of the 23 live remote branches are already more than 200 commits
           # behind, and main moves ~121 commits a month.
           #
           # The clone may also arrive shallow from checkout itself, so a plain
@@ -1089,7 +1089,7 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 | R10 | `GOMAXPROCS`가 CI에서 호스트 코어 수를 보아 측정 조건과 달라짐 | 중 | 메모리 초과 | Linting step environment에 `GOMAXPROCS: "2"` 명시(§6.2 변경점 5) |
 | R11 | **pre-commit hook이 gofmt 일괄 커밋을 거부** | 높 | 구현 착수 즉시 막힘 | 실측: `core.hooksPath`가 설정되어 있고 hook이 활성이다. gofmt가 `models/*/webhook.go` 6개를 건드리면 "WebhookMessage model changed without RST documentation update"로 커밋이 거부된다. **이 변경은 포맷 전용이므로 RST 갱신 대상이 아니다.** 포맷 커밋에 한해 `--no-verify`를 사용하고, PR 본문에 사유(포맷 전용, 필드 변경 없음)를 명시한다. `git diff --stat`으로 webhook.go 변경이 공백뿐임을 함께 첨부한다 |
 | R12 | lint가 영구히 적용되지 않는 서비스가 존재 | 낮 | 사각지대 | `bin-openapi-manager`(Go 2파일)와 `voip-asterisk-proxy`(21파일)는 **`go-test` command 호출부 자체가 없다**(호출 37 = go-test 35 + api 1 + pipecat 1, 이 둘은 목록에 없음). §6.2의 "3곳 수정으로 전량 반영"이 커버하지 못한다. 이번 범위에서는 손대지 않고 §4 Non-goals로 기록한다. 두 서비스에 test job을 신설하는 것은 별개 과제다 |
-| R13 | **shallow clone이 merge base 계산을 끊어 게이트가 무관한 PR을 죽임** | 높 | 머지 후 전면 발현 | 초안의 `--depth=200`은 저장소를 shallow로 전환한다. 실측: base 커밋 객체는 존재(`git cat-file -t` → `commit`)하는데 `git merge-base`는 **exit 1**이다. 게이트가 fail-closed·무조건 실행이므로 base가 fetch 윈도를 벗어난 브랜치는 **위반 0건이어도 CI 적색**이다. 현재 64개 브랜치 중 **21개가 200커밋 이상 뒤져** 있고 main은 월 ~121커밋으로 움직여, 약 7주만 지나면 걸린다. **조치: `--depth` 제거 + merge base 해석 실패 시에만 deepen**(§6.2.1). `--depth` 제거만으로는 checkout 자체가 shallow인 경우를 못 막는다는 점도 실측 확인했다. **V8b(CI 로그 확인)로는 걸러지지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 그냥 통과하기 때문이다. 이 결함만을 겨냥해 V8c를 신설했다 |
+| R13 | **shallow clone이 merge base 계산을 끊어 게이트가 무관한 PR을 죽임** | 높 | 머지 후 전면 발현 | 초안의 `--depth=200`은 저장소를 shallow로 전환한다. 실측: base 커밋 객체는 존재(`git cat-file -t` → `commit`)하는데 `git merge-base`는 **exit 1**이다. 게이트가 fail-closed·무조건 실행이므로 base가 fetch 윈도를 벗어난 브랜치는 **위반 0건이어도 CI 적색**이다. 현재 살아있는 원격 브랜치 23개(main 제외) 중 **21개가 200커밋 이상 뒤져** 있고 main은 월 ~121커밋으로 움직여, 약 7주만 지나면 걸린다. **조치: `--depth` 제거 + merge base 해석 실패 시에만 deepen**(§6.2.1). `--depth` 제거만으로는 checkout 자체가 shallow인 경우를 못 막는다는 점도 실측 확인했다. **V8b(CI 로그 확인)로는 걸러지지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 그냥 통과하기 때문이다. 이 결함만을 겨냥해 V8c를 신설했다 |
 
 Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며, R2는 이미 설계에서 해소했다.
 
@@ -1247,7 +1247,17 @@ Draft — Design Review 루프 진행 중.
 | 4 | 반영 검증·CI 실행 가능성 | CHANGES_REQUESTED | 반영 완료 (B1 + M1~M3) |
 | 5 | 반영 검증·게이트 환경 의존성 | CHANGES_REQUESTED | 반영 완료 |
 | 6 | 반영 검증·fetch 안전성 | **APPROVED** | 비차단 지적 5건 반영 |
-| 7 | — | 대기 (2연속 APPROVE 필요) | — |
+| 7 | 최종 확인·구현 준비도 | **APPROVED** | **2연속 APPROVE 달성. 설계 단계 종료** |
+
+라운드 7에서 게이트 스크립트를 mawk로도 실행해 gawk 의존이 없음을 확인했고(CI `cimg/go`
+이미지 대비), §6.1 스니펫과 `.golangci.yml`의 바이트 일치, §/R/V/G/D/Q 상호참조 전수 대조
+(미정의 0건, 중복 0건)를 마쳤다. N5의 브랜치 수는 `git branch -r`이 `origin/HEAD` 별칭과
+stale tracking ref를 포함한다는 지적을 받아 "살아있는 원격 브랜치 23개(main 제외) 중 21개"로
+재정정했다. 하중을 지는 21은 어느 기준으로도 동일하다.
+
+**구현 착수 조건 충족.** 남은 미검증 항목은 V12(`circleci config process`) 하나이며,
+이 환경에 CLI가 없어 구현 시 설치해 실행해야 한다. 미선언 파라미터로 continuation 전체가
+죽는 경로(§6.2.1.1)를 잡는 유일한 검증이므로 생략하지 않는다.
 
 **라운드 6 조치 내역** (전부 비차단, 정확성 보강):
 
