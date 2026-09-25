@@ -1,6 +1,6 @@
 # VoIPbin Monorepo
 
-VoIPbin is a cloud-native, open-source CPaaS platform for programmable voice communication. This repository is the main backend services monorepo — it contains backend services that handle call routing, AI pipelines, conferencing, billing, messaging, and more.
+VoIPbin is a cloud-native, opensource CPaaS platform for programmable voice communication. This repository is the main backend services monorepo. It contains backend services that handle call routing, AI pipelines, conferencing, billing, messaging, and more.
 
 This is one of VoIPbin's main repositories. It covers the backend service layer; other infrastructure (Kamailio, Kubernetes configs) lives in separate repos.
 
@@ -18,9 +18,9 @@ VoIPbin uses a **monorepo** to manage all backend services in a single codebase.
 
 ## 🔍 What is VoIPbin?
 
-VoIPbin is a **VoIP backend platform** designed to help teams quickly deploy and operate communication workflows — from simple call routing to AI-assisted conversation flows.
+VoIPbin is a **VoIP backend platform** designed to help teams quickly deploy and operate communication workflows, from simple call routing to AI-assisted conversation flows.
 
-It is the only production-grade open-source CPaaS platform that you can fully self-host, with a focus on flexibility, modularity, and full control over your stack.
+It is a production-grade opensource CPaaS platform that you can fully self-host, with a focus on flexibility, modularity, and full control over your stack.
 
 ### Use cases include:
 
@@ -36,23 +36,23 @@ It is the only production-grade open-source CPaaS platform that you can fully se
 
 ## 🚀 What You Can Do with VoIPbin
 
-- **Agent Interfaces**: Let your agents receive calls and interact via a simple web interface. Agents aren't limited to voice — a chat-only agent can be created without a phone/SIP address and still handle chat/conversation work.
+- **Agent Interfaces**: Let your agents receive calls and interact via a simple web interface. Agents aren't limited to voice. A chat-only agent can be created without a phone/SIP address and still handle chat/conversation work.
 - **Admin Console**: Manage flows, routing, agents, campaigns, and more.
 - **Programmable Flows**: Define rich call behaviors via flow JSON or API.
 - **AI Assistants**: Inject AI into your call flows with VoIPbin's chatbot integration.
 - **Conferencing**: Set up rooms with recording, moderator controls, and breakout support.
 - **Multichannel Support**: Mix voice, SMS, email, and more.
-- **Modular Services**: Pick only the features you need — everything runs independently.
+- **Modular Services**: Pick only the features you need. Everything runs independently.
 - **Self-hosting and Cloud-friendly**: Deploy on GCP (or any Kubernetes setup) with full customization.
 
 ---
 
 ## 🌐 Helpful Links
 
-- 🔧 [Admin Console](https://admin.voipbin.net/) — Manage everything visually
-- 📞 [Agent Page](https://talk.voipbin.net/) — VoIP-enabled agent interface
-- 📘 [API Documentation](https://api.voipbin.net/docs/) — Explore and test VoIPbin APIs
-- 🌍 [Project Site](http://voipbin.net/) — Landing page for VoIPbin
+- 🔧 [Admin Console](https://admin.voipbin.net/): Manage everything visually
+- 📞 [Agent Page](https://talk.voipbin.net/): VoIP-enabled agent interface
+- 📘 [API Documentation](https://api.voipbin.net/docs/): Explore and test VoIPbin APIs
+- 🌍 [Project Site](http://voipbin.net/): Landing page for VoIPbin
 
 ---
 
@@ -87,6 +87,7 @@ The monorepo includes many backend services under separate directories:
 | `bin-rag-manager`          | Retrieval-augmented generation backend        |
 | `bin-registrar-manager`    | SIP registrar (UDP/TCP/WebRTC)                |
 | `bin-route-manager`        | Routing logic and policies                    |
+| `bin-schedule-manager`     | Scheduled and recurring job execution         |
 | `bin-sentinel-manager`     | Kubernetes-aware health/monitoring sentinel   |
 | `bin-storage-manager`      | File storage backend                          |
 | `bin-tag-manager`          | Labeling and tagging                          |
@@ -94,7 +95,9 @@ The monorepo includes many backend services under separate directories:
 | `bin-timeline-manager`     | Per-resource timeline events                  |
 | `bin-transcribe-manager`   | Audio transcription                           |
 | `bin-transfer-manager`     | Call transfer logic                           |
+| `bin-trigger-sender`       | Trigger dispatch to downstream services       |
 | `bin-tts-manager`          | Text-to-Speech integration                    |
+| `bin-webchat-manager`      | Web chat channel backend                      |
 | `bin-webhook-manager`      | Webhook sender                                |
 | `voip-asterisk-proxy`      | Integration proxy for Asterisk                |
 | `voip-kamailio-proxy`      | Kamailio SIP proxy integration                |
@@ -107,7 +110,7 @@ The monorepo includes many backend services under separate directories:
 
 > ⚠️ VoIPbin is not a plug-and-play application.
 > 
-> It's a platform composed of multiple microservices, SIP/media infrastructure (e.g., Asterisk, RTPEngine), Kubernetes-based deployments, and pluggable third-party integrations for telephony, AI, and other backends. You don't just "run it" — you assemble and deploy it based on your architecture.
+> It's a platform composed of multiple microservices, SIP/media infrastructure (e.g., Asterisk, RTPEngine), container-based deployments, and pluggable third-party integrations for telephony, AI, and other backends. You don't just "run it", you assemble and deploy it based on your architecture.
 
 This monorepo handles only part of voipbin services.
 
@@ -120,7 +123,7 @@ That said, here's how to begin:
 
 VoIPbin is composed of multiple services that run independently and communicate over HTTP, gRPC, SIP, and WebRTC. You’ll need:
 
-* A Kubernetes environment (we recommend GCP GKE)
+* A container runtime: Docker Compose for a single host, or Kubernetes for a multi-node setup
 * Compute engine with static public IP Address
 * A public domain with TLS (e.g., via Cloudflare)
 * A media path (RTPEngine or equivalent)
@@ -142,13 +145,17 @@ export CC_SSL_CERT_API_BASE64=xxx
 ```
 Check each service’s README (or environment loader) for what it needs.
 
-### Deploy to Kubernetes
-You'll need a Kubernetes manifest or Helm chart per service. For now, these are maintained privately or in internal repositories — contact us if you'd like access to deployment blueprints.
+### Deploy It
+
+The [install repository](https://github.com/voipbin/install) provides a single-host
+deployment that brings up the full stack with Docker Compose, which is the
+fastest way to get a working system. Kubernetes manifests are used for the
+multi-node setup; reach out at support@voipbin.net if you need those blueprints.
 
 
 ## 📫 Questions or Feedback?
-We’re here to help. Visit voipbin.net or reach out to the team via the contact link on the site.
+We’re here to help. Visit voipbin.net or email support@voipbin.net.
 
 ## 📞 Need Help?
-If you're exploring VoIPbin for your own product, team, or integration — feel free to reach out. We're building it to empower engineers like you.
+If you're exploring VoIPbin for your own product, team, or integration, feel free to reach out. We're building it to empower engineers like you.
 
