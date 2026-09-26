@@ -8,7 +8,7 @@ linters:
   exclusions:
     generated: lax
     paths:
-      - vendor
+      - (^|/)vendor(/|$)
     rules:
       - path: _test\.go
         linters:
@@ -26,4 +26,4 @@ formatters:
   exclusions:
     generated: lax
     paths:
-      - vendor
+      - (^|/)vendor(/|$)

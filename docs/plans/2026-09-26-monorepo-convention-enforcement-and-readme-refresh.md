@@ -166,7 +166,7 @@ linters:
   exclusions:
     generated: lax
     paths:
-      - vendor
+      - (^|/)vendor(/|$)
     rules:
       - path: _test\.go
         linters:
@@ -184,7 +184,7 @@ formatters:
   exclusions:
     generated: lax
     paths:
-      - vendor
+      - (^|/)vendor(/|$)
 ```
 
 설계 근거:
@@ -199,6 +199,12 @@ formatters:
   이번 범위에서 제외하고 §4 Non-goals에 명시한다.
 - **`concurrency` 키는 설정하지 않는다.** §6.1.2에서 실측으로 무효함이 확인되었다.
 - 메모리 제어는 설정 파일이 아니라 **CI step의 환경변수**(`GOGC`, `GOMEMLIMIT`, `GOMAXPROCS`)로 수행한다. §6.2 참조.
+- **`exclusions.paths`는 경로 이름이 아니라 정규식이며 anchor가 없다.** 따라서 `- vendor`로 적으면
+  `bin-ai-manager/pkg/mcpoauthhandler/vendors.go`처럼 이름에 `vendor`가 포함된 **프로덕션 파일까지**
+  lint·gofmt 대상에서 빠진다(추적 파일 중 `/vendor/` 밖에서 이 문자열을 가진 유일한 파일). 실측:
+  해당 파일에 gofmt 위반과 미사용 함수를 주입하면 `gofmt -l`은 검출하는데 golangci-lint는 `0 issues`였다.
+  `- (^|/)vendor(/|$)`로 anchor를 넣으면 4건 모두 검출되고, `vendor/` 보유 모듈(`bin-api-manager`)은
+  여전히 `0 issues`를 유지한다. 강제 계층을 만드는 PR이 스스로 구멍을 내지 않도록 정규식으로 적는다.
 
 > 이 스니펫은 커밋된 `.golangci.yml`과 **바이트 단위로 일치해야 한다.**
 > 둘이 갈라지면 구현자가 어느 쪽을 정본으로 볼지 알 수 없다.
