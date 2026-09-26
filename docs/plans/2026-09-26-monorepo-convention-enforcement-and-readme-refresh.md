@@ -879,6 +879,19 @@ Rule 3 위반을 정상 보고한 뒤 scan 실패로 실패한다.
 
 #### 6.4.2 스크립트
 
+아래 블록은 `scripts/check-test-conventions.sh` **전문이며 바이트 일치해야 한다.**
+이 문서를 손으로 갱신하다 같은 자리(`SCAN_OUT=""` 다음)에서 **두 번 연속** 줄이
+병합되어 실행 불가 상태가 되었다(`BASE_REF: unbound variable`, 그 전 회차는
+`trap: EXITBASE_REF=...: invalid signal specification`). 사람이 지킬 규칙으로는
+부족하다고 판단해 `lint-config-check` 잡에 대조 step을 넣었다.
+
+- `.circleci/config_work.yml`: 스니펫을 추출해 `diff -u` 로 스크립트와 대조하고
+  `bash -n` 까지 돌린다. 불일치면 잡이 실패한다.
+- `.circleci/config.yml`: 이 문서 경로를 `run-lint-config-check` 매핑에 추가했다.
+  문서만 고친 변경에서도 대조가 돌아야 하기 때문이다(추가 전에는 돌지 않았다).
+
+고의로 스니펫에 한 글자를 넣은 사본으로 검출을 실측 확인했다.
+
 ```bash
 #!/usr/bin/env bash
 #
@@ -897,7 +910,9 @@ set -uo pipefail
 # checking nothing. scan() therefore writes its result into SCAN_OUT rather than
 # stdout, so it runs in this shell and can flip this flag directly.
 scan_broken=0
-SCAN_OUT=""BASE_REF="origin/main"
+SCAN_OUT=""
+
+BASE_REF="origin/main"
 
 if ! MERGE_BASE="$(git merge-base "${BASE_REF}" HEAD 2>/dev/null)" || [ -z "${MERGE_BASE}" ]; then
   echo "check-test-conventions: FAILED to resolve merge base with ${BASE_REF}." >&2
