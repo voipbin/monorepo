@@ -164,12 +164,14 @@ func (h *transcribeHandler) stopLive(ctx context.Context, tr *transcribe.Transcr
 //     NotFound here always means "no session on the pod that owns this
 //     transcribe" - which is the only pod that could ever have had one -
 //     independent of how many other replicas exist.
+//
 //   - legacy requesthandler.ErrNotFound sentinel: the call-manager RPC
 //     (CallV1ExternalMediaStop) surfaces a 404 through the older,
 //     pre-VoipbinError sentinel path instead of a typed error (call-manager's
 //     external-media error responses are not yet migrated to typed errors).
 //     Mirrors the same dual-check pattern used by
 //     bin-call-manager/pkg/channelhandler/hangup.go's HangingUpWithAsteriskID.
+//
 //   - typed cerrors.VoipbinError{Status: StatusUnavailable, Reason:
 //     streaminghandler.ErrSTTNotConfiguredReason}: returned by
 //     streaminghandler's disabledStreamingHandler.Stop (see

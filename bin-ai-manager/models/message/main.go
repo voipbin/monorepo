@@ -65,11 +65,11 @@ type Role string
 
 // list of roles
 const (
-	RoleNone      Role = ""
-	RoleSystem    Role = "system"
-	RoleUser      Role = "user"
-	RoleAssistant Role = "assistant"
-	RoleFunction  Role = "function"
+	RoleNone         Role = ""
+	RoleSystem       Role = "system"
+	RoleUser         Role = "user"
+	RoleAssistant    Role = "assistant"
+	RoleFunction     Role = "function"
 	RoleTool         Role = "tool"
 	RoleNotification Role = "notification"
 )

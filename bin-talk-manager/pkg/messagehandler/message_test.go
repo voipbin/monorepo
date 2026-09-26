@@ -14,9 +14,9 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
+	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
-	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
 
@@ -46,24 +46,24 @@ func Test_MessageCreate(t *testing.T) {
 			name: "normal_root_message_without_parent",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Hello, this is a root message",
-				Medias:     nil,
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Hello, this is a root message",
+				Medias:    nil,
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+						ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -80,25 +80,25 @@ func Test_MessageCreate(t *testing.T) {
 			name: "normal_threaded_reply_with_parent",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				ParentID:   &parentID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "This is a reply to a message",
-				Medias:     nil,
+				ChatID:    chatID,
+				ParentID:  &parentID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "This is a reply to a message",
+				Medias:    nil,
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+						ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -109,7 +109,7 @@ func Test_MessageCreate(t *testing.T) {
 			},
 			responseParent: &message.Message{
 				Identity: commonidentity.Identity{
-					ID:         parentID,
+					ID: parentID,
 				},
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
@@ -123,25 +123,25 @@ func Test_MessageCreate(t *testing.T) {
 			name: "normal_reply_to_soft_deleted_parent_allowed",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				ParentID:   &softDeletedParentID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Reply to deleted message",
-				Medias:     nil,
+				ChatID:    chatID,
+				ParentID:  &softDeletedParentID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Reply to deleted message",
+				Medias:    nil,
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
+						ID: uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -152,7 +152,7 @@ func Test_MessageCreate(t *testing.T) {
 			},
 			responseParent: &message.Message{
 				Identity: commonidentity.Identity{
-					ID:         softDeletedParentID,
+					ID: softDeletedParentID,
 				},
 				ChatID:   chatID,
 				Type:     message.TypeNormal,
@@ -166,24 +166,24 @@ func Test_MessageCreate(t *testing.T) {
 			name: "normal_system_message",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "system",
-				OwnerID:    uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
-				Type:       message.TypeSystem,
-				Text:       "Agent joined the conversation",
-				Medias:     nil,
+				ChatID:    chatID,
+				OwnerType: "system",
+				OwnerID:   uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
+				Type:      message.TypeSystem,
+				Text:      "Agent joined the conversation",
+				Medias:    nil,
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
+						ID: uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "system",
@@ -200,24 +200,24 @@ func Test_MessageCreate(t *testing.T) {
 			name: "normal_message_with_medias",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Check this file",
-				Medias:     []message.Media{{Type: message.MediaTypeFile}},
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Check this file",
+				Medias:    []message.Media{{Type: message.MediaTypeFile}},
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
+						ID: uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -348,11 +348,11 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_nil_chat_id",
 
 			req: MessageCreateRequest{
-				ChatID:     uuid.Nil,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
+				ChatID:    uuid.Nil,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Test message",
 			},
 
 			expectError: true,
@@ -361,11 +361,11 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_empty_owner_type",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Test message",
 			},
 
 			expectError: true,
@@ -374,11 +374,11 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_nil_owner_id",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    uuid.Nil,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   uuid.Nil,
+				Type:      message.TypeNormal,
+				Text:      "Test message",
 			},
 
 			expectError: true,
@@ -387,11 +387,11 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_empty_type",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       "",
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      "",
+				Text:      "Test message",
 			},
 
 			expectError: true,
@@ -400,11 +400,11 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_invalid_type_value",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       "invalid_type",
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      "invalid_type",
+				Text:      "Test message",
 			},
 
 			expectError: true,
@@ -413,11 +413,11 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_talk_not_found",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Test message",
 			},
 
 			responseChat: nil,
@@ -429,11 +429,11 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_talk_get_returns_nil",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Test message",
 			},
 
 			responseChat: nil,
@@ -445,16 +445,16 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_sender_not_participant",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Test message",
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
@@ -468,16 +468,16 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_participant_check_failed",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Test message",
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
@@ -491,17 +491,17 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_parent_not_found",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				ParentID:   &parentID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Reply message",
+				ChatID:    chatID,
+				ParentID:  &parentID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Reply message",
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
@@ -509,7 +509,7 @@ func Test_MessageCreate_error(t *testing.T) {
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+						ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -528,17 +528,17 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_parent_get_returns_nil",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				ParentID:   &parentID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Reply message",
+				ChatID:    chatID,
+				ParentID:  &parentID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Reply message",
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
@@ -546,7 +546,7 @@ func Test_MessageCreate_error(t *testing.T) {
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+						ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -565,17 +565,17 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_parent_in_different_talk",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				ParentID:   &parentID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Cross-talk threading attack",
+				ChatID:    chatID,
+				ParentID:  &parentID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Cross-talk threading attack",
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
@@ -583,7 +583,7 @@ func Test_MessageCreate_error(t *testing.T) {
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
+						ID: uuid.FromStringOrNil("31536998-da36-11ee-976a-b31b049d62c2"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",
@@ -595,7 +595,7 @@ func Test_MessageCreate_error(t *testing.T) {
 			getParticipantsError: nil,
 			responseParent: &message.Message{
 				Identity: commonidentity.Identity{
-					ID:         parentID,
+					ID: parentID,
 				},
 				ChatID:   chatID2, // Different talk!
 				Type:     message.TypeNormal,
@@ -610,16 +610,16 @@ func Test_MessageCreate_error(t *testing.T) {
 			name: "error_database_create_failed",
 
 			req: MessageCreateRequest{
-				ChatID:     chatID,
-				OwnerType:  "agent",
-				OwnerID:    ownerID,
-				Type:       message.TypeNormal,
-				Text:       "Test message",
+				ChatID:    chatID,
+				OwnerType: "agent",
+				OwnerID:   ownerID,
+				Type:      message.TypeNormal,
+				Text:      "Test message",
 			},
 
 			responseChat: &chat.Chat{
 				Identity: commonidentity.Identity{
-					ID:         chatID,
+					ID: chatID,
 				},
 				Type: chat.TypeDirect,
 			},
@@ -627,7 +627,7 @@ func Test_MessageCreate_error(t *testing.T) {
 			responseParticipants: []*participant.Participant{
 				{
 					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
+						ID: uuid.FromStringOrNil("62b0e2b7-0583-4f78-9406-45b00d17a9b4"),
 					},
 					Owner: commonidentity.Owner{
 						OwnerType: "agent",

@@ -126,9 +126,9 @@ func mcpServerIDShort(id uuid.UUID) string {
 // the call through.
 func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "toolHandleMcpCall",
-		"aicall_id":  c.ID,
-		"tool_name":  tc.Function.Name,
+		"func":      "toolHandleMcpCall",
+		"aicall_id": c.ID,
+		"tool_name": tc.Function.Name,
 	})
 	log.Debugf("handling mcp tool call.")
 

@@ -48,7 +48,7 @@ func Test_ChatCreate(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -80,10 +80,10 @@ func Test_ChatCreate(t *testing.T) {
 
 func Test_ChatGet(t *testing.T) {
 	tests := []struct {
-		name      string
+		name       string
 		createChat *chat.Chat
-		getID     uuid.UUID
-		expectErr bool
+		getID      uuid.UUID
+		expectErr  bool
 	}{
 		{
 			name: "existing talk",
@@ -116,7 +116,7 @@ func Test_ChatGet(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -145,12 +145,12 @@ func Test_ChatGet(t *testing.T) {
 
 func Test_ChatList(t *testing.T) {
 	tests := []struct {
-		name       string
+		name        string
 		createChats []*chat.Chat
-		filters    map[chat.Field]any
-		token      string
-		size       uint64
-		expectLen  int
+		filters     map[chat.Field]any
+		token       string
+		size        uint64
+		expectLen   int
 	}{
 		{
 			name: "list all talks for customer",
@@ -249,7 +249,7 @@ func Test_ChatList(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -329,7 +329,7 @@ func Test_TalkUpdate(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -380,7 +380,7 @@ func Test_ChatDelete(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -455,6 +455,3 @@ func Test_ChatMemberCountIncrement(t *testing.T) {
 		t.Errorf("Wrong member count. expect: 1, got: %d", res.MemberCount)
 	}
 }
-
-
-

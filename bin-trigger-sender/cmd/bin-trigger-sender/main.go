@@ -33,13 +33,13 @@ type response struct {
 
 func main() {
 	rabbitAddr := flag.String("rabbit_addr", "", "RabbitMQ address (amqp://...)")
-	queue      := flag.String("queue", "", "Target queue name")
-	uri        := flag.String("uri", "", "Request URI (e.g. /v1/numbers/renew)")
-	method     := flag.String("method", "POST", "Request method (POST, GET, ...)")
-	dataType   := flag.String("data_type", "application/json", "Content type")
-	data       := flag.String("data", "", "Request body as JSON string")
-	timeoutMs  := flag.Int("timeout", 5000, "Timeout in milliseconds")
-	delayMs    := flag.Int("delay", 0, "Delay before sending in milliseconds")
+	queue := flag.String("queue", "", "Target queue name")
+	uri := flag.String("uri", "", "Request URI (e.g. /v1/numbers/renew)")
+	method := flag.String("method", "POST", "Request method (POST, GET, ...)")
+	dataType := flag.String("data_type", "application/json", "Content type")
+	data := flag.String("data", "", "Request body as JSON string")
+	timeoutMs := flag.Int("timeout", 5000, "Timeout in milliseconds")
+	delayMs := flag.Int("delay", 0, "Delay before sending in milliseconds")
 	flag.Parse()
 
 	if *rabbitAddr == "" || *queue == "" || *uri == "" {

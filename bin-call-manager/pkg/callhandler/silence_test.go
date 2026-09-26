@@ -26,9 +26,9 @@ func Test_SilenceOn(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall       *call.Call
+		responseCall         *call.Call
 		responseSilenceOnErr error
-		expectError        bool
+		expectError          bool
 	}{
 		{
 			name: "normal",
@@ -101,9 +101,9 @@ func Test_SilenceOff(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall        *call.Call
+		responseCall          *call.Call
 		responseSilenceOffErr error
-		expectError         bool
+		expectError           bool
 	}{
 		{
 			name: "normal",

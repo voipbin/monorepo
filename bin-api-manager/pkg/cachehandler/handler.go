@@ -14,7 +14,7 @@ import (
 const provisioningTokenKeyPrefix = "api-manager.provisioning_token."
 
 // getSerialize returns cached serialized info.
-//nolint: unused // reserved
+// nolint: unused // reserved
 func (h *handler) getSerialize(ctx context.Context, key string, data interface{}) error {
 	tmp, err := h.Cache.Get(ctx, key).Result()
 	if err != nil {
@@ -28,7 +28,7 @@ func (h *handler) getSerialize(ctx context.Context, key string, data interface{}
 }
 
 // setSerialize sets the info into the cache after serialization.
-//nolint: unused // reserved
+// nolint: unused // reserved
 func (h *handler) setSerialize(ctx context.Context, key string, data interface{}) error {
 	tmp, err := json.Marshal(data)
 	if err != nil {

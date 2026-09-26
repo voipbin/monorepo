@@ -25,10 +25,10 @@ type mockGCPClientStream struct{}
 
 func (m *mockGCPClientStream) Header() (metadata.MD, error) { return nil, nil }
 func (m *mockGCPClientStream) Trailer() metadata.MD         { return nil }
-func (m *mockGCPClientStream) CloseSend() error              { return nil }
-func (m *mockGCPClientStream) Context() context.Context      { return context.Background() }
-func (m *mockGCPClientStream) SendMsg(any) error             { return nil }
-func (m *mockGCPClientStream) RecvMsg(any) error             { return nil }
+func (m *mockGCPClientStream) CloseSend() error             { return nil }
+func (m *mockGCPClientStream) Context() context.Context     { return context.Background() }
+func (m *mockGCPClientStream) SendMsg(any) error            { return nil }
+func (m *mockGCPClientStream) RecvMsg(any) error            { return nil }
 
 // mockGCPStreamClient implements speechpb.Speech_StreamingRecognizeClient for testing
 type mockGCPStreamClient struct {

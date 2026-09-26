@@ -221,9 +221,9 @@ func (h *serviceHandler) QueueUpdate(
 	serviceTimeout *int,
 ) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "QueueUpdate",
-		"customer_id":  a.CustomerID,
-		"username":     a.DisplayName(),
+		"func":        "QueueUpdate",
+		"customer_id": a.CustomerID,
+		"username":    a.DisplayName(),
 	})
 
 	if a.IsDirect() {

@@ -17,10 +17,10 @@ type Trunk struct {
 	DomainName string `json:"domain_name" db:"domain_name"`
 
 	// sip info
-	AuthTypes  []sipauth.AuthType `json:"auth_types" db:"auth_types,json"`  // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	Realm      string             `json:"realm" db:"realm"`                 // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	Username   string             `json:"username" db:"username"`           // DO NOT CHANGE. This used by the kamailio's INVITE validation
-	Password   string             `json:"password" db:"password"`           // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	AuthTypes  []sipauth.AuthType `json:"auth_types" db:"auth_types,json"`   // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Realm      string             `json:"realm" db:"realm"`                  // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Username   string             `json:"username" db:"username"`            // DO NOT CHANGE. This used by the kamailio's INVITE validation
+	Password   string             `json:"password" db:"password"`            // DO NOT CHANGE. This used by the kamailio's INVITE validation
 	AllowedIPs []string           `json:"allowed_ips" db:"allowed_ips,json"` // DO NOT CHANGE. This used by the kamailio's INVITE validation
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`

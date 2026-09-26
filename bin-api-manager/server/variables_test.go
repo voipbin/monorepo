@@ -20,8 +20,8 @@ func Test_validateVariables(t *testing.T) {
 
 		variables map[string]string
 
-		expectError      bool
-		expectMsgSubstr  string
+		expectError     bool
+		expectMsgSubstr string
 	}{
 		{
 			name:        "nil map returns nil",

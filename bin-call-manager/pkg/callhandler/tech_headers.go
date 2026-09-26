@@ -19,16 +19,16 @@ import (
 // Keys are checked both in their raw form (for CALLERID/PJSIP_HEADER entries)
 // and after PJSIP_HEADER(add,...) wrapping (for SIP header names).
 var reservedTechHeaderKeys = map[string]struct{}{
-	"PJSIP_HEADER(add,P-Asserted-Identity)": {},
-	"PJSIP_HEADER(add,Privacy)":             {},
-	"PJSIP_HEADER(add,VBOUT-SDP_Transport)": {},
-	"PJSIP_HEADER(add,VB-CALL-ID)":          {},
-	"PJSIP_HEADER(add,VB-CONFBRIDGE-ID)":    {},
-	"PJSIP_HEADER(add,VB-DIRECTION)":        {},
+	"PJSIP_HEADER(add,P-Asserted-Identity)":            {},
+	"PJSIP_HEADER(add,Privacy)":                        {},
+	"PJSIP_HEADER(add,VBOUT-SDP_Transport)":            {},
+	"PJSIP_HEADER(add,VB-CALL-ID)":                     {},
+	"PJSIP_HEADER(add,VB-CONFBRIDGE-ID)":               {},
+	"PJSIP_HEADER(add,VB-DIRECTION)":                   {},
 	"PJSIP_HEADER(add," + common.SIPHeaderCodecs + ")": {}, // prevent provider override
-	"CALLERID(name)":                        {},
-	"CALLERID(num)":                         {},
-	"CALLERID(pres)":                        {},
+	"CALLERID(name)":                                   {},
+	"CALLERID(num)":                                    {},
+	"CALLERID(pres)":                                   {},
 }
 
 // mergeTechHeaders copies sanitized entries from src (raw operator-supplied

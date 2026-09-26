@@ -121,34 +121,3 @@ func (h *MessageEvent) GetText() string {
 	res := h.Data.Payload.Text
 	return res
 }
-
-// // ConvertMessage returns converted message.Message
-// func (h *Message) ConvertMessage(id uuid.UUID, customerID uuid.UUID) *message.Message {
-// 	source := h.Data.Payload.From.ConvertAddress()
-
-// 	// convert the to to the targets
-// 	targets := []target.Target{}
-// 	for _, to := range h.Data.Payload.To {
-// 		destination := to.ConvertAddress()
-// 		target := target.Target{
-// 			Destination: *destination,
-// 			Status:      target.StatusReceived,
-// 			Parts:       h.Data.Payload.Parts,
-// 		}
-// 		targets = append(targets, target)
-// 	}
-
-// 	return &message.Message{
-// 		ID:         id,
-// 		CustomerID: customerID,
-// 		Type:       message.Type(strings.ToLower(h.Data.Payload.Type)),
-// 		Source:     source,
-// 		Targets:    targets,
-
-// 		ProviderName:        message.ProviderNameTelnyx,
-// 		ProviderReferenceID: h.Data.Payload.ID,
-// 		Text:                h.Data.Payload.Text,
-// 		Medias:              []string{},
-// 		Direction:           message.DirectionInbound,
-// 	}
-// }

@@ -11,7 +11,7 @@ type Target struct {
 	Destination commonaddress.Address `json:"destination"`
 	Status      Status                `json:"status"`
 	Parts       int                   `json:"parts"` // number of messages
-	TMUpdate    *time.Time             `json:"tm_update"`
+	TMUpdate    *time.Time            `json:"tm_update"`
 }
 
 // Status defines

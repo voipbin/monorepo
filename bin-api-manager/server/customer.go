@@ -176,4 +176,3 @@ func (h *server) PutCustomerBillingAccountId(c *gin.Context) {
 
 	c.JSON(200, res)
 }
-

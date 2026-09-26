@@ -76,7 +76,7 @@ type streamingHandler struct {
 	awsClient *transcribestreaming.Client
 
 	mapStreaming map[uuid.UUID]*streaming.Streaming
-	muSteaming  sync.Mutex
+	muSteaming   sync.Mutex
 }
 
 // NewStreamingHandler define
@@ -134,6 +134,6 @@ func NewStreamingHandler(
 		awsClient: awsClient,
 
 		mapStreaming: make(map[uuid.UUID]*streaming.Streaming),
-		muSteaming:  sync.Mutex{},
+		muSteaming:   sync.Mutex{},
 	}
 }

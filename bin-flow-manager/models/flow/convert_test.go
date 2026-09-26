@@ -24,8 +24,8 @@ func TestConvertStringMapToFieldMap(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "empty_map",
-			input: map[string]any{},
+			name:    "empty_map",
+			input:   map[string]any{},
 			wantErr: false,
 		},
 		{

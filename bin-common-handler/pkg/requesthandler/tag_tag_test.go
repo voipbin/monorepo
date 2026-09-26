@@ -298,10 +298,10 @@ func Test_TagV1TagList(t *testing.T) {
 
 			expectTarget: "bin-manager.tag-manager.request",
 			expectRequest: &sock.Request{
-			URI:      "/v1/tags?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
-			Method:   sock.RequestMethodGet,
-			DataType: ContentTypeJSON,
-			Data:     []byte(`{"customer_id":"8fe6c136-2c75-11ee-a3a4-37400837e12e"}`),
+				URI:      "/v1/tags?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"8fe6c136-2c75-11ee-a3a4-37400837e12e"}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
@@ -331,11 +331,11 @@ func Test_TagV1TagList(t *testing.T) {
 			}
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-		filters := map[tmtag.Field]any{
-			tmtag.FieldCustomerID: tt.customerID,
-		}
+			filters := map[tmtag.Field]any{
+				tmtag.FieldCustomerID: tt.customerID,
+			}
 
-		res, err := reqHandler.TagV1TagList(ctx, tt.token, tt.pageSize, filters)
+			res, err := reqHandler.TagV1TagList(ctx, tt.token, tt.pageSize, filters)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

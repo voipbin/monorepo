@@ -27,9 +27,9 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID  uuid.UUID
-		accountType account.Type
-		accountName string
+		customerID    uuid.UUID
+		accountType   account.Type
+		accountName   string
 		detail        string
 		secret        string
 		token         string

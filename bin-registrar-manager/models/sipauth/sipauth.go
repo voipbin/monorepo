@@ -8,7 +8,7 @@ import (
 
 // SIPAuth struct
 type SIPAuth struct {
-	ID            uuid.UUID     `json:"id,omitempty" db:"id,uuid"`         // reference id
+	ID            uuid.UUID     `json:"id,omitempty" db:"id,uuid"`          // reference id
 	ReferenceType ReferenceType `json:"type,omitempty" db:"reference_type"` // reference type
 
 	AuthTypes []AuthType `json:"auth_types,omitempty" db:"auth_types,json"`

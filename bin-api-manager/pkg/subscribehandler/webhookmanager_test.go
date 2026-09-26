@@ -25,8 +25,8 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 		request *sock.Event
 
 		// For chat events that need participant fan-out
-		chatID       uuid.UUID
-		participants []*tkparticipant.Participant
+		chatID         uuid.UUID
+		participants   []*tkparticipant.Participant
 		participantErr error
 
 		expectTopics []string
@@ -322,8 +322,8 @@ func Test_createTopics(t *testing.T) {
 		raw json.RawMessage
 
 		// For chat events that need participant fan-out
-		chatID       uuid.UUID
-		participants []*tkparticipant.Participant
+		chatID         uuid.UUID
+		participants   []*tkparticipant.Participant
 		participantErr error
 
 		expectTopics []string

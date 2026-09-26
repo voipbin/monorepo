@@ -57,7 +57,7 @@ var (
 	regV1AccountsID                     = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 	regV1AccountsIDBalanceAddForce      = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_add_force$")
 	regV1AccountsIDBalanceSubtractForce = regexp.MustCompile("/v1/accounts/" + regUUID + "/balance_subtract_force$")
-	regV1AccountsIDIsValidBalance        = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_balance$")
+	regV1AccountsIDIsValidBalance       = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_balance$")
 	regV1AccountsIDIsValidResourceLimit = regexp.MustCompile("/v1/accounts/" + regUUID + "/is_valid_resource_limit$")
 	regV1AccountsIDIsValidPaymentInfo   = regexp.MustCompile("/v1/accounts/" + regUUID + "/payment_info$")
 

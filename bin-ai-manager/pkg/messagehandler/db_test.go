@@ -24,10 +24,10 @@ func Test_Create(t *testing.T) {
 		activeflowID uuid.UUID
 		activeAIID   uuid.UUID
 		direction    message.Direction
-		role       message.Role
-		content    string
-		toolCalls  []message.ToolCall
-		toolCallID string
+		role         message.Role
+		content      string
+		toolCalls    []message.ToolCall
+		toolCallID   string
 
 		responseUUID uuid.UUID
 
@@ -41,8 +41,8 @@ func Test_Create(t *testing.T) {
 			activeflowID: uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 			activeAIID:   uuid.FromStringOrNil("aabbccdd-1234-5678-abcd-ef1234567890"),
 			direction:    message.DirectionIncoming,
-			role:       message.RoleUser,
-			content:    "Hello, world!",
+			role:         message.RoleUser,
+			content:      "Hello, world!",
 			toolCalls: []message.ToolCall{
 				{
 					ID:   "62bfd2da-943b-11f0-9375-c711ec2159d9",

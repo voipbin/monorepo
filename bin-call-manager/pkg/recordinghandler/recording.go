@@ -8,10 +8,10 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/recording"
 
-	bmbilling "monorepo/bin-billing-manager/models/billing"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	bmbilling "monorepo/bin-billing-manager/models/billing"
 )
 
 // recordingReferenceTypeCall creates a new reocording for call type

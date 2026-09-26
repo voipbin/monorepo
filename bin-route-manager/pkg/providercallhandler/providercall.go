@@ -195,7 +195,7 @@ func (h *providerCallHandler) List(ctx context.Context, token string, limit uint
 // Delete soft-deletes the providercall and returns the deleted record.
 func (h *providerCallHandler) Delete(ctx context.Context, id uuid.UUID) (*providercall.ProviderCall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":             "Delete",
+		"func":            "Delete",
 		"providercall_id": id,
 	})
 

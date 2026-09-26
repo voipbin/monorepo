@@ -28,10 +28,10 @@ func Test_MuteOn(t *testing.T) {
 		id        uuid.UUID
 		direction call.MuteDirection
 
-		responseCall      *call.Call
-		responseMuteOnErr error
+		responseCall       *call.Call
+		responseMuteOnErr  error
 		responseMuteSetErr error
-		expectError       bool
+		expectError        bool
 	}{
 		{
 			name: "normal",

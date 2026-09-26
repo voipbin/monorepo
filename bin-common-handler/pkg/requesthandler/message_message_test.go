@@ -42,7 +42,7 @@ func Test_MessageV1MessageList(t *testing.T) {
 				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-			Data:     []byte(`{"customer_id":"2970f4e8-a2b1-11ec-b21d-a7848e946530"}`),
+				Data:     []byte(`{"customer_id":"2970f4e8-a2b1-11ec-b21d-a7848e946530"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -67,9 +67,9 @@ func Test_MessageV1MessageList(t *testing.T) {
 			"bin-manager.message-manager.request",
 			&sock.Request{
 				URI:      "/v1/messages?page_token=2020-09-20T03%3A23%3A20.995000Z&page_size=10",
-			Method:   sock.RequestMethodGet,
+				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-			Data:     []byte(`{"customer_id":"6f0e7d2c-a2b1-11ec-88c4-af58c97aff78"}`),
+				Data:     []byte(`{"customer_id":"6f0e7d2c-a2b1-11ec-88c4-af58c97aff78"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,

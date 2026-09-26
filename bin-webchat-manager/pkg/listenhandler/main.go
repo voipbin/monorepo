@@ -46,13 +46,13 @@ type listenHandler struct {
 
 var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" //nolint:deadcode,unused,varcheck // this is ok
-	regAny  = "(.*)"                                                        //nolint:deadcode,unused,varcheck // this is ok
+	regAny  = "(.*)"                                                         //nolint:deadcode,unused,varcheck // this is ok
 
 	// v1
 	// widgets
-	regV1WidgetsGet                  = regexp.MustCompile(`/v1/widgets\?` + regAny + "$")
-	regV1Widgets                     = regexp.MustCompile("/v1/widgets$")
-	reqV1WidgetsID                   = regexp.MustCompile("/v1/widgets/" + regUUID + "$")
+	regV1WidgetsGet                    = regexp.MustCompile(`/v1/widgets\?` + regAny + "$")
+	regV1Widgets                       = regexp.MustCompile("/v1/widgets$")
+	reqV1WidgetsID                     = regexp.MustCompile("/v1/widgets/" + regUUID + "$")
 	reqV1WidgetsIDDirectHashRegenerate = regexp.MustCompile("/v1/widgets/" + regUUID + "/direct-hash-regenerate$")
 
 	// sessions

@@ -294,7 +294,7 @@ func Test_TalkV1ChatUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		chatID uuid.UUID
+		chatID     uuid.UUID
 		chatName   *string
 		chatDetail *string
 
@@ -307,7 +307,7 @@ func Test_TalkV1ChatUpdate(t *testing.T) {
 		{
 			name: "update name only",
 
-			chatID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+			chatID:     uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 			chatName:   ptrString("Updated Name"),
 			chatDetail: nil,
 
@@ -336,7 +336,7 @@ func Test_TalkV1ChatUpdate(t *testing.T) {
 		{
 			name: "update both name and detail",
 
-			chatID: uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
+			chatID:     uuid.FromStringOrNil("72179880-ec5f-11ec-920e-c77279756b6d"),
 			chatName:   ptrString("New Name"),
 			chatDetail: ptrString("New Detail"),
 

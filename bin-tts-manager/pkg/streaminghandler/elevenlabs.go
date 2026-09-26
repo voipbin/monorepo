@@ -31,9 +31,9 @@ type ElevenlabsConfig struct {
 	Ctx    context.Context    `json:"-"`
 	Cancel context.CancelFunc `json:"-"`
 
-	ConnWebsock  *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
-	ConnAst      *websocket.Conn `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
-	ConnAstDone  chan struct{}    `json:"-"` // closed when Asterisk WebSocket disconnects
+	ConnWebsock *websocket.Conn `json:"-"` // connector between the service and ElevenLabs
+	ConnAst     *websocket.Conn `json:"-"` // connector between the service and Asterisk. readonly, the original asterisk connection
+	ConnAstDone chan struct{}   `json:"-"` // closed when Asterisk WebSocket disconnects
 
 	Message *message.Message `json:"message,omitempty"` // Current message being synthesized
 
@@ -176,9 +176,9 @@ func (h *elevenlabsHandler) Init(ctx context.Context, st *streaming.Streaming) (
 		Ctx:    ctx,
 		Cancel: cancel,
 
-		ConnWebsock:  connWebsock,
-		ConnAst:      st.ConnAst,
-		ConnAstDone:  st.ConnAstDone,
+		ConnWebsock: connWebsock,
+		ConnAst:     st.ConnAst,
+		ConnAstDone: st.ConnAstDone,
 
 		Message: &message.Message{
 			Identity: commonidentity.Identity{

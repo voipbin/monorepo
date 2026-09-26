@@ -74,13 +74,13 @@ func TestGetSIPAnalysis(t *testing.T) {
 	tests := []struct {
 		name string
 
-		sipCallID      string
-		homerMessages  []*sipmessage.SIPMessage
-		homerErr       error
-		wantErr        bool
-		wantCount      int
-		wantRTCPStats  bool
-		wantMOS        float64
+		sipCallID     string
+		homerMessages []*sipmessage.SIPMessage
+		homerErr      error
+		wantErr       bool
+		wantCount     int
+		wantRTCPStats bool
+		wantMOS       float64
 	}{
 		{
 			name:      "homer error returns error",
@@ -89,8 +89,8 @@ func TestGetSIPAnalysis(t *testing.T) {
 			wantErr:   true,
 		},
 		{
-			name:      "no messages returns empty result",
-			sipCallID: "call-1",
+			name:          "no messages returns empty result",
+			sipCallID:     "call-1",
 			homerMessages: []*sipmessage.SIPMessage{},
 			wantCount:     0,
 			wantRTCPStats: false,
@@ -245,20 +245,20 @@ func TestGetPcap(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		sipCallID     string
-		sipPcapData   []byte
-		sipPcapErr    error
-		rtcpPcapData  []byte
-		rtcpPcapErr   error
-		wantErr       bool
-		wantEmpty     bool
+		name         string
+		sipCallID    string
+		sipPcapData  []byte
+		sipPcapErr   error
+		rtcpPcapData []byte
+		rtcpPcapErr  error
+		wantErr      bool
+		wantEmpty    bool
 	}{
 		{
-			name:        "SIP PCAP error returns error",
-			sipCallID:   "call-1",
-			sipPcapErr:  fmt.Errorf("pcap fetch failed"),
-			wantErr:     true,
+			name:       "SIP PCAP error returns error",
+			sipCallID:  "call-1",
+			sipPcapErr: fmt.Errorf("pcap fetch failed"),
+			wantErr:    true,
 		},
 		{
 			name:        "empty SIP PCAP returns empty",
@@ -267,11 +267,11 @@ func TestGetPcap(t *testing.T) {
 			wantEmpty:   true,
 		},
 		{
-			name:         "SIP PCAP only success",
-			sipCallID:    "call-1",
-			sipPcapData:  createPcap("\x0a\x00\x00\x01", "\xcb\x00\x71\x01"), // 10.0.0.1 -> 203.0.113.1
-			rtcpPcapErr:  fmt.Errorf("rtcp unavailable"),
-			wantErr:      false,
+			name:        "SIP PCAP only success",
+			sipCallID:   "call-1",
+			sipPcapData: createPcap("\x0a\x00\x00\x01", "\xcb\x00\x71\x01"), // 10.0.0.1 -> 203.0.113.1
+			rtcpPcapErr: fmt.Errorf("rtcp unavailable"),
+			wantErr:     false,
 		},
 		{
 			name:         "SIP and RTCP PCAP merge success",
@@ -481,10 +481,10 @@ func TestFilterInternalPackets(t *testing.T) {
 	}
 
 	tests := []struct {
-		name      string
-		srcIP     string
-		dstIP     string
-		wantKept  bool
+		name     string
+		srcIP    string
+		dstIP    string
+		wantKept bool
 	}{
 		{name: "internal to internal filtered", srcIP: "\x0a\x00\x00\x01", dstIP: "\x0a\x00\x00\x02", wantKept: false},
 		{name: "internal to external kept", srcIP: "\x0a\x00\x00\x01", dstIP: "\xcb\x00\x71\x01", wantKept: true},
@@ -994,9 +994,9 @@ func TestFilterInternalPackets_Mixed(t *testing.T) {
 	}
 
 	// Add 3 packets: internal-internal, internal-external, external-external
-	addPacket("\x0a\x00\x00\x01", "\x0a\x00\x00\x02")    // internal-internal (filtered)
-	addPacket("\x0a\x00\x00\x01", "\xcb\x00\x71\x01")    // internal-external (kept)
-	addPacket("\xcb\x00\x71\x01", "\xcb\x00\x71\x02")    // external-external (kept)
+	addPacket("\x0a\x00\x00\x01", "\x0a\x00\x00\x02") // internal-internal (filtered)
+	addPacket("\x0a\x00\x00\x01", "\xcb\x00\x71\x01") // internal-external (kept)
+	addPacket("\xcb\x00\x71\x01", "\xcb\x00\x71\x02") // external-external (kept)
 
 	pcap := buf.Bytes()
 
@@ -1205,9 +1205,9 @@ func TestMergeMultiplePcaps(t *testing.T) {
 		ts2 := time.Date(2026, 1, 1, 0, 0, 2, 0, time.UTC)
 		ts3 := time.Date(2026, 1, 1, 0, 0, 3, 0, time.UTC)
 
-		ethPcap1 := createTimestampedPcap(ts1)       // Ethernet
-		rawPcap := createRawPcap(ts2)                 // Raw (mismatched)
-		ethPcap2 := createTimestampedPcap(ts3)        // Ethernet
+		ethPcap1 := createTimestampedPcap(ts1) // Ethernet
+		rawPcap := createRawPcap(ts2)          // Raw (mismatched)
+		ethPcap2 := createTimestampedPcap(ts3) // Ethernet
 
 		result, err := mergeMultiplePcaps([]io.Reader{
 			bytes.NewReader(ethPcap1),
@@ -1753,4 +1753,3 @@ func TestRewriteRTPPacketIPs(t *testing.T) {
 		}
 	})
 }
-

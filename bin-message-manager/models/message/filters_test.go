@@ -34,9 +34,9 @@ func TestFieldStruct(t *testing.T) {
 		{
 			name: "with_deleted_flag",
 			fields: FieldStruct{
-				ID:       uuid.FromStringOrNil("523e4567-e89b-12d3-a456-426614174000"),
-				Deleted:  true,
-				Type:     TypeSMS,
+				ID:        uuid.FromStringOrNil("523e4567-e89b-12d3-a456-426614174000"),
+				Deleted:   true,
+				Type:      TypeSMS,
 				Direction: DirectionInbound,
 			},
 		},

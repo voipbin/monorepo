@@ -142,7 +142,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			balanceToken:         25,
 			billableUnits:        3,
 			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 4500},
-			expectTokenDeducted:  20, // 2 full units @ 10 tokens each
+			expectTokenDeducted:  20,   // 2 full units @ 10 tokens each
 			expectCreditDeducted: 4500, // 1 remaining unit @ 4500 credit
 		},
 		{
@@ -158,7 +158,7 @@ func Test_CalculateTokenCreditDeduction(t *testing.T) {
 			balanceToken:         9,
 			billableUnits:        2,
 			costInfo:             billing.CostInfo{Mode: billing.CostModeTokenFirst, TokenPerUnit: 10, CreditPerUnit: 6000},
-			expectTokenDeducted:  0, // 9 < 10 → 0 full units
+			expectTokenDeducted:  0,     // 9 < 10 → 0 full units
 			expectCreditDeducted: 12000, // 2 units @ 6000
 		},
 		{

@@ -13,9 +13,9 @@ import (
 type WebhookMessage struct {
 	commonidentity.Identity
 
-	Name          string    `json:"name,omitempty"`
-	Detail        string    `json:"detail,omitempty"`
-	StartMemberID uuid.UUID `json:"start_member_id,omitempty"`
+	Name          string         `json:"name,omitempty"`
+	Detail        string         `json:"detail,omitempty"`
+	StartMemberID uuid.UUID      `json:"start_member_id,omitempty"`
 	Members       []Member       `json:"members,omitempty"`
 	Parameter     map[string]any `json:"parameter,omitempty"`
 

@@ -10,10 +10,10 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 

@@ -739,12 +739,6 @@ func Test_DeleteContactsIdAddressesAddressId(t *testing.T) {
 	}
 }
 
-
-
-
-
-
-
 func Test_PostContactsIdTags(t *testing.T) {
 
 	tests := []struct {
@@ -1009,4 +1003,3 @@ func Test_contactsIDAddressesAddressIDDelete_InvalidAddressID(t *testing.T) {
 		t.Errorf("status code = %d want %d", w.Code, http.StatusBadRequest)
 	}
 }
-

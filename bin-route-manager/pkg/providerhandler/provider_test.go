@@ -288,13 +288,13 @@ func Test_Update(t *testing.T) {
 			ctx := context.Background()
 
 			fields := map[provider.Field]any{
-				provider.FieldType:           tt.providerType,
-				provider.FieldHostname:       tt.hostname,
-				provider.FieldTechPrefix:     tt.techPrefix,
-				provider.FieldTechPostfix:    tt.techPostfix,
-				provider.FieldTechHeaders:    tt.techHeaders,
-				provider.FieldName:           tt.updateName,
-				provider.FieldDetail:         tt.detail,
+				provider.FieldType:            tt.providerType,
+				provider.FieldHostname:        tt.hostname,
+				provider.FieldTechPrefix:      tt.techPrefix,
+				provider.FieldTechPostfix:     tt.techPostfix,
+				provider.FieldTechHeaders:     tt.techHeaders,
+				provider.FieldName:            tt.updateName,
+				provider.FieldDetail:          tt.detail,
 				provider.FieldCodecs:          "",
 				provider.FieldHealthStatus:    provider.HealthStatusUnknown,
 				provider.FieldHealthCheckedAt: nil,
@@ -366,8 +366,8 @@ func Test_Update_PartialUpdate(t *testing.T) {
 			id:          baseID,
 			setHostname: func() *string { v := "new.example.com"; return &v }(),
 			expectFields: map[provider.Field]any{
-				provider.FieldHostname:       "new.example.com",
-				provider.FieldHealthStatus:   provider.HealthStatusUnknown,
+				provider.FieldHostname:        "new.example.com",
+				provider.FieldHealthStatus:    provider.HealthStatusUnknown,
 				provider.FieldHealthCheckedAt: nil,
 			},
 		},

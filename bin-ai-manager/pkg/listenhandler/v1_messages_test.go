@@ -34,7 +34,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			request: &sock.Request{
 				URI:    "/v1/messages?page_size=10&page_token=2020-05-03T21:35:02.809Z",
 				Method: sock.RequestMethodGet,
-			Data:   []byte(`{"aicall_id":"445110a0-f25d-11ef-9ff1-2f4ea94a72ac","deleted":false}`),
+				Data:   []byte(`{"aicall_id":"445110a0-f25d-11ef-9ff1-2f4ea94a72ac","deleted":false}`),
 			},
 
 			responseMessages: []*message.Message{

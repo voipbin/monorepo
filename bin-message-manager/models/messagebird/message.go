@@ -37,37 +37,6 @@ type RecipientStruct struct {
 	Items                    []Recipient `json:"items"`
 }
 
-// // ConvertMessage converts to the message.Message
-// func (h *Message) ConvertMessage(id uuid.UUID, customerID uuid.UUID) *message.Message {
-// 	res := &message.Message{
-// 		ID:         id,
-// 		CustomerID: customerID,
-// 		Type:       message.Type(h.Type),
-// 		Source: &commonaddress.Address{
-// 			Type:   commonaddress.TypeTel,
-// 			Target: h.Originator,
-// 		},
-// 		Targets:             []target.Target{},
-// 		ProviderName:        message.ProviderNameMessagebird,
-// 		ProviderReferenceID: h.ID,
-// 		Text:                h.Body,
-// 		Medias:              []string{},
-// 	}
-
-// 	res.Direction = message.DirectionInbound
-// 	if h.Direction == "mt" {
-// 		res.Direction = message.DirectionOutbound
-// 	}
-
-// 	// recipient
-// 	for _, recipient := range h.Recipients.Items {
-// 		t := recipient.ConvertTartget()
-// 		res.Targets = append(res.Targets, *t)
-// 	}
-
-// 	return res
-// }
-
 // GetTargets returns converted message targets.
 func (h *Message) GetTargets() []target.Target {
 	res := []target.Target{}

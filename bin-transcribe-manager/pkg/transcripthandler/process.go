@@ -65,9 +65,9 @@ func (h *transcriptHandler) processFromRecording(ctx context.Context, mediaLink 
 				strings.HasSuffix(word.Word, "!") {
 
 				res = append(res, &transcript.Transcript{
-					Direction:    direction,
-					Message:      strings.TrimSpace(currentSentence),
-					OffsetMs:     toOffsetMs(sentenceStart),
+					Direction: direction,
+					Message:   strings.TrimSpace(currentSentence),
+					OffsetMs:  toOffsetMs(sentenceStart),
 				})
 
 				currentSentence = ""
@@ -77,9 +77,9 @@ func (h *transcriptHandler) processFromRecording(ctx context.Context, mediaLink 
 
 	if currentSentence != "" {
 		res = append(res, &transcript.Transcript{
-			Direction:    direction,
-			Message:      strings.TrimSpace(currentSentence),
-			OffsetMs:     toOffsetMs(sentenceStart),
+			Direction: direction,
+			Message:   strings.TrimSpace(currentSentence),
+			OffsetMs:  toOffsetMs(sentenceStart),
 		})
 	}
 

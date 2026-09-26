@@ -17,10 +17,10 @@ type WebhookMessage struct {
 	AssistanceType AssistanceType `json:"assistance_type,omitempty"`
 	AssistanceID   uuid.UUID      `json:"assistance_id,omitempty"`
 
-	AIEngineModel ai.EngineModel `json:"ai_engine_model,omitempty"`
-	AITTSType     ai.TTSType     `json:"ai_tts_type,omitempty"`
-	AITTSVoiceID  string         `json:"ai_tts_voice_id,omitempty"`
-	AISTTType     ai.STTType     `json:"ai_stt_type,omitempty"`
+	AIEngineModel      ai.EngineModel `json:"ai_engine_model,omitempty"`
+	AITTSType          ai.TTSType     `json:"ai_tts_type,omitempty"`
+	AITTSVoiceID       string         `json:"ai_tts_voice_id,omitempty"`
+	AISTTType          ai.STTType     `json:"ai_stt_type,omitempty"`
 	AIVADConfig        *ai.VADConfig  `json:"ai_vad_config,omitempty"`
 	AISmartTurnEnabled bool           `json:"ai_smart_turn_enabled,omitempty"`
 
@@ -54,10 +54,10 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 		AssistanceType: h.AssistanceType,
 		AssistanceID:   h.AssistanceID,
 
-		AIEngineModel: h.AIEngineModel,
-		AITTSType:     h.AITTSType,
-		AITTSVoiceID:  h.AITTSVoiceID,
-		AISTTType:     h.AISTTType,
+		AIEngineModel:      h.AIEngineModel,
+		AITTSType:          h.AITTSType,
+		AITTSVoiceID:       h.AITTSVoiceID,
+		AISTTType:          h.AISTTType,
 		AIVADConfig:        h.AIVADConfig,
 		AISmartTurnEnabled: h.AISmartTurnEnabled,
 

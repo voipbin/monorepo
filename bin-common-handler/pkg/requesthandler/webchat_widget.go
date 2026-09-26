@@ -27,11 +27,11 @@ func (r *requestHandler) WebchatV1WidgetCreate(
 
 	data := &wcrequest.V1DataWidgetsPost{
 		CustomerID:         customerID,
-		Name:                name,
-		SessionFlowID:       sessionFlowID,
-		MessageFlowID:       messageFlowID,
-		SessionIdleTimeout:  sessionIdleTimeout,
-		ThemeConfig:         themeConfig,
+		Name:               name,
+		SessionFlowID:      sessionFlowID,
+		MessageFlowID:      messageFlowID,
+		SessionIdleTimeout: sessionIdleTimeout,
+		ThemeConfig:        themeConfig,
 	}
 
 	m, err := json.Marshal(data)

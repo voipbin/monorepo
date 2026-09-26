@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 
 	"monorepo/bin-common-handler/models/sock"
-	rmrequest "monorepo/bin-route-manager/pkg/listenhandler/models/request"
 	rmroute "monorepo/bin-route-manager/models/route"
+	rmrequest "monorepo/bin-route-manager/pkg/listenhandler/models/request"
 )
 
 // RouteV1DialrouteList sends a request to route-manager

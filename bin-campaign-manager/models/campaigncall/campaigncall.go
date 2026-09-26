@@ -23,7 +23,7 @@ type Campaigncall struct {
 	ActiveflowID uuid.UUID `json:"activeflow_id" db:"activeflow_id,uuid"` // activeflow id
 	FlowID       uuid.UUID `json:"flow_id" db:"flow_id,uuid"`             // flow id
 
-	ReferenceType ReferenceType `json:"reference_type" db:"reference_type"` // none or call
+	ReferenceType ReferenceType `json:"reference_type" db:"reference_type"`  // none or call
 	ReferenceID   uuid.UUID     `json:"reference_id" db:"reference_id,uuid"` // reference id
 
 	Status Status `json:"status" db:"status"`

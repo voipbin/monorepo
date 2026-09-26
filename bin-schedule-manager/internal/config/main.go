@@ -62,13 +62,13 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("schedule_backup_retention_count", 7, "Number of newest backup files to keep")
 
 	bindings := map[string]string{
-		"rabbitmq_address":                   "RABBITMQ_ADDRESS",
-		"prometheus_endpoint":                "PROMETHEUS_ENDPOINT",
-		"prometheus_listen_address":          "PROMETHEUS_LISTEN_ADDRESS",
-		"database_dsn":                       "DATABASE_DSN",
-		"redis_address":                      "REDIS_ADDRESS",
-		"redis_password":                     "REDIS_PASSWORD",
-		"redis_database":                     "REDIS_DATABASE",
+		"rabbitmq_address":                  "RABBITMQ_ADDRESS",
+		"prometheus_endpoint":               "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address":         "PROMETHEUS_LISTEN_ADDRESS",
+		"database_dsn":                      "DATABASE_DSN",
+		"redis_address":                     "REDIS_ADDRESS",
+		"redis_password":                    "REDIS_PASSWORD",
+		"redis_database":                    "REDIS_DATABASE",
 		"schedule_tick_interval_sec":        "SCHEDULE_TICK_INTERVAL_SEC",
 		"schedule_dispatch_concurrency":     "SCHEDULE_DISPATCH_CONCURRENCY",
 		"schedule_execution_retention_days": "SCHEDULE_EXECUTION_RETENTION_DAYS",

@@ -211,39 +211,39 @@ func Test_StructWithTimestamps_JSONUnmarshal(t *testing.T) {
 	}
 
 	tests := []struct {
-		name             string
-		input            string
-		expectTMCreate   bool
-		expectTMUpdate   bool
-		expectTMDelete   bool
+		name           string
+		input          string
+		expectTMCreate bool
+		expectTMUpdate bool
+		expectTMDelete bool
 	}{
 		{
-			name:             "all timestamps present",
-			input:            `{"id":"test-1","tm_create":"2026-02-05T10:30:45Z","tm_update":"2026-02-05T10:30:45Z","tm_delete":"2026-02-05T10:30:45Z"}`,
-			expectTMCreate:   true,
-			expectTMUpdate:   true,
-			expectTMDelete:   true,
+			name:           "all timestamps present",
+			input:          `{"id":"test-1","tm_create":"2026-02-05T10:30:45Z","tm_update":"2026-02-05T10:30:45Z","tm_delete":"2026-02-05T10:30:45Z"}`,
+			expectTMCreate: true,
+			expectTMUpdate: true,
+			expectTMDelete: true,
 		},
 		{
-			name:             "only tm_create present",
-			input:            `{"id":"test-2","tm_create":"2026-02-05T10:30:45Z"}`,
-			expectTMCreate:   true,
-			expectTMUpdate:   false,
-			expectTMDelete:   false,
+			name:           "only tm_create present",
+			input:          `{"id":"test-2","tm_create":"2026-02-05T10:30:45Z"}`,
+			expectTMCreate: true,
+			expectTMUpdate: false,
+			expectTMDelete: false,
 		},
 		{
-			name:             "timestamps explicitly null",
-			input:            `{"id":"test-3","tm_create":null,"tm_update":null,"tm_delete":null}`,
-			expectTMCreate:   false,
-			expectTMUpdate:   false,
-			expectTMDelete:   false,
+			name:           "timestamps explicitly null",
+			input:          `{"id":"test-3","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectTMCreate: false,
+			expectTMUpdate: false,
+			expectTMDelete: false,
 		},
 		{
-			name:             "no timestamps in JSON",
-			input:            `{"id":"test-4"}`,
-			expectTMCreate:   false,
-			expectTMUpdate:   false,
-			expectTMDelete:   false,
+			name:           "no timestamps in JSON",
+			input:          `{"id":"test-4"}`,
+			expectTMCreate: false,
+			expectTMUpdate: false,
+			expectTMDelete: false,
 		},
 	}
 

@@ -329,7 +329,7 @@ func Test_Update(t *testing.T) {
 		id     uuid.UUID
 		fields map[trunk.Field]any
 
-		responseTrunk    *trunk.Trunk
+		responseTrunk       *trunk.Trunk
 		expectSIPAuthFields map[sipauth.Field]any
 	}
 

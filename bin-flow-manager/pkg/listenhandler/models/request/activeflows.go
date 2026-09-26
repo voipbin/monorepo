@@ -20,7 +20,7 @@ type V1DataActiveFlowsPost struct {
 	ReferenceID           uuid.UUID                `json:"reference_id"`
 	ReferenceActiveflowID uuid.UUID                `json:"reference_activeflow_id,omitempty"`
 
-	WebhookURI    string                  `json:"webhook_uri,omitempty"`
+	WebhookURI    string                   `json:"webhook_uri,omitempty"`
 	WebhookMethod activeflow.WebhookMethod `json:"webhook_method,omitempty"`
 
 	// Variables are optional externally-supplied initial variables seeded into the new

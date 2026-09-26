@@ -18,7 +18,7 @@ type ServiceHandler interface {
 }
 
 type serviceHandler struct {
-	reqHandler           requesthandler.RequestHandler
+	reqHandler          requesthandler.RequestHandler
 	paddleWebhookSecret string
 }
 

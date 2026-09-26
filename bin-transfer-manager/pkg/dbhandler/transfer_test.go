@@ -98,11 +98,11 @@ func TestTransferCreate(t *testing.T) {
 
 func TestTransferGet(t *testing.T) {
 	tests := []struct {
-		name            string
-		transferID      uuid.UUID
-		cacheTransfer   *transfer.Transfer
-		cacheError      error
-		shouldError     bool
+		name             string
+		transferID       uuid.UUID
+		cacheTransfer    *transfer.Transfer
+		cacheError       error
+		shouldError      bool
 		expectedTransfer *transfer.Transfer
 	}{
 		{

@@ -110,7 +110,7 @@ func TestSend_WireFormat(t *testing.T) {
 
 	cmd := map[string]interface{}{"command": "ping"}
 	c.Send(cmd) //nolint:errcheck
-	<-captured // wait for handler to finish writing received
+	<-captured  // wait for handler to finish writing received
 
 	// cookie must be the prefix before the first space
 	idx := bytes.IndexByte(received, ' ')

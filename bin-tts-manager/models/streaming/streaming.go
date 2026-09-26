@@ -32,7 +32,7 @@ type Streaming struct {
 	VendorConfig any        `json:"-"`
 
 	ConnAst     *websocket.Conn `json:"-"` // Connection to the Asterisk for the streaming
-	ConnAstDone chan struct{}    `json:"-"` // Closed when ConnAst disconnects (Asterisk gone)
+	ConnAstDone chan struct{}   `json:"-"` // Closed when ConnAst disconnects (Asterisk gone)
 	CreatedAt   time.Time       `json:"-"` // Timestamp of when the streaming was created (for metrics)
 }
 

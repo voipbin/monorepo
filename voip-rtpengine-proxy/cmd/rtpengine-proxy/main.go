@@ -21,7 +21,7 @@ import (
 const serviceName = "rtpengine-proxy"
 
 var (
-	interfaceName    = ""
+	interfaceName      = ""
 	rtpengineNGAddress = ""
 	rtpengineNGTimeout = ""
 
@@ -35,7 +35,7 @@ var (
 	prometheusEndpoint      = ""
 	prometheusListenAddress = ""
 
-	recordingDir  = ""
+	recordingDir       = ""
 	gcpBucketNameMedia = ""
 )
 

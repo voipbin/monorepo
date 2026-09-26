@@ -1,12 +1,12 @@
 package dbhandler
 
 import (
-	"time"
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -44,7 +44,7 @@ func Test_ChannelCreate(t *testing.T) {
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
 				Data:       map[string]interface{}{},
 				StasisData: map[channel.StasisDataType]string{},
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:   nil,
 				TMDelete:   nil,
 				TMAnswer:   nil,
@@ -58,7 +58,7 @@ func Test_ChannelCreate(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "fd4ed562-823f-11ea-a6b2-bbfcd3647952",
 				State:      "Up",
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			},
 
 			testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
@@ -68,7 +68,7 @@ func Test_ChannelCreate(t *testing.T) {
 				State:      "Up",
 				Data:       map[string]interface{}{},
 				StasisData: map[channel.StasisDataType]string{},
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:   nil,
 				TMDelete:   nil,
 				TMAnswer:   nil,
@@ -97,7 +97,7 @@ func Test_ChannelCreate(t *testing.T) {
 					"key1": "val1",
 				},
 				StasisData: map[channel.StasisDataType]string{},
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:   nil,
 				TMDelete:   nil,
 				TMAnswer:   nil,
@@ -126,7 +126,7 @@ func Test_ChannelCreate(t *testing.T) {
 				StasisData: map[channel.StasisDataType]string{
 					"key1": "val1",
 				},
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:  testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:  nil,
 				TMDelete:  nil,
 				TMAnswer:  nil,
@@ -271,7 +271,7 @@ func Test_ChannelEndAndDelete(t *testing.T) {
 
 				TMRinging: nil,
 				TMAnswer:  nil,
-				TMEnd: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMEnd:     testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 
 				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
@@ -340,7 +340,7 @@ func Test_ChannelSetStateAnswer(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "bbed0da6-6e6d-11ed-9544-937fb1cf3a60",
 				State:      ari.ChannelStateDown,
-				TMCreate: testhelper.TimePtr("2020-04-20T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-20T03:22:17.995000Z"),
 			},
 			ari.ChannelStateUp,
 
@@ -352,7 +352,7 @@ func Test_ChannelSetStateAnswer(t *testing.T) {
 				Data:       map[string]interface{}{},
 				StasisData: map[channel.StasisDataType]string{},
 
-				TMAnswer: testhelper.TimePtr("2020-04-20T03:23:20.995000Z"),
+				TMAnswer:  testhelper.TimePtr("2020-04-20T03:23:20.995000Z"),
 				TMRinging: nil,
 				TMEnd:     nil,
 
@@ -426,7 +426,7 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "dbb6d036-6e6d-11ed-8256-7b4b5eef5694",
 				State:      ari.ChannelStateDown,
-				TMCreate: testhelper.TimePtr("2020-04-20T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-20T03:22:17.995000Z"),
 			},
 			ari.ChannelStateRing,
 
@@ -453,7 +453,7 @@ func Test_ChannelSetStateRinging(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "f03c8a28-6e6d-11ed-a20b-bfaa56fb5a4c",
 				State:      ari.ChannelStateDown,
-				TMCreate: testhelper.TimePtr("2020-04-20T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-20T03:22:17.995000Z"),
 			},
 			ari.ChannelStateRing,
 
@@ -1027,7 +1027,7 @@ func Test_ChannelSetBridgeID(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "4c10052c-9177-11ea-bee2-8f5a79d2f22b",
 				State:      ari.ChannelStateRing,
-				TMCreate: testhelper.TimePtr("2020-04-20T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-20T03:22:17.995000Z"),
 			},
 			"",
 
@@ -1683,7 +1683,7 @@ func Test_ChannelList(t *testing.T) {
 					TMAnswer:  nil,
 					TMRinging: nil,
 					TMEnd:     nil,
-					TMCreate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+					TMCreate:  testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 					TMUpdate:  nil,
 					TMDelete:  nil,
 				},
@@ -1697,7 +1697,7 @@ func Test_ChannelList(t *testing.T) {
 					TMAnswer:  nil,
 					TMRinging: nil,
 					TMEnd:     nil,
-					TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+					TMCreate:  testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 					TMUpdate:  nil,
 					TMDelete:  nil,
 				},
@@ -1819,7 +1819,7 @@ func Test_ChannelListForRecovery(t *testing.T) {
 					TMAnswer:  nil,
 					TMRinging: nil,
 					TMEnd:     nil,
-					TMCreate: testhelper.TimePtr("2025-06-14T03:00:00.000000Z"),
+					TMCreate:  testhelper.TimePtr("2025-06-14T03:00:00.000000Z"),
 					TMUpdate:  nil,
 					TMDelete:  nil,
 				},
@@ -1834,7 +1834,7 @@ func Test_ChannelListForRecovery(t *testing.T) {
 					TMAnswer:  nil,
 					TMRinging: nil,
 					TMEnd:     nil,
-					TMCreate: testhelper.TimePtr("2025-06-14T02:00:00.000000Z"),
+					TMCreate:  testhelper.TimePtr("2025-06-14T02:00:00.000000Z"),
 					TMUpdate:  nil,
 					TMDelete:  nil,
 				},

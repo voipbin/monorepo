@@ -20,7 +20,7 @@ const (
 
 	FieldCodecs Field = "codecs" // codecs
 
-	FieldHealthStatus    Field = "health_status"    // health_status
+	FieldHealthStatus    Field = "health_status"     // health_status
 	FieldHealthCheckedAt Field = "health_checked_at" // health_checked_at
 
 	FieldTMCreate Field = "tm_create" // tm_create

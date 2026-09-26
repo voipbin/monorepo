@@ -111,7 +111,7 @@ func TestBootstrap(t *testing.T) {
 
 func TestLoadGlobalConfig(t *testing.T) {
 	tests := []struct {
-		name string
+		name  string
 		setup func()
 		check func(*testing.T, *Config)
 	}{
@@ -228,44 +228,44 @@ func TestInitConfig(t *testing.T) {
 
 func TestInitConfig_BindErrors(t *testing.T) {
 	tests := []struct {
-		name       string
+		name        string
 		missingFlag string
-		wantErr    bool
+		wantErr     bool
 	}{
 		{
-			name:       "missing database_dsn",
+			name:        "missing database_dsn",
 			missingFlag: "database_dsn",
-			wantErr:    true,
+			wantErr:     true,
 		},
 		{
-			name:       "missing prometheus_endpoint",
+			name:        "missing prometheus_endpoint",
 			missingFlag: "prometheus_endpoint",
-			wantErr:    true,
+			wantErr:     true,
 		},
 		{
-			name:       "missing prometheus_listen_address",
+			name:        "missing prometheus_listen_address",
 			missingFlag: "prometheus_listen_address",
-			wantErr:    true,
+			wantErr:     true,
 		},
 		{
-			name:       "missing rabbitmq_address",
+			name:        "missing rabbitmq_address",
 			missingFlag: "rabbitmq_address",
-			wantErr:    true,
+			wantErr:     true,
 		},
 		{
-			name:       "missing redis_address",
+			name:        "missing redis_address",
 			missingFlag: "redis_address",
-			wantErr:    true,
+			wantErr:     true,
 		},
 		{
-			name:       "missing redis_database",
+			name:        "missing redis_database",
 			missingFlag: "redis_database",
-			wantErr:    true,
+			wantErr:     true,
 		},
 		{
-			name:       "missing redis_password",
+			name:        "missing redis_password",
 			missingFlag: "redis_password",
-			wantErr:    true,
+			wantErr:     true,
 		},
 	}
 

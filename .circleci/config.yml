@@ -60,3 +60,6 @@ workflows:
             .circleci/tests/.*          run-shell-tests true
             docs/reference/extractor\.sh run-shell-tests true
             docs/reference/tests/.*     run-shell-tests true
+
+            \.golangci\.yml             run-lint-config-check true
+            scripts/.*                  run-lint-config-check true

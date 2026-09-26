@@ -16,7 +16,7 @@ type Accesskey struct {
 
 	// TokenHash is the SHA-256 hex digest of the token. Tagged json:"-" to prevent
 	// exposure in API responses. Note: empty when loaded from cache (JSON serialization).
-	TokenHash string `json:"-" db:"token_hash"`
+	TokenHash   string `json:"-" db:"token_hash"`
 	TokenPrefix string `json:"token_prefix" db:"token_prefix"`
 
 	// RawToken holds the plain-text token temporarily during creation.

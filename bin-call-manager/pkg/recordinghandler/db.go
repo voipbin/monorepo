@@ -87,7 +87,7 @@ func (h *recordingHandler) Create(
 // List returns list of recordings of the given filters
 func (h *recordingHandler) List(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "List",
+		"func":    "List",
 		"filters": filters,
 	})
 

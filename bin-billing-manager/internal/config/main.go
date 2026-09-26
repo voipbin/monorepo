@@ -68,8 +68,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
 
-		"paddle_api_key":              "PADDLE_API_KEY",
-		"paddle_price_id_basic":       "PADDLE_PRICE_ID_BASIC",
+		"paddle_api_key":               "PADDLE_API_KEY",
+		"paddle_price_id_basic":        "PADDLE_PRICE_ID_BASIC",
 		"paddle_price_id_professional": "PADDLE_PRICE_ID_PROFESSIONAL",
 	}
 

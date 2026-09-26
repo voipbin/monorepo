@@ -162,7 +162,7 @@ func (h *handler) RouteList(ctx context.Context, token string, limit uint64, fil
 		From(routesTable).
 		Where(squirrel.Eq{string(route.FieldTMDelete): nil}).
 		Where(squirrel.Lt{string(route.FieldTMCreate): token}).
-		OrderBy(string(route.FieldTMCreate) + " DESC", string(route.FieldID) + " DESC").
+		OrderBy(string(route.FieldTMCreate)+" DESC", string(route.FieldID)+" DESC").
 		Limit(limit).
 		PlaceholderFormat(squirrel.Question)
 

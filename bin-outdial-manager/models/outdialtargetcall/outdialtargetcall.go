@@ -17,9 +17,9 @@ type OutdialTargetCall struct {
 	OutdialID       uuid.UUID `json:"outdial_id" db:"outdial_id,uuid"`
 	OutdialTargetID uuid.UUID `json:"outdial_target_id" db:"outdial_target_id,uuid"`
 
-	ActiveflowID  uuid.UUID     `json:"activeflow_id" db:"activeflow_id,uuid"`   // this is required
-	ReferenceType ReferenceType `json:"reference_type" db:"reference_type"`      // none or call
-	ReferenceID   uuid.UUID     `json:"reference_id" db:"reference_id,uuid"`     // reference id
+	ActiveflowID  uuid.UUID     `json:"activeflow_id" db:"activeflow_id,uuid"` // this is required
+	ReferenceType ReferenceType `json:"reference_type" db:"reference_type"`    // none or call
+	ReferenceID   uuid.UUID     `json:"reference_id" db:"reference_id,uuid"`   // reference id
 
 	Status Status `json:"status" db:"status"`
 

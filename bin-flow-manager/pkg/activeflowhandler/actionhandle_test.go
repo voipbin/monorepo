@@ -3832,11 +3832,11 @@ func Test_actionHandleCall(t *testing.T) {
 		name string
 		af   *activeflow.Activeflow
 
-		source         *commonaddress.Address
-		destinations   []commonaddress.Address
-		flowID         uuid.UUID
-		actions        []action.Action
-		masterCallID   uuid.UUID
+		source          *commonaddress.Address
+		destinations    []commonaddress.Address
+		flowID          uuid.UUID
+		actions         []action.Action
+		masterCallID    uuid.UUID
 		earlyExecution  bool
 		expectAnonymous string
 

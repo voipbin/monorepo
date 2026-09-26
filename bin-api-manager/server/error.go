@@ -8,8 +8,8 @@ import (
 
 	"monorepo/bin-api-manager/lib/apierror"
 	"monorepo/bin-api-manager/lib/middleware"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

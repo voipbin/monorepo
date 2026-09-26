@@ -67,8 +67,8 @@ func TestCampaignStruct(t *testing.T) {
 		OutdialID:      outdialID,
 		QueueID:        queueID,
 		NextCampaignID: nextCampaignID,
-		TMCreate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
-		TMUpdate: ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMCreate:       ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+		TMUpdate:       ptrTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 	c.ID = id
 

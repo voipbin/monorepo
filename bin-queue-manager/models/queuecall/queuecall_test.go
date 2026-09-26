@@ -17,15 +17,15 @@ func TestQueuecallStruct(t *testing.T) {
 	serviceAgentID := uuid.Must(uuid.NewV4())
 
 	qc := Queuecall{
-		QueueID:          queueID,
-		ReferenceType:    ReferenceTypeCall,
-		ReferenceID:      referenceID,
-		Status:           StatusWaiting,
-		ServiceAgentID:   serviceAgentID,
-		TimeoutWait:      60000,
-		TimeoutService:   300000,
-		DurationWaiting:  15000,
-		DurationService:  120000,
+		QueueID:         queueID,
+		ReferenceType:   ReferenceTypeCall,
+		ReferenceID:     referenceID,
+		Status:          StatusWaiting,
+		ServiceAgentID:  serviceAgentID,
+		TimeoutWait:     60000,
+		TimeoutService:  300000,
+		DurationWaiting: 15000,
+		DurationService: 120000,
 	}
 	qc.ID = id
 	qc.CustomerID = customerID

@@ -118,7 +118,7 @@ func (m *mockRagHandlerForListen) DocumentList(_ context.Context, _ uint64, _ st
 func (m *mockRagHandlerForListen) QueryRag(_ context.Context, _ uuid.UUID, _ string, _ int) (*query.Response, error) {
 	return nil, fmt.Errorf("not implemented")
 }
-func (m *mockRagHandlerForListen) DocumentIngestPendingAll(_ context.Context) {}
+func (m *mockRagHandlerForListen) DocumentIngestPendingAll(_ context.Context)            {}
 func (m *mockRagHandlerForListen) RunIngestionTicker(_ context.Context, _ time.Duration) {}
 
 func TestListenHandler_Interface(t *testing.T) {

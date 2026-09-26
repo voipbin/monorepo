@@ -15,8 +15,8 @@ func TestConvertStringMapToFieldMap(t *testing.T) {
 		{
 			name: "valid_conversion_with_uuid",
 			src: map[string]any{
-				"name":   "Test Campaign",
-				"status": "run",
+				"name":    "Test Campaign",
+				"status":  "run",
 				"flow_id": uuid.Must(uuid.NewV4()).String(),
 			},
 			wantErr: false,
@@ -30,8 +30,8 @@ func TestConvertStringMapToFieldMap(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "empty_map",
-			src:  map[string]any{},
+			name:    "empty_map",
+			src:     map[string]any{},
 			wantErr: false,
 		},
 		{

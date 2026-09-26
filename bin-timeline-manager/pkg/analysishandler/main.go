@@ -104,9 +104,9 @@ type analysisHandler struct {
 	sem chan struct{}
 
 	// metrics
-	metricStarted   prometheus.Counter
-	metricCompleted *prometheus.CounterVec
-	metricDuration  prometheus.Histogram
+	metricStarted    prometheus.Counter
+	metricCompleted  *prometheus.CounterVec
+	metricDuration   prometheus.Histogram
 	metricEnrichment *prometheus.CounterVec
 }
 
@@ -153,9 +153,9 @@ func NewAnalysisHandler(
 		models:       models,
 		sem:          make(chan struct{}, analysisMaxConcurrentJobs),
 
-		metricStarted:   promAnalysisStarted,
-		metricCompleted: promAnalysisCompleted,
-		metricDuration:  promAnalysisDuration,
+		metricStarted:    promAnalysisStarted,
+		metricCompleted:  promAnalysisCompleted,
+		metricDuration:   promAnalysisDuration,
 		metricEnrichment: promAnalysisEnrichment,
 	}
 }

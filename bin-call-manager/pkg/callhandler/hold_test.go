@@ -26,9 +26,9 @@ func Test_HoldOn(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall     *call.Call
+		responseCall      *call.Call
 		responseHoldOnErr error
-		expectError      bool
+		expectError       bool
 	}{
 		{
 			name: "normal",
@@ -101,9 +101,9 @@ func Test_HoldOff(t *testing.T) {
 
 		id uuid.UUID
 
-		responseCall      *call.Call
+		responseCall       *call.Call
 		responseHoldOffErr error
-		expectError       bool
+		expectError        bool
 	}{
 		{
 			name: "normal",

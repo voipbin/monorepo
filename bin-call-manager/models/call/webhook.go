@@ -34,11 +34,11 @@ type WebhookMessage struct {
 	Destination commonaddress.Address `json:"destination,omitempty"`
 
 	// info
-	Status        Status          `json:"status,omitempty"`
+	Status        Status                 `json:"status,omitempty"`
 	Action        fmaction.Action        `json:"action,omitempty"`
 	Metadata      map[string]interface{} `json:"metadata,omitempty"`
 	Direction     Direction              `json:"direction,omitempty"`
-	MuteDirection MuteDirection   `json:"mute_direction,omitempty"`
+	MuteDirection MuteDirection          `json:"mute_direction,omitempty"`
 
 	HangupBy     HangupBy     `json:"hangup_by,omitempty"`
 	HangupReason HangupReason `json:"hangup_reason,omitempty"`

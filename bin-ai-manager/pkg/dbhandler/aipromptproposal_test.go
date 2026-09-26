@@ -61,8 +61,8 @@ func insertTestProposal(t *testing.T, id, customerID, aiID, basisHistID uuid.UUI
 // fetchAIRow reads the post-Accept state of an AI directly from the DB,
 // bypassing the cache.
 type aiSnapshot struct {
-	InitPrompt           string
-	CurrentPromptHistID  uuid.UUID
+	InitPrompt          string
+	CurrentPromptHistID uuid.UUID
 }
 
 func fetchAIRow(t *testing.T, id uuid.UUID) aiSnapshot {
@@ -90,8 +90,8 @@ func fetchProposalRow(t *testing.T, id uuid.UUID) (status string, appliedHistID 
 
 // aiIDMatcher asserts the cached AI struct has the post-Accept current_prompt_history_id and init_prompt.
 type aiIDMatcher struct {
-	expectedHistID  uuid.UUID
-	expectedPrompt  string
+	expectedHistID uuid.UUID
+	expectedPrompt string
 }
 
 func (m aiIDMatcher) Matches(x any) bool {

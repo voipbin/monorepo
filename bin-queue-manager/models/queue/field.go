@@ -16,9 +16,9 @@ const (
 	FieldDirectID   Field = "direct_id"   // direct_id
 	FieldDirectHash Field = "direct_hash" // direct_hash
 
-	FieldWaitFlowID     Field = "wait_flow_id"     // wait_flow_id
-	FieldWaitTimeout    Field = "wait_timeout"     // wait_timeout
-	FieldServiceTimeout Field = "service_timeout"  // service_timeout
+	FieldWaitFlowID     Field = "wait_flow_id"    // wait_flow_id
+	FieldWaitTimeout    Field = "wait_timeout"    // wait_timeout
+	FieldServiceTimeout Field = "service_timeout" // service_timeout
 
 	FieldWaitQueuecallIDs    Field = "wait_queue_call_ids"    // wait_queue_call_ids
 	FieldServiceQueuecallIDs Field = "service_queue_call_ids" // service_queue_call_ids

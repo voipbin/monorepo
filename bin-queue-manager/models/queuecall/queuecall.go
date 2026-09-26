@@ -17,15 +17,15 @@ type Queuecall struct {
 
 	QueueID uuid.UUID `json:"queue_id,omitempty" db:"queue_id,uuid"`
 
-	ReferenceType         ReferenceType `json:"reference_type,omitempty" db:"reference_type"`                    // referenced resource's type.
-	ReferenceID           uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`                   // referenced resource's id.
+	ReferenceType         ReferenceType `json:"reference_type,omitempty" db:"reference_type"`                        // referenced resource's type.
+	ReferenceID           uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`                       // referenced resource's id.
 	ReferenceActiveflowID uuid.UUID     `json:"reference_activeflow_id,omitempty" db:"reference_activeflow_id,uuid"` // referenced resource's activeflow id
 
 	ForwardActionID uuid.UUID `json:"forward_action_id,omitempty" db:"forward_action_id,uuid"` // action id for forward. This is for the conference_join's action id.
 	ConfbridgeID    uuid.UUID `json:"confbridge_id,omitempty" db:"confbridge_id,uuid"`         // confbridge id
 	GroupcallID     uuid.UUID `json:"groupcall_id,omitempty" db:"groupcall_id,uuid"`           // agent dial groupcall id (VOIP-1539 event-driven routing)
 
-	Source        commonaddress.Address `json:"source,omitempty" db:"source,json"`           // source address for calling to the agent.
+	Source        commonaddress.Address `json:"source,omitempty" db:"source,json"`            // source address for calling to the agent.
 	RoutingMethod queue.RoutingMethod   `json:"routing_method,omitempty" db:"routing_method"` // queue's routing method
 	TagIDs        []uuid.UUID           `json:"tag_ids,omitempty" db:"tag_ids,json"`          // queue's tags
 

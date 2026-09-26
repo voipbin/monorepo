@@ -25,8 +25,8 @@ func Test_PasswordForgot(t *testing.T) {
 	tests := []struct {
 		name string
 
-		username       string
-		emailType      PasswordResetEmailType
+		username        string
+		emailType       PasswordResetEmailType
 		expectedSubject string
 
 		responseAgent *agent.Agent

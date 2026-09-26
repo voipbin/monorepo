@@ -262,7 +262,7 @@ func TestCreateWebhookEvent(t *testing.T) {
 			ID:         id,
 			CustomerID: customerID,
 		},
-		Owner: commonidentity.Owner{},
+		Owner:         commonidentity.Owner{},
 		ActiveflowID:  activeflowID,
 		ReferenceType: ReferenceTypeCall,
 		ReferenceID:   referenceID,

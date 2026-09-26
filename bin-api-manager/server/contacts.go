@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+	"github.com/sirupsen/logrus"
 )
 
 func (h *server) GetContacts(c *gin.Context, params openapi_server.GetContactsParams) {

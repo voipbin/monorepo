@@ -53,7 +53,7 @@ func Test_ParticipantCreate(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -119,7 +119,7 @@ func Test_ParticipantCreate_UPSERT(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -216,7 +216,7 @@ func Test_ParticipantGet(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -405,7 +405,7 @@ func Test_ParticipantList(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 
@@ -507,7 +507,7 @@ func Test_ParticipantDelete(t *testing.T) {
 			h := &dbHandler{
 				db:          dbTest,
 				redis:       nil,
-			utilHandler: commonutil.NewUtilHandler(),
+				utilHandler: commonutil.NewUtilHandler(),
 			}
 			ctx := context.Background()
 

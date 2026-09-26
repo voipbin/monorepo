@@ -16,12 +16,12 @@ const (
 	FieldConfbridgeID Field = "confbridge_id" // confbridge_id
 	FieldType         Field = "type"          // type
 
-	FieldMasterCallID    Field = "master_call_id"    // master_call_id
-	FieldChainedCallIDs  Field = "chained_call_ids"  // chained_call_ids
-	FieldRecordingID     Field = "recording_id"      // recording_id
-	FieldRecordingIDs    Field = "recording_ids"     // recording_ids
+	FieldMasterCallID     Field = "master_call_id"     // master_call_id
+	FieldChainedCallIDs   Field = "chained_call_ids"   // chained_call_ids
+	FieldRecordingID      Field = "recording_id"       // recording_id
+	FieldRecordingIDs     Field = "recording_ids"      // recording_ids
 	FieldExternalMediaIDs Field = "external_media_ids" // external_media_ids
-	FieldGroupcallID     Field = "groupcall_id"      // groupcall_id
+	FieldGroupcallID      Field = "groupcall_id"       // groupcall_id
 
 	FieldSource      Field = "source"      // source
 	FieldDestination Field = "destination" // destination

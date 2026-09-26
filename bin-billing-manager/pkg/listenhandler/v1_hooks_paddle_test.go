@@ -36,9 +36,9 @@ func buildHookData(t *testing.T, paddleJSON string) []byte {
 func Test_processV1HooksPaddlePost(t *testing.T) {
 
 	tests := []struct {
-		name    string
-		paddle  string // raw Paddle event JSON
-		setup   func(mockAccount *accounthandler.MockAccountHandler, mockPaddle *paddlehandler.MockPaddleHandler)
+		name      string
+		paddle    string // raw Paddle event JSON
+		setup     func(mockAccount *accounthandler.MockAccountHandler, mockPaddle *paddlehandler.MockPaddleHandler)
 		expectRes *sock.Response
 	}{
 		{

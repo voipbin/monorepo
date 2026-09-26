@@ -493,16 +493,16 @@ func (t *scanTarget) copyTimePtr(s string) error {
 
 	// Try parsing with multiple layouts
 	layouts := []string{
-		"2006-01-02T15:04:05.000000Z",    // ISO 8601 with microseconds
-		"2006-01-02T15:04:05.000000",     // ISO 8601 without Z
-		"2006-01-02T15:04:05Z",           // ISO 8601 without microseconds
-		"2006-01-02T15:04:05",            // ISO 8601 no Z no micros
-		"2006-01-02 15:04:05.000000",     // MySQL format with microseconds
-		"2006-01-02 15:04:05",            // MySQL format without microseconds
-		"2006-01-02 15:04:05.999-07:00",  // SQLite format with timezone
-		"2006-01-02 15:04:05.999+00:00",  // SQLite format with +00:00
-		time.RFC3339,                     // RFC 3339
-		time.RFC3339Nano,                 // RFC 3339 with nanoseconds
+		"2006-01-02T15:04:05.000000Z",   // ISO 8601 with microseconds
+		"2006-01-02T15:04:05.000000",    // ISO 8601 without Z
+		"2006-01-02T15:04:05Z",          // ISO 8601 without microseconds
+		"2006-01-02T15:04:05",           // ISO 8601 no Z no micros
+		"2006-01-02 15:04:05.000000",    // MySQL format with microseconds
+		"2006-01-02 15:04:05",           // MySQL format without microseconds
+		"2006-01-02 15:04:05.999-07:00", // SQLite format with timezone
+		"2006-01-02 15:04:05.999+00:00", // SQLite format with +00:00
+		time.RFC3339,                    // RFC 3339
+		time.RFC3339Nano,                // RFC 3339 with nanoseconds
 	}
 
 	var parsed time.Time

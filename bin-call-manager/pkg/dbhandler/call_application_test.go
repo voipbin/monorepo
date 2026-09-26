@@ -123,4 +123,3 @@ func Test_CallApplicationAMDSet(t *testing.T) {
 		})
 	}
 }
-

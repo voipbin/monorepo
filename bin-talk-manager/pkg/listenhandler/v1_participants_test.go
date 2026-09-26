@@ -29,11 +29,11 @@ func Test_processV1TalksIDParticipantsPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		chatID      uuid.UUID
-		ownerType   string
-		ownerID     uuid.UUID
+		chatID              uuid.UUID
+		ownerType           string
+		ownerID             uuid.UUID
 		responseParticipant *participant.Participant
-		expectRes   *sock.Response
+		expectRes           *sock.Response
 	}{
 		{
 			name: "normal",
@@ -352,53 +352,6 @@ func Test_processV1TalksIDParticipantsIDDelete(t *testing.T) {
 		})
 	}
 }
-
-// func Test_processV1TalksIDParticipantsID_unsupported_method(t *testing.T) {
-// 	tests := []struct {
-// 		name      string
-// 		request   *sock.Request
-// 		expectRes *sock.Response
-// 	}{
-// 		{
-// 			name: "GET method",
-// 			request: &sock.Request{
-// 				URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795/participants/bbef9d30-75fe-11ed-c3ea-f8e017af9700",
-// 				Method:   sock.RequestMethodGet,
-// 				DataType: "application/json",
-// 			},
-// 			expectRes: &sock.Response{
-// 				StatusCode: 405,
-// 				DataType:   "application/json",
-// 				Data:       json.RawMessage("{}"),
-// 			},
-// 		},
-// 	}
-// 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
-// 
-// 			mockSock := sockhandler.NewMockSockHandler(mc)
-// 			mockParticipant := participanthandler.NewMockParticipantHandler(mc)
-// 
-// 			h := &listenHandler{
-// 				sockHandler:        mockSock,
-// 				participantHandler: mockParticipant,
-// 			}
-// 
-// 			ctx := context.Background()
-// 			res, err := h.v1ChatsIDParticipantsIDDelete(ctx, *tt.request)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
-// 
-// 			if !reflect.DeepEqual(res, tt.expectRes) {
-// 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-// 			}
-// 		})
-// 	}
-// }
 
 func Test_v1ParticipantsGet(t *testing.T) {
 	tests := []struct {

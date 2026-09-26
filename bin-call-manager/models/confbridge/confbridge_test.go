@@ -82,16 +82,16 @@ func TestConfbridgeStruct(t *testing.T) {
 	externalMediaID := uuid.Must(uuid.NewV4())
 
 	c := Confbridge{
-		ActiveflowID:    activeflowID,
-		ReferenceType:   ReferenceTypeConference,
-		ReferenceID:     referenceID,
-		Type:            TypeConference,
-		Status:          StatusProgressing,
-		BridgeID:        "bridge-123",
-		Flags:           []Flag{FlagNoAutoLeave},
-		ChannelCallIDs:  map[string]uuid.UUID{"channel-1": uuid.Must(uuid.NewV4())},
-		RecordingID:     recordingID,
-		RecordingIDs:    []uuid.UUID{recordingID},
+		ActiveflowID:     activeflowID,
+		ReferenceType:    ReferenceTypeConference,
+		ReferenceID:      referenceID,
+		Type:             TypeConference,
+		Status:           StatusProgressing,
+		BridgeID:         "bridge-123",
+		Flags:            []Flag{FlagNoAutoLeave},
+		ChannelCallIDs:   map[string]uuid.UUID{"channel-1": uuid.Must(uuid.NewV4())},
+		RecordingID:      recordingID,
+		RecordingIDs:     []uuid.UUID{recordingID},
 		ExternalMediaIDs: []uuid.UUID{externalMediaID},
 	}
 	c.ID = id

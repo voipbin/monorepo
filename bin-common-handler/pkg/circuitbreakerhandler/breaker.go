@@ -8,7 +8,7 @@ import (
 type State int
 
 const (
-	StateClosed   State = iota
+	StateClosed State = iota
 	StateOpen
 	StateHalfOpen
 )

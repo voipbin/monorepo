@@ -1,12 +1,12 @@
 package dbhandler
 
 import (
-	"time"
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -40,7 +40,7 @@ func Test_BridgeCreate(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "98ff3f2a-8226-11ea-9ec5-079bcb66275c",
 				ChannelIDs: []string{},
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:   nil,
 				TMDelete:   nil,
 			},
@@ -61,7 +61,7 @@ func Test_BridgeCreate(t *testing.T) {
 				ChannelIDs:    []string{},
 				ReferenceType: bridge.ReferenceTypeCall,
 				ReferenceID:   uuid.FromStringOrNil("23c83b3e-9316-11ea-91c3-ef8d90e0ec42"),
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:      testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:      nil,
 				TMDelete:      nil,
 			},
@@ -82,7 +82,7 @@ func Test_BridgeCreate(t *testing.T) {
 				ChannelIDs:    []string{},
 				ReferenceType: bridge.ReferenceTypeConfbridge,
 				ReferenceID:   uuid.FromStringOrNil("560448b8-9316-11ea-a651-b78c9ee8e874"),
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:      testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:      nil,
 				TMDelete:      nil,
 			},
@@ -146,9 +146,9 @@ func Test_BridgeEnd(t *testing.T) {
 				AsteriskID: "3e:50:6b:43:bb:30",
 				ID:         "208a5bbe-8ee3-11ea-b267-174c3bd0a842",
 				ChannelIDs: []string{},
-				TMCreate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
-				TMUpdate: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
-				TMDelete: testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
+				TMCreate:   testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
+				TMUpdate:   testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
+				TMDelete:   testhelper.TimePtr("2020-04-18T05:22:17.995000Z"),
 			},
 		},
 	}

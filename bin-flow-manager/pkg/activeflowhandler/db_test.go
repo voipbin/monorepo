@@ -399,7 +399,7 @@ func Test_updateCurrentAction(t *testing.T) {
 					},
 				},
 			},
-		expectActiveflowUpdate: &activeflow.Activeflow{
+			expectActiveflowUpdate: &activeflow.Activeflow{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("f594ebd8-06ae-11eb-9bca-5757b3876041"),
 				},

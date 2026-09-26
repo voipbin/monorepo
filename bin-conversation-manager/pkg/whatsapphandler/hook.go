@@ -28,7 +28,7 @@ type whatsappPayload struct {
 			Value struct {
 				MessagingProduct string `json:"messaging_product"`
 				Metadata         struct {
-					PhoneNumberID     string `json:"phone_number_id"`
+					PhoneNumberID      string `json:"phone_number_id"`
 					DisplayPhoneNumber string `json:"display_phone_number"`
 				} `json:"metadata"`
 				Messages []struct {

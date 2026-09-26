@@ -14,8 +14,8 @@ type Provider struct {
 	Hostname string `json:"hostname" db:"hostname"` // destination
 
 	// sip type techs
-	TechPrefix  string            `json:"tech_prefix" db:"tech_prefix"`   // tech prefix. valid only for the sip type.
-	TechPostfix string            `json:"tech_postfix" db:"tech_postfix"` // tech postfix. valid only for the sip type.
+	TechPrefix  string            `json:"tech_prefix" db:"tech_prefix"`        // tech prefix. valid only for the sip type.
+	TechPostfix string            `json:"tech_postfix" db:"tech_postfix"`      // tech postfix. valid only for the sip type.
 	TechHeaders map[string]string `json:"tech_headers" db:"tech_headers,json"` // tech headers. valid only for the sip type.
 
 	Name   string `json:"name" db:"name"`

@@ -1,12 +1,12 @@
 package dbhandler
 
 import (
-	"time"
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -123,7 +123,7 @@ func Test_GroupcallCreate(t *testing.T) {
 				CallCount:      2,
 				GroupcallCount: 2,
 				DialIndex:      1,
-				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMCreate:       testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
 				TMUpdate:       nil,
 				TMDelete:       nil,
 			},

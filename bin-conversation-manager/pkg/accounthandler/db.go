@@ -123,7 +123,7 @@ func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Accoun
 // List returns list of accounts of the given filters
 func (h *accountHandler) List(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "List",
+		"func":    "List",
 		"filters": filters,
 	})
 

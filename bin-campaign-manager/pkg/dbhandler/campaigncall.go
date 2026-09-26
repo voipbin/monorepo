@@ -236,7 +236,7 @@ func (h *handler) CampaigncallList(ctx context.Context, token string, size uint6
 		Select(fields...).
 		From(campaigncallsTable).
 		Where(squirrel.Lt{string(campaigncall.FieldTMCreate): token}).
-		OrderBy(string(campaigncall.FieldTMCreate) + " DESC", string(campaigncall.FieldID) + " DESC").
+		OrderBy(string(campaigncall.FieldTMCreate)+" DESC", string(campaigncall.FieldID)+" DESC").
 		Limit(size).
 		PlaceholderFormat(squirrel.Question)
 
@@ -317,7 +317,7 @@ func (h *handler) CampaigncallListOngoingByCampaignID(ctx context.Context, campa
 			squirrel.Eq{string(campaigncall.FieldStatus): campaigncall.StatusProgressing},
 		}).
 		Where(squirrel.Lt{string(campaigncall.FieldTMCreate): token}).
-		OrderBy(string(campaigncall.FieldTMCreate) + " DESC", string(campaigncall.FieldID) + " DESC").
+		OrderBy(string(campaigncall.FieldTMCreate)+" DESC", string(campaigncall.FieldID)+" DESC").
 		Limit(limit).
 		PlaceholderFormat(squirrel.Question)
 

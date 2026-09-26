@@ -65,7 +65,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"aws_access_key":            "AWS_ACCESS_KEY",
 		"aws_secret_key":            "AWS_SECRET_KEY",
 		"elevenlabs_api_key":        "ELEVENLABS_API_KEY",
-		"gcp_tts_endpoint":         "GCP_TTS_ENDPOINT",
+		"gcp_tts_endpoint":          "GCP_TTS_ENDPOINT",
 		"database_dsn":              "DATABASE_DSN",
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",

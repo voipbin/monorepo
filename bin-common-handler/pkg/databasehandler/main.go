@@ -13,7 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-
 func Connect(dsn string) (*sql.DB, error) {
 	res, err := sql.Open("mysql", dsn)
 	if err != nil {

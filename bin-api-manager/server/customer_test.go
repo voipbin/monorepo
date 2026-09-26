@@ -569,4 +569,3 @@ func Test_customerBillingAccountIDPut_MissingAuthIdentity(t *testing.T) {
 	assertMissingAuthIdentity(t, http.MethodPut, "/customer/billing_account_id",
 		[]byte(`{"billing_account_id":"245bc55e-c514-11ef-85d3-23d66dfc487a"}`))
 }
-

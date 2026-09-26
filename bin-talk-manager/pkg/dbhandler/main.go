@@ -10,10 +10,10 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
+	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/message"
 	"monorepo/bin-talk-manager/models/participant"
-	"monorepo/bin-talk-manager/models/chat"
-	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 )
 
 // ErrNotFound is returned when a requested record does not exist.

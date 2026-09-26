@@ -154,7 +154,7 @@ func Test_EventCMCallHangup(t *testing.T) {
 
 		call *cmcall.Call
 
-		responseBilling        *billing.Billing
+		responseBilling         *billing.Billing
 		responseConsumedBilling *billing.Billing
 	}
 

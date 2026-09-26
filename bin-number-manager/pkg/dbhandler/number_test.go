@@ -301,8 +301,8 @@ func Test_NumberUpdate(t *testing.T) {
 	curTime := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC)
 
 	type test struct {
-		name   string
-		num    *number.Number
+		name string
+		num  *number.Number
 
 		updateFields map[number.Field]any
 
@@ -406,8 +406,8 @@ func Test_NumberUpdateFlowID(t *testing.T) {
 	curTime := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC)
 
 	type test struct {
-		name   string
-		num    *number.Number
+		name string
+		num  *number.Number
 
 		updateFields map[number.Field]any
 
@@ -506,8 +506,8 @@ func Test_NumberUpdateCallFlowID(t *testing.T) {
 	curTime := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC)
 
 	type test struct {
-		name   string
-		num    *number.Number
+		name string
+		num  *number.Number
 
 		updateFields map[number.Field]any
 
@@ -605,8 +605,8 @@ func Test_NumberUpdateMessageFlowID(t *testing.T) {
 	curTime := time.Date(2021, 2, 26, 18, 26, 49, 0, time.UTC)
 
 	type test struct {
-		name   string
-		num    *number.Number
+		name string
+		num  *number.Number
 
 		updateFields map[number.Field]any
 

@@ -76,7 +76,6 @@ var (
 	ErrDuplicateKey        = errors.New("duplicate key")
 )
 
-
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
 	h := &handler{

@@ -1209,4 +1209,3 @@ func TestUpdate_RejectsInsightAIWithNormalTools(t *testing.T) {
 	}
 	assertInvalidArgument(t, err)
 }
-

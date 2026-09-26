@@ -106,7 +106,7 @@ func Test_OutdialV1OutdialList(t *testing.T) {
 				URI:      fmt.Sprintf("/v1/outdials?page_token=%s&page_size=10", url.QueryEscape("2021-03-02T03:23:20.995000Z")),
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
-			Data:     []byte(`{"customer_id":"74b94c72-b650-11ec-a5cf-ff01639e276f"}`),
+				Data:     []byte(`{"customer_id":"74b94c72-b650-11ec-a5cf-ff01639e276f"}`),
 			},
 			&sock.Response{
 				StatusCode: 200,

@@ -24,10 +24,10 @@ import (
 )
 
 const (
-	maxFileSize       = 50 * 1024 * 1024 // 50 MB
-	maxRetryCount     = 3
-	maxTokensPerChunk = 512
-	heartbeatInterval = 10 // Update heartbeat every 10 chunks
+	maxFileSize        = 50 * 1024 * 1024 // 50 MB
+	maxRetryCount      = 3
+	maxTokensPerChunk  = 512
+	heartbeatInterval  = 10 // Update heartbeat every 10 chunks
 	urlDownloadTimeout = 5 * time.Minute
 )
 

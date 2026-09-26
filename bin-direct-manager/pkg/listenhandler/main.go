@@ -36,8 +36,8 @@ type ListenHandler interface {
 type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	utilHandler    utilhandler.UtilHandler
-	directHandler  directhandler.DirectHandler
+	utilHandler   utilhandler.UtilHandler
+	directHandler directhandler.DirectHandler
 }
 
 var (
@@ -112,8 +112,8 @@ func NewListenHandler(sockHandler sockhandler.SockHandler, directHandler directh
 	h := &listenHandler{
 		sockHandler: sockHandler,
 
-		utilHandler:    utilhandler.NewUtilHandler(),
-		directHandler:  directHandler,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		directHandler: directHandler,
 	}
 
 	return h

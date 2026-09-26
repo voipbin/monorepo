@@ -1,12 +1,12 @@
 package dbhandler
 
 import (
-	"time"
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"reflect"
 	"testing"
+	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -80,8 +80,8 @@ func Test_CallCreate(t *testing.T) {
 					Detail:     "test destination detail",
 				},
 
-				Status: call.StatusHangup,
-				Data:   map[call.DataType]string{},
+				Status:   call.StatusHangup,
+				Data:     map[call.DataType]string{},
 				Metadata: map[string]interface{}{},
 				Action: fmaction.Action{
 					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
@@ -142,8 +142,8 @@ func Test_CallCreate(t *testing.T) {
 					Detail:     "test destination detail",
 				},
 
-				Status: call.StatusHangup,
-				Data:   map[call.DataType]string{},
+				Status:   call.StatusHangup,
+				Data:     map[call.DataType]string{},
 				Metadata: map[string]interface{}{},
 				Action: fmaction.Action{
 					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
@@ -182,12 +182,12 @@ func Test_CallCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("64e31a36-b6fc-4df5-9a66-48f68ad60a70"),
 				},
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
-				Dialroutes:     []rmroute.Route{},
+				Data:             map[call.DataType]string{},
+				Metadata:         map[string]interface{}{},
+				Dialroutes:       []rmroute.Route{},
 
 				TMProgressing: nil,
 				TMRinging:     nil,
@@ -282,12 +282,12 @@ func Test_CallList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
 					},
 
-					ChainedCallIDs: []uuid.UUID{},
-					RecordingIDs:   []uuid.UUID{},
+					ChainedCallIDs:   []uuid.UUID{},
+					RecordingIDs:     []uuid.UUID{},
 					ExternalMediaIDs: []uuid.UUID{},
-					Data:           map[call.DataType]string{},
-					Metadata: map[string]interface{}{},
-					Dialroutes:     []rmroute.Route{},
+					Data:             map[call.DataType]string{},
+					Metadata:         map[string]interface{}{},
+					Dialroutes:       []rmroute.Route{},
 
 					TMProgressing: nil,
 					TMRinging:     nil,
@@ -303,12 +303,12 @@ func Test_CallList(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("739625ca-7f43-11ec-8d25-4f519d029295"),
 					},
 
-					ChainedCallIDs: []uuid.UUID{},
-					RecordingIDs:   []uuid.UUID{},
+					ChainedCallIDs:   []uuid.UUID{},
+					RecordingIDs:     []uuid.UUID{},
 					ExternalMediaIDs: []uuid.UUID{},
-					Data:           map[call.DataType]string{},
-					Metadata: map[string]interface{}{},
-					Dialroutes:     []rmroute.Route{},
+					Data:             map[call.DataType]string{},
+					Metadata:         map[string]interface{}{},
+					Dialroutes:       []rmroute.Route{},
 
 					TMProgressing: nil,
 					TMRinging:     nil,
@@ -415,12 +415,12 @@ func Test_CallList_delete(t *testing.T) {
 						CustomerID: uuid.FromStringOrNil("c6cc16b0-03d5-4332-b1d5-0c0b68e29847"),
 					},
 
-					ChainedCallIDs: []uuid.UUID{},
-					RecordingIDs:   []uuid.UUID{},
+					ChainedCallIDs:   []uuid.UUID{},
+					RecordingIDs:     []uuid.UUID{},
 					ExternalMediaIDs: []uuid.UUID{},
-					Data:           map[call.DataType]string{},
-					Metadata: map[string]interface{}{},
-					Dialroutes:     []rmroute.Route{},
+					Data:             map[call.DataType]string{},
+					Metadata:         map[string]interface{}{},
+					Dialroutes:       []rmroute.Route{},
 
 					TMProgressing: nil,
 					TMRinging:     nil,
@@ -514,11 +514,11 @@ func Test_CallSetBridgeID(t *testing.T) {
 
 				BridgeID: "c6d46f04-5f89-11ed-98b2-57f1fabc3cf4",
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
-				Data: map[call.DataType]string{},
+				Data:     map[call.DataType]string{},
 				Metadata: map[string]interface{}{},
 
 				Dialroutes: []rmroute.Route{},
@@ -613,8 +613,8 @@ func Test_CallSetStatus(t *testing.T) {
 					ID: uuid.FromStringOrNil("93d7aea3-4a93-4c58-8bce-d956a0f73ad6"),
 				},
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source:      commonaddress.Address{},
@@ -623,7 +623,7 @@ func Test_CallSetStatus(t *testing.T) {
 				Status:    call.StatusTerminating,
 				Direction: call.DirectionIncoming,
 				Data:      map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:  map[string]interface{}{},
 
 				Dialroutes: []rmroute.Route{},
 
@@ -716,14 +716,14 @@ func Test_CallGetByChannelID(t *testing.T) {
 				ChannelID: "54963ab2-6bc8-11ed-9acd-8325f591cc80",
 				Type:      call.TypeFlow,
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Status:     call.StatusRinging,
 				Direction:  call.DirectionIncoming,
 				Data:       map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:   map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -763,8 +763,8 @@ func Test_CallGetByChannelID(t *testing.T) {
 				ChannelID: "79b8a8b6-6bc8-11ed-8ace-af5dbf486a09",
 				Type:      call.TypeFlow,
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source: commonaddress.Address{
@@ -774,7 +774,7 @@ func Test_CallGetByChannelID(t *testing.T) {
 				Status:     call.StatusRinging,
 				Direction:  call.DirectionIncoming,
 				Data:       map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:   map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -869,8 +869,8 @@ func Test_CallSetHangup(t *testing.T) {
 				ChannelID: "93ea5e38-84e3-11ea-8927-dbf157fd2c9a",
 				Type:      call.TypeFlow,
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source:      commonaddress.Address{},
@@ -882,12 +882,12 @@ func Test_CallSetHangup(t *testing.T) {
 				HangupReason: call.HangupReasonNormal,
 				HangupBy:     call.HangupByLocal,
 				Data:         map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:     map[string]interface{}{},
 				Dialroutes:   []rmroute.Route{},
 
 				TMRinging:     nil,
 				TMProgressing: nil,
-				TMHangup: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
+				TMHangup:      testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 
 				TMCreate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
 				TMUpdate: testhelper.TimePtr("2020-04-18T03:22:18.995000Z"),
@@ -965,14 +965,14 @@ func Test_CallSetFlowID(t *testing.T) {
 					ID: uuid.FromStringOrNil("3599ce5e-9357-11ea-b215-f7ddc7ee506e"),
 				},
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				FlowID: uuid.FromStringOrNil("52f4a50a-8cc7-11ea-87f7-f36a8e4090eb"),
 
 				Data:       map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:   map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1057,14 +1057,14 @@ func Test_CallSetConfbridgeID(t *testing.T) {
 					ID: uuid.FromStringOrNil("56ca1f9c-9358-11ea-8dd7-472b84a9f7d4"),
 				},
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				ConfbridgeID: uuid.FromStringOrNil("62faff48-9358-11ea-8455-8fd1af79d7dc"),
 
 				Data:       map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:   map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1166,8 +1166,8 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Type:      call.TypeFlow,
 				FlowID:    uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source:      commonaddress.Address{},
@@ -1184,7 +1184,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Status:         call.StatusRinging,
 				Direction:      call.DirectionIncoming,
 				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:       map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1227,8 +1227,8 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Type:      call.TypeFlow,
 				FlowID:    uuid.FromStringOrNil("11dd8344-8d02-11ea-9aef-334a6a41cb02"),
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source:      commonaddress.Address{},
@@ -1242,7 +1242,7 @@ func Test_CallSetActionAndActionNextHold(t *testing.T) {
 				Status:         call.StatusRinging,
 				Direction:      call.DirectionIncoming,
 				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:       map[string]interface{}{},
 				Dialroutes:     []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1326,15 +1326,15 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("14649d2c-24fc-11eb-bb0b-9bd6970f725f"),
 				},
-				ChannelID:      "14daba5c-24fc-11eb-8f58-8b798baaf553",
-				Type:           call.TypeFlow,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChannelID:        "14daba5c-24fc-11eb-8f58-8b798baaf553",
+				Type:             call.TypeFlow,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
-				Dialroutes:     []rmroute.Route{},
-				MasterCallID:   uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
+				Data:             map[call.DataType]string{},
+				Metadata:         map[string]interface{}{},
+				Dialroutes:       []rmroute.Route{},
+				MasterCallID:     uuid.FromStringOrNil("4a6ce0aa-24fc-11eb-aec0-4b97b9a2422a"),
 
 				TMRinging:     nil,
 				TMProgressing: nil,
@@ -1360,13 +1360,13 @@ func Test_CallSetMasterCallID(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("665db8f2-2501-11eb-86ce-f3a50eef6f26"),
 				},
-				Type:           call.TypeFlow,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				Type:             call.TypeFlow,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
-				Dialroutes:     []rmroute.Route{},
+				Data:             map[call.DataType]string{},
+				Metadata:         map[string]interface{}{},
+				Dialroutes:       []rmroute.Route{},
 
 				TMRinging:     nil,
 				TMProgressing: nil,
@@ -1440,7 +1440,7 @@ func Test_CallSetRecordingID(t *testing.T) {
 				},
 				ChannelID: "4e2fe520-282b-11eb-ad66-b777dce59261",
 				Type:      call.TypeFlow,
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:  testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 			},
 			uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
 
@@ -1449,14 +1449,14 @@ func Test_CallSetRecordingID(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("46ab9ad8-282b-11eb-82c3-6782faf5e030"),
 				},
-				ChannelID:      "4e2fe520-282b-11eb-ad66-b777dce59261",
-				Type:           call.TypeFlow,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChannelID:        "4e2fe520-282b-11eb-ad66-b777dce59261",
+				Type:             call.TypeFlow,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
-				Dialroutes:     []rmroute.Route{},
+				Data:             map[call.DataType]string{},
+				Metadata:         map[string]interface{}{},
+				Dialroutes:       []rmroute.Route{},
 
 				RecordingID: uuid.FromStringOrNil("4e847572-282b-11eb-9c58-97622e4406e2"),
 
@@ -1485,13 +1485,13 @@ func Test_CallSetRecordingID(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7b3e197e-282b-11eb-956d-4feb054947db"),
 				},
-				Type:           call.TypeFlow,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				Type:             call.TypeFlow,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
-				Dialroutes:     []rmroute.Route{},
+				Data:             map[call.DataType]string{},
+				Metadata:         map[string]interface{}{},
+				Dialroutes:       []rmroute.Route{},
 
 				TMRinging:     nil,
 				TMProgressing: nil,
@@ -1585,15 +1585,15 @@ func Test_CallSetForRouteFailover(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("eff7e968-6035-11ed-b494-17ddee07f371"),
 				},
-				ChannelID:      "06372bc6-6036-11ed-bd92-7793e1da99bd",
-				Type:           call.TypeFlow,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChannelID:        "06372bc6-6036-11ed-bd92-7793e1da99bd",
+				Type:             call.TypeFlow,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
-				DialrouteID:    uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
-				Dialroutes:     []rmroute.Route{},
+				Data:             map[call.DataType]string{},
+				Metadata:         map[string]interface{}{},
+				DialrouteID:      uuid.FromStringOrNil("11441a56-6036-11ed-9ac4-3b51fc15b1a1"),
+				Dialroutes:       []rmroute.Route{},
 
 				TMRinging:     nil,
 				TMProgressing: nil,
@@ -1675,13 +1675,13 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("b347a946-6bab-11ed-845d-3fd878a04427"),
 				},
-				ActionNextHold: true,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ActionNextHold:   true,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
-				Dialroutes:     []rmroute.Route{},
+				Data:             map[call.DataType]string{},
+				Metadata:         map[string]interface{}{},
+				Dialroutes:       []rmroute.Route{},
 
 				TMRinging:     nil,
 				TMProgressing: nil,
@@ -1706,13 +1706,13 @@ func Test_CallSetActionNextHold(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("10ecffc8-6bad-11ed-89dd-7bd54d2b1b6b"),
 				},
-				ActionNextHold: false,
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ActionNextHold:   false,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
-				Data:           map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
-				Dialroutes:     []rmroute.Route{},
+				Data:             map[call.DataType]string{},
+				Metadata:         map[string]interface{}{},
+				Dialroutes:       []rmroute.Route{},
 
 				TMRinging:     nil,
 				TMProgressing: nil,
@@ -1796,15 +1796,15 @@ func Test_CallDelete(t *testing.T) {
 					ID: uuid.FromStringOrNil("407a8f3a-0fed-45b6-9587-a963e39c91ec"),
 				},
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source:      commonaddress.Address{},
 				Destination: commonaddress.Address{},
 
 				Data:       map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:   map[string]interface{}{},
 				Dialroutes: []rmroute.Route{},
 
 				TMRinging:     nil,
@@ -1891,8 +1891,8 @@ func Test_CallSetData(t *testing.T) {
 					ID: uuid.FromStringOrNil("8d80157e-98bf-49e8-9827-06c744bfa81a"),
 				},
 
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Data: map[call.DataType]string{
@@ -1985,12 +1985,12 @@ func Test_CallSetMuteDirection(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("21771598-d243-11ed-bbd2-b39e5d43e568"),
 				},
-				ChainedCallIDs: []uuid.UUID{},
-				RecordingIDs:   []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Data:          map[call.DataType]string{},
-				Metadata: map[string]interface{}{},
+				Metadata:      map[string]interface{}{},
 				MuteDirection: call.MuteDirectionBoth,
 
 				Dialroutes: []rmroute.Route{},

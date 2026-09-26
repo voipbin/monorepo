@@ -7,9 +7,9 @@ import (
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
+	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
-	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 )
 

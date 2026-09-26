@@ -18,7 +18,7 @@ type V1DataProviderCallsPost struct {
 
 	// Either FlowID or Actions (not both). When Actions is non-empty and
 	// FlowID is uuid.Nil, route-manager creates a temporary flow for the call.
-	FlowID  uuid.UUID        `json:"flow_id"`
+	FlowID  uuid.UUID         `json:"flow_id"`
 	Actions []fmaction.Action `json:"actions"`
 
 	Source       *commonaddress.Address  `json:"source"`
