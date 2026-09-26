@@ -9,7 +9,7 @@ Base: `origin/main` @ `fb8e8d58a`
 
 ## 1. Problem statement
 
-monorepo(Go 37 서비스, 31,291 파일)의 코드 컨벤션이 서비스 연령에 따라 드리프트했다.
+monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령에 따라 드리프트했다.
 조사 결과 근본 원인은 "규칙 문서의 부재"가 아니라 **"선언된 규칙과 기계적으로 강제되는 규칙의 괴리"** 였다.
 
 ### 1.1 실측된 괴리 (증거)
@@ -1154,7 +1154,7 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 | R9 | `.golangci.yml` 단독 변경 PR이 어떤 lint job도 트리거하지 않음 | 중 | 튜닝 PR이 미검증 머지 | §6.2.1.1에서 `run-lint-config-check` 파라미터·workflow·`lint-config-check` job을 **신설**하고 mapping 2행(`\.golangci\.yml`, `scripts/.*`)을 추가하여 해소. 초안의 `scripts/.* → run-shell-tests` 매핑은 해당 job이 bats만 돌리므로 근거가 되지 못했다(철회). 게이트 스크립트 쪽은 §6.2.1에서 **무조건 실행**으로 등록되므로 트리거가 불필요하다 |
 | R10 | `GOMAXPROCS`가 CI에서 호스트 코어 수를 보아 측정 조건과 달라짐 | 중 | 메모리 초과 | Linting step environment에 `GOMAXPROCS: "1"` 명시(§6.2 변경점 5). `small`은 1 vCPU이므로 이 값이 실제 스펙과도 일치한다(§6.1.3) |
 | R11 | **pre-commit hook이 gofmt 일괄 커밋을 거부** | 높 | 구현 착수 즉시 막힘 | 실측: `core.hooksPath`가 설정되어 있고 hook이 활성이다. gofmt가 `models/*/webhook.go` 6개를 건드리면 "WebhookMessage model changed without RST documentation update"로 커밋이 거부된다. **이 변경은 포맷 전용이므로 RST 갱신 대상이 아니다.** 포맷 커밋에 한해 `--no-verify`를 사용하고, PR 본문에 사유(포맷 전용, 필드 변경 없음)를 명시한다. `git diff --stat`으로 webhook.go 변경이 공백뿐임을 함께 첨부한다 |
-| R12 | lint가 영구히 적용되지 않는 서비스가 존재 | 낮 | 사각지대 | 실측 결과 **3개 서비스**다. (a) `bin-openapi-manager`(Go 2파일)와 `voip-asterisk-proxy`(21파일)는 `go-test` command 호출부 자체가 없다. (b) `bin-pipecat-manager`(Go 86파일, 세 사각지대 중 최대)는 `go-test-pipecat-manager` command 호출부는 존재하지만 그 호출부가 속한 `bin-pipecat-manager-test` job이 workflow에서 주석 처리되어(`config_work.yml:543`) 스케줄되지 않는다. job 정의(L1580)만 고아로 남아 있다. 따라서 "호출 37 = go-test 35 + api 1 + pipecat 1"은 command 호출 횟수로는 맞지만, **실제 lint가 도는 서비스는 36개**다(파라미터 40개 전수 `circleci config process`로 확인: 위 3개는 `lintsteps=0`). §6.2의 "3곳 수정으로 전량 반영"이 이 3개를 커버하지 못한다. 이번 범위에서는 손대지 않고 §4 Non-goals로 기록한다. 세 서비스에 test job을 신설하거나 pipecat job 주석을 해제하는 것은 별개 과제다 |
+| R12 | lint가 영구히 적용되지 않는 서비스가 존재 | 낮 | 사각지대 | 실측 결과 **3개 서비스**다. (a) `bin-openapi-manager`(Go 2파일)와 `voip-asterisk-proxy`(21파일)는 `go-test` command 호출부 자체가 없다. 단 `run-bin-openapi-manager`는 `config_work.yml:221`에서 `bin-api-manager` workflow를 함께 켜므로 전개물에 lint step이 1개 보이는데, 그 step의 대상은 `cd bin-api-manager`이며 openapi 자체 코드는 린트되지 않는다. (b) `bin-pipecat-manager`(Go 86파일, 세 사각지대 중 최대)는 `go-test-pipecat-manager` command 호출부는 존재하지만 그 호출부가 속한 `bin-pipecat-manager-test` job이 workflow에서 주석 처리되어(`config_work.yml:543`) 스케줄되지 않는다. job 정의(L1580)만 고아로 남아 있다. 따라서 "호출 37 = go-test 35 + api 1 + pipecat 1"은 command 호출 횟수로는 맞지만, **실제 lint가 도는 서비스는 36개**다(파라미터 40개 전수 `circleci config process`로 확인: 위 3개는 `lintsteps=0`). §6.2의 "3곳 수정으로 전량 반영"이 이 3개를 커버하지 못한다. 이번 범위에서는 손대지 않고 §4 Non-goals로 기록한다. 세 서비스에 test job을 신설하거나 pipecat job 주석을 해제하는 것은 별개 과제다 |
 | R13 | **shallow clone이 merge base 계산을 끊어 게이트가 무관한 PR을 죽임** | 높 | 머지 후 전면 발현 | 초안의 `--depth=200`은 저장소를 shallow로 전환한다. 실측: base 커밋 객체는 존재(`git cat-file -t` → `commit`)하는데 `git merge-base`는 **exit 1**이다. 게이트가 fail-closed·무조건 실행이므로 base가 fetch 윈도를 벗어난 브랜치는 **위반 0건이어도 CI 적색**이다. 현재 살아있는 원격 브랜치 23개(main 제외) 중 **21개가 200커밋 이상 뒤져** 있고 main은 월 ~121커밋으로 움직여, 약 7주만 지나면 걸린다. **조치: `--depth` 제거 + merge base 해석 실패 시에만 deepen**(§6.2.1). `--depth` 제거만으로는 checkout 자체가 shallow인 경우를 못 막는다는 점도 실측 확인했다. **V8b(CI 로그 확인)로는 걸러지지 않는다** — 이번 PR의 base는 main 팁 바로 아래라 그냥 통과하기 때문이다. 이 결함만을 겨냥해 V8c를 신설했다 |
 
 Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며, R2는 이미 설계에서 해소했다.
