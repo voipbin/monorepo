@@ -151,7 +151,6 @@ func NewListenHandler(
 	return h
 }
 
-// func (h *listenHandler) Run(queue, exchangeDelay string) error {
 func (h *listenHandler) Run() error {
 	logrus.WithFields(logrus.Fields{
 		"func": "Run",

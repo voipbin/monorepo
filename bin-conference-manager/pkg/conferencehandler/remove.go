@@ -9,8 +9,7 @@ import (
 	"monorepo/bin-conference-manager/models/conference"
 )
 
-// Leaved handles event the referencecall has left from the confbridge
-// func (h *conferenceHandler) Leaved(ctx context.Context, cfID uuid.UUID, ccID uuid.UUID) (*conference.Conference, error) {
+// RemoveConferencecallID handles event the referencecall has left from the confbridge
 func (h *conferenceHandler) RemoveConferencecallID(ctx context.Context, cfID uuid.UUID, ccID uuid.UUID) (*conference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "RemoveConferencecallID",

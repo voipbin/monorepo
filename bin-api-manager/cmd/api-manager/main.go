@@ -395,50 +395,6 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 	}
 }
 
-// func runListenHTTPOld(serviceHandler servicehandler.ServiceHandler) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func": "runListenHTTP",
-// 	})
-
-// 	app := gin.Default()
-
-// 	// documents
-// 	app.Static("/docs", "docsdev/build")
-// 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-// 	app.GET("/redoc/*any", func(c *gin.Context) {
-// 		c.File("gens/openapi_redoc/api.html")
-// 	})
-
-// 	// CORS setting
-// 	// CORS for https://foo.com and https://github.com origins, allowing:
-// 	// - PUT and PATCH methods
-// 	// - Origin header
-// 	// - Credentials share
-// 	// - Preflight requests cached for 12 hours
-// 	app.Use(cors.New(cors.Config{
-// 		AllowOrigins:     []string{"*"},
-// 		AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"},
-// 		AllowHeaders:     []string{"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"},
-// 		ExposeHeaders:    []string{"Content-Length"},
-// 		AllowCredentials: false,
-// 		MaxAge:           12 * time.Hour,
-// 	}))
-
-// 	// inject servicehandler
-// 	app.Use(func(c *gin.Context) {
-// 		c.Set(common.OBJServiceHandler, serviceHandler)
-// 		c.Next()
-// 	})
-
-// 	// apply api router
-// 	api.ApplyRoutes(app)
-
-// 	logrus.Debug("Starting the api service.")
-// 	if errAppRun := app.RunTLS(":443", constSSLCertFilename, constSSLPrivFilename); errAppRun != nil {
-// 		log.Errorf("The api service ended with error. err: %v", errAppRun)
-// 	}
-// }
-
 func runListenStreamsock(ctx context.Context, streamHandler streamhandler.StreamHandler) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListenAudiosock",

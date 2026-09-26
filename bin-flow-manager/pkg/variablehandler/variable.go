@@ -66,7 +66,6 @@ func (h *variableHandler) Set(ctx context.Context, t *variable.Variable) error {
 }
 
 // SetVariable sets the variable with value
-// func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, variables map[string]string  key string, value string) error {
 func (h *variableHandler) SetVariable(ctx context.Context, id uuid.UUID, variables map[string]string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SetVariable",

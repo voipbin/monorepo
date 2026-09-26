@@ -332,48 +332,6 @@ func (h *listenHandler) processV1QueuesIDRoutingMethodPut(ctx context.Context, m
 }
 
 // // processV1QueuesIDWaitActionsPut handles Put /v1/queues/<queue-id>/wait_actions request
-// func (h *listenHandler) processV1QueuesIDWaitActionsPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-// 	log := logrus.WithFields(logrus.Fields{
-// 		"func":    "processV1QueuesIDWaitActionsPut",
-// 		"request": m,
-// 	})
-
-// 	uriItems := strings.Split(m.URI, "/")
-// 	if len(uriItems) < 5 {
-// 		return simpleResponse(400), nil
-// 	}
-
-// 	id := uuid.FromStringOrNil(uriItems[3])
-
-// 	var req request.V1DataQueuesIDWaitActionsPut
-// 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-// 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
-// 		return simpleResponse(400), nil
-// 	}
-
-// 	// update the queue
-// 	tmp, err := h.queueHandler.UpdateWaitActionsAndTimeouts(ctx, id, req.WaitActions, req.WaitTimeout, req.ServiceTimeout)
-// 	if err != nil {
-// 		log.Errorf("Could not update the queue info. err: %v", err)
-// 		return simpleResponse(500), nil
-// 	}
-
-// 	data, err := json.Marshal(tmp)
-// 	if err != nil {
-// 		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
-// 		return simpleResponse(500), nil
-// 	}
-
-// 	res := &sock.Response{
-// 		StatusCode: 200,
-// 		DataType:   "application/json",
-// 		Data:       data,
-// 	}
-
-// 	return res, nil
-// }
-
-// processV1QueuesIDAgentsGet handles Get /v1/queues/<queue-id>/agents request
 func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDAgentsGet",
