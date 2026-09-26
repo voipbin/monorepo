@@ -805,10 +805,13 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 
 | 분류 | 건수 | 판정 |
 |---|---|---|
-| `Test_<Method>` 정통 | 5,433 | 통과 |
-| `TestXxx_Case` (밑줄 있음) | **626** | **위반 — 게이트 대상** |
-| `TestXxx` (밑줄 없음) | 1,098 | **규정 없음 — 게이트 대상 아님** |
-| `TestMain` | 31 | Go 표준 엔트리포인트 — 정당 |
+| `Test_<Method>` / `Test_<Method>_<Scenario>` 정통 | 5,433 | 통과 |
+| `TestXxx_Case` (밑줄 없이 시작) | 626 | **위반** — 밑줄 삽입 대상 |
+| `TestXxx` (밑줄 없음, 접미사도 없음) | 1,098 | **위반** — 밑줄 삽입 대상 |
+| `TestMain` | 31 | Go 표준 엔트리포인트 — 유일 예외, 제외 |
+
+개정 전에는 아래 626건만 위반으로 보고 1,098건은 "규정 없음"으로 분류했다.
+개정 후 기준은 `Test_` 접두사 하나이므로 둘 다 위반이며 합계 1,724건이 개명 대상이다.
 
 `TestXxx` 1,098건에는 `TestFieldConstants`(46), `TestEventTypeConstants`(43),
 `TestGoldenRoutingKeys`(26)처럼 **메서드가 아닌 대상(상수군·골든파일·부트스트랩)을 검증하는 테스트**가 다수 포함된다.
@@ -1072,7 +1075,7 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 | 4 | 파일이 1개일 때 `grep -n`이 파일명을 출력하지 않아 위반 위치를 알 수 없음 | `grep -H` 추가 |
 | 5 | 마지막 줄 `(${CHANGED} checked)`가 파일 목록 전체를 개행 포함 출력 | `${#CHANGED[@]}` 개수로 변경 |
 | 6 | Rule 3의 `mockCtrl` 분기가 사문 (저장소 내 **0건**) | 제거 |
-| 7 | Rule 1이 `TestMain` 31건과 비메서드 테스트 1,098건을 오탐 | §6.4.1대로 `TestXxx_Case`만 매치하도록 축소 |
+| 7 | Rule 1이 `TestMain` 31건을 오탐 | `grep -vE`로 `TestMain`만 제외 (§6.4.1 개정. 초안은 `TestXxx_Case`만 매치하도록 축소했으나 철회했다) |
 | 8 | `mapfile -t CHANGED < <(... \|\| true)`가 **fail-open을 되살림**. `mapfile`의 종료 상태는 프로세스 치환 내부 파이프라인이 아니라 리다이렉트 결과라 항상 0이다. `git diff`가 실패해도(shallow clone에서 merge base는 풀렸으나 objects 미확보 등) 배열이 비어 `exit 0`으로 조용히 통과 | `DIFF_OUT="$(git diff ...)"` 로 분리하여 상태를 명시 검사. `\|\| true`는 `set -e`가 없어 애초에 죽은 표현이었다 |
 | 9 | `mapfile`은 bash 4+ 전용이며 CI 이미지의 bash 버전을 확인하지 못함 | `while IFS= read -r` 루프로 대체하여 의존 제거. vendor 필터도 `case` 문으로 옮겨 `grep` 프로세스 하나를 줄였다 |
 
@@ -1080,13 +1083,14 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 
 참고로 §10 Q6이 예고했던 수정안 `grep -vE '^func TestMain\('`은 **동작하지 않는다**.
 `grep -n`은 다중 파일에서 `경로:행번호:본문`을 출력하므로 `^func` 앵커가 결코 매치되지 않는다
-(실행 확인). Rule 1 축소로 이 필터 자체가 불필요해졌다.
+(실행 확인). 개정 후에는 경로·행번호 접두를 포함한 `^[^:]*:[0-9]+:func[[:space:]]+TestMain\(`
+를 쓴다.
 
 설계 근거:
 
-- **정규식 `^func Test[A-Z][A-Za-z0-9]*_`** — 정통 `Test_Create`는 `Test` 뒤가 `_`이므로 매치되지 않는다.
-  위반 `TestCreate_Success`는 `Test` 뒤가 대문자이고 이후 `_`가 있어 매치된다.
-  밑줄 없는 `TestCreate`·`TestMain`은 의도적으로 매치하지 않는다(§6.4.1).
+- **정규식 `^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]`** — 정통 `Test_Create`와
+  `Test_Create_HappyPath`는 `Test` 뒤가 `_`이므로 매치되지 않는다. 밑줄 없이 시작하는
+  `TestCreate`·`TestCreate_Success`는 매치된다. `TestMain`만 `grep -vE`로 제외한다(§6.4.1 개정).
   실제 정통 파일 100개(bin-call/flow/queue-manager)에 강제 실행하여 **오탐 0건**을 확인했다.
 - **`--diff-filter=d`** — 삭제된 파일을 grep 대상에서 제외한다 (파일 부재로 인한 오류 방지).
 - **merge base 해석 실패 시 exit 1 (fail-closed)** — 초안은 exit 0이었으나 철회했다.
@@ -1321,8 +1325,10 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 **Q5 — 해결됨 (§6.2.2).** v2.5.0은 스키마는 통과하나 **실행이 불가능**했다(go1.25 빌드 vs 1.27.1 타깃).
 v2.14.0(go1.27.0 빌드)으로 교체하여 실제 `run` 성공을 확인했다. `install.sh`도 버그가 있어 제거했다.
 
-**Q6 — 해소됨 (§6.4.1).** Rule 1을 `TestXxx_Case`만 매치하도록 축소하여 `TestMain` 오탐이 사라졌다.
-예고했던 필터 `grep -vE '^func TestMain\('`은 애초에 동작하지 않는 코드였다(§6.4.3).
+**Q6 — 해소됨 (§6.4.1 개정).** `TestMain`은 `grep -vE '^[^:]*:[0-9]+:func[[:space:]]+TestMain\('`
+로 제외한다. 경로·행번호 접두를 포함하므로 `^func` 앵커가 매치되지 않던 초안 필터의 결함을
+해결했고, `TestMainHandler`가 함께 제외되지 않는 것도 실측 확인했다.
+초안의 "Rule 1을 `TestXxx_Case`만 매치하도록 축소" 방안은 철회되었다.
 
 **Q7 — 해결됨 (§6.5(c), 대표님 확정).** README의 em dash 11건을 **전부 정리**한다.
 `open-source`(하이픈) 2건도 `opensource` 한 단어로 통일한다.
@@ -1490,5 +1496,5 @@ stale tracking ref를 포함한다는 지적을 받아 "살아있는 원격 브�
 | `concurrency`가 메모리를 줄이지 못함 (-1.8%) | 콜드 캐시 재측정 | OOM 미해결 상태로 배포 |
 | `goimports`가 gofmt보다 13파일 더 잡음 | `goimports -l` 대조 | 6개 서비스 job 실패 |
 | `gofmt`가 SQL 주석을 스마트쿼트로 치환 | 전체 diff 비ASCII 스캔 | 문서화된 SQL 식 손상 |
-| Rule 1 정규식이 1,755건 매치 (의도는 626건) | 실제 저장소 grep | 정당한 테스트 1,129건 오탐 |
+| Rule 1 정규식이 1,755건 매치 (당시 의도는 626건) | 실제 저장소 grep | 오탐으로 오판. 개정 후 1,724건은 실제 위반이고 `TestMain` 31건만 제외 대상이다 |
 | `grep -n` 다중 파일 출력 형식으로 필터 무효화 | 임시 저장소 실행 | 예외 처리가 조용히 동작 안 함 |
