@@ -2,16 +2,19 @@ package servicehandler
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	"reflect"
-	"testing"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -72,6 +75,49 @@ func Test_accesskeyGet(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.responseAccesskey, res)
 			}
 		})
+	}
+}
+
+func Test_accesskeyGet_softDeleted(t *testing.T) {
+	// A soft-deleted accesskey (TMDelete set) must be treated as not found,
+	// consistent with every other resource's *Get helper in this package
+	// (numbers.go, flow.go, call.go, email.go, recording.go, etc.), and so
+	// that a retried DELETE on an already-deleted key is idempotent (404,
+	// not 409).
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("f1d53156-8dec-11ee-98a0-6ba69fe98bd2"),
+			CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+	accesskeyID := uuid.FromStringOrNil("9c1078ba-ab47-11ef-b8b7-27bf39014b86")
+	tmDelete := time.Date(2026, 8, 24, 0, 0, 0, 0, time.UTC)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+	ctx := context.Background()
+
+	mockReq.EXPECT().CustomerV1AccesskeyGet(ctx, accesskeyID).Return(&csaccesskey.Accesskey{
+		ID:         accesskeyID,
+		CustomerID: agent.CustomerID,
+		TMDelete:   &tmDelete,
+	}, nil)
+
+	res, err := h.accesskeyGet(ctx, agent, accesskeyID)
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
+	}
+	if err != serviceerrors.ErrNotFound {
+		t.Errorf("Wrong match. expect: %v, got: %v", serviceerrors.ErrNotFound, err)
 	}
 }
 

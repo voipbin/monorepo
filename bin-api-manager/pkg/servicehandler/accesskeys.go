@@ -25,8 +25,14 @@ func (h *serviceHandler) accesskeyGet(ctx context.Context, a *auth.AuthIdentity,
 		return nil, serviceerrors.ErrNotFound
 	}
 
+	// A soft-deleted accesskey is treated as gone, consistent with every
+	// other resource's *Get helper in this package (numbers.go, flow.go,
+	// call.go, email.go, recording.go, etc. all return ErrNotFound here,
+	// not ErrStateInvalid/409). This also makes DELETE idempotent: retrying
+	// a delete on an already-deleted key now gets 404, which teardown/cleanup
+	// code across the codebase already treats as a success code.
 	if res.TMDelete != nil {
-		return nil, fmt.Errorf("%w: accesskey is soft-deleted", serviceerrors.ErrStateInvalid)
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil
