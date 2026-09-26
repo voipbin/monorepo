@@ -784,7 +784,7 @@ G3(gofmt 313파일)이 그 중 **테스트 파일 151개**를 변경 목록에 �
 | Rule 1 (`TestXxx_Case`, 구 정규식 기준) | 122 | 20 |
 | Rule 2 (testify) | 2 | 2 |
 | Rule 3 (`ctrl :=`) | 54 | 4 |
-| **합계** | **178** | — |
+| **합계** | **178** (구 정규식 기준. 개정 후 318) | — |
 
 Rule 1 개정 후 같은 151개 파일에 현 정규식을 적용하면 262건 / 50파일(합계 318)이다.
 수치만 커지고 결론은 동일하므로 아래 논지는 그대로 유효하다.
@@ -798,7 +798,7 @@ D6("존량은 범위 밖")과 G3+G4 동시 진행이 정면으로 충돌한다.
 
 | 입력 | 기존(파일 단위) | 변경(라인 단위) |
 |---|---|---|
-| gofmt 전용 변경 | **178건 위반, exit 1** | **0건, exit 0** |
+| gofmt 전용 변경 | **178건 위반, exit 1** (구 정규식 기준. 개정 후 318건) | **0건, exit 0** |
 | 실제 위반 신규 추가 | 검출 | **3종 전부 검출, exit 1** |
 
 gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므로, 포맷 전용 변경은
@@ -929,8 +929,8 @@ Rule 3 위반을 정상 보고한 뒤 scan 실패로 실패한다.
 #!/usr/bin/env bash
 #
 # Enforces the test conventions declared in docs/conventions/testing.md
-# that no Go linter can express. Only inspects files changed relative to
-# the merge base with main, so the existing backlog does not fail the build.
+# that no Go linter can express. Only inspects lines a change adds relative
+# to the merge base with main, so the existing backlog does not fail the build.
 #
 # Fail-closed: if the merge base cannot be resolved the script exits non-zero.
 # The CI job is responsible for fetching origin/main before running this
@@ -987,7 +987,7 @@ fi
 # Inspect ADDED LINES ONLY, not whole files.
 #
 # Checking whole files would make any repo-wide reformat fail this gate: a
-# gofmt-only pass rewrites 151 test files, and those files carry 178
+# gofmt-only pass rewrites over a hundred test files, and those files carry
 # pre-existing violations that the branch never introduced. Scoping to added
 # lines keeps the gate on what the branch actually wrote, which is what
 # "changed files only" was meant to express in the first place.
@@ -1087,8 +1087,8 @@ fi
 if [ "${fail}" -ne 0 ]; then
   echo ""
   echo "Test convention check failed. These rules are documented in"
-  echo "docs/conventions/testing.md and are enforced only on files this"
-  echo "branch changes; pre-existing violations elsewhere are untouched."
+  echo "docs/conventions/testing.md and are enforced only on lines this"
+  echo "branch adds; pre-existing violations elsewhere are untouched."
   exit 1
 fi
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # Enforces the test conventions declared in docs/conventions/testing.md
-# that no Go linter can express. Only inspects files changed relative to
-# the merge base with main, so the existing backlog does not fail the build.
+# that no Go linter can express. Only inspects lines a change adds relative
+# to the merge base with main, so the existing backlog does not fail the build.
 #
 # Fail-closed: if the merge base cannot be resolved the script exits non-zero.
 # The CI job is responsible for fetching origin/main before running this
@@ -59,7 +59,7 @@ fi
 # Inspect ADDED LINES ONLY, not whole files.
 #
 # Checking whole files would make any repo-wide reformat fail this gate: a
-# gofmt-only pass rewrites 151 test files, and those files carry 178
+# gofmt-only pass rewrites over a hundred test files, and those files carry
 # pre-existing violations that the branch never introduced. Scoping to added
 # lines keeps the gate on what the branch actually wrote, which is what
 # "changed files only" was meant to express in the first place.
@@ -159,8 +159,8 @@ fi
 if [ "${fail}" -ne 0 ]; then
   echo ""
   echo "Test convention check failed. These rules are documented in"
-  echo "docs/conventions/testing.md and are enforced only on files this"
-  echo "branch changes; pre-existing violations elsewhere are untouched."
+  echo "docs/conventions/testing.md and are enforced only on lines this"
+  echo "branch adds; pre-existing violations elsewhere are untouched."
   exit 1
 fi
 
