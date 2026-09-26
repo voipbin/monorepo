@@ -1,9 +1,19 @@
 # 2026-09-26 monorepo 코드 컨벤션 강제 계층 복구 및 README 현행화
 
-Status: Draft (design review loop 대기)
+Status: Merged (PR #1338, squash `ec3d0790e`, 2026-09-26)
 Branch: `NOJIRA-Monorepo-code-convention-and-readme-cleanup`
 Worktree: `~/gitvoipbin/monorepo/.worktrees/NOJIRA-Monorepo-code-convention-and-readme-cleanup`
 Base: `origin/main` @ `fb8e8d58a`
+
+**이 문서의 기준 시점.** 본문의 측정값·검증 결과·인용 위치는 별도 표기가 없으면 Base
+`fb8e8d58a` 에서 PR #1338 머지(`ec3d0790e`)까지의 상태를 가리킨다. 그 이후 Rule 1 명명
+규칙이 개정되었고(§6.4.1 "결정 ... 개정"), 개정 후 기준이 현행이다. 두 기준이 갈리는
+문장에는 "구 규칙 기준" 또는 "개정 후" 를 명시했다. 표를 현재 동작의 근거로 읽지 말고,
+현행 동작은 §6.4.1 개정 단락과 `scripts/check-test-conventions.sh` 를 보라.
+
+**행번호 인용 주의.** 다른 파일을 행번호로 가리킨 인용은 Base 시점 기준이며, 이후 그
+파일이 변경되면 어긋난다. 새로 쓰는 인용은 섹션명이나 `git show <sha>:<path> | grep`
+형태의 앵커를 쓴다.
 
 ---
 
