@@ -109,7 +109,7 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 
 | 제외 항목 | 규모 | 사유 / 후속 |
 |---|---|---|
-| 테스트 함수명 존량 수정 | **1,755건 / 244 패키지** | D6. `Test_` 밑줄이 빠진 형태(`TestCreate` → `Test_Create`). 목표명 충돌은 3건(0.17%)뿐이라 거의 기계적이나 파일 수가 많아 서비스별 후속 PR로 분리. 게이트가 추가 라인만 보므로 존량은 CI를 붉히지 않는다 |
+| 테스트 함수명 존량 수정 | **1,724건 / 244 패키지** | D6. `Test_` 밑줄이 빠진 형태(`TestCreate` → `Test_Create`). 게이트 매치 1,755건에서 개명 대상이 아닌 `TestMain` 31건을 뺀 수다. 목표명 충돌은 3건(0.17%)뿐이라 거의 기계적이나 파일 수가 많아 서비스별 후속 PR로 분리. 게이트가 추가 라인만 보므로 존량은 CI를 붉히지 않는다 |
 | testify 제거 존량 | 9파일 | D6. 단 D7 게이트가 신규 유입 차단 |
 | `ctrl` → `mc` 존량 리네이밍 | 202회 / 22파일 | D6 |
 | `exepct` 오타 정정 | 182회 / 38파일 | D6. 정통 관용구의 오타이나 기능 영향 없음 |
@@ -848,9 +848,22 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 `TestMain` 제외는 `grep -vE '...:func[[:space:]]+TestMain\('` 로 하며, 여는 괄호를
 포함하므로 `TestMainHandler`는 제외되지 않고 정상 검출된다(실측 확인).
 
+**scan 실패 시 fail-closed (리뷰 지적으로 발견, 이 세션에서 실제로 당한 결함).**
+`awk`가 죽으면 아무 줄도 출력하지 않는다. 호출부는 그것을 "위반 없음"으로 읽고
+게이트 전체가 녹색이 된다. 실제로 이 브랜치 작업 중 패턴에 `\(`를 써서
+`awk: fatal: invalid regexp` 가 났는데도 `check-test-conventions: OK` 가 나왔다.
+`bash -n` 과 자기 브랜치 실행은 둘 다 통과했으므로 합성 시나리오 없이는 보이지 않는다.
+
+`scan()` 은 `$( )` 안에서 호출되므로 그 안의 `exit 1` 은 서브셸만 죽이고 전파되지
+않는다(실측: 에러 메시지만 늘고 `EXIT=0` 유지). 따라서 `mktemp` 마커 파일에 실패를
+기록하고, 모든 규칙을 훑은 뒤 메인 셸에서 판정한다. `trap ... EXIT` 로 정리한다.
+
+재현 검증: 패턴을 `\(` 로 되돌린 사본은 `EXIT=1` + `awk failed (exit 2)` 를 낸다.
+`awk` 를 `exit 2` 로 shim 해도 위반이 0건이어도 `EXIT=1` 이다. 임시파일 누수 0건.
+
 위 세 형태는 현재 저장소에 0건이지만, 게이트는 앞으로 들어올 코드를 막는 장치이므로
 미리 닫아 둔다. 강화 후에도 전역 매치 수는 1,755건으로 동일하다(과탐 없음).
-합성 저장소 13종 시나리오 전수 통과를 실측했다.
+합성 저장소 16종 시나리오 전수 통과를 실측했다(Rule 2·3 포함, 3종 awk 동일).
 
 #### 6.4.2 스크립트
 
@@ -867,7 +880,10 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 #
 set -uo pipefail
 
-BASE_REF="origin/main"
+# Marker file used by scan() to report an awk failure out of its subshell.
+SCAN_FAILED="$(mktemp -t cvgate.XXXXXX)"
+rm -f "${SCAN_FAILED}"
+trap 'rm -f "${SCAN_FAILED}"' EXITBASE_REF="origin/main"
 
 if ! MERGE_BASE="$(git merge-base "${BASE_REF}" HEAD 2>/dev/null)" || [ -z "${MERGE_BASE}" ]; then
   echo "check-test-conventions: FAILED to resolve merge base with ${BASE_REF}." >&2
@@ -943,20 +959,37 @@ scan() {
   # Note the patterns below are POSIX EREs as awk understands them: no \b, no
   # \<, no \s. awk warns about (and ignores) unknown escapes, which silently
   # disables a rule -- Rule 3 was lost this way during review.
-  awk -v pat="$1" '
-    /^\+\+\+ b\// { file = substr($0, 7); next }
-    /^@@ / {
-      # @@ -old,cnt +new,cnt @@
-      split($3, a, ",")
-      line = a[1]; sub(/^\+/, "", line)
-      next
-    }
-    /^\+/ {
-      body = substr($0, 2)
-      if (body ~ pat) printf "%s:%d:%s\n", file, line, body
-      line++
-    }
-  ' <<< "${DIFF_U0}"
+  #
+  # A dead pattern is the worst failure this script has: awk exits non-zero,
+  # prints nothing, and every rule then reads as "clean". Treat any awk failure
+  # as a hard error instead of an empty result.
+  local out rc
+  out="$(
+    awk -v pat="$1" '
+      /^\+\+\+ b\// { file = substr($0, 7); next }
+      /^@@ / {
+        # @@ -old,cnt +new,cnt @@
+        split($3, a, ",")
+        line = a[1]; sub(/^\+/, "", line)
+        next
+      }
+      /^\+/ {
+        body = substr($0, 2)
+        if (body ~ pat) printf "%s:%d:%s\n", file, line, body
+        line++
+      }
+    ' <<< "${DIFF_U0}"
+  )"
+  rc=$?
+  if [ "${rc}" -ne 0 ]; then
+    # scan runs inside $(...), so exiting here would only kill the subshell and
+    # the caller would read an empty -- "clean" -- result. Record the failure on
+    # disk so the main shell can fail the run after the rules have been scanned.
+    printf 'check-test-conventions: awk failed (exit %s) on pattern: %s\n' \
+      "${rc}" "$1" >&2
+    : > "${SCAN_FAILED}"
+  fi
+  printf '%s' "${out}"
 }
 
 # Rule 1 — every test name starts with Test_. See 13.6: what follows the
@@ -981,6 +1014,13 @@ m="$(scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController')"
 [ -n "${m}" ] && report \
   "Name the gomock controller 'mc' (mc := gomock.NewController(t))." \
   " (13.3 Test Structure Conventions)" "${m}"
+
+if [ -e "${SCAN_FAILED}" ]; then
+  echo ""
+  echo "check-test-conventions: a scan failed, so the rules above could not be"
+  echo "evaluated. Failing instead of reporting a clean run."
+  exit 1
+fi
 
 if [ "${fail}" -ne 0 ]; then
   echo ""

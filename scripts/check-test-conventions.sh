@@ -10,6 +10,11 @@
 #
 set -uo pipefail
 
+# Marker file used by scan() to report an awk failure out of its subshell.
+SCAN_FAILED="$(mktemp -t cvgate.XXXXXX)"
+rm -f "${SCAN_FAILED}"
+trap 'rm -f "${SCAN_FAILED}"' EXIT
+
 BASE_REF="origin/main"
 
 if ! MERGE_BASE="$(git merge-base "${BASE_REF}" HEAD 2>/dev/null)" || [ -z "${MERGE_BASE}" ]; then
@@ -86,20 +91,37 @@ scan() {
   # Note the patterns below are POSIX EREs as awk understands them: no \b, no
   # \<, no \s. awk warns about (and ignores) unknown escapes, which silently
   # disables a rule -- Rule 3 was lost this way during review.
-  awk -v pat="$1" '
-    /^\+\+\+ b\// { file = substr($0, 7); next }
-    /^@@ / {
-      # @@ -old,cnt +new,cnt @@
-      split($3, a, ",")
-      line = a[1]; sub(/^\+/, "", line)
-      next
-    }
-    /^\+/ {
-      body = substr($0, 2)
-      if (body ~ pat) printf "%s:%d:%s\n", file, line, body
-      line++
-    }
-  ' <<< "${DIFF_U0}"
+  #
+  # A dead pattern is the worst failure this script has: awk exits non-zero,
+  # prints nothing, and every rule then reads as "clean". Treat any awk failure
+  # as a hard error instead of an empty result.
+  local out rc
+  out="$(
+    awk -v pat="$1" '
+      /^\+\+\+ b\// { file = substr($0, 7); next }
+      /^@@ / {
+        # @@ -old,cnt +new,cnt @@
+        split($3, a, ",")
+        line = a[1]; sub(/^\+/, "", line)
+        next
+      }
+      /^\+/ {
+        body = substr($0, 2)
+        if (body ~ pat) printf "%s:%d:%s\n", file, line, body
+        line++
+      }
+    ' <<< "${DIFF_U0}"
+  )"
+  rc=$?
+  if [ "${rc}" -ne 0 ]; then
+    # scan runs inside $(...), so exiting here would only kill the subshell and
+    # the caller would read an empty -- "clean" -- result. Record the failure on
+    # disk so the main shell can fail the run after the rules have been scanned.
+    printf 'check-test-conventions: awk failed (exit %s) on pattern: %s\n' \
+      "${rc}" "$1" >&2
+    : > "${SCAN_FAILED}"
+  fi
+  printf '%s' "${out}"
 }
 
 # Rule 1 — every test name starts with Test_. See 13.6: what follows the
@@ -124,6 +146,13 @@ m="$(scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController')"
 [ -n "${m}" ] && report \
   "Name the gomock controller 'mc' (mc := gomock.NewController(t))." \
   " (13.3 Test Structure Conventions)" "${m}"
+
+if [ -e "${SCAN_FAILED}" ]; then
+  echo ""
+  echo "check-test-conventions: a scan failed, so the rules above could not be"
+  echo "evaluated. Failing instead of reporting a clean run."
+  exit 1
+fi
 
 if [ "${fail}" -ne 0 ]; then
   echo ""

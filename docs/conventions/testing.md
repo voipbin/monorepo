@@ -148,6 +148,9 @@ The scenario suffix is encouraged when one method has several distinct cases:
 it keeps the failing case visible in `go test` output without opening the file.
 Use it or omit it as the test warrants; both forms are correct.
 
+`TestMain` is the one exception: Go's own toolchain reserves that exact name for
+the package test entry point, so it stays as is. Every other name takes `Test_`.
+
 `scripts/check-test-conventions.sh` enforces the underscore on lines a change
 adds, so existing names are not rewritten by the gate.
 
