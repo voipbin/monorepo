@@ -23,7 +23,7 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 | `go mod vendor` | `CLAUDE.md:49` | ✅ 실행 | `config_work.yml:2223` |
 | `go generate ./...` | `CLAUDE.md:50` | ⚠️ **부분 강제** | `go-test` command에는 없으나, `bin-openapi-manager-validate` job(L1498-1523)이 `go generate ./...` 후 `git diff --exit-code gens/models/gen.go`로 생성물 drift를 차단한다. **단 bin-openapi-manager 한정** |
 | `go test ./...` | `CLAUDE.md:51` | ✅ 실행 | `config_work.yml:2237-2243` (`go test` 자체는 2241) |
-| `golangci-lint run` | `CLAUDE.md:52` | ❌ **주석 처리** | `config_work.yml:2224-2236`, 동일 블록이 2267, 2315에도 존재 |
+| `golangci-lint run` | `CLAUDE.md:52` | ❌ **주석 처리** | `config_work.yml`의 `golangci-lint run` 주석 블록 4곳(`grep -n 'golangci-lint run' .circleci/config_work.yml`) |
 
 추가로 `go vet`이 같은 주석 블록(`config_work.yml:2236`)에 묻혀 함께 비활성화되어 있다.
 주석 사유는 `# TODO: Re-enable golangci-lint after fixing OOM on small resource_class`로,
@@ -37,7 +37,7 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 | 항목 | 실측치 |
 |---|---|
 | gofmt 미준수 파일 | **313개** (프로덕션 162 / 테스트 151, **35개** 서비스에 분포 — `voip-kamailio-proxy`·`voip-rtpengine-proxy` 포함) |
-| 테스트 함수명 `TestXxx_Case` (규약 위반) | **626건 / 131파일** (`bin-*` 한정 599건 / 126파일, `voip-*` 27건) |
+| 테스트 함수명 `TestXxx_Case` (구 규칙 기준 위반) | **626건 / 131파일** (`bin-*` 한정 599건 / 126파일, `voip-*` 27건). 개정 후 위반 총량은 1,724건이다 |
 | testify 사용 (규약 위반, 외부 의존성) | **9파일** (api 5, ai 3, storage 1) |
 | gomock 컨트롤러 변수 `ctrl` (규약 위반) | **194회 / 22파일** (`bin-*` 한정 171회 / 19파일) |
 | 루트 README 서비스 표 누락 | 3건 (schedule / trigger-sender / webchat) |
@@ -50,16 +50,19 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 
 ### 1.3 중요: 컨벤션 문서는 이미 완비되어 있다
 
-`docs/conventions/testing.md`(383줄)는 위반된 규칙을 **이미 전부 정확히 명문화**하고 있다.
+`docs/conventions/testing.md`는 위반된 규칙을 **이미 전부 정확히 명문화**하고 있다.
+
+아래 표는 섹션으로 가리킨다. 행번호로 적었다가 이 브랜치가 13.6을 16줄 늘리면서
+이후 참조 8곳이 한꺼번에 거짓이 된 적이 있다. 문서 길이에 의존하지 않는 참조를 쓴다.
 
 | 규칙 | testing.md 선언 위치 |
 |---|---|
-| `Test_<MethodName>` 함수명 | L128 `Use `Test_<MethodName>`:`, L132-134 예시 |
-| `mc := gomock.NewController(t)` | L33, L272, L305 |
-| `defer mc.Finish()` 페어링 | L380 (체크리스트 항목) |
-| `reflect.DeepEqual` 어서션 | L116, L292 |
-| `<source>_test.go` 1:1 파일명 | L342-344 (디렉터리 트리 예시) |
-| `t.Run(tt.name, ...)` 서브테스트 | L32, L271 |
+| `Test_<MethodName>` 함수명 | §13.6 Test Function Naming (CORRECT/WRONG 예시 포함) |
+| `mc := gomock.NewController(t)` | §13.1 Table-Driven Tests, §Test Utilities |
+| `defer mc.Finish()` 페어링 | §13.1, §Test Utilities (체크리스트 항목) |
+| `reflect.DeepEqual` 어서션 | §13.5 Assertion Pattern, §13.8 |
+| `<source>_test.go` 1:1 파일명 | §Test Utilities (디렉터리 트리 예시) |
+| `t.Run(tt.name, ...)` 서브테스트 | §13.1 Table-Driven Tests |
 
 **따라서 "컨벤션을 문서에 명문화한다"는 조치는 이미 완료된 일을 반복하는 것이며, 드리프트를 막지 못함이 실증되었다.**
 이번 작업은 문서 추가가 아니라 **기계적 강제 수단의 도입**에 집중한다.
@@ -85,7 +88,7 @@ bin-timeline 127건·bin-rag 41건). 개정 규칙에서는 이 서비스들도 
 2. **G2.** 루트 `.golangci.yml`을 신설하고 CI에서 `golangci-lint`를 복구한다. 단 OOM을 유발하지 않아야 한다.
 3. **G3.** gofmt 미준수 313개 파일을 일괄 정리하고, 이후 재발을 CI가 차단한다.
 4. **G4.** `docs/conventions/testing.md`가 이미 규정한 테스트 규칙 중 린터로 잡히지 않는 3건
-   (`TestXxx_Case` 함수명 / testify import / `ctrl` 변수명)을 **변경된 파일에 한해** CI가 차단한다.
+   (`Test_` 접두사 미준수 함수명 / testify import / `ctrl` 변수명)을 **변경된 파일에 한해** CI가 차단한다.
 5. **G5.** 루트 `README.md`의 서비스 표 누락 3건을 보완하고, 셀프호스팅 경로를 현행화한다.
 
 각 목표는 §9 검증 계획에서 실행 가능한 명령으로 확인한다.
@@ -101,7 +104,7 @@ bin-timeline 127건·bin-rag 41건). 개정 규칙에서는 이 서비스들도 
 | D3 | README 정비 범위는 **루트 README만**. 서비스별 37개 README는 제외 | 스코프 제어 |
 | D4 | OOM 회피는 **변경된 서비스만 린트**. resource_class 상향하지 않음 | 비용 증가 최소화 |
 | D5 | 테스트 컨벤션은 **기존 방식 유지**(`Test_FuncName`, `reflect.DeepEqual`, `mc`). Go 커뮤니티 표준으로 전환하지 않음 | 정통성 + 다수파 일치 (§1.3) |
-| D6 | 존량 드리프트(테스트 함수명 599건 등)는 **이번 PR 범위 밖**. 점진 교체 방침 | 스코프 제어. 단 D7로 신규 유입은 차단 |
+| D6 | 존량 드리프트는 **이번 PR 범위 밖**. 점진 교체 방침 | 스코프 제어. 단 D7로 신규 유입은 차단. 당시 집계 599건은 구 규칙 `TestXxx_Case`의 `bin-*` 한정 수치이고, 개정 후 총량은 1,724건이다 |
 | D7 | 테스트 규칙 강제는 **grep 기반 경량 CI 게이트 스크립트**. 신규/변경 파일만 검사 | golangci-lint로는 함수명 규칙을 잡을 수 없음 |
 | D8 | 에러 체인 복구(`fmt.Errorf` 1,602건)는 **이번 PR 범위 밖** | 별도 설계 필요. 64%가 구 코호트라 "AI 교정" 프레이밍이 부적절 |
 
@@ -111,9 +114,9 @@ bin-timeline 127건·bin-rag 41건). 개정 규칙에서는 이 서비스들도 
 
 | 제외 항목 | 규모 | 사유 / 후속 |
 |---|---|---|
-| 테스트 함수명 존량 수정 | **1,724건 / 244 패키지** | D6. `Test_` 밑줄이 빠진 형태(`TestCreate` → `Test_Create`). 게이트 매치 1,755건에서 개명 대상이 아닌 `TestMain` 31건을 뺀 수다. 목표명 충돌은 3건(0.17%)뿐이라 거의 기계적이나 파일 수가 많아 서비스별 후속 PR로 분리. 게이트가 추가 라인만 보므로 존량은 CI를 붉히지 않는다 |
+| 테스트 함수명 존량 수정 | **1,724건 / 221 디렉터리** | D6. `Test_` 밑줄이 빠진 형태(`TestCreate` → `Test_Create`). 게이트 매치 1,755건에서 개명 대상이 아닌 `TestMain` 31건을 뺀 수다. 목표명 충돌은 3건(0.17%)뿐이라 거의 기계적이나 파일 수가 많아 서비스별 후속 PR로 분리. 게이트가 추가 라인만 보므로 존량은 CI를 붉히지 않는다 |
 | testify 제거 존량 | 9파일 | D6. 단 D7 게이트가 신규 유입 차단 |
-| `ctrl` → `mc` 존량 리네이밍 | 202회 / 22파일 | D6 |
+| `ctrl` → `mc` 존량 리네이밍 | 202회 / 22파일 (`ctrl :=` 전체. §1.2의 194회는 `ctrl := gomock.NewController` 한정이며 둘 다 각자의 술어로 참이다) | D6 |
 | `exepct` 오타 정정 | 182회 / 38파일 | D6. 정통 관용구의 오타이나 기능 영향 없음 |
 | 에러 체인 복구 (`%v` → `%w`) | 1,602건 | D8. 별도 설계 문서 필요 |
 | 서비스별 README 37개 표준화 | 16개는 `##` 섹션 0개 | D3 |
@@ -296,7 +299,7 @@ CircleCI 공식 Configuration Reference의 Docker x86 표는 다음과 같다.
 
 ### 6.2 `.circleci/config_work.yml` 수정
 
-현재 상태 (`config_work.yml:2224-2236`, 동일 블록이 2267·2315에 반복):
+현재 상태 (`config_work.yml`의 `golangci-lint run` 주석 블록. `grep -n 'golangci-lint run'`으로 4곳 확인):
 
 ```yaml
       # TODO: Re-enable golangci-lint after fixing OOM on small resource_class
@@ -1102,7 +1105,8 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
   `Test_Create_HappyPath`는 `Test` 뒤가 `_`이므로 매치되지 않는다. 밑줄 없이 시작하는
   `TestCreate`·`TestCreate_Success`는 매치된다. `TestMain`만 `grep -vE`로 제외한다(§6.4.1 개정).
   "정통 파일 100개(bin-call/flow/queue-manager)에 오탐 0건" 은 구 규칙 기준 측정이다.
-  개정 규칙에서는 그 서비스들도 각각 108·39·22건이 매치된다(밑줄 없는 존량). 오탐이 아니라
+  개정 규칙에서는 그 100파일 표본에 103건, 세 서비스 전체 248파일에는 169건
+  (각각 108·39·22)이 매치된다(밑줄 없는 존량). 오탐이 아니라
   실제 위반이며, 게이트가 추가 라인만 보므로 CI는 붉어지지 않는다.
 - **`--diff-filter=d`** — 삭제된 파일을 grep 대상에서 제외한다 (파일 부재로 인한 오류 방지).
 - **merge base 해석 실패 시 exit 1 (fail-closed)** — 초안은 exit 0이었으나 철회했다.
@@ -1260,7 +1264,8 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 당초 계획에는 "CLAUDE.md에 테스트 7규칙 명문화"가 포함되어 있었으나 **철회**한다.
 
 - §1.3에서 확인했듯 `docs/conventions/testing.md`가 7규칙을 이미 정확히 규정하고 있다.
-- 그럼에도 599건의 위반이 발생했다. 즉 **문서화는 이미 시도되었고 실패한 대책**이다.
+- 그럼에도 599건의 위반이 발생했다(구 규칙 `TestXxx_Case`의 `bin-*` 한정 집계.
+  개정 규칙으로는 1,724건이다). 즉 **문서화는 이미 시도되었고 실패한 대책**이다.
 - 동일한 내용을 다른 파일에 한 번 더 쓰는 것은 중복 서술을 늘리고, 두 사본이 갈라질 위험만 만든다.
 - 올바른 대책은 §6.4의 기계적 게이트다.
 
@@ -1305,7 +1310,7 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 | V5 | **CI 버전으로 실제 실행** (스키마 검증만으로는 불충분) | 핀한 버전을 설치 후 대표 서비스에서 `golangci-lint run` | 정상 종료. **`config verify` 통과만으로 합격 처리하지 않는다** (§6.2.2 발견 2) |
 | V5b | 설치 체크섬 검증 | `sha256sum -c` | OK |
 | V5c | 설치 후 버전 일치 가드 동작 | 의도적으로 다른 버전을 PATH에 둔 뒤 step 실행 | exit 1로 실패 |
-| V6 | 게이트 스크립트 오탐 없음 | 정통 파일 100개(bin-call/flow/queue-manager)를 대상으로 강제 실행 | 위반 0 **(완료: §6.4.4. 구 규칙 기준이며, 개정 후 같은 대상은 108·39·22건이 매치된다)** |
+| V6 | 게이트 스크립트 오탐 없음 | 정통 파일 100개(bin-call/flow/queue-manager)를 대상으로 강제 실행 | 위반 0 **(완료: §6.4.4. 구 규칙 기준. 개정 후 같은 100파일 표본에는 103건이 매치되고, 세 서비스 전체 248파일로는 169건(108+39+22)이다)** |
 | V7 | 게이트 스크립트 검출 동작 | 위반 3종을 담은 임시 저장소로 실행 | 3건 모두 검출, exit 1 **(완료: §6.4.4)** |
 | V8 | **게이트 fail-closed 동작** | `origin/main` ref 삭제 후 실행 | **exit 1** + 조치 안내 출력 **(완료: §6.4.4)** |
 | V8b | **게이트가 CI에서 실제로 merge base를 해석했는지** | CI 로그에서 `check-test-conventions: OK (N file(s) checked)` 확인 | N ≥ 1이며 skip/실패 메시지가 아님. **이 확인 없이는 G4 달성으로 간주하지 않는다** |
