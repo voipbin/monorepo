@@ -761,10 +761,13 @@ G3(gofmt 313파일)이 그 중 **테스트 파일 151개**를 변경 목록에 �
 
 | 규칙 | 위반 | 파일 |
 |---|---|---|
-| Rule 1 (`TestXxx_Case`) | 122 | 20 |
+| Rule 1 (`TestXxx_Case`, 구 정규식 기준) | 122 | 20 |
 | Rule 2 (testify) | 2 | 2 |
 | Rule 3 (`ctrl :=`) | 54 | 4 |
 | **합계** | **178** | — |
+
+Rule 1 개정 후 같은 156개 파일에 현 정규식을 적용하면 271건 / 51파일(합계 327)이다.
+수치만 커지고 결론은 동일하므로 아래 논지는 그대로 유효하다.
 
 게이트는 `when:` 없이 무조건 실행되므로 첫 파이프라인에서 확정적으로 적색이 된다.
 D6("존량은 범위 밖")과 G3+G4 동시 진행이 정면으로 충돌한다.
@@ -815,8 +818,10 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 
 `TestXxx` 1,098건에는 `TestFieldConstants`(46), `TestEventTypeConstants`(43),
 `TestGoldenRoutingKeys`(26)처럼 **메서드가 아닌 대상(상수군·골든파일·부트스트랩)을 검증하는 테스트**가 다수 포함된다.
-`testing.md` §13.6은 `Test_<MethodName>`만 규정하며, 이런 비메서드 테스트의 표기를 정의하지 않는다
-(`grep -i 'constant|golden|TestMain|non-method|package-level' docs/conventions/testing.md` → **0건**).
+개정 전 `testing.md` §13.6은 `Test_<MethodName>`만 규정하고 이런 비메서드 테스트의 표기를
+정의하지 않았다(당시 `grep -i 'constant|golden|TestMain|non-method|package-level'
+docs/conventions/testing.md` → 0건). 개정으로 `Test_` 접두사가 표기 종류와 무관하게
+적용되고 `TestMain`이 유일 예외로 명기되었으므로, 이 공백은 해소되었다.
 
 **결정(대표님 확정, 2026-09-26 개정): Rule 1은 `Test_` 접두사 자체를 강제한다.**
 
@@ -829,10 +834,13 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 
 - `testing.md` 13.6에 `Test_<Method>_<Scenario>`를 정식 허용으로 명문화한다.
   시나리오 접미사는 실패 케이스를 `go test` 출력에서 바로 보여주므로 권장한다.
-- 게이트 정규식은 `^func Test[A-Z][A-Za-z0-9_]*[(]`, 즉 **밑줄 없는 형태**를 잡는다.
+- 게이트 정규식은 **밑줄 없는 형태**를 잡는다. 최종 패턴은 아래 표에 정리한
+  `^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]` 이다(초안 `^func Test[A-Z][A-Za-z0-9_]*[(]`
+  에서 제네릭·다중공백 변종을 막도록 확장했다).
   `TestMain`은 Go 툴체인이 예약한 엔트리포인트이므로 유일한 예외로 제외한다.
 
-`TestXxx`(밑줄 없음) 존량은 1,755건이며 목표명 충돌은 **3건(0.17%)** 에 불과하다.
+개명 대상 존량은 **1,724건**이며(전체 매치 1,755에서 `TestMain` 31건을 뺀 수)
+목표명 충돌은 **3건(0.17%)** 에 불과하다.
 게이트가 추가 라인만 보므로 존량은 그대로 남고 신규 유입만 차단된다. 존량 정리는
 별도 후속으로 분리한다(§4 Non-goals).
 
@@ -1091,7 +1099,9 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 - **정규식 `^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]`** — 정통 `Test_Create`와
   `Test_Create_HappyPath`는 `Test` 뒤가 `_`이므로 매치되지 않는다. 밑줄 없이 시작하는
   `TestCreate`·`TestCreate_Success`는 매치된다. `TestMain`만 `grep -vE`로 제외한다(§6.4.1 개정).
-  실제 정통 파일 100개(bin-call/flow/queue-manager)에 강제 실행하여 **오탐 0건**을 확인했다.
+  "정통 파일 100개(bin-call/flow/queue-manager)에 오탐 0건" 은 구 규칙 기준 측정이다.
+  개정 규칙에서는 그 서비스들도 각각 108·39·22건이 매치된다(밑줄 없는 존량). 오탐이 아니라
+  실제 위반이며, 게이트가 추가 라인만 보므로 CI는 붉어지지 않는다.
 - **`--diff-filter=d`** — 삭제된 파일을 grep 대상에서 제외한다 (파일 부재로 인한 오류 방지).
 - **merge base 해석 실패 시 exit 1 (fail-closed)** — 초안은 exit 0이었으나 철회했다.
   CircleCI `checkout`은 현재 브랜치의 refspec만 fetch하므로 `origin/main`이 없을 수 있고,
@@ -1102,22 +1112,28 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 
 #### 6.4.4 스크립트 실행 검증 (설계 단계에서 완료)
 
+**이 절의 표는 전부 `ec3d0790e` 머지 시점, 즉 Rule 1 개정 전 기준이다.** 당시 규칙은
+`TestXxx_Case`만 위반으로 보았으므로 `TestFieldConstants`·`TestGoldenRoutingKeys` 같은
+밑줄 없는 이름이 "정통 표기"로 분류되어 있다. §6.4.1 개정 후 이들은 위반이며, 표가
+`exit 0`이라 적은 그 입력은 실제로 `exit 1`을 낸다(실측 확인). 표는 당시 검증 이력으로
+남기되, 현재 동작의 근거로 읽어서는 안 된다. 개정 후 동작 검증은 §6.4.1 개정 단락에 있다.
+
 임시 git 저장소를 만들어 실제로 실행한 결과:
 
 | 케이스 | 입력 | 결과 |
 |---|---|---|
-| 오탐 검사 | `TestMain` + `TestFieldConstants` + `Test_Get` | **OK, exit 0** |
+| 오탐 검사 | `TestMain` + `TestFieldConstants` + `Test_Get` | **OK, exit 0** (구 규칙 기준. 개정 후 `TestFieldConstants`는 위반이며 이 입력은 exit 1이다) |
 | 위반 검출 | `TestCreate_EmptyName` + testify import + `ctrl :=` | **3종 전부 검출, exit 1** |
 | 단일 파일 리포트 | 변경 파일 1개 | `pkg/d_test.go:3:` — **파일명 출력됨** |
 | fail-closed | `origin/main` ref 삭제 | **exit 1 + 조치 안내 출력** |
-| 실저장소 오탐 | 정통 테스트 파일 100개 | **Rule 1/2/3 전부 0건** |
+| 실저장소 오탐 | 정통 테스트 파일 100개 | **Rule 1/2/3 전부 0건** (구 규칙 기준) |
 
 **라운드 3 수정(§6.4.3 #8·#9) 후 재검증 (`while read` 방식):**
 
 | 케이스 | 결과 |
 |---|---|
 | 위반 3종 검출 | **3건 전부, 파일명·행번호 정상, exit 1** |
-| 정통 파일 오탐 (`TestMain`·`TestGoldenRoutingKeys`) | **OK (1 file(s) checked), exit 0** |
+| 정통 파일 오탐 (`TestMain`·`TestGoldenRoutingKeys`) | **OK (1 file(s) checked), exit 0** (구 규칙 기준) |
 | merge base 해석 실패 | **exit 1 + 조치 안내** |
 
 `mapfile` fail-open도 별도 재현으로 확인했다: `git diff`를 잘못된 ref로 실행해도
@@ -1131,7 +1147,7 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 |---|---|---|
 | **gofmt 전용 변경 (B1 시나리오)** | exit 0 | **OK (60 file(s) checked), exit 0** |
 | 위반 3종 신규 추가 | exit 1 | **3종 전부, 행번호 정확(L5/L3/L6), exit 1** |
-| 정통 표기(`TestMain`·`TestFieldConstants`·`TestGoldenRoutingKeys`) | exit 0 | **OK, exit 0** |
+| 정통 표기(`TestMain`·`TestFieldConstants`·`TestGoldenRoutingKeys`) | exit 0 | **OK, exit 0** (구 규칙 기준) |
 | vendor 경로 테스트 파일 | 무시 | **OK, exit 0** |
 | merge base 해석 실패 | exit 1 | **exit 1 + 안내** |
 
