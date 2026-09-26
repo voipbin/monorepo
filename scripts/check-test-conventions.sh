@@ -102,11 +102,13 @@ scan() {
   ' <<< "${DIFF_U0}"
 }
 
-# Rule 1 — Test_<MethodName>, not TestXxx_Case. See 6.4.1 for why bare
-# TestXxx (no underscore) is deliberately NOT matched.
-m="$(scan '^func Test[A-Z][A-Za-z0-9]*_')"
+# Rule 1 — every test name starts with Test_. See 13.6: what follows the
+# underscore is the method, optionally plus a scenario, so both Test_Create
+# and Test_Create_HappyPath pass. TestMain is Go's own entry point and is
+# excluded; it is the only name the toolchain itself reserves.
+m="$(scan '^func Test[A-Z][A-Za-z0-9_]*[(]' | grep -v '^[^:]*:[0-9]*:func TestMain(' || true)"
 [ -n "${m}" ] && report \
-  "Test function must be named Test_<MethodName> (got TestXxx_Case)." \
+  "Test function must start with Test_ (got TestXxx)." \
   " (13.6 Test Function Naming)" "${m}"
 
 # Rule 2 — assertions use reflect.DeepEqual + t.Errorf, not testify.

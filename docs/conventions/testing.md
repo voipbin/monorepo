@@ -125,18 +125,31 @@ if err != nil {
 
 ## 13.6 Test Function Naming
 
-Use `Test_<MethodName>`:
+Start every test function with `Test_`. The underscore after `Test` is the rule;
+what follows it names the method under test, optionally followed by the scenario.
 
 ```go
-// CORRECT
+// CORRECT — Test_<MethodName>
 func Test_Create(t *testing.T) { ... }
 func Test_Delete(t *testing.T) { ... }
 func Test_FlowGet(t *testing.T) { ... }
 
+// CORRECT — Test_<MethodName>_<Scenario>
+func Test_Create_HappyPath(t *testing.T) { ... }
+func Test_ConvertWebhookMessage_stripsInternalFields(t *testing.T) { ... }
+func Test_ExtractPromptSnapshots_nilMetadata(t *testing.T) { ... }
+
 // WRONG
-func TestCreate(t *testing.T) { ... }  // Missing underscore
-func TestHandler_Create(t *testing.T) { ... }  // Extra prefix
+func TestCreate(t *testing.T) { ... }              // Missing underscore after Test
+func TestCreate_HappyPath(t *testing.T) { ... }    // Missing underscore after Test
 ```
+
+The scenario suffix is encouraged when one method has several distinct cases:
+it keeps the failing case visible in `go test` output without opening the file.
+Use it or omit it as the test warrants; both forms are correct.
+
+`scripts/check-test-conventions.sh` enforces the underscore on lines a change
+adds, so existing names are not rewritten by the gate.
 
 ## 13.7 gomock.Any() Usage
 
