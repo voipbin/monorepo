@@ -23,7 +23,7 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 | `go mod vendor` | `CLAUDE.md:49` | ✅ 실행 | `config_work.yml:2223` |
 | `go generate ./...` | `CLAUDE.md:50` | ⚠️ **부분 강제** | `go-test` command에는 없으나, `bin-openapi-manager-validate` job(L1498-1523)이 `go generate ./...` 후 `git diff --exit-code gens/models/gen.go`로 생성물 drift를 차단한다. **단 bin-openapi-manager 한정** |
 | `go test ./...` | `CLAUDE.md:51` | ✅ 실행 | `config_work.yml:2237-2243` (`go test` 자체는 2241) |
-| `golangci-lint run` | `CLAUDE.md:52` | ❌ **주석 처리** | `config_work.yml`의 `golangci-lint run` 주석 블록 4곳(`grep -n 'golangci-lint run' .circleci/config_work.yml`) |
+| `golangci-lint run` | `CLAUDE.md:52` | ❌ **주석 처리** | `config_work.yml`의 주석 블록 3곳 (`git show fb8e8d58a:.circleci/config_work.yml \| grep -n 'Re-enable golangci-lint'`) |
 
 추가로 `go vet`이 같은 주석 블록(`config_work.yml:2236`)에 묻혀 함께 비활성화되어 있다.
 주석 사유는 `# TODO: Re-enable golangci-lint after fixing OOM on small resource_class`로,
@@ -299,7 +299,9 @@ CircleCI 공식 Configuration Reference의 Docker x86 표는 다음과 같다.
 
 ### 6.2 `.circleci/config_work.yml` 수정
 
-현재 상태 (`config_work.yml`의 `golangci-lint run` 주석 블록. `grep -n 'golangci-lint run'`으로 4곳 확인):
+당시 상태 (Base `fb8e8d58a` 의 주석 블록 3곳.
+`git show fb8e8d58a:.circleci/config_work.yml | grep -n 'Re-enable golangci-lint'` 로 확인.
+이 브랜치를 포함한 현재 트리에서는 이미 활성화되어 있다):
 
 ```yaml
       # TODO: Re-enable golangci-lint after fixing OOM on small resource_class
