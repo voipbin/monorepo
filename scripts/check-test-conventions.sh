@@ -10,10 +10,12 @@
 #
 set -uo pipefail
 
-# Marker file used by scan() to report an awk failure out of its subshell.
-SCAN_FAILED="$(mktemp -t cvgate.XXXXXX)"
-rm -f "${SCAN_FAILED}"
-trap 'rm -f "${SCAN_FAILED}"' EXIT
+# Set by scan() when awk itself fails. A dead pattern prints nothing, which a
+# caller would otherwise read as "no violations" -- the gate would go green while
+# checking nothing. scan() therefore writes its result into SCAN_OUT rather than
+# stdout, so it runs in this shell and can flip this flag directly.
+scan_broken=0
+SCAN_OUT=""
 
 BASE_REF="origin/main"
 
@@ -87,16 +89,17 @@ report() {
 # (@@ -a,b +c,d @@) carry the new-file line number, so walk the diff and keep
 # a running counter; a bare grep over added lines would lose the location.
 scan() {
-  # $1 = ERE to match against added lines.
+  # $1 = ERE to match against added lines. Result lands in SCAN_OUT.
+  #
   # Note the patterns below are POSIX EREs as awk understands them: no \b, no
   # \<, no \s. awk warns about (and ignores) unknown escapes, which silently
   # disables a rule -- Rule 3 was lost this way during review.
   #
-  # A dead pattern is the worst failure this script has: awk exits non-zero,
-  # prints nothing, and every rule then reads as "clean". Treat any awk failure
-  # as a hard error instead of an empty result.
-  local out rc
-  out="$(
+  # This assigns SCAN_OUT instead of printing, so callers invoke it as a plain
+  # statement rather than inside $( ). A subshell could not report awk's failure
+  # back to the main shell, and an empty result reads as "clean".
+  local rc
+  SCAN_OUT="$(
     awk -v pat="$1" '
       /^\+\+\+ b\// { file = substr($0, 7); next }
       /^@@ / {
@@ -114,14 +117,10 @@ scan() {
   )"
   rc=$?
   if [ "${rc}" -ne 0 ]; then
-    # scan runs inside $(...), so exiting here would only kill the subshell and
-    # the caller would read an empty -- "clean" -- result. Record the failure on
-    # disk so the main shell can fail the run after the rules have been scanned.
     printf 'check-test-conventions: awk failed (exit %s) on pattern: %s\n' \
       "${rc}" "$1" >&2
-    : > "${SCAN_FAILED}"
+    scan_broken=1
   fi
-  printf '%s' "${out}"
 }
 
 # Rule 1 — every test name starts with Test_. See 13.6: what follows the
@@ -130,24 +129,27 @@ scan() {
 # excluded; it is the only name the toolchain itself reserves.
 # The trailing [([] also catches generic tests (func TestFoo[T any](...)),
 # and [[:space:]]+ tolerates more than one space after func.
-m="$(scan '^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]' | grep -vE '^[^:]*:[0-9]+:func[[:space:]]+TestMain\(' || true)"
+scan '^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]'
+m="$(grep -vE '^[^:]*:[0-9]+:func[[:space:]]+TestMain\(' <<< "${SCAN_OUT}" || true)"
 [ -n "${m}" ] && report \
   "Test function must start with Test_ (got TestXxx)." \
   " (13.6 Test Function Naming)" "${m}"
 
 # Rule 2 — assertions use reflect.DeepEqual + t.Errorf, not testify.
-m="$(scan '"github[.]com/stretchr/testify')"
+scan '"github[.]com/stretchr/testify'
+m="${SCAN_OUT}"
 [ -n "${m}" ] && report \
   "testify is not used in this repository; use reflect.DeepEqual + t.Errorf." \
   " (13.5 Assertion Pattern)" "${m}"
 
 # Rule 3 — the gomock controller variable is named mc.
-m="$(scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController')"
+scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController'
+m="${SCAN_OUT}"
 [ -n "${m}" ] && report \
   "Name the gomock controller 'mc' (mc := gomock.NewController(t))." \
   " (13.3 Test Structure Conventions)" "${m}"
 
-if [ -e "${SCAN_FAILED}" ]; then
+if [ "${scan_broken}" -ne 0 ]; then
   echo ""
   echo "check-test-conventions: a scan failed, so the rules above could not be"
   echo "evaluated. Failing instead of reporting a clean run."
