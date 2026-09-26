@@ -1,6 +1,6 @@
 # 2026-09-26 monorepo 코드 컨벤션 강제 계층 복구 및 README 현행화
 
-Status: Merged (PR #1338, squash `ec3d0790e`, 2026-09-26)
+Status: Merged (PR #1338, squash `ec3d0790e`, 2026-09-26 UTC / 09-27 KST)
 Branch: `NOJIRA-Monorepo-code-convention-and-readme-cleanup`
 Worktree: `~/gitvoipbin/monorepo/.worktrees/NOJIRA-Monorepo-code-convention-and-readme-cleanup`
 Base: `origin/main` @ `fb8e8d58a`
