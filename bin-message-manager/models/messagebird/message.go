@@ -37,7 +37,7 @@ type RecipientStruct struct {
 	Items                    []Recipient `json:"items"`
 }
 
-// // ConvertMessage converts to the message.Message
+// GetTargets returns converted message targets.
 func (h *Message) GetTargets() []target.Target {
 	res := []target.Target{}
 	for _, recipient := range h.Recipients.Items {

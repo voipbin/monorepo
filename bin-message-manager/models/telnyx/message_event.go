@@ -121,5 +121,3 @@ func (h *MessageEvent) GetText() string {
 	res := h.Data.Payload.Text
 	return res
 }
-
-// // ConvertMessage returns converted message.Message

@@ -331,7 +331,7 @@ func (h *listenHandler) processV1QueuesIDRoutingMethodPut(ctx context.Context, m
 	return res, nil
 }
 
-// // processV1QueuesIDWaitActionsPut handles Put /v1/queues/<queue-id>/wait_actions request
+// processV1QueuesIDAgentsGet handles Get /v1/queues/<queue-id>/agents request
 func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1QueuesIDAgentsGet",
