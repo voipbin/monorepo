@@ -837,6 +837,21 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 아무것도 잡지 못한다). 괄호는 `[(]` 문자클래스로 써야 한다. gawk·mawk·busybox awk
 3종에서 동일 동작을 실측 확인했다.
 
+최종 패턴은 `^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]` 이다. 세 가지를 함께 막는다.
+
+| 형태 | 왜 필요한가 |
+|---|---|
+| `[[:space:]]+` | `func  TestX(`(공백 2개)를 놓치지 않는다 |
+| `[([]` | 제네릭 `func TestFoo[T any](...)`를 놓치지 않는다 |
+| `([A-Z]...)?` 선택 | 이름이 `Test`뿐인 `func Test(`도 잡는다 |
+
+`TestMain` 제외는 `grep -vE '...:func[[:space:]]+TestMain\('` 로 하며, 여는 괄호를
+포함하므로 `TestMainHandler`는 제외되지 않고 정상 검출된다(실측 확인).
+
+위 세 형태는 현재 저장소에 0건이지만, 게이트는 앞으로 들어올 코드를 막는 장치이므로
+미리 닫아 둔다. 강화 후에도 전역 매치 수는 1,755건으로 동일하다(과탐 없음).
+합성 저장소 13종 시나리오 전수 통과를 실측했다.
+
 #### 6.4.2 스크립트
 
 ```bash
@@ -944,11 +959,15 @@ scan() {
   ' <<< "${DIFF_U0}"
 }
 
-# Rule 1 — Test_<MethodName>, not TestXxx_Case. See 6.4.1 for why bare
-# TestXxx (no underscore) is deliberately NOT matched.
-m="$(scan '^func Test[A-Z][A-Za-z0-9]*_')"
+# Rule 1 — every test name starts with Test_. See 13.6: what follows the
+# underscore is the method, optionally plus a scenario, so both Test_Create
+# and Test_Create_HappyPath pass. TestMain is Go's own entry point and is
+# excluded; it is the only name the toolchain itself reserves.
+# The trailing [([] also catches generic tests (func TestFoo[T any](...)),
+# and [[:space:]]+ tolerates more than one space after func.
+m="$(scan '^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]' | grep -vE '^[^:]*:[0-9]+:func[[:space:]]+TestMain\(' || true)"
 [ -n "${m}" ] && report \
-  "Test function must be named Test_<MethodName> (got TestXxx_Case)." \
+  "Test function must start with Test_ (got TestXxx)." \
   " (13.6 Test Function Naming)" "${m}"
 
 # Rule 2 — assertions use reflect.DeepEqual + t.Errorf, not testify.

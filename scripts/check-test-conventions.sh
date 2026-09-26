@@ -106,7 +106,9 @@ scan() {
 # underscore is the method, optionally plus a scenario, so both Test_Create
 # and Test_Create_HappyPath pass. TestMain is Go's own entry point and is
 # excluded; it is the only name the toolchain itself reserves.
-m="$(scan '^func Test[A-Z][A-Za-z0-9_]*[(]' | grep -v '^[^:]*:[0-9]*:func TestMain(' || true)"
+# The trailing [([] also catches generic tests (func TestFoo[T any](...)),
+# and [[:space:]]+ tolerates more than one space after func.
+m="$(scan '^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]' | grep -vE '^[^:]*:[0-9]+:func[[:space:]]+TestMain\(' || true)"
 [ -n "${m}" ] && report \
   "Test function must start with Test_ (got TestXxx)." \
   " (13.6 Test Function Naming)" "${m}"
