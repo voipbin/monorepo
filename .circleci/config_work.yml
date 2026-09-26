@@ -2282,6 +2282,11 @@ jobs:
             doc=docs/plans/2026-09-26-monorepo-convention-enforcement-and-readme-refresh.md
             awk '/^#### 6\.4\.2/ {f=1} f && /^```bash$/ {g=1; next} g && /^```$/ {exit} g' \
               "${doc}" > /tmp/snippet.sh
+            if [ ! -s /tmp/snippet.sh ]; then
+              echo "Could not find the script snippet in ${doc}."
+              echo "Expected a \`\`\`bash block under the 6.4.2 heading."
+              exit 1
+            fi
             if ! diff -u scripts/check-test-conventions.sh /tmp/snippet.sh; then
               echo ""
               echo "The snippet in ${doc} no longer matches the script it documents."

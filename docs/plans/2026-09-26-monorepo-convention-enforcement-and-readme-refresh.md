@@ -751,7 +751,7 @@ MULTISET-CHANGED: bin-call-manager/pkg/dbhandler/json_expr.go
 `docs/conventions/testing.md`가 규정하지만 어떤 린터로도 잡히지 않는 3개 규칙을 강제한다.
 **변경된 파일만 검사**하여 존량(D6)에 걸리지 않게 한다.
 
-#### 6.4.1 Rule 1의 범위 축소 및 검사 단위 (실측에 따른 결정)
+#### 6.4.1 Rule 1의 강제 범위와 검사 단위 (실측에 따른 결정)
 
 **검사 단위: 변경된 "파일"이 아니라 변경된 "라인"이다.**
 
