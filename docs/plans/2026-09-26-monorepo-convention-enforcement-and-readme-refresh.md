@@ -101,7 +101,7 @@ bin-timeline 63%·bin-rag 59% 로 갈린다.
 2. **G2.** 루트 `.golangci.yml`을 신설하고 CI에서 `golangci-lint`를 복구한다. 단 OOM을 유발하지 않아야 한다.
 3. **G3.** gofmt 미준수 313개 파일을 일괄 정리하고, 이후 재발을 CI가 차단한다.
 4. **G4.** `docs/conventions/testing.md`가 이미 규정한 테스트 규칙 중 린터로 잡히지 않는 3건
-   (`Test_` 접두사 미준수 함수명 / testify import / `ctrl` 변수명)을 **변경된 파일에 한해** CI가 차단한다.
+   (`Test_` 접두사 미준수 함수명 / testify import / `ctrl` 변수명)을 **변경이 추가한 라인에 한해** CI가 차단한다.
 5. **G5.** 루트 `README.md`의 서비스 표 누락 3건을 보완하고, 셀프호스팅 경로를 현행화한다.
 
 각 목표는 §9 검증 계획에서 실행 가능한 명령으로 확인한다.
@@ -769,7 +769,7 @@ MULTISET-CHANGED: bin-call-manager/pkg/dbhandler/json_expr.go
 ### 6.4 `scripts/check-test-conventions.sh` (신규)
 
 `docs/conventions/testing.md`가 규정하지만 어떤 린터로도 잡히지 않는 3개 규칙을 강제한다.
-**변경된 파일만 검사**하여 존량(D6)에 걸리지 않게 한다.
+**변경이 추가한 라인만 검사**하여 존량(D6)에 걸리지 않게 한다(§6.4.1).
 
 #### 6.4.1 Rule 1의 강제 범위와 검사 단위 (실측에 따른 결정)
 
