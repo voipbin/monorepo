@@ -19,7 +19,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// conferenceGet vaildates the customer's ownership and returns the conference info.
+// conferenceGet validates the customer's ownership and returns the conference info.
 func (h *serviceHandler) conferenceGet(ctx context.Context, id uuid.UUID) (*cfconference.Conference, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "conferenceGet",

@@ -17,7 +17,7 @@ import (
 	"monorepo/bin-call-manager/models/dtmf"
 )
 
-// digitsReceived handles DTMF Recevied event
+// digitsReceived handles DTMF Received event
 func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, digit string, duration int) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "digitsReceived",

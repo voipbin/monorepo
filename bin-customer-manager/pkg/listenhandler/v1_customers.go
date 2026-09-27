@@ -278,7 +278,7 @@ func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *sock.Req
 
 	var reqData request.V1DataCustomersIDPut
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
-		// same call-id is already exsit
+		// same call-id is already exist
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}

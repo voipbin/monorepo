@@ -28,7 +28,7 @@ func Test_ConversationV1Hook(t *testing.T) {
 			name: "normal",
 
 			hookMessage: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/conversation/customers/7a008138-ea75-11ec-a1ab-83428342ec10/line",
+				ReceivedURI:  "hook.voipbin.net/v1.0/conversation/customers/7a008138-ea75-11ec-a1ab-83428342ec10/line",
 				ReceivedData: []byte(`{"destination": "U11298214116e3afbad432b5794a6d3a0"}`),
 			},
 

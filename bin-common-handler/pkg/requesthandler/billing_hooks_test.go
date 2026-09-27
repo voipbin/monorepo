@@ -26,7 +26,7 @@ func Test_BillingV1PaddleHook(t *testing.T) {
 			name: "normal",
 
 			hookMessage: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/billing/paddle",
+				ReceivedURI:  "hook.voipbin.net/v1.0/billing/paddle",
 				ReceivedData: []byte(`{"event_id":"evt_001","event_type":"transaction.completed"}`),
 			},
 

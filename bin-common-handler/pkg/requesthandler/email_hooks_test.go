@@ -25,7 +25,7 @@ func Test_EmailV1Hooks(t *testing.T) {
 			name: "normal",
 
 			hookMessage: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/email/sendgrid",
+				ReceivedURI:  "hook.voipbin.net/v1.0/email/sendgrid",
 				ReceivedData: []byte(`{"voipbin_message_id": "12a4b8b0-007a-11f0-a49b-6fa21c3b2cc3"}`),
 			},
 

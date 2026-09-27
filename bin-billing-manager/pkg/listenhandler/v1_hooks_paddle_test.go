@@ -23,7 +23,7 @@ import (
 func buildHookData(t *testing.T, paddleJSON string) []byte {
 	t.Helper()
 	hook := hmhook.Hook{
-		ReceviedURI:  "hook.example.com/billing/paddle",
+		ReceivedURI:  "hook.example.com/billing/paddle",
 		ReceivedData: []byte(paddleJSON),
 	}
 	data, err := json.Marshal(hook)

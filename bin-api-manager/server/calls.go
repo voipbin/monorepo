@@ -462,7 +462,7 @@ func (h *server) PostCallsIdMute(c *gin.Context, id string) {
 
 	var req openapi_server.PostCallsIdMuteJSONBody
 	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
+		log.Errorf("Could not parse the request parameter. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(
 			commonoutline.ServiceNameAPIManager,
 			"INVALID_JSON_BODY",
@@ -518,7 +518,7 @@ func (h *server) DeleteCallsIdMute(c *gin.Context, id string) {
 
 	var req openapi_server.DeleteCallsIdMuteJSONBody
 	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
+		log.Errorf("Could not parse the request parameter. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(
 			commonoutline.ServiceNameAPIManager,
 			"INVALID_JSON_BODY",
@@ -779,7 +779,7 @@ func (h *server) PostCallsIdRecordingStart(c *gin.Context, id string) {
 
 	var req openapi_server.PostCallsIdRecordingStartJSONBody
 	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the reqeust parameter. err: %v", err)
+		log.Errorf("Could not parse the request parameter. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(
 			commonoutline.ServiceNameAPIManager,
 			"INVALID_JSON_BODY",

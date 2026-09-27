@@ -29,7 +29,7 @@ func (h *serviceHandler) Conversation(ctx context.Context, r *http.Request) (str
 	}
 
 	req := &hmhook.Hook{
-		ReceviedURI:       r.Host + r.URL.RequestURI(),
+		ReceivedURI:       r.Host + r.URL.RequestURI(),
 		ReceivedData:      data,
 		ReceivedMethod:    r.Method,
 		ReceivedSignature: r.Header.Get("X-Hub-Signature-256"),

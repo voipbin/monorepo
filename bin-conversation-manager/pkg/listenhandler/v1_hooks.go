@@ -28,11 +28,11 @@ func (h *listenHandler) processV1HooksGet(ctx context.Context, m *sock.Request) 
 		return simpleResponse(400), nil
 	}
 
-	// hub.* params are in req.ReceviedURI (the forwarded external URL),
+	// hub.* params are in req.ReceivedURI (the forwarded external URL),
 	// NOT in m.URI (the internal RPC path "/v1/hooks").
-	u, err := url.Parse(req.ReceviedURI)
+	u, err := url.Parse(req.ReceivedURI)
 	if err != nil {
-		log.Debugf("Could not parse ReceviedURI. err: %v", err)
+		log.Debugf("Could not parse ReceivedURI. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -41,7 +41,7 @@ func (h *listenHandler) processV1HooksGet(ctx context.Context, m *sock.Request) 
 	token := q.Get("hub.verify_token")
 	challenge := q.Get("hub.challenge")
 
-	result, err := h.conversationHandler.HookVerify(ctx, req.ReceviedURI, mode, token, challenge)
+	result, err := h.conversationHandler.HookVerify(ctx, req.ReceivedURI, mode, token, challenge)
 	if err != nil {
 		log.Errorf("HookVerify failed. err: %v", err)
 		return simpleResponse(403), nil
@@ -67,13 +67,13 @@ func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request)
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
 		return simpleResponse(400), nil
 	}
-	log.WithField("request", req).Debugf("Received hook request. request_uri: %s", req.ReceviedURI)
+	log.WithField("request", req).Debugf("Received hook request. request_uri: %s", req.ReceivedURI)
 
 	// Always respond 200 to the caller regardless of Hook() outcome. Meta (and other
 	// platforms) interpret non-200 as "not delivered" and will retry. On HMAC or
 	// signature failure, Hook() discards the payload without persisting any data —
 	// returning 200 simply tells Meta not to retry a forged or replayed request.
-	if errHook := h.conversationHandler.Hook(ctx, req.ReceviedURI, req.ReceivedMethod, req.ReceivedSignature, req.ReceivedData); errHook != nil {
+	if errHook := h.conversationHandler.Hook(ctx, req.ReceivedURI, req.ReceivedMethod, req.ReceivedSignature, req.ReceivedData); errHook != nil {
 		log.Errorf("Could not hook the message correctly. err: %v", errHook)
 	}
 

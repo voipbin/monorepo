@@ -9,7 +9,7 @@ import (
 	"monorepo/bin-call-manager/models/ari"
 )
 
-// HealthCheck checks the given channel is still vaild
+// HealthCheck checks the given channel is still valid
 func (h *channelHandler) HealthCheck(ctx context.Context, channelID string, retryCount int) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "HealthCheck",

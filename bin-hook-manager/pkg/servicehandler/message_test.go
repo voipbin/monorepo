@@ -31,7 +31,7 @@ func Test_Message(t *testing.T) {
 			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/messages",
+				ReceivedURI:  "hook.voipbin.net/v1.0/messages",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 		},
@@ -43,7 +43,7 @@ func Test_Message(t *testing.T) {
 			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/messages/telnyx",
+				ReceivedURI:  "hook.voipbin.net/v1.0/messages/telnyx",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 		},
@@ -93,7 +93,7 @@ func Test_Message_Error(t *testing.T) {
 			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/messages",
+				ReceivedURI:  "hook.voipbin.net/v1.0/messages",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 			expectError: fmt.Errorf("message hook error"),
