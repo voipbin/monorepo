@@ -515,6 +515,11 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 		{
 			name: "reuse: alive previous pipecat — interrupt invoked",
 
+			// Wired so the reuse branch's MCP refresh actually runs on a PLAIN AI
+			// aicall: this is what makes the team gate at start.go:367 observable
+			// here (without it the resolver would fetch the AI a second time).
+			wireMcpHandlers: true,
+
 			ai: &ai.AI{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
@@ -522,6 +527,9 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				},
 				InitPrompt:  "hello, this is init prompt message.",
 				STTLanguage: "en-US",
+				// `a` IS the governing AI for a plain AI aicall, so exactly one
+				// server fetch must happen and no team lookup at all.
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("a8888888-0002-11f0-9999-999999999999")},
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
@@ -537,10 +545,15 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 						ID:         existingAIcallID,
 						CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 					},
-					AIEngineModel: "openai.gpt-5-nano",
-					Status:        aicall.StatusProgressing,
-					TMUpdate:      &freshTM,
-					PipecatcallID: oldPCC,
+					// Explicitly AI-typed. These reuse fixtures used to leave this at
+					// the zero value, which hit the resolver's fail-closed default
+					// and made the team gate unobservable on the reuse path.
+					AssistanceType: aicall.AssistanceTypeAI,
+					AssistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+					AIEngineModel:  "openai.gpt-5-nano",
+					Status:         aicall.StatusProgressing,
+					TMUpdate:       &freshTM,
+					PipecatcallID:  oldPCC,
 				}
 				pipecatcall := &pmpipecatcall.Pipecatcall{
 					Identity: commonidentity.Identity{ID: oldPCC},
@@ -575,6 +588,19 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
 
 				// conversation message create
+				// The refresh runs on a plain AI aicall: exactly ONE server fetch,
+				// governed by `a` itself. No team or member lookup is registered,
+				// so removing the reuse branch's team gate fails here.
+				m.mcpServer.EXPECT().Get(ctx, uuid.FromStringOrNil("a8888888-0002-11f0-9999-999999999999")).Return(&mcpserver.McpServer{
+					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("a8888888-0002-11f0-9999-999999999999")},
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				m.mcpTool.EXPECT().ListTools(ctx, uuid.FromStringOrNil("a8888888-0002-11f0-9999-999999999999")).Return([]mcptoolhandler.McpTool{
+					{Name: "ai_tool"},
+				}, nil)
+				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, existingAIcallID, gomock.Any()).Return(nil)
+
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "test user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
@@ -596,10 +622,12 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d1319db4-30dd-11f0-8747-a7f601e136a5"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
-				AIEngineModel: "openai.gpt-5-nano",
-				Status:        aicall.StatusProgressing,
-				TMUpdate:      &freshTM,
-				PipecatcallID: uuid.FromStringOrNil("aaaaaaaa-0001-11f0-aaaa-aaaaaaaaaaaa"),
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+				AIEngineModel:  "openai.gpt-5-nano",
+				Status:         aicall.StatusProgressing,
+				TMUpdate:       &freshTM,
+				PipecatcallID:  uuid.FromStringOrNil("aaaaaaaa-0001-11f0-aaaa-aaaaaaaaaaaa"),
 			},
 		},
 		{
@@ -1106,6 +1134,10 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
 				STTLanguage: "en-US",
+				// The start-member AI bound at entry whitelists a DIFFERENT
+				// server, and no expectation is registered for it: if it ever
+				// governed the refresh, gomock would reject the unexpected fetch.
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("a8888888-0009-11f0-9999-999999999999")},
 			},
 			assistanceType: aicall.AssistanceTypeTeam,
 			assistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
@@ -1188,8 +1220,9 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				// refreshMcpToolMap -> resolveTools, driven by whichever AI the
 				// reuse branch chose. Only the CURRENT member's server is set
-				// up: if the start member's AI governed, resolveTools would ask
-				// for a server nobody expects and gomock would fail.
+				// up, so a start-member refresh fails twice over: gomock rejects
+				// the unexpected fetch of the start member's server, and the
+				// callback below finds no current-member entry in the map.
 				m.mcpServer.EXPECT().Get(ctx, curServerID).Return(&mcpserver.McpServer{
 					Identity: commonidentity.Identity{ID: curServerID},
 					Status:   mcpserver.StatusActive,

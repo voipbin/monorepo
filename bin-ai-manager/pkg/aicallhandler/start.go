@@ -361,7 +361,10 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		// The MCP whitelist belongs to the CURRENT team member, not the start member
 		// bound in a. Only a team can have an active member that differs from a: for
 		// a plain AI aicall a already IS the governing AI, so resolving again would
-		// only add an RPC (and breaks the reuse tests). On failure keep a and still
+		// only add an RPC. Removing this gate fails
+		// Test_ServiceStart_serviceStartReferenceTypeConversation/normal and
+		// Test_startReferenceTypeConversation/"reuse: alive previous pipecat" on
+		// the unexpected fetch. On failure keep a and still
 		// refresh -- skipping the refresh would leave a previous member's stale map.
 		mcpAI := a
 		if res.AssistanceType == aicall.AssistanceTypeTeam {
