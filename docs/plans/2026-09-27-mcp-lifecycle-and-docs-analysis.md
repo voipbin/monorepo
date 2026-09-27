@@ -2,12 +2,13 @@
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v8, Analysis Review Loop round 8 pending
+Status: v9, Analysis Review Loop round 8 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive). Adversarial CHANGES_REQUESTED with
-one blocking finding at the PR A ↔ PR C boundary, verified and folded in as D21 plus
-§5 Q11 and a §3.12 retraction.
+one blocking finding at the PR A ↔ PR C boundary → D21 + §5 Q11.
+v9: 대표님 resolved Q11 (skip already-stored ids, reject newly added ones) and Q6
+(no prune loop). No open questions block the PR A design doc except §5 Q5 and Q9.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -43,6 +44,8 @@ separately.
 | Q4 | Dead `mcp_tools_list_cache_ttl_seconds` flag: implement or remove? | **Remove the flag, no cache.** |
 | Q5 | PR B as one PR or split? | **One PR.** "하나로 가자." (PR B doc) |
 | Q6 | Split the analysis so A/C can proceed without waiting on B? | **Yes.** "권고대로 진행해" |
+| Q7 | D21: how to handle an AI whose whitelist already holds a deleted id? | **Skip already-stored ids, reject newly added ones.** "skip-not-reject 방식으로 하자." + "이후에 AI 업데이트를 할 때 ... 이때는 reject 를 해야하지 않을까?" |
+| Q8 | Add a prune loop that strips deleted ids from every affected AI? | **No.** "비쌀려나?" → no transaction on delete, un-indexed JSON column, one `ai_updated` webhook per affected AI, and skip-not-reject already resolves D21 alone |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -87,11 +90,11 @@ separately.
 - **D20** `mcpserverhandler.Update` **short-circuits to `h.Get` before touching the
   DB** when every field is omitted, so a `PUT {}` on a deleted server returns 200
   with the full row — a path NO dbhandler-level gate can reach.
-- **D21** **PR A's whitelist gate makes any AI holding a deleted id permanently
-  un-saveable.** The whitelist is never pruned (Q6), the picker filters deleted
-  servers out so the id has no checkbox, and the PUT body always carries the array.
-  Every save of that AI, for any unrelated edit, would 400. This is a PR A ↔ PR C
-  cross-boundary defect that neither PR sees alone.
+- **D21** An AI holding a deleted MCP server id must stay saveable. Write-time
+  validation **skips ids already in the stored whitelist and rejects only newly added
+  ones** (§5 Q11, 대표님 확정). Without the skip, every save of that AI 400s forever,
+  for any unrelated edit; without the reject, attaching a deleted server fails
+  silently. This is a PR A ↔ PR C cross-boundary defect that neither PR sees alone.
 
 **PR C — square-admin parity (`voipbin/monorepo-javascript`):**
 - **D8** `mcp_server_ids` is settable only on the AI detail page, though the
@@ -613,7 +616,11 @@ and D20): a fix traced only to its own layer, never forward to the surface that
 consumes it. Here the two layers are in **different repositories**, which is why
 five rounds of review missed it.
 
-Resolution is a decision, not an implementation detail — see §5 Q11.
+**Resolution is a decision, not an implementation detail — RESOLVED in §5 Q11:**
+skip ids already in the stored whitelist, reject ids newly added. The diff is free
+because `tmp.McpServerIDs` at `v1_ais.go:272` is still the unmodified stored list
+(`aiHandler.Update` at `:247` does not take `McpServerIDs`). With that, none of the
+six steps above fires: step 4 no longer rejects, so steps 5 and 6 never trigger.
 
 square-admin reads `has_secret` only from GET
 responses (`mcpservers_list.js:86`, `mcpservers_detail.js:266`) and does not consume
@@ -646,7 +653,7 @@ mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
 D1, D2, D3, D4, D5, D6, D12, D13 (pending §5 Q5), D14, **D15, D16, D17 (pending
-§5 Q9), D18, D19, D20, D21 (pending §5 Q11)**. One logical unit: "a deleted or
+§5 Q9), D18, D19, D20, D21**. One logical unit: "a deleted or
 foreign MCP server must be inert everywhere, write paths must reject rather than
 silently succeed, and the docs/config must stop describing things that are not true."
 
@@ -792,34 +799,62 @@ Redis cache (§3.9), because there is no measured signal for it.
    `listenhandler/main.go:194-195` to `RESOURCE_NOT_FOUND`. PR A must translate it at
    `handler.go:206` (mirroring `Get:96-101`), or the gate path and the TOCTOU race
    path return two different codes for the same condition.
-6. **Does PR A prune stale ids from `ai.mcp_server_ids` on delete?** v5-v7
-   recommended NO (consume-time gating is sufficient and idempotent; pruning means a
-   fan-out write across every AI of that customer on every delete). **v8: this
-   recommendation is now COUPLED to Q11 and cannot be decided alone** — "don't prune"
-   is exactly what makes D21's frozen AI possible. Decide Q11 first.
-11. **D21 (BLOCKING, decide before the PR A design doc): what happens when an AI's
-   whitelist already contains a deleted id?** Three viable resolutions, and the choice
-   changes what §7's "rejected by `ValidateMcpServerIDs`" test asserts:
-   - **(a) Skip, don't reject.** `ValidateMcpServerIDs` ignores deleted ids already
-     present rather than 400-ing. The gate's remaining job is preventing *new*
-     deleted ids from being added. Cheapest, keeps Q6's "don't prune," no PR C
-     change, and consume-time gating already makes the stale id inert. Risk: an
-     invalid id lives on in the row indefinitely, and "validate" silently tolerating
-     invalid input is a weaker contract.
-   - **(b) Prune on delete** (reverses Q6). The whitelist becomes self-healing and the
-     UI never sees a ghost id. Cost: a fan-out write across every AI of the customer
-     on every delete, which Q6 rejected for good reason.
-   - **(c) PR C renders unlisted-but-selected ids as removable "unavailable" entries**
-     and strips them from the PUT body. Most honest to the customer (they see what
-     they had and can clear it), but it puts the fix in a different repo from the gate
-     and leaves a window where an un-updated frontend hits the 400.
-   **Recommendation: (a), with a one-line note in the RST that deleted ids are
-   retained but inert.** It resolves the deadlock inside PR A, needs no cross-repo
-   coordination, and is consistent with the already-accepted principle that
-   consume-time gating (not data cleanup) is what enforces revocation. (c) can follow
-   later as a UX improvement without blocking anything.
-   Whatever is chosen applies equally to `teamgraph/sidebar.js:753-782` once PR C adds
-   the field there (§4).
+6. **Does PR A prune stale ids from `ai.mcp_server_ids` on delete?** **RESOLVED: no.**
+   Q11's skip-not-reject removes the reason pruning existed (D21's frozen AI), and the
+   loop's own costs (no transaction on `McpServerDelete`, un-indexed JSON column, one
+   `ai_updated` webhook per affected AI) are real. See Q11's "Rejected alternatives."
+11. **D21 (RESOLVED — 대표님 확정): what happens when an AI's whitelist already
+   contains a deleted id?** **Decision: skip what is already there, reject what is
+   newly added.** ("skip-not-reject 방식으로 하자." + "이후에 AI 업데이트를 할 때
+   ... 이때는 reject 를 해야하지 않을까?")
+
+   | Path | Behavior | Rationale |
+   |---|---|---|
+   | POST `/ais` | reject ALL deleted ids | no prior list exists, so every id is new |
+   | PUT with field omitted (`req.McpServerIDs == nil`) | no validation | current behavior, unchanged |
+   | PUT, id already in the stored whitelist | **skip** | already-held; rejecting freezes the AI (D21) |
+   | PUT, id newly added to the list | **reject** (`INVALID_MCP_SERVER_ID`) | attaching a deleted server is a user error and must not fail silently |
+
+   **The diff costs nothing — both sides are already in hand at the gate.**
+   `v1_ais.go:272` runs with `tmp` returned by `aiHandler.Update` at `:247`, and
+   `Update`'s argument list (`:249-266`) does NOT include `McpServerIDs`. Therefore
+   `tmp.McpServerIDs` is the **currently stored, not-yet-modified** whitelist, and the
+   incoming list is `*req.McpServerIDs`. Computing "which ids are new" needs **zero
+   extra DB reads and no signature change**. (An earlier draft of this document
+   claimed an extra parameter was required; that was wrong.)
+
+   **Why the diff is mandatory, not an optimization.** `ais_detail.js:406-440` always
+   puts `mcp_server_ids` in the PUT body, so `req.McpServerIDs` is non-nil on every
+   square-admin save. Without the diff, square-admin traffic must pass the gate
+   unconditionally, which is exactly the D21 freeze. The "field omitted" branch only
+   ever applies to direct API callers.
+
+   **Why plain skip-everything was rejected.** It would silently accept "attach this
+   deleted server to my AI now." The consume-time gate keeps that inert, so there is no
+   security incident, but the customer believes the server is connected and never
+   learns why its tools never fire — a silent failure. Rejecting only the newly added
+   ids reports the error at the moment it is made.
+
+   **Pointer semantics already support this** and are deliberate:
+   `server/ais.go:68-74` documents that nil means "field omitted, leave the whitelist
+   untouched" while a non-nil pointer to an empty slice means "explicitly clear it."
+   PR A must not collapse that distinction.
+
+   **Rejected alternatives.** (b) Prune stale ids on MCP delete: `McpServerDelete`
+   (`dbhandler/mcpserver.go:163+`) is a bare UPDATE with no transaction, so a
+   mid-loop failure leaves dead ids behind and the AI still frozen; `mcp_server_ids`
+   is an un-indexed JSON column (`d8e342656cf0…:22`) with no reverse lookup, so the
+   loop must read every AI of the customer; and each rewrite fires
+   `ai.EventTypeUpdated` (`mcpserver_validation.go:86`), so deleting one MCP server
+   emits a webhook per affected AI — the customer is told N AIs changed when they
+   deleted a server. It also cannot clean rows that already exist without a
+   migration. Since skip-not-reject fully resolves D21 on its own, the loop adds
+   webhook noise, partial-failure handling, and a migration while solving nothing
+   that remains. (c) PR C rendering removable "unavailable" entries: not needed for
+   correctness; the stale id disappears naturally the next time the customer saves
+   that AI, since the form submits only currently-valid ids.
+
+   Applies equally to `teamgraph/sidebar.js:753-782` once PR C adds the field (§4).
 7. **Does `square-admin/CLAUDE.md` Field Sync Points gain `src/types/api.ts` as a
    fourth row?** Recommend yes (PR C).
 8. **D14 scope in PR A:** document the three webhook event types now, or only fix
@@ -842,7 +877,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Dead config flag + design doc justifying another decision by citing a nonexistent cache | Medium | D6; correct `2026-09-11-…:466-467`, `:705`, `:750-754` |
 | Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | Medium | D13 / §5 Q5 — decide before the design doc |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
-| An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) / §5 Q11 — must be decided before the design doc |
+| An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 Q11**: skip already-stored ids, reject only newly added ones. Both directions must be unit-tested (§7) |
 | Gating OAuth `Complete` discards a freshly-minted vendor grant: `complete.go:84` deletes the state row and `:88` completes the token exchange BEFORE `:126`, so VoIPBin holds a live GitHub/Linear token and drops it unrevoked | Medium | Preferable to writing onto a deleted row, but the orphaned vendor-side grant must be acknowledged in the PR body (and revocation considered) |
 | `PUT {}` on a deleted server returns 200 with the row because `mcpserverhandler.Update` short-circuits to `h.Get` before any DB write; NO dbhandler gate reaches it | **High** | D20 (§3.7f). Gate inside `mcpserverhandler.Update` ahead of the `len(fields)==0` branch AND ahead of `ValidateURL` |
 | An implementer gates `mcpserverhandler.Get` to fix the above and breaks the GET-after-DELETE 200 contract | **High** | §3.7h names its four contradictory consumers; §5 Q1 forbids it explicitly; defense-in-depth gates go in `mcp_tool.go` |
@@ -865,7 +900,10 @@ Redis cache (§3.9), because there is no measured signal for it.
 **PR A (`monorepo`):** `go mod tidy && go mod vendor && go generate ./... && go
 test ./... && golangci-lint run -v --timeout 5m` in `bin-ai-manager`. New unit
 tests proving a soft-deleted server is: skipped in resolution, refused in dispatch,
-refused in transport, rejected by `ValidateMcpServerIDs`, rejected by
+refused in transport, rejected by `ValidateMcpServerIDs` **when newly added and
+skipped when already stored** (§5 Q11 — assert BOTH directions: a PUT adding a
+deleted id 400s, and a PUT that merely re-submits an already-stored deleted id
+succeeds), rejected by
 `McpServerUpdate`, rejected by OAuth `Start`, rejected by OAuth `Complete`; that
 delete zeroes all secret/token ciphertext in the SAME statement while update paths
 never do; that dispatch refuses a server owned by another customer (D12); that the
