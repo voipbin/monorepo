@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v22, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v23, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v22, Analysis Review Loop round 15 pending
+Status: v23, Analysis Review Loop round 16 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -33,6 +33,16 @@ was prescribed at dispatch, which §3.1 of this same document proves is dead cod
 the live leak path at resolution got none. Also raised **D27** (pre-deploy deleted rows
 keep credentials) as a genuinely OPEN decision.
 
+Round 15: **both tracks CHANGES_REQUESTED, ELEVENTH instance, fourth consecutive one inside
+D28.** v22 mandated "never fail the call" and cited `resolveTeamMemberAI` as already
+providing it; that helper skips its fallback loop for 2 of 3 error modes (member present but
+`aiHandler.Get` fails, team fetch fails), so at dispatch v22 would have converted today's
+silent start-member degrade into `fillFailed` for every MCP tool call on that team. v22's two
+offered mechanisms were also mutually exclusive (one needs a forbidden third RPC or a
+signature change; the other mutates a resolver with six callers plus a duplicate copy). v23
+replaces both with ONE narrow method, states that the reorder is optional hygiene rather than
+the protection, and requires the AI-fetch-failure assertion v22 omitted.
+
 Round 14: **both tracks CHANGES_REQUESTED, TENTH instance, again in the newest edit.** v21's
 replacement fix asserted "ordering is irrelevant" while `resolveActiveAIIDFromAIcall` has no
 start-member fallback — so for a stale `CurrentMemberID` it resolves `uuid.Nil`, the refresh
@@ -62,7 +72,7 @@ enforcement point, with its only promised test on the dead dispatch path.
 
 **v16 — the five unconfirmed "Recommend …" items (§5 items 1, 3, 4, 7, 8) are now
 closed** by 대표님 ("a로 가자" for the MCP link, recommendations accepted for the rest).
-Investigating Q3 surfaced **D24**: the docs advertise a stale third-party fork while
+Investigating §5 item 3 surfaced **D24**: the docs advertise a stale third-party fork while
 `uvx voipbin-mcp` installs the official repo — a published-falsehood defect the v14
 draft had wrongly deferred to 대표님 as unjudgeable instead of simply checking.
 **Readiness is still NOT claimed in this header.** Every §5 item is now decided, but
@@ -117,7 +127,7 @@ separately.
 | Q18 | Does the already-stored-id exemption cover the ownership check too? | **NO — D25 (§3.5a), SIXTH instance.** The exemption applies to the `tm_delete` predicate ONLY. `ValidateMcpServerIDs` gains a `storedIDs` parameter so existence and ownership run on every id; v12-v15's "no signature change" claim created a cross-tenant hole and is retracted |
 | Q19 | Where does the D12 ownership assertion live? | **BOTH resolution and dispatch** — D26 (§3.5b), SEVENTH instance. Dispatch-only was dead code (§3.1); resolution is where the credential is decrypted and sent. `resolveTools` already holds `a.CustomerID`, so cost is zero |
 | Q20 | Do pre-deploy soft-deleted rows get their credentials zeroed? | **Yes — one-off Alembic data migration** ("a 로 가자"), all seven columns where `tm_delete IS NOT NULL`, authored in PR A and applied by 대표님, downgrade an explicit no-op. The affected-row count is unmeasured and remains a design-doc precondition (it changes the PR body's impact claim, not the decision) |
-| Q21 | How is D12's team-member half enforced? | **Repair the member first, then resolve the active member's AI once, at BOTH `start.go:361` and `mcp_tool.go:144`, with a mandatory start-member fallback** — D28 (§3.5c). v19's hoist-alone and v21's resolve-alone ("ordering is irrelevant") are BOTH withdrawn: `resolveActiveAIIDFromAIcall` has no fallback, so order and failure contract are load-bearing. TENTH instance. The §7 dispatch assertion stays reinstated |
+| Q21 | How is D12's team-member half enforced? | **One new narrow `resolveActiveAIForMcp` with an unconditional start-member fallback, used at `start.go:361` and `mcp_tool.go:144`; the shared `resolveActiveAIIDFromAIcall` is NOT modified (6 callers + a `messagehandler` twin); the reorder is optional hygiene, not the protection** — D28 (§3.5c). v19 (hoist-alone), v21 (resolve-alone) and v22 (`resolveTeamMemberAI` "already" never-fails — it does not for 2 of 3 error modes) are ALL withdrawn. ELEVENTH instance |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -192,13 +202,14 @@ separately.
   columns where `tm_delete IS NOT NULL` (§5 item 2), authored in PR A and applied by
   대표님, with an explicit no-op downgrade.
 - **D28** D12's **team-member** half has no prescribed enforcement point: `start.go:361`
-  refreshes the MCP tool map with the **start**-member AI, two lines before
+  refreshes the MCP tool map with the **start**-member AI, nine lines before
   `start.go:369-372` resolves the current member, so a reused team AIcall makes
   credentialed outbound calls to the wrong member's MCP servers. The §7 test promised for
   it targeted dispatch, which is dead code and cannot see `c.CurrentMemberID`. **EIGHTH
-  instance**; §3.5c. Fixed by repairing `CurrentMemberID` first, then resolving the active
-  member's AI once for both the reuse branch and dispatch, with a mandatory start-member
-  fallback. (v19's hoist-alone and v21's resolve-alone were each withdrawn — see §3.5c.)
+  instance**; §3.5c. Fixed by adding one narrow `resolveActiveAIForMcp` whose start-member fallback covers
+  ALL failure modes, used at the reuse branch and dispatch, without touching the shared
+  resolver. The v19 (hoist), v21 (resolve-only) and v22 (`resolveTeamMemberAI` fallback)
+  prescriptions were each withdrawn — see §3.5c.
 - ~~**D22**~~ **VOIDED in v14** by the §5 item 5 reversal — no AI-type gate exists, so a gate
   that under-enforces and freezes AIs cannot occur. Retained in §3.12b as the fourth
   recorded instance of the recurring failure mode. Not PR A or PR C scope.
@@ -483,61 +494,93 @@ with only a `Warnf` when `ac.CurrentMemberID` is not in `t.Members` (`:35`). It 
 start-member fallback**. `resolveTeamMemberAI` (`start.go:42-52`) **does** have one, and
 `resolveTeamMemberForSend` (`start.go:371`) is the only thing that repairs a stale
 `CurrentMemberID`, persisting the repair (`send.go:176-183`). v21 placed its call at `:361`,
-**ten lines before that repair**, and then asserted "Ordering is irrelevant." For a stale
+**nine lines before that repair**, and then asserted "Ordering is irrelevant." For a stale
 member that yields `uuid.Nil` → `aiHandler.Get` fails → the refresh is skipped (its error is
 only `Warnf`'d at `:362`) → **the stale map survives, which is the exact state D28 exists to
 remove.** Today's code, by passing the start-member AI, at least refreshes with the correct
 fallback target. So v21 regressed the degraded case while fixing the normal one, and
 "ordering is irrelevant" was written with `resolveTeamMemberForSend` quoted three lines away.
 
-**Resolution (v22): repair first, then resolve once, and name the failure contract.**
+**~~Resolution (v22): repair first, then resolve once, and name the failure contract.~~
+AMENDED in v23 — the named mechanism does not implement the mandated contract.** Round 15
+found this; **ELEVENTH instance**, and the fourth consecutive one inside D28.
 
-(a) **Reuse branch, ordered.** Move the team repair (`start.go:369-373`,
-`resolveTeamMemberForSend`) **above** the MCP refresh, then resolve the active AI and pass
-**that** to `refreshMcpToolMap`. The repair must run first precisely because the helper
-cannot fall back; after it, `res.CurrentMemberID` is guaranteed present in the team. v19's
-hoist was directionally right and insufficient (it never changed the AI passed); v21 changed
-the AI and ignored the order. **Both are needed.**
+**What v22 got wrong.** v22 mandated "fall back to the start member, never fail the call"
+and cited `resolveTeamMemberAI` as already defining it. It does not.
+`resolveTeamMemberAI` (`start.go:30-54`) reaches its fallback loop (`:43-51`) for exactly
+**one** condition: the requested member is absent from `t.Members`. It returns an error
+without ever reaching the fallback when:
 
-(b) **Failure contract, explicit at both sites: fall back to the start member, never fail
-the call.** `resolveTeamMemberAI` already defines this behaviour and dispatch's current
-`resolveAI` inherits it, so failing closed would be a **regression introduced by our own
-fix**: at dispatch a `uuid.Nil` → `aiHandler.Get` error becomes
-`fillFailed("could not retrieve AI configuration")`, killing **every** MCP tool call for
-that team. `processEventPMTeamMemberSwitched` logs-and-continues when
-`UpdateCurrentMemberID` fails (`subscribehandler/pipecat_message.go:82`), so a mismatched
-`CurrentMemberID` is a live, code-acknowledged state. **Prescription: at both sites resolve
-through a path that retains the start-member fallback** (reuse `resolveTeamMemberAI`, or give
-the helper the same fallback — one place, one behaviour). Do NOT introduce a second
-divergent failure policy.
+1. the member IS present but `aiHandler.Get(m.AIID)` fails (`:36`) — transient RPC error, or
+   a deleted AI row;
+2. `teamHandler.Get` fails upstream (`send.go:160-163`);
+3. neither the member nor the start member is in the team (`:53`).
 
-(c) **Dispatch (`mcp_tool.go:144`).** Replace `resolveAI` with the active-member resolution
-from (b). `toolHandleMcpCall` holds `c *aicall.AIcall` at `:127`, and `resolveAI`'s other
-three return values are discarded, with `tmpAI` used only at `:151` — nothing else breaks.
-v19's claim that dispatch cannot see `CurrentMemberID` was true of `resolveAI` and false of
-the package (`listen_trigger.go:155`), so the §7 dispatch assertion stays REINSTATED.
+So v22's contract held for one of three error modes. At dispatch that is a **regression we
+introduce**: today `resolveAI` fetches the START member's AI (`start.go:69-79`) and never
+reads `CurrentMemberID`, so a broken current-member AI cannot affect MCP dispatch at all.
+Under v22 it becomes `fillFailed("could not retrieve AI configuration")` (`mcp_tool.go:147`)
+— **every MCP tool call for that team dies.** v22 forbade exactly this outcome in the same
+paragraph that prescribed it.
 
-(d) **Do not add a third team RPC.** `start.go:381` already calls this helper on the same
-`res` after the repair, and the TODO at `:378-380` already flags that `teamHandler.Get` runs
-twice. Resolve once after the repair and reuse the value.
+**And v22's two offered mechanisms were mutually unsatisfiable.** "Reuse
+`resolveTeamMemberAI`" needs a `*team.Team`, which only `resolveTeamMemberForSend` holds and
+discards (it returns `error`), so it costs either a signature change or a third
+`teamHandler.Get` — which v22's own clause (d) forbids. "Give the helper the same fallback"
+touches `resolveActiveAIIDFromAIcall`, which has **six other callers**
+(`send.go:78`, `:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
+`start.go:381`) driving message attribution, **plus a duplicate copy in
+`messagehandler/event.go:45`** that would silently diverge. v22 called that "one place, one
+behaviour" without enumerating any of it.
 
-**Residual gaps, corrected and stated (v22).**
+**The reorder is NOT load-bearing.** Stated plainly, because v22 presented a cosmetic and a
+load-bearing mechanism as co-required. `resolveTeamMemberForSend`'s caller only `Warnf`s
+(`start.go:371`), so when the repair fails `CurrentMemberID` is still stale when the refresh
+runs; and when the resolution itself carries the fallback, it yields the same AI whether it
+runs before or after the repair. **The fallback-bearing resolution does all the work.**
 
-The v21 residual paragraph was **wrong about the direction of the risk**. Post-fix, dispatch
-resolves the active member and `mcpServerIDIsWhitelisted` (call site `mcp_tool.go:151`, func `:239`) **refuses** a
-server the active member does not whitelist, so the stale map cannot get the other member's
-tool *accepted*. The true residual is the opposite: **under-availability** — the active
-member's own newly whitelisted tools are missing from the map until the next Start. Not a
-leak, and the security conclusion stands, but the reasoning and the PR B hand-off were
-mis-stated.
+**Resolution (v23): one mechanism — a local fallback-bearing resolution at the two MCP
+sites, and no change to the shared helper.**
 
-Two paths never refresh the map, not one:
-- **Send path**: `refreshMcpToolMap` has exactly one caller (`start.go:361`); `send.go`
-  repairs the member but never refreshes the map.
-- **Reused contact_case AIcall**: `start.go:589` delegates to `refreshInsightSessionIfIdle`,
-  which returns "kept" for a team without refreshing the map.
+(a) **Add one narrow method, `resolveActiveAIForMcp(ctx, c *aicall.AIcall) *ai.AI`**, whose
+    single job is: return the current member's AI; on ANY failure (member absent, AI fetch
+    error, team fetch error) fall back to the START member's AI; if even that fails, return
+    `nil`. It is the only place the three error modes are handled, and it does not touch
+    `resolveActiveAIIDFromAIcall` or its six callers or the `messagehandler` twin.
+(b) **Reuse branch (`start.go:361`)**: pass its result to `refreshMcpToolMap` instead of the
+    start-member `a`. On `nil`, keep today's behaviour — pass the start-member `a` already in
+    hand, so the map is still refreshed. **Never skip the refresh**; a skipped refresh is how
+    v21 preserved the stale map.
+(c) **Dispatch (`mcp_tool.go:144`)**: replace `resolveAI` with it. On `nil`, **preserve
+    today's outcome** by falling through to the existing start-member `resolveAI` result
+    rather than `fillFailed`. Dispatch must not become more failure-prone than before our fix.
+(d) **The reorder is OPTIONAL, not required.** Moving the team repair above the refresh is
+    harmless and desirable (it persists `CurrentMemberID` via `send.go:176-183` and keeps
+    `start.go:381` consistent, and nothing between `:361` and `:394` reads `AIEngineModel`),
+    but it is **not** what protects the degraded case. Recorded as hygiene so no implementer
+    believes ordering is the safety mechanism.
+(e) **One team RPC.** `resolveActiveAIForMcp` performs the single `teamHandler.Get` the two
+    MCP sites need; the pre-existing duplicate flagged by the TODO at `start.go:378-380` is
+    **out of scope** for PR A and stays as-is.
 
-**PR A's position: both are under-availability, not exposure** — every prescribed gate
+**Why the start-member fallback is correct at dispatch, not a cross-member leak.** When
+`CurrentMemberID` cannot be resolved, the platform's own defined state for that session IS
+the start member — `send.go:176-183` persists exactly that repair and the engine model
+already follows it. Customer-ownership (D26) and the deleted/status gates still run, so the
+executed server belongs to the same customer. The choice is between the start member's tools
+and no tools at all, and today's behaviour is already the former.
+
+**§7 additions (v23): assert BOTH degraded modes, at BOTH sites** — member-absent AND
+current-member-AI-fetch-failure. v22 asserted only the first, which is why its regression
+would have shipped green.
+
+**Residual gaps (unchanged from v22, restated).** Post-fix, dispatch resolves the active
+member and `mcpServerIDIsWhitelisted` (call site `mcp_tool.go:151`, func `:239`) **refuses** a
+server the active member does not whitelist, so the residual is **under-availability**, not
+exposure: the active member's own newly whitelisted tools are missing until the next Start.
+Two paths never refresh the map — the send path (`refreshMcpToolMap` has exactly one caller,
+`start.go:361`) and a reused contact_case AIcall (`start.go:589` →
+`refreshInsightSessionIfIdle`, which returns "kept" for a team). Every prescribed gate
 re-reads the row, so a deleted or foreign server stays inert whichever member's map is
 loaded. **PR B precondition: refresh the map on member switch, covering both paths.**
 
@@ -1246,29 +1289,26 @@ Redis cache (§3.9), because there is no measured signal for it.
    signature change. Resolution **skips** the foreign server (best-effort contract,
    `:44-51`); dispatch **refuses** it with the existing
    `"mcp tool is no longer available"` string.
-   **ALSO MANDATORY (D28, §3.5c — the member half of D12): repair the member, then resolve
-   the active member's AI once, at BOTH MCP sites, with an explicit start-member fallback.**
-   (a) **Reuse branch, ordered:** move the team repair (`start.go:369-373`,
-   `resolveTeamMemberForSend`) ABOVE the MCP refresh (`:361`), then pass the active member's
-   AI to `refreshMcpToolMap` instead of the start-member `a` (bound at `:187` via `resolveAI`
-   → `:75` `t.StartMemberID`). Order matters because `resolveActiveAIIDFromAIcall`
-   (`helpers.go:19`) returns `uuid.Nil` with only a `Warnf` for a stale `CurrentMemberID`
-   (`:35`) and has **no fallback**, while `resolveTeamMemberAI` (`start.go:42-52`) does; the
-   repair persists it (`send.go:176-183`).
-   (b) **Dispatch:** replace `resolveAI` at `mcp_tool.go:144` with the same active-member
-   resolution (`:127` already holds `c *aicall.AIcall`; the other three `resolveAI` returns
-   are discarded and `tmpAI` is used only at `:151`).
-   (c) **Failure contract, mandatory at both sites: fall back to the start member, never fail
-   the call.** Today's `resolveAI` inherits that fallback, so failing closed would be a
-   regression we introduce: at dispatch `uuid.Nil` becomes
-   `fillFailed("could not retrieve AI configuration")` and kills every MCP tool call for the
-   team, and a mismatched `CurrentMemberID` is a live state
-   (`subscribehandler/pipecat_message.go:82` logs and continues).
-   (d) **Resolve once** — `start.go:381` already calls the helper on the same `res` after the
-   repair and the TODO at `:378-380` flags the duplicate `teamHandler.Get`; do not add a third.
-   **WITHDRAWN: v19's "hoist alone" (never changed the AI passed) and v21's "resolve alone,
-   ordering is irrelevant" (defeated by the missing fallback). Both the order and the resolved
-   AI must change, together.**
+   **ALSO MANDATORY (D28, §3.5c — the member half of D12): add ONE narrow
+   fallback-bearing resolution and use it at both MCP sites.**
+   (a) Add `resolveActiveAIForMcp(ctx, c *aicall.AIcall) *ai.AI`: current member's AI, else
+   the START member's AI on ANY failure (member absent, AI fetch error, team fetch error),
+   else `nil`. **Do NOT modify `resolveActiveAIIDFromAIcall`** — it has six other callers
+   (`send.go:78`, `:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
+   `start.go:381`) plus a duplicate in `messagehandler/event.go:45`.
+   (b) Reuse branch `start.go:361`: pass its result to `refreshMcpToolMap` instead of the
+   start-member `a` (bound at `:187` via `resolveAI` → `:75`). On `nil`, pass the
+   start-member `a` — **never skip the refresh** (skipping is how v21 preserved the stale map).
+   (c) Dispatch `mcp_tool.go:144`: replace `resolveAI` with it; on `nil` preserve today's
+   start-member outcome rather than `fillFailed` (`:147`). Dispatch must not become more
+   failure-prone than before the fix.
+   (d) Moving the team repair (`start.go:369-373`) above `:361` is **OPTIONAL hygiene**, not
+   the protection: its caller only `Warnf`s (`:371`), so a failed repair leaves
+   `CurrentMemberID` stale anyway.
+   **WITHDRAWN: v19's hoist-alone (no-op), v21's resolve-alone ("ordering is irrelevant",
+   defeated by the missing fallback), and v22's "`resolveTeamMemberAI` already defines
+   never-fail" — that helper skips its fallback loop when the member is present but
+   `aiHandler.Get` fails (`start.go:36`) or the team fetch fails (`send.go:160-163`).**
    Defense in depth (deleted/status only): resolution (`mcp_tool.go:72-88`) and
    dispatch (`:151-168`).
    **Explicitly forbidden:** gating inside `dbhandler.McpServerGet` —
@@ -1381,6 +1421,14 @@ Redis cache (§3.9), because there is no measured signal for it.
    inference presented as fact. The count is therefore a **design-doc precondition**: one
    DB query by 대표님 before the migration lands. It does not change the decision (the
    migration is correct at any count), only the PR body's claim about impact.
+
+   **(iv) Migration-vs-deploy ordering: either order is safe, and the PR body must say so.**
+   If the migration is applied BEFORE the code deploy, a pre-gate `ListTools` against a
+   soft-deleted OAuth row hits `Decrypt` with a zeroed `key_version` and fails with
+   "key version 0 is not configured" (`mcpserverhandler/secret.go:126-129`) — a clean error on
+   a best-effort path, skipped like any other. If AFTER, the gates already make the row inert
+   and the migration only cleans residue. **No ordering constraint is imposed on 대표님;**
+   stating this prevents an implementer from inventing one.
 3. **Naming collision** (`uvx voipbin-mcp` = VoIPBin-as-MCP-server vs
    customer-registered MCP server). **RESOLVED (v15).**
    - **Rename scope: the `ai_overview.rst:681` heading only.** Not `skill.md` or
@@ -1642,7 +1690,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Gating inside `dbhandler.McpServerGet` breaks `Delete`/`Update` read-back and the validator's GET-after-DELETE 200 contract | **High** | §5 item 1 forbids it explicitly; run the full 21-test api-validator mcpserver suite |
 | Credential zeroing as a separate UPDATE is silently no-op'd by the new `tm_delete` predicate (`RowsAffected` ignored at `dbhandler/mcpserver.go:154-156`) | **High** | §5 item 2 resolved: same statement; test that ciphertext columns are actually null after delete |
 | Credential zeroing is irreversible; a mis-fire destroys a live server's secret | **High** | Zero only on the delete path, never on update; unit test that update paths never clear ciphertext columns |
-| No customer-ownership assertion in dispatch; team path resolves the START member's AI before refreshing the MCP tool map, so a reused team AIcall calls the wrong member's MCP servers | **High** | D12 (§3.5) + **D28 (§3.5c)** — fixed by repairing `CurrentMemberID` first (`resolveTeamMemberForSend` hoisted above `:361`), then resolving the active member's AI once for both `start.go:361` and `mcp_tool.go:144`, with a mandatory start-member fallback. v19's hoist-alone and v21's resolve-alone are both withdrawn. Assertions required on both sites plus the stale-member fallback. Residual, stated: TWO paths never refresh the map (send, and reused contact_case via `start.go:589`) — **under-availability**, not exposure (every gate re-reads the row), deferred to PR B |
+| No customer-ownership assertion in dispatch; team path resolves the START member's AI before refreshing the MCP tool map, so a reused team AIcall calls the wrong member's MCP servers | **High** | D12 (§3.5) + **D28 (§3.5c)** — fixed by ONE new narrow `resolveActiveAIForMcp` with an unconditional start-member fallback, used at `start.go:361` and `mcp_tool.go:144`, leaving the shared `resolveActiveAIIDFromAIcall` (6 callers + `messagehandler` twin) untouched. The reorder is optional hygiene, not the protection. v19, v21 and v22 prescriptions all withdrawn. Assertions required on both sites plus the stale-member fallback. Residual, stated: TWO paths never refresh the map (send, and reused contact_case via `start.go:589`) — **under-availability**, not exposure (every gate re-reads the row), deferred to PR B |
 | A stored FOREIGN id freezes the AI for every unrelated edit | Medium | **D25's ownership predicate reconstructs D21's dead end one predicate over.** `storedIDs` exempts only the deleted-row rejection, so a stored foreign id makes every PUT 400, and the picker is customer-scoped (`servicehandler/mcpserver.go:67-70`) so the id is invisible and unremovable in the UI while `ais_detail.js:421` re-submits it unconditionally. **Accepted, not fixed:** today's code validates ownership on every write, so a stored foreign id cannot be created going forward, and the production walk found **zero** AIs holding any `mcp_server_ids`, so no such legacy row is known to exist. The decision stands (ownership must not be exempt); what PR A owes is this sentence in the PR body, so the state is documented rather than discovered by a stuck customer. If one is ever reported, the remedy is a targeted data fix, not an exemption |
 | A deleted server can be resurrected to `active` with a new URL + secret | **High** | D2 |
 | Published docs give a 404 endpoint path | **High** (live) | D5 |
@@ -1666,7 +1714,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | A rejected `mcp_server_ids` leaves an orphaned (POST) or already-mutated (PUT) AI behind and still returns 400 | Medium | D18 (§3.7d); standalone ordering fix — move validation inside `aiHandler.Update` to reuse `chatbot.go:135-139`'s unconditional pre-fetch. (v15 said "alongside D13's signature change"; D13 is VOIDED, so D18 carries no dependency) |
 | Repeat DELETE re-stamps `tm_delete` and re-publishes `EventTypeDeleted`; PR A is rewriting that exact statement for credential zeroing | Medium | D16 (§3.7b); keep repeat DELETE at 200 because DELETE is idempotent by contract and GET still returns the soft-deleted row (v15's "the validator fixture requires it" reason was FALSE — `cleanup_report.py:86` tolerates 404) |
 | Docs assert a `9999-01-01` sentinel and an "(enum string)" type this resource does not have, and say nothing about what DELETE does to tool access | Medium | D19 (§3.7e); same note block D5 edits |
-| Coverage for `mcp_server_ids` on `POST /ais` is Go-unit-only, no end-to-end | Medium | Q4 |
+| Coverage for `mcp_server_ids` on `POST /ais` is Go-unit-only, no end-to-end | Medium | §5 item 4 (deferred behind ETC-18) |
 | `GetValidAccessToken`'s error surface changes once `McpServerUpdate` is gated | Low | Desired behavior; needs an explicit test (§7) |
 | PR A "breaks" a customer whose AI depends on a deleted-but-working server | Low | No customer AI can be *calling* those tools today (§3.1); breakage is limited to stopping the unwanted `ListTools` round trip. Note it in the PR body |
 | Field Sync Points drift recurs | Low | Update all four sites + amend the table in PR C |
@@ -1697,10 +1745,12 @@ ciphertext is unrecoverable and a downgrade that appears to succeed while restor
 would be worse than the bug. `alembic upgrade` is 대표님's step, not this PR's); that **resolution SKIPS and dispatch REFUSES** a server owned by another customer (D12/D26 — both sites, since dispatch alone is dead code per §3.1); that **a reused team AIcall whose `CurrentMemberID`
 differs from `StartMemberID` builds its `mcp_tool_map` from the CURRENT member's
 whitelist** (D28, resolution side — host: `startReferenceTypeConversation` /
-`refreshMcpToolMap`, and `start_test.go:462` already exercises this path); that **a team AIcall whose `CurrentMemberID` is
-NOT present in the team still resolves tools via the START member and does not fail the
-call** (D28(c) — the fallback contract; host: the same two sites. This is the assertion that
-would have caught v21's regression); **and that
+`refreshMcpToolMap`, and `start_test.go:462` already exercises this path); that **BOTH degraded modes at BOTH sites resolve via the
+START member and do not fail the call: (i) `CurrentMemberID` absent from the team, and
+(ii) the current member IS present but its `aiHandler.Get` fails** (D28 fallback contract;
+hosts: `refreshMcpToolMap` via `startReferenceTypeConversation`, and `toolHandleMcpCall`).
+Mode (ii) is mandatory: v22 asserted only (i), which is why its dispatch regression would
+have shipped green); **and that
 dispatch rejects a tool belonging to a server only the START member whitelists** (D28,
 dispatch side — host: `toolHandleMcpCall`. REINSTATED in v21: v19 withdrew this as
 unimplementable, which was true of `resolveAI` and false of the package, since
@@ -1757,7 +1807,7 @@ is a blanket `ProviderGet.mockResolvedValue`, `:320/:380/:398/:431` use
 `expect.objectContaining`, `:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
 asserts only the PUT body. All four form bodies (§4) must be exercised.
 
-## 8. Retrospective (fourteen rounds)
+## 8. Retrospective (fifteen rounds)
 
 **v1** asserted "exactly ONE grep hit" and "no `mcpserver*.rst` files exist." Both
 false. Root cause: a case-sensitive `grep mcp` that missed uppercase `MCP`, written
@@ -1829,6 +1879,21 @@ about it, self-flagged a possible fourth instance — and then created a fifth i
 very decision meant to close the loop.
 
 Lessons now in effect:
+- **A fallback is not "a fallback" until you enumerate the error modes it does NOT cover.**
+  v22 cited `resolveTeamMemberAI` as defining "never fail the call" after reading only its
+  member-absent branch; two other paths return before the fallback loop. **Read every `return`
+  in a function before citing its behaviour as a contract.**
+- **When a prescription offers two mechanisms, check they are not mutually exclusive.** v22's
+  option A needed an RPC its own clause (d) forbade, and option B mutated a helper with six
+  callers and a duplicate copy the document never mentioned. **Offering alternatives hides the
+  cost of each; name ONE mechanism and its price.**
+- **Never let a safety fix make an existing path MORE failure-prone.** v22's dispatch change
+  would have killed every MCP tool call for a team whose current-member AI was briefly
+  unfetchable — a strictly worse outcome than the bug. **For each site a fix touches, write
+  down today's behaviour on each error path and confirm the fix is no worse.**
+- **Say which mechanism is load-bearing.** v22 presented a cosmetic reorder and a
+  load-bearing fallback as co-required, so an implementer could have shipped the decorative
+  half. **When prescribing two changes, state explicitly which one provides the guarantee.**
 - **A helper's error return is part of the prescription.** v21 adopted an existing resolver
   without reading its failure branch: it returns `uuid.Nil` and only warns, with no
   start-member fallback, while the function it replaced had one. **Before prescribing "use
@@ -1838,7 +1903,7 @@ Lessons now in effect:
   and both have now been wrong.** Each asserts that surrounding code does not matter. Three
   instances (D25, D28-v19, D28-v21) came from exactly these two sentences. **When tempted to
   write either, name the neighbouring statement you checked.**
-- **Five consecutive rounds found the defect inside the fix for the previous one.** The
+- **Six consecutive rounds found the defect inside the fix for the previous one.** The
   inventory bullet is part of the fix: v21 corrected §3.5c and left §2's D28 bullet still
   prescribing the withdrawn no-op, which is the first thing a design-doc author reads.
   **When a resolution changes, grep the defect id and update every occurrence, then re-read
@@ -1854,7 +1919,7 @@ Lessons now in effect:
   said it is what every other such site uses. **When an assertion looks unimplementable,
   grep for the capability before deleting the test — deleting a correct test is worse than
   leaving it failing.**
-- **Four consecutive rounds found an instance in the edit that closed the previous one.**
+- **Six consecutive rounds found an instance in the edit that closed the previous one.**
   The fix-up edit is now the highest-risk region of any revision, because it is written
   under the impression that the hard thinking is already done. **Review your own newest
   edit first and hardest, against code, not against the paragraph you just wrote.**
