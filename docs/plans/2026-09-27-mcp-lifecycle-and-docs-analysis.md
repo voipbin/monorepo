@@ -2,7 +2,7 @@
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v11, Analysis Review Loop round 9 pending
+Status: v12, Analysis Review Loop round 9 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -13,10 +13,13 @@ unconditionally) plus 3 stale sentences; adversarial found the **fourth instance
 the recurring failure mode in Q5 itself (D22, §3.12b) and a missing pre-write read for
 Q9's transition gate (§3.12c). All verified and folded in.
 v9: 대표님 resolved Q11 and Q6. v10: 대표님 resolved Q5 and Q9.
-**v11 status: NOT ready for the design doc.** §5 Q5's sub-decisions (i) consume-path
-type gate, (ii) PR C Insight-transition cleanup, (iii) production count of Insight AIs
-holding a whitelist, are open and change what §7 asserts. v10's header claimed "no
-open question blocks the design doc"; that claim was premature and is retracted.
+v11: round-8 corrections + D22 + Q5(iii) production count measured (zero affected rows).
+v12: 대표님 resolved Q5(i) consume-path type gate and Q5(ii) PR C Insight-transition
+cleanup; both gate points verified to already hold the AI object (no extra read, no
+signature change). **§5 Q1-Q11 and all Q5 sub-decisions are now decided.** Remaining §5
+items are implementation details for the design doc. Round 9 must confirm this before
+the design doc starts — v10 made the same readiness claim prematurely and round 8
+refuted it.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -56,6 +59,8 @@ separately.
 | Q8 | Add a prune loop that strips deleted ids from every affected AI? | **No.** "비쌀려나?" → no transaction on delete, un-indexed JSON column, one `ai_updated` webhook per affected AI, and skip-not-reject already resolves D21 alone |
 | Q9 | D13: add an AI-type parameter to `ValidateMcpServerIDs`? | **Yes, add it.** "Q5. 추가하도록 하자." Deny-by-default `default:` branch, per `AllowedToolNames` precedent |
 | Q10 | D17: reject `auth_type: "oauth"` on POST/PUT? | **Yes, reject.** "좋아, 네 제안대로 가자" Gate the write handlers, not `IsValid()`; reject the transition INTO oauth, not the value |
+| Q11 | Where does the Insight AI-type gate live? | **Both the write path AND the consume path** ("네 제안대로 진행해보자"). A write-time-only gate enforces nothing for rows that already hold a whitelist, because Q8 never prunes (D22a). `mcp_tool.go:72` skips, `:151` refuses |
+| Q12 | Does PR C clear `mcpServerIds` when an AI is flipped to Insight? | **Yes**, at `ais_detail.js:738-743` and `ais_create.js:274`, plus hide the MCP card for Insight. Without it PR A's gate 400s every save of a flipped AI, reproducing D21 (D22b) |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -106,10 +111,12 @@ separately.
   for any unrelated edit; without the reject, attaching a deleted server fails
   silently. This is a PR A ↔ PR C cross-boundary defect that neither PR sees alone.
 - **D22** Q5's Insight gate, as a write-time-only check, **enforces nothing for rows
-  that already store `mcp_server_ids`** (the consume path has no type check at all)
-  while **freezing any AI flipped to Insight in square-admin** (the form clears tools
-  but not MCP servers, and re-submits the whitelist unconditionally). Fourth instance
-  of this document's recurring failure mode. See §3.12b; §5 Q5(i)(ii)(iii) open.
+  that already store `mcp_server_ids`** (the consume path has no type check) while
+  **freezing any AI flipped to Insight in square-admin**. Fourth instance of this
+  document's recurring failure mode. §3.12b. **RESOLVED (§5 Q5 i/ii/iii):** the type
+  gate lands at BOTH the write path and the consume path (`mcp_tool.go:72` skip,
+  `:151` refuse), and PR C clears `mcpServerIds` on the Insight transition at
+  `ais_detail.js:738-743` + `ais_create.js:274` and hides the MCP card for Insight.
 
 **PR C — square-admin parity (`voipbin/monorepo-javascript`):**
 - **D8** `mcp_server_ids` is settable only on the AI detail page, though the
@@ -642,16 +649,6 @@ responses (`mcpservers_list.js:86`, `mcpservers_detail.js:266`) and does not con
 mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 (`mcpservers_detail.js:38`), so §5 Q2's `has_secret` flip breaks nothing.
 
-### 3.13a Verified clean in round 6 — recorded so PR A does not over-scope
-
-| Area | Finding |
-|---|---|
-| SSRF / URL validation | `ValidateURL` IS applied on both write paths: `mcpserverhandler/handler.go:38` (Create) and `:146-150` (Update, under `if url != nil`). Literal private/loopback/link-local addresses are rejected (`ssrf.go:31-57`, `rejectDisallowedIP:63-77`), and the DNS-rebinding case is closed at dial time by `controlRejectDisallowedAddr` (`ssrf.go:117-133`) via the shared guarded client (`mcptoolhandler/client.go:140-144`). **Nothing for PR A to add** beyond §5 Q10's precedence fix |
-| Key rotation | **No rotation or re-encryption job exists anywhere in the repo.** Rotation is config-side and decrypt-by-row-version (`mcpserverhandler/secret.go:123-130`, `NewSecretCrypto:79-89`); nothing iterates rows, so zeroed rows would be encountered by no job. Credential zeroing is safe on this axis |
-| Caller-set completeness | Full non-test, non-mock enumeration. `db.McpServerUpdate`: exactly 3 callers (`mcpserverhandler/handler.go:206`, `mcpoauthhandler/access_token.go:108`, `mcpoauthhandler/complete.go:126`) — all named in §5 Q1/§6. `db.McpServerDelete`: exactly 1 (`handler.go:226`) — named. `db.McpServerGet`: 10; the three not named in this analysis (`handler.go:82`, `complete.go:129`, `complete.go:161`) are post-write read-backs of a row the same function just wrote, harmless once `:126` is gated. **No caller of consequence is unmentioned** |
-| Concurrency | No transaction or row lock on any mcpserver path — `McpServerDelete` is a bare UPDATE, unlike `dbhandler/ai.go:243`+`:294` and `aipromptproposal.go:227`+`:253` which use `BeginTx` + `FOR UPDATE`. For delete-vs-tool-call, the fail-closed re-read per call (`client.go:191`, `:214`) is **sufficient**: the residual window is at most one already-dispatched outbound request. **No transaction warranted.** State this bound in the PR body, since `mcpservers_detail.js:496` promises immediacy |
-| Tool-path error surface | `toolHandleMcpCall` converts every failure into a generic `fillFailed(...)` tool result (`mcp_tool.go:137-174`), so gating never leaks a status code to a customer through the AI path |
-
 ### 3.12b D22: Q5's Insight gate enforces nothing where it matters and freezes AIs elsewhere. CONFIRMED. BLOCKER.
 
 **This is the FOURTH instance of this document's recurring failure mode** (after D15,
@@ -698,7 +695,8 @@ customer flipping an existing AI to Insight sends `type: "insight"` plus a non-e
 configuration" (`:445`). The dead end is identical to D21 and lands in the repo PR A
 does not touch.
 
-Resolution: §5 Q5 sub-decisions (i), (ii), (iii).
+Resolution: §5 Q5 sub-decisions (i), (ii), (iii) — **all three RESOLVED in v12**
+(consume-path type gate + PR C Insight-transition cleanup + production count of zero).
 
 ### 3.12c Q9's transition gate needs a read that does not exist, and its frontend safety is accidental
 
@@ -743,6 +741,16 @@ relying on the form's option list.
   passes through `mcpserverhandler`, so the decision is unchanged, but §7 must assert
   both survive the gate.
 
+### 3.13a Verified clean in round 6 — recorded so PR A does not over-scope
+
+| Area | Finding |
+|---|---|
+| SSRF / URL validation | `ValidateURL` IS applied on both write paths: `mcpserverhandler/handler.go:38` (Create) and `:146-150` (Update, under `if url != nil`). Literal private/loopback/link-local addresses are rejected (`ssrf.go:31-57`, `rejectDisallowedIP:63-77`), and the DNS-rebinding case is closed at dial time by `controlRejectDisallowedAddr` (`ssrf.go:117-133`) via the shared guarded client (`mcptoolhandler/client.go:140-144`). **Nothing for PR A to add** beyond §5 Q10's precedence fix |
+| Key rotation | **No rotation or re-encryption job exists anywhere in the repo.** Rotation is config-side and decrypt-by-row-version (`mcpserverhandler/secret.go:123-130`, `NewSecretCrypto:79-89`); nothing iterates rows, so zeroed rows would be encountered by no job. Credential zeroing is safe on this axis |
+| Caller-set completeness | Full non-test, non-mock enumeration. `db.McpServerUpdate`: exactly 3 callers (`mcpserverhandler/handler.go:206`, `mcpoauthhandler/access_token.go:108`, `mcpoauthhandler/complete.go:126`) — all named in §5 Q1/§6. `db.McpServerDelete`: exactly 1 (`handler.go:226`) — named. `db.McpServerGet`: 10; the three not named in this analysis (`handler.go:82`, `complete.go:129`, `complete.go:161`) are post-write read-backs of a row the same function just wrote, harmless once `:126` is gated. **No caller of consequence is unmentioned** |
+| Concurrency | No transaction or row lock on any mcpserver path — `McpServerDelete` is a bare UPDATE, unlike `dbhandler/ai.go:243`+`:294` and `aipromptproposal.go:227`+`:253` which use `BeginTx` + `FOR UPDATE`. For delete-vs-tool-call, the fail-closed re-read per call (`client.go:191`, `:214`) is **sufficient**: the residual window is at most one already-dispatched outbound request. **No transaction warranted.** State this bound in the PR body, since `mcpservers_detail.js:496` promises immediacy |
+| Tool-path error surface | `toolHandleMcpCall` converts every failure into a generic `fillFailed(...)` tool result (`mcp_tool.go:137-174`), so gating never leaks a status code to a customer through the AI path |
+
 ### 3.14 Other surfaces
 
 | Surface | Finding |
@@ -773,7 +781,15 @@ AI-edit `:753-768` (both verified to carry `tool_names` and omit
 `sidebar.js` has no `mcpservers` fetch of its own, so the
 `ProviderGet('mcpservers?page_size=100')` call at `ais_detail.js:373-377` (a bare
 `useEffect`, token-scoped, no extra customer context needed) must be reused there.
-Independent of A; may proceed in parallel.
+**Plus the Insight-transition cleanup (§5 Q5(ii), D22(b)) — a FIFTH item that is not
+a form body:** clear `mcpServerIds` beside the existing `setSelectedTools([])` at
+`ais_detail.js:738-743` and `ais_create.js:274`, and gate the MCP Servers card on
+`aiType !== 'insight'` (`ais_detail.js:1238`; same idiom as
+`AIEngineFields.js:300`/`:320` and `sidebar.js:1500`). Without this, PR A's type gate
+400s every save of an AI flipped to Insight.
+**No longer independent of A:** the Insight cleanup only matters because PR A adds the
+gate, so PR C must land with or after A. The rest of PR C may still proceed in
+parallel.
 
 **PR B — deferred to its own analysis.** PR A remains its hard prerequisite: PR B
 is what makes `CallTool` reachable, so landing it before PR A's gates would turn
@@ -883,27 +899,41 @@ Redis cache (§3.9), because there is no measured signal for it.
    would be the honest alternative, but nothing in the codebase supports it today and
    inventing one here is out of PR A's scope.
 
-   **BLOCKING sub-decisions added in v11 — see §3.12b (D22). A write-time gate alone
-   both fails to enforce this policy and freezes existing AIs:**
-   - **(i) Does the consume path also gate on `a.Type`?** Without it, Q5 enforces
-     nothing for any row that already stores `mcp_server_ids`, because Q6 deliberately
-     never prunes. Recommend YES — gate `mcp_tool.go:72` (resolution) and `:151`
-     (dispatch) on the AI type, mirroring the `tm_delete` gates D1 already puts there.
-     This is where revocation is actually enforced throughout this document; the policy
-     must live in the same place.
-   - **(ii) PR C must clear `mcpServerIds` on the Insight transition and hide the MCP
-     card for `aiType === 'insight'`.** Otherwise the gate 400s every save of an AI
-     flipped to Insight (§3.12b). This adds a PR C item beyond §4's current four form
-     bodies.
+   **RESOLVED sub-decisions (v12, 대표님 확정 — "네 제안대로 진행해보자"). See §3.12b
+   (D22).** A write-time gate alone both fails to enforce this policy and freezes
+   existing AIs, so all three parts ship together:
+   - **(i) YES — the consume path gates on the AI type too.** This is where revocation
+     is actually enforced throughout this document, so the Insight policy lives in the
+     same place as D1's `tm_delete` gates. **Verified reachable (v12):** both gate
+     points already hold the AI object, so no extra read and no signature change is
+     needed — `resolveTools(ctx context.Context, a *ai.AI)` (`mcp_tool.go:52`) has
+     `a.Type` in hand before the `for _, serverID := range a.McpServerIDs` loop at
+     `:72`, and `toolHandleMcpCall` already resolves `tmpAI` at `:144` before the
+     whitelist check at `:151`, so `tmpAI.Type` is available there.
+     Follow the surrounding convention at each site: resolution **skips** (the loop is
+     documented best-effort at `:44-51` — a skipped server must not fail the whole
+     resolution), dispatch **refuses** with the existing generic
+     `fillFailed(res, errMcpToolCallFailed("mcp tool is no longer available"))` so no
+     new customer-visible error string appears.
+   - **(ii) YES — PR C clears `mcpServerIds` on the Insight transition and hides the
+     MCP card for `aiType === 'insight'`.** Otherwise the gate 400s every save of an AI
+     flipped to Insight (§3.12b). **Two transition sites, not one (v12):**
+     `ais_detail.js:738-743` and `ais_create.js:274` both already clear
+     `setSelectedTools([])` on the flip — add the `mcpServerIds` reset beside it. For
+     the card, follow the established pattern in `AIEngineFields.js:300` (`{aiType ===
+     'insight' && …}` caption) and `:320` (`aiType === 'insight' ? INSIGHT_TOOLS :
+     AVAILABLE_TOOLS`); `teamgraph/sidebar.js:1500` uses the same idiom
+     (`aiData?.type === 'insight' ? …`) and must get it when PR C adds the field there.
+     This extends PR C beyond §4's four form bodies.
    - **(iii) Production count — MEASURED in v11, risk is zero today.** Full cursor walk
      of `GET /v1.0/ais` on `api.voipbin.net` (2026-09-27): **5 AIs total, all
      `type: normal`, and ZERO AIs (of any type) hold a non-empty `mcp_server_ids`.**
      So no existing row is frozen by the Insight gate, and D22(a)'s
      "existing Insight AI keeps calling its servers" has no instance in production
-     today. This removes the migration risk but NOT sub-decisions (i) and (ii): (i)
-     still governs whether the policy is enforceable at all once customers do adopt
-     the feature, and (ii) still governs the flip-to-Insight path, which any customer
-     can trigger at any time without pre-existing data.
+     today. This removes the migration risk but does NOT make (i) or (ii) optional:
+     (i) governs whether the policy is enforceable at all once customers adopt the
+     feature, and (ii) governs the flip-to-Insight path, which any customer can
+     trigger at any time with no pre-existing data.
 
    **Coupled decision (D18): does validation move AHEAD of the AI write?** Today
    `ValidateMcpServerIDs` runs after `aiHandler.Create`/`Update` has committed
@@ -1074,7 +1104,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | OAuth Complete has no re-check (TOCTOU between Start and Complete) | Medium | D3; gate both independently |
 | PR A "corrects" the `openapi.yaml`/`ai_struct_ai.rst` LLM-merging text that PR B will make true | Medium | Leave D7's text alone in PR A; only fix the `,omitempty`/"Defaults to `[]`" contradiction (§5 Q8) |
 | Dead config flag + design doc justifying another decision by citing a nonexistent cache | Medium | D6; correct `2026-09-11-…:466-467`, `:705`, `:750-754` |
-| Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | **High** | D13 / D22 (§3.12b) — §5 Q5 resolved to add the gate, but a write-time gate alone enforces nothing for existing rows (no type check at `mcp_tool.go:72`/`:151`) AND freezes any AI flipped to Insight in square-admin. Sub-decisions (i)(ii)(iii) still open |
+| Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | **High** | D13 / D22 (§3.12b) — **RESOLVED (§5 Q5 i/ii/iii):** gate at the write path AND the consume path (`mcp_tool.go:72` skip / `:151` refuse), PR C clears `mcpServerIds` on the Insight flip and hides the card. Production count measured at **zero** affected rows, so no migration needed |
 | Q9's transition gate has no pre-write row to compare against, and survives square-admin only because `AUTH_TYPE_OPTIONS` omits oauth and `:359-366` renders it read-only | Medium | §3.12c — one pre-write `McpServerGet` must serve D20, §3.7g and Q9 together; assert transition semantics in a backend test, not via the form's option list |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
 | An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 Q11**: skip already-stored ids, reject only newly added ones. Both directions must be unit-tested (§7) |
@@ -1115,9 +1145,11 @@ deny-by-default branch (§5 Q5 — this is the regression that would 400 every
 type-omitting PUT, including `test_ai_lifecycle.py:38-48`/`:96-106`); a test that a
 genuinely unknown `Type` denies rather than falling through to the `Normal` set
 (mirroring `AllowedToolNames`' `default:` at `models/ai/tool_validation.go:42-45`); and
-**if Q5(i) adopts the consume-path gate, tests that an Insight AI's stored whitelist is
-skipped in resolution and refused in dispatch** — without those, D22(a) means the
-write-time test passes while the policy is unenforced. **Q9 (D17) now confirmed:** that
+**per Q5(i) the consume-path gate: an Insight AI's stored whitelist is SKIPPED in
+`resolveTools` (built-ins and other servers still resolve, per the best-effort contract
+at `mcp_tool.go:44-51`) and REFUSED in `toolHandleMcpCall` with the existing generic
+"mcp tool is no longer available"** — this is the assertion that makes the policy real
+for rows that predate the deploy, since Q6 never prunes. **Q9 (D17) now confirmed:** that
 POST/PUT setting `auth_type: "oauth"` is rejected; that a PUT re-submitting an
 unchanged `auth_type: "oauth"` on an OAuth-completed row still succeeds (transition
 gate, not a value gate — a value gate 400s every save from
