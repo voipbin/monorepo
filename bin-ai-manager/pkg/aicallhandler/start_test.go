@@ -7,11 +7,14 @@ import (
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
+	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/teamhandler"
@@ -467,13 +470,15 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 	expiredTM := time.Now().Add(-25 * time.Hour)
 
 	type mocks struct {
-		util    *utilhandler.MockUtilHandler
-		req     *requesthandler.MockRequestHandler
-		notify  *notifyhandler.MockNotifyHandler
-		db      *dbhandler.MockDBHandler
-		ai      *aihandler.MockAIHandler
-		team    *teamhandler.MockTeamHandler
-		message *messagehandler.MockMessageHandler
+		util      *utilhandler.MockUtilHandler
+		req       *requesthandler.MockRequestHandler
+		notify    *notifyhandler.MockNotifyHandler
+		db        *dbhandler.MockDBHandler
+		ai        *aihandler.MockAIHandler
+		team      *teamhandler.MockTeamHandler
+		message   *messagehandler.MockMessageHandler
+		mcpServer *mcpserverhandler.MockMcpServerHandler
+		mcpTool   *mcptoolhandler.MockMcpToolHandler
 	}
 
 	tests := []struct {
@@ -494,6 +499,13 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 		// but expectErrSubstring (when set) MUST be a substring of err.Error().
 		expectErr          bool
 		expectErrSubstring string
+
+		// wireMcpHandlers — when true, the MCP server/tool handlers are
+		// injected so refreshMcpToolMap actually runs and the sub-case can
+		// assert WHICH AI's whitelist reaches the tool map. Leaving them nil
+		// is what let the reuse half of D28 be re-introduced with every test
+		// still passing.
+		wireMcpHandlers bool
 
 		// expectIdleExpiredInc — when true, the idle-expired counter
 		// (promAIcallIdleExpiredTotal) MUST increment by exactly 1 across
@@ -1086,6 +1098,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 		{
 			name: "team smoke: reuse + alive previous pipecat",
 
+			wireMcpHandlers: true,
+
 			ai: &ai.AI{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
@@ -1105,6 +1119,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				teamID := uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef")
 				memberID := uuid.FromStringOrNil("a5555555-0001-11f0-9999-999999999999")
 				memberAIID := uuid.FromStringOrNil("a6666666-0001-11f0-9999-999999999999")
+				curServerID := uuid.FromStringOrNil("a8888888-0001-11f0-9999-999999999999")
 				existing := &aicall.AIcall{
 					Identity: commonidentity.Identity{
 						ID:         existingAIcallID,
@@ -1161,10 +1176,53 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				// Twice: once for resolveActiveAIForMcp (the MCP tool map must be built
 				// from the CURRENT member's whitelist, not the start member's), once for
 				// resolveTeamMemberForSend's engine-model override.
+				// The CURRENT member's AI whitelists curServerID. The start
+				// member's AI (never fetched on this path) whitelists a
+				// different server, so the tool map below proves which AI
+				// governed the refresh.
 				m.ai.EXPECT().Get(ctx, memberAIID).Return(&ai.AI{
-					Identity:    commonidentity.Identity{ID: memberAIID},
-					EngineModel: "grok.grok-3", // resolved engine model overrides the stale snapshot
+					Identity:     commonidentity.Identity{ID: memberAIID},
+					EngineModel:  "grok.grok-3", // resolved engine model overrides the stale snapshot
+					McpServerIDs: []uuid.UUID{curServerID},
 				}, nil).Times(2)
+
+				// refreshMcpToolMap -> resolveTools, driven by whichever AI the
+				// reuse branch chose. Only the CURRENT member's server is set
+				// up: if the start member's AI governed, resolveTools would ask
+				// for a server nobody expects and gomock would fail.
+				m.mcpServer.EXPECT().Get(ctx, curServerID).Return(&mcpserver.McpServer{
+					Identity: commonidentity.Identity{ID: curServerID},
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				m.mcpTool.EXPECT().ListTools(ctx, curServerID).Return([]mcptoolhandler.McpTool{
+					{Name: "cur_tool"},
+				}, nil)
+				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, existingAIcallID, gomock.Any()).
+					DoAndReturn(func(_ context.Context, _ uuid.UUID, fields map[aicall.Field]any) error {
+						metadata, ok := fields[aicall.FieldMetadata].(map[string]any)
+						if !ok {
+							t.Errorf("metadata field missing from the tool-map update")
+							return nil
+						}
+						toolMap, ok := metadata[aicall.MetaKeyMcpToolMap].(map[string]aicall.McpToolRef)
+						if !ok {
+							t.Errorf("mcp tool map missing from the metadata")
+							return nil
+						}
+						// D28: the map MUST be built from the CURRENT member's
+						// whitelist. A start-member map would be empty here.
+						found := false
+						for _, ref := range toolMap {
+							if ref.ServerID == curServerID {
+								found = true
+							}
+						}
+						if !found {
+							t.Errorf("tool map was not built from the current member's server. want: %s, got: %v", curServerID, toolMap)
+						}
+						return nil
+					})
 
 				// resolveActiveAIForMcp also walks the team to reach the current member.
 				m.team.EXPECT().Get(ctx, teamID).Return(&team.Team{
@@ -1211,6 +1269,121 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				TMUpdate:        &freshTM,
 				PipecatcallID:   uuid.FromStringOrNil("a3333333-0099-11f0-9999-999999999999"),
 				CurrentMemberID: uuid.FromStringOrNil("a5555555-0001-11f0-9999-999999999999"),
+			},
+		},
+		{
+			// D28 degraded: the resolver cannot reach the team, so it returns
+			// nil and the reuse branch keeps the start-member `a`. The refresh
+			// MUST still run: skipping it would leave a previous member's stale
+			// tool map in place, which is the state D28 exists to prevent.
+			name: "team degraded: team unfetchable — refresh still runs with the start-member AI",
+
+			wireMcpHandlers: true,
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+				},
+				STTLanguage:  "en-US",
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("a9999999-0001-11f0-9999-999999999999")},
+			},
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+			activeflowID:   uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
+			referenceID:    uuid.FromStringOrNil("d184c87c-30dd-11f0-8bbf-d773a2d31d73"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existingAIcallID := uuid.FromStringOrNil("a3333333-0002-11f0-9999-999999999999")
+				oldPCC := uuid.FromStringOrNil("a3333333-0098-11f0-9999-999999999999")
+				newPCC := uuid.FromStringOrNil("a4444444-0002-11f0-9999-999999999999")
+				teamID := uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef")
+				startServerID := uuid.FromStringOrNil("a9999999-0001-11f0-9999-999999999999")
+				existing := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         existingAIcallID,
+						CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+					},
+					AssistanceType:  aicall.AssistanceTypeTeam,
+					AssistanceID:    teamID,
+					AIEngineModel:   "openai.gpt-5-nano",
+					Status:          aicall.StatusProgressing,
+					TMUpdate:        &freshTM,
+					PipecatcallID:   oldPCC,
+					CurrentMemberID: uuid.FromStringOrNil("a5555555-0002-11f0-9999-999999999999"),
+				}
+				pipecatcall := &pmpipecatcall.Pipecatcall{
+					Identity: commonidentity.Identity{ID: oldPCC},
+					HostID:   "host-degraded",
+				}
+				responsePC := &pmpipecatcall.Pipecatcall{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("8f97dd3a-b664-11f0-b2ae-0b46e18cb363"),
+					},
+				}
+
+				m.req.EXPECT().FlowV1VariableGet(ctx, gomock.Any()).Return(&fmvariable.Variable{
+					Variables: map[string]string{
+						"voipbin.conversation_message.text": "degraded user message.",
+					},
+				}, nil)
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existing, nil)
+
+				m.req.EXPECT().PipecatV1PipecatcallGet(gomock.Any(), oldPCC).Return(pipecatcall, nil)
+				m.req.EXPECT().PipecatV1Ping(gomock.Any(), "host-degraded").Return(nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminate(gomock.Any(), "host-degraded", oldPCC).Return(nil, nil)
+
+				m.util.EXPECT().UUIDCreate().Return(newPCC)
+				m.db.EXPECT().AIcallUpdateIfActive(ctx, existingAIcallID, map[aicall.Field]any{
+					aicall.FieldPipecatcallID: newPCC,
+					aicall.FieldActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
+				}).Return(int64(1), nil)
+				// Twice: once for the reuse branch's re-read, once inside
+				// refreshMcpToolMap before it writes the tool map back.
+				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil).Times(2)
+
+				// Every teamHandler.Get on this path fails: resolveActiveAIForMcp,
+				// resolveTeamMemberForSend and resolveActiveAIIDFromAIcall each
+				// call it once and each degrades independently.
+				m.team.EXPECT().Get(ctx, teamID).Return(nil, fmt.Errorf("team backend down")).AnyTimes()
+
+				// The refresh runs anyway, governed by the start-member `a`.
+				m.mcpServer.EXPECT().Get(ctx, startServerID).Return(&mcpserver.McpServer{
+					Identity: commonidentity.Identity{ID: startServerID},
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				m.mcpTool.EXPECT().ListTools(ctx, startServerID).Return([]mcptoolhandler.McpTool{
+					{Name: "start_tool"},
+				}, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, existingAIcallID, gomock.Any()).Return(nil)
+
+				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "degraded user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(20), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.req.EXPECT().PipecatV1PipecatcallStart(
+					ctx,
+					existing.PipecatcallID,
+					existing.CustomerID,
+					existing.ActiveflowID,
+					pmpipecatcall.ReferenceTypeAICall,
+					existing.ID,
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+			},
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a3333333-0002-11f0-9999-999999999999"),
+					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+				},
+				AssistanceType: aicall.AssistanceTypeTeam,
+				AssistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+				// The team was unreachable, so the stale snapshot survives.
+				AIEngineModel:   "openai.gpt-5-nano",
+				Status:          aicall.StatusProgressing,
+				TMUpdate:        &freshTM,
+				PipecatcallID:   uuid.FromStringOrNil("a3333333-0098-11f0-9999-999999999999"),
+				CurrentMemberID: uuid.FromStringOrNil("a5555555-0002-11f0-9999-999999999999"),
 			},
 		},
 		{
@@ -1403,6 +1576,9 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				ai:      aihandler.NewMockAIHandler(mc),
 				team:    teamhandler.NewMockTeamHandler(mc),
 				message: messagehandler.NewMockMessageHandler(mc),
+
+				mcpServer: mcpserverhandler.NewMockMcpServerHandler(mc),
+				mcpTool:   mcptoolhandler.NewMockMcpToolHandler(mc),
 			}
 
 			h := &aicallHandler{
@@ -1413,6 +1589,16 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				aiHandler:      m.ai,
 				teamHandler:    m.team,
 				messageHandler: m.message,
+			}
+
+			// refreshMcpToolMap returns early unless BOTH MCP handlers are
+			// set. Leaving them nil is what let the reuse half of D28 be
+			// re-introduced without any test failing, so a sub-case that
+			// asserts which AI governs the tool map must wire them; the
+			// others keep them nil and are unaffected.
+			if tt.wireMcpHandlers {
+				h.mcpServerHandler = m.mcpServer
+				h.mcptoolHandler = m.mcpTool
 			}
 			ctx := context.Background()
 

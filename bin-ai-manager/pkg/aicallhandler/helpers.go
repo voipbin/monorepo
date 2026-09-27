@@ -176,12 +176,17 @@ func (h *aicallHandler) interruptPreviousPipecatcall(ctx context.Context, pcID u
 // uuid.Nil would make the MCP paths fail for a team whose current member is
 // momentarily unresolvable -- strictly worse than today.
 //
-// The fallback is therefore unconditional: on ANY failure (member absent from the
-// team, member's AI unfetchable, team unfetchable) it degrades to the START
-// member's AI, which is the session's defined state whenever CurrentMemberID
-// cannot be resolved (the send path persists exactly that repair). It returns nil
-// only when the start member is unusable too; callers must then keep their
-// existing behaviour rather than failing the call.
+// The start-member fallback is therefore attempted, but only where it can change
+// the outcome. resolveTeamMemberAI already retries the start member when the
+// current member is absent from the roster, so this function retries it only for
+// the one mode that callee misses: the member IS on the roster and its AI fetch
+// failed. The retry is skipped when it would re-issue an identical request --
+// either member off the roster, or both members pointing at the same AI id (which
+// teamhandler permits: it requires member ids to be unique, never AI ids).
+//
+// A nil return therefore means no further attempt could have succeeded, so callers
+// must fail closed rather than substituting another AI. It also means this function
+// subsumes resolveAI on every path: do not add a resolveAI fallback behind it.
 //
 // Deliberately separate from resolveActiveAIIDFromAIcall: that helper has six
 // other callers driving message attribution, plus a twin in messagehandler, and

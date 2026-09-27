@@ -548,12 +548,12 @@ func Test_cutBeforeSessionStart(t *testing.T) {
 	}
 }
 
-// Test_aicallHandler_resolveActiveAIForMcp pins the fallback contract that three
-// successive versions of the D28 analysis got wrong: the MCP paths must resolve the
-// CURRENT team member's AI, and on EVERY failure mode degrade to the START member
-// rather than returning nothing. resolveTeamMemberAI alone is not enough -- it
-// reaches its own fallback loop only when the member is absent from the team, and
-// errors out when the member is present but its AI is unfetchable.
+// Test_aicallHandler_resolveActiveAIForMcp pins the contract that successive
+// versions of the D28 analysis got wrong: the MCP paths must resolve the CURRENT
+// team member's AI, and must fall back to the START member in the one mode
+// resolveTeamMemberAI misses (member on the roster, its AI unfetchable) while
+// never re-issuing a request that already failed. nil means fail closed, so the
+// cases below assert both the resolved AI and the exact fetch count.
 func Test_aicallHandler_resolveActiveAIForMcp(t *testing.T) {
 	aiID := uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001")
 	teamID := uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000002")

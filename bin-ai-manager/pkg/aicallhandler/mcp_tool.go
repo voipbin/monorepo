@@ -142,14 +142,17 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 	}
 
 	// The whitelist that governs this call is the CURRENT team member's.
-	// resolveActiveAIForMcp already subsumes resolveAI: for AssistanceTypeAI both
-	// issue the same single fetch, for a team it tries the current member AND then
-	// the start member that resolveAI alone would have tried, and for any other
-	// type both refuse. So a nil here means resolveAI would also have failed, and
-	// retrying it would only double an RPC on the LLM's critical path.
+	// resolveActiveAIForMcp subsumes resolveAI on every path: for AssistanceTypeAI
+	// both issue the same single fetch, for a team it tries the current member and
+	// then -- where a retry could differ -- the start member that resolveAI alone
+	// would have tried, and for any other type both refuse. So a nil here means
+	// resolveAI would have failed too; falling back to it would double an RPC on
+	// the LLM's critical path and change nothing. Fail closed instead.
 	tmpAI := h.resolveActiveAIForMcp(ctx, c)
 	if tmpAI == nil {
-		log.Errorf("Could not resolve the ai for the mcp tool call.")
+		// Warn, not Error: the cause is already logged by the resolver, this is a
+		// per-call recoverable refusal, and the neighbouring gates below warn too.
+		log.Warnf("Could not resolve the ai for the mcp tool call. refusing.")
 		fillFailed(res, errMcpToolCallFailed("could not retrieve AI configuration"))
 		return res
 	}
