@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v32, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v33, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v32, Analysis Review Loop round 24 pending
+Status: v33, Analysis Review Loop round 25 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -40,8 +40,9 @@ columns) but caught a corrupted paragraph and four stale references. Adversarial
 member half, which has the identical shape — diagnosed, risk-rowed, and never given an
 enforcement point, with its only promised test on the dead dispatch path.
 
-**v16 — the five unconfirmed "Recommend …" items (§5 items 3, 5 and 10 under the numbering
-in force at v16; §5 was renumbered in v31) are now
+**v16 — the five unconfirmed "Recommend …" items (written at v16 as §5 Q1, Q3, Q4, Q7, Q8,
+whose §5 ordinals were then 1, 3, 4, 7, 8; §5 was renumbered in v31, and those same five items
+are 1, 3, 4, 10, 11 today) are now
 closed** by 대표님 ("a로 가자" for the MCP link, recommendations accepted for the rest).
 Investigating §5 item 3 surfaced **D24**: the docs advertise a stale third-party fork while
 `uvx voipbin-mcp` installs the official repo — a published-falsehood defect the v14
@@ -113,6 +114,17 @@ path built the handler without MCP mocks so `refreshMcpToolMap` returned at its 
 reading the AI. The fact-checker found §5 item 1(c) still prescribing the deleted fallback, 7
 surviving pre-fix `mcp_tool.go` anchors, three stale subtest counts, and §3.5c's heading still
 announcing a live BLOCKER. See §3.5c v27.
+
+Round 24: **both tracks CHANGES_REQUESTED; the Go code clean for a fifth consecutive round.**
+Sixteen mutations across the two reviewers, sixteen caught, one further mutant correctly judged
+equivalent. One reviewer confirmed all 22 anchors pin uniquely within ±5 lines; the other
+re-verified §5 item 1 clause by clause, both non-D28 halves of §7, and four fresh defects
+(D3, D6, D14, D21) against real code. Each found one blocking defect the other missed, and both
+had been introduced by the round-23 fix commit: a bare `:N` carried from an earlier line landing
+on a blank line in §7, and line 43's v16 ordinals replaced with wrong ones while being labelled.
+Both travelled the same two holes as every earlier recurrence — carried continuations checked
+only for range, and ordinals written in a form the regex cannot see. Both are now mechanically
+checked; thirteen sabotage experiments, thirteen caught. See §3.5c v33.
 
 Round 23: **both tracks CHANGES_REQUESTED; the Go code clean for a fourth consecutive round.**
 Sixteen mutations, sixteen caught (one further mutant judged equivalent, not a gap). Priority-1
@@ -522,12 +534,12 @@ itself in §3.3), `complete.go:68` guards the state row, and
 surface. The accurate and still-sufficient claim is that it is **the only ownership check
 on the AI-whitelist → consume path**. Corrected wherever it appeared.
 
-### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v32 notes at the end of this section; the NEWEST is v32.**
+### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v33 notes at the end of this section; the NEWEST is v33.**
 
 > **Reading order.** Everything between here and the v24 note is the ORIGINAL DIAGNOSIS,
 > written in the present tense while the defect was live, and kept as the record of how four
 > prose prescriptions went wrong. It does NOT describe the current code. For what the code
-> does now, and for what an implementer must not undo, read the v32 note (the newest) and §5 item 1.
+> does now, and for what an implementer must not undo, read the v33 note (the newest) and §5 item 1.
 
 **EIGHTH instance**, and the third in a row created by a fix-up edit. D26 corrected the
 ownership half of D12 from dispatch to resolution. It did not look at the **member**
@@ -587,7 +599,7 @@ load-bearing.** Round 14 found this; it is the **TENTH instance**, the fifth con
 introduced by the edit that closed the previous one.
 
 **What v21 got wrong.** `resolveActiveAIIDFromAIcall` (`helpers.go:21`) returns `uuid.Nil`
-with only a `Warnf` when `ac.CurrentMemberID` is not in `t.Members` (`:35`). It has **no
+with only a `Warnf` when `ac.CurrentMemberID` is not in `t.Members` (`helpers.go:36 CurrentMemberID`). It has **no
 start-member fallback**. `resolveTeamMemberAI` (`start.go:42-52`) **does** have one, and
 `resolveTeamMemberForSend` (`start.go:384`) is the only thing that repairs a stale
 `CurrentMemberID`, persisting the repair (`send.go:176-183`). v21 placed its call in the reuse
@@ -672,6 +684,40 @@ with a deliberately broken input, before it is trusted. Both of this script's or
 passed their target defects.*
 
 **Earlier note (v29), retained as the record of round 20's response.**
+
+**ROUND 24 (v33): the two escape routes that carried eight rounds of defects are now closed.**
+Round 23's fix commit introduced two more, one per reviewer, and both arrived through the same
+two holes every earlier recurrence used.
+
+1. **A bare `:N` carried from an EARLIER line landed on a blank line** (section 7's dispatch-test
+   prescription). The path came from a preceding line, so no reader could see which file was
+   meant, and the gate only warned. Worse, this commit CAUSED it: adding an anchor at doc:2160
+   re-bound the carry from one wrong construct to another. A carried bare `:N` landing on a blank
+   line or a lone brace is now an ERROR, not a warning, on the reasoning that the only available
+   evidence the binding is right is that the landing looks like a construct. Turning it on
+   surfaced three more, one of them a genuine cross-file mis-binding
+   (`test_rag_lifecycle.py` where the prose meant `test_mcpservers_lifecycle.py`). Range ENDS are
+   exempt: a block's last line is expected to be a brace.
+2. **An ordinal written in plural form was invisible.** `item (\d+)` extracts nothing from
+   "§5 items 1, 3, 4, 7, 8" or from v16's "§5 Q1, Q3, Q4, Q7, Q8", so the v31 remap skipped it
+   and the v32 repair then replaced five correct ordinals with three wrong ones. Both the plural
+   and the Q-label enumerations are now parsed.
+
+The v32 repair of line 43 was itself wrong: v16's own text read "§5 Q1, Q3, Q4, Q7, Q8", so the
+pre-v32 ordinals 1, 3, 4, 7, 8 were correct and only unlabelled. Corrected, with today's
+equivalents (1, 3, 4, 10, 11) stated alongside.
+
+`--self-test` grew from ten probes to eighteen checks and now covers the cross-line carry (every
+probe body used to be a single line, so the shape most of the real document is made of was
+unreachable), ambiguous-basename preference, both range-end paths, and two report-only channels
+that no exit-code probe can see. **Thirteen sabotage experiments, thirteen caught** (round 23's
+apparatus caught nine of twelve). One probe written this round asserted a non-zero exit from a
+channel that only reports; it was removed rather than weakened, and the channel is asserted on
+stdout instead.
+
+The lesson the last three rounds keep re-teaching, stated once more: **a check nobody has
+deliberately broken is not a check, and the classes that escape are the ones no probe has a
+shape for.**
 
 **ROUND 23 (v32): a probe that fails for the wrong reason is a false guarantee.**
 Round 22's fix added `--self-test`, ten probes replaying the defects that refuted three
@@ -796,7 +842,7 @@ path, and its comment claimed protection that did not exist.**
    server, so both mechanisms (unexpected fetch and empty tool map) are genuinely live.
 4. Citations: this commit's comment expansion shifted `mcp_tool.go` again, leaving five anchors on
    a bare `return res` including one inside §5 item 1. Re-derived mechanically: `mcp_tool.go:157`→`mcp_tool.go:160`,
-   `:157-174`→`:160-176`, `:245`→`:248`, `start.go:1180`→`:1184`. Two stale subtest totals fixed
+   `:157-174`→`:160-176`, `mcp_tool.go` :245→:248, `start.go:1180`→`:1184`. Two stale subtest totals fixed
    (the v25 note restored to its historically correct 15; §8 corrected to 18).
 
 Lesson recorded: *a fixture's zero value is a behaviour, not a blank. An untyped enum silently
@@ -1413,7 +1459,7 @@ the one layer that cannot deliver the policy.
 
 **(a) It does not enforce the policy for existing rows.** The consume path has NO type
 check. `grep -n 'Type' pkg/aicallhandler/mcp_tool.go` returns exactly one line,
-`:144` (`resolveAI`), and never `a.Type`. Resolution iterates the whitelist blind to
+`mcp_tool.go:145` (`resolveAI`), and never `a.Type`. Resolution iterates the whitelist blind to
 type:
 
 ```go
@@ -1752,7 +1798,8 @@ Redis cache (§3.9), because there is no measured signal for it.
    across other resources that inline-DELETE an id they also registered with a cleanup
    fixture, so teardown re-DELETEs it (e.g. `test_rag_lifecycle.py:20`/`:53`). The true
    and sufficient claim is that **no *mcpserver* test issues a repeat DELETE**
-   (`test_mcpservers_lifecycle.py` deletes at `:263` and `:281` only, and its
+   (`test_mcpservers_lifecycle.py` deletes at `test_mcpservers_lifecycle.py:263`
+   and `:281` only, and its
    fixture-using tests never delete inline). This
    is the same error class as the `test_ai_lifecycle.py:4` mis-citation (round 9): a
    test artifact quoted as a live constraint without being read.
@@ -2172,7 +2219,8 @@ have shipped green); **and that
 dispatch rejects a tool belonging to a server only the START member whitelists** (D28,
 dispatch side — host: `toolHandleMcpCall`. REINSTATED in v21: v19 withdrew this as
 unimplementable, which was true of `resolveAI` and false of the package, since
-`resolveActiveAIIDFromAIcall` sees `c.CurrentMemberID` and `:127` holds the aicall. It is a
+`resolveActiveAIIDFromAIcall` sees `c.CurrentMemberID` and
+`mcp_tool.go:127 toolHandleMcpCall` holds the aicall. It is a
 unit test, not E2E, because dispatch is dead code until PR B per §3.1); and `GetValidAccessToken`'s new
 error when rotating against a row deleted mid-flight. **§5 item 5 (D13) REVERSED in v14 — assert the OPPOSITE:** a test that an
 Insight AI CAN hold and use `mcp_server_ids` (`ValidateMcpServerIDs` accepts it, and
@@ -2225,7 +2273,7 @@ is a blanket `ProviderGet.mockResolvedValue`, `:320/:380/:398/:431` use
 `expect.objectContaining`, `ais_create.test.js:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
 asserts only the PUT body. All four form bodies (§4) must be exercised.
 
-## 8. Retrospective (twenty-two rounds)
+## 8. Retrospective (twenty-four rounds)
 
 **v1** asserted "exactly ONE grep hit" and "no `mcpserver*.rst` files exist." Both
 false. Root cause: a case-sensitive `grep mcp` that missed uppercase `MCP`, written

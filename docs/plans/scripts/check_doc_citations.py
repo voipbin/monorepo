@@ -209,6 +209,30 @@ SELF_TEST_PROBES = [
      "`square-main/public/skill.md:999999`"),
     (1, "reference beyond the last section 5 item", "references item",
      "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee item 7.\n"),
+    (1, "plural ordinal list beyond the last section 5 item", "references item",
+     "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee §5 items 1, 7 and 9.\n"),
+    (1, "Q-label ordinal list beyond the last section 5 item", "references item",
+     "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee §5 Q1, Q3, Q9.\n"),
+    # Probe bodies are multi-line on purpose: a single-line body cannot reach
+    # the cross-line path carry, which is the shape most of the real document
+    # is made of.
+    (1, "bare :N carried from an EARLIER line landing on a blank line",
+     "CARRIED",
+     "See `bin-ai-manager/pkg/aicallhandler/helpers_test.go:557 "
+     "Test_aicallHandler_resolveActiveAIForMcp`\nand also `:127` here.\n"),
+    (0, "bare :N carried from an EARLIER line landing on code must PASS", None,
+     "See `bin-ai-manager/pkg/aicallhandler/mcp_tool.go:151 "
+     "resolveActiveAIForMcp`\nand also `:127` here.\n"),
+    # `helpers.go` exists in two packages (270 lines here, 25 there). Without
+    # BASENAME_PREFERENCE the ambiguous basename resolves to the short one and
+    # a CORRECT citation starts failing -- how the 62-false-hit episode began.
+    (0, "ambiguous basename must resolve by preference, not first match", None,
+     "`helpers.go:194 resolveActiveAIForMcp`"),
+    # A CONTINUATION range has its own end check, separate from a citation's.
+    (1, "continuation range END out of range",
+     "OUT OF RANGE",
+     "`bin-ai-manager/pkg/aicallhandler/helpers.go:194 resolveActiveAIForMcp` "
+     "and `:20-999999`"),
     (0, "correct anchor must PASS", None,
      "`bin-ai-manager/pkg/aicallhandler/start.go:375 refreshMcpToolMap`"),
     (0, "correct cross-repo citation must PASS", None,
@@ -248,9 +272,36 @@ def self_test(doc):
     finally:
         if os.path.exists(probe):
             os.remove(probe)
-    print("\n%s: %d/%d probes behaved correctly."
+    # Some channels REPORT without failing (the unbindable-`:N` list, the
+    # section 5 orphan warning). An exit-code probe cannot see those deleted,
+    # so assert on stdout directly against a body that must produce them.
+    for name, body, must_print in (
+        ("unbindable bare :N is reported",
+         "A paragraph naming no path at all.\n\nThen `:4321` alone.\n",
+         "has no resolvable file on its line"),
+        ("section 5 ordinal nothing references is reported",
+         "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee item 1.\n",
+         "referenced by nothing"),
+    ):
+        try:
+            with open(probe, "w", encoding="utf-8") as fh:
+                fh.write(body)
+            out = subprocess.run(
+                [sys.executable, os.path.abspath(__file__), probe],
+                capture_output=True, text=True,
+            ).stdout
+        finally:
+            if os.path.exists(probe):
+                os.remove(probe)
+        ok = must_print in out
+        failures += 0 if ok else 1
+        print("%-5s %-58s (report channel)"
+              % ("ok" if ok else "FAIL", name))
+
+    total_checks = len(SELF_TEST_PROBES) + 2
+    print("\n%s: %d/%d checks behaved correctly."
           % ("PASS" if not failures else "FAIL",
-             len(SELF_TEST_PROBES) - failures, len(SELF_TEST_PROBES)))
+             total_checks - failures, total_checks))
     return 1 if failures else 0
 
 
@@ -313,8 +364,15 @@ def main():
             ).read().split("\n")
         return source_cache[path]
 
-    def check_one(doc_line, cited, path, num, symbol):
-        """Check ONE line reference. Every call counts as one line-check."""
+    def check_one(doc_line, cited, path, num, symbol, carried=False):
+        """Check ONE line reference. Every call counts as one line-check.
+
+        `carried` marks a bare `:N` bound to a path cited on an EARLIER line.
+        Nothing in the prose repeats the filename there, so a wrong binding is
+        invisible to a reader; the only evidence that the pairing is right is
+        that the landing looks like a construct. A carried reference landing on
+        a blank line or a lone brace is therefore an error, not a warning.
+        """
         nonlocal anchored, unanchored
         src = source_lines(path)
         if num < 1 or num > len(src):
@@ -343,11 +401,15 @@ def main():
             unanchored += 1
         stripped = landed.strip()
         if stripped == "" or stripped in ("}", "})", "},", "};"):
+            what = "a blank line" if not stripped else "a lone %r" % stripped
+            if carried:
+                problems.append(
+                    "doc:%d  %s:%d CARRIED bare :N lands on %s -- the path came "
+                    "from an earlier line, so this binding is unproven (cite "
+                    "the path explicitly)" % (doc_line, cited, num, what))
+                return
             warnings.append(
-                "doc:%d  %s:%d lands on %s"
-                % (doc_line, cited, num,
-                   "a blank line" if not stripped else "a lone %r" % stripped)
-            )
+                "doc:%d  %s:%d lands on %s" % (doc_line, cited, num, what))
         if args.verbose:
             landings.append("doc:%-5d %s:%-5d | %s"
                             % (doc_line, cited, num, stripped[:100]))
@@ -411,10 +473,13 @@ def main():
             src = (prior[-1][1], prior[-1][2]) if prior else carried_span
             if src is None:
                 continue
-            bound.append((cont, src))
-        for cont, (cited, path) in bound:
-            check_one(doc_line, cited, path, int(cont.group("start")), None)
+            bound.append((cont, src, not prior))
+        for cont, (cited, path), carried in bound:
+            check_one(doc_line, cited, path, int(cont.group("start")), None,
+                      carried=carried)
             if cont.group("end"):
+                # The END of a range is expected to be a block's closing brace,
+                # so landing quality proves nothing there.
                 check_one(doc_line, cited, path, int(cont.group("end")), None)
         carried_span = last_path
         if len(bound) < len(conts):
@@ -434,7 +499,15 @@ def main():
     sec5 = re.search(r"^## 5[^\n]*\n(.*?)(?=^## 6)", text, re.S | re.M)
     if sec5:
         n_items = len(re.findall(r"^\d+\. \*\*", sec5.group(1), re.M))
+        # Plural and Q-label forms hid a stale ordinal for two rounds running:
+        # `item (\d+)` sees nothing in "§5 items 1, 3, 4, 7, 8" or "§5 Q1, Q3".
+        # Match the whole enumeration, then every number inside it.
         refs = {int(m) for m in re.findall(r"item (\d+)", text)}
+        for run in re.findall(r"§5 items? ((?:Q?\d+[,\s]+(?:and\s+)?)*Q?\d+)",
+                              text):
+            refs.update(int(n) for n in re.findall(r"\d+", run))
+        for run in re.findall(r"§5 ((?:Q\d+[,\s]+(?:and\s+)?)+Q\d+)", text):
+            refs.update(int(n) for n in re.findall(r"\d+", run))
         for r in sorted(refs):
             if r > n_items:
                 problems.append(
