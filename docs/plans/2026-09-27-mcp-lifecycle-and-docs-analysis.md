@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v33, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v34, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v33, Analysis Review Loop round 25 pending
+Status: v34, Analysis Review Loop round 26 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -114,6 +114,17 @@ path built the handler without MCP mocks so `refreshMcpToolMap` returned at its 
 reading the AI. The fact-checker found §5 item 1(c) still prescribing the deleted fallback, 7
 surviving pre-fix `mcp_tool.go` anchors, three stale subtest counts, and §3.5c's heading still
 announcing a live BLOCKER. See §3.5c v27.
+
+Round 25: **both tracks CHANGES_REQUESTED; the Go code clean for a sixth consecutive round.**
+Twelve mutations across the two reviewers, eleven caught, one correctly judged equivalent. One
+reviewer ran twenty-two gate sabotages and six survived, three substantively: the lone-brace half
+of the carried-landing check this branch had just added was unprobed and fell to a single-token
+flip, and the two anchors added the round before repeat within five lines of their target,
+falsifying the uniqueness claim in the round-24 log entry. The other swept every bare `:N` in the
+document against what the PROSE means rather than what the gate binds, and found four
+disagreements the gate cannot see, one of them inside the open D17 prescription. Both mechanisms
+are now probed on both halves, the range-END exemption is brace-only, and the gate reports
+non-unique anchors -- finding independently the same two the reviewer named. See §3.5c v34.
 
 Round 24: **both tracks CHANGES_REQUESTED; the Go code clean for a fifth consecutive round.**
 Sixteen mutations across the two reviewers, sixteen caught, one further mutant correctly judged
@@ -534,12 +545,12 @@ itself in §3.3), `complete.go:68` guards the state row, and
 surface. The accurate and still-sufficient claim is that it is **the only ownership check
 on the AI-whitelist → consume path**. Corrected wherever it appeared.
 
-### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v33 notes at the end of this section; the NEWEST is v33.**
+### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v34 notes at the end of this section; the NEWEST is v34.**
 
 > **Reading order.** Everything between here and the v24 note is the ORIGINAL DIAGNOSIS,
 > written in the present tense while the defect was live, and kept as the record of how four
 > prose prescriptions went wrong. It does NOT describe the current code. For what the code
-> does now, and for what an implementer must not undo, read the v33 note (the newest) and §5 item 1.
+> does now, and for what an implementer must not undo, read the v34 note (the newest) and §5 item 1.
 
 **EIGHTH instance**, and the third in a row created by a fix-up edit. D26 corrected the
 ownership half of D12 from dispatch to resolution. It did not look at the **member**
@@ -599,7 +610,7 @@ load-bearing.** Round 14 found this; it is the **TENTH instance**, the fifth con
 introduced by the edit that closed the previous one.
 
 **What v21 got wrong.** `resolveActiveAIIDFromAIcall` (`helpers.go:21`) returns `uuid.Nil`
-with only a `Warnf` when `ac.CurrentMemberID` is not in `t.Members` (`helpers.go:36 CurrentMemberID`). It has **no
+with only a `Warnf` when `ac.CurrentMemberID` is not in `t.Members` (`helpers.go:36 member_id`). It has **no
 start-member fallback**. `resolveTeamMemberAI` (`start.go:42-52`) **does** have one, and
 `resolveTeamMemberForSend` (`start.go:384`) is the only thing that repairs a stale
 `CurrentMemberID`, persisting the repair (`send.go:176-183`). v21 placed its call in the reuse
@@ -623,7 +634,7 @@ without ever reaching the fallback when:
 1. the member IS present but `aiHandler.Get(m.AIID)` fails (`:36`) — transient RPC error, or
    a deleted AI row;
 2. `teamHandler.Get` fails upstream (`send.go:160-163`);
-3. neither the member nor the start member is in the team (`:53`).
+3. neither the member nor the start member is in the team (`start.go:53`).
 
 So v22's contract held for one of three error modes. At dispatch that is a **regression we
 introduce**: today `resolveAI` fetches the START member's AI (`start.go:69-79`) and never
@@ -685,6 +696,36 @@ passed their target defects.*
 
 **Earlier note (v29), retained as the record of round 20's response.**
 
+**ROUND 25 (v34): the mechanism added to close the class had an exempt path, and half of it
+was unprobed.**
+
+1. **The carried-landing error's range-END exemption swallowed blank lines too.** v33 justified
+   the exemption as "a block's last line is expected to be a brace" and then implemented it as
+   a blanket skip, so a carried range whose END landed on a BLANK line passed silently. One did:
+   the Status table of ai_struct_mcpserver.rst (lines 77-86) was bound to
+   internal/config/main.go lines 79-86, whose line 86 is blank. A blank line ends no block in any language; the exemption is now
+   brace-only, and both halves have probes.
+2. **The lone-brace half of the carried check was never probed.** The only carried probe landed
+   on a blank line, so flipping `if carried:` to `if carried and not stripped:` -- one token,
+   disabling four brace shapes -- passed a full 18/18 run. Probed now, along with the
+   basename-preference ORDER (the previous probe survived re-sorting the preference list, which
+   proved only that *some* order was applied).
+3. **Anchors that repeat near their target do not prevent drift, and two of mine did.** The
+   round-24 log entry certifies "all 22 anchors pin uniquely within +/-5"; the two anchors v33
+   added to fix round 24 broke it (`toolHandleMcpCall` also matches its own comment and log
+   field; `CurrentMemberID` matches four lines up). The gate now reports non-unique anchors and
+   independently found exactly the two the reviewer did; both were re-anchored on symbols unique
+   in their window.
+
+Also fixed: the validAuthTypes citation of models/mcpserver/main.go (lines 23-25, bound to id.yaml, landing on
+unrelated YAML, inside the open D17 prescription an implementer follows), `start.go:53` bound to
+`send.go`, and a stale self-reference to this document's own line numbers.
+
+Three rounds have now ended with the gate catching a defect class only after a reviewer showed
+the check for it was decorative. The pattern worth naming: **every exemption is a hole until a
+probe proves it is narrow, and an exemption written in prose ("braces") but implemented broadly
+("braces or blanks") is the easiest kind to grant yourself.**
+
 **ROUND 24 (v33): the two escape routes that carried eight rounds of defects are now closed.**
 Round 23's fix commit introduced two more, one per reviewer, and both arrived through the same
 two holes every earlier recurrence used.
@@ -711,7 +752,9 @@ equivalents (1, 3, 4, 10, 11) stated alongside.
 probe body used to be a single line, so the shape most of the real document is made of was
 unreachable), ambiguous-basename preference, both range-end paths, and two report-only channels
 that no exit-code probe can see. **Thirteen sabotage experiments, thirteen caught** (round 23's
-apparatus caught nine of twelve). One probe written this round asserted a non-zero exit from a
+apparatus caught nine of twelve). That count was not exhaustive and round 25 refuted its
+implied generality: of twenty-two sabotages a reviewer ran, six survived, including a
+single-token flip disabling half of the mechanism this very note introduces. One probe written this round asserted a non-zero exit from a
 channel that only reports; it was removed rather than weakened, and the channel is asserted on
 stdout instead.
 
@@ -1195,7 +1238,7 @@ value for **both** `tm_update` and `tm_delete`. The API cannot produce that outp
 Also in the same file: `:37` labels `oauth_vendor` "(enum string)", but the model
 field is a plain `string` (`models/mcpserver/main.go:82`) populated from the
 runtime-configurable vendor catalog (`internal/config/main.go:151-154`) with no
-`IsValid`. And neither the Status table (`:79-86`) nor the delete note states what
+`IsValid`. And neither the Status table (`ai_struct_mcpserver.rst:77-86`) nor the delete note states what
 DELETE does to tool access — which becomes the headline customer-visible change once
 PR A lands, so it belongs in this file.
 
@@ -1845,7 +1888,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    after `ScanRow`, but one convention must be picked and the in-file precedent is `0`.
 
    **(iii) The pre-deploy backfill.** §5 item 2 as written only zeroes credentials going **forward**, inside the `McpServerDelete`
-   statement. D4 (`:97-98`, §3.4) states the defect as ciphertext surviving *indefinitely*
+   statement. D4 (doc:247, §3.4) states the defect as ciphertext surviving *indefinitely*
    on already-deleted rows — exactly what the forward fix cannot reach. Worse, the obvious
    remediation fails silently: `McpServerDelete` gains `tm_delete IS NULL` (§5 item 1), so
    re-deleting an already-deleted server matches **zero rows**, the handler swallows that
@@ -2002,7 +2045,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    failed to follow: `models/mcpserver/main.go:17-19` says "never set directly via
    POST/PUT with a customer-supplied secret," and the OpenAPI spec enumerates only
    `["", "bearer", "api_key"]` (`paths/mcpservers/main.yaml:57`, `id.yaml:74`). But
-   `validAuthTypes` at `:23-25` includes `AuthTypeOAuth: true`, the write paths check
+   `models/mcpserver/main.go:23 validAuthTypes` (`:23-25`) includes `AuthTypeOAuth: true`, the write paths check
    only `IsValid()` (`handler.go:48-50`, `:154-156`), and there is no OpenAPI
    request-validator middleware in `bin-api-manager` to fall back on (§3.7c). Option
    (b) — relaxing the docs to match — would deliberately make an already-correct
@@ -2220,7 +2263,7 @@ dispatch rejects a tool belonging to a server only the START member whitelists**
 dispatch side — host: `toolHandleMcpCall`. REINSTATED in v21: v19 withdrew this as
 unimplementable, which was true of `resolveAI` and false of the package, since
 `resolveActiveAIIDFromAIcall` sees `c.CurrentMemberID` and
-`mcp_tool.go:127 toolHandleMcpCall` holds the aicall. It is a
+`mcp_tool.go:127 messageContent` holds the aicall. It is a
 unit test, not E2E, because dispatch is dead code until PR B per §3.1); and `GetValidAccessToken`'s new
 error when rotating against a row deleted mid-flight. **§5 item 5 (D13) REVERSED in v14 — assert the OPPOSITE:** a test that an
 Insight AI CAN hold and use `mcp_server_ids` (`ValidateMcpServerIDs` accepts it, and
@@ -2273,7 +2316,7 @@ is a blanket `ProviderGet.mockResolvedValue`, `:320/:380/:398/:431` use
 `expect.objectContaining`, `ais_create.test.js:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
 asserts only the PUT body. All four form bodies (§4) must be exercised.
 
-## 8. Retrospective (twenty-four rounds)
+## 8. Retrospective (twenty-five rounds)
 
 **v1** asserted "exactly ONE grep hit" and "no `mcpserver*.rst` files exist." Both
 false. Root cause: a case-sensitive `grep mcp` that missed uppercase `MCP`, written

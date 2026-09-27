@@ -233,6 +233,28 @@ SELF_TEST_PROBES = [
      "OUT OF RANGE",
      "`bin-ai-manager/pkg/aicallhandler/helpers.go:194 resolveActiveAIForMcp` "
      "and `:20-999999`"),
+    # The blank-line half of the carried check was probed from the start; the
+    # LONE-BRACE half was not, and a single-token flip disabling it survived a
+    # full self-test run. Both halves are probed now.
+    (1, "bare :N carried from an EARLIER line landing on a lone brace",
+     "CARRIED",
+     "See `bin-ai-manager/pkg/aicallhandler/helpers.go:194 "
+     "resolveActiveAIForMcp`\nand also `:270` there.\n"),
+    # A carried RANGE is exempt from the brace rule (a block's last line is a
+    # brace) but NOT from the blank-line rule -- a blank line ends no block in
+    # any language, and one such landing escaped through the first exemption.
+    (1, "carried range END landing on a blank line", "CARRIED",
+     "See `bin-ai-manager/internal/config/main.go:151-154` here\n"
+     "and the table at `:79-86` there.\n"),
+    (0, "carried range END landing on a closing brace must PASS", None,
+     "See `bin-ai-manager/pkg/aicallhandler/helpers.go:194 "
+     "resolveActiveAIForMcp`\nand also `:196-225` there.\n"),
+    # `start.go` lives in aicallhandler (1255 lines) and mcpoauthhandler (110).
+    # BASENAME_PREFERENCE lists aicallhandler first ON PURPOSE; any reordering
+    # (sorting it, emptying it, walk-order) sends this citation to the short
+    # file. A preference probe that survives re-sorting proves nothing.
+    (0, "ambiguous basename honours preference ORDER, not any order", None,
+     "`start.go:1200`"),
     (0, "correct anchor must PASS", None,
      "`bin-ai-manager/pkg/aicallhandler/start.go:375 refreshMcpToolMap`"),
     (0, "correct cross-repo citation must PASS", None,
@@ -276,6 +298,9 @@ def self_test(doc):
     # section 5 orphan warning). An exit-code probe cannot see those deleted,
     # so assert on stdout directly against a body that must produce them.
     for name, body, must_print in (
+        ("anchor that repeats within +/-5 lines is reported",
+         "`bin-ai-manager/pkg/aicallhandler/mcp_tool.go:127 toolHandleMcpCall`\n",
+         "NOT unique"),
         ("unbindable bare :N is reported",
          "A paragraph naming no path at all.\n\nThen `:4321` alone.\n",
          "has no resolvable file on its line"),
@@ -298,7 +323,7 @@ def self_test(doc):
         print("%-5s %-58s (report channel)"
               % ("ok" if ok else "FAIL", name))
 
-    total_checks = len(SELF_TEST_PROBES) + 2
+    total_checks = len(SELF_TEST_PROBES) + 3
     print("\n%s: %d/%d checks behaved correctly."
           % ("PASS" if not failures else "FAIL",
              total_checks - failures, total_checks))
@@ -364,7 +389,8 @@ def main():
             ).read().split("\n")
         return source_cache[path]
 
-    def check_one(doc_line, cited, path, num, symbol, carried=False):
+    def check_one(doc_line, cited, path, num, symbol, carried=False,
+                  carried_end=False):
         """Check ONE line reference. Every call counts as one line-check.
 
         `carried` marks a bare `:N` bound to a path cited on an EARLIER line.
@@ -392,6 +418,20 @@ def main():
                     % (doc_line, cited, num, symbol, landed.strip()[:80])
                 )
                 return
+            # An anchor whose symbol also appears nearby does not prevent the
+            # drift it exists to catch: the citation would still "match" after
+            # the construct moved a few lines. Report it so anchors get chosen
+            # from symbols that are unique in their window.
+            lo, hi = max(0, num - 1 - 5), min(len(src), num + 5)
+            near = [i + 1 for i in range(lo, hi)
+                    if i + 1 != num
+                    and re.search(r"\b%s\b" % re.escape(symbol), src[i])]
+            if near:
+                warnings.append(
+                    "doc:%d  %s:%d anchor %r is NOT unique within +/-5 (also "
+                    "%s) -- a small drift would still pass"
+                    % (doc_line, cited, num, symbol,
+                       ", ".join(str(n) for n in near)))
             if landed.lstrip().startswith(("//", "#", "*")):
                 warnings.append(
                     "doc:%d  %s:%d anchor %r landed on a COMMENT, not the "
@@ -402,7 +442,14 @@ def main():
         stripped = landed.strip()
         if stripped == "" or stripped in ("}", "})", "},", "};"):
             what = "a blank line" if not stripped else "a lone %r" % stripped
-            if carried:
+            # A range END is expected to be a block's closing brace, so a brace
+            # landing proves nothing there -- but a BLANK line is not a block
+            # end in any language, and one such landing (a carried range whose
+            # path came from the previous line) escaped the first version of
+            # this check precisely through the end exemption.
+            if carried_end and stripped:
+                pass
+            elif carried or carried_end:
                 problems.append(
                     "doc:%d  %s:%d CARRIED bare :N lands on %s -- the path came "
                     "from an earlier line, so this binding is unproven (cite "
@@ -480,7 +527,8 @@ def main():
             if cont.group("end"):
                 # The END of a range is expected to be a block's closing brace,
                 # so landing quality proves nothing there.
-                check_one(doc_line, cited, path, int(cont.group("end")), None)
+                check_one(doc_line, cited, path, int(cont.group("end")), None,
+                          carried_end=carried)
         carried_span = last_path
         if len(bound) < len(conts):
             conts = [c for c in conts if all(c is not b[0] for b in bound)]
