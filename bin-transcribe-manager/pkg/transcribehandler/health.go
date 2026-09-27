@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// HealthCheck checks the given transcribe is still vaild
+// HealthCheck checks the given transcribe is still valid
 // and stop the transcribe if the transcribe is not valid and over the default retry count.
 func (h *transcribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount int) {
 	log := logrus.WithFields(logrus.Fields{

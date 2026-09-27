@@ -159,7 +159,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -301,7 +301,7 @@ func Test_processV1TranscribesGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -374,7 +374,7 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -456,7 +456,7 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -521,7 +521,7 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -561,7 +561,7 @@ func Test_processV1TranscribesIDStopPost_notFound(t *testing.T) {
 		Data:       []byte(`{"status":"NOT_FOUND","reason":"TRANSCRIBE_NOT_FOUND","domain":"transcribe-manager","message":"The transcribe was not found."}`),
 	}
 	if !reflect.DeepEqual(res, expectRes) {
-		t.Errorf("Wrong match.\nexepct: %v\ngot: %v", expectRes, res)
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expectRes, res)
 	}
 }
 

@@ -31,7 +31,7 @@ func Test_Email(t *testing.T) {
 			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/emails",
+				ReceivedURI:  "hook.voipbin.net/v1.0/emails",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 		},
@@ -43,7 +43,7 @@ func Test_Email(t *testing.T) {
 			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/emails/sendgrid",
+				ReceivedURI:  "hook.voipbin.net/v1.0/emails/sendgrid",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 		},
@@ -93,7 +93,7 @@ func Test_Email_Error(t *testing.T) {
 			body: []byte(`{"key1":"val1"}`),
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/emails",
+				ReceivedURI:  "hook.voipbin.net/v1.0/emails",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 			expectError: fmt.Errorf("could not send hook"),

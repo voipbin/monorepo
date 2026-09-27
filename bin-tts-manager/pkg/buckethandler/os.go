@@ -19,7 +19,7 @@ func (h *bucketHandler) OSFileExist(ctx context.Context, target string) bool {
 	if err != nil {
 		return false
 	}
-	log.WithField("file", fileInfo).Infof("The target file is exsits. target: %s", target)
+	log.WithField("file", fileInfo).Infof("The target file is exists. target: %s", target)
 
 	return true
 }

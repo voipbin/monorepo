@@ -28,7 +28,7 @@ func Test_MessageV1Hook(t *testing.T) {
 			name: "normal",
 
 			hookMessage: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/messages/telnyx",
+				ReceivedURI:  "hook.voipbin.net/v1.0/messages/telnyx",
 				ReceivedData: []byte(`{"key1":"val1"}`),
 			},
 

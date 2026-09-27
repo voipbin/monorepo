@@ -178,7 +178,7 @@ func (h *serviceHandler) Billing(ctx context.Context, r *http.Request) error {
 
     // 3. Wrap in Hook and send RPC to billing-manager
     req := &hmhook.Hook{
-        ReceviedURI:  r.Host + r.URL.Path,
+        ReceivedURI:  r.Host + r.URL.Path,
         ReceivedData: body,
     }
     return h.reqHandler.BillingV1PaddleHook(ctx, req)

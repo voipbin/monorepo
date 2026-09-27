@@ -107,7 +107,7 @@ func Test_processV1QueuesPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -255,7 +255,7 @@ func Test_processV1QueuesGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 
 		})
@@ -318,7 +318,7 @@ func Test_processV1QueuesIDGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -380,7 +380,7 @@ func Test_processV1QueuesIDDelete(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -470,7 +470,7 @@ func Test_processV1QueuesIDPut(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -563,7 +563,7 @@ func Test_processV1QueuesIDTagIDsPut(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -628,7 +628,7 @@ func Test_processV1QueuesIDRoutingMethodPut(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
@@ -693,7 +693,7 @@ func Test_processV1QueuesIDAgentsGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

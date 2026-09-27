@@ -363,7 +363,7 @@
 
   // Hook defines
   type Hook struct {
-      ReceviedURI       string `json:"received_uri"`        // typo preserved for backward compat
+      ReceivedURI       string `json:"received_uri"`
       ReceivedData      []byte `json:"received_data"`
       ReceivedMethod    string `json:"received_method"`     // "GET" or "POST"
       ReceivedSignature string `json:"received_signature"`  // X-Hub-Signature-256 header value
@@ -487,7 +487,7 @@
       }
 
       req := &hmhook.Hook{
-          ReceviedURI:       r.Host + r.URL.RequestURI(), // RequestURI preserves query string
+          ReceivedURI:       r.Host + r.URL.RequestURI(), // RequestURI preserves query string
           ReceivedData:      data,
           ReceivedMethod:    r.Method,
           ReceivedSignature: r.Header.Get("X-Hub-Signature-256"),
@@ -2216,7 +2216,7 @@
   ```go
   func TestProcessV1HooksGet_ValidChallenge(t *testing.T) {
       // set up mock conversationHandler.HookVerify to return ("chal123", nil)
-      // send a GET /v1/hooks request with ReceviedURI containing hub.* params
+      // send a GET /v1/hooks request with ReceivedURI containing hub.* params
       // assert response StatusCode == 200 and Data == []byte("chal123")
   }
 
@@ -2276,9 +2276,9 @@
           log.Debugf("Could not unmarshal data. err: %v", err)
           return simpleResponse(400), nil
       }
-      log.WithField("request", req).Debugf("Received hook. uri: %s", req.ReceviedURI)
+      log.WithField("request", req).Debugf("Received hook. uri: %s", req.ReceivedURI)
 
-      if errHook := h.conversationHandler.Hook(ctx, req.ReceviedURI, req.ReceivedMethod, req.ReceivedSignature, req.ReceivedData); errHook != nil {
+      if errHook := h.conversationHandler.Hook(ctx, req.ReceivedURI, req.ReceivedMethod, req.ReceivedSignature, req.ReceivedData); errHook != nil {
           log.Errorf("Could not process hook. err: %v", errHook)
       }
 
@@ -2298,11 +2298,11 @@
           return simpleResponse(400), nil
       }
 
-      // hub.* params are in req.ReceviedURI (the forwarded external URL),
+      // hub.* params are in req.ReceivedURI (the forwarded external URL),
       // NOT in m.URI (the internal RPC path "/v1/hooks").
-      u, err := url.Parse(req.ReceviedURI)
+      u, err := url.Parse(req.ReceivedURI)
       if err != nil {
-          log.Debugf("Could not parse ReceviedURI. err: %v", err)
+          log.Debugf("Could not parse ReceivedURI. err: %v", err)
           return simpleResponse(400), nil
       }
 
@@ -2311,7 +2311,7 @@
       token     := q.Get("hub.verify_token")
       challenge := q.Get("hub.challenge")
 
-      result, err := h.conversationHandler.HookVerify(ctx, req.ReceviedURI, mode, token, challenge)
+      result, err := h.conversationHandler.HookVerify(ctx, req.ReceivedURI, mode, token, challenge)
       if err != nil {
           log.Errorf("HookVerify failed. err: %v", err)
           return simpleResponse(403), nil

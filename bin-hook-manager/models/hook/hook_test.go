@@ -8,12 +8,12 @@ func TestHookStruct(t *testing.T) {
 	data := []byte(`{"key": "value"}`)
 
 	h := Hook{
-		ReceviedURI:  "/v1/webhooks/telnyx",
+		ReceivedURI:  "/v1/webhooks/telnyx",
 		ReceivedData: data,
 	}
 
-	if h.ReceviedURI != "/v1/webhooks/telnyx" {
-		t.Errorf("Hook.ReceviedURI = %v, expected %v", h.ReceviedURI, "/v1/webhooks/telnyx")
+	if h.ReceivedURI != "/v1/webhooks/telnyx" {
+		t.Errorf("Hook.ReceivedURI = %v, expected %v", h.ReceivedURI, "/v1/webhooks/telnyx")
 	}
 	if string(h.ReceivedData) != `{"key": "value"}` {
 		t.Errorf("Hook.ReceivedData = %v, expected %v", string(h.ReceivedData), `{"key": "value"}`)
@@ -22,12 +22,12 @@ func TestHookStruct(t *testing.T) {
 
 func TestHookWithEmptyData(t *testing.T) {
 	h := Hook{
-		ReceviedURI:  "/v1/webhooks/messagebird",
+		ReceivedURI:  "/v1/webhooks/messagebird",
 		ReceivedData: nil,
 	}
 
-	if h.ReceviedURI != "/v1/webhooks/messagebird" {
-		t.Errorf("Hook.ReceviedURI = %v, expected %v", h.ReceviedURI, "/v1/webhooks/messagebird")
+	if h.ReceivedURI != "/v1/webhooks/messagebird" {
+		t.Errorf("Hook.ReceivedURI = %v, expected %v", h.ReceivedURI, "/v1/webhooks/messagebird")
 	}
 	if h.ReceivedData != nil {
 		t.Errorf("Hook.ReceivedData should be nil, got %v", h.ReceivedData)
@@ -49,10 +49,10 @@ func TestHookWithDifferentURIs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := Hook{
-				ReceviedURI: tt.uri,
+				ReceivedURI: tt.uri,
 			}
-			if h.ReceviedURI != tt.uri {
-				t.Errorf("Hook.ReceviedURI = %v, expected %v", h.ReceviedURI, tt.uri)
+			if h.ReceivedURI != tt.uri {
+				t.Errorf("Hook.ReceivedURI = %v, expected %v", h.ReceivedURI, tt.uri)
 			}
 		})
 	}

@@ -65,7 +65,7 @@ func (h *messageHandler) Create(ctx context.Context, id uuid.UUID, customerID uu
 	return res, nil
 }
 
-// List returns list of messges info with filters
+// List returns list of messages info with filters
 func (h *messageHandler) List(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "List",

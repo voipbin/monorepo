@@ -168,7 +168,7 @@ func Test_endpointLocalGet(t *testing.T) {
 			expectRes: "127.0.0.1:10001",
 		},
 		{
-			name: "same port number becuase released in the previous",
+			name: "same port number because released in the previous",
 
 			podIP:  "127.0.0.1",
 			callID: uuid.FromStringOrNil("db9cc112-e920-11ee-b26c-93e1660749a9"),

@@ -21,7 +21,7 @@ func Test_V1DataHooksPostUnmarshal(t *testing.T) {
 			[]byte(`{"received_uri":"hook.voipbin.net/v1.0/hooks/telnyx","received_data":"eyJrZXkxIjoidmFsMSJ9"}`),
 			&V1DataHooksPost{
 				Hook: hmhook.Hook{
-					ReceviedURI:  "hook.voipbin.net/v1.0/hooks/telnyx",
+					ReceivedURI:  "hook.voipbin.net/v1.0/hooks/telnyx",
 					ReceivedData: []byte(`{"key1":"val1"}`),
 				},
 			},
