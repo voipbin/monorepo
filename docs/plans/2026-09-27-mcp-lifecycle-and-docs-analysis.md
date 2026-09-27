@@ -21,10 +21,14 @@ D13, D22 and D23 outright** (retained in §3.12b/§3.12e as recorded instances o
 failure mode, marked VOIDED and out of scope). Five rounds of gate design collapse into
 one docs sentence. D18 is re-scoped: it no longer rides on a signature rewrite.
 v9: 대표님 resolved Q11 and Q6. v10: Q5 and Q9. v12: Q5(i)/(ii), now withdrawn.
-**v14 status: readiness NOT claimed.** §5 Q1/Q3/Q4/Q7/Q8 still carry "Recommend …"
-items never confirmed by 대표님; those are listed for a single decision pass. v10 and
-v12 both claimed readiness prematurely and both were refuted, so this header will not
-claim it until a round returns clean AND those five are closed.
+**v15 — the five unconfirmed "Recommend …" items (§5 Q1, Q3, Q4, Q7, Q8) are now
+closed** by 대표님 ("a로 가자" for the MCP link, recommendations accepted for the rest).
+Investigating Q3 surfaced **D24**: the docs advertise a stale third-party fork while
+`uvx voipbin-mcp` installs the official repo — a published-falsehood defect the v14
+draft had wrongly deferred to 대표님 as unjudgeable instead of simply checking.
+**Readiness is still NOT claimed in this header.** Every §5 item is now decided, but
+v10 and v12 each made that claim and each was refuted within one round; round 10 must
+return clean on both tracks before the design doc starts.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -66,6 +70,11 @@ separately.
 | Q10 | D17: reject `auth_type: "oauth"` on POST/PUT? | **Yes, reject.** "좋아, 네 제안대로 가자" Gate the write handlers, not `IsValid()`; reject the transition INTO oauth, not the value |
 | Q11 | ~~Where does the Insight AI-type gate live?~~ | **MOOT (v14).** No gate exists. The v12 answer (both write and consume path) is withdrawn |
 | Q12 | ~~Does PR C clear `mcpServerIds` on the Insight flip?~~ | **MOOT (v14).** No gate, so nothing to clear and nothing to hide. `mcpServerIds` survives a type flip and the MCP card stays visible for every type |
+| Q13 | Does the `RowsAffected` check apply to every `McpServerUpdate` caller, token rotation included? | **Yes, uniformly** (v15). A rotation against a soft-deleted row is a bug signal; swallowing it hides it. Design doc must confirm the failure degrades gracefully |
+| Q14 | Does `McpServerDelete` gain the same predicate (D16)? | **Yes**, but the handler keeps **200 on repeat DELETE** and stops re-publishing `EventTypeDeleted`. The 200 is load-bearing for the validator cleanup fixture |
+| Q15 | Naming-collision rename scope, and the third-party MCP link | **Heading only**; and **replace** `nrjchnd/voipbin-mcp` with `github.com/voipbin/mcp`, remove the fork link entirely ("a로 가자"). `uvx voipbin-mcp` already installs the official repo per PyPI, so the published link contradicts the published command |
+| Q16 | Add api-validator MCP coverage now? | **Defer until ETC-18 is fixed.** The validator leaks ~4 MCP servers per run into production (100 measured); more coverage before the fix accelerates it |
+| Q17 | PR A docs scope for D14 | **Contradiction (`ai_struct_ai.rst:69`) is mandatory**; the three webhook event types ship in the same PR if it stays reviewable, else split |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -83,6 +92,12 @@ separately.
   `AccessTokenCiphertext`, `RefreshTokenCiphertext` indefinitely.
 - **D5** Published docs give a 404 endpoint path (`/mcp_servers` vs `/mcpservers`)
   plus two broken `:ref:` targets.
+- **D24** `ai_overview.rst:685` advertises a third-party fork
+  (`github.com/nrjchnd/voipbin-mcp`, ~17 months stale, no tests, no CI) as "A
+  recommended open-source implementation", while the documented command `uvx
+  voipbin-mcp` installs `github.com/voipbin/mcp` per PyPI. **The published link and the
+  published command point at different code.** Same class as D5. Resolved in §5 Q3:
+  replace the link, label it official, remove the fork.
 - **D6** `mcp_tools_list_cache_ttl_seconds` is a dead flag; the design doc
   justifies a *separate* design decision by citing this nonexistent cache.
 - **D12** `toolHandleMcpCall` never asserts `server.CustomerID == c.CustomerID`,
@@ -905,7 +920,10 @@ Redis cache (§3.9), because there is no measured signal for it.
 - Narrative docs (`mcpserver_overview` / `_tutorial`) — desirable but not required
   to fix a live 404; decide at PR A design time whether they fit without bloating
   review.
-- Resolving the `uvx voipbin-mcp` naming collision platform-wide (§5 Q3).
+- Resolving the `uvx voipbin-mcp` naming collision platform-wide (§5 Q3): the
+  `ai_overview.rst:681` heading is fixed, but `skill.md` and `llms.txt` are out of
+  scope.
+- api-validator MCP coverage (§5 Q4) — deferred behind Jira ETC-18, its own PR.
 
 ## 5. Decisions to lock before the PR A design doc
 
@@ -924,13 +942,19 @@ Redis cache (§3.9), because there is no measured signal for it.
    sufficient.** Because it discards `RowsAffected`
    (`dbhandler/mcpserver.go:154-156`), a predicate alone yields a silent 200 plus a
    spurious `EventTypeUpdated` (§3.7a). PR A must make `McpServerUpdate` inspect
-   `RowsAffected` and return `ErrNotFound` on zero. **Open:** whether that applies
-   to every caller uniformly, notably `access_token.go:101-108`'s token rotation,
-   where "no row matched" now surfaces as an error instead of being swallowed.
-   **Also open (D16):** does `McpServerDelete` gain the same predicate? Recommend
-   yes, keeping the handler's repeat-DELETE response at 200 (idempotent) and
-   dropping the duplicate `EventTypeDeleted`, to stay compatible with the validator
-   cleanup fixture (`test_mcpservers_lifecycle.py:249-252`).
+   `RowsAffected` and return `ErrNotFound` on zero.
+   **RESOLVED (v15): apply it uniformly to every caller, token rotation included.**
+   `access_token.go:101-108` currently swallows "no row matched"; after this change it
+   surfaces an error. That is the desired behavior — rotating a token against a
+   soft-deleted server is a bug signal, and swallowing it means never learning about
+   it. **Design-doc obligation:** confirm a rotation failure degrades gracefully (the
+   tool call fails, per `client.go:97-100`'s existing error path) and does not abort
+   the surrounding call.
+   **RESOLVED (v15, D16): `McpServerDelete` gains the same predicate**, while the
+   handler keeps answering **200 on a repeat DELETE** (idempotent) and stops
+   re-publishing `EventTypeDeleted`. The 200 is load-bearing: the validator cleanup
+   fixture deletes unconditionally (`test_mcpservers_lifecycle.py:249-252`), so a 404
+   on the second delete would turn teardown into a failure.
    **MANDATORY ADDITION (D20): an existence gate inside `mcpserverhandler.Update`,
    placed ahead of BOTH the `len(fields)==0` short-circuit (`handler.go:194-204`)
    AND the `ValidateURL`/`status.IsValid`/`authType.IsValid` block
@@ -956,13 +980,39 @@ Redis cache (§3.9), because there is no measured signal for it.
  `FieldKeyVersion = 0` next to the nil ciphertext/nonce
  (`mcpserverhandler/handler.go:178-182`). Delete should match.
 3. **Naming collision** (`uvx voipbin-mcp` = VoIPBin-as-MCP-server vs
-   customer-registered MCP server): rename the `ai_overview.rst:681` heading only,
-   or also `skill.md`/`llms.txt`? And should `ai_overview.rst:685` keep pointing at
-   the third-party fork rather than `github.com/voipbin/mcp`?
+   customer-registered MCP server). **RESOLVED (v15).**
+   - **Rename scope: the `ai_overview.rst:681` heading only.** Not `skill.md` or
+     `llms.txt` — PR A is already large and a platform-wide rename is its own task
+     (kept as a §4 non-goal).
+   - **The third-party link is REPLACED, not kept. 대표님 확정: "a로 가자."**
+     `ai_overview.rst:685` currently advertises
+     `https://github.com/nrjchnd/voipbin-mcp` as "A recommended open-source
+     implementation". **This is a documentation defect of the same class as D5, not a
+     preference**, and the earlier draft of this document wrongly deferred it to 대표님
+     as unjudgeable. Measured 2026-09-27:
+
+     | | `voipbin/mcp` | `nrjchnd/voipbin-mcp` (currently linked) |
+     |---|---|---|
+     | Owner | **VoIPBin org** | third-party individual |
+     | Last push | **2026-04-06** | 2025-05-05 (~17 months stale) |
+     | Tests / CI | **both present** | neither |
+     | Packaging | **`pyproject.toml` + `uv.lock`** | `requirements.txt` |
+
+     Decisive: the PyPI package `voipbin-mcp` (v0.1.1) declares
+     `Repository: https://github.com/voipbin/mcp`. **So `uvx voipbin-mcp` installs the
+     official repo, NOT the linked fork** — the docs point somewhere the documented
+     command does not go. PR A replaces the link with `github.com/voipbin/mcp`, changes
+     "A recommended open-source implementation" to **official**, states `uvx
+     voipbin-mcp` as the run command, and **removes the fork link entirely** rather
+     than listing it as a community alternative, so exactly one answer is published.
 4. **api-validator coverage** (third repo `monorepo-monitoring`, therefore a fourth
    PR): `mcp_server_ids` on `POST /ais`, revocation behavior after DELETE, OAuth
-   start/complete against a deleted server, `has_secret` false after DELETE. Add now
-   or defer?
+   start/complete against a deleted server, `has_secret` false after DELETE.
+   **RESOLVED (v15): DEFER — not in PR A, and not until ETC-18 is fixed.** Not a
+   priority judgement: the validator is currently **leaking test resources into the
+   production account** (100 `api-validator-mcp-*` servers measured 2026-09-27, ~4 per
+   run, Jira **ETC-18**). Adding MCP coverage before the leak is fixed accelerates the
+   accumulation. Sequence: ETC-18 → then this coverage as its own PR.
 5. **D13 policy: are MCP servers permitted on `TypeInsight` AIs?**
    (v10 confirmed "add the AI-type gate" — "Q5. 추가하도록 하자." — then)
    **REVERSED in v14 — 대표님 확정: "인사이트도 mcp 사용가능하도록 해."** Insight AIs
@@ -1151,11 +1201,16 @@ Redis cache (§3.9), because there is no measured signal for it.
 
    Applies equally to `teamgraph/sidebar.js:753-782` once PR C adds the field (§4).
 7. **Does `square-admin/CLAUDE.md` Field Sync Points gain `src/types/api.ts` as a
-   fourth row?** Recommend yes (PR C).
+   fourth row?** **RESOLVED (v15): yes, in PR C.** One table row; `types/api.ts` is
+   exactly the site the existing three-row table lets contributors forget.
 8. **D14 scope in PR A:** document the three webhook event types now, or only fix
    the `ai_struct_ai.rst:69` "Defaults to `[]`" vs `,omitempty` contradiction?
-   Recommend fixing the contradiction in PR A and documenting the event types in the
-   same PR if it stays reviewable.
+   **RESOLVED (v15): the contradiction is MANDATORY in PR A; the event-type
+   documentation is included if PR A stays reviewable, and split out otherwise.**
+   The contradiction is a published falsehood customers read today, so it ships with
+   PR A regardless. The three event types are net-new prose whose volume is only known
+   once the other doc fixes are written; the design doc makes the call, and splitting
+   is a scope decision, not a new question.
 
 ## 6. Risk table
 
@@ -1322,6 +1377,14 @@ about it, self-flagged a possible fourth instance — and then created a fifth i
 very decision meant to close the loop.
 
 Lessons now in effect:
+- **"Only the owner can judge this" is a claim that itself needs evidence.** v14
+  deferred the MCP-link question to 대표님 as unjudgeable without opening either
+  repository. Five minutes of checking (commit dates, tests, CI, and the PyPI package's
+  declared repo) showed the documented link contradicts the documented command — an
+  objective defect, D24. Escalate a question only after establishing there is no fact
+  that settles it; otherwise escalation is just unfinished work.
+- **Check the artifact a doc tells users to run, not only the text.** The collision here
+  was invisible in prose and obvious from PyPI metadata.
 - **When a gate needs five rounds of design, question the policy, not the gate.**
   D13 → D22 → D23 was three escalating attempts to place one AI-type gate; each fix
   created the next defect. The author never stepped back to ask whether the restriction
