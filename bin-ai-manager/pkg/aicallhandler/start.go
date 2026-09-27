@@ -358,7 +358,20 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		// reuse and Metadata staleness" -- this reuse branch does not otherwise
 		// touch Metadata, so the write is a single new key, read-modify-write
 		// against whatever else may already be there).
-		if errMcp := h.refreshMcpToolMap(ctx, res, a); errMcp != nil {
+		// The MCP whitelist belongs to the CURRENT team member, not the start
+		// member bound in a. On failure resolveActiveAIForMcp returns nil and we
+		// keep refreshing with a -- never skip the refresh, or a stale map from a
+		// previous member survives.
+		// Only a team can have an active member that differs from a; for a plain AI
+		// aicall, a already IS the governing AI, so resolving again would only add an
+		// RPC. On failure keep a -- never skip the refresh, or a stale map survives.
+		mcpAI := a
+		if res.AssistanceType == aicall.AssistanceTypeTeam {
+			if resolved := h.resolveActiveAIForMcp(ctx, res); resolved != nil {
+				mcpAI = resolved
+			}
+		}
+		if errMcp := h.refreshMcpToolMap(ctx, res, mcpAI); errMcp != nil {
 			log.Warnf("Could not refresh the mcp tool map on aicall reuse. aicall_id: %s, err: %v", res.ID, errMcp)
 		}
 

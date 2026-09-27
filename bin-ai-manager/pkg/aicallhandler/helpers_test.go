@@ -11,9 +11,11 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/team"
+	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/teamhandler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -541,6 +543,157 @@ func Test_cutBeforeSessionStart(t *testing.T) {
 				if contents[i] != want {
 					t.Errorf("row %d mismatch. expect: %q, got: %q", i, want, contents[i])
 				}
+			}
+		})
+	}
+}
+
+// Test_aicallHandler_resolveActiveAIForMcp pins the fallback contract that three
+// successive versions of the D28 analysis got wrong: the MCP paths must resolve the
+// CURRENT team member's AI, and on EVERY failure mode degrade to the START member
+// rather than returning nothing. resolveTeamMemberAI alone is not enough -- it
+// reaches its own fallback loop only when the member is absent from the team, and
+// errors out when the member is present but its AI is unfetchable.
+func Test_aicallHandler_resolveActiveAIForMcp(t *testing.T) {
+	aiID := uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001")
+	teamID := uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000002")
+	curMemberID := uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000003")
+	curAIID := uuid.FromStringOrNil("c0000000-0000-0000-0000-0000000000a3")
+	startMemberID := uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000004")
+	startAIID := uuid.FromStringOrNil("d0000000-0000-0000-0000-0000000000a4")
+
+	fullTeam := &team.Team{
+		Identity:      identity.Identity{ID: teamID},
+		StartMemberID: startMemberID,
+		Members: []team.Member{
+			{ID: curMemberID, AIID: curAIID},
+			{ID: startMemberID, AIID: startAIID},
+		},
+	}
+	// the current member is gone from the roster, e.g. the team was edited mid-session
+	staleTeam := &team.Team{
+		Identity:      identity.Identity{ID: teamID},
+		StartMemberID: startMemberID,
+		Members: []team.Member{
+			{ID: startMemberID, AIID: startAIID},
+		},
+	}
+
+	tests := []struct {
+		name      string
+		ac        *aicall.AIcall
+		mockSetup func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler)
+		wantAIID  uuid.UUID
+		wantNil   bool
+	}{
+		{
+			name: "AI type — resolves AssistanceID with no team RPC",
+			ac: &aicall.AIcall{
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   aiID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				ah.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{Identity: identity.Identity{ID: aiID}}, nil)
+			},
+			wantAIID: aiID,
+		},
+		{
+			name: "Team, happy path — resolves the CURRENT member, not the start member",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: curMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(fullTeam, nil)
+				ah.EXPECT().Get(gomock.Any(), curAIID).Return(&ai.AI{Identity: identity.Identity{ID: curAIID}}, nil)
+			},
+			wantAIID: curAIID,
+		},
+		{
+			name: "Team, degraded mode 1 — current member absent from the team falls back to the start member",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: curMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(staleTeam, nil)
+				// resolveTeamMemberAI's own fallback loop covers this mode
+				ah.EXPECT().Get(gomock.Any(), startAIID).Return(&ai.AI{Identity: identity.Identity{ID: startAIID}}, nil)
+			},
+			wantAIID: startAIID,
+		},
+		{
+			name: "Team, degraded mode 2 — current member PRESENT but its AI is unfetchable still falls back",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: curMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(fullTeam, nil)
+				// this is the mode resolveTeamMemberAI does NOT cover: it returns an
+				// error before reaching its fallback loop, so the explicit retry below
+				// is the only thing keeping the MCP paths alive.
+				ah.EXPECT().Get(gomock.Any(), curAIID).Return(nil, errors.New("rpc timeout"))
+				ah.EXPECT().Get(gomock.Any(), startAIID).Return(&ai.AI{Identity: identity.Identity{ID: startAIID}}, nil)
+			},
+			wantAIID: startAIID,
+		},
+		{
+			name: "Team, degraded mode 3 — team unfetchable returns nil, there is no start member to reach",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: curMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(nil, errors.New("team gone"))
+			},
+			wantNil: true,
+		},
+		{
+			name: "Team — start member itself unfetchable returns nil without a second identical attempt",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: startMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(fullTeam, nil)
+				// exactly once: the current member IS the start member, so retrying
+				// would fail identically and must be skipped.
+				ah.EXPECT().Get(gomock.Any(), startAIID).Return(nil, errors.New("rpc timeout"))
+			},
+			wantNil: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			tt.mockSetup(mockTeam, mockAI)
+
+			h := &aicallHandler{teamHandler: mockTeam, aiHandler: mockAI}
+			got := h.resolveActiveAIForMcp(context.Background(), tt.ac)
+
+			if tt.wantNil {
+				if got != nil {
+					t.Errorf("Wrong match. expect: nil, got: %v", got)
+				}
+				return
+			}
+			if got == nil {
+				t.Fatalf("Wrong match. expect: ai %s, got: nil", tt.wantAIID)
+			}
+			if got.ID != tt.wantAIID {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.wantAIID, got.ID)
 			}
 		})
 	}

@@ -1158,9 +1158,21 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 						{ID: memberID, AIID: memberAIID},
 					},
 				}, nil)
+				// Twice: once for resolveActiveAIForMcp (the MCP tool map must be built
+				// from the CURRENT member's whitelist, not the start member's), once for
+				// resolveTeamMemberForSend's engine-model override.
 				m.ai.EXPECT().Get(ctx, memberAIID).Return(&ai.AI{
 					Identity:    commonidentity.Identity{ID: memberAIID},
 					EngineModel: "grok.grok-3", // resolved engine model overrides the stale snapshot
+				}, nil).Times(2)
+
+				// resolveActiveAIForMcp also walks the team to reach the current member.
+				m.team.EXPECT().Get(ctx, teamID).Return(&team.Team{
+					Identity:      commonidentity.Identity{ID: teamID},
+					StartMemberID: uuid.FromStringOrNil("a7777777-0001-11f0-9999-999999999999"),
+					Members: []team.Member{
+						{ID: memberID, AIID: memberAIID},
+					},
 				}, nil)
 
 				// resolveActiveAIIDFromAIcall: get team to find CurrentMemberID's AIID.

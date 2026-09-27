@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 )
@@ -163,4 +164,69 @@ func (h *aicallHandler) interruptPreviousPipecatcall(ctx context.Context, pcID u
 		return
 	}
 	promAIcallInterruptAttemptedTotal.WithLabelValues("alive").Inc()
+}
+
+// resolveActiveAIForMcp resolves the AI whose MCP whitelist governs this AIcall.
+//
+// It exists because the MCP paths need the CURRENT team member's whitelist, while
+// resolveAI resolves the START member and resolveActiveAIIDFromAIcall has no
+// fallback at all (it returns uuid.Nil and only warns). Neither is usable here:
+// using the start member calls the wrong member's MCP servers, and propagating a
+// uuid.Nil would make the MCP paths fail for a team whose current member is
+// momentarily unresolvable -- strictly worse than today.
+//
+// The fallback is therefore unconditional: on ANY failure (member absent from the
+// team, member's AI unfetchable, team unfetchable) it degrades to the START
+// member's AI, which is the session's defined state whenever CurrentMemberID
+// cannot be resolved (the send path persists exactly that repair). It returns nil
+// only when the start member is unusable too; callers must then keep their
+// existing behaviour rather than failing the call.
+//
+// Deliberately separate from resolveActiveAIIDFromAIcall: that helper has six
+// other callers driving message attribution, plus a twin in messagehandler, and
+// giving it a fallback would change all of them.
+func (h *aicallHandler) resolveActiveAIForMcp(ctx context.Context, c *aicall.AIcall) *ai.AI {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "resolveActiveAIForMcp",
+		"aicall_id": c.ID,
+	})
+
+	if c.AssistanceType != aicall.AssistanceTypeTeam {
+		a, err := h.aiHandler.Get(ctx, c.AssistanceID)
+		if err != nil {
+			log.Warnf("Could not get the ai. ai_id: %s, err: %v", c.AssistanceID, err)
+			return nil
+		}
+		return a
+	}
+
+	t, err := h.teamHandler.Get(ctx, c.AssistanceID)
+	if err != nil {
+		// no team, no start member to fall back to.
+		log.Warnf("Could not get the team. team_id: %s, err: %v", c.AssistanceID, err)
+		return nil
+	}
+
+	// resolveTeamMemberAI falls back to the start member only when the requested
+	// member is absent; it errors out when the member is present but its AI is
+	// unfetchable. Retry explicitly for the start member to cover that mode too.
+	a, resolvedMemberID, err := h.resolveTeamMemberAI(ctx, t, c.CurrentMemberID)
+	if err == nil {
+		return a
+	}
+	log.Warnf("Could not resolve the current team member AI, falling back to the start member. member_id: %s, err: %v", c.CurrentMemberID, err)
+
+	if c.CurrentMemberID == t.StartMemberID {
+		// already the start member, the retry would fail identically.
+		return nil
+	}
+
+	a, resolvedMemberID, err = h.resolveTeamMemberAI(ctx, t, t.StartMemberID)
+	if err != nil {
+		log.Warnf("Could not resolve the start member AI either. start_member_id: %s, err: %v", t.StartMemberID, err)
+		return nil
+	}
+	log.Debugf("Resolved the start member AI as fallback. member_id: %s", resolvedMemberID)
+
+	return a
 }

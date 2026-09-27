@@ -351,7 +351,9 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			aicall:   baseAIcall(goValueToolMap),
 			toolName: namespacedName,
 			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
-				aiH.EXPECT().Get(gomock.Any(), aiID).Return(nil, context.DeadlineExceeded)
+				// Twice: resolveActiveAIForMcp tries first and returns nil, then the
+				// resolveAI fallback tries and also fails -- only then fail closed.
+				aiH.EXPECT().Get(gomock.Any(), aiID).Return(nil, context.DeadlineExceeded).Times(2)
 			},
 			wantResult:      "failed",
 			wantCallToolHit: false,

@@ -539,6 +539,23 @@ load-bearing mechanism as co-required. `resolveTeamMemberForSend`'s caller only 
 runs; and when the resolution itself carries the fallback, it yields the same AI whether it
 runs before or after the repair. **The fallback-bearing resolution does all the work.**
 
+**VERIFIED IN CODE (v24).** 대표님 authorised implementing D28 ahead of the remaining
+analysis, because three successive prescriptions for it were refuted by code the document had
+only reasoned about. The implementation is committed in this branch and the compiler and test
+suite adjudicated it. Two things the prose had NOT anticipated surfaced immediately:
+
+1. **v23 said "use it at both MCP sites" without qualifying the non-team case.** Implemented
+   literally, it added an `aiHandler.Get` for plain AI aicalls, where the bound `a` already IS
+   the governing AI — three existing reuse tests failed on the unexpected RPC. Now gated on
+   `AssistanceType == AssistanceTypeTeam`.
+2. **The "start member is already the current member" case needed an explicit skip**, or the
+   fallback retries the identical failing fetch. Not mentioned anywhere in v19-v23.
+
+`Test_aicallHandler_resolveActiveAIForMcp` pins all six cases (happy path resolves the
+CURRENT member; each of the three degraded modes; the already-start-member skip; the no-team
+RPC for plain AI). `go build ./...`, `go vet`, and `go test ./...` are clean across
+bin-ai-manager. The prescription below is retained as the record of what was implemented.
+
 **Resolution (v23): one mechanism — a local fallback-bearing resolution at the two MCP
 sites, and no change to the shared helper.**
 

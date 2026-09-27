@@ -141,11 +141,18 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 		return res
 	}
 
-	tmpAI, _, _, err := h.resolveAI(ctx, c.AssistanceType, c.AssistanceID)
-	if err != nil {
-		log.Errorf("Could not resolve AI. err: %v", err)
-		fillFailed(res, errMcpToolCallFailed("could not retrieve AI configuration"))
-		return res
+	// The whitelist that governs this call is the CURRENT team member's. Fall back
+	// to resolveAI (the start member) rather than failing, so this gate is never
+	// more failure-prone than it was before the current-member resolution existed.
+	tmpAI := h.resolveActiveAIForMcp(ctx, c)
+	if tmpAI == nil {
+		var err error
+		tmpAI, _, _, err = h.resolveAI(ctx, c.AssistanceType, c.AssistanceID)
+		if err != nil {
+			log.Errorf("Could not resolve AI. err: %v", err)
+			fillFailed(res, errMcpToolCallFailed("could not retrieve AI configuration"))
+			return res
+		}
 	}
 
 	if !mcpServerIDIsWhitelisted(tmpAI.McpServerIDs, ref.ServerID) {
