@@ -2,13 +2,15 @@
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v9, Analysis Review Loop round 8 pending
+Status: v10, Analysis Review Loop round 8 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive). Adversarial CHANGES_REQUESTED with
 one blocking finding at the PR A ↔ PR C boundary → D21 + §5 Q11.
-v9: 대표님 resolved Q11 (skip already-stored ids, reject newly added ones) and Q6
-(no prune loop). No open questions block the PR A design doc except §5 Q5 and Q9.
+v9: 대표님 resolved Q11 (skip already-stored ids, reject newly added ones) and Q6.
+v10: 대표님 resolved Q5 (add the AI-type gate) and Q9 (reject `auth_type: "oauth"`
+on writes). **No open question blocks the PR A design doc.** §5 Q1-Q11 are all
+decided; the remaining §5 items are implementation details for the design doc.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -46,6 +48,8 @@ separately.
 | Q6 | Split the analysis so A/C can proceed without waiting on B? | **Yes.** "권고대로 진행해" |
 | Q7 | D21: how to handle an AI whose whitelist already holds a deleted id? | **Skip already-stored ids, reject newly added ones.** "skip-not-reject 방식으로 하자." + "이후에 AI 업데이트를 할 때 ... 이때는 reject 를 해야하지 않을까?" |
 | Q8 | Add a prune loop that strips deleted ids from every affected AI? | **No.** "비쌀려나?" → no transaction on delete, un-indexed JSON column, one `ai_updated` webhook per affected AI, and skip-not-reject already resolves D21 alone |
+| Q9 | D13: add an AI-type parameter to `ValidateMcpServerIDs`? | **Yes, add it.** "Q5. 추가하도록 하자." Deny-by-default `default:` branch, per `AllowedToolNames` precedent |
+| Q10 | D17: reject `auth_type: "oauth"` on POST/PUT? | **Yes, reject.** "좋아, 네 제안대로 가자" Gate the write handlers, not `IsValid()`; reject the transition INTO oauth, not the value |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -652,8 +656,8 @@ mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 ### PROCEED with PR A and PR C.
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
-D1, D2, D3, D4, D5, D6, D12, D13 (pending §5 Q5), D14, **D15, D16, D17 (pending
-§5 Q9), D18, D19, D20, D21**. One logical unit: "a deleted or
+D1, D2, D3, D4, D5, D6, D12, D13, D14, **D15, D16, D17, D18, D19, D20, D21**. One
+logical unit: "a deleted or
 foreign MCP server must be inert everywhere, write paths must reject rather than
 silently succeed, and the docs/config must stop describing things that are not true."
 
@@ -759,32 +763,82 @@ Redis cache (§3.9), because there is no measured signal for it.
    PR): `mcp_server_ids` on `POST /ais`, revocation behavior after DELETE, OAuth
    start/complete against a deleted server, `has_secret` false after DELETE. Add now
    or defer?
-5. **D13 policy: are MCP servers permitted on `TypeInsight` AIs?** If conditional,
-   `ValidateMcpServerIDs` gains an AI-type parameter and the gate lands in PR A. If
-   unconditional by design, PR A records the rationale so the asymmetry with
-   `tool_names` is deliberate rather than accidental. **This must be answered before
-   PR A's design doc**, because it changes a function signature and both call sites.
+5. **D13 policy: are MCP servers permitted on `TypeInsight` AIs?** **RESOLVED — 대표님
+   확정: add the AI-type gate.** ("Q5. 추가하도록 하자.")
+   `ValidateMcpServerIDs` gains a `Type` parameter and both call sites
+   (`v1_ais.go:118`, `:272`) pass the resolved AI type, mirroring
+   `ValidateToolNames(t Type, …)`. The precedent to follow is
+   `models/ai/tool_validation.go:36-47` `AllowedToolNames(t Type)`, whose `default:`
+   branch is **deny-by-default** (empty set + `UnknownAITypeToolDenialTotal.Inc()` at
+   `:43-45`), explicitly so a future third AI type is not silently collapsed into the
+   write-capable `Normal` set. PR A must not introduce a fail-open `default:` here.
+
+   Remaining sub-decision for the design doc (implementation detail, not a blocker):
+   whether Insight AIs are denied MCP servers outright, or allowed a narrower set.
+   Recommend **denied outright for now** — `AllowedToolNames(TypeInsight)` returns
+   `tool.AllInsightToolNames` (read-only Insight tools), and an arbitrary customer MCP
+   server is by definition not in that reviewed set. A per-server capability model
+   would be the honest alternative, but nothing in the codebase supports it today and
+   inventing one here is out of PR A's scope.
+
    **Coupled decision (D18): does validation move AHEAD of the AI write?** Today
    `ValidateMcpServerIDs` runs after `aiHandler.Create`/`Update` has committed
    (`v1_ais.go:92-128`, `:247-283`), so a rejected whitelist leaves an orphaned or
    already-mutated AI and still returns 400. Since D13 rewrites this signature and
    both call sites anyway, fixing the ordering here is nearly free; deferring it
    means shipping a known orphan path. Recommend fixing it in PR A.
-9. **D17: is `auth_type: "oauth"` allowed on POST/PUT?** (listed here out of numeric
-   order because it shares Q5's write-gate character; see the end of this section for
-   Q6-Q8.) `ai_struct_mcpserver.rst:35`
-   says no; nothing enforces it, and there is no OpenAPI request-validator middleware
-   in `bin-api-manager` to lean on (§3.7c). Either (a) add the write-time gate in
-   `mcpserverhandler.Create`/`Update` and keep the docs sentence, or (b) drop the
-   sentence and accept customer-set `oauth` rows. Recommend (a): option (b) lets a
-   customer create a server that stores a secret the oauth code path ignores
-   (`client.go:90-101`) and then fails on an empty access token
-   (`access_token.go:38`) — undiagnosable from the API surface. Note (a) also implies
-   deciding whether `Create` must reject a `secret` when `auth_type` is `oauth`.
+
+   **Interaction with Q11 that the design doc must resolve explicitly.** Moving
+   validation ahead of the write removes the `tmp` that Q11's diff reads
+   (`tmp.McpServerIDs` at `:272` is currently the post-`Update`, pre-`UpdateMcpServerIDs`
+   row). Once validation runs first, the stored whitelist must be fetched before the
+   write — an `AIGet` that the PUT path does not perform today. This does not change
+   Q11's decision, but it does mean Q11's "zero extra DB reads" claim holds only while
+   validation stays after the write. Naming this now prevents the D15/D20/D21 failure
+   mode (a prescribed fix that the prescribed ordering invalidates) from recurring a
+   fourth time.
+9. **D17: is `auth_type: "oauth"` allowed on POST/PUT?** **RESOLVED — 대표님 확정:
+   reject it (option a).** ("좋아, 네 제안대로 가자")
+
+   The code already declares this the correct behavior and only the implementation
+   failed to follow: `models/mcpserver/main.go:17-19` says "never set directly via
+   POST/PUT with a customer-supplied secret," and the OpenAPI spec enumerates only
+   `["", "bearer", "api_key"]` (`paths/mcpservers/main.yaml:57`, `id.yaml:74`). But
+   `validAuthTypes` at `:23-25` includes `AuthTypeOAuth: true`, the write paths check
+   only `IsValid()` (`handler.go:48-50`, `:154-156`), and there is no OpenAPI
+   request-validator middleware in `bin-api-manager` to fall back on (§3.7c). Option
+   (b) — relaxing the docs to match — would deliberately make an already-correct
+   document wrong.
+
+   **What the defect produces today:** the row saves with 200 and lists as `active`,
+   but the oauth branch resolves its credential through
+   `oauthHandler.GetValidAccessToken` (`client.go:98-101`), which fails on an empty
+   access token. The customer sees a healthy-looking server whose tools never fire,
+   with nothing on the API surface explaining why. **Same class as Q11's
+   silent-attach:** a write that succeeds and does nothing.
+
+   **Implementation constraints for the design doc:**
+   - Gate `mcpserverhandler.Create`/`Update`, **not** `AuthType.IsValid()` — the
+     OAuth completion path legitimately writes `oauth` internally
+     (`mcpoauthhandler/complete.go:136-158`) and must keep passing model validation.
+   - Follow Q11's shape: **validate the transition, not the value.** A server that
+     legitimately completed OAuth must stay editable — a PUT changing only `name`
+     that re-submits `auth_type: "oauth"` unchanged must NOT 400. Reject only when the
+     request *moves* a row into `oauth`. Without this the gate reproduces D21's freeze
+     on OAuth-backed servers.
+   - Decide whether `Create` must also reject a `secret` when `auth_type` is `oauth`
+     (the secret would be stored and then ignored by `client.go:90-101`).
+
+   **Migration risk: none measured.** All 100 active production MCP servers are
+   api-validator leftovers with `auth_type` `bearer` (75) or `""` (25) — **zero rows
+   carry a customer-set `oauth`**, so no existing row is frozen by this gate. (Source:
+   full cursor walk of `GET /v1.0/mcpservers` on `api.voipbin.net`, 2026-09-27; the
+   leftover accumulation itself is tracked separately as ETC-18.)
+
    **Scope note:** the unenforced assertion appears TWICE in the same file, `:35`
    and again in the Auth Type table at `:100` ("Never set directly by the customer"),
-   plus as a code comment at `models/mcpserver/main.go:17-19`. Whichever way Q9
-   resolves, all three must move together.
+   plus as a code comment at `models/mcpserver/main.go:17-19`. All three now become
+   true statements and must be verified together rather than edited.
 10. **D20/D15 error contract: which 404 do gated writes return?** Both candidates
    terminate at 404, so there is no 500 risk (§3.7g verified the plumbing), but the
    customer-visible code differs: bare `dbhandler.ErrNotFound` → `RESOURCE_NOT_FOUND`,
@@ -908,8 +962,16 @@ succeeds), rejected by
 delete zeroes all secret/token ciphertext in the SAME statement while update paths
 never do; that dispatch refuses a server owned by another customer (D12); that the
 team path validates the CURRENT member's whitelist; and `GetValidAccessToken`'s new
-error when rotating against a row deleted mid-flight. Plus D13's type gate if §5 Q5
-says conditional. **New in v6:** that a PUT against a deleted server returns an
+error when rotating against a row deleted mid-flight. **Q5 (D13) now confirmed:** an
+AI-type gate test proving `TypeInsight` cannot whitelist an MCP server, plus a test
+that an unknown/future `Type` denies rather than falling through to the `Normal` set
+(mirroring `AllowedToolNames`' `default:` branch at
+`models/ai/tool_validation.go:42-45`). **Q9 (D17) now confirmed:** that POST/PUT
+setting `auth_type: "oauth"` is rejected, AND that a PUT re-submitting an unchanged
+`auth_type: "oauth"` on an OAuth-completed row still succeeds (transition gate, not a
+value gate — otherwise the gate freezes legitimate OAuth servers the way D21 froze
+AIs), AND that `mcpoauthhandler/complete.go:136-158` still writes `oauth` internally.
+**New in v6:** that a PUT against a deleted server returns an
 error rather than a silent 200 with no `EventTypeUpdated` published (D15 — assert
 BOTH the status and the absence of the webhook); that every other
 `McpServerUpdate` caller still behaves correctly under the new `RowsAffected`
