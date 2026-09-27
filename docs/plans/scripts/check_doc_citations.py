@@ -58,23 +58,17 @@ CITATION = re.compile(
 CONTINUATION = re.compile(r"`:(?P<start>\d+)(?:[-,](?P<end>\d+))?`")
 HEXTOKEN = re.compile(r"\b([0-9a-f]{7,40})\b")
 
-# Cited files that legitimately live outside this repository.
-# square-admin paths appear under several shapes in this document
-# (src/views/..., teamgraph/..., __tests__/...), all in monorepo-javascript;
-# the api-validator files live in monorepo-monitoring.
+# Cited files that legitimately live outside every root we were given.
+#
+# This list is a LAST RESORT, consulted only after resolve() has failed against
+# the main root AND every --extra-root. It used to be consulted FIRST, which
+# meant every square-admin and api-validator citation was skipped unopened and
+# a citation to line 999999 of a real file passed the gate. Do not restore that
+# order: an entry here must mean "we have no copy of this file", never "do not
+# check this file".
 EXTERNAL_HINTS = (
-    "square-admin/",
-    "api-validator/",
-    "monorepo-monitoring/",
-    "monorepo-javascript/",
-    "teamgraph/",
-    "__tests__/",
-    "src/views/",
     "skill.md",
     "llms.txt",
-    "cleanup_report.py",
-    "test_mcpservers_lifecycle.py",
-    "test_ai_lifecycle.py",
 )
 
 # Alembic revision identifiers are 12-hex strings that look exactly like short
@@ -208,16 +202,27 @@ def main():
     root = repo_root(os.path.dirname(doc_path))
     extra = list(args.extra_root)
     if not extra:
-        parent = os.path.dirname(os.path.dirname(root))
-        for sibling in ("monorepo-javascript", "monorepo-monitoring"):
-            candidate = os.path.join(parent, sibling)
-            if os.path.isdir(candidate):
-                extra.append(candidate)
+        # root may be a worktree (…/monorepo/.worktrees/<branch>), so walk up
+        # until we find a directory that actually holds the siblings. Without
+        # this the documented bare invocation fails in every worktree, which
+        # is where all review work happens.
+        probe = root
+        for _ in range(4):
+            probe = os.path.dirname(probe)
+            if not probe or probe == "/":
+                break
+            found = [os.path.join(probe, s)
+                     for s in ("monorepo-javascript", "monorepo-monitoring")
+                     if os.path.isdir(os.path.join(probe, s))]
+            if found:
+                extra = found
+                break
     index = index_files(root, extra)
     text = open(doc_path, encoding="utf-8").read()
 
     total = external = anchored = unanchored = 0
     problems = []
+    dropped = []
     warnings = []
     landings = []
     source_cache = {}
@@ -230,6 +235,7 @@ def main():
         return source_cache[path]
 
     def check_one(doc_line, cited, path, num, symbol):
+        """Check ONE line reference. Every call counts as one line-check."""
         nonlocal anchored, unanchored
         src = source_lines(path)
         if num < 1 or num > len(src):
@@ -241,12 +247,19 @@ def main():
         landed = src[num - 1]
         if symbol:
             anchored += 1
-            if symbol not in landed:
+            # Word-boundary match: a bare substring lets `resolveActiveAI`
+            # pass against `resolveActiveAIIDFromAIcall`, which pins nothing.
+            if not re.search(r"\b%s\b" % re.escape(symbol), landed):
                 problems.append(
                     "doc:%d  %s:%d ANCHOR MISMATCH: expected %r, line reads %r"
                     % (doc_line, cited, num, symbol, landed.strip()[:80])
                 )
                 return
+            if landed.lstrip().startswith(("//", "#", "*")):
+                warnings.append(
+                    "doc:%d  %s:%d anchor %r landed on a COMMENT, not the "
+                    "construct" % (doc_line, cited, num, symbol)
+                )
         else:
             unanchored += 1
         stripped = landed.strip()
@@ -260,21 +273,30 @@ def main():
             landings.append("doc:%-5d %s:%-5d | %s"
                             % (doc_line, cited, num, stripped[:100]))
 
+    last_path = None
     for doc_line, line in enumerate(text.split("\n"), start=1):
-        last_path = None
+        # Prose wraps, so a bullet may cite the path on one line and continue
+        # with bare `:N` on the next. Carry the path across wrapped lines and
+        # drop it at a paragraph or heading boundary, where a new subject
+        # starts and binding would be a guess.
+        if not line.strip() or line.lstrip().startswith(("#", "|", "```")):
+            last_path = None
         for match in CITATION.finditer(line):
             cited = match.group("path")
             total += 1
-            if is_external(cited):
-                external += 1
-                last_path = None
-                continue
+            # Resolve FIRST. is_external is only a fallback for paths no root
+            # has a copy of; consulting it first is what let a citation to
+            # line 999999 of a real square-admin file pass.
             path, note = resolve(cited, index)
             if path is None:
+                if is_external(cited):
+                    external += 1
+                    last_path = None
+                    continue
                 if note == "NOT-FOUND" and "/" not in cited:
                     problems.append(
                         "doc:%d  %s UNRESOLVED bare basename (add a path prefix, "
-                        "or add it to EXTERNAL_HINTS if it lives elsewhere)"
+                        "or pass the repo that holds it with --extra-root)"
                         % (doc_line, cited)
                     )
                 else:
@@ -290,27 +312,44 @@ def main():
                 symbol = None
             check_one(doc_line, cited, path, int(match.group("start")), symbol)
             if match.group("end"):
-                check_one(doc_line, cited, path, int(match.group("end")), None)
+                # The range END gets the same anchor: a range whose start is
+                # pinned and whose end drifts freely is half a check.
+                check_one(doc_line, cited, path, int(match.group("end")), symbol)
 
+        conts = list(CONTINUATION.finditer(line))
         if last_path is not None:
             cited, path = last_path
-            for cont in CONTINUATION.finditer(line):
-                total += 1
+            for cont in conts:
                 check_one(doc_line, cited, path, int(cont.group("start")), None)
                 if cont.group("end"):
                     check_one(doc_line, cited, path, int(cont.group("end")), None)
+        elif conts:
+            # A bare `:N` with no resolvable path on its line is silently
+            # unverifiable. Say so rather than dropping it.
+            dropped.extend(
+                "doc:%d  :%s has no resolvable file on its line (cite the path "
+                "explicitly)" % (doc_line, c.group("start")) for c in conts
+            )
 
     bad_commits = check_commits(text, root)
 
+    # Every number below counts LINE REFERENCES (a `a.go:10-20` citation is
+    # two), so the three add up to the total. They are not citation counts.
     print("citations extracted  : %d" % total)
-    print("out-of-repo/skipped  : %d" % external)
-    print("symbol-anchored      : %d (verified against the landed line)" % anchored)
-    print("unanchored           : %d (range-checked only -- drive this down)"
+    print("line refs checked    : %d" % (anchored + unanchored))
+    print("  symbol-anchored    : %d (verified against the landed line)" % anchored)
+    print("  unanchored         : %d (range-checked only -- drive this down)"
           % unanchored)
+    print("skipped, no copy here: %d citations" % external)
+    print("unverifiable bare :N : %d" % len(dropped))
     if args.verbose:
         print("\n--- landings ---")
         for entry in landings:
             print(entry)
+    if dropped:
+        print("\nUNVERIFIABLE CONTINUATIONS (%d):" % len(dropped))
+        for entry in dropped:
+            print("  " + entry)
     if warnings:
         print("\nWARNINGS (%d):" % len(warnings))
         for entry in warnings:
