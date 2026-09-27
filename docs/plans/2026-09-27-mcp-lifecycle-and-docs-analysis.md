@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v17, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v18, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v17, Analysis Review Loop round 12 pending
+Status: v18, Analysis Review Loop round 12 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -89,7 +89,7 @@ separately.
 | Q17 | PR A docs scope for D14 | **Contradiction (`ai_struct_ai.rst:69`) is mandatory**; the three webhook event types ship in the same PR if it stays reviewable, else split |
 | Q18 | Does the already-stored-id exemption cover the ownership check too? | **NO — D25 (§3.5a), SIXTH instance.** The exemption applies to the `tm_delete` predicate ONLY. `ValidateMcpServerIDs` gains a `storedIDs` parameter so existence and ownership run on every id; v12-v15's "no signature change" claim created a cross-tenant hole and is retracted |
 | Q19 | Where does the D12 ownership assertion live? | **BOTH resolution and dispatch** — D26 (§3.5b), SEVENTH instance. Dispatch-only was dead code (§3.1); resolution is where the credential is decrypted and sent. `resolveTools` already holds `a.CustomerID`, so cost is zero |
-| Q20 | Do pre-deploy soft-deleted rows get their credentials zeroed? | **OPEN — needs 대표님** (D27, §5 item 2). Recommend a one-off Alembic data migration, but the `tm_delete IS NOT NULL` ciphertext count is unmeasured and is a design-doc precondition |
+| Q20 | Do pre-deploy soft-deleted rows get their credentials zeroed? | **Yes — one-off Alembic data migration** ("a 로 가자"), all seven columns where `tm_delete IS NOT NULL`, authored in PR A and applied by 대표님, downgrade an explicit no-op. The affected-row count is unmeasured and remains a design-doc precondition (it changes the PR body's impact claim, not the decision) |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -147,6 +147,22 @@ separately.
   ones** (§5 Q11, 대표님 확정). Without the skip, every save of that AI 400s forever,
   for any unrelated edit; without the reject, attaching a deleted server fails
   silently. This is a PR A ↔ PR C cross-boundary defect that neither PR sees alone.
+- **D25** The D21 exemption above, as v12-v15 mandated it (filter the incoming id list,
+  "no signature change needed"), also exempts already-stored ids from the **customer
+  ownership** check — existence and ownership share one loop
+  (`mcpserver_validation.go:36-56`). A foreign id, once stored, then reaches resolution
+  and is used with its owner's decrypted credential. **SIXTH instance**; §3.5a. Fixed by
+  a `storedIDs` parameter so the exemption is predicate-scoped.
+- **D26** The D12 ownership assertion was prescribed at dispatch
+  (`mcp_tool.go:157-167`) only — the one path §3.1 proves is **unreachable in
+  production** — while the live leak runs through resolution (`:72-88` → `ListTools` →
+  `client.go:73`/`:80` decrypt → outbound). **SEVENTH instance**; §3.5b. Fixed by
+  asserting at both sites; `resolveTools` already holds `a.CustomerID`.
+- **D27** Credential zeroing is forward-only: rows soft-deleted BEFORE the deploy keep
+  their ciphertext, and re-deleting them matches zero rows and reports 200 while zeroing
+  nothing. **RESOLVED (v18): a one-off Alembic data migration** nulls all seven credential
+  columns where `tm_delete IS NOT NULL` (§5 item 2), authored in PR A and applied by
+  대표님, with an explicit no-op downgrade.
 - ~~**D22**~~ **VOIDED in v14** by the Q5 reversal — no AI-type gate exists, so a gate
   that under-enforces and freezes AIs cannot occur. Retained in §3.12b as the fourth
   recorded instance of the recurring failure mode. Not PR A or PR C scope.
@@ -980,7 +996,9 @@ is a third, reachable for `type: 'insight'` via `prompt_templates.js:659`
 ### PROCEED with PR A and PR C.
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
-D1, D2, D3, D4, D5, D6, D12, D14, **D15, D16, D17, D18, D19, D20, D21, D24, D25, D26**, and **D27 if 대표님 picks the migration**.
+D1, D2, D3, D4, D5, D6, D12, D14, **D15, D16, D17, D18, D19, D20, D21, D24, D25, D26, D27**.
+D27 adds the only schema artifact in PR A: one Alembic data migration, authored here and
+applied by 대표님.
 (D13, D22, D23 are VOIDED by the v14 policy reversal and are NOT work items.)
 (D13, D22, D23 voided in v14 — Insight AIs may use MCP servers.) One
 logical unit: "a deleted or
@@ -1129,31 +1147,41 @@ Redis cache (§3.9), because there is no measured signal for it.
 2. **Credential zeroing mechanics. RESOLVED: same statement as the delete
    timestamps. But rows deleted BEFORE the deploy are NOT covered — OPEN, needs 대표님.**
 
-   **OPEN QUESTION (D27, raised round 11).** Q2 as written only zeroes credentials
-   going **forward**, inside the `McpServerDelete` statement. D4 (`:97-98`, §3.4) states
-   the defect as ciphertext surviving *indefinitely* on already-deleted rows — and those
-   rows are exactly what the forward fix cannot reach. Worse, the obvious remediation
-   fails silently: `McpServerDelete` gains `tm_delete IS NULL` (§5 item 1), so
+   **RESOLVED (v18): a one-off Alembic data migration backfills the pre-deploy rows.**
+   대표님 확정: "a 로 가자."
+
+   Q2 as written only zeroes credentials going **forward**, inside the `McpServerDelete`
+   statement. D4 (`:97-98`, §3.4) states the defect as ciphertext surviving *indefinitely*
+   on already-deleted rows — exactly what the forward fix cannot reach. Worse, the obvious
+   remediation fails silently: `McpServerDelete` gains `tm_delete IS NULL` (§5 item 1), so
    re-deleting an already-deleted server matches **zero rows**, the handler swallows that
    error by design (the repeat-DELETE 200 rule), and the caller is told **200 success**
-   while nothing was zeroed.
+   while nothing was zeroed. A forward-only fix would leave D4 half-closed while the PR
+   claimed to close it.
 
-   Options:
+   **Scope of the migration.** All seven credential columns, verified against the schema:
+   `secret_ciphertext`, `secret_nonce` (`9b0ad37e0360…:35-37`),
+   `access_token_ciphertext`, `access_token_nonce`, `refresh_token_ciphertext`,
+   `refresh_token_nonce` (`62c10f986f07…:30-34`), plus `key_version`. All are nullable, so
+   `NULL` is a legal target for every one. Predicate: `tm_delete IS NOT NULL`. `op.execute`
+   data migrations have precedent in this tree (e.g.
+   `1ebd3fdcea8d_call_outbound_configs_add_default_.py`), so no new pattern is introduced.
 
-   | Option | Content | Trade-off |
-   |---|---|---|
-   | (a) One-off Alembic data migration | `UPDATE mcp_servers SET <cipher cols>=NULL, key_version=0 WHERE tm_delete IS NOT NULL` | Closes D4 fully. One migration file; **대표님 applies it, this document never runs `alembic upgrade`** |
-   | (b) Accept the residue, document it | Forward-only zeroing; note that pre-deploy deleted rows keep ciphertext | Zero work, but D4 stays half-open and the PR claims more than it delivers |
+   **Hard constraint on the design doc.** The migration file is **authored** in PR A;
+   `alembic upgrade` is **never run by this workstream** — 대표님 applies it. The
+   downgrade must be a no-op with a comment saying so: zeroed ciphertext is
+   unrecoverable, and a downgrade that silently "succeeds" while restoring nothing would
+   be a worse lie than the bug.
 
-   **Recommendation: (a), and measure first.** The production MCP inventory is already
-   known to be entirely `api-validator-mcp-*` test rows (100 measured 2026-09-27, zero
-   customer-owned), so the blast radius is almost certainly test data and the migration
-   is near-free. **What this document has NOT measured is how many soft-deleted rows
-   exist and how many carry non-empty ciphertext** — that is a `tm_delete IS NOT NULL`
-   count, not obtainable from the public API, so it needs either a DB query by 대표님 or
-   an explicit decision to migrate blind. Recommending (a) without that count would
-   repeat this document's own measurement failures, so the count is listed as a
-   design-doc precondition rather than asserted. A separate `dbhandler.McpServerUpdate` after `McpServerDelete`
+   **Unmeasured precondition, stated rather than guessed.** How many rows have
+   `tm_delete IS NOT NULL` with non-empty ciphertext is **not obtainable from the public
+   API**, and this document has NOT measured it. The production MCP inventory is known to
+   be entirely `api-validator-mcp-*` test rows (100 measured 2026-09-27, zero
+   customer-owned), so the blast radius is *probably* test data only — but that is an
+   inference, not a measurement, and this document has already been burned three times by
+   inference presented as fact. The count is therefore a **design-doc precondition**: one
+   DB query by 대표님 before the migration lands. It does not change the decision (the
+   migration is correct at any count), only the PR body's claim about impact. A separate `dbhandler.McpServerUpdate` after `McpServerDelete`
    would be **silently no-op'd** by the `tm_delete IS NULL` predicate Q1 mandates,
    because `McpServerUpdate` ignores `RowsAffected` (`dbhandler/mcpserver.go:154-156`).
    Confirmed acceptable side effect: `has_secret` flips to false on the
@@ -1430,7 +1458,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Q9's transition gate has no pre-write row to compare against, and survives square-admin only because `AUTH_TYPE_OPTIONS` omits oauth and `:359-366` renders it read-only | Medium | §3.12c — one pre-write `McpServerGet` must serve D20, §3.7g and Q9 together; assert transition semantics in a backend test, not via the form's option list |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
 | A foreign customer's MCP server id, once stored, is used at resolution with its decrypted credential on an outbound request | **High** | D25 (§3.5a) + D26 (§3.5b) — the exemption must be predicate-scoped (`storedIDs` param), AND ownership must be asserted at resolution, not only at the dead dispatch path. Both need §7 assertions or the regression is silent |
-| Credentials on rows soft-deleted before the deploy are never zeroed, and re-deleting reports 200 while zeroing nothing | **Medium** | D27 — **OPEN**, §5 item 2. Recommend a one-off Alembic data migration (대표님 applies); precondition is a `tm_delete IS NOT NULL` ciphertext count, which this document has NOT measured |
+| Credentials on rows soft-deleted before the deploy are never zeroed, and re-deleting reports 200 while zeroing nothing | **Medium** | D27 — **RESOLVED**, §5 item 2: one-off Alembic data migration over all seven credential columns. Residual: the affected-row count is unmeasured, so the PR body must not claim an impact figure until 대표님 runs the count |
 | An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 Q11**: skip already-stored ids, reject only newly added ones. Both directions must be unit-tested (§7) |
 | Gating OAuth `Complete` discards a freshly-minted vendor grant: `complete.go:84` deletes the state row and `:88` completes the token exchange BEFORE `:126`, so VoIPBin holds a live GitHub/Linear token and drops it unrevoked | Medium | Preferable to writing onto a deleted row, but the orphaned vendor-side grant must be acknowledged in the PR body (and revocation considered) |
 | `PUT {}` on a deleted server returns 200 with the row because `mcpserverhandler.Update` short-circuits to `h.Get` before any DB write; NO dbhandler gate reaches it | **High** | D20 (§3.7f). Gate inside `mcpserverhandler.Update` ahead of the `len(fields)==0` branch AND ahead of `ValidateURL` |
