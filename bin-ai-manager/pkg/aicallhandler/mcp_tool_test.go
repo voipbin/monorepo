@@ -353,9 +353,9 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			aicall:   baseAIcall(goValueToolMap),
 			toolName: namespacedName,
 			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
-				// Twice: resolveActiveAIForMcp tries first and returns nil, then the
-				// resolveAI fallback tries and also fails -- only then fail closed.
-				aiH.EXPECT().Get(gomock.Any(), aiID).Return(nil, context.DeadlineExceeded).Times(2)
+				// Exactly once. resolveActiveAIForMcp subsumes resolveAI, so a nil
+				// result fails closed directly instead of re-running the same fetch.
+				aiH.EXPECT().Get(gomock.Any(), aiID).Return(nil, context.DeadlineExceeded)
 			},
 			wantResult:      "failed",
 			wantCallToolHit: false,
@@ -635,8 +635,8 @@ func Test_toolHandleMcpCall_team(t *testing.T) {
 			aicall:   aicallFor(aicall.AssistanceTypeTeam, teamID, curOnlyServerID, "search_tickets"),
 			toolName: message.FunctionCallName("mcp_" + mcpServerIDShort(curOnlyServerID) + "_search_tickets"),
 			setupMock: func(th *teamhandler.MockTeamHandler, aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
-				// twice: once for resolveActiveAIForMcp, once for the resolveAI fallback
-				th.EXPECT().Get(gomock.Any(), teamID).Return(nil, context.DeadlineExceeded).Times(2)
+				// Exactly once: there is no second resolution to fall back to.
+				th.EXPECT().Get(gomock.Any(), teamID).Return(nil, context.DeadlineExceeded)
 			},
 			wantResult: "failed",
 		},

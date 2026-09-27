@@ -227,15 +227,19 @@ func (h *aicallHandler) resolveActiveAIForMcp(ctx context.Context, c *aicall.AIc
 		log.Debugf("Resolved the team member AI for mcp. member_id: %s, ai_id: %s", resolvedMemberID, a.ID)
 		return a
 	}
-	log.Warnf("Could not resolve the current team member AI, falling back to the start member. member_id: %s, err: %v", c.CurrentMemberID, err)
-
-	// resolveTeamMemberAI's own fallback loop already tried the start member whenever
-	// CurrentMemberID was absent from the roster, so retrying then would re-issue the
-	// byte-identical failing fetch. Retry ONLY for the mode its fallback does not
-	// cover: the current member IS on the roster but its own AI fetch failed.
-	if !teamHasMember(t, c.CurrentMemberID) || c.CurrentMemberID == t.StartMemberID {
+	// Decide whether a retry can differ from what was just attempted. The fetch being
+	// deduplicated is keyed on AIID, not on member id: two distinct members may share
+	// one AIID (teamhandler validates member-id uniqueness and a non-nil AIID only,
+	// never AIID uniqueness), so comparing member ids would re-issue a byte-identical
+	// aiHandler.Get. resolveTeamMemberAI's own fallback loop already tried the start
+	// member whenever CurrentMemberID was absent from the roster.
+	curAIID, curOnRoster := teamMemberAIID(t, c.CurrentMemberID)
+	startAIID, startOnRoster := teamMemberAIID(t, t.StartMemberID)
+	if !curOnRoster || !startOnRoster || curAIID == startAIID {
+		log.Warnf("Could not resolve the current team member AI and no distinct start-member AI to fall back to. member_id: %s, err: %v", c.CurrentMemberID, err)
 		return nil
 	}
+	log.Warnf("Could not resolve the current team member AI, falling back to the start member. member_id: %s, err: %v", c.CurrentMemberID, err)
 
 	a, resolvedMemberID, err = h.resolveTeamMemberAI(ctx, t, t.StartMemberID)
 	if err != nil {
@@ -247,12 +251,15 @@ func (h *aicallHandler) resolveActiveAIForMcp(ctx context.Context, c *aicall.AIc
 	return a
 }
 
-// teamHasMember reports whether the given member id is on the team's roster.
-func teamHasMember(t *team.Team, memberID uuid.UUID) bool {
+// teamMemberAIID returns the AIID of the given member and whether it is on the
+// team's roster. Callers compare the AIID rather than the member id when they need
+// to know whether a second aiHandler.Get would differ from the first: distinct
+// members may legally share one AIID.
+func teamMemberAIID(t *team.Team, memberID uuid.UUID) (uuid.UUID, bool) {
 	for _, m := range t.Members {
 		if m.ID == memberID {
-			return true
+			return m.AIID, true
 		}
 	}
-	return false
+	return uuid.Nil, false
 }

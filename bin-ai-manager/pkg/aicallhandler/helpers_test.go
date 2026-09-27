@@ -703,6 +703,64 @@ func Test_aicallHandler_resolveActiveAIForMcp(t *testing.T) {
 			wantAIID: startAIID,
 		},
 		{
+			name: "Team — current and start member SHARE one AIID, the failing fetch is not repeated",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: curMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				// teamhandler validates member-id uniqueness and a non-nil AIID, never
+				// AIID uniqueness, so two members may legally point at one AI. A guard
+				// keyed on member id would see "different members" and retry the
+				// byte-identical aiHandler.Get; the AIID-keyed guard must not.
+				th.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Identity:      identity.Identity{ID: teamID},
+					StartMemberID: startMemberID,
+					Members: []team.Member{
+						{ID: curMemberID, AIID: startAIID},
+						{ID: startMemberID, AIID: startAIID},
+					},
+				}, nil)
+				ah.EXPECT().Get(gomock.Any(), startAIID).Return(nil, errors.New("rpc timeout"))
+			},
+			wantNil: true,
+		},
+		{
+			name: "Team with an empty roster returns nil without any AI fetch",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: curMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Identity:      identity.Identity{ID: teamID},
+					StartMemberID: startMemberID,
+				}, nil)
+			},
+			wantNil: true,
+		},
+		{
+			name: "Team whose StartMemberID is itself absent from the roster returns nil",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: curMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Identity:      identity.Identity{ID: teamID},
+					StartMemberID: uuid.FromStringOrNil("e0000000-0000-0000-0000-00000000000e"),
+					Members: []team.Member{
+						{ID: curMemberID, AIID: curAIID},
+					},
+				}, nil)
+				ah.EXPECT().Get(gomock.Any(), curAIID).Return(nil, errors.New("rpc timeout"))
+			},
+			wantNil: true,
+		},
+		{
 			name: "Team — start member itself unfetchable returns nil without a second identical attempt",
 			ac: &aicall.AIcall{
 				AssistanceType:  aicall.AssistanceTypeTeam,
