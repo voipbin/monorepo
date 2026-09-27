@@ -2,15 +2,21 @@
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v10, Analysis Review Loop round 8 pending
+Status: v11, Analysis Review Loop round 9 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
-Round 7: fact-check **APPROVED** (3 consecutive). Adversarial CHANGES_REQUESTED with
-one blocking finding at the PR A ↔ PR C boundary → D21 + §5 Q11.
-v9: 대표님 resolved Q11 (skip already-stored ids, reject newly added ones) and Q6.
-v10: 대표님 resolved Q5 (add the AI-type gate) and Q9 (reject `auth_type: "oauth"`
-on writes). **No open question blocks the PR A design doc.** §5 Q1-Q11 are all
-decided; the remaining §5 items are implementation details for the design doc.
+Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
+(1 blocking, PR A ↔ PR C boundary → D21 + §5 Q11).
+Round 8: **BOTH tracks CHANGES_REQUESTED.** Fact-check found v10's "the PUT path
+performs no pre-write `AIGet`" to be WRONG (`chatbot.go:134-138` pre-fetches
+unconditionally) plus 3 stale sentences; adversarial found the **fourth instance** of
+the recurring failure mode in Q5 itself (D22, §3.12b) and a missing pre-write read for
+Q9's transition gate (§3.12c). All verified and folded in.
+v9: 대표님 resolved Q11 and Q6. v10: 대표님 resolved Q5 and Q9.
+**v11 status: NOT ready for the design doc.** §5 Q5's sub-decisions (i) consume-path
+type gate, (ii) PR C Insight-transition cleanup, (iii) production count of Insight AIs
+holding a whitelist, are open and change what §7 asserts. v10's header claimed "no
+open question blocks the design doc"; that claim was premature and is retracted.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -99,6 +105,11 @@ separately.
   ones** (§5 Q11, 대표님 확정). Without the skip, every save of that AI 400s forever,
   for any unrelated edit; without the reject, attaching a deleted server fails
   silently. This is a PR A ↔ PR C cross-boundary defect that neither PR sees alone.
+- **D22** Q5's Insight gate, as a write-time-only check, **enforces nothing for rows
+  that already store `mcp_server_ids`** (the consume path has no type check at all)
+  while **freezing any AI flipped to Insight in square-admin** (the form clears tools
+  but not MCP servers, and re-submits the whitelist unconditionally). Fourth instance
+  of this document's recurring failure mode. See §3.12b; §5 Q5(i)(ii)(iii) open.
 
 **PR C — square-admin parity (`voipbin/monorepo-javascript`):**
 - **D8** `mcp_server_ids` is settable only on the AI detail page, though the
@@ -641,6 +652,97 @@ mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 | Concurrency | No transaction or row lock on any mcpserver path — `McpServerDelete` is a bare UPDATE, unlike `dbhandler/ai.go:243`+`:294` and `aipromptproposal.go:227`+`:253` which use `BeginTx` + `FOR UPDATE`. For delete-vs-tool-call, the fail-closed re-read per call (`client.go:191`, `:214`) is **sufficient**: the residual window is at most one already-dispatched outbound request. **No transaction warranted.** State this bound in the PR body, since `mcpservers_detail.js:496` promises immediacy |
 | Tool-path error surface | `toolHandleMcpCall` converts every failure into a generic `fillFailed(...)` tool result (`mcp_tool.go:137-174`), so gating never leaks a status code to a customer through the AI path |
 
+### 3.12b D22: Q5's Insight gate enforces nothing where it matters and freezes AIs elsewhere. CONFIRMED. BLOCKER.
+
+**This is the FOURTH instance of this document's recurring failure mode** (after D15,
+D20, D21), and it was NOT the instance the author self-flagged. Q5 prescribes a
+write-time AI-type gate. Traced forward in both directions, the write-time layer is
+the one layer that cannot deliver the policy.
+
+**(a) It does not enforce the policy for existing rows.** The consume path has NO type
+check. `grep -n 'Type' pkg/aicallhandler/mcp_tool.go` returns exactly one line,
+`:144` (`resolveAI`), and never `a.Type`. Resolution iterates the whitelist blind to
+type:
+
+```go
+// pkg/aicallhandler/mcp_tool.go:72
+for _, serverID := range a.McpServerIDs {
+	server, err := h.mcpServerHandler.Get(ctx, serverID)
+```
+
+Insight sessions reach this through `insight_session.go:104` → `:143`. Combined with
+**Q6's decision never to prune**, any Insight AI that already stores
+`mcp_server_ids` — or any Normal AI later flipped to Insight — keeps resolving and
+`ListTools`-calling those servers forever. §7's promised test ("`TypeInsight` cannot
+whitelist an MCP server") would pass while the policy is unenforced in production.
+
+**(b) It reintroduces D21 verbatim, and Q11's skip does NOT cover it.** Q11 exempts
+already-stored ids from the **deleted-server** predicate only. The type predicate is
+different, so the exemption does not apply. In square-admin:
+
+```javascript
+// ais_detail.js:738-743 — switching to insight clears TOOLS but not MCP servers
+onValueChange={(value) => {
+  setAiType(value);
+  if (value === 'insight') {
+    setSelectedTools([]);
+  }
+}}
+```
+
+`mcpServerIds` is never cleared, `:421` puts it unconditionally, and the MCP Servers
+card at `:1238` is rendered with **no `aiType` condition** — unlike
+`AIEngineFields.js:301`/`:320`, which do gate tool sets on `aiType === 'insight'`. So a
+customer flipping an existing AI to Insight sends `type: "insight"` plus a non-empty
+`mcp_server_ids` and receives a hard 400 behind the generic "Could not update the AI
+configuration" (`:445`). The dead end is identical to D21 and lands in the repo PR A
+does not touch.
+
+Resolution: §5 Q5 sub-decisions (i), (ii), (iii).
+
+### 3.12c Q9's transition gate needs a read that does not exist, and its frontend safety is accidental
+
+**The pre-image is missing.** `mcpserverhandler.Update` (`handler.go:138-192`) builds
+its field map purely from incoming pointers; the only `McpServerGet` is the
+**post-write** read-back at `:210`. So "validate the transition, not the value"
+(§5 Q9) requires a pre-write row read that does not exist today. **It is the same read
+D20's existence gate needs** (§5 Q1) and the same one §3.7g's precedence fix needs.
+The design doc must state that **one** pre-write `McpServerGet` serves all three —
+otherwise three implementers add three reads, or one adds none and silently falls back
+to a value gate, reproducing the freeze Q9 explicitly warns about.
+
+**The frontend is compatible, but by accident.** §3.12a's earlier claim that
+square-admin "already handles `auth_type: 'oauth'`" is true and materially incomplete.
+`mcpservers_detail.js:156` re-submits `auth_type: buildAuthTypeWireValue(authType)`
+**unconditionally** on every save, and `:38`/`:91` hydrate `'oauth'`, so an OAuth row's
+PUT always carries `auth_type: "oauth"`. A value gate would 400 every edit of a
+Connected server. The transition gate survives only because `AUTH_TYPE_OPTIONS`
+(`:31-35`) omits `oauth`, so the form cannot move a row INTO oauth; and `:359-366`
+renders oauth as a read-only badge, so it cannot move a row OUT of oauth either. **Both
+are load-bearing UI facts that PR A's tests do not pin.** If either changes, the gate
+breaks. Record them, and assert the transition semantics in a backend test rather than
+relying on the form's option list.
+
+### 3.12d Q11 implementation constraints (non-blocking, but must be written down)
+
+- **The diff is SET membership, not sequence comparison.** `mcpServerIds` is
+  order-dependent in the frontend (`ais_detail.js:382-386` appends on toggle; `:553`
+  sorts only for the dirty check, never for submission). A `slices.Equal`-style
+  comparison would misclassify a reordered list as "newly added." Build a
+  `map[uuid.UUID]struct{}` of the stored list and test membership. Duplicates in the
+  incoming list and the explicit empty-slice clear (pinned by
+  `ais_detail.test.js:690-700`) both fall out correctly from set membership; no extra
+  decision is needed.
+- **POST has no diff code path at all.** `mcp_server_ids` is not a `Create` parameter
+  (`chatbot.go:20-39`), so the POST rule is simply "reject all deleted ids." An
+  implementer writing one shared helper must not have it read a stored list that does
+  not exist.
+- **Both internal oauth writes are exempt, not one.** §5 Q9 cites `complete.go:136-158`
+  (new row). The **reconnect branch also writes it**: `complete.go:112-133` sets
+  `FieldAuthType: AuthTypeOAuth` at `:117` via `McpServerUpdate` at `:126`. Neither
+  passes through `mcpserverhandler`, so the decision is unchanged, but §7 must assert
+  both survive the gate.
+
 ### 3.14 Other surfaces
 
 | Surface | Finding |
@@ -781,6 +883,28 @@ Redis cache (§3.9), because there is no measured signal for it.
    would be the honest alternative, but nothing in the codebase supports it today and
    inventing one here is out of PR A's scope.
 
+   **BLOCKING sub-decisions added in v11 — see §3.12b (D22). A write-time gate alone
+   both fails to enforce this policy and freezes existing AIs:**
+   - **(i) Does the consume path also gate on `a.Type`?** Without it, Q5 enforces
+     nothing for any row that already stores `mcp_server_ids`, because Q6 deliberately
+     never prunes. Recommend YES — gate `mcp_tool.go:72` (resolution) and `:151`
+     (dispatch) on the AI type, mirroring the `tm_delete` gates D1 already puts there.
+     This is where revocation is actually enforced throughout this document; the policy
+     must live in the same place.
+   - **(ii) PR C must clear `mcpServerIds` on the Insight transition and hide the MCP
+     card for `aiType === 'insight'`.** Otherwise the gate 400s every save of an AI
+     flipped to Insight (§3.12b). This adds a PR C item beyond §4's current four form
+     bodies.
+   - **(iii) Production count — MEASURED in v11, risk is zero today.** Full cursor walk
+     of `GET /v1.0/ais` on `api.voipbin.net` (2026-09-27): **5 AIs total, all
+     `type: normal`, and ZERO AIs (of any type) hold a non-empty `mcp_server_ids`.**
+     So no existing row is frozen by the Insight gate, and D22(a)'s
+     "existing Insight AI keeps calling its servers" has no instance in production
+     today. This removes the migration risk but NOT sub-decisions (i) and (ii): (i)
+     still governs whether the policy is enforceable at all once customers do adopt
+     the feature, and (ii) still governs the flip-to-Insight path, which any customer
+     can trigger at any time without pre-existing data.
+
    **Coupled decision (D18): does validation move AHEAD of the AI write?** Today
    `ValidateMcpServerIDs` runs after `aiHandler.Create`/`Update` has committed
    (`v1_ais.go:92-128`, `:247-283`), so a rejected whitelist leaves an orphaned or
@@ -788,15 +912,36 @@ Redis cache (§3.9), because there is no measured signal for it.
    both call sites anyway, fixing the ordering here is nearly free; deferring it
    means shipping a known orphan path. Recommend fixing it in PR A.
 
-   **Interaction with Q11 that the design doc must resolve explicitly.** Moving
-   validation ahead of the write removes the `tmp` that Q11's diff reads
-   (`tmp.McpServerIDs` at `:272` is currently the post-`Update`, pre-`UpdateMcpServerIDs`
-   row). Once validation runs first, the stored whitelist must be fetched before the
-   write — an `AIGet` that the PUT path does not perform today. This does not change
-   Q11's decision, but it does mean Q11's "zero extra DB reads" claim holds only while
-   validation stays after the write. Naming this now prevents the D15/D20/D21 failure
-   mode (a prescribed fix that the prescribed ordering invalidates) from recurring a
-   fourth time.
+   **Interaction with D18 that the design doc must resolve explicitly.**
+   **CORRECTED in v11** (v10 stated this wrong): v10 claimed the PUT path performs no
+   pre-write `AIGet`. It does. `aihandler/chatbot.go:134-138` pre-fetches
+   unconditionally ("Pre-fetch unconditionally so all three branches can detect
+   changes", `preUpdateAI, errGet := h.db.AIGet(ctx, id)`) before any `AIUpdate`. So
+   D18's reordering costs no extra read *provided validation is placed inside
+   `aiHandler.Update`*, where `preUpdateAI.McpServerIDs` is in hand. What is actually
+   true is narrower and more important: **the `tmp`-based diff only works at the
+   `listenhandler` frame, and that frame has no row read at all.** Whoever moves
+   validation ahead of the write must move it INTO `aiHandler.Update` (using
+   `preUpdateAI`), not merely reorder the two statements in `v1_ais.go` — the latter
+   leaves nothing to diff against and forces a second `AIGet`.
+
+   **D18 also destroys `tmp.CustomerID`.** Both call sites currently pass
+   `tmp.CustomerID` (`v1_ais.go:118`, `:273`). Ahead of the write there is no `tmp`, so
+   the POST path must use the request's customer id and the PUT path must take both the
+   customer id and the resolved type from `preUpdateAI`.
+
+   **The resolved type does not exist at the listenhandler frame either — and
+   deny-by-default makes that fatal.** §5 Q5's "both call sites pass the resolved AI
+   type" is only achievable inside `aiHandler.Update`. At `v1_ais.go` there is only
+   `req.Type`, which is `omitempty` (`listenhandler/models/request/ais.go:17`, `:56`),
+   so an omitted `type` decodes to `TypeNone`. Resolution (`TypeNone` → stored type →
+   `TypeNormal`) happens at `chatbot.go:144-150`, i.e. AFTER the `AIGet` that D18 wants
+   to precede. Feeding `TypeNone` into a deny-by-default `default:` branch would
+   **reject every request that omits `type`** — and such requests are real traffic:
+   `api-validator/tests/scenarios/test_ai_lifecycle.py:38-48` and `:96-106` PUT without
+   a `type` key, and `teamgraph/sidebar.js:753` sends `type: aiData?.type`, undefined
+   whenever absent. **PR A must resolve `TypeNone` to the stored type BEFORE the
+   deny-by-default switch, never pass `TypeNone` into it.**
 9. **D17: is `auth_type: "oauth"` allowed on POST/PUT?** **RESOLVED — 대표님 확정:
    reject it (option a).** ("좋아, 네 제안대로 가자")
 
@@ -929,7 +1074,8 @@ Redis cache (§3.9), because there is no measured signal for it.
 | OAuth Complete has no re-check (TOCTOU between Start and Complete) | Medium | D3; gate both independently |
 | PR A "corrects" the `openapi.yaml`/`ai_struct_ai.rst` LLM-merging text that PR B will make true | Medium | Leave D7's text alone in PR A; only fix the `,omitempty`/"Defaults to `[]`" contradiction (§5 Q8) |
 | Dead config flag + design doc justifying another decision by citing a nonexistent cache | Medium | D6; correct `2026-09-11-…:466-467`, `:705`, `:750-754` |
-| Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | Medium | D13 / §5 Q5 — decide before the design doc |
+| Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | **High** | D13 / D22 (§3.12b) — §5 Q5 resolved to add the gate, but a write-time gate alone enforces nothing for existing rows (no type check at `mcp_tool.go:72`/`:151`) AND freezes any AI flipped to Insight in square-admin. Sub-decisions (i)(ii)(iii) still open |
+| Q9's transition gate has no pre-write row to compare against, and survives square-admin only because `AUTH_TYPE_OPTIONS` omits oauth and `:359-366` renders it read-only | Medium | §3.12c — one pre-write `McpServerGet` must serve D20, §3.7g and Q9 together; assert transition semantics in a backend test, not via the form's option list |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
 | An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 Q11**: skip already-stored ids, reject only newly added ones. Both directions must be unit-tested (§7) |
 | Gating OAuth `Complete` discards a freshly-minted vendor grant: `complete.go:84` deletes the state row and `:88` completes the token exchange BEFORE `:126`, so VoIPBin holds a live GitHub/Linear token and drops it unrevoked | Medium | Preferable to writing onto a deleted row, but the orphaned vendor-side grant must be acknowledged in the PR body (and revocation considered) |
@@ -963,21 +1109,28 @@ delete zeroes all secret/token ciphertext in the SAME statement while update pat
 never do; that dispatch refuses a server owned by another customer (D12); that the
 team path validates the CURRENT member's whitelist; and `GetValidAccessToken`'s new
 error when rotating against a row deleted mid-flight. **Q5 (D13) now confirmed:** an
-AI-type gate test proving `TypeInsight` cannot whitelist an MCP server, plus a test
-that an unknown/future `Type` denies rather than falling through to the `Normal` set
-(mirroring `AllowedToolNames`' `default:` branch at
-`models/ai/tool_validation.go:42-45`). **Q9 (D17) now confirmed:** that POST/PUT
-setting `auth_type: "oauth"` is rejected, AND that a PUT re-submitting an unchanged
-`auth_type: "oauth"` on an OAuth-completed row still succeeds (transition gate, not a
-value gate — otherwise the gate freezes legitimate OAuth servers the way D21 froze
-AIs), AND that `mcpoauthhandler/complete.go:136-158` still writes `oauth` internally.
+AI-type gate test proving `TypeInsight` cannot whitelist an MCP server; a test that an
+omitted `type` (`TypeNone`) resolves to the stored type and is NOT denied by the
+deny-by-default branch (§5 Q5 — this is the regression that would 400 every
+type-omitting PUT, including `test_ai_lifecycle.py:38-48`/`:96-106`); a test that a
+genuinely unknown `Type` denies rather than falling through to the `Normal` set
+(mirroring `AllowedToolNames`' `default:` at `models/ai/tool_validation.go:42-45`); and
+**if Q5(i) adopts the consume-path gate, tests that an Insight AI's stored whitelist is
+skipped in resolution and refused in dispatch** — without those, D22(a) means the
+write-time test passes while the policy is unenforced. **Q9 (D17) now confirmed:** that
+POST/PUT setting `auth_type: "oauth"` is rejected; that a PUT re-submitting an
+unchanged `auth_type: "oauth"` on an OAuth-completed row still succeeds (transition
+gate, not a value gate — a value gate 400s every save from
+`mcpservers_detail.js:156`); and that BOTH internal oauth writers still succeed —
+`complete.go:136-158` (new row) and the reconnect branch `complete.go:112-133` (`:117`
+via `McpServerUpdate` at `:126`).
 **New in v6:** that a PUT against a deleted server returns an
 error rather than a silent 200 with no `EventTypeUpdated` published (D15 — assert
 BOTH the status and the absence of the webhook); that every other
 `McpServerUpdate` caller still behaves correctly under the new `RowsAffected`
 check, `access_token.go:101-108` included; that a repeat DELETE does not move
 `tm_delete` or re-publish `EventTypeDeleted` while still answering 200 (D16); that
-`POST`/`PUT` with `auth_type: "oauth"` is rejected if §5 Q9 picks the gate (D17);
+`POST`/`PUT` with `auth_type: "oauth"` is rejected (D17, §5 Q9 resolved);
 and that a rejected `mcp_server_ids` leaves no AI behind on POST (D18). **New in v7
 (D20):** that `PUT {}` (every field omitted) against a deleted server is rejected
 rather than returning 200 with the row — the existing
@@ -985,7 +1138,7 @@ rather than returning 200 with the row — the existing
 that a malformed-URL PUT on a deleted row returns the gate's 404, not 400
 `INVALID_MCP_SERVER_URL`; and that `mcpserverhandler.Get` is NOT gated, i.e.
 `v1_mcpservers.go:142`'s customer GET still answers 200 while `mcp_tool.go:73`/`:157`
-fail closed. **New in v8 (D21):** whichever §5 Q11 option is chosen, a test that an
+fail closed. **New in v8 (D21), per §5 Q11:** a test that an
 existing AI holding a deleted MCP server id can still be saved when editing an
 unrelated field (name/prompt/engine) — this is the regression that freezes customer
 AIs, and it spans both repos, so PR C must exercise it in a real browser against a
@@ -1062,6 +1215,18 @@ the code v7 was prescribing. Five rounds missed it because the cause and the eff
 live in different repositories, and each repo's section was reviewed against its own
 code.
 
+**v10** resolved Q5 and Q9 and declared the document ready for the design doc. Round 8
+refuted both halves of that. The fact-check track found that v10 had **fabricated a
+constraint**: it asserted the PUT path performs no pre-write `AIGet` when
+`chatbot.go:134-138` does exactly that, unconditionally, with a comment saying so. The
+adversarial track found the **fourth instance** of the recurring failure mode inside
+the newly resolved Q5 itself — and worse, Q5's write-time gate is the one layer that
+can neither enforce the Insight policy (the consume path has no type check) nor avoid
+freezing customers (square-admin clears tools but not MCP servers on the Insight
+flip). The author had diagnosed this exact shape three times, written two lessons
+about it, self-flagged a possible fourth instance — and then created a fifth in the
+very decision meant to close the loop.
+
 Lessons now in effect:
 - Use `grep -i` for content/convention greps.
 - For any producer function, grep its callers and check whether the return value is
@@ -1093,3 +1258,16 @@ Lessons now in effect:
 - **A judgement about existing behavior ("this is only cosmetic") expires the moment
   you prescribe a change that touches it.** Re-evaluate every such judgement against
   the post-fix code, not the current code.
+- **Never assert that code does NOT do something without grepping for it.** v10 claimed
+  the PUT path performs no pre-write read; it performs one, with an explanatory
+  comment. A negative claim about code needs the same evidence as a positive one, and
+  is easier to get wrong because nothing contradicts it on the screen you are reading.
+- **A new policy needs an enforcement point, and the write path is rarely it.**
+  Before prescribing a validation gate, ask which layer actually decides the behavior
+  at runtime. If the consume path does not check the predicate, a write-time gate is
+  documentation, not enforcement — it only constrains rows created after the deploy
+  (D22).
+- **Every new rejection predicate needs its own frontend trace; an exemption written
+  for one predicate does not cover another.** Q11's skip exempts already-stored ids
+  from the deleted-server check, and that exemption gave false comfort about the type
+  check, which is a different predicate hitting the same unconditional PUT body.
