@@ -2,24 +2,26 @@
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v12, Analysis Review Loop round 9 pending
+Status: v13, Analysis Review Loop round 10 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
 (1 blocking, PR A ↔ PR C boundary → D21 + §5 Q11).
-Round 8: **BOTH tracks CHANGES_REQUESTED.** Fact-check found v10's "the PUT path
-performs no pre-write `AIGet`" to be WRONG (`chatbot.go:134-138` pre-fetches
-unconditionally) plus 3 stale sentences; adversarial found the **fourth instance** of
-the recurring failure mode in Q5 itself (D22, §3.12b) and a missing pre-write read for
-Q9's transition gate (§3.12c). All verified and folded in.
-v9: 대표님 resolved Q11 and Q6. v10: 대표님 resolved Q5 and Q9.
-v11: round-8 corrections + D22 + Q5(iii) production count measured (zero affected rows).
-v12: 대표님 resolved Q5(i) consume-path type gate and Q5(ii) PR C Insight-transition
-cleanup; both gate points verified to already hold the AI object (no extra read, no
-signature change). **§5 Q1-Q11 and all Q5 sub-decisions are now decided.** Remaining §5
-items are implementation details for the design doc. Round 9 must confirm this before
-the design doc starts — v10 made the same readiness claim prematurely and round 8
-refuted it.
+Round 8: **BOTH tracks CHANGES_REQUESTED.** Fact-check refuted v10's "the PUT path
+performs no pre-write `AIGet`" (`chatbot.go:135-139` pre-fetches unconditionally);
+adversarial found the **fourth instance** of the recurring failure mode in Q5 (D22).
+Round 9: **BOTH tracks CHANGES_REQUESTED.** Adversarial found the **fifth instance**,
+inside the v12 material written to close the fourth (D23, §3.12e): a type flip that
+omits `mcp_server_ids` bypasses the gate entirely and produces a frozen Insight AI, and
+the gate's predicate is unspecified in a way that would 400 every Insight AI save.
+Fact-check found the header's readiness claim contradicted by open items in §5 Q1/Q3/
+Q4/Q7/Q8, a missed third Insight-transition site, and a FALSE api-validator citation
+(`test_ai_lifecycle.py` is skipped at `:4`). All verified against code and folded in.
+v9: 대표님 resolved Q11 and Q6. v10: Q5 and Q9. v12: Q5(i) and Q5(ii).
+**v13 status: NOT ready for the design doc.** §3.12e's three open decisions change both
+the implementation and its tests, and §5 Q1/Q3/Q4/Q7/Q8 still carry "Recommend …"
+items that were never confirmed. v10 and v12 both claimed readiness prematurely and
+both were refuted; this header will not claim it again until a round returns clean.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -117,6 +119,14 @@ separately.
   gate lands at BOTH the write path and the consume path (`mcp_tool.go:72` skip,
   `:151` refuse), and PR C clears `mcpServerIds` on the Insight transition at
   `ais_detail.js:738-743` + `ais_create.js:274` and hides the MCP card for Insight.
+- **D23** The Insight gate is **unreachable by the request that creates the violating
+  row**: a `PUT {"type":"insight"}` that omits `mcp_server_ids` never enters the
+  `req.McpServerIDs != nil` block, so it produces a post-deploy Insight AI holding a
+  non-empty whitelist that is then **permanently frozen** (the UI clear fires only on
+  `onValueChange`, not on load, and the card is hidden). Its predicate is also
+  unspecified: read literally it 400s every Insight AI save, including empty ones.
+  **FIFTH instance**, created by the fix for the fourth. §3.12e. **OPEN — three
+  decisions needed.**
 
 **PR C — square-admin parity (`voipbin/monorepo-javascript`):**
 - **D8** `mcp_server_ids` is settable only on the AI detail page, though the
@@ -741,6 +751,68 @@ relying on the form's option list.
   passes through `mcpserverhandler`, so the decision is unchanged, but §7 must assert
   both survive the gate.
 
+### 3.12e D23: the Insight gate is unreachable by the request that creates the violating row, and its predicate is unspecified. CONFIRMED. BLOCKER.
+
+**FIFTH instance of this document's recurring failure mode** (after D15, D20, D21,
+D22), found in the v12 material that was written to close the fourth. v12 was verified
+for *reachability of the gate points*; it was not verified for *reachability of the
+gate by the offending request*.
+
+**(a) A type flip that OMITS the whitelist bypasses the gate entirely.** Both call
+sites of `ValidateMcpServerIDs` sit inside `if req.McpServerIDs != nil`
+(`v1_ais.go:117` and `:272`) — Q11's own table codifies "field omitted → no
+validation". So:
+
+```
+PUT /ais/{id}  {"type": "insight"}     // mcp_server_ids omitted
+```
+
+flips the type (`chatbot.go:145-149` resolves and writes it), never enters the
+`req.McpServerIDs != nil` block, and leaves the stored non-empty whitelist untouched
+(Q6 never prunes; `aiHandler.Update`'s parameter list excludes `McpServerIDs`).
+**Result: an Insight AI holding a non-empty whitelist, created AFTER the deploy,
+through the public API, with nothing rejected.** Q5(iii)'s production count of zero
+does not cover this — it is not a migration artifact, it is a new row.
+
+**(b) That row is then permanently frozen, and Q5(ii)'s cleanup does not reach it.**
+`ais_detail.js:197` hydrates `aiType = 'insight'` and `:242` hydrates
+`mcpServerIds = [X]` on load. Q5(ii)'s clear lives in `onValueChange`
+(`:738-743`), which fires only when the user **changes** the select — **not on load of
+an already-Insight AI.** Meanwhile Q5(ii)'s other half hides the MCP card for Insight,
+so there is no picker and no `toggleMcpServer` to remove `[X]`. `:421` still submits
+`mcp_server_ids` unconditionally (pinned by `__tests__/ais_detail.test.js:690-726`), so
+every subsequent save is a non-empty whitelist on an Insight AI → 400 → generic "Could
+not update the AI configuration" (`:445`). Save is not dirty-gated (`:831`, `:840`
+disable only on `isSaving`/`isDeleting`), so any unrelated edit hits it. **This is D21's
+freeze reconstructed by the fix for D22.**
+
+**(c) The gate's predicate is unspecified, and the obvious reading 400s every Insight
+AI save.** `ais_detail.js:421` sends `mcp_server_ids` on every save; for an Insight AI
+that value is `[]`. §7's wording ("`TypeInsight` cannot whitelist an MCP server") and
+§5 Q5's "denied outright" read as "type is Insight → reject". Implemented literally,
+`ValidateMcpServerIDs(…, TypeInsight, [])` rejects and **every save of every Insight
+AI 400s**, including AIs that never had MCP data, and including the POST from
+`ais_create.js` once PR C adds the field. **The empty list must be explicitly
+exempt:** reject only a NON-EMPTY whitelist for Insight.
+
+**(d) A third Insight-transition site exists.** Q5(ii) names two;
+`ais_create.js:92` (`setAiType(template.type || 'normal')` in `handleTemplateSelect`)
+is a third, reachable for `type: 'insight'` via `prompt_templates.js:659`
+(`insight_case_assistant`, `:653`) and re-triggerable after the form is filled by the
+"Change Template" button at `:186`. It clears tools but not MCP ids.
+
+**Open decisions this creates (not implementation details):**
+1. **What happens on a type flip to Insight while a whitelist is stored?** Options:
+   (a) reject the flip while a non-empty whitelist is stored, telling the customer to
+   clear it first; (b) auto-clear the whitelist server-side as part of the flip (one
+   write, no webhook storm, unlike Q8's rejected bulk loop); (c) validate on the flip
+   even when the field is omitted, which requires reading the stored list. Recommend
+   **(b)** — it is the only option that cannot freeze a row, and the flip is already a
+   deliberate destructive act on the tool set.
+2. **Confirm the empty-list exemption** in both the gate and §7's assertions.
+3. **PR C: clear `mcpServerIds` on load when the fetched AI is already Insight**, not
+   only in `onValueChange`, and add the third transition site (`ais_create.js:92`).
+
 ### 3.13a Verified clean in round 6 — recorded so PR A does not over-scope
 
 | Area | Finding |
@@ -967,10 +1039,17 @@ Redis cache (§3.9), because there is no measured signal for it.
    so an omitted `type` decodes to `TypeNone`. Resolution (`TypeNone` → stored type →
    `TypeNormal`) happens at `chatbot.go:144-150`, i.e. AFTER the `AIGet` that D18 wants
    to precede. Feeding `TypeNone` into a deny-by-default `default:` branch would
-   **reject every request that omits `type`** — and such requests are real traffic:
-   `api-validator/tests/scenarios/test_ai_lifecycle.py:38-48` and `:96-106` PUT without
-   a `type` key, and `teamgraph/sidebar.js:753` sends `type: aiData?.type`, undefined
-   whenever absent. **PR A must resolve `TypeNone` to the stored type BEFORE the
+   **reject every request that omits `type`**. **Evidence corrected in v13:** v11/v12
+   cited `api-validator/tests/scenarios/test_ai_lifecycle.py:38-48` and `:96-106` as
+   live proof. That citation was FALSE — the entire module is skipped at
+   `test_ai_lifecycle.py:4` (`pytestmark = pytest.mark.skip(reason="POST /ais returns
+   500 consistently…")`), so those tests never execute, and neither PUT body contains
+   `mcp_server_ids` so `ValidateMcpServerIDs` would not run on them anyway. The concern
+   stands on `teamgraph/sidebar.js:756` (`type: aiData?.type`, undefined whenever
+   absent) and on the wire contract itself (`type` is `omitempty`). **No api-validator
+   test breaks under the new gates** — `test_mcpservers_lifecycle.py` and
+   `test_mcpservers_oauth.py` never set `auth_type: "oauth"` and never touch
+   `mcp_server_ids`. **PR A must resolve `TypeNone` to the stored type BEFORE the
    deny-by-default switch, never pass `TypeNone` into it.**
 9. **D17: is `auth_type: "oauth"` allowed on POST/PUT?** **RESOLVED — 대표님 확정:
    reject it (option a).** ("좋아, 네 제안대로 가자")
@@ -1105,6 +1184,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | PR A "corrects" the `openapi.yaml`/`ai_struct_ai.rst` LLM-merging text that PR B will make true | Medium | Leave D7's text alone in PR A; only fix the `,omitempty`/"Defaults to `[]`" contradiction (§5 Q8) |
 | Dead config flag + design doc justifying another decision by citing a nonexistent cache | Medium | D6; correct `2026-09-11-…:466-467`, `:705`, `:750-754` |
 | Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | **High** | D13 / D22 (§3.12b) — **RESOLVED (§5 Q5 i/ii/iii):** gate at the write path AND the consume path (`mcp_tool.go:72` skip / `:151` refuse), PR C clears `mcpServerIds` on the Insight flip and hides the card. Production count measured at **zero** affected rows, so no migration needed |
+| An Insight AI created by a type flip that omits `mcp_server_ids` keeps a non-empty whitelist and becomes permanently un-saveable | **High** | D23 (§3.12e) — **OPEN.** Recommend auto-clearing the whitelist server-side as part of the flip; also exempt the empty list from the gate, clear on load (not only `onValueChange`), and cover the third transition site `ais_create.js:92` |
 | Q9's transition gate has no pre-write row to compare against, and survives square-admin only because `AUTH_TYPE_OPTIONS` omits oauth and `:359-366` renders it read-only | Medium | §3.12c — one pre-write `McpServerGet` must serve D20, §3.7g and Q9 together; assert transition semantics in a backend test, not via the form's option list |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
 | An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 Q11**: skip already-stored ids, reject only newly added ones. Both directions must be unit-tested (§7) |
@@ -1142,7 +1222,9 @@ error when rotating against a row deleted mid-flight. **Q5 (D13) now confirmed:*
 AI-type gate test proving `TypeInsight` cannot whitelist an MCP server; a test that an
 omitted `type` (`TypeNone`) resolves to the stored type and is NOT denied by the
 deny-by-default branch (§5 Q5 — this is the regression that would 400 every
-type-omitting PUT, including `test_ai_lifecycle.py:38-48`/`:96-106`); a test that a
+type-omitting PUT; the citation v11/v12 gave for this —
+`test_ai_lifecycle.py:38-48`/`:96-106` — was FALSE, that module is skipped at `:4`, so
+assert it as a unit test instead); a test that a
 genuinely unknown `Type` denies rather than falling through to the `Normal` set
 (mirroring `AllowedToolNames`' `default:` at `models/ai/tool_validation.go:42-45`); and
 **per Q5(i) the consume-path gate: an Insight AI's stored whitelist is SKIPPED in
@@ -1260,6 +1342,26 @@ about it, self-flagged a possible fourth instance — and then created a fifth i
 very decision meant to close the loop.
 
 Lessons now in effect:
+- **A gate is only as reachable as its enclosing condition.** v12 verified that both
+  new gate points *hold the AI object*, and concluded the gate was sound. It never
+  asked which requests *enter* the block the gate sits in — both call sites are inside
+  `if req.McpServerIDs != nil`, so the one request that creates the violation (a type
+  flip omitting the field) walks past it (D23). Verifying that a gate CAN run is not
+  verifying that it WILL run for the case it targets.
+- **Name the request that violates the new rule, then trace whether it reaches the
+  gate.** Not "is the gate correct" but "what is the cheapest request that breaks this
+  rule, and what happens to it line by line".
+- **State the predicate, not the policy.** "Insight AIs are denied MCP servers" is a
+  policy; "reject a NON-EMPTY whitelist when the resolved type is Insight" is a
+  predicate. The policy left the empty list ambiguous, and the literal reading would
+  have 400'd every Insight AI save (D23c). Every prescribed rejection needs its exact
+  predicate and its exempt cases written down.
+- **A frontend cleanup keyed on an event only covers rows that fire that event.**
+  Clearing state in `onValueChange` does nothing for a row that loads already in the
+  target state — and hiding the control removes the only affordance to fix it.
+- **Verify a test citation is live before using it as evidence.** v11/v12 cited two
+  api-validator tests as proof of real traffic; the whole module is skipped at `:4`.
+  A skipped test proves nothing and cannot regress.
 - Use `grep -i` for content/convention greps.
 - For any producer function, grep its callers and check whether the return value is
   discarded (`_,`).
