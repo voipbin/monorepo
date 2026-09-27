@@ -2,26 +2,29 @@
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v13, Analysis Review Loop round 10 pending
+Status: v14, Analysis Review Loop round 10 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
 (1 blocking, PR A ↔ PR C boundary → D21 + §5 Q11).
 Round 8: **BOTH tracks CHANGES_REQUESTED.** Fact-check refuted v10's "the PUT path
-performs no pre-write `AIGet`" (`chatbot.go:135-139` pre-fetches unconditionally);
-adversarial found the **fourth instance** of the recurring failure mode in Q5 (D22).
+performs no pre-write `AIGet`"; adversarial found the **fourth instance** of the
+recurring failure mode in Q5 (D22).
 Round 9: **BOTH tracks CHANGES_REQUESTED.** Adversarial found the **fifth instance**,
-inside the v12 material written to close the fourth (D23, §3.12e): a type flip that
-omits `mcp_server_ids` bypasses the gate entirely and produces a frozen Insight AI, and
-the gate's predicate is unspecified in a way that would 400 every Insight AI save.
-Fact-check found the header's readiness claim contradicted by open items in §5 Q1/Q3/
-Q4/Q7/Q8, a missed third Insight-transition site, and a FALSE api-validator citation
-(`test_ai_lifecycle.py` is skipped at `:4`). All verified against code and folded in.
-v9: 대표님 resolved Q11 and Q6. v10: Q5 and Q9. v12: Q5(i) and Q5(ii).
-**v13 status: NOT ready for the design doc.** §3.12e's three open decisions change both
-the implementation and its tests, and §5 Q1/Q3/Q4/Q7/Q8 still carry "Recommend …"
-items that were never confirmed. v10 and v12 both claimed readiness prematurely and
-both were refuted; this header will not claim it again until a round returns clean.
+inside the v12 material written to close the fourth (D23): a type flip omitting
+`mcp_server_ids` bypassed the gate and produced a permanently frozen Insight AI.
+Fact-check found a missed third transition site and a FALSE api-validator citation
+(`test_ai_lifecycle.py` is skipped at `:4`).
+**v14 — 대표님 REVERSED the underlying policy: "인사이트도 mcp 사용가능하도록 해."**
+Insight AIs may use MCP servers. No AI-type gate is added anywhere, which **voids
+D13, D22 and D23 outright** (retained in §3.12b/§3.12e as recorded instances of the
+failure mode, marked VOIDED and out of scope). Five rounds of gate design collapse into
+one docs sentence. D18 is re-scoped: it no longer rides on a signature rewrite.
+v9: 대표님 resolved Q11 and Q6. v10: Q5 and Q9. v12: Q5(i)/(ii), now withdrawn.
+**v14 status: readiness NOT claimed.** §5 Q1/Q3/Q4/Q7/Q8 still carry "Recommend …"
+items never confirmed by 대표님; those are listed for a single decision pass. v10 and
+v12 both claimed readiness prematurely and both were refuted, so this header will not
+claim it until a round returns clean AND those five are closed.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -59,10 +62,10 @@ separately.
 | Q6 | Split the analysis so A/C can proceed without waiting on B? | **Yes.** "권고대로 진행해" |
 | Q7 | D21: how to handle an AI whose whitelist already holds a deleted id? | **Skip already-stored ids, reject newly added ones.** "skip-not-reject 방식으로 하자." + "이후에 AI 업데이트를 할 때 ... 이때는 reject 를 해야하지 않을까?" |
 | Q8 | Add a prune loop that strips deleted ids from every affected AI? | **No.** "비쌀려나?" → no transaction on delete, un-indexed JSON column, one `ai_updated` webhook per affected AI, and skip-not-reject already resolves D21 alone |
-| Q9 | D13: add an AI-type parameter to `ValidateMcpServerIDs`? | **Yes, add it.** "Q5. 추가하도록 하자." Deny-by-default `default:` branch, per `AllowedToolNames` precedent |
+| Q9 | D13: add an AI-type parameter to `ValidateMcpServerIDs`? | **REVERSED in v14 — No.** "인사이트도 mcp 사용가능하도록 해." Insight AIs may use MCP servers. No type gate anywhere; D13/D22/D23 are voided. PR A owes one docs sentence stating the behavior |
 | Q10 | D17: reject `auth_type: "oauth"` on POST/PUT? | **Yes, reject.** "좋아, 네 제안대로 가자" Gate the write handlers, not `IsValid()`; reject the transition INTO oauth, not the value |
-| Q11 | Where does the Insight AI-type gate live? | **Both the write path AND the consume path** ("네 제안대로 진행해보자"). A write-time-only gate enforces nothing for rows that already hold a whitelist, because Q8 never prunes (D22a). `mcp_tool.go:72` skips, `:151` refuses |
-| Q12 | Does PR C clear `mcpServerIds` when an AI is flipped to Insight? | **Yes**, at `ais_detail.js:738-743` and `ais_create.js:274`, plus hide the MCP card for Insight. Without it PR A's gate 400s every save of a flipped AI, reproducing D21 (D22b) |
+| Q11 | ~~Where does the Insight AI-type gate live?~~ | **MOOT (v14).** No gate exists. The v12 answer (both write and consume path) is withdrawn |
+| Q12 | ~~Does PR C clear `mcpServerIds` on the Insight flip?~~ | **MOOT (v14).** No gate, so nothing to clear and nothing to hide. `mcpServerIds` survives a type flip and the MCP card stays visible for every type |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -85,8 +88,10 @@ separately.
 - **D12** `toolHandleMcpCall` never asserts `server.CustomerID == c.CustomerID`,
   and on team AIcalls it validates the whitelist against the **start** member while
   the session runs the **current** member.
-- **D13** `ValidateMcpServerIDs` takes no AI type, so `mcp_server_ids` is not
-  type-validated, asymmetric with `tool_names`.
+- ~~**D13**~~ **VOIDED in v14.** `ValidateMcpServerIDs` takes no AI type. 대표님
+  confirmed this is intended ("인사이트도 mcp 사용가능하도록 해"): Insight AIs may use
+  MCP servers, so the asymmetry with `tool_names` is deliberate, not a defect. PR A adds
+  no type gate; it owes only one docs sentence stating the behavior (see §5 Q5).
 - **D14** The three mcpserver webhook event types are undocumented, and
   `ai.McpServerIDs` carries `,omitempty` while the RST says it defaults to `[]`.
 - **D15** `McpServerUpdate` discards `RowsAffected`, so **the `tm_delete` predicate
@@ -112,21 +117,12 @@ separately.
   ones** (§5 Q11, 대표님 확정). Without the skip, every save of that AI 400s forever,
   for any unrelated edit; without the reject, attaching a deleted server fails
   silently. This is a PR A ↔ PR C cross-boundary defect that neither PR sees alone.
-- **D22** Q5's Insight gate, as a write-time-only check, **enforces nothing for rows
-  that already store `mcp_server_ids`** (the consume path has no type check) while
-  **freezing any AI flipped to Insight in square-admin**. Fourth instance of this
-  document's recurring failure mode. §3.12b. **RESOLVED (§5 Q5 i/ii/iii):** the type
-  gate lands at BOTH the write path and the consume path (`mcp_tool.go:72` skip,
-  `:151` refuse), and PR C clears `mcpServerIds` on the Insight transition at
-  `ais_detail.js:738-743` + `ais_create.js:274` and hides the MCP card for Insight.
-- **D23** The Insight gate is **unreachable by the request that creates the violating
-  row**: a `PUT {"type":"insight"}` that omits `mcp_server_ids` never enters the
-  `req.McpServerIDs != nil` block, so it produces a post-deploy Insight AI holding a
-  non-empty whitelist that is then **permanently frozen** (the UI clear fires only on
-  `onValueChange`, not on load, and the card is hidden). Its predicate is also
-  unspecified: read literally it 400s every Insight AI save, including empty ones.
-  **FIFTH instance**, created by the fix for the fourth. §3.12e. **OPEN — three
-  decisions needed.**
+- ~~**D22**~~ **VOIDED in v14** by the Q5 reversal — no AI-type gate exists, so a gate
+  that under-enforces and freezes AIs cannot occur. Retained in §3.12b as the fourth
+  recorded instance of the recurring failure mode. Not PR A or PR C scope.
+- ~~**D23**~~ **VOIDED in v14** by the Q5 reversal — no gate to bypass, no row to
+  freeze; its three open decisions are withdrawn. Retained in §3.12e as the fifth
+  recorded instance, created by the fix for the fourth. Not PR A or PR C scope.
 
 **PR C — square-admin parity (`voipbin/monorepo-javascript`):**
 - **D8** `mcp_server_ids` is settable only on the AI detail page, though the
@@ -387,9 +383,11 @@ call. So a rejected whitelist returns 400 while the AI **has already been
 created** (POST) or mutated (PUT `:247-283`), leaving an orphan. Note `tool_names`
 IS a `Create` parameter and IS validated inside the write.
 
-D13's type gate multiplies this: an Insight AI whose whitelist is refused is still
-created. Since D13 changes this function's signature and both call sites anyway,
-PR A should decide whether validation moves ahead of the write (§5 Q5).
+**v14:** the earlier argument here — that D13's type gate rewrites this signature
+anyway, making the reordering nearly free — is withdrawn with D13 (§5 Q5). D18 now
+stands alone: the orphan path is still real, but PR A must justify the reordering on
+its own merits. Q11's diff logic touches the same two blocks, which is the remaining
+reason to do it here.
 
 ### 3.7e D19: the RST documents a timestamp sentinel this resource does not use. CONFIRMED.
 
@@ -659,7 +657,14 @@ responses (`mcpservers_list.js:86`, `mcpservers_detail.js:266`) and does not con
 mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 (`mcpservers_detail.js:38`), so §5 Q2's `has_secret` flip breaks nothing.
 
-### 3.12b D22: Q5's Insight gate enforces nothing where it matters and freezes AIs elsewhere. CONFIRMED. BLOCKER.
+### 3.12b D22: VOIDED in v14 — Q5's Insight gate enforces nothing where it matters and freezes AIs elsewhere
+
+**STATUS: VOIDED, not fixed.** 대표님 reversed the underlying policy in v14 ("인사이트도
+mcp 사용가능하도록 해") — Insight AIs may use MCP servers, so no AI-type gate is added
+and this defect cannot occur. The analysis below is retained verbatim because it is the
+fourth recorded instance of this document's recurring failure mode and its reasoning is
+what led to the reversal: the gate could not be placed anywhere that both enforced the
+policy and left customers able to save. **Nothing here is PR A or PR C scope.**
 
 **This is the FOURTH instance of this document's recurring failure mode** (after D15,
 D20, D21), and it was NOT the instance the author self-flagged. Q5 prescribes a
@@ -705,8 +710,8 @@ customer flipping an existing AI to Insight sends `type: "insight"` plus a non-e
 configuration" (`:445`). The dead end is identical to D21 and lands in the repo PR A
 does not touch.
 
-Resolution: §5 Q5 sub-decisions (i), (ii), (iii) — **all three RESOLVED in v12**
-(consume-path type gate + PR C Insight-transition cleanup + production count of zero).
+Resolution: **none needed — VOIDED in v14.** 대표님 reversed the policy, so no gate is
+built and this defect cannot occur.
 
 ### 3.12c Q9's transition gate needs a read that does not exist, and its frontend safety is accidental
 
@@ -751,7 +756,14 @@ relying on the form's option list.
   passes through `mcpserverhandler`, so the decision is unchanged, but §7 must assert
   both survive the gate.
 
-### 3.12e D23: the Insight gate is unreachable by the request that creates the violating row, and its predicate is unspecified. CONFIRMED. BLOCKER.
+### 3.12e D23: VOIDED in v14 — the Insight gate is unreachable by the request that creates the violating row
+
+**STATUS: VOIDED, not fixed.** Same reversal as D22: there is no AI-type gate, so there
+is nothing to bypass and nothing to freeze. Its three open decisions (flip semantics,
+empty-list exemption, on-load cleanup) are **withdrawn**. Retained verbatim as the fifth
+recorded instance of the recurring failure mode — it was created by the fix for the
+fourth, which is the strongest evidence in this document that the gate was the wrong
+shape. **Nothing here is PR A or PR C scope.**
 
 **FIFTH instance of this document's recurring failure mode** (after D15, D20, D21,
 D22), found in the v12 material that was written to close the fourth. v12 was verified
@@ -838,7 +850,8 @@ is a third, reachable for `type: 'insight'` via `prompt_templates.js:659`
 ### PROCEED with PR A and PR C.
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
-D1, D2, D3, D4, D5, D6, D12, D13, D14, **D15, D16, D17, D18, D19, D20, D21**. One
+D1, D2, D3, D4, D5, D6, D12, D14, **D15, D16, D17, D18, D19, D20, D21**.
+(D13, D22, D23 voided in v14 — Insight AIs may use MCP servers.) One
 logical unit: "a deleted or
 foreign MCP server must be inert everywhere, write paths must reject rather than
 silently succeed, and the docs/config must stop describing things that are not true."
@@ -853,15 +866,12 @@ AI-edit `:753-768` (both verified to carry `tool_names` and omit
 `sidebar.js` has no `mcpservers` fetch of its own, so the
 `ProviderGet('mcpservers?page_size=100')` call at `ais_detail.js:373-377` (a bare
 `useEffect`, token-scoped, no extra customer context needed) must be reused there.
-**Plus the Insight-transition cleanup (§5 Q5(ii), D22(b)) — a FIFTH item that is not
-a form body:** clear `mcpServerIds` beside the existing `setSelectedTools([])` at
-`ais_detail.js:738-743` and `ais_create.js:274`, and gate the MCP Servers card on
-`aiType !== 'insight'` (`ais_detail.js:1238`; same idiom as
-`AIEngineFields.js:300`/`:320` and `sidebar.js:1500`). Without this, PR A's type gate
-400s every save of an AI flipped to Insight.
-**No longer independent of A:** the Insight cleanup only matters because PR A adds the
-gate, so PR C must land with or after A. The rest of PR C may still proceed in
-parallel.
+**The Insight-transition cleanup prescribed in v12 is WITHDRAWN (v14).** With no
+AI-type gate, `mcpServerIds` must SURVIVE a type flip and the MCP Servers card
+(`ais_detail.js:1238`) must stay visible for every AI type — including Insight, since
+Insight AIs may now use MCP servers. PR C must not add `aiType === 'insight'`
+conditions around MCP state or the MCP card.
+**Independent of A again; may proceed in parallel.**
 
 **PR B — deferred to its own analysis.** PR A remains its hard prerequisite: PR B
 is what makes `CallTool` reachable, so landing it before PR A's gates would turn
@@ -953,104 +963,81 @@ Redis cache (§3.9), because there is no measured signal for it.
    PR): `mcp_server_ids` on `POST /ais`, revocation behavior after DELETE, OAuth
    start/complete against a deleted server, `has_secret` false after DELETE. Add now
    or defer?
-5. **D13 policy: are MCP servers permitted on `TypeInsight` AIs?** **RESOLVED — 대표님
-   확정: add the AI-type gate.** ("Q5. 추가하도록 하자.")
-   `ValidateMcpServerIDs` gains a `Type` parameter and both call sites
-   (`v1_ais.go:118`, `:272`) pass the resolved AI type, mirroring
-   `ValidateToolNames(t Type, …)`. The precedent to follow is
-   `models/ai/tool_validation.go:36-47` `AllowedToolNames(t Type)`, whose `default:`
-   branch is **deny-by-default** (empty set + `UnknownAITypeToolDenialTotal.Inc()` at
-   `:43-45`), explicitly so a future third AI type is not silently collapsed into the
-   write-capable `Normal` set. PR A must not introduce a fail-open `default:` here.
+5. **D13 policy: are MCP servers permitted on `TypeInsight` AIs?**
+   (v10 confirmed "add the AI-type gate" — "Q5. 추가하도록 하자." — then)
+   **REVERSED in v14 — 대표님 확정: "인사이트도 mcp 사용가능하도록 해."** Insight AIs
+   MAY use MCP servers. **No AI-type gate is added anywhere**, so:
+   - `ValidateMcpServerIDs` does NOT gain a `Type` parameter, and neither call site
+     changes signature.
+   - **No consume-path type gate.** `mcp_tool.go:72` and `:151` keep only D1's
+     `tm_delete`/status gates.
+   - **No PR C Insight-transition cleanup and no card hiding.** `mcpServerIds` survives
+     a type flip, and the MCP Servers card stays visible for every AI type.
 
-   Remaining sub-decision for the design doc (implementation detail, not a blocker):
-   whether Insight AIs are denied MCP servers outright, or allowed a narrower set.
-   Recommend **denied outright for now** — `AllowedToolNames(TypeInsight)` returns
-   `tool.AllInsightToolNames` (read-only Insight tools), and an arbitrary customer MCP
-   server is by definition not in that reviewed set. A per-server capability model
-   would be the honest alternative, but nothing in the codebase supports it today and
-   inventing one here is out of PR A's scope.
+   **Three defects are VOIDED by this decision, not fixed:**
+   - **D13** (Insight AIs may whitelist arbitrary MCP servers) — no longer a defect;
+     it is the intended behavior.
+   - **D22** (§3.12b: a write-time-only gate enforces nothing and freezes flipped AIs)
+     — moot; there is no gate.
+   - **D23** (§3.12e: a whitelist-omitting type flip bypasses the gate and permanently
+     freezes the row) — moot; there is no gate. The three open decisions D23 raised
+     (flip semantics, empty-list exemption, on-load cleanup) are all withdrawn.
 
-   **RESOLVED sub-decisions (v12, 대표님 확정 — "네 제안대로 진행해보자"). See §3.12b
-   (D22).** A write-time gate alone both fails to enforce this policy and freezes
-   existing AIs, so all three parts ship together:
-   - **(i) YES — the consume path gates on the AI type too.** This is where revocation
-     is actually enforced throughout this document, so the Insight policy lives in the
-     same place as D1's `tm_delete` gates. **Verified reachable (v12):** both gate
-     points already hold the AI object, so no extra read and no signature change is
-     needed — `resolveTools(ctx context.Context, a *ai.AI)` (`mcp_tool.go:52`) has
-     `a.Type` in hand before the `for _, serverID := range a.McpServerIDs` loop at
-     `:72`, and `toolHandleMcpCall` already resolves `tmpAI` at `:144` before the
-     whitelist check at `:151`, so `tmpAI.Type` is available there.
-     Follow the surrounding convention at each site: resolution **skips** (the loop is
-     documented best-effort at `:44-51` — a skipped server must not fail the whole
-     resolution), dispatch **refuses** with the existing generic
-     `fillFailed(res, errMcpToolCallFailed("mcp tool is no longer available"))` so no
-     new customer-visible error string appears.
-   - **(ii) YES — PR C clears `mcpServerIds` on the Insight transition and hides the
-     MCP card for `aiType === 'insight'`.** Otherwise the gate 400s every save of an AI
-     flipped to Insight (§3.12b). **Two transition sites, not one (v12):**
-     `ais_detail.js:738-743` and `ais_create.js:274` both already clear
-     `setSelectedTools([])` on the flip — add the `mcpServerIds` reset beside it. For
-     the card, follow the established pattern in `AIEngineFields.js:300` (`{aiType ===
-     'insight' && …}` caption) and `:320` (`aiType === 'insight' ? INSIGHT_TOOLS :
-     AVAILABLE_TOOLS`); `teamgraph/sidebar.js:1500` uses the same idiom
-     (`aiData?.type === 'insight' ? …`) and must get it when PR C adds the field there.
-     This extends PR C beyond §4's four form bodies.
-   - **(iii) Production count — MEASURED in v11, risk is zero today.** Full cursor walk
-     of `GET /v1.0/ais` on `api.voipbin.net` (2026-09-27): **5 AIs total, all
-     `type: normal`, and ZERO AIs (of any type) hold a non-empty `mcp_server_ids`.**
-     So no existing row is frozen by the Insight gate, and D22(a)'s
-     "existing Insight AI keeps calling its servers" has no instance in production
-     today. This removes the migration risk but does NOT make (i) or (ii) optional:
-     (i) governs whether the policy is enforceable at all once customers adopt the
-     feature, and (ii) governs the flip-to-Insight path, which any customer can
-     trigger at any time with no pre-existing data.
+   **What the decision means, stated honestly.** `AllowedToolNames(TypeInsight)`
+   returns `tool.AllInsightToolNames`, and `models/tool/main.go:74-88` requires every
+   entry to have "no side effects outside the session's own message/expression
+   surface". An arbitrary customer MCP server carries no such guarantee, so MCP tools
+   on an Insight AI are NOT bound by the Insight tool contract. That asymmetry is now
+   deliberate: **the built-in tool set stays curated; MCP servers are the customer's
+   own trust decision on their own AI, whatever its type.** PR A must NOT silently
+   reintroduce the restriction, and §7 must not assert it.
+
+   **PR A owes one docs sentence** (D14/§4 docs scope): state plainly that
+   `mcp_server_ids` applies to every AI type including Insight, and that MCP tools are
+   outside the curated Insight tool set. Without it, a reader comparing
+   `AllInsightToolNames`' comment against observed behavior will reasonably file this
+   as a bug.
+
+   **Deferred, not decided against:** per-server or per-tool capability limits (already
+   a §4 non-goal). If Insight-specific restriction is ever wanted, that is the honest
+   mechanism — not the AI-type gate this decision reverses.
 
    **Coupled decision (D18): does validation move AHEAD of the AI write?** Today
    `ValidateMcpServerIDs` runs after `aiHandler.Create`/`Update` has committed
    (`v1_ais.go:92-128`, `:247-283`), so a rejected whitelist leaves an orphaned or
-   already-mutated AI and still returns 400. Since D13 rewrites this signature and
-   both call sites anyway, fixing the ordering here is nearly free; deferring it
-   means shipping a known orphan path. Recommend fixing it in PR A.
+   already-mutated AI and still returns 400. **Re-scoped in v14:** the Q5 reversal
+   removes the signature rewrite that made this "nearly free", so D18 now stands on its
+   own merits. It is still worth doing — an orphaned AI on a rejected whitelist is a
+   real defect — but it is now an independent change, and the design doc may legitimately
+   defer it. Recommend still fixing it in PR A, since D21/Q11's diff logic touches the
+   same two blocks anyway.
 
-   **Interaction with D18 that the design doc must resolve explicitly.**
-   **CORRECTED in v11** (v10 stated this wrong): v10 claimed the PUT path performs no
-   pre-write `AIGet`. It does. `aihandler/chatbot.go:134-138` pre-fetches
-   unconditionally ("Pre-fetch unconditionally so all three branches can detect
-   changes", `preUpdateAI, errGet := h.db.AIGet(ctx, id)`) before any `AIUpdate`. So
-   D18's reordering costs no extra read *provided validation is placed inside
-   `aiHandler.Update`*, where `preUpdateAI.McpServerIDs` is in hand. What is actually
-   true is narrower and more important: **the `tmp`-based diff only works at the
-   `listenhandler` frame, and that frame has no row read at all.** Whoever moves
-   validation ahead of the write must move it INTO `aiHandler.Update` (using
-   `preUpdateAI`), not merely reorder the two statements in `v1_ais.go` — the latter
-   leaves nothing to diff against and forces a second `AIGet`.
+   **Where the validation must move, if D18 is taken.** `aihandler/chatbot.go:135-139`
+   pre-fetches unconditionally ("Pre-fetch unconditionally so all three branches can
+   detect changes", `preUpdateAI, errGet := h.db.AIGet(ctx, id)`) before any `AIUpdate`,
+   so reordering costs no extra read **provided validation moves INTO
+   `aiHandler.Update`**, where `preUpdateAI.McpServerIDs` is in hand. Merely swapping
+   the two statements in `v1_ais.go` does not work: that frame has no row read, so
+   Q11's diff would lose the stored whitelist it compares against and force a second
+   `AIGet`. D18 also destroys `tmp.CustomerID` (passed today at `v1_ais.go:118`,
+   `:273`), so the POST path must use the request's customer id and the PUT path must
+   take it from `preUpdateAI`.
 
-   **D18 also destroys `tmp.CustomerID`.** Both call sites currently pass
-   `tmp.CustomerID` (`v1_ais.go:118`, `:273`). Ahead of the write there is no `tmp`, so
-   the POST path must use the request's customer id and the PUT path must take both the
-   customer id and the resolved type from `preUpdateAI`.
+   **v14 note on a now-moot hazard.** v11-v13 warned at length that an omitted `type`
+   decodes to `TypeNone` (`listenhandler/models/request/ais.go:17`, `:56`) and would be
+   denied by a deny-by-default `default:` branch, 400ing every type-omitting PUT. **That
+   hazard disappears with the Q5 reversal** — no type is passed to
+   `ValidateMcpServerIDs` at all. Retained here only so a future reader who revisits
+   AI-type gating knows the trap exists: resolution (`TypeNone` → stored →
+   `TypeNormal`) happens at `chatbot.go:145-149`, i.e. after the `AIGet`, so any
+   type-keyed validation must live downstream of that point.
+   **Also corrected in v13 and still worth recording:** v11/v12 cited
+   `api-validator/tests/scenarios/test_ai_lifecycle.py:38-48`/`:96-106` as live proof of
+   type-omitting traffic. The citation was FALSE — the module is skipped at
+   `test_ai_lifecycle.py:4`. **No api-validator test breaks under any gate in this
+   document**: `test_mcpservers_lifecycle.py` and `test_mcpservers_oauth.py` never set
+   `auth_type: "oauth"` and never touch `mcp_server_ids`.
 
-   **The resolved type does not exist at the listenhandler frame either — and
-   deny-by-default makes that fatal.** §5 Q5's "both call sites pass the resolved AI
-   type" is only achievable inside `aiHandler.Update`. At `v1_ais.go` there is only
-   `req.Type`, which is `omitempty` (`listenhandler/models/request/ais.go:17`, `:56`),
-   so an omitted `type` decodes to `TypeNone`. Resolution (`TypeNone` → stored type →
-   `TypeNormal`) happens at `chatbot.go:144-150`, i.e. AFTER the `AIGet` that D18 wants
-   to precede. Feeding `TypeNone` into a deny-by-default `default:` branch would
-   **reject every request that omits `type`**. **Evidence corrected in v13:** v11/v12
-   cited `api-validator/tests/scenarios/test_ai_lifecycle.py:38-48` and `:96-106` as
-   live proof. That citation was FALSE — the entire module is skipped at
-   `test_ai_lifecycle.py:4` (`pytestmark = pytest.mark.skip(reason="POST /ais returns
-   500 consistently…")`), so those tests never execute, and neither PUT body contains
-   `mcp_server_ids` so `ValidateMcpServerIDs` would not run on them anyway. The concern
-   stands on `teamgraph/sidebar.js:756` (`type: aiData?.type`, undefined whenever
-   absent) and on the wire contract itself (`type` is `omitempty`). **No api-validator
-   test breaks under the new gates** — `test_mcpservers_lifecycle.py` and
-   `test_mcpservers_oauth.py` never set `auth_type: "oauth"` and never touch
-   `mcp_server_ids`. **PR A must resolve `TypeNone` to the stored type BEFORE the
-   deny-by-default switch, never pass `TypeNone` into it.**
 9. **D17: is `auth_type: "oauth"` allowed on POST/PUT?** **RESOLVED — 대표님 확정:
    reject it (option a).** ("좋아, 네 제안대로 가자")
 
@@ -1183,8 +1170,8 @@ Redis cache (§3.9), because there is no measured signal for it.
 | OAuth Complete has no re-check (TOCTOU between Start and Complete) | Medium | D3; gate both independently |
 | PR A "corrects" the `openapi.yaml`/`ai_struct_ai.rst` LLM-merging text that PR B will make true | Medium | Leave D7's text alone in PR A; only fix the `,omitempty`/"Defaults to `[]`" contradiction (§5 Q8) |
 | Dead config flag + design doc justifying another decision by citing a nonexistent cache | Medium | D6; correct `2026-09-11-…:466-467`, `:705`, `:750-754` |
-| Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | **High** | D13 / D22 (§3.12b) — **RESOLVED (§5 Q5 i/ii/iii):** gate at the write path AND the consume path (`mcp_tool.go:72` skip / `:151` refuse), PR C clears `mcpServerIds` on the Insight flip and hides the card. Production count measured at **zero** affected rows, so no migration needed |
-| An Insight AI created by a type flip that omits `mcp_server_ids` keeps a non-empty whitelist and becomes permanently un-saveable | **High** | D23 (§3.12e) — **OPEN.** Recommend auto-clearing the whitelist server-side as part of the flip; also exempt the empty list from the gate, clear on load (not only `onValueChange`), and cover the third transition site `ais_create.js:92` |
+| Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | n/a | **NOT A RISK (v14).** 대표님 confirmed this is intended. MCP tools are outside the curated Insight tool set by design; PR A documents the asymmetry rather than gating it (§5 Q5) |
+| ~~An Insight AI created by a type flip becomes permanently un-saveable~~ | n/a | **VOIDED (v14).** D23 depended on the AI-type gate, which no longer exists |
 | Q9's transition gate has no pre-write row to compare against, and survives square-admin only because `AUTH_TYPE_OPTIONS` omits oauth and `:359-366` renders it read-only | Medium | §3.12c — one pre-write `McpServerGet` must serve D20, §3.7g and Q9 together; assert transition semantics in a backend test, not via the form's option list |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
 | An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 Q11**: skip already-stored ids, reject only newly added ones. Both directions must be unit-tested (§7) |
@@ -1218,20 +1205,13 @@ succeeds), rejected by
 delete zeroes all secret/token ciphertext in the SAME statement while update paths
 never do; that dispatch refuses a server owned by another customer (D12); that the
 team path validates the CURRENT member's whitelist; and `GetValidAccessToken`'s new
-error when rotating against a row deleted mid-flight. **Q5 (D13) now confirmed:** an
-AI-type gate test proving `TypeInsight` cannot whitelist an MCP server; a test that an
-omitted `type` (`TypeNone`) resolves to the stored type and is NOT denied by the
-deny-by-default branch (§5 Q5 — this is the regression that would 400 every
-type-omitting PUT; the citation v11/v12 gave for this —
-`test_ai_lifecycle.py:38-48`/`:96-106` — was FALSE, that module is skipped at `:4`, so
-assert it as a unit test instead); a test that a
-genuinely unknown `Type` denies rather than falling through to the `Normal` set
-(mirroring `AllowedToolNames`' `default:` at `models/ai/tool_validation.go:42-45`); and
-**per Q5(i) the consume-path gate: an Insight AI's stored whitelist is SKIPPED in
-`resolveTools` (built-ins and other servers still resolve, per the best-effort contract
-at `mcp_tool.go:44-51`) and REFUSED in `toolHandleMcpCall` with the existing generic
-"mcp tool is no longer available"** — this is the assertion that makes the policy real
-for rows that predate the deploy, since Q6 never prunes. **Q9 (D17) now confirmed:** that
+error when rotating against a row deleted mid-flight. **Q5 (D13) REVERSED in v14 — assert the OPPOSITE:** a test that an
+Insight AI CAN hold and use `mcp_server_ids` (`ValidateMcpServerIDs` accepts it, and
+`resolveTools` returns that server's tools for a `TypeInsight` AI). This is a
+regression guard in the literal sense: it fails if anyone reintroduces the type gate
+this decision removes. No `TypeInsight`-denial test, no unknown-`Type` test, and no
+consume-path type-gate test — v12's three prescribed assertions are withdrawn.
+**Q9 (D17) now confirmed:** that
 POST/PUT setting `auth_type: "oauth"` is rejected; that a PUT re-submitting an
 unchanged `auth_type: "oauth"` on an OAuth-completed row still succeeds (transition
 gate, not a value gate — a value gate 400s every save from
@@ -1342,6 +1322,16 @@ about it, self-flagged a possible fourth instance — and then created a fifth i
 very decision meant to close the loop.
 
 Lessons now in effect:
+- **When a gate needs five rounds of design, question the policy, not the gate.**
+  D13 → D22 → D23 was three escalating attempts to place one AI-type gate; each fix
+  created the next defect. The author never stepped back to ask whether the restriction
+  itself was wanted. 대표님 answered that in one sentence ("인사이트도 mcp 사용가능하도록
+  해") and three defects evaporated. **Repeated implementation difficulty is evidence
+  about the requirement, not just the implementation.**
+- **Surface the policy question early, with its cost.** The author treated "are Insight
+  AIs allowed MCP servers?" as settled by an inferred analogy to `AllowedToolNames`,
+  and spent five rounds on mechanics. Asking "do we actually want this restriction?"
+  before designing the gate would have saved all of it.
 - **A gate is only as reachable as its enclosing condition.** v12 verified that both
   new gate points *hold the AI object*, and concluded the gate was sound. It never
   asked which requests *enter* the block the gate sits in — both call sites are inside
