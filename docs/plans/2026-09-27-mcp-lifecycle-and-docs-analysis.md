@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v19, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v20, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v19, Analysis Review Loop round 13 pending
+Status: v20, Analysis Review Loop round 13 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -32,6 +32,9 @@ Adversarial found the **SEVENTH instance (D26)**: the ownership assertion D25 mo
 was prescribed at dispatch, which §3.1 of this same document proves is dead code, while
 the live leak path at resolution got none. Also raised **D27** (pre-deploy deleted rows
 keep credentials) as a genuinely OPEN decision.
+
+v20: 대표님 declined round 12's PR A split proposal — "하나로 가자." One PR per repository
+stands; Q17's "split out if it grows" hedge is withdrawn.
 
 Round 12: **both tracks CHANGES_REQUESTED.** Fact-check found no false code claim in the
 v17/v18 material (the D27 column list is complete and correctly excludes the two metadata
@@ -93,7 +96,7 @@ separately.
 | Q14 | Does `McpServerDelete` gain the same predicate (D16)? | **Yes**, but the handler keeps **200 on repeat DELETE** and stops re-publishing `EventTypeDeleted`. 200 is required because DELETE is idempotent and GET still returns the soft-deleted row; v15's "the validator fixture would fail on 404" reason was FALSE (`cleanup_report.py:86` tolerates 404) |
 | Q15 | Naming-collision rename scope, and the third-party MCP link | **Heading only**; and **replace** `nrjchnd/voipbin-mcp` with `github.com/voipbin/mcp`, remove the fork link entirely ("a로 가자"). `uvx voipbin-mcp` already installs the official repo per PyPI, so the published link contradicts the published command |
 | Q16 | Add api-validator MCP coverage now? | **Defer until ETC-18 is fixed.** The validator leaks ~4 MCP servers per run into production (100 measured); more coverage before the fix accelerates it |
-| Q17 | PR A docs scope for D14 | **Contradiction (`ai_struct_ai.rst:69`) is mandatory**; the three webhook event types ship in the same PR if it stays reviewable, else split |
+| Q17 | PR A docs scope for D14, and is PR A split? | **NOT split — one PR per repository** (대표님 확정: "하나로 가자"). Every PR A item, including the three webhook event types and the `ai_struct_ai.rst:69` contradiction, ships in ONE `monorepo` PR. Round 12's A1/A2 (logic vs docs) split proposal is **declined**; the earlier "split out if it grows" wording is withdrawn |
 | Q18 | Does the already-stored-id exemption cover the ownership check too? | **NO — D25 (§3.5a), SIXTH instance.** The exemption applies to the `tm_delete` predicate ONLY. `ValidateMcpServerIDs` gains a `storedIDs` parameter so existence and ownership run on every id; v12-v15's "no signature change" claim created a cross-tenant hole and is retracted |
 | Q19 | Where does the D12 ownership assertion live? | **BOTH resolution and dispatch** — D26 (§3.5b), SEVENTH instance. Dispatch-only was dead code (§3.1); resolution is where the credential is decrypted and sent. `resolveTools` already holds `a.CustomerID`, so cost is zero |
 | Q20 | Do pre-deploy soft-deleted rows get their credentials zeroed? | **Yes — one-off Alembic data migration** ("a 로 가자"), all seven columns where `tm_delete IS NOT NULL`, authored in PR A and applied by 대표님, downgrade an explicit no-op. The affected-row count is unmeasured and remains a design-doc precondition (it changes the PR body's impact claim, not the decision) |
@@ -1017,8 +1020,11 @@ is a third, reachable for `type: 'insight'` via `prompt_templates.js:659`
 (`insight_case_assistant`, `:653`) and re-triggerable after the form is filled by the
 "Change Template" button at `:186`. It clears tools but not MCP ids.
 
-**Open decisions this creates (not implementation details):**
-1. **What happens on a type flip to Insight while a whitelist is stored?** Options:
+**~~Open decisions this creates~~ — ALL THREE WITHDRAWN in v14.** No AI-type gate exists,
+so none of the following is a question, a work item, or a §7 assertion. Retained verbatim
+only as evidence of how much prescribed work the reversal removed. **Do not implement
+anything below.**
+1. ~~**What happens on a type flip to Insight while a whitelist is stored?**~~ Options:
    (a) reject the flip while a non-empty whitelist is stored, telling the customer to
    clear it first; (b) auto-clear the whitelist server-side as part of the flip (one
    write, no webhook storm, unlike Q8's rejected bulk loop); (c) validate on the flip
@@ -1505,8 +1511,14 @@ Redis cache (§3.9), because there is no measured signal for it.
    exactly the site the existing three-row table lets contributors forget.
 8. **D14 scope in PR A:** document the three webhook event types now, or only fix
    the `ai_struct_ai.rst:69` "Defaults to `[]`" vs `,omitempty` contradiction?
-   **RESOLVED (v15): the contradiction is MANDATORY in PR A; the event-type
-   documentation is included if PR A stays reviewable, and split out otherwise.**
+   **RESOLVED (v15/v20): the contradiction is MANDATORY in PR A, and so is the
+   event-type documentation — PR A is NOT split.** 대표님 확정 (v20): "하나로 가자."
+   Round 12's adversarial review proposed splitting PR A into A1 (Go logic + migration)
+   and A2 (docs/config, no Go changes), on the grounds that 19 defects across four
+   services is a lot to review at once. **Declined.** The standing rule is one PR per
+   repository, and the earlier "split out if it stays reviewable" hedge is withdrawn:
+   every PR A item lands in a single `monorepo` PR. PR C remains separate only because it
+   is a different repository, which is a structural necessity rather than a split.
    The contradiction is a published falsehood customers read today, so it ships with
    PR A regardless. The three event types are net-new prose whose volume is only known
    once the other doc fixes are written; the design doc makes the call, and splitting
