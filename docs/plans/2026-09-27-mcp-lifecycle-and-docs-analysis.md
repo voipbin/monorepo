@@ -524,7 +524,7 @@ twice. Resolve once after the repair and reuse the value.
 **Residual gaps, corrected and stated (v22).**
 
 The v21 residual paragraph was **wrong about the direction of the risk**. Post-fix, dispatch
-resolves the active member and `mcpServerIDIsWhitelisted` (`mcp_tool.go:150`) **refuses** a
+resolves the active member and `mcpServerIDIsWhitelisted` (call site `mcp_tool.go:151`, func `:239`) **refuses** a
 server the active member does not whitelist, so the stale map cannot get the other member's
 tool *accepted*. The true residual is the opposite: **under-availability** — the active
 member's own newly whitelisted tools are missing from the map until the next Start. Not a
