@@ -4,7 +4,6 @@ package contacthandler
 
 import (
 	"context"
-	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -49,7 +48,7 @@ type ContactHandler interface {
 	// Proxies bin-timeline-manager's peer_events read API (design doc
 	// 2026-07-25-contact-interaction-retire-to-peer-events, §8.1/§9).
 	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string,
-		peerType, peerTarget string, contactID uuid.UUID, addressID uuid.UUID, since time.Time) ([]*tmpeerevent.PeerEvent, string, error)
+		peerType, peerTarget string, contactID uuid.UUID, addressID uuid.UUID) ([]*tmpeerevent.PeerEvent, string, error)
 }
 
 type contactHandler struct {

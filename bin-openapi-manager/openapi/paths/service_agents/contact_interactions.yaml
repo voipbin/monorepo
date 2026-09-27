@@ -1,10 +1,8 @@
 get:
   summary: List interactions
   description: |
-    List CRM interactions for the service agent's customer. At most one filter may be
+    List CRM interactions for the service agent's customer. Exactly one filter must be
     provided: peer_type + peer_target (remote endpoint), contact_id, or address_id.
-    If no filter is provided, the full customer interaction history is returned,
-    scoped to the "since" lookback window (default "30d", maximum "180d").
 
     The response is the raw, unmodified peer_events shape (design doc
     2026-07-25-contact-interaction-retire-to-peer-events, §8.1/§9): rows may
@@ -39,15 +37,6 @@ get:
         type: string
         format: uuid
         example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-    - name: since
-      in: query
-      description: |
-        Lookback window in days (e.g. "7d", "30d"), used only when no filter
-        (peer_type+peer_target, contact_id, address_id) is provided. Default "30d", max "180d".
-        Ignored when a filter is provided.
-      schema:
-        type: string
-        example: "30d"
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
   responses:

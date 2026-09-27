@@ -108,7 +108,6 @@ import (
 	widget "monorepo/bin-webchat-manager/models/widget"
 	webhook "monorepo/bin-webhook-manager/models/webhook"
 	reflect "reflect"
-	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -4097,9 +4096,9 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1ContactUpdate(ctx, contactID,
 }
 
 // ContactV1InteractionList mocks base method.
-func (m *MockRequestHandler) ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*peerevent.PeerEvent, string, error) {
+func (m *MockRequestHandler) ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*peerevent.PeerEvent, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1InteractionList", ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since)
+	ret := m.ctrl.Call(m, "ContactV1InteractionList", ctx, customerID, size, token, peerType, peerTarget, contactID, addressID)
 	ret0, _ := ret[0].([]*peerevent.PeerEvent)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -4107,9 +4106,9 @@ func (m *MockRequestHandler) ContactV1InteractionList(ctx context.Context, custo
 }
 
 // ContactV1InteractionList indicates an expected call of ContactV1InteractionList.
-func (mr *MockRequestHandlerMockRecorder) ContactV1InteractionList(ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1InteractionList(ctx, customerID, size, token, peerType, peerTarget, contactID, addressID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1InteractionList", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1InteractionList), ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1InteractionList", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1InteractionList), ctx, customerID, size, token, peerType, peerTarget, contactID, addressID)
 }
 
 // ContactV1TagAdd mocks base method.

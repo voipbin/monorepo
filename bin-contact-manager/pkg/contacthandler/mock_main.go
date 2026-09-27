@@ -15,7 +15,6 @@ import (
 	customer "monorepo/bin-customer-manager/models/customer"
 	peerevent "monorepo/bin-timeline-manager/models/peerevent"
 	reflect "reflect"
-	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -165,9 +164,9 @@ func (mr *MockContactHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // InteractionList mocks base method.
-func (m *MockContactHandler) InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*peerevent.PeerEvent, string, error) {
+func (m *MockContactHandler) InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*peerevent.PeerEvent, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InteractionList", ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since)
+	ret := m.ctrl.Call(m, "InteractionList", ctx, customerID, size, token, peerType, peerTarget, contactID, addressID)
 	ret0, _ := ret[0].([]*peerevent.PeerEvent)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -175,9 +174,9 @@ func (m *MockContactHandler) InteractionList(ctx context.Context, customerID uui
 }
 
 // InteractionList indicates an expected call of InteractionList.
-func (mr *MockContactHandlerMockRecorder) InteractionList(ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since any) *gomock.Call {
+func (mr *MockContactHandlerMockRecorder) InteractionList(ctx, customerID, size, token, peerType, peerTarget, contactID, addressID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockContactHandler)(nil).InteractionList), ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockContactHandler)(nil).InteractionList), ctx, customerID, size, token, peerType, peerTarget, contactID, addressID)
 }
 
 // List mocks base method.

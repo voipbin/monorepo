@@ -5,7 +5,6 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"monorepo/bin-common-handler/pkg/circuitbreakerhandler"
 
@@ -956,7 +955,7 @@ type RequestHandler interface {
 
 	// contact-manager interactions (CRM v1 read API, VOIP-1209; response shape
 	// migrated to peerevent.PeerEvent, design doc 2026-07-25-contact-interaction-retire-to-peer-events §8.1/§9)
-	ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*tmpeerevent.PeerEvent, string, error)
+	ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*tmpeerevent.PeerEvent, string, error)
 
 	// contact-manager cases (Phase 5, NOJIRA-contact-case-management)
 	ContactV1CaseCreate(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType, name, detail, referenceID string) (*cmkase.Case, error)

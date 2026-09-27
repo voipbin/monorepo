@@ -61,7 +61,7 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 			expectStatus:  http.StatusOK,
 		},
 		{
-			name: "normal - no filter, unfiltered mode with default 30d since",
+			name: "normal - filter by peer_type+peer_target",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -69,13 +69,13 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:      "/service_agents/contact_interactions",
+			reqQuery:      "/service_agents/contact_interactions?peer_type=tel&peer_target=%2B155****1111",
 			responseItems: []*tmpeerevent.PeerEvent{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
 		},
 		{
-			name: "normal - no filter, explicit since",
+			name: "normal - filter by address_id",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -83,13 +83,13 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:      "/service_agents/contact_interactions?since=7d",
+			reqQuery:      "/service_agents/contact_interactions?address_id=22222222-0000-0000-0000-000000000002",
 			responseItems: []*tmpeerevent.PeerEvent{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
 		},
 		{
-			name: "bad request - since invalid format",
+			name: "bad request - no filter provided",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -97,19 +97,7 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:     "/service_agents/contact_interactions?since=7days",
-			expectStatus: http.StatusBadRequest,
-		},
-		{
-			name: "bad request - since exceeds 180d max",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         agentID,
-					CustomerID: customerID,
-				},
-				Permission: amagent.PermissionCustomerAgent,
-			}),
-			reqQuery:     "/service_agents/contact_interactions?since=181d",
+			reqQuery:     "/service_agents/contact_interactions",
 			expectStatus: http.StatusBadRequest,
 		},
 		{
@@ -154,7 +142,7 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 
 			if tt.responseItems != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					ServiceAgentInteractionList(req.Context(), tt.agent, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					ServiceAgentInteractionList(req.Context(), tt.agent, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 

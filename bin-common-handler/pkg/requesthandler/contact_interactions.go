@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"time"
 
 	"github.com/gofrs/uuid"
 
@@ -15,10 +14,7 @@ import (
 )
 
 // ContactV1InteractionList lists interactions from contact-manager.
-// Exactly one of (peerType+peerTarget), contactID, or addressID should be non-zero,
-// UNLESS since is non-zero, in which case zero filters is allowed (unfiltered, time-scoped mode).
-// since is encoded as an absolute RFC3339Nano timestamp on the wire (not a relative "Nd" string) —
-// any "Nd" parsing/range validation happens at the bin-api-manager HTTP layer before this call.
+// Exactly one of (peerType+peerTarget), contactID, or addressID must be non-zero.
 //
 // The RPC's internal implementation proxies bin-timeline-manager's peer_events read API
 // (design doc 2026-07-25-contact-interaction-retire-to-peer-events, §8.1/§9), so the
@@ -30,7 +26,6 @@ func (r *requestHandler) ContactV1InteractionList(
 	token string,
 	peerType, peerTarget string,
 	contactID, addressID uuid.UUID,
-	since time.Time,
 ) ([]*tmpeerevent.PeerEvent, string, error) {
 	u := url.Values{}
 	if peerType != "" {
@@ -44,9 +39,6 @@ func (r *requestHandler) ContactV1InteractionList(
 	}
 	if addressID != uuid.Nil {
 		u.Set("address_id", addressID.String())
-	}
-	if !since.IsZero() {
-		u.Set("since", since.UTC().Format(time.RFC3339Nano))
 	}
 	if size > 0 {
 		u.Set("page_size", fmt.Sprintf("%d", size))

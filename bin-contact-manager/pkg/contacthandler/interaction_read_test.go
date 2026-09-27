@@ -58,7 +58,7 @@ func Test_InteractionList_ByPeer(t *testing.T) {
 		},
 	)
 
-	res, nextToken, err := h.InteractionList(ctx, customerID, 10, "", string(commonaddress.TypeTel), "+821100000001", uuid.Nil, uuid.Nil, time.Time{})
+	res, nextToken, err := h.InteractionList(ctx, customerID, 10, "", string(commonaddress.TypeTel), "+821100000001", uuid.Nil, uuid.Nil)
 	if err != nil {
 		t.Errorf("Test_InteractionList_ByPeer got error: %v", err)
 	}
@@ -150,7 +150,7 @@ func Test_InteractionList_ByContact(t *testing.T) {
 		},
 	)
 
-	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", contactID, uuid.Nil, time.Time{})
+	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", contactID, uuid.Nil)
 	if err != nil {
 		t.Errorf("Test_InteractionList_ByContact got error: %v", err)
 	}
@@ -192,7 +192,7 @@ func Test_InteractionList_ByAddress(t *testing.T) {
 		},
 	)
 
-	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", uuid.Nil, addressID, time.Time{})
+	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", uuid.Nil, addressID)
 	if err != nil {
 		t.Errorf("Test_InteractionList_ByAddress got error: %v", err)
 	}
@@ -215,33 +215,9 @@ func Test_InteractionList_NoFilter_Error(t *testing.T) {
 	customerID := uuid.FromStringOrNil("a082d59c-2a00-11ee-8fb1-8bbf141432f6")
 
 	// No filters, and since is also zero -- peer_events requires >=1 address filter.
-	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", uuid.Nil, uuid.Nil, time.Time{})
+	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", uuid.Nil, uuid.Nil)
 	if err == nil {
 		t.Errorf("Test_InteractionList_NoFilter_Error expected error, got nil")
-	}
-}
-
-func Test_InteractionList_SinceOnly_Error(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	h := contactHandler{
-		utilHandler: mockUtil,
-		db:          mockDB,
-		reqHandler:  mockReq,
-	}
-	ctx := context.Background()
-
-	customerID := uuid.FromStringOrNil("a082d59c-2a00-11ee-8fb1-8bbf141432f6")
-
-	// since-only (unfiltered mode) is no longer supported -- peer_events has
-	// no unfiltered read path.
-	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", uuid.Nil, uuid.Nil, time.Now().Add(-24*time.Hour))
-	if err == nil {
-		t.Errorf("Test_InteractionList_SinceOnly_Error expected error, got nil")
 	}
 }
 
@@ -277,7 +253,7 @@ func Test_InteractionList_ByContact_NoAddresses(t *testing.T) {
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockDB.EXPECT().AddressListAllByContactID(ctx, contactID).Return([]contact.Address{}, nil)
 
-	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", contactID, uuid.Nil, time.Time{})
+	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", contactID, uuid.Nil)
 	if err == nil {
 		t.Errorf("Test_InteractionList_ByContact_NoAddresses expected error, got nil")
 	}
@@ -305,7 +281,7 @@ func Test_InteractionList_ByPeer_RPCError(t *testing.T) {
 
 	mockReq.EXPECT().TimelineV1PeerEventList(ctx, gomock.Any()).Return(nil, fmt.Errorf("rpc timeout"))
 
-	_, _, err := h.InteractionList(ctx, customerID, 10, "", string(commonaddress.TypeTel), "+821****0001", uuid.Nil, uuid.Nil, time.Time{})
+	_, _, err := h.InteractionList(ctx, customerID, 10, "", string(commonaddress.TypeTel), "+821****0001", uuid.Nil, uuid.Nil)
 	if err == nil {
 		t.Errorf("Test_InteractionList_ByPeer_RPCError expected error, got nil")
 	}

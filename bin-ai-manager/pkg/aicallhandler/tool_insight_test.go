@@ -245,11 +245,11 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 			if tt.responseCaseErr == nil && tt.responseCase != nil && tt.responseCase.CustomerID == customerID {
 				if tt.expectContactFilter {
 					mockReq.EXPECT().ContactV1InteractionList(
-						ctx, customerID, uint64(insightDefaultListLimit), "", "", "", contactID, uuid.Nil, time.Time{},
+						ctx, customerID, uint64(insightDefaultListLimit), "", "", "", contactID, uuid.Nil,
 					).Return(tt.responseInteraction, "", tt.responseListErr)
 				} else {
 					mockReq.EXPECT().ContactV1InteractionList(
-						ctx, customerID, uint64(insightDefaultListLimit), "", string(tt.responseCase.Peer.Type), tt.responseCase.Peer.Target, uuid.Nil, uuid.Nil, time.Time{},
+						ctx, customerID, uint64(insightDefaultListLimit), "", string(tt.responseCase.Peer.Type), tt.responseCase.Peer.Target, uuid.Nil, uuid.Nil,
 					).Return(tt.responseInteraction, "", tt.responseListErr)
 				}
 			}

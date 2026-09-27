@@ -618,7 +618,6 @@ type ServiceHandler interface {
 		token string,
 		peerType, peerTarget string,
 		contactID, addressID uuid.UUID,
-		since time.Time,
 	) ([]*tmpeerevent.PeerEvent, string, error)
 
 	// conversation handlers
