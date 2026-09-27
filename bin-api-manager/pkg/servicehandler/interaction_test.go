@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -139,11 +138,11 @@ func Test_InteractionList(t *testing.T) {
 
 			if !tt.expectErr {
 				mockReq.EXPECT().
-					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID, time.Time{}).
+					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID).
 					Return(tt.responseItems, tt.responseToken, nil)
 			} else if tt.name == "rpc error propagates" {
 				mockReq.EXPECT().
-					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID, time.Time{}).
+					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID).
 					Return(nil, "", fmt.Errorf("rpc timeout"))
 			}
 

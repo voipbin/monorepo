@@ -145,10 +145,10 @@ func (h *aicallHandler) toolHandleGetContactInteractions(ctx context.Context, c 
 	var interactions []*tmpeerevent.PeerEvent
 	if kase.ContactID != nil {
 		interactions, _, err = h.reqHandler.ContactV1InteractionList(
-			ctx, c.CustomerID, limit, "", "", "", *kase.ContactID, uuid.Nil, time.Time{})
+			ctx, c.CustomerID, limit, "", "", "", *kase.ContactID, uuid.Nil)
 	} else {
 		interactions, _, err = h.reqHandler.ContactV1InteractionList(
-			ctx, c.CustomerID, limit, "", string(kase.Peer.Type), kase.Peer.Target, uuid.Nil, uuid.Nil, time.Time{})
+			ctx, c.CustomerID, limit, "", string(kase.Peer.Type), kase.Peer.Target, uuid.Nil, uuid.Nil)
 	}
 	if err != nil {
 		// Round-2 review finding (VOIP-1234 PR #1100): the Contact backing

@@ -4,7 +4,6 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -21,10 +20,10 @@ import (
 // 2026-07-25-contact-interaction-retire-to-peer-events, §8.1/§9).
 //
 // Exactly one of (peerType+peerTarget), contactID, or addressID must be
-// non-zero -- peer_events requires at least one address filter, unlike the
-// old contact_interactions InteractionList, which additionally supported an
-// unfiltered/since-only mode. That mode has no peer_events equivalent and is
-// rejected here.
+// non-zero -- peer_events requires at least one address filter (removed the
+// unfiltered/since-only mode entirely in ETC-17: it never had a peer_events
+// equivalent since the 2026-07-25 rewrite, so it always 400'd in
+// production).
 //
 // Returns the response without reshaping (§8.1 item 1 / §9.1 item 1):
 // []*peerevent.PeerEvent, plus a next-page token (empty when no further pages).
@@ -36,7 +35,6 @@ func (h *contactHandler) InteractionList(
 	peerType, peerTarget string,
 	contactID uuid.UUID,
 	addressID uuid.UUID,
-	since time.Time,
 ) ([]*tmpeerevent.PeerEvent, string, error) {
 	var addrs []commonaddress.Address
 
