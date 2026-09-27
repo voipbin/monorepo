@@ -654,6 +654,55 @@ func Test_aicallHandler_resolveActiveAIForMcp(t *testing.T) {
 			wantNil: true,
 		},
 		{
+			name: "Unsupported assistance type returns nil rather than treating AssistanceID as an AI",
+			ac: &aicall.AIcall{
+				AssistanceType: "unknown",
+				AssistanceID:   aiID,
+			},
+			// No mock expectation at all: resolving must fail closed BEFORE any fetch.
+			// Treating a non-AI, non-team type as an AI would authorise MCP dispatch
+			// against whatever row AssistanceID happens to hit.
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {},
+			wantNil:   true,
+		},
+		{
+			name: "Empty assistance type returns nil rather than treating AssistanceID as an AI",
+			ac: &aicall.AIcall{
+				AssistanceID: aiID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {},
+			wantNil:   true,
+		},
+		{
+			name: "Team, composed degraded — current member absent AND the start member AI fails, fetched once",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: curMemberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(staleTeam, nil)
+				// Exactly once. resolveTeamMemberAI's inner fallback loop already tried
+				// the start member, so an outer retry here would re-issue the identical
+				// failing fetch on the LLM's critical path.
+				ah.EXPECT().Get(gomock.Any(), startAIID).Return(nil, errors.New("rpc timeout"))
+			},
+			wantNil: true,
+		},
+		{
+			name: "Team, nil CurrentMemberID — start member resolved once, no duplicate fetch",
+			ac: &aicall.AIcall{
+				AssistanceType: aicall.AssistanceTypeTeam,
+				AssistanceID:   teamID,
+				// a freshly created aicall that never switched members holds uuid.Nil
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(fullTeam, nil)
+				ah.EXPECT().Get(gomock.Any(), startAIID).Return(&ai.AI{Identity: identity.Identity{ID: startAIID}}, nil)
+			},
+			wantAIID: startAIID,
+		},
+		{
 			name: "Team — start member itself unfetchable returns nil without a second identical attempt",
 			ac: &aicall.AIcall{
 				AssistanceType:  aicall.AssistanceTypeTeam,

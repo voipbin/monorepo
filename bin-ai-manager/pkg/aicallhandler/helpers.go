@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/team"
 )
 
 // resolveActiveAIIDFromAIcall returns the active AI UUID for the given AIcall.
@@ -191,13 +192,24 @@ func (h *aicallHandler) resolveActiveAIForMcp(ctx context.Context, c *aicall.AIc
 		"aicall_id": c.ID,
 	})
 
-	if c.AssistanceType != aicall.AssistanceTypeTeam {
+	switch c.AssistanceType {
+	case aicall.AssistanceTypeAI:
 		a, err := h.aiHandler.Get(ctx, c.AssistanceID)
 		if err != nil {
 			log.Warnf("Could not get the ai. ai_id: %s, err: %v", c.AssistanceID, err)
 			return nil
 		}
 		return a
+
+	case aicall.AssistanceTypeTeam:
+		// handled below
+
+	default:
+		// Mirror resolveAI's default arm: an unrecognised assistance type must not
+		// be treated as an AI id. Returning nil keeps the MCP gates fail-closed
+		// instead of authorising against whatever row AssistanceID happens to hit.
+		log.Warnf("Unsupported assistance type for mcp resolution. assistance_type: %s", c.AssistanceType)
+		return nil
 	}
 
 	t, err := h.teamHandler.Get(ctx, c.AssistanceID)
@@ -212,12 +224,16 @@ func (h *aicallHandler) resolveActiveAIForMcp(ctx context.Context, c *aicall.AIc
 	// unfetchable. Retry explicitly for the start member to cover that mode too.
 	a, resolvedMemberID, err := h.resolveTeamMemberAI(ctx, t, c.CurrentMemberID)
 	if err == nil {
+		log.Debugf("Resolved the team member AI for mcp. member_id: %s, ai_id: %s", resolvedMemberID, a.ID)
 		return a
 	}
 	log.Warnf("Could not resolve the current team member AI, falling back to the start member. member_id: %s, err: %v", c.CurrentMemberID, err)
 
-	if c.CurrentMemberID == t.StartMemberID {
-		// already the start member, the retry would fail identically.
+	// resolveTeamMemberAI's own fallback loop already tried the start member whenever
+	// CurrentMemberID was absent from the roster, so retrying then would re-issue the
+	// byte-identical failing fetch. Retry ONLY for the mode its fallback does not
+	// cover: the current member IS on the roster but its own AI fetch failed.
+	if !teamHasMember(t, c.CurrentMemberID) || c.CurrentMemberID == t.StartMemberID {
 		return nil
 	}
 
@@ -229,4 +245,14 @@ func (h *aicallHandler) resolveActiveAIForMcp(ctx context.Context, c *aicall.AIc
 	log.Debugf("Resolved the start member AI as fallback. member_id: %s", resolvedMemberID)
 
 	return a
+}
+
+// teamHasMember reports whether the given member id is on the team's roster.
+func teamHasMember(t *team.Team, memberID uuid.UUID) bool {
+	for _, m := range t.Members {
+		if m.ID == memberID {
+			return true
+		}
+	}
+	return false
 }

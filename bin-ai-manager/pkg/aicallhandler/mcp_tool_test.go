@@ -14,9 +14,11 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
+	"monorepo/bin-ai-manager/pkg/teamhandler"
 )
 
 // commonidentityFor builds the minimal Identity embedded in an AI/McpServer
@@ -524,4 +526,160 @@ func Test_mcpServerIDIsWhitelisted(t *testing.T) {
 // carries a value that must never reach the LLM-facing message verbatim.
 func errorWithSecret() error {
 	return mcpToolCallError("upstream said: super-secret-upstream-value")
+}
+
+// Test_toolHandleMcpCall_team covers dispatch for a TEAM aicall, which the
+// AI-typed table above cannot reach. This is defect D28: before the fix the
+// dispatch gate resolved the START member, so after a mid-conversation member
+// switch a tool call was authorised against the wrong member's whitelist.
+//
+// It also pins the fail-closed property for an assistance type that is neither
+// AI nor team: such an aicall must be refused, never resolved by treating
+// AssistanceID as an AI id.
+func Test_toolHandleMcpCall_team(t *testing.T) {
+	teamID := uuid.Must(uuid.NewV4())
+	curMemberID := uuid.Must(uuid.NewV4())
+	curAIID := uuid.Must(uuid.NewV4())
+	startMemberID := uuid.Must(uuid.NewV4())
+	startAIID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	// the server is whitelisted by the CURRENT member only
+	curOnlyServerID := uuid.Must(uuid.NewV4())
+	// and this one by the START member only
+	startOnlyServerID := uuid.Must(uuid.NewV4())
+
+	teamFixture := &team.Team{
+		Identity:      commonidentityFor(teamID),
+		StartMemberID: startMemberID,
+		Members: []team.Member{
+			{ID: curMemberID, AIID: curAIID},
+			{ID: startMemberID, AIID: startAIID},
+		},
+	}
+	curAI := &ai.AI{
+		Identity:     commonidentity.Identity{ID: curAIID, CustomerID: customerID},
+		McpServerIDs: []uuid.UUID{curOnlyServerID},
+	}
+	startAI := &ai.AI{
+		Identity:     commonidentity.Identity{ID: startAIID, CustomerID: customerID},
+		McpServerIDs: []uuid.UUID{startOnlyServerID},
+	}
+
+	aicallFor := func(assistanceType aicall.AssistanceType, assistanceID uuid.UUID, serverID uuid.UUID, toolName string) *aicall.AIcall {
+		return &aicall.AIcall{
+			AssistanceType:  assistanceType,
+			AssistanceID:    assistanceID,
+			CurrentMemberID: curMemberID,
+			Metadata: map[string]any{
+				aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{
+					"mcp_" + mcpServerIDShort(serverID) + "_" + toolName: {ServerID: serverID, ToolName: toolName},
+				},
+			},
+		}
+	}
+
+	tests := []struct {
+		name       string
+		aicall     *aicall.AIcall
+		toolName   message.FunctionCallName
+		setupMock  func(th *teamhandler.MockTeamHandler, aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler)
+		wantResult string
+	}{
+		{
+			name:     "team: a server the CURRENT member whitelists is dispatched",
+			aicall:   aicallFor(aicall.AssistanceTypeTeam, teamID, curOnlyServerID, "search_tickets"),
+			toolName: message.FunctionCallName("mcp_" + mcpServerIDShort(curOnlyServerID) + "_search_tickets"),
+			setupMock: func(th *teamhandler.MockTeamHandler, aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(teamFixture, nil)
+				aiH.EXPECT().Get(gomock.Any(), curAIID).Return(curAI, nil)
+				srv.EXPECT().Get(gomock.Any(), curOnlyServerID).Return(&mcpserver.McpServer{
+					Identity: commonidentity.Identity{ID: curOnlyServerID, CustomerID: customerID},
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tl.EXPECT().CallTool(gomock.Any(), curOnlyServerID, "search_tickets", gomock.Any()).Return("ok", nil)
+			},
+			wantResult: "success",
+		},
+		{
+			name:     "team: a server only the START member whitelists is refused after a member switch",
+			aicall:   aicallFor(aicall.AssistanceTypeTeam, teamID, startOnlyServerID, "search_tickets"),
+			toolName: message.FunctionCallName("mcp_" + mcpServerIDShort(startOnlyServerID) + "_search_tickets"),
+			setupMock: func(th *teamhandler.MockTeamHandler, aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(teamFixture, nil)
+				aiH.EXPECT().Get(gomock.Any(), curAIID).Return(curAI, nil)
+				// no CallTool: the whitelist gate must refuse before dispatch. Before
+				// the D28 fix the start member resolved here and this call succeeded.
+			},
+			wantResult: "failed",
+		},
+		{
+			name:     "team, degraded: current member AI unfetchable falls back to the START member and still dispatches",
+			aicall:   aicallFor(aicall.AssistanceTypeTeam, teamID, startOnlyServerID, "search_tickets"),
+			toolName: message.FunctionCallName("mcp_" + mcpServerIDShort(startOnlyServerID) + "_search_tickets"),
+			setupMock: func(th *teamhandler.MockTeamHandler, aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(teamFixture, nil)
+				aiH.EXPECT().Get(gomock.Any(), curAIID).Return(nil, context.DeadlineExceeded)
+				// the fallback must keep dispatch working, not fail the call
+				aiH.EXPECT().Get(gomock.Any(), startAIID).Return(startAI, nil)
+				srv.EXPECT().Get(gomock.Any(), startOnlyServerID).Return(&mcpserver.McpServer{
+					Identity: commonidentity.Identity{ID: startOnlyServerID, CustomerID: customerID},
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tl.EXPECT().CallTool(gomock.Any(), startOnlyServerID, "search_tickets", gomock.Any()).Return("ok", nil)
+			},
+			wantResult: "success",
+		},
+		{
+			name:     "team, degraded: team unfetchable refuses without dispatching",
+			aicall:   aicallFor(aicall.AssistanceTypeTeam, teamID, curOnlyServerID, "search_tickets"),
+			toolName: message.FunctionCallName("mcp_" + mcpServerIDShort(curOnlyServerID) + "_search_tickets"),
+			setupMock: func(th *teamhandler.MockTeamHandler, aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				// twice: once for resolveActiveAIForMcp, once for the resolveAI fallback
+				th.EXPECT().Get(gomock.Any(), teamID).Return(nil, context.DeadlineExceeded).Times(2)
+			},
+			wantResult: "failed",
+		},
+		{
+			name:     "unsupported assistance type is refused, not resolved as an AI",
+			aicall:   aicallFor("unknown", curAIID, curOnlyServerID, "search_tickets"),
+			toolName: message.FunctionCallName("mcp_" + mcpServerIDShort(curOnlyServerID) + "_search_tickets"),
+			setupMock: func(th *teamhandler.MockTeamHandler, aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				// no aiHandler.Get at all: treating AssistanceID as an AI id would
+				// authorise the call against whatever row it happens to hit.
+			},
+			wantResult: "failed",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockSrv := mcpserverhandler.NewMockMcpServerHandler(mc)
+			mockTool := mcptoolhandler.NewMockMcpToolHandler(mc)
+			tt.setupMock(mockTeam, mockAI, mockSrv, mockTool)
+
+			h := &aicallHandler{
+				teamHandler:      mockTeam,
+				aiHandler:        mockAI,
+				mcpServerHandler: mockSrv,
+				mcptoolHandler:   mockTool,
+			}
+
+			tc := &message.ToolCall{
+				ID:       "tool-1",
+				Function: message.FunctionCall{Name: tt.toolName, Arguments: `{}`},
+			}
+
+			got := h.toolHandleMcpCall(context.Background(), tt.aicall, tc)
+			if got.Result != tt.wantResult {
+				t.Errorf("Wrong match. expect: %s, got: %s (message: %s)", tt.wantResult, got.Result, got.Message)
+			}
+		})
+	}
 }
