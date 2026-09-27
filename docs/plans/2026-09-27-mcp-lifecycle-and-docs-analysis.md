@@ -2,11 +2,11 @@
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v6, Analysis Review Loop round 6 pending
-Round 5 result: fact-check reviewer **APPROVED** (no factual errors or
-mis-citations found across §3.1-§3.13, §4-§7). Adversarial reviewer
-CHANGES_REQUESTED with seven findings, all verified and folded in below as
-D15-D19 plus §5 Q1/Q5 corrections.
+Status: v7, Analysis Review Loop round 7 pending
+Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
+Round 6: fact-check **APPROVED** again (2 consecutive; every D15-D19 citation
+resolves). Adversarial CHANGES_REQUESTED with three blocking findings (B1-B3), all
+verified and folded in below as D20 plus §5 Q1/Q10 corrections.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -83,6 +83,9 @@ separately.
 - **D19** `ai_struct_mcpserver.rst` documents a `9999-01-01` timestamp sentinel this
   resource does not use (it uses `null`), plus a bogus "(enum string)" label on
   `oauth_vendor`.
+- **D20** `mcpserverhandler.Update` **short-circuits to `h.Get` before touching the
+  DB** when every field is omitted, so a `PUT {}` on a deleted server returns 200
+  with the full row — a path NO dbhandler-level gate can reach.
 
 **PR C — square-admin parity (`voipbin/monorepo-javascript`):**
 - **D8** `mcp_server_ids` is settable only on the AI detail page, though the
@@ -374,6 +377,94 @@ PR A lands, so it belongs in this file.
 All of the above sit in the same note block and example that D5 already edits, so
 PR A fixes them in the same pass.
 
+### 3.7f D20: the empty-PUT path bypasses every DB-level gate. CONFIRMED. BLOCKER for §5 Q1.
+
+`mcpserverhandler.Update` builds a field map from nil-able pointers and then:
+
+```go
+// pkg/mcpserverhandler/handler.go:194-204
+if len(fields) == 0 {
+	// A PUT with every field omitted … is a client no-op, not a server error.
+	// … Reuses Get's existing ErrNotFound -> cerrors.NotFound mapping …
+	return h.Get(ctx, id)
+}
+
+if err := h.db.McpServerUpdate(ctx, id, fields); err != nil { ... }
+```
+
+A `PUT /mcpservers/{id}` with an empty or all-null body yields `len(fields) == 0` —
+every field is a nil pointer end to end
+(`bin-api-manager/server/mcpservers.go:179-191` →
+`requesthandler/ai_mcpservers.go:122-130` → `listenhandler/v1_mcpservers.go:187-197`)
+— so it **never calls `db.McpServerUpdate`** and returns 200 with the deleted row's
+full body. An existing test pins this: `pkg/mcpserverhandler/handler_partial_update_test.go:115-148`
+(`Test_Update_AllFieldsOmitted_IsANoOp`) asserts `db.McpServerUpdate` is not called.
+
+**Consequence: §5 Q1's mandated fix does not close PUT-against-a-deleted-server.**
+The `tm_delete IS NULL` predicate plus the D15 `RowsAffected` check both live below
+a branch this request never enters, and Q1's own forbid-clause rules out the only
+other interception point (`dbhandler.McpServerGet`). After PR A lands exactly as
+v6 wrote it, `PUT {}` on a deleted server still answers 200 with the row.
+
+Fix: an explicit existence gate inside `mcpserverhandler.Update` **ahead of** the
+`len(fields) == 0` branch — and, per §3.7g, ahead of `ValidateURL` too.
+
+This is the same failure shape as D15 one layer higher: **a prescribed fix that does
+not reach the path it was meant to close.**
+
+### 3.7g D20 corollary: validation precedes existence, so the error contract is inconsistent.
+
+`ValidateURL` runs at the very top of `Update` (`handler.go:146-150`), before any
+field assembly and far before the DB write:
+
+```go
+// pkg/mcpserverhandler/handler.go:146-150
+if url != nil {
+	if err := ValidateURL(*url); err != nil {
+		return nil, cerrors.InvalidArgument(..., "INVALID_MCP_SERVER_URL", ...)
+	}
+}
+```
+
+`status.IsValid()` (`:151-153`) and `authType.IsValid()` (`:154-156`) follow, also
+before existence is known. So on a **deleted** server: a PUT with a malformed URL
+returns **400 `INVALID_MCP_SERVER_URL`** while the same PUT with a valid URL would
+return 404 once gated. That is both inconsistent and a weak existence oracle (a
+caller can probe which ids exist by varying only the URL's validity).
+
+The gate must precede all three validations.
+
+**Error code choice (must be decided, §5 Q10).** Both candidates terminate at 404,
+so there is no 500 anywhere — verified plumbing:
+- bare `dbhandler.ErrNotFound` → `listenhandler/main.go:194-195` →
+  `requesthandler.ErrNotFound` → `server/error_translate.go:83-84` → **404
+  `RESOURCE_NOT_FOUND`**
+- typed `cerrors.NotFound` → `listenhandler/main.go:184-189` → typed passthrough
+  (`error_translate.go:52-56`) → **404 `MCP_SERVER_NOT_FOUND`**
+
+`handler.Get:97-101` already emits `MCP_SERVER_NOT_FOUND` for a nonexistent id, so
+using the same code for "deleted" keeps the two indistinguishable — which is the
+correct privacy posture, but it must be a deliberate choice, not an accident of
+which error type the implementer happens to return.
+
+### 3.7h What CANNOT be gated: `mcpserverhandler.Get` has four consumers pulling opposite ways.
+
+§5 Q1 forbids gating `dbhandler.McpServerGet` and explains why. The **handler-level**
+`Get` (`handler.go:93-107`) is a different function and equally ungateable, for a
+different reason — its four non-test consumers have contradictory requirements:
+
+| Consumer | Requirement |
+|---|---|
+| `pkg/listenhandler/v1_mcpservers.go:142` | customer GET — **must keep returning 200** for a deleted row (§4 non-goals, validator-tested) |
+| `pkg/aicallhandler/mcp_tool.go:73` (resolution) | must **fail closed** |
+| `pkg/aicallhandler/mcp_tool.go:157` (dispatch) | must **fail closed** |
+| `pkg/mcpserverhandler/handler.go:203` | D20's empty-PUT short-circuit — must fail closed |
+
+So the defense-in-depth gates §5 Q1 lists must be written **in `mcp_tool.go`
+itself**, not in the shared `Get`. The design doc has to say this outright: an
+implementer who "helpfully" gates `Get` breaks the GET-after-DELETE 200 contract,
+which is §6's top risk row one layer up.
+
 ### 3.8 D5: published docs give a 404 path. CONFIRMED.
 
 `bin-api-manager/docsdev/source/ai_struct_mcpserver.rst`:
@@ -481,7 +572,17 @@ responses (`mcpservers_list.js:86`, `mcpservers_detail.js:266`) and does not con
 mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 (`mcpservers_detail.js:38`), so §5 Q2's `has_secret` flip breaks nothing.
 
-### 3.13 Other surfaces
+### 3.13a Verified clean in round 6 — recorded so PR A does not over-scope
+
+| Area | Finding |
+|---|---|
+| SSRF / URL validation | `ValidateURL` IS applied on both write paths: `mcpserverhandler/handler.go:38` (Create) and `:146-150` (Update, under `if url != nil`). Literal private/loopback/link-local addresses are rejected (`ssrf.go:31-57`, `rejectDisallowedIP:63-77`), and the DNS-rebinding case is closed at dial time by `controlRejectDisallowedAddr` (`ssrf.go:117-133`) via the shared guarded client (`mcptoolhandler/client.go:140-144`). **Nothing for PR A to add** beyond §5 Q10's precedence fix |
+| Key rotation | **No rotation or re-encryption job exists anywhere in the repo.** Rotation is config-side and decrypt-by-row-version (`mcpserverhandler/secret.go:123-130`, `NewSecretCrypto:79-89`); nothing iterates rows, so zeroed rows would be encountered by no job. Credential zeroing is safe on this axis |
+| Caller-set completeness | Full non-test, non-mock enumeration. `db.McpServerUpdate`: exactly 3 callers (`mcpserverhandler/handler.go:206`, `mcpoauthhandler/access_token.go:108`, `mcpoauthhandler/complete.go:126`) — all named in §5 Q1/§6. `db.McpServerDelete`: exactly 1 (`handler.go:226`) — named. `db.McpServerGet`: 10; the three not named in this analysis (`handler.go:82`, `complete.go:129`, `complete.go:161`) are post-write read-backs of a row the same function just wrote, harmless once `:126` is gated. **No caller of consequence is unmentioned** |
+| Concurrency | No transaction or row lock on any mcpserver path — `McpServerDelete` is a bare UPDATE, unlike `dbhandler/ai.go:243`+`:294` and `aipromptproposal.go:227`+`:253` which use `BeginTx` + `FOR UPDATE`. For delete-vs-tool-call, the fail-closed re-read per call (`client.go:191`, `:214`) is **sufficient**: the residual window is at most one already-dispatched outbound request. **No transaction warranted.** State this bound in the PR body, since `mcpservers_detail.js:496` promises immediacy |
+| Tool-path error surface | `toolHandleMcpCall` converts every failure into a generic `fillFailed(...)` tool result (`mcp_tool.go:137-174`), so gating never leaks a status code to a customer through the AI path |
+
+### 3.14 Other surfaces
 
 | Surface | Finding |
 |---|---|
@@ -497,7 +598,7 @@ mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
 D1, D2, D3, D4, D5, D6, D12, D13 (pending §5 Q5), D14, **D15, D16, D17 (pending
-§5 Q9), D18, D19**. One logical unit: "a deleted or foreign MCP server must be
+§5 Q9), D18, D19, D20**. One logical unit: "a deleted or foreign MCP server must be
 inert everywhere, write paths must reject rather than silently succeed, and the
 docs/config must stop describing things that are not true."
 
@@ -571,14 +672,30 @@ Redis cache (§3.9), because there is no measured signal for it.
    yes, keeping the handler's repeat-DELETE response at 200 (idempotent) and
    dropping the duplicate `EventTypeDeleted`, to stay compatible with the validator
    cleanup fixture (`test_mcpservers_lifecycle.py:249-252`).
+   **MANDATORY ADDITION (D20): an existence gate inside `mcpserverhandler.Update`,
+   placed ahead of BOTH the `len(fields)==0` short-circuit (`handler.go:194-204`)
+   AND the `ValidateURL`/`status.IsValid`/`authType.IsValid` block
+   (`handler.go:146-156`).** Without it, `PUT {}` on a deleted server still returns
+   200 with the row (§3.7f) and a malformed-URL PUT returns 400 instead of 404
+   (§3.7g). The existing test `handler_partial_update_test.go:115-148` pins the
+   no-op behavior and will need a deleted-row counterpart.
+   **ALSO EXPLICITLY FORBIDDEN (D20 corollary): gating `mcpserverhandler.Get`
+   (`handler.go:93-107`).** Its four consumers have contradictory requirements
+   (§3.7h): `v1_mcpservers.go:142` must stay 200, while `mcp_tool.go:73`/`:157` and
+   `handler.go:203` must fail closed. The defense-in-depth gates therefore live in
+   `mcp_tool.go` itself.
 2. **Credential zeroing mechanics. RESOLVED: same statement as the delete
    timestamps.** A separate `dbhandler.McpServerUpdate` after `McpServerDelete`
    would be **silently no-op'd** by the `tm_delete IS NULL` predicate Q1 mandates,
    because `McpServerUpdate` ignores `RowsAffected` (`dbhandler/mcpserver.go:154-156`).
    Confirmed acceptable side effect: `has_secret` flips to false on the
    `EventTypeDeleted` payload (`mcpserverhandler/handler.go:242`) and on the
-   GET-after-DELETE response; no validator test asserts it (§3.13), no square-admin
-   consumer breaks (§3.12), no documented contract exists (§3.7), and it is truthful.
+   GET-after-DELETE response; no validator test asserts it (§3.14), no square-admin
+   consumer breaks (§3.12), no documented contract exists (§3.7), and it is truthful. **Sub-decision (v7): `key_version` is zeroed alongside the ciphertext
+ columns.** §3.4 lists it among the retained columns and Q2 previously omitted it.
+ Precedent exists in-file: the explicit secret-clear path already sets
+ `FieldKeyVersion = 0` next to the nil ciphertext/nonce
+ (`mcpserverhandler/handler.go:178-182`). Delete should match.
 3. **Naming collision** (`uvx voipbin-mcp` = VoIPBin-as-MCP-server vs
    customer-registered MCP server): rename the `ai_overview.rst:681` heading only,
    or also `skill.md`/`llms.txt`? And should `ai_overview.rst:685` keep pointing at
@@ -609,6 +726,18 @@ Redis cache (§3.9), because there is no measured signal for it.
    (`client.go:90-101`) and then fails on an empty access token
    (`access_token.go:38`) — undiagnosable from the API surface. Note (a) also implies
    deciding whether `Create` must reject a `secret` when `auth_type` is `oauth`.
+   **Scope note:** the unenforced assertion appears TWICE in the same file, `:35`
+   and again in the Auth Type table at `:100` ("Never set directly by the customer"),
+   plus as a code comment at `models/mcpserver/main.go:17-19`. Whichever way Q9
+   resolves, all three must move together.
+10. **D20/D15 error contract: which 404 do gated writes return?** Both candidates
+   terminate at 404, so there is no 500 risk (§3.7g verified the plumbing), but the
+   customer-visible code differs: bare `dbhandler.ErrNotFound` → `RESOURCE_NOT_FOUND`,
+   typed `cerrors.NotFound` → `MCP_SERVER_NOT_FOUND`. Recommend `MCP_SERVER_NOT_FOUND`
+   for consistency with `handler.Get:97-101`, which already returns it for a
+   nonexistent id — keeping "nonexistent" and "deleted" indistinguishable is the right
+   privacy posture, but it must be deliberate. Also confirm the gate precedes
+   `ValidateURL` (`handler.go:146-150`) so a deleted row never answers 400.
 6. **Does PR A prune stale ids from `ai.mcp_server_ids` on delete?** Recommend NO:
    consume-time gating is sufficient and idempotent; pruning means a fan-out write
    across every AI of that customer on every delete. The stale id becomes inert, and
@@ -635,6 +764,9 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Dead config flag + design doc justifying another decision by citing a nonexistent cache | Medium | D6; correct `2026-09-11-…:466-467`, `:705`, `:750-754` |
 | Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | Medium | D13 / §5 Q5 — decide before the design doc |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
+| `PUT {}` on a deleted server returns 200 with the row because `mcpserverhandler.Update` short-circuits to `h.Get` before any DB write; NO dbhandler gate reaches it | **High** | D20 (§3.7f). Gate inside `mcpserverhandler.Update` ahead of the `len(fields)==0` branch AND ahead of `ValidateURL` |
+| An implementer gates `mcpserverhandler.Get` to fix the above and breaks the GET-after-DELETE 200 contract | **High** | §3.7h names its four contradictory consumers; §5 Q1 forbids it explicitly; defense-in-depth gates go in `mcp_tool.go` |
+| Validation precedes existence, so a deleted row answers 400 `INVALID_MCP_SERVER_URL` on a malformed URL — inconsistent, and a weak existence oracle | Medium | D20 corollary (§3.7g) / §5 Q10 |
 | Gating `McpServerUpdate` yields a SILENT 200 + spurious `EventTypeUpdated` instead of a rejection, because `RowsAffected` is discarded (`dbhandler/mcpserver.go:154-156`); the same defeats the OAuth Complete gate | **High** | D15 (§3.7a). PR A must return `ErrNotFound` on zero rows; §7's rejection tests are otherwise unachievable |
 | Making `McpServerUpdate` honor `RowsAffected` changes behavior for EVERY existing caller, notably `access_token.go:101-108` token rotation | **High** | §5 Q1; enumerate all callers and add a test per caller for the new error path |
 | `auth_type: "oauth"` settable via POST/PUT with a secret the oauth path ignores, producing an undiagnosable broken server; no OpenAPI validator middleware exists to catch it | **High** | D17 (§3.7c) / §5 Q9 |
@@ -666,7 +798,14 @@ BOTH the status and the absence of the webhook); that every other
 check, `access_token.go:101-108` included; that a repeat DELETE does not move
 `tm_delete` or re-publish `EventTypeDeleted` while still answering 200 (D16); that
 `POST`/`PUT` with `auth_type: "oauth"` is rejected if §5 Q9 picks the gate (D17);
-and that a rejected `mcp_server_ids` leaves no AI behind on POST (D18). Clean Sphinx
+and that a rejected `mcp_server_ids` leaves no AI behind on POST (D18). **New in v7
+(D20):** that `PUT {}` (every field omitted) against a deleted server is rejected
+rather than returning 200 with the row — the existing
+`handler_partial_update_test.go:115-148` no-op test needs a deleted-row counterpart;
+that a malformed-URL PUT on a deleted row returns the gate's 404, not 400
+`INVALID_MCP_SERVER_URL`; and that `mcpserverhandler.Get` is NOT gated, i.e.
+`v1_mcpservers.go:142`'s customer GET still answers 200 while `mcp_tool.go:73`/`:157`
+fail closed. Clean Sphinx
 rebuild; `grep -n 'mcp_servers' docsdev/source/*.rst` returns nothing **and
 `grep -n '9999-01-01' docsdev/source/ai_struct_mcpserver.rst` returns nothing**
 (D19). Full 21-test api-validator mcpserver suite green (GET-after-DELETE 200 must
@@ -719,6 +858,15 @@ and §6 named three) and missed four defects in the very file it was editing
 (`ai_struct_mcpserver.rst`: the sentinel note, the example block, the `oauth_vendor`
 label, the unenforced oauth sentence).
 
+**v6** fixed all of that and was approved on facts a second time, but the adversarial
+reviewer found the **same failure mode one layer higher**: v6 prescribed a
+`McpServerUpdate` gate plus a `RowsAffected` check, and `PUT {}` never reaches
+either, because `mcpserverhandler.Update` short-circuits to `h.Get` before the DB
+write (D20). v6 had even quoted the surrounding function twice without noticing the
+branch above the line it quoted. It also missed that validation runs before
+existence (so a deleted row answers 400), and that the handler-level `Get` is as
+ungateable as the dbhandler one, for a different reason.
+
 Lessons now in effect:
 - Use `grep -i` for content/convention greps.
 - For any producer function, grep its callers and check whether the return value is
@@ -738,3 +886,8 @@ Lessons now in effect:
   way you trace a defect.
 - **When editing a file for one defect, read it in full and fix every defect in it.**
   A second PR touching the same paragraph is wasted review.
+- **When quoting a function to justify a gate, read the WHOLE function from its first
+  line, not the neighborhood of the line you care about.** Early returns, guard
+  clauses, and short-circuits above your quote can make the gate unreachable (D20).
+- **For every gate, name the request that bypasses it.** If you cannot think of one,
+  you have not looked hard enough at the branches.
