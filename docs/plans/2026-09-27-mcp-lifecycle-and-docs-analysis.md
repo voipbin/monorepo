@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v18, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v19, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v18, Analysis Review Loop round 12 pending
+Status: v19, Analysis Review Loop round 13 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -33,13 +33,20 @@ was prescribed at dispatch, which §3.1 of this same document proves is dead cod
 the live leak path at resolution got none. Also raised **D27** (pre-deploy deleted rows
 keep credentials) as a genuinely OPEN decision.
 
+Round 12: **both tracks CHANGES_REQUESTED.** Fact-check found no false code claim in the
+v17/v18 material (the D27 column list is complete and correctly excludes the two metadata
+columns) but caught a corrupted paragraph and four stale references. Adversarial found the
+**EIGHTH instance (D28)**: D26 fixed the ownership half of D12 and never looked at the
+member half, which has the identical shape — diagnosed, risk-rowed, and never given an
+enforcement point, with its only promised test on the dead dispatch path.
+
 **v16 — the five unconfirmed "Recommend …" items (§5 Q1, Q3, Q4, Q7, Q8) are now
 closed** by 대표님 ("a로 가자" for the MCP link, recommendations accepted for the rest).
 Investigating Q3 surfaced **D24**: the docs advertise a stale third-party fork while
 `uvx voipbin-mcp` installs the official repo — a published-falsehood defect the v14
 draft had wrongly deferred to 대표님 as unjudgeable instead of simply checking.
 **Readiness is still NOT claimed in this header.** Every §5 item is now decided, but
-v10 and v12 each made that claim and each was refuted within one round; round 10 must
+v10, v12 and v15 each made that claim and each was refuted within one round; a round must
 return clean on both tracks before the design doc starts.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
@@ -76,20 +83,21 @@ separately.
 | Q4 | Dead `mcp_tools_list_cache_ttl_seconds` flag: implement or remove? | **Remove the flag, no cache.** |
 | Q5 | PR B as one PR or split? | **One PR.** "하나로 가자." (PR B doc) |
 | Q6 | Split the analysis so A/C can proceed without waiting on B? | **Yes.** "권고대로 진행해" |
-| Q7 | D21: how to handle an AI whose whitelist already holds a deleted id? | **Skip already-stored ids, reject newly added ones.** "skip-not-reject 방식으로 하자." + "이후에 AI 업데이트를 할 때 ... 이때는 reject 를 해야하지 않을까?" |
+| Q7 | D21: how to handle an AI whose whitelist already holds a deleted id? | **Skip the DELETED-row rejection for already-stored ids; existence and ownership still run on every id (D25); reject newly added ones.** "skip-not-reject 방식으로 하자." + "이후에 AI 업데이트를 할 때 ... 이때는 reject 를 해야하지 않을까?" |
 | Q8 | Add a prune loop that strips deleted ids from every affected AI? | **No.** "비쌀려나?" → no transaction on delete, un-indexed JSON column, one `ai_updated` webhook per affected AI, and skip-not-reject already resolves D21 alone |
 | Q9 | D13: add an AI-type parameter to `ValidateMcpServerIDs`? | **REVERSED in v14 — No.** "인사이트도 mcp 사용가능하도록 해." Insight AIs may use MCP servers. No type gate anywhere; D13/D22/D23 are voided. PR A owes one docs sentence stating the behavior |
 | Q10 | D17: reject `auth_type: "oauth"` on POST/PUT? | **Yes, reject.** "좋아, 네 제안대로 가자" Gate the write handlers, not `IsValid()`; reject the transition INTO oauth, not the value |
 | Q11 | ~~Where does the Insight AI-type gate live?~~ | **MOOT (v14).** No gate exists. The v12 answer (both write and consume path) is withdrawn |
 | Q12 | ~~Does PR C clear `mcpServerIds` on the Insight flip?~~ | **MOOT (v14).** No gate, so nothing to clear and nothing to hide. `mcpServerIds` survives a type flip and the MCP card stays visible for every type |
 | Q13 | Does the `RowsAffected` check apply to every `McpServerUpdate` caller, token rotation included? | **Yes, uniformly** (v15). A rotation against a soft-deleted row is a bug signal; swallowing it hides it. Design doc must confirm the failure degrades gracefully |
-| Q14 | Does `McpServerDelete` gain the same predicate (D16)? | **Yes**, but the handler keeps **200 on repeat DELETE** and stops re-publishing `EventTypeDeleted`. 200 is required because DELETE is idempotent and GET still returns the soft-deleted row; v15's "the validator fixture would fail on 404" reason was FALSE (`cleanup_report.py:84` tolerates 404) |
+| Q14 | Does `McpServerDelete` gain the same predicate (D16)? | **Yes**, but the handler keeps **200 on repeat DELETE** and stops re-publishing `EventTypeDeleted`. 200 is required because DELETE is idempotent and GET still returns the soft-deleted row; v15's "the validator fixture would fail on 404" reason was FALSE (`cleanup_report.py:86` tolerates 404) |
 | Q15 | Naming-collision rename scope, and the third-party MCP link | **Heading only**; and **replace** `nrjchnd/voipbin-mcp` with `github.com/voipbin/mcp`, remove the fork link entirely ("a로 가자"). `uvx voipbin-mcp` already installs the official repo per PyPI, so the published link contradicts the published command |
 | Q16 | Add api-validator MCP coverage now? | **Defer until ETC-18 is fixed.** The validator leaks ~4 MCP servers per run into production (100 measured); more coverage before the fix accelerates it |
 | Q17 | PR A docs scope for D14 | **Contradiction (`ai_struct_ai.rst:69`) is mandatory**; the three webhook event types ship in the same PR if it stays reviewable, else split |
 | Q18 | Does the already-stored-id exemption cover the ownership check too? | **NO — D25 (§3.5a), SIXTH instance.** The exemption applies to the `tm_delete` predicate ONLY. `ValidateMcpServerIDs` gains a `storedIDs` parameter so existence and ownership run on every id; v12-v15's "no signature change" claim created a cross-tenant hole and is retracted |
 | Q19 | Where does the D12 ownership assertion live? | **BOTH resolution and dispatch** — D26 (§3.5b), SEVENTH instance. Dispatch-only was dead code (§3.1); resolution is where the credential is decrypted and sent. `resolveTools` already holds `a.CustomerID`, so cost is zero |
 | Q20 | Do pre-deploy soft-deleted rows get their credentials zeroed? | **Yes — one-off Alembic data migration** ("a 로 가자"), all seven columns where `tm_delete IS NOT NULL`, authored in PR A and applied by 대표님, downgrade an explicit no-op. The affected-row count is unmeasured and remains a design-doc precondition (it changes the PR body's impact claim, not the decision) |
+| Q21 | How is D12's team-member half enforced? | **By ORDER, not a gate** — D28 (§3.5c), EIGHTH instance. Hoist the existing `resolveTeamMemberForSend` (`start.go:369-372`) above `refreshMcpToolMap` (`:361`). Dispatch cannot enforce it (`resolveAI` cannot see `c.CurrentMemberID`), which is why v5-v18's §7 assertion was unimplementable |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -163,6 +171,12 @@ separately.
   nothing. **RESOLVED (v18): a one-off Alembic data migration** nulls all seven credential
   columns where `tm_delete IS NOT NULL` (§5 item 2), authored in PR A and applied by
   대표님, with an explicit no-op downgrade.
+- **D28** D12's **team-member** half has no prescribed enforcement point: `start.go:361`
+  refreshes the MCP tool map with the **start**-member AI, two lines before
+  `start.go:369-372` resolves the current member, so a reused team AIcall makes
+  credentialed outbound calls to the wrong member's MCP servers. The §7 test promised for
+  it targeted dispatch, which is dead code and cannot see `c.CurrentMemberID`. **EIGHTH
+  instance**; §3.5c. Fixed by hoisting the existing member resolution above the refresh.
 - ~~**D22**~~ **VOIDED in v14** by the Q5 reversal — no AI-type gate exists, so a gate
   that under-enforces and freezes AIs cannot occur. Retained in §3.12b as the fourth
   recorded instance of the recurring failure mode. Not PR A or PR C scope.
@@ -383,6 +397,50 @@ itself in §3.3), `complete.go:68` guards the state row, and
 surface. The accurate and still-sufficient claim is that it is **the only ownership check
 on the AI-whitelist → consume path**. Corrected wherever it appeared.
 
+### 3.5c D28: D12's team half has no prescribed enforcement point, and its only promised test is on the dead path. CONFIRMED. BLOCKER.
+
+**EIGHTH instance**, and the third in a row created by a fix-up edit. D26 corrected the
+ownership half of D12 from dispatch to resolution. It did not look at the **member**
+half of the same defect, which has the identical shape.
+
+**The live defect.** On a team AIcall, `resolveAI` resolves the **start** member
+(`start.go:74`, `h.resolveTeamMemberAI(ctx, t, t.StartMemberID)`). On the reuse branch,
+`start.go:361` calls `refreshMcpToolMap(ctx, res, a)` with that start-member `a`, which
+reaches `resolveTools` (`mcp_tool.go:284`) and fires `ListTools` at `:84` — a credentialed
+outbound request to the **start** member's MCP servers, not the running member's.
+
+**And the mechanism to fix it already exists, two lines later.** `start.go:369-372`
+calls `resolveTeamMemberForSend(ctx, res)`, which resolves `c.CurrentMemberID`
+(`send.go:166`) and overrides the engine model in memory. So the reuse branch already
+knows how to get the current member's AI — it just does the MCP refresh **before** that
+call instead of after. This is an ordering defect with a ready-made helper, not a new
+subsystem.
+
+**What the document did with it.** §3.5 diagnosed it correctly, §6 carries a High risk row
+pointing at §3.5, and §7 promises a test that "the team path validates the CURRENT
+member's whitelist" — but:
+
+- §5 item 1's gate-placement list names **no** member-resolution prescription at all.
+- The promised §7 test targets whitelist validation, which lives at `mcp_tool.go:151`
+  — **dispatch**, which §3.1 proves is dead code. As written the assertion is
+  unimplementable: `toolHandleMcpCall` calls `resolveAI`, which cannot see
+  `c.CurrentMemberID`.
+
+So the diagnosis was right, the risk row was right, and the enforcement point was never
+named — for the second time in two rounds, on the two halves of one defect.
+
+**Resolution (v19): fix the ORDER, not the gate.** On the reuse branch, run the team
+member resolution **before** `refreshMcpToolMap`, so the map is built from the current
+member's AI. Concretely: hoist the existing `resolveTeamMemberForSend` call
+(`start.go:369-372`) above the `refreshMcpToolMap` call (`:361`), or have the reuse branch
+pass the current-member `a` that helper already resolves. No new gate, no new DB read
+beyond the `teamHandler.Get` that call already performs, and no new error string.
+
+**§7 correction:** the team assertion must target **resolution**, not dispatch — assert
+that a reused team AIcall whose `CurrentMemberID` differs from `StartMemberID` builds its
+`mcp_tool_map` from the CURRENT member's whitelist. The dispatch-side wording is withdrawn
+as unimplementable.
+
 ### 3.6 D13: `mcp_server_ids` is not AI-type validated. VOIDED in v14, retained for history.
 
 **STATUS: VOIDED, not fixed.** 대표님 확정 (v14): "인사이트도 mcp 사용가능하도록 해."
@@ -475,7 +533,7 @@ This is unavoidable for PR A because §5 Q2 mandates zeroing credentials **in th
 exact statement**, so PR A is rewriting it regardless. The decision must preserve a 200 on repeat
 DELETE even if the timestamp stops moving — **because DELETE is idempotent by contract
 and GET keeps returning the soft-deleted row**, not because of the test suite. (v15
-cited the validator fixture as the reason; `cleanup_report.py:84` tolerates 404, so that
+cited the validator fixture as the reason; `cleanup_report.py:86` tolerates 404, so that
 reason was false. See §5 item 1.) Resolved: add the predicate, swallow the zero-row error
 at `handler.go:226` so the response stays 200, stop re-publishing the webhook.
 
@@ -996,7 +1054,7 @@ is a third, reachable for `type: 'insight'` via `prompt_templates.js:659`
 ### PROCEED with PR A and PR C.
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
-D1, D2, D3, D4, D5, D6, D12, D14, **D15, D16, D17, D18, D19, D20, D21, D24, D25, D26, D27**.
+D1, D2, D3, D4, D5, D6, D12, D14, **D15, D16, D17, D18, D19, D20, D21, D24, D25, D26, D27, D28**.
 D27 adds the only schema artifact in PR A: one Alembic data migration, authored here and
 applied by 대표님.
 (D13, D22, D23 are VOIDED by the v14 policy reversal and are NOT work items.)
@@ -1085,6 +1143,15 @@ Redis cache (§3.9), because there is no measured signal for it.
    signature change. Resolution **skips** the foreign server (best-effort contract,
    `:44-51`); dispatch **refuses** it with the existing
    `"mcp tool is no longer available"` string.
+   **ALSO MANDATORY (D28, §3.5c — the member half of D12): fix the ORDER on the team
+   reuse branch.** `start.go:361` calls `refreshMcpToolMap` with the **start**-member AI
+   (`resolveAI` → `start.go:74`, `t.StartMemberID`), and only afterwards does
+   `start.go:369-372` resolve the current member via `resolveTeamMemberForSend`
+   (`send.go:166`, `c.CurrentMemberID`). Hoist that resolution above the refresh, or pass
+   the current-member `a` it already produces. No new gate, no new DB read beyond the
+   `teamHandler.Get` that helper already performs. Prescribing this at dispatch is
+   impossible — `toolHandleMcpCall` calls `resolveAI`, which cannot see
+   `c.CurrentMemberID` — which is why v5-v18's §7 team assertion was unimplementable.
    Defense in depth (deleted/status only): resolution (`mcp_tool.go:72-88`) and
    dispatch (`:151-168`).
    **Explicitly forbidden:** gating inside `dbhandler.McpServerGet` —
@@ -1144,13 +1211,26 @@ Redis cache (§3.9), because there is no measured signal for it.
    (§3.7h): `v1_mcpservers.go:142` must stay 200, while `mcp_tool.go:73`/`:157` and
    `handler.go:203` must fail closed. The defense-in-depth gates therefore live in
    `mcp_tool.go` itself.
-2. **Credential zeroing mechanics. RESOLVED: same statement as the delete
-   timestamps. But rows deleted BEFORE the deploy are NOT covered — OPEN, needs 대표님.**
+2. **Credential zeroing mechanics. RESOLVED (v7): the same statement as the delete
+   timestamps. RESOLVED (v18): pre-deploy rows are backfilled by a one-off Alembic data
+   migration** (대표님 확정: "a 로 가자").
 
-   **RESOLVED (v18): a one-off Alembic data migration backfills the pre-deploy rows.**
-   대표님 확정: "a 로 가자."
+   **(i) Why the same statement.** A separate `dbhandler.McpServerUpdate` after
+   `McpServerDelete` would be **silently no-op'd** by the `tm_delete IS NULL` predicate
+   §5 item 1 mandates, because `McpServerUpdate` ignores `RowsAffected`
+   (`dbhandler/mcpserver.go:154-156`). Confirmed acceptable side effect: `has_secret`
+   flips to false on the `EventTypeDeleted` payload (`mcpserverhandler/handler.go:242`)
+   and on the GET-after-DELETE response; no validator test asserts it (§3.14), no
+   square-admin consumer breaks (§3.12), no documented contract exists (§3.7), and it is
+   truthful.
 
-   Q2 as written only zeroes credentials going **forward**, inside the `McpServerDelete`
+   **(ii) `key_version` is zeroed alongside the ciphertext columns**, matching the
+   explicit secret-clear precedent already in-file, which sets `FieldKeyVersion = 0` next
+   to the nil ciphertext/nonce (`mcpserverhandler/handler.go:178-182`). **Use `0`, not
+   `NULL`, in both the delete statement and the migration** — functionally equivalent
+   after `ScanRow`, but one convention must be picked and the in-file precedent is `0`.
+
+   **(iii) The pre-deploy backfill.** Q2 as written only zeroes credentials going **forward**, inside the `McpServerDelete`
    statement. D4 (`:97-98`, §3.4) states the defect as ciphertext surviving *indefinitely*
    on already-deleted rows — exactly what the forward fix cannot reach. Worse, the obvious
    remediation fails silently: `McpServerDelete` gains `tm_delete IS NULL` (§5 item 1), so
@@ -1162,8 +1242,10 @@ Redis cache (§3.9), because there is no measured signal for it.
    **Scope of the migration.** All seven credential columns, verified against the schema:
    `secret_ciphertext`, `secret_nonce` (`9b0ad37e0360…:35-37`),
    `access_token_ciphertext`, `access_token_nonce`, `refresh_token_ciphertext`,
-   `refresh_token_nonce` (`62c10f986f07…:30-34`), plus `key_version`. All are nullable, so
-   `NULL` is a legal target for every one. Predicate: `tm_delete IS NOT NULL`. `op.execute`
+   `refresh_token_nonce` (`62c10f986f07…:30,:31,:33,:34`), plus `key_version`. All are
+   nullable. Note `access_token_expires_at` (`:32`) and `oauth_vendor` (`:29`) sit in the
+   same DDL block but are **metadata, not credentials**, and are deliberately excluded.
+   Ciphertext/nonce columns are set `NULL`; `key_version` is set `0` per (ii). Predicate: `tm_delete IS NOT NULL`. `op.execute`
    data migrations have precedent in this tree (e.g.
    `1ebd3fdcea8d_call_outbound_configs_add_default_.py`), so no new pattern is introduced.
 
@@ -1181,17 +1263,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    inference, not a measurement, and this document has already been burned three times by
    inference presented as fact. The count is therefore a **design-doc precondition**: one
    DB query by 대표님 before the migration lands. It does not change the decision (the
-   migration is correct at any count), only the PR body's claim about impact. A separate `dbhandler.McpServerUpdate` after `McpServerDelete`
-   would be **silently no-op'd** by the `tm_delete IS NULL` predicate Q1 mandates,
-   because `McpServerUpdate` ignores `RowsAffected` (`dbhandler/mcpserver.go:154-156`).
-   Confirmed acceptable side effect: `has_secret` flips to false on the
-   `EventTypeDeleted` payload (`mcpserverhandler/handler.go:242`) and on the
-   GET-after-DELETE response; no validator test asserts it (§3.14), no square-admin
-   consumer breaks (§3.12), no documented contract exists (§3.7), and it is truthful. **Sub-decision (v7): `key_version` is zeroed alongside the ciphertext
- columns.** §3.4 lists it among the retained columns and Q2 previously omitted it.
- Precedent exists in-file: the explicit secret-clear path already sets
- `FieldKeyVersion = 0` next to the nil ciphertext/nonce
- (`mcpserverhandler/handler.go:178-182`). Delete should match.
+   migration is correct at any count), only the PR body's claim about impact.
 3. **Naming collision** (`uvx voipbin-mcp` = VoIPBin-as-MCP-server vs
    customer-registered MCP server). **RESOLVED (v15).**
    - **Rename scope: the `ai_overview.rst:681` heading only.** Not `skill.md` or
@@ -1447,7 +1519,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Gating inside `dbhandler.McpServerGet` breaks `Delete`/`Update` read-back and the validator's GET-after-DELETE 200 contract | **High** | §5 Q1 forbids it explicitly; run the full 21-test api-validator mcpserver suite |
 | Credential zeroing as a separate UPDATE is silently no-op'd by the new `tm_delete` predicate (`RowsAffected` ignored at `dbhandler/mcpserver.go:154-156`) | **High** | §5 Q2 resolved: same statement; test that ciphertext columns are actually null after delete |
 | Credential zeroing is irreversible; a mis-fire destroys a live server's secret | **High** | Zero only on the delete path, never on update; unit test that update paths never clear ciphertext columns |
-| No customer-ownership assertion in dispatch; team path validates the START member's whitelist | **High** | D12 (§3.5) |
+| No customer-ownership assertion in dispatch; team path resolves the START member's AI before refreshing the MCP tool map, so a reused team AIcall calls the wrong member's MCP servers | **High** | D12 (§3.5) + **D28 (§3.5c)** — fixed by ORDER: hoist `resolveTeamMemberForSend` (`start.go:369-372`) above `refreshMcpToolMap` (`:361`). The §7 assertion must be resolution-side; the dispatch wording was unimplementable |
 | A deleted server can be resurrected to `active` with a new URL + secret | **High** | D2 |
 | Published docs give a 404 endpoint path | **High** (live) | D5 |
 | OAuth Complete has no re-check (TOCTOU between Start and Complete) | Medium | D3; gate both independently |
@@ -1459,7 +1531,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
 | A foreign customer's MCP server id, once stored, is used at resolution with its decrypted credential on an outbound request | **High** | D25 (§3.5a) + D26 (§3.5b) — the exemption must be predicate-scoped (`storedIDs` param), AND ownership must be asserted at resolution, not only at the dead dispatch path. Both need §7 assertions or the regression is silent |
 | Credentials on rows soft-deleted before the deploy are never zeroed, and re-deleting reports 200 while zeroing nothing | **Medium** | D27 — **RESOLVED**, §5 item 2: one-off Alembic data migration over all seven credential columns. Residual: the affected-row count is unmeasured, so the PR body must not claim an impact figure until 대표님 runs the count |
-| An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 Q11**: skip already-stored ids, reject only newly added ones. Both directions must be unit-tested (§7) |
+| An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 Q11**: skip the deleted-row rejection for already-stored ids (existence + ownership still enforced, D25), reject only newly added ones. Both directions must be unit-tested (§7) |
 | Gating OAuth `Complete` discards a freshly-minted vendor grant: `complete.go:84` deletes the state row and `:88` completes the token exchange BEFORE `:126`, so VoIPBin holds a live GitHub/Linear token and drops it unrevoked | Medium | Preferable to writing onto a deleted row, but the orphaned vendor-side grant must be acknowledged in the PR body (and revocation considered) |
 | `PUT {}` on a deleted server returns 200 with the row because `mcpserverhandler.Update` short-circuits to `h.Get` before any DB write; NO dbhandler gate reaches it | **High** | D20 (§3.7f). Gate inside `mcpserverhandler.Update` ahead of the `len(fields)==0` branch AND ahead of `ValidateURL` |
 | An implementer gates `mcpserverhandler.Get` to fix the above and breaks the GET-after-DELETE 200 contract | **High** | §3.7h names its four contradictory consumers; §5 Q1 forbids it explicitly; defense-in-depth gates go in `mcp_tool.go` |
@@ -1492,8 +1564,11 @@ ownership, and without this assertion the cross-tenant regression is silent. Als
 rejected by
 `McpServerUpdate`, rejected by OAuth `Start`, rejected by OAuth `Complete`; that
 delete zeroes all secret/token ciphertext in the SAME statement while update paths
-never do; that **resolution SKIPS and dispatch REFUSES** a server owned by another customer (D12/D26 — both sites, since dispatch alone is dead code per §3.1); that the
-team path validates the CURRENT member's whitelist; and `GetValidAccessToken`'s new
+never do; that **resolution SKIPS and dispatch REFUSES** a server owned by another customer (D12/D26 — both sites, since dispatch alone is dead code per §3.1); that **a reused team AIcall whose `CurrentMemberID`
+differs from `StartMemberID` builds its `mcp_tool_map` from the CURRENT member's
+whitelist** (D28 — this is a RESOLUTION-side assertion; v5-v18 worded it as dispatch-side
+whitelist validation, which is unimplementable because `toolHandleMcpCall`'s `resolveAI`
+cannot see `c.CurrentMemberID`, and dispatch is dead code per §3.1); and `GetValidAccessToken`'s new
 error when rotating against a row deleted mid-flight. **Q5 (D13) REVERSED in v14 — assert the OPPOSITE:** a test that an
 Insight AI CAN hold and use `mcp_server_ids` (`ValidateMcpServerIDs` accepts it, and
 `resolveTools` returns that server's tools for a `TypeInsight` AI). This is a
@@ -1617,6 +1692,17 @@ about it, self-flagged a possible fourth instance — and then created a fifth i
 very decision meant to close the loop.
 
 Lessons now in effect:
+- **When a defect has two halves, fixing one half does not inspect the other.** D12 was
+  "no ownership check" AND "team validates the wrong member". D26 corrected the ownership
+  half's enforcement point and left the member half exactly as broken, in the same
+  section, one round later (D28). **Enumerate a defect's independent claims before
+  declaring any of them fixed**, and re-check the §7 assertion for each half separately —
+  D28 was visible the whole time in a §7 line that could not be implemented.
+- **An unimplementable test assertion is a design defect, not a wording problem.** §7
+  promised "the team path validates the CURRENT member's whitelist" for fourteen versions.
+  Nobody asked *at which call site*, and the answer was "none that can see
+  `CurrentMemberID`". **When writing a §7 line, name the function that will host the
+  assertion**; if you cannot, the prescription behind it does not exist yet.
 - **"Only the owner can judge this" is a claim that itself needs evidence.** v14
   deferred the MCP-link question to 대표님 as unjudgeable without opening either
   repository. Five minutes of checking (commit dates, tests, CI, and the PyPI package's
