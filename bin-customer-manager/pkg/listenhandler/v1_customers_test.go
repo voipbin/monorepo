@@ -109,7 +109,7 @@ func Test_processV1CustomersGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -205,7 +205,7 @@ func Test_processV1CustomersPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -267,7 +267,7 @@ func Test_processV1CustomersIDGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -329,7 +329,7 @@ func Test_processV1CustomersIDDelete(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -405,7 +405,7 @@ func Test_processV1CustomersIDPut(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -469,7 +469,7 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -569,7 +569,7 @@ func Test_processV1CustomersIDMetadataPut(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -641,7 +641,7 @@ func Test_processV1CustomersCleanupUnverifiedPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -713,7 +713,7 @@ func Test_processV1CustomersCleanupFrozenExpiredPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

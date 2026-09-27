@@ -84,7 +84,7 @@ func TestProcessV1DirectsGet(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -157,7 +157,7 @@ func TestProcessV1DirectsPost(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -225,7 +225,7 @@ func TestProcessV1DirectsIDGet(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -286,7 +286,7 @@ func TestProcessV1DirectsIDDelete(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -348,7 +348,7 @@ func TestProcessV1DirectsByHashGet(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -410,7 +410,7 @@ func TestProcessV1DirectsIDRegenerate(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

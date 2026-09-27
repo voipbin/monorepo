@@ -103,7 +103,7 @@ func Test_processV1ExternalMediasPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -192,7 +192,7 @@ func Test_processV1ExternalMediasGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -253,7 +253,7 @@ func Test_processV1ExternalMediasIDGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
@@ -313,7 +313,7 @@ func Test_processV1ExternalMediasIDDelete(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

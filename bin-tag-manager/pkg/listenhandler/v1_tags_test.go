@@ -133,7 +133,7 @@ func TestProcessV1TagsGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -209,7 +209,7 @@ func TestProcessV1TagsPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -280,7 +280,7 @@ func TestProcessV1TagsIDGet(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -346,7 +346,7 @@ func TestProcessV1TagsIDPut(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})
@@ -408,7 +408,7 @@ func TestProcessV1TagsIDDelete(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 
 		})

@@ -597,7 +597,7 @@ func Test_GetNextAction(t *testing.T) {
 			},
 		},
 		{
-			name: "the current action in the end of actions and retrun action has next id",
+			name: "the current action in the end of actions and return action has next id",
 
 			stackMap: map[uuid.UUID]*stack.Stack{
 				stack.IDMain: {

@@ -64,7 +64,7 @@ func (h *callHandler) digitsReceived(ctx context.Context, cn *channel.Channel, d
 		}
 
 		if !condition {
-			log.Debug("The digit recieved not finished yet. Waiting next digit.")
+			log.Debug("The digit received not finished yet. Waiting next digit.")
 			return nil
 		}
 

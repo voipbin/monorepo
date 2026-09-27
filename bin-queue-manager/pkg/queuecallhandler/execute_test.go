@@ -36,7 +36,7 @@ func Test_Execute(t *testing.T) {
 		responseFlow       *fmflow.Flow
 		responseGroupcalls []*cmgroupcall.Groupcall
 
-		expcetFlowActions  []fmaction.Action
+		expectFlowActions  []fmaction.Action
 		expectDestinations []commonaddress.Address
 		expectGroupcallID  uuid.UUID
 	}{
@@ -79,7 +79,7 @@ func Test_Execute(t *testing.T) {
 				},
 			},
 
-			expcetFlowActions: []fmaction.Action{
+			expectFlowActions: []fmaction.Action{
 				{
 					Type: fmaction.TypeConfbridgeJoin,
 					Option: map[string]any{
@@ -116,7 +116,7 @@ func Test_Execute(t *testing.T) {
 			mockDB.EXPECT().QueuecallGet(ctx, tt.id).Return(tt.responseQueuecall, nil)
 
 			// generateFlowForAgentCall
-			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expcetFlowActions, uuid.Nil, false).Return(tt.responseFlow, nil)
+			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.responseQueuecall.CustomerID, fmflow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowActions, uuid.Nil, false).Return(tt.responseFlow, nil)
 
 			// reserve
 			mockReq.EXPECT().AgentV1AgentReserve(ctx, tt.agentID, "queuecall", tt.responseQueuecall.ID).Return(true, nil)

@@ -100,7 +100,7 @@ func (h *queueHandler) GetQueuesByAgent(ctx context.Context, agent amagent.Agent
 	return res, nil
 }
 
-// GetAgents retruns list of agents of the given queue and status
+// GetAgents returns list of agents of the given queue and status
 func (h *queueHandler) GetAgents(ctx context.Context, id uuid.UUID, status amagent.Status) ([]amagent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "GetAgents",
