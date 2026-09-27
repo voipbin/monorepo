@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v5, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v16, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v14, Analysis Review Loop round 10 pending
+Status: v16, Analysis Review Loop round 11 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -21,7 +21,12 @@ D13, D22 and D23 outright** (retained in §3.12b/§3.12e as recorded instances o
 failure mode, marked VOIDED and out of scope). Five rounds of gate design collapse into
 one docs sentence. D18 is re-scoped: it no longer rides on a signature rewrite.
 v9: 대표님 resolved Q11 and Q6. v10: Q5 and Q9. v12: Q5(i)/(ii), now withdrawn.
-**v15 — the five unconfirmed "Recommend …" items (§5 Q1, Q3, Q4, Q7, Q8) are now
+Round 10: **both tracks CHANGES_REQUESTED.** Fact-check confirmed the v15 external
+claims (PyPI/GitHub, D24) but found the D16 justification false. Adversarial found the
+**SIXTH instance (D25)**: this document's own Q11 exemption, implemented as it mandated,
+disables the system's only ownership check.
+
+**v16 — the five unconfirmed "Recommend …" items (§5 Q1, Q3, Q4, Q7, Q8) are now
 closed** by 대표님 ("a로 가자" for the MCP link, recommendations accepted for the rest).
 Investigating Q3 surfaced **D24**: the docs advertise a stale third-party fork while
 `uvx voipbin-mcp` installs the official repo — a published-falsehood defect the v14
@@ -71,10 +76,11 @@ separately.
 | Q11 | ~~Where does the Insight AI-type gate live?~~ | **MOOT (v14).** No gate exists. The v12 answer (both write and consume path) is withdrawn |
 | Q12 | ~~Does PR C clear `mcpServerIds` on the Insight flip?~~ | **MOOT (v14).** No gate, so nothing to clear and nothing to hide. `mcpServerIds` survives a type flip and the MCP card stays visible for every type |
 | Q13 | Does the `RowsAffected` check apply to every `McpServerUpdate` caller, token rotation included? | **Yes, uniformly** (v15). A rotation against a soft-deleted row is a bug signal; swallowing it hides it. Design doc must confirm the failure degrades gracefully |
-| Q14 | Does `McpServerDelete` gain the same predicate (D16)? | **Yes**, but the handler keeps **200 on repeat DELETE** and stops re-publishing `EventTypeDeleted`. The 200 is load-bearing for the validator cleanup fixture |
+| Q14 | Does `McpServerDelete` gain the same predicate (D16)? | **Yes**, but the handler keeps **200 on repeat DELETE** and stops re-publishing `EventTypeDeleted`. 200 is required because DELETE is idempotent and GET still returns the soft-deleted row; v15's "the validator fixture would fail on 404" reason was FALSE (`cleanup_report.py:84` tolerates 404) |
 | Q15 | Naming-collision rename scope, and the third-party MCP link | **Heading only**; and **replace** `nrjchnd/voipbin-mcp` with `github.com/voipbin/mcp`, remove the fork link entirely ("a로 가자"). `uvx voipbin-mcp` already installs the official repo per PyPI, so the published link contradicts the published command |
 | Q16 | Add api-validator MCP coverage now? | **Defer until ETC-18 is fixed.** The validator leaks ~4 MCP servers per run into production (100 measured); more coverage before the fix accelerates it |
 | Q17 | PR A docs scope for D14 | **Contradiction (`ai_struct_ai.rst:69`) is mandatory**; the three webhook event types ship in the same PR if it stays reviewable, else split |
+| Q18 | Does the already-stored-id exemption cover the ownership check too? | **NO — D25 (§3.5a), SIXTH instance.** The exemption applies to the `tm_delete` predicate ONLY. `ValidateMcpServerIDs` gains a `storedIDs` parameter so existence and ownership run on every id; v12-v15's "no signature change" claim created a cross-tenant hole and is retracted |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -264,7 +270,56 @@ tool only the start member whitelists is ACCEPTED for the current member.
 `h.aiHandler.Get(...)` at `:104`, not from `resolveAI`'s team branch. Teams never
 reach `:225`.
 
-### 3.6 D13: `mcp_server_ids` is not AI-type validated. CONFIRMED.
+### 3.5a D25: this document's own Q11 exemption disables the only ownership check. CONFIRMED. BLOCKER.
+
+**SIXTH instance of the recurring failure mode**, and the first one that is a security
+regression rather than a usability one. Unlike D22/D23 it was not introduced by a
+product decision — this document introduced it, then asserted it was free.
+
+`ValidateMcpServerIDs` (`pkg/aihandler/mcpserver_validation.go:35-60`) runs two checks
+in a single loop over the incoming ids:
+
+```go
+for _, id := range ids {
+    srv, err := h.db.McpServerGet(ctx, id)          // :37  existence
+    ...
+    if srv == nil || srv.CustomerID != customerID { // :50  OWNERSHIP
+```
+
+§5 Q11 grants already-stored ids an exemption so that a soft-deleted-but-held id cannot
+freeze the AI (D21). v12-v15 additionally claimed the exemption needs **"zero extra DB
+reads and no signature change"**, explicitly retracting an earlier draft that asked for
+a parameter. But with no signature change the function cannot see the stored list, so
+the only way to implement the exemption is to **call it with the newly-added subset
+only** — which exempts already-stored ids from the ownership check in the same stroke.
+
+Why that is exploitable. §3.5 `:239-241` establishes this line is the **only** ownership
+check in the system. Verified again in v16: neither consume-path site compares
+`CustomerID` — `resolveTools:72-88` checks `Get` success and `Status` only, and
+`toolHandleMcpCall:153-167` checks whitelist membership, `Get` success, and `Status`
+only. §5 Q1 prescribes an ownership assertion at **dispatch** (`:157-167`), not at
+resolution. So a foreign `mcp_server_id`, once stored, reaches `resolveTools:84`
+→ `ListTools` → `client.go:191` with **another customer's decrypted secret** on an
+outbound request. Storing it the first time is what the ownership check exists to
+prevent, and the exemption removes exactly that.
+
+This is the document's own closing lesson (`:1457-1460`, "an exemption written for one
+predicate does not cover another") applied backwards: an exemption written for the
+`tm_delete` predicate was allowed to cover existence and ownership as well.
+
+**Resolution (v16), decided in §5 Q11:** `ValidateMcpServerIDs` gains a `storedIDs`
+parameter; existence and ownership run for every id, and only the `tm_delete` rejection
+consults `storedIDs`. One signature change, still zero extra DB reads. §7 gains the
+assertion that **an already-stored id owned by another customer is still rejected** —
+absent that test, the regression is silent.
+
+### 3.6 D13: `mcp_server_ids` is not AI-type validated. VOIDED in v14, retained for history.
+
+**STATUS: VOIDED, not fixed.** 대표님 확정 (v14): "인사이트도 mcp 사용가능하도록 해."
+Insight AIs MAY use MCP servers, so the absence of an AI-type check is **intended
+behavior, not a defect**. Nothing in this section is a PR A work item. The findings are
+kept only because §3.12b/§3.12e and the §8 retrospective reference them.
+
 
 ```go
 // pkg/aihandler/mcpserver_validation.go:35 — no AI type parameter
@@ -347,11 +402,12 @@ predicate and also ignores `RowsAffected`, so a second DELETE **re-stamps
 `EventTypeDeleted`.
 
 This is unavoidable for PR A because §5 Q2 mandates zeroing credentials **in this
-exact statement**, so PR A is rewriting it regardless. Interacts with the
-api-validator cleanup fixture's documented repeat-DELETE tolerance
-(`test_mcpservers_lifecycle.py:249-252`), so the decision must preserve a 200 on
-repeat DELETE even if the timestamp stops moving. Recommend: add the predicate,
-keep the handler's response 200 (idempotent), stop re-publishing the webhook.
+exact statement**, so PR A is rewriting it regardless. The decision must preserve a 200 on repeat
+DELETE even if the timestamp stops moving — **because DELETE is idempotent by contract
+and GET keeps returning the soft-deleted row**, not because of the test suite. (v15
+cited the validator fixture as the reason; `cleanup_report.py:84` tolerates 404, so that
+reason was false. See §5 item 1.) Resolved: add the predicate, swallow the zero-row error
+at `handler.go:226` so the response stays 200, stop re-publishing the webhook.
 
 ### 3.7c D17: `auth_type: "oauth"` is settable directly, contradicting the docs. CONFIRMED.
 
@@ -753,6 +809,11 @@ relying on the form's option list.
 
 ### 3.12d Q11 implementation constraints (non-blocking, but must be written down)
 
+- **The exemption is a predicate-scoped condition INSIDE the validator, not a filtered
+  input list (D25, §3.5a).** `ValidateMcpServerIDs` receives the full incoming list plus
+  `storedIDs`; existence (`mcpserver_validation.go:37-48`) and ownership (`:50-56`) run
+  on every id, and only the new `tm_delete` rejection consults `storedIDs`. Passing a
+  pre-filtered subset — what v12-v15 mandated — would exempt ownership too.
 - **The diff is SET membership, not sequence comparison.** `mcpServerIds` is
   order-dependent in the frontend (`ais_detail.js:382-386` appends on toggle; `:553`
   sorts only for the dirty check, never for submission). A `slices.Equal`-style
@@ -865,7 +926,8 @@ is a third, reachable for `type: 'insight'` via `prompt_templates.js:659`
 ### PROCEED with PR A and PR C.
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
-D1, D2, D3, D4, D5, D6, D12, D14, **D15, D16, D17, D18, D19, D20, D21**.
+D1, D2, D3, D4, D5, D6, D12, D14, **D15, D16, D17, D18, D19, D20, D21, D24, D25**.
+(D13, D22, D23 are VOIDED by the v14 policy reversal and are NOT work items.)
 (D13, D22, D23 voided in v14 — Insight AIs may use MCP servers.) One
 logical unit: "a deleted or
 foreign MCP server must be inert everywhere, write paths must reject rather than
@@ -952,9 +1014,25 @@ Redis cache (§3.9), because there is no measured signal for it.
    the surrounding call.
    **RESOLVED (v15, D16): `McpServerDelete` gains the same predicate**, while the
    handler keeps answering **200 on a repeat DELETE** (idempotent) and stops
-   re-publishing `EventTypeDeleted`. The 200 is load-bearing: the validator cleanup
-   fixture deletes unconditionally (`test_mcpservers_lifecycle.py:249-252`), so a 404
-   on the second delete would turn teardown into a failure.
+   re-publishing `EventTypeDeleted`.
+   **Justification CORRECTED in v16.** v15 claimed the 200 was "load-bearing" because
+   the validator cleanup fixture would fail on a 404, citing
+   `test_mcpservers_lifecycle.py:249-252`. **Both halves were false.** That citation is
+   a *docstring*, in a test that says it does **not** use the fixture; and
+   `cleanup_report.py:84` declares `ok_codes=(200, 204, 404)`, so `delete_one` counts a
+   404 as success (`:94`, `:99-101`). No test in the suite issues a repeat DELETE. This
+   is the same error class as the `test_ai_lifecycle.py:4` mis-citation (round 9): a
+   test artifact quoted as a live constraint without being read.
+   **The real justification is API semantics, not the test suite.** DELETE is idempotent
+   by contract, `/mcpservers/{id}` GET still returns a soft-deleted row
+   (`dbhandler/mcpserver.go:53-59` applies no `tm_delete` filter, asserted deliberately
+   by `test_delete_mcpserver_soft_delete_then_get_still_200`), so answering 404 only on
+   the *second* DELETE while GET keeps answering 200 would be incoherent.
+   **Mechanism the design doc must specify (v16):** the new zero-row error from
+   `McpServerDelete` is **swallowed at the handler** (`handler.go:226`), which then falls
+   through to the existing read-back at `:230` and returns 200 while skipping the
+   duplicate `EventTypeDeleted`. Without stating this, the naive implementation
+   propagates the error and yields 404, contradicting this very decision.
    **MANDATORY ADDITION (D20): an existence gate inside `mcpserverhandler.Update`,
    placed ahead of BOTH the `len(fields)==0` short-circuit (`handler.go:194-204`)
    AND the `ValidateURL`/`status.IsValid`/`authType.IsValid` block
@@ -1157,16 +1235,31 @@ Redis cache (§3.9), because there is no measured signal for it.
    |---|---|---|
    | POST `/ais` | reject ALL deleted ids | no prior list exists, so every id is new |
    | PUT with field omitted (`req.McpServerIDs == nil`) | no validation | current behavior, unchanged |
-   | PUT, id already in the stored whitelist | **skip** | already-held; rejecting freezes the AI (D21) |
+   | PUT, id already in the stored whitelist | **skip the DELETED predicate ONLY** — existence and ownership still enforced | already-held; rejecting a deleted-but-held id freezes the AI (D21). Ownership is NOT exempt (D25) |
    | PUT, id newly added to the list | **reject** (`INVALID_MCP_SERVER_ID`) | attaching a deleted server is a user error and must not fail silently |
 
-   **The diff costs nothing — both sides are already in hand at the gate.**
-   `v1_ais.go:272` runs with `tmp` returned by `aiHandler.Update` at `:247`, and
-   `Update`'s argument list (`:249-266`) does NOT include `McpServerIDs`. Therefore
-   `tmp.McpServerIDs` is the **currently stored, not-yet-modified** whitelist, and the
-   incoming list is `*req.McpServerIDs`. Computing "which ids are new" needs **zero
-   extra DB reads and no signature change**. (An earlier draft of this document
-   claimed an extra parameter was required; that was wrong.)
+   **The exemption is per-PREDICATE, not per-id. CORRECTED in v16 — see D25 (§3.5a).**
+   `ValidateMcpServerIDs` (`mcpserver_validation.go:35-60`) runs **two** checks in one
+   loop: existence (`:37-48`) and **customer ownership** (`:50-56`). v12-v15 said the
+   diff needs "zero extra DB reads and no signature change", which forces the diff to
+   be computed at the call sites and the function to be invoked **with the new subset
+   only** — silently exempting already-stored ids from the ownership check too. Per
+   §3.5 `:239-241` that line is *the only ownership check in the system*, and neither
+   consume-path gate (`mcp_tool.go:72-88`, `:153-167`) compares `CustomerID`. So the
+   exemption as written opens cross-tenant use of another customer's MCP server,
+   including its decrypted secret. **This document asserted the opposite and was
+   wrong: the earlier draft that called for an extra parameter was RIGHT, and the v12
+   "correction" that removed it introduced the hole.**
+
+   **Resolution (v16): pass the stored list in; keep ONE loop.**
+   `ValidateMcpServerIDs` gains a `storedIDs []uuid.UUID` parameter (nil at
+   `v1_ais.go:118`, `tmp.McpServerIDs` at `:273`, which is the pre-modification
+   whitelist because `Update`'s argument list at `:249-266` excludes `McpServerIDs`).
+   Inside the loop: existence and ownership run for **every** id; the `tm_delete`
+   rejection is skipped when the id is in `storedIDs`. Rejected alternative: two calls
+   (full list for existence/ownership, subset for the deleted predicate) — that issues
+   a second `McpServerGet` per already-stored id for no benefit. **Still zero extra DB
+   reads; one signature change.**
 
    **Why the diff is mandatory, not an optimization.** `ais_detail.js:406-440` always
    puts `mcp_server_ids` in the PUT body, so `req.McpServerIDs` is non-nil on every
@@ -1237,7 +1330,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Gating `McpServerUpdate` yields a SILENT 200 + spurious `EventTypeUpdated` instead of a rejection, because `RowsAffected` is discarded (`dbhandler/mcpserver.go:154-156`); the same defeats the OAuth Complete gate | **High** | D15 (§3.7a). PR A must return `ErrNotFound` on zero rows; §7's rejection tests are otherwise unachievable |
 | Making `McpServerUpdate` honor `RowsAffected` changes behavior for EVERY existing caller, notably `access_token.go:101-108` token rotation | **High** | §5 Q1; enumerate all callers and add a test per caller for the new error path |
 | `auth_type: "oauth"` settable via POST/PUT with a secret the oauth path ignores, producing an undiagnosable broken server; no OpenAPI validator middleware exists to catch it | **High** | D17 (§3.7c) / §5 Q9 |
-| A rejected `mcp_server_ids` leaves an orphaned (POST) or already-mutated (PUT) AI behind and still returns 400 | Medium | D18 (§3.7d); fix ordering alongside D13's signature change |
+| A rejected `mcp_server_ids` leaves an orphaned (POST) or already-mutated (PUT) AI behind and still returns 400 | Medium | D18 (§3.7d); standalone ordering fix — move validation inside `aiHandler.Update` to reuse `chatbot.go:135-139`'s unconditional pre-fetch. (v15 said "alongside D13's signature change"; D13 is VOIDED, so D18 carries no dependency) |
 | Repeat DELETE re-stamps `tm_delete` and re-publishes `EventTypeDeleted`; PR A is rewriting that exact statement for credential zeroing | Medium | D16 (§3.7b); keep repeat DELETE at 200 for the validator cleanup fixture |
 | Docs assert a `9999-01-01` sentinel and an "(enum string)" type this resource does not have, and say nothing about what DELETE does to tool access | Medium | D19 (§3.7e); same note block D5 edits |
 | Coverage for `mcp_server_ids` on `POST /ais` is Go-unit-only, no end-to-end | Medium | §5 Q4 |
@@ -1255,7 +1348,11 @@ tests proving a soft-deleted server is: skipped in resolution, refused in dispat
 refused in transport, rejected by `ValidateMcpServerIDs` **when newly added and
 skipped when already stored** (§5 Q11 — assert BOTH directions: a PUT adding a
 deleted id 400s, and a PUT that merely re-submits an already-stored deleted id
-succeeds), rejected by
+succeeds). **New in v16 (D25), MANDATORY:** a test that a PUT re-submitting an
+**already-stored id owned by a DIFFERENT customer is still rejected** — the
+`storedIDs` exemption must cover the `tm_delete` predicate only, never existence or
+ownership, and without this assertion the cross-tenant regression is silent. Also
+rejected by
 `McpServerUpdate`, rejected by OAuth `Start`, rejected by OAuth `Complete`; that
 delete zeroes all secret/token ciphertext in the SAME statement while update paths
 never do; that dispatch refuses a server owned by another customer (D12); that the
@@ -1285,13 +1382,19 @@ and that a rejected `mcp_server_ids` leaves no AI behind on POST (D18). **New in
 rather than returning 200 with the row — the existing
 `handler_partial_update_test.go:115-148` no-op test needs a deleted-row counterpart;
 that a malformed-URL PUT on a deleted row returns the gate's 404, not 400
-`INVALID_MCP_SERVER_URL`; and that `mcpserverhandler.Get` is NOT gated, i.e.
+`INVALID_MCP_SERVER_URL`; that a **repeat DELETE still answers 200** and publishes
+`EventTypeDeleted` exactly once (§5 item 1 — the handler swallows the new zero-row
+error and falls through to the read-back, so this asserts the mechanism, not just the
+status code); and that `mcpserverhandler.Get` is NOT gated, i.e.
 `v1_mcpservers.go:142`'s customer GET still answers 200 while `mcp_tool.go:73`/`:157`
 fail closed. **New in v8 (D21), per §5 Q11:** a test that an
 existing AI holding a deleted MCP server id can still be saved when editing an
 unrelated field (name/prompt/engine) — this is the regression that freezes customer
 AIs, and it spans both repos, so PR C must exercise it in a real browser against a
-seeded deleted id. Clean Sphinx
+seeded deleted id. A docs assertion for **D24**: no published page links
+`nrjchnd/voipbin-mcp`, and the MCP Server section names `github.com/voipbin/mcp` with
+the `uvx voipbin-mcp` command (grep-able, same shape as the `mcp_servers` and
+`9999-01-01` greps). Clean Sphinx
 rebuild; `grep -n 'mcp_servers' docsdev/source/*.rst` returns nothing **and
 `grep -n '9999-01-01' docsdev/source/ai_struct_mcpserver.rst` returns nothing**
 (D19). Full 21-test api-validator mcpserver suite green (GET-after-DELETE 200 must
@@ -1455,6 +1558,22 @@ Lessons now in effect:
   documentation, not enforcement — it only constrains rows created after the deploy
   (D22).
 - **Every new rejection predicate needs its own frontend trace; an exemption written
-  for one predicate does not cover another.** Q11's skip exempts already-stored ids
+  for one predicate does not cover another.** Round 10 proved this lesson was written
+  and then violated in the same document: Q11's exemption was implemented as a filter on
+  the id LIST, which silently exempted existence and ownership along with `tm_delete`
+  (D25, §3.5a). **Write exemptions as predicate-scoped conditions inside the validator,
+  never as a narrowed input set** — a narrowed input set cannot express "skip check A but
+  still run checks B and C".
+- **"No signature change needed" is a red flag when the caller holds state the callee
+  needs.** v12 retracted a correct earlier draft that asked for a parameter, on the
+  grounds that the diff could be computed at the call site for free. It could — and doing
+  so cost the ownership check. Cheapness at the call site is not evidence of correctness
+  inside the callee.
+- **A test file cited as a live constraint must be opened.** Round 9 caught a skipped
+  module quoted as proof; round 10 caught a docstring quoted as fixture code, whose own
+  text said the opposite (`cleanup_report.py:84` tolerates 404). Twice is a pattern:
+  quote the assertion or the default argument, not the file name.
+
+  (original lesson) Q11's skip exempts already-stored ids
   from the deleted-server check, and that exemption gave false comfort about the type
   check, which is a different predicate hitting the same unconditional PUT body.
