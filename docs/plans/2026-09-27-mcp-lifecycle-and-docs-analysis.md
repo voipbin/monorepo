@@ -2,7 +2,11 @@
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v5, Analysis Review Loop round 5 pending
+Status: v6, Analysis Review Loop round 6 pending
+Round 5 result: fact-check reviewer **APPROVED** (no factual errors or
+mis-citations found across §3.1-§3.13, §4-§7). Adversarial reviewer
+CHANGES_REQUESTED with seven findings, all verified and folded in below as
+D15-D19 plus §5 Q1/Q5 corrections.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
 out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
 
@@ -64,6 +68,21 @@ separately.
   type-validated, asymmetric with `tool_names`.
 - **D14** The three mcpserver webhook event types are undocumented, and
   `ai.McpServerIDs` carries `,omitempty` while the RST says it defaults to `[]`.
+- **D15** `McpServerUpdate` discards `RowsAffected`, so **the `tm_delete` predicate
+  D2 requires would turn a rejected PUT into a silent 200** with unchanged fields
+  and a spurious `EventTypeUpdated`. Gating alone is not enough; the function must
+  report "no row matched".
+- **D16** `McpServerDelete` has no `tm_delete` predicate and ignores `RowsAffected`,
+  so **delete is not idempotent**: a second DELETE re-stamps `tm_delete` with a
+  fresh timestamp and re-publishes `EventTypeDeleted`.
+- **D17** `auth_type: "oauth"` can be set directly via POST/PUT with a
+  customer-supplied secret, which `ai_struct_mcpserver.rst:35` says is impossible
+  and which no code enforces.
+- **D18** `ValidateMcpServerIDs` runs **after** the AI write has already committed,
+  so a rejected whitelist leaves an orphaned/mutated AI behind and still returns 400.
+- **D19** `ai_struct_mcpserver.rst` documents a `9999-01-01` timestamp sentinel this
+  resource does not use (it uses `null`), plus a bogus "(enum string)" label on
+  `oauth_vendor`.
 
 **PR C — square-admin parity (`voipbin/monorepo-javascript`):**
 - **D8** `mcp_server_ids` is settable only on the AI detail page, though the
@@ -227,6 +246,134 @@ record that explicitly so the asymmetry stops looking like an oversight.
   `ai_struct_ai.rst:69` says it "Defaults to `[]`". Same defect class as
   `oauth_vendor` in §3.10.
 
+### 3.7a D15: gating `McpServerUpdate` silently succeeds. CONFIRMED. BLOCKER for §5 Q1.
+
+```go
+// pkg/dbhandler/mcpserver.go:154-156 — result discarded
+if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+	return fmt.Errorf("McpServerUpdate: could not execute. err: %v", err)
+}
+return nil
+```
+
+Adding `tm_delete IS NULL` to the `Where` makes the statement match zero rows and
+return `nil`. `mcpserverHandler.Update` then continues:
+
+```go
+// pkg/mcpserverhandler/handler.go:206-217
+if err := h.db.McpServerUpdate(ctx, id, fields); err != nil { ... }
+res, err := h.db.McpServerGet(ctx, id)      // does NOT filter tm_delete
+...
+h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, mcpserver.EventTypeUpdated, res)
+return res, nil
+```
+
+So a PUT against a deleted server would return **200 with unchanged fields and a
+spurious `EventTypeUpdated` webhook**. Today's visible resurrection becomes a
+silent success, which is arguably worse: the customer believes the update applied.
+
+The same mechanic defeats the OAuth `Complete` gate, since `complete.go:126` writes
+through `McpServerUpdate`.
+
+**Therefore §7's promised tests ("rejected by `McpServerUpdate`", "rejected by
+OAuth `Complete`") are unachievable by gating alone.** PR A must additionally make
+`McpServerUpdate` inspect `RowsAffected` and return `ErrNotFound` on zero. That is a
+behavior change affecting **every** existing caller, including
+`mcpoauthhandler/access_token.go:101-108`'s token rotation — see §6's new risk row.
+
+This is the same mechanic §5 Q2 already established for credential zeroing; v5
+failed to carry it into Q1.
+
+### 3.7b D16: delete is not idempotent. CONFIRMED.
+
+`McpServerDelete` (`pkg/dbhandler/mcpserver.go:163-182`) has no `tm_delete`
+predicate and also ignores `RowsAffected`, so a second DELETE **re-stamps
+`tm_delete` with a fresh timestamp** and `handler.Delete:242` re-publishes
+`EventTypeDeleted`.
+
+This is unavoidable for PR A because §5 Q2 mandates zeroing credentials **in this
+exact statement**, so PR A is rewriting it regardless. Interacts with the
+api-validator cleanup fixture's documented repeat-DELETE tolerance
+(`test_mcpservers_lifecycle.py:249-252`), so the decision must preserve a 200 on
+repeat DELETE even if the timestamp stops moving. Recommend: add the predicate,
+keep the handler's response 200 (idempotent), stop re-publishing the webhook.
+
+### 3.7c D17: `auth_type: "oauth"` is settable directly, contradicting the docs. CONFIRMED.
+
+`ai_struct_mcpserver.rst:35` states `oauth` "can never be set directly via
+POST/PUT." Nothing enforces that:
+- `AuthType.IsValid()` (`models/mcpserver/main.go:23-30`) **accepts**
+  `AuthTypeOAuth`.
+- `mcpserverhandler.Create:48-50` and `Update:154-156` check only `IsValid()`.
+- `bin-api-manager/server/mcpservers.go:91-94` (POST) and `:185-189` (PUT) cast the
+  raw string straight through.
+- **There is no OpenAPI request-validator middleware.** `grep -rn
+  'OapiRequestValidator\|openapi3filter\|ValidateRequest' bin-api-manager`
+  (excluding `vendor/`) → **zero hits**. The chain at
+  `cmd/api-manager/main.go:366-378` is RequestID / RateLimit / Authenticate /
+  EnforceAccountStatus / DirectResourceScope only. So the generated enum
+  (`gens/openapi_server/gen.go:3550-3566`) and the spec enums
+  (`paths/mcpservers/main.yaml:57`, `id.yaml:74`) are **decorative**.
+
+Result: `POST /mcpservers {"auth_type":"oauth","secret":"x"}` succeeds, stores a
+customer-supplied secret on an `oauth` row, and reports `has_secret: true`, while
+`buildAuthHeader`'s oauth branch (`mcptoolhandler/client.go:90-101`) ignores
+`SecretCiphertext` and fails on an empty `AccessTokenCiphertext`
+(`access_token.go:38`). A silently broken server the customer cannot diagnose.
+
+Same defect class as D2 (a missing write-time gate), on the same docs sentence D5
+edits. **Decision needed (§5 Q9): add the gate, or correct the sentence.**
+
+### 3.7d D18: whitelist validation runs after the AI write commits. CONFIRMED.
+
+```go
+// pkg/listenhandler/v1_ais.go:92-128 (POST) — Create FIRST
+tmp, err := h.aiHandler.Create(ctx, req.CustomerID, ... req.ToolNames, ...)
+if err != nil { ... }
+
+if req.McpServerIDs != nil {
+	if err := h.aiHandler.ValidateMcpServerIDs(ctx, tmp.CustomerID, *req.McpServerIDs); err != nil {
+		return errorResponse(err), nil        // AI already exists
+	}
+	tmp, err = h.aiHandler.UpdateMcpServerIDs(ctx, tmp.ID, *req.McpServerIDs)
+```
+
+`mcp_server_ids` is not even a `Create` parameter; it is applied by a **second**
+call. So a rejected whitelist returns 400 while the AI **has already been
+created** (POST) or mutated (PUT `:247-283`), leaving an orphan. Note `tool_names`
+IS a `Create` parameter and IS validated inside the write.
+
+D13's type gate multiplies this: an Insight AI whose whitelist is refused is still
+created. Since D13 changes this function's signature and both call sites anyway,
+PR A should decide whether validation moves ahead of the write (§5 Q5).
+
+### 3.7e D19: the RST documents a timestamp sentinel this resource does not use. CONFIRMED.
+
+`ai_struct_mcpserver.rst:53` asserts that `tm_delete` = `9999-01-01
+00:00:00.000000` means "not deleted," and the example block at `:71-72` prints that
+value for **both** `tm_update` and `tm_delete`. The API cannot produce that output:
+- `models/mcpserver/main.go:98` is `TMDelete *time.Time` (pointer, so `null` on the
+  wire).
+- `ai_mcp_servers` was created 2026-09-11
+  (`9b0ad37e0360_ai_mcp_servers_create_table.py:22-42`), **after**
+  `071504ef41d0_timestamp_sentinel_to_null.py` retired the sentinel, and the table
+  is absent from that migration's `TABLE_COLUMNS` (`:26-71`).
+- api-validator confirms the real contract: `test_mcpservers_lifecycle.py:266,274`
+  assert `tm_delete is not None` rather than the sentinel comparison older
+  resources use (`test_ai_lifecycle.py:66`).
+- Correct precedent in the same docs tree: `talk_struct_talk.rst:37`,
+  `customer_struct_customer.rst:67`.
+
+Also in the same file: `:37` labels `oauth_vendor` "(enum string)", but the model
+field is a plain `string` (`models/mcpserver/main.go:82`) populated from the
+runtime-configurable vendor catalog (`internal/config/main.go:151-154`) with no
+`IsValid`. And neither the Status table (`:79-86`) nor the delete note states what
+DELETE does to tool access — which becomes the headline customer-visible change once
+PR A lands, so it belongs in this file.
+
+All of the above sit in the same note block and example that D5 already edits, so
+PR A fixes them in the same pass.
+
 ### 3.8 D5: published docs give a 404 path. CONFIRMED.
 
 `bin-api-manager/docsdev/source/ai_struct_mcpserver.rst`:
@@ -349,13 +496,21 @@ mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 ### PROCEED with PR A and PR C.
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
-D1, D2, D3, D4, D5, D6, D12, D13 (pending §5 Q5), D14. One logical unit: "a
-deleted or foreign MCP server must be inert everywhere, and the docs/config must
-stop describing things that are not true."
+D1, D2, D3, D4, D5, D6, D12, D13 (pending §5 Q5), D14, **D15, D16, D17 (pending
+§5 Q9), D18, D19**. One logical unit: "a deleted or foreign MCP server must be
+inert everywhere, write paths must reject rather than silently succeed, and the
+docs/config must stop describing things that are not true."
 
 **PR C — `voipbin/monorepo-javascript` — square-admin parity.**
 D8 + `types/api.ts` + the CLAUDE.md Field Sync Points table row + re-verification
 of the `mcpservers_detail.js:496` delete-dialog copy (PR A makes it true).
+**Per the Field Sync Points rule this covers FOUR form bodies, not one:**
+`ais_create.js:114-129`, and `teamgraph/sidebar.js` AI-create `:514-528` and
+AI-edit `:753-768` (both verified to carry `tool_names` and omit
+`mcp_server_ids`), plus `ais_detail.js`'s existing implementation left intact.
+`sidebar.js` has no `mcpservers` fetch of its own, so the
+`ProviderGet('mcpservers?page_size=100')` call at `ais_detail.js:373-377` (a bare
+`useEffect`, token-scoped, no extra customer context needed) must be reused there.
 Independent of A; may proceed in parallel.
 
 **PR B — deferred to its own analysis.** PR A remains its hard prerequisite: PR B
@@ -405,6 +560,17 @@ Redis cache (§3.9), because there is no measured signal for it.
    `:210`; gating there breaks Delete's own success path and the validator's 200
    contract. Confirm, and confirm whether a deleted server is skipped silently
    (matching the existing non-active pattern) or logged at WARN.
+   **RESOLVED sub-decision (D15): gating `McpServerUpdate` is necessary but NOT
+   sufficient.** Because it discards `RowsAffected`
+   (`dbhandler/mcpserver.go:154-156`), a predicate alone yields a silent 200 plus a
+   spurious `EventTypeUpdated` (§3.7a). PR A must make `McpServerUpdate` inspect
+   `RowsAffected` and return `ErrNotFound` on zero. **Open:** whether that applies
+   to every caller uniformly, notably `access_token.go:101-108`'s token rotation,
+   where "no row matched" now surfaces as an error instead of being swallowed.
+   **Also open (D16):** does `McpServerDelete` gain the same predicate? Recommend
+   yes, keeping the handler's repeat-DELETE response at 200 (idempotent) and
+   dropping the duplicate `EventTypeDeleted`, to stay compatible with the validator
+   cleanup fixture (`test_mcpservers_lifecycle.py:249-252`).
 2. **Credential zeroing mechanics. RESOLVED: same statement as the delete
    timestamps.** A separate `dbhandler.McpServerUpdate` after `McpServerDelete`
    would be **silently no-op'd** by the `tm_delete IS NULL` predicate Q1 mandates,
@@ -426,6 +592,23 @@ Redis cache (§3.9), because there is no measured signal for it.
    unconditional by design, PR A records the rationale so the asymmetry with
    `tool_names` is deliberate rather than accidental. **This must be answered before
    PR A's design doc**, because it changes a function signature and both call sites.
+   **Coupled decision (D18): does validation move AHEAD of the AI write?** Today
+   `ValidateMcpServerIDs` runs after `aiHandler.Create`/`Update` has committed
+   (`v1_ais.go:92-128`, `:247-283`), so a rejected whitelist leaves an orphaned or
+   already-mutated AI and still returns 400. Since D13 rewrites this signature and
+   both call sites anyway, fixing the ordering here is nearly free; deferring it
+   means shipping a known orphan path. Recommend fixing it in PR A.
+9. **D17: is `auth_type: "oauth"` allowed on POST/PUT?** (listed here out of numeric
+   order because it shares Q5's write-gate character; see the end of this section for
+   Q6-Q8.) `ai_struct_mcpserver.rst:35`
+   says no; nothing enforces it, and there is no OpenAPI request-validator middleware
+   in `bin-api-manager` to lean on (§3.7c). Either (a) add the write-time gate in
+   `mcpserverhandler.Create`/`Update` and keep the docs sentence, or (b) drop the
+   sentence and accept customer-set `oauth` rows. Recommend (a): option (b) lets a
+   customer create a server that stores a secret the oauth code path ignores
+   (`client.go:90-101`) and then fails on an empty access token
+   (`access_token.go:38`) — undiagnosable from the API surface. Note (a) also implies
+   deciding whether `Create` must reject a `secret` when `auth_type` is `oauth`.
 6. **Does PR A prune stale ids from `ai.mcp_server_ids` on delete?** Recommend NO:
    consume-time gating is sufficient and idempotent; pruning means a fan-out write
    across every AI of that customer on every delete. The stale id becomes inert, and
@@ -452,6 +635,12 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Dead config flag + design doc justifying another decision by citing a nonexistent cache | Medium | D6; correct `2026-09-11-…:466-467`, `:705`, `:750-754` |
 | Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | Medium | D13 / §5 Q5 — decide before the design doc |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
+| Gating `McpServerUpdate` yields a SILENT 200 + spurious `EventTypeUpdated` instead of a rejection, because `RowsAffected` is discarded (`dbhandler/mcpserver.go:154-156`); the same defeats the OAuth Complete gate | **High** | D15 (§3.7a). PR A must return `ErrNotFound` on zero rows; §7's rejection tests are otherwise unachievable |
+| Making `McpServerUpdate` honor `RowsAffected` changes behavior for EVERY existing caller, notably `access_token.go:101-108` token rotation | **High** | §5 Q1; enumerate all callers and add a test per caller for the new error path |
+| `auth_type: "oauth"` settable via POST/PUT with a secret the oauth path ignores, producing an undiagnosable broken server; no OpenAPI validator middleware exists to catch it | **High** | D17 (§3.7c) / §5 Q9 |
+| A rejected `mcp_server_ids` leaves an orphaned (POST) or already-mutated (PUT) AI behind and still returns 400 | Medium | D18 (§3.7d); fix ordering alongside D13's signature change |
+| Repeat DELETE re-stamps `tm_delete` and re-publishes `EventTypeDeleted`; PR A is rewriting that exact statement for credential zeroing | Medium | D16 (§3.7b); keep repeat DELETE at 200 for the validator cleanup fixture |
+| Docs assert a `9999-01-01` sentinel and an "(enum string)" type this resource does not have, and say nothing about what DELETE does to tool access | Medium | D19 (§3.7e); same note block D5 edits |
 | Coverage for `mcp_server_ids` on `POST /ais` is Go-unit-only, no end-to-end | Medium | §5 Q4 |
 | `GetValidAccessToken`'s error surface changes once `McpServerUpdate` is gated | Low | Desired behavior; needs an explicit test (§7) |
 | PR A "breaks" a customer whose AI depends on a deleted-but-working server | Low | No customer AI can be *calling* those tools today (§3.1); breakage is limited to stopping the unwanted `ListTools` round trip. Note it in the PR body |
@@ -470,16 +659,28 @@ delete zeroes all secret/token ciphertext in the SAME statement while update pat
 never do; that dispatch refuses a server owned by another customer (D12); that the
 team path validates the CURRENT member's whitelist; and `GetValidAccessToken`'s new
 error when rotating against a row deleted mid-flight. Plus D13's type gate if §5 Q5
-says conditional. Clean Sphinx rebuild; `grep -n 'mcp_servers' docsdev/source/*.rst`
-returns nothing. Full 21-test api-validator mcpserver suite green (GET-after-DELETE
-200 must still hold).
+says conditional. **New in v6:** that a PUT against a deleted server returns an
+error rather than a silent 200 with no `EventTypeUpdated` published (D15 — assert
+BOTH the status and the absence of the webhook); that every other
+`McpServerUpdate` caller still behaves correctly under the new `RowsAffected`
+check, `access_token.go:101-108` included; that a repeat DELETE does not move
+`tm_delete` or re-publish `EventTypeDeleted` while still answering 200 (D16); that
+`POST`/`PUT` with `auth_type: "oauth"` is rejected if §5 Q9 picks the gate (D17);
+and that a rejected `mcp_server_ids` leaves no AI behind on POST (D18). Clean Sphinx
+rebuild; `grep -n 'mcp_servers' docsdev/source/*.rst` returns nothing **and
+`grep -n '9999-01-01' docsdev/source/ai_struct_mcpserver.rst` returns nothing**
+(D19). Full 21-test api-validator mcpserver suite green (GET-after-DELETE 200 must
+still hold, and the cleanup fixture's repeat-DELETE tolerance must not regress).
 
 **PR C (`monorepo-javascript`):** baseline-vs-branch test comparison per CLAUDE.md
 test gate; `npm run build`; production build served and verified in a real browser
 (reviews and RTL do not catch unmount races — 대표님 has repeatedly found real bugs
-this way after green reviews).
+this way after green reviews). Verified no existing test breaks: `ais_create.test.js:157`
+is a blanket `ProviderGet.mockResolvedValue`, `:320/:380/:398/:431` use
+`expect.objectContaining`, `:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
+asserts only the PUT body. All four form bodies (§4) must be exercised.
 
-## 8. Retrospective (four rounds, four different failure modes)
+## 8. Retrospective (five rounds)
 
 **v1** asserted "exactly ONE grep hit" and "no `mcpserver*.rst` files exist." Both
 false. Root cause: a case-sensitive `grep mcp` that missed uppercase `MCP`, written
@@ -506,6 +707,18 @@ as a live advertising surface. Root cause: assuming symmetry — that two paths 
 All four are the same shape: **a claim about behavior inferred from the existence or
 apparent symmetry of code, instead of traced end-to-end.**
 
+**v5 (this document's first split version)** passed the fact-check reviewer with no
+errors found, but the adversarial reviewer found a NEW failure mode: **prescribing a
+fix without verifying the fix produces the promised observable.** v5 mandated a
+`tm_delete` predicate on `McpServerUpdate` and promised a test asserting rejection —
+without checking that `McpServerUpdate` discards `RowsAffected`, which makes the
+predicate a silent no-op returning `nil`. v5 had already established that exact
+mechanic one section earlier, for credential zeroing, and failed to carry it across.
+v5 also under-scoped PR C (its scope line listed one form body while its own §3.12
+and §6 named three) and missed four defects in the very file it was editing
+(`ai_struct_mcpserver.rst`: the sentinel note, the example block, the `oauth_vendor`
+label, the unenforced oauth sentence).
+
 Lessons now in effect:
 - Use `grep -i` for content/convention greps.
 - For any producer function, grep its callers and check whether the return value is
@@ -519,3 +732,9 @@ Lessons now in effect:
 - Before citing a function, confirm which implementation the caller actually binds
   to (same name, different package, different signature).
 - Before citing a code path as live, grep for its callers.
+- **When prescribing a fix, verify the fix produces the observable you promise to
+  test.** A `WHERE` predicate only rejects if the caller inspects `RowsAffected`; an
+  enum in a spec only validates if a validator runs. Trace the fix forward the same
+  way you trace a defect.
+- **When editing a file for one defect, read it in full and fix every defect in it.**
+  A second PR touching the same paragraph is wasted review.
