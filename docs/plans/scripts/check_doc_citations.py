@@ -189,45 +189,62 @@ def is_external(cited):
 # silently passed the very defect it was written to catch, so the gate now
 # ships with the probes that refuted it.
 SELF_TEST_PROBES = [
-    (1, "cross-repo bogus line",
+    (1, "cross-repo bogus line", "OUT OF RANGE",
      "`square-admin/src/views/ais/ais_detail.js:999999`"),
-    (1, "api-validator bogus line",
-     "`api-validator/tests/test_ai_lifecycle.py:999999`"),
-    (1, "substring anchor pins nothing",
+    # NOTE: this path must EXIST, or the probe passes on NOT-FOUND and proves
+    # nothing about sibling-repo line-range resolution.
+    (1, "api-validator bogus line", "OUT OF RANGE",
+     "`api-validator/tests/scenarios/test_ai_lifecycle.py:999999`"),
+    (1, "substring anchor pins nothing", "ANCHOR MISMATCH",
      "`bin-ai-manager/pkg/aicallhandler/helpers.go:21 resolveActiveAI`"),
-    (1, "range END drifted",
+    (1, "range END drifted", "OUT OF RANGE",
      "`bin-ai-manager/pkg/aicallhandler/helpers.go:194-999 resolveActiveAIForMcp`"),
-    (1, "continuation binds to nearest PRECEDING path",
+    (1, "continuation binds to nearest PRECEDING path", "OUT OF RANGE",
      "`bin-common-handler/models/identity/identity.go:9` and `:73` then "
      "`bin-ai-manager/pkg/aicallhandler/mcp_tool.go:52`"),
-    (1, "nonexistent commit", "commit `deadbeefcafe1` did it"),
-    (1, "reference beyond the last section 5 item",
+    (1, "nonexistent commit", "does not exist",
+     "commit `deadbeefcafe1` did it"),
+    (1, "hint-listed path that EXISTS locally, bogus line "
+        "(guards resolve-before-external ordering)", "OUT OF RANGE",
+     "`square-main/public/skill.md:999999`"),
+    (1, "reference beyond the last section 5 item", "references item",
      "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee item 7.\n"),
-    (0, "correct anchor must PASS",
+    (0, "correct anchor must PASS", None,
      "`bin-ai-manager/pkg/aicallhandler/start.go:375 refreshMcpToolMap`"),
-    (0, "correct cross-repo citation must PASS",
+    (0, "correct cross-repo citation must PASS", None,
      "`square-admin/src/views/ais/ais_detail.js:421`"),
 ]
 
 
 def self_test(doc):
-    """Run the gate against its own probes. Exit non-zero if any misbehaves."""
+    """Run the gate against its own probes. Exit non-zero if any misbehaves.
+
+    A probe that fails for an INCIDENTAL reason (an unresolvable path instead of
+    the out-of-range line it was written to catch) is a false guarantee, so each
+    failing probe also declares the message its failure must contain.
+    """
     probe = os.path.join(os.path.dirname(os.path.abspath(doc)),
                          "_gate_self_test.md")
     failures = 0
     try:
-        for want, name, body in SELF_TEST_PROBES:
+        for want, name, reason, body in SELF_TEST_PROBES:
             with open(probe, "w", encoding="utf-8") as fh:
                 fh.write(body if body.endswith("\n") else body + "\n")
-            got = subprocess.run(
+            run = subprocess.run(
                 [sys.executable, os.path.abspath(__file__), probe],
                 capture_output=True, text=True,
-            ).returncode
+            )
+            got = run.returncode
             ok = (got != 0) == (want != 0)
+            why = ""
+            if ok and reason and reason not in run.stdout:
+                # Failed, but not for the reason the probe exists to prove.
+                ok = False
+                why = " (wrong reason: expected %r)" % reason
             failures += 0 if ok else 1
-            print("%-5s %-50s exit=%d want%s0"
+            print("%-5s %-58s exit=%d want%s0%s"
                   % ("ok" if ok else "FAIL", name, got,
-                     "!=" if want else "=="))
+                     "!=" if want else "==", why))
     finally:
         if os.path.exists(probe):
             os.remove(probe)

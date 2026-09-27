@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v31, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v32, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v31, Analysis Review Loop round 23 pending
+Status: v32, Analysis Review Loop round 24 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -40,7 +40,8 @@ columns) but caught a corrupted paragraph and four stale references. Adversarial
 member half, which has the identical shape — diagnosed, risk-rowed, and never given an
 enforcement point, with its only promised test on the dead dispatch path.
 
-**v16 — the five unconfirmed "Recommend …" items (§5 items 1, 3, 4, 7, 8) are now
+**v16 — the five unconfirmed "Recommend …" items (§5 items 3, 5 and 10 under the numbering
+in force at v16; §5 was renumbered in v31) are now
 closed** by 대표님 ("a로 가자" for the MCP link, recommendations accepted for the rest).
 Investigating §5 item 3 surfaced **D24**: the docs advertise a stale third-party fork while
 `uvx voipbin-mcp` installs the official repo — a published-falsehood defect the v14
@@ -112,6 +113,16 @@ path built the handler without MCP mocks so `refreshMcpToolMap` returned at its 
 reading the AI. The fact-checker found §5 item 1(c) still prescribing the deleted fallback, 7
 surviving pre-fix `mcp_tool.go` anchors, three stale subtest counts, and §3.5c's heading still
 announcing a live BLOCKER. See §3.5c v27.
+
+Round 23: **both tracks CHANGES_REQUESTED; the Go code clean for a fourth consecutive round.**
+Sixteen mutations, sixteen caught (one further mutant judged equivalent, not a gap). Priority-1
+verified the v31 remap mechanically — the reviewer reconstructed it independently from `66c00676e`
+and found zero mis-pointing references among all 130. Both reviewers found the fix commit had again
+introduced the next defect, and each found one the other missed: `--self-test`, added the round
+before as the guarantee that this gate stays honest, failed to notice two of four deliberate
+sabotages, and §7's `start_test.go:462` had pointed at a lone closing brace since `90d2e2f44`.
+Seventh consecutive round of anchor drift, and the first where the escaped anchor sat in the
+verification apparatus itself. See §3.5c v32.
 
 Round 22: **both tracks CHANGES_REQUESTED; the Go code clean for a third consecutive round.**
 Eleven mutations, eleven caught, including D28 itself and the fail-closed dispatch. Test counts,
@@ -511,12 +522,12 @@ itself in §3.3), `complete.go:68` guards the state row, and
 surface. The accurate and still-sufficient claim is that it is **the only ownership check
 on the AI-whitelist → consume path**. Corrected wherever it appeared.
 
-### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v31 notes at the end of this section; the NEWEST is v31.**
+### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v32 notes at the end of this section; the NEWEST is v32.**
 
 > **Reading order.** Everything between here and the v24 note is the ORIGINAL DIAGNOSIS,
 > written in the present tense while the defect was live, and kept as the record of how four
 > prose prescriptions went wrong. It does NOT describe the current code. For what the code
-> does now, and for what an implementer must not undo, read the v31 note (the newest) and §5 item 1.
+> does now, and for what an implementer must not undo, read the v32 note (the newest) and §5 item 1.
 
 **EIGHTH instance**, and the third in a row created by a fix-up edit. D26 corrected the
 ownership half of D12 from dispatch to resolution. It did not look at the **member**
@@ -662,6 +673,37 @@ passed their target defects.*
 
 **Earlier note (v29), retained as the record of round 20's response.**
 
+**ROUND 23 (v32): a probe that fails for the wrong reason is a false guarantee.**
+Round 22's fix added `--self-test`, ten probes replaying the defects that refuted three
+earlier versions of this gate, and it reported 10/10. Two reviewers independently showed
+it was partly theatre.
+
+1. **Two of four deliberate sabotages went unnoticed.** Reverting resolve-before-external
+   (round 21's exact blocker) left `--self-test` fully green, because no probe cited a path
+   that both matches `EXTERNAL_HINTS` and exists locally. Removing `monorepo-monitoring`
+   from sibling discovery also left it green: the api-validator probe cited
+   api-validator/tests/test_ai_lifecycle.py, which does not exist (the file is under
+   `tests/scenarios/`), so it failed on NOT-FOUND and proved nothing about the line-range
+   resolution its name advertises. Fixed by correcting the path, adding a probe that cites
+   square-main/public/skill.md at a bogus line (hint-listed *and* locally resolvable), and — the general repair — giving every
+   failing probe the message its failure must contain, so failing for an incidental reason
+   now counts as a failure. All four sabotages are caught.
+2. **`start_test.go:462` was a lone closing brace.** `Test_startReferenceTypeConversation`
+   moved to `:465` in `90d2e2f44` and the citation rode unchanged through five commits —
+   the seventh consecutive instance of anchor drift, in §7, on the one line that tells an
+   implementer which existing test covers D28's resolution side. It survived because it
+   carried no symbol, so only its range was checked. Now `start_test.go:465
+   Test_startReferenceTypeConversation`; the load-bearing anchors of §5 item 1 were given
+   symbols too (22 anchored, up from 18).
+3. **A stale ordinal the remap could not see.** Line 43 read "§5 items 1, 3, 4, 7, 8" —
+   plural and comma-separated, so the gate's `item (\d+)` extracted nothing from it and the
+   v31 remap skipped it. It described v16's numbering; rewritten to say so explicitly
+   rather than restated in today's ordinals, because it is a historical note.
+
+The lesson is narrower than v31's and worse: **the self-test was itself an unverified
+claim.** It is only evidence once you have broken the thing it guards and watched it
+object. Four sabotage experiments now accompany it, and each probe pins its own reason.
+
 **ROUND 22 (v31): the renumbering meant to fix nine cross-references broke twenty-seven, and the
 continuation binding fixed across lines was still wrong within one.**
 
@@ -720,8 +762,8 @@ it, and said it could.**
 6. **Three prose defects.** §5 item 1 named three tests broken by the ungated resolver; running the
    mutation shows two, and `reuse: dead` cannot fail (no `wireMcpHandlers`, so `refreshMcpToolMap`
    returns at the nil guard). `start.go:382` pointed at a comment, not the `Warnf` at `:385`.
-   `dbhandler/mcpserver.go:146-149` pointed inside `McpServerUpdate` instead of its declaration at
-   `:134` — an error the v29 note announced catching and never applied.
+   the anchor then written as `mcpserver.go`:146-149 pointed inside `McpServerUpdate` instead of
+   its declaration at `dbhandler/mcpserver.go:134` — an error the v29 note announced catching and never applied.
 
 Lesson recorded: *announcing that a check works is a claim like any other and must be tested with a
 deliberately broken input before it is written down. Three consecutive rounds of this document
@@ -1652,7 +1694,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    else `nil`. **Do NOT modify `resolveActiveAIIDFromAIcall`** — it has six other callers
    (`send.go:78`, `send.go:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
    `start.go:396`) plus a duplicate in `messagehandler/event.go:45`.
-   (b) Reuse branch `start.go:375`: pass its result to `refreshMcpToolMap` instead of the
+   (b) Reuse branch `start.go:375 refreshMcpToolMap`: pass its result to `refreshMcpToolMap` instead of the
    start-member `a`, **but ONLY when `res.AssistanceType == aicall.AssistanceTypeTeam`** — for a
    plain AI aicall `a` already IS the governing AI, and resolving again both adds an RPC and
    breaks two existing tests (verified by running the mutation:
@@ -1661,7 +1703,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    NOT fail and cannot: it sets no `wireMcpHandlers`, so `refreshMcpToolMap` returns at its nil
    guard before reading any AI). On
    `nil`, keep `a` — **never skip the refresh** (skipping is how v21 preserved the stale map).
-   (c) Dispatch `mcp_tool.go:151`: replace `resolveAI` with it, and on `nil` **fail closed**
+   (c) Dispatch `mcp_tool.go:151 resolveActiveAIForMcp`: replace `resolveAI` with it, and on `nil` **fail closed**
    (`fillFailed`). **Do NOT add a `resolveAI` fallback behind it** — the resolver subsumes
    `resolveAI` on every path (the same single fetch for `AssistanceTypeAI`; current-then-start for
    a team, where `resolveAI` tries only the start member; refusal for any other type), so such a
@@ -2114,7 +2156,8 @@ ciphertext is unrecoverable and a downgrade that appears to succeed while restor
 would be worse than the bug. `alembic upgrade` is 대표님's step, not this PR's); that **resolution SKIPS and dispatch REFUSES** a server owned by another customer (D12/D26 — both sites, since dispatch alone is dead code per §3.1); that **a reused team AIcall whose `CurrentMemberID`
 differs from `StartMemberID` builds its `mcp_tool_map` from the CURRENT member's
 whitelist** (D28, resolution side — host: `startReferenceTypeConversation` /
-`refreshMcpToolMap`, and `start_test.go:462` already exercises this path); **[COVERED — `helpers_test.go` `Test_aicallHandler_resolveActiveAIForMcp`, 13 subtests;
+`refreshMcpToolMap`, and `start_test.go:465 Test_startReferenceTypeConversation` already
+exercises this path); **[COVERED — `helpers_test.go:557 Test_aicallHandler_resolveActiveAIForMcp`, 13 subtests;
 `mcp_tool_test.go` `Test_toolHandleMcpCall_team`, 5 subtests]** that **BOTH degraded modes at
 BOTH sites resolve via the START member and do not fail the call: (i) `CurrentMemberID` absent
 from the team, and (ii) the current member IS present but its `aiHandler.Get` fails** — plus
