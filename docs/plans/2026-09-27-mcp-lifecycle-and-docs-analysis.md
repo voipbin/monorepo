@@ -1,12 +1,12 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v30, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v31, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v30, Analysis Review Loop round 22 pending
+Status: v31, Analysis Review Loop round 23 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
-(1 blocking, PR A ↔ PR C boundary → D21 + §5 item 11).
+(1 blocking, PR A ↔ PR C boundary → D21 + §5 item 9).
 Round 8: **BOTH tracks CHANGES_REQUESTED.** Fact-check refuted v10's "the PUT path
 performs no pre-write `AIGet`"; adversarial found the **fourth instance** of the
 recurring failure mode in §5 item 5 (D22).
@@ -20,10 +20,10 @@ Insight AIs may use MCP servers. No AI-type gate is added anywhere, which **void
 D13, D22 and D23 outright** (retained in §3.12b/§3.12e as recorded instances of the
 failure mode, marked VOIDED and out of scope). Five rounds of gate design collapse into
 one docs sentence. D18 is re-scoped: it no longer rides on a signature rewrite.
-v9: 대표님 resolved §5 item 11 and §5 item 8. v10: §5 item 5 and §5 item 6. v12: §5 item 5(i)/(ii), now withdrawn.
+v9: 대표님 resolved §5 item 9 and §5 item 8. v10: §5 item 5 and §5 item 6. v12: §5 item 5(i)/(ii), now withdrawn.
 Round 10: **both tracks CHANGES_REQUESTED.** Fact-check confirmed the v15 external
 claims (PyPI/GitHub, D24) but found the D16 justification false. Adversarial found the
-**SIXTH instance (D25)**: this document's own §5 item 11 exemption, implemented as it mandated,
+**SIXTH instance (D25)**: this document's own §5 item 9 exemption, implemented as it mandated,
 disables the only ownership check on the whitelist → consume path.
 
 Round 11: **both tracks CHANGES_REQUESTED.** Fact-check confirmed the D25 fix is sound
@@ -113,6 +113,17 @@ reading the AI. The fact-checker found §5 item 1(c) still prescribing the delet
 surviving pre-fix `mcp_tool.go` anchors, three stale subtest counts, and §3.5c's heading still
 announcing a live BLOCKER. See §3.5c v27.
 
+Round 22: **both tracks CHANGES_REQUESTED; the Go code clean for a third consecutive round.**
+Eleven mutations, eleven caught, including D28 itself and the fail-closed dispatch. Test counts,
+fail-closed prescription, declined reorder and five spot-checked defects (D1, D15, D17, D20, D25)
+all verified against real code. Both reviewers independently converged on the same two defects,
+both mine, both in the document layer: the §5 renumbering used a prefix-unsafe string replacement
+that left 27 cross-references on the old ordinals while the list moved beneath them, and the
+continuation binding — fixed across wrapped lines the round before — still bound to the last path
+on a line rather than the nearest preceding one, mis-binding twelve references including the SSRF
+row and §5 item 1's caller list. Both were hand-edit classes with no mechanical check; the gate now
+derives §5's item count from the rendered list and binds continuations by offset. See §3.5c v31.
+
 Round 21: **both tracks CHANGES_REQUESTED; the Go code passed cleanly and every blocking finding
 was again in the tooling.** Ten mutations, ten caught; subsumption independently re-derived over
 1152 shapes with zero regressions; both rewritten comments verified true by execution; §7's subtest
@@ -125,7 +136,7 @@ fixed; the documented bare invocation failed in every worktree; the summary coun
 §5 item 1 named three tests broken by the ungated resolver where the mutation shows two. Repairing
 the continuation binding then exposed **five genuine out-of-range citations and 26 mis-bound
 references that twenty rounds and two adversarial reviewers had never seen**, three of them inside
-§5 item 1. See §3.5c v30.
+§5 item 1. See §3.5c v31.
 
 Round 20: **both tracks CHANGES_REQUESTED, and this time the anti-drift mechanism itself was the
 defect.** The code was confirmed correct by ten independent mutations, all caught. Every blocking
@@ -251,7 +262,7 @@ separately.
   with the full row — a path NO dbhandler-level gate can reach.
 - **D21** An AI holding a deleted MCP server id must stay saveable. Write-time
   validation **skips ids already in the stored whitelist and rejects only newly added
-  ones** (§5 item 11, 대표님 확정). Without the skip, every save of that AI 400s forever,
+  ones** (§5 item 9, 대표님 확정). Without the skip, every save of that AI 400s forever,
   for any unrelated edit; without the reject, attaching a deleted server fails
   silently. This is a PR A ↔ PR C cross-boundary defect that neither PR sees alone.
 - **D25** The D21 exemption above, as v12-v15 mandated it (filter the incoming id list,
@@ -413,7 +424,7 @@ tool only the start member whitelists is ACCEPTED for the current member.
 `h.aiHandler.Get(...)` at `:104`, not from `resolveAI`'s team branch. Teams never
 reach `:225`.
 
-### 3.5a D25: this document's own §5 item 11 exemption disables the whitelist path's only ownership check. CONFIRMED. BLOCKER.
+### 3.5a D25: this document's own §5 item 9 exemption disables the whitelist path's only ownership check. CONFIRMED. BLOCKER.
 
 **SIXTH instance of the recurring failure mode**, and the first one that is a security
 regression rather than a usability one. Unlike D22/D23 it was not introduced by a
@@ -429,7 +440,7 @@ for _, id := range ids {
     if srv == nil || srv.CustomerID != customerID { // :50  OWNERSHIP
 ```
 
-§5 item 11 grants already-stored ids an exemption so that a soft-deleted-but-held id cannot
+§5 item 9 grants already-stored ids an exemption so that a soft-deleted-but-held id cannot
 freeze the AI (D21). v12-v15 additionally claimed the exemption needs **"zero extra DB
 reads and no signature change"**, explicitly retracting an earlier draft that asked for
 a parameter. But with no signature change the function cannot see the stored list, so
@@ -452,7 +463,7 @@ This is the document's own closing lesson (the retrospective lessons, "an exempt
 predicate does not cover another") applied backwards: an exemption written for the
 `tm_delete` predicate was allowed to cover existence and ownership as well.
 
-**Resolution (v16), decided in §5 item 11:** `ValidateMcpServerIDs` gains a `storedIDs`
+**Resolution (v16), decided in §5 item 9:** `ValidateMcpServerIDs` gains a `storedIDs`
 parameter; existence and ownership run for every id, and only the `tm_delete` rejection
 consults `storedIDs`. One signature change, still zero extra DB reads. §7 gains the
 assertion that **an already-stored id owned by another customer is still rejected** —
@@ -500,12 +511,12 @@ itself in §3.3), `complete.go:68` guards the state row, and
 surface. The accurate and still-sufficient claim is that it is **the only ownership check
 on the AI-whitelist → consume path**. Corrected wherever it appeared.
 
-### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v30 notes at the end of this section; the NEWEST is v30.**
+### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v31 notes at the end of this section; the NEWEST is v31.**
 
 > **Reading order.** Everything between here and the v24 note is the ORIGINAL DIAGNOSIS,
 > written in the present tense while the defect was live, and kept as the record of how four
 > prose prescriptions went wrong. It does NOT describe the current code. For what the code
-> does now, and for what an implementer must not undo, read the v30 note (the newest) and §5 item 1.
+> does now, and for what an implementer must not undo, read the v31 note (the newest) and §5 item 1.
 
 **EIGHTH instance**, and the third in a row created by a fix-up edit. D26 corrected the
 ownership half of D12 from dispatch to resolution. It did not look at the **member**
@@ -603,7 +614,7 @@ paragraph that prescribed it.
 discards (it returns `error`), so it costs either a signature change or a third
 `teamHandler.Get` — which v22's own clause (d) forbids. "Give the helper the same fallback"
 touches `resolveActiveAIIDFromAIcall`, which has **six other callers**
-(`send.go:78`, `:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
+(`send.go:78`, `send.go:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
 `start.go:396`) driving message attribution, **plus a duplicate copy in
 `messagehandler/event.go:45`** that would silently diverge. v22 called that "one place, one
 behaviour" without enumerating any of it.
@@ -651,6 +662,34 @@ passed their target defects.*
 
 **Earlier note (v29), retained as the record of round 20's response.**
 
+**ROUND 22 (v31): the renumbering meant to fix nine cross-references broke twenty-seven, and the
+continuation binding fixed across lines was still wrong within one.**
+
+1. **A prefix-unsafe string replacement.** §5 was renumbered old→new (9→6, 10→7, 6→8, 11→9, 7→10,
+   8→11) by replacing `item N` left to right. `item 1`→`item 1` ran first and consumed the `item 1`
+   inside `item 11`, so all 24 D21 references and all 3 D20/D15 references kept the OLD ordinal
+   while the list around them moved. An implementer sent to "§5 item 11" for the `storedIDs`
+   parameter would have landed on the D14 docs item. **The edit that fixed nine references broke
+   twenty-seven.** Remapped correctly, protecting the one reference that genuinely means the new
+   item 11.
+2. **Continuations bound to the LAST path on the line, not the nearest preceding one.** Round 21
+   fixed carry ACROSS wrapped lines and left binding WITHIN a line last-wins, so a bare `:N`
+   written between two citations attached to the wrong file. Twelve live instances, two of them
+   load-bearing (`handler.go:146-150`, the SSRF row an implementer reads before deciding not to add
+   URL validation, and `send.go:106`, inside §5 item 1's caller list). Now bound by offset to the
+   nearest preceding path.
+3. **The gate now checks §5's own numbering.** It derives the item count from the rendered list,
+   fails on any `item N` beyond it, and warns on any ordinal nothing references — the exact
+   fingerprint of a half-finished remap. Verified by probe: a two-item section referenced as
+   `item 7` exits 1. Both defects above were hand-edit classes with no mechanical check; this
+   closes the second one and the offset binding closes the first.
+
+Lesson recorded: *a bulk renumbering by string replacement is prefix-unsafe by construction. Guard
+the longer token first, or key the replacement on a parsed ordinal, and add the invariant to the
+gate in the same commit.*
+
+**Earlier note (v30), retained as the record of round 21's response.**
+
 **ROUND 21 (v30): the fix for "the gate cannot see drift" shipped a gate that still could not see
 it, and said it could.**
 
@@ -672,7 +711,7 @@ it, and said it could.**
    carries across wrapped lines and drops at paragraph and heading boundaries. Making them
    verifiable immediately surfaced **26 mis-bound references and five genuine out-of-range
    citations** that twenty rounds of review, including two adversarial reviewers this round, never
-   saw: two ais_detail.test.js references to lines 831 and 840 of a 730-line file (real lines 695
+   saw: two ais_detail.test.js references to lines 831 and 840 of a 729-line file (real lines 695
    and 721) and
    three `mcp_tool.go` references bound to `identity.go`, **inside §5 item 1**.
 5. **Substring anchors pinned nothing.** `resolveActiveAI` matched `resolveActiveAIIDFromAIcall`.
@@ -714,7 +753,7 @@ path, and its comment claimed protection that did not exist.**
    strengthened to match it: the start-member AI now really does whitelist a different, unexpected
    server, so both mechanisms (unexpected fetch and empty tool map) are genuinely live.
 4. Citations: this commit's comment expansion shifted `mcp_tool.go` again, leaving five anchors on
-   a bare `return res` including one inside §5 item 1. Re-derived mechanically: `:157`→`:160`,
+   a bare `return res` including one inside §5 item 1. Re-derived mechanically: `mcp_tool.go:157`→`mcp_tool.go:160`,
    `:157-174`→`:160-176`, `:245`→`:248`, `start.go:1180`→`:1184`. Two stale subtest totals fixed
    (the v25 note restored to its historically correct 15; §8 corrected to 18).
 
@@ -731,9 +770,11 @@ Mechanism now in place, and now actually load-bearing:
         --extra-root ~/gitvoipbin/monorepo-javascript \
         --extra-root ~/gitvoipbin/monorepo-monitoring
 
-It resolves every citation (including `:N,M` and bare `:N` continuations), verifies symbol-anchored
-ones against the landed line, validates every commit-like token, and warns on landings on blank
-lines and lone braces. Run it before committing ANY revision. When you touch an anchor, give it a
+It resolves every citation (including `:N,M` and bare `:N` continuations, bound to the nearest
+PRECEDING path), verifies symbol-anchored ones against the landed line on a word boundary,
+validates every commit-like token, checks §5's own item numbering against the rendered list, and
+warns on landings on blank lines, lone braces and comments. Run `--self-test` first: it replays the
+probes that refuted three earlier versions of this gate and fails if any stops being caught. Run it before committing ANY revision. When you touch an anchor, give it a
 symbol anchor rather than a bare line number: bare numbers are the form that drifted six times.
 
 **Earlier note (v27), retained as the record of the fourth implementation round.**
@@ -1043,7 +1084,7 @@ IS a `Create` parameter and IS validated inside the write.
 **v14:** the earlier argument here — that D13's type gate rewrites this signature
 anyway, making the reordering nearly free — is withdrawn with D13 (§5 item 5). D18 now
 stands alone: the orphan path is still real, but PR A must justify the reordering on
-its own merits. §5 item 11's diff logic touches the same two blocks, which is the remaining
+its own merits. §5 item 9's diff logic touches the same two blocks, which is the remaining
 reason to do it here.
 
 ### 3.7e D19: the RST documents a timestamp sentinel this resource does not use. CONFIRMED.
@@ -1130,7 +1171,7 @@ caller can probe which ids exist by varying only the URL's validity).
 
 The gate must precede all three validations.
 
-**Error code choice (must be decided, §5 item 10).** Both candidates terminate at 404,
+**Error code choice (must be decided, §5 item 7).** Both candidates terminate at 404,
 so there is no 500 anywhere — verified plumbing:
 - bare `dbhandler.ErrNotFound` → `listenhandler/main.go:194-195` →
   `requesthandler.ErrNotFound` → `server/error_translate.go:83-84` → **404
@@ -1289,7 +1330,7 @@ customer-facing dead end. Traced forward through square-admin:
 5. **The user gets no hint why.** `ais_detail.js:551-553` computes dirtiness by
    comparing old vs new whitelist, so the dead id never marks the whitelist section
    dirty. The failure surfaces while editing something else, as the generic
-   "Could not update the AI configuration" at `:445`.
+   "Could not update the AI configuration" at `ais_detail.js:445`.
 6. **D18 compounds it.** `aiHandler.Update` at `v1_ais.go:247` has **already
    committed** before validation runs, so the unrelated edits persist while the user
    is told the save failed. If §5 item 5's recommendation (move validation ahead of the
@@ -1303,7 +1344,7 @@ and D20): a fix traced only to its own layer, never forward to the surface that
 consumes it. Here the two layers are in **different repositories**, which is why
 five rounds of review missed it.
 
-**Resolution is a decision, not an implementation detail — RESOLVED in §5 item 11:**
+**Resolution is a decision, not an implementation detail — RESOLVED in §5 item 9:**
 skip the DELETED-row rejection for ids already in the stored whitelist (existence and ownership still run — D25), reject ids newly added. The diff is free
 because `tmp.McpServerIDs` at `v1_ais.go:272` is still the unmodified stored list
 (`aiHandler.Update` at `:247` does not take `McpServerIDs`). With that, none of the
@@ -1345,7 +1386,7 @@ Insight sessions reach this through `insight_session.go:104` → `:143`. Combine
 `ListTools`-calling those servers forever. §7's promised test ("`TypeInsight` cannot
 whitelist an MCP server") would pass while the policy is unenforced in production.
 
-**(b) It reintroduces D21 verbatim, and §5 item 11's skip does NOT cover it.** §5 item 11 exempts
+**(b) It reintroduces D21 verbatim, and §5 item 9's skip does NOT cover it.** §5 item 9 exempts
 already-stored ids from the **deleted-server** predicate only. The type predicate is
 different, so the exemption does not apply. In square-admin:
 
@@ -1364,7 +1405,7 @@ card at `:1238` is rendered with **no `aiType` condition** — unlike
 `AIEngineFields.js:301`/`:320`, which do gate tool sets on `aiType === 'insight'`. So a
 customer flipping an existing AI to Insight sends `type: "insight"` plus a non-empty
 `mcp_server_ids` and receives a hard 400 behind the generic "Could not update the AI
-configuration" (`:445`). The dead end is identical to D21 and lands in the repo PR A
+configuration" (`ais_detail.js:445`). The dead end is identical to D21 and lands in the repo PR A
 does not touch.
 
 Resolution: **none needed — VOIDED in v14.** 대표님 reversed the policy, so no gate is
@@ -1393,7 +1434,7 @@ are load-bearing UI facts that PR A's tests do not pin.** If either changes, the
 breaks. Record them, and assert the transition semantics in a backend test rather than
 relying on the form's option list.
 
-### 3.12d §5 item 11 implementation constraints (non-blocking, but must be written down)
+### 3.12d §5 item 9 implementation constraints (non-blocking, but must be written down)
 
 - **The exemption is a predicate-scoped condition INSIDE the validator, not a filtered
   input list (D25, §3.5a).** `ValidateMcpServerIDs` receives the full incoming list plus
@@ -1434,7 +1475,7 @@ gate by the offending request*.
 
 **(a) A type flip that OMITS the whitelist bypasses the gate entirely.** Both call
 sites of `ValidateMcpServerIDs` sit inside `if req.McpServerIDs != nil`
-(`v1_ais.go:117` and `:272`) — §5 item 11's own table codifies "field omitted → no
+(`v1_ais.go:117` and `:272`) — §5 item 9's own table codifies "field omitted → no
 validation". So:
 
 ```
@@ -1456,7 +1497,7 @@ an already-Insight AI.** Meanwhile §5 item 5(ii)'s other half hides the MCP car
 so there is no picker and no `toggleMcpServer` to remove `[X]`. `:421` still submits
 `mcp_server_ids` unconditionally (pinned by `__tests__/ais_detail.test.js:690-726`), so
 every subsequent save is a non-empty whitelist on an Insight AI → 400 → generic "Could
-not update the AI configuration" (`:445`). Save is not dirty-gated (`__tests__/ais_detail.test.js:695`, `__tests__/ais_detail.test.js:721`
+not update the AI configuration" (`ais_detail.js:445`). Save is not dirty-gated (`__tests__/ais_detail.test.js:695`, `__tests__/ais_detail.test.js:721`
 disable only on `isSaving`/`isDeleting`), so any unrelated edit hits it. **This is D21's
 freeze reconstructed by the fix for D22.**
 
@@ -1494,10 +1535,10 @@ anything below.**
 
 | Area | Finding |
 |---|---|
-| SSRF / URL validation | `ValidateURL` IS applied on both write paths: `mcpserverhandler/handler.go:38` (Create) and `:146-150` (Update, under `if url != nil`). Literal private/loopback/link-local addresses are rejected (`ssrf.go:31-57`, `rejectDisallowedIP:63-77`), and the DNS-rebinding case is closed at dial time by `controlRejectDisallowedAddr` (`ssrf.go:117-133`) via the shared guarded client (`mcptoolhandler/client.go:140-144`). **Nothing for PR A to add** beyond §5 item 10's precedence fix |
+| SSRF / URL validation | `ValidateURL` IS applied on both write paths: `mcpserverhandler/handler.go:38` (Create) and `mcpserverhandler/handler.go:146-150` (Update, under `if url != nil`). Literal private/loopback/link-local addresses are rejected (`ssrf.go:31-57`, `rejectDisallowedIP:63-77`), and the DNS-rebinding case is closed at dial time by `controlRejectDisallowedAddr` (`ssrf.go:117-133`) via the shared guarded client (`mcptoolhandler/client.go:140-144`). **Nothing for PR A to add** beyond §5 item 7's precedence fix |
 | Key rotation | **No rotation or re-encryption job exists anywhere in the repo.** Rotation is config-side and decrypt-by-row-version (`mcpserverhandler/secret.go:123-130`, `NewSecretCrypto:79-89`); nothing iterates rows, so zeroed rows would be encountered by no job. Credential zeroing is safe on this axis |
 | Caller-set completeness | Full non-test, non-mock enumeration. `db.McpServerUpdate`: exactly 3 callers (`mcpserverhandler/handler.go:206`, `mcpoauthhandler/access_token.go:108`, `mcpoauthhandler/complete.go:126`) — all named in §5 item 1/§6. `db.McpServerDelete`: exactly 1 (`handler.go:226`) — named. `db.McpServerGet`: 10; the three not named in this analysis (`handler.go:82`, `complete.go:129`, `complete.go:161`) are post-write read-backs of a row the same function just wrote, harmless once `:126` is gated. **No caller of consequence is unmentioned** |
-| Concurrency | No transaction or row lock on any mcpserver path — `McpServerDelete` is a bare UPDATE, unlike `dbhandler/ai.go:243`+`:294` and `dbhandler/aipromptproposal.go:227`+`:253` which use `BeginTx` + `FOR UPDATE`. For delete-vs-tool-call, the fail-closed re-read per call (`client.go:191`, `:214`) is **sufficient**: the residual window is at most one already-dispatched outbound request. **No transaction warranted.** State this bound in the PR body, since `mcpservers_detail.js:496` promises immediacy |
+| Concurrency | No transaction or row lock on any mcpserver path — `McpServerDelete` is a bare UPDATE, unlike `dbhandler/ai.go:243`+`dbhandler/ai.go:294` and `dbhandler/aipromptproposal.go:227`+`dbhandler/aipromptproposal.go:253` which use `BeginTx` + `FOR UPDATE`. For delete-vs-tool-call, the fail-closed re-read per call (`client.go:191`, `:214`) is **sufficient**: the residual window is at most one already-dispatched outbound request. **No transaction warranted.** State this bound in the PR body, since `mcpservers_detail.js:496` promises immediacy |
 | Tool-path error surface | `toolHandleMcpCall` converts every failure into a generic `fillFailed(...)` tool result (`mcp_tool.go:137-174`), so gating never leaks a status code to a customer through the AI path |
 
 ### 3.14 Other surfaces
@@ -1609,7 +1650,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    (a) Add `resolveActiveAIForMcp(ctx, c *aicall.AIcall) *ai.AI`: current member's AI, else
    the START member's AI on ANY failure (member absent, AI fetch error, team fetch error),
    else `nil`. **Do NOT modify `resolveActiveAIIDFromAIcall`** — it has six other callers
-   (`send.go:78`, `:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
+   (`send.go:78`, `send.go:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
    `start.go:396`) plus a duplicate in `messagehandler/event.go:45`.
    (b) Reuse branch `start.go:375`: pass its result to `refreshMcpToolMap` instead of the
    start-member `a`, **but ONLY when `res.AssistanceType == aicall.AssistanceTypeTeam`** — for a
@@ -1836,7 +1877,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    removes the signature rewrite that made this "nearly free", so D18 now stands on its
    own merits. It is still worth doing — an orphaned AI on a rejected whitelist is a
    real defect — but it is now an independent change, and the design doc may legitimately
-   defer it. Recommend still fixing it in PR A, since D21/§5 item 11's diff logic touches the
+   defer it. Recommend still fixing it in PR A, since D21/§5 item 9's diff logic touches the
    same two blocks anyway.
 
    **Where the validation must move, if D18 is taken.** `aihandler/chatbot.go:135-139`
@@ -1845,7 +1886,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    so reordering costs no extra read **provided validation moves INTO
    `aiHandler.Update`**, where `preUpdateAI.McpServerIDs` is in hand. Merely swapping
    the two statements in `v1_ais.go` does not work: that frame has no row read, so
-   §5 item 11's diff would lose the stored whitelist it compares against and force a second
+   §5 item 9's diff would lose the stored whitelist it compares against and force a second
    `AIGet`. D18 also destroys `tmp.CustomerID` (passed today at `v1_ais.go:118`,
    `:273`), so the POST path must use the request's customer id and the PUT path must
    take it from `preUpdateAI`.
@@ -1882,14 +1923,14 @@ Redis cache (§3.9), because there is no measured signal for it.
    but the oauth branch resolves its credential through
    `oauthHandler.GetValidAccessToken` (`client.go:98-101`), which fails on an empty
    access token. The customer sees a healthy-looking server whose tools never fire,
-   with nothing on the API surface explaining why. **Same class as §5 item 11's
+   with nothing on the API surface explaining why. **Same class as §5 item 9's
    silent-attach:** a write that succeeds and does nothing.
 
    **Implementation constraints for the design doc:**
    - Gate `mcpserverhandler.Create`/`Update`, **not** `AuthType.IsValid()` — the
      OAuth completion path legitimately writes `oauth` internally
      (`mcpoauthhandler/complete.go:136-158`) and must keep passing model validation.
-   - Follow §5 item 11's shape: **validate the transition, not the value.** A server that
+   - Follow §5 item 9's shape: **validate the transition, not the value.** A server that
      legitimately completed OAuth must stay editable — a PUT changing only `name`
      that re-submits `auth_type: "oauth"` unchanged must NOT 400. Reject only when the
      request *moves* a row into `oauth`. Without this the gate reproduces D21's freeze
@@ -1922,9 +1963,9 @@ Redis cache (§3.9), because there is no measured signal for it.
    `handler.go:206` (mirroring `Get:96-101`), or the gate path and the TOCTOU race
    path return two different codes for the same condition.
 8. **Does PR A prune stale ids from `ai.mcp_server_ids` on delete?** **RESOLVED: no.**
-   §5 item 11's skip-not-reject removes the reason pruning existed (D21's frozen AI), and the
+   §5 item 9's skip-not-reject removes the reason pruning existed (D21's frozen AI), and the
    loop's own costs (no transaction on `McpServerDelete`, un-indexed JSON column, one
-   `ai_updated` webhook per affected AI) are real. See §5 item 11's "Rejected alternatives."
+   `ai_updated` webhook per affected AI) are real. See §5 item 9's "Rejected alternatives."
 9. **D21 (RESOLVED — 대표님 확정): what happens when an AI's whitelist already
    contains a deleted id?** **Decision: skip what is already there, reject what is
    newly added.** ("skip-not-reject 방식으로 하자." + "이후에 AI 업데이트를 할 때
@@ -2031,11 +2072,11 @@ Redis cache (§3.9), because there is no measured signal for it.
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
 | A foreign customer's MCP server id, once stored, is used at resolution with its decrypted credential on an outbound request | **High** | D25 (§3.5a) + D26 (§3.5b) — the exemption must be predicate-scoped (`storedIDs` param), AND ownership must be asserted at resolution, not only at the dead dispatch path. Both need §7 assertions or the regression is silent |
 | Credentials on rows soft-deleted before the deploy are never zeroed, and re-deleting reports 200 while zeroing nothing | **Medium** | D27 — **RESOLVED**, §5 item 2: one-off Alembic data migration over all seven credential columns. Residual: the affected-row count is unmeasured, so the PR body must not claim an impact figure until 대표님 runs the count |
-| An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 item 11**: skip the deleted-row rejection for already-stored ids (existence + ownership still enforced, D25), reject only newly added ones. Both directions must be unit-tested (§7) |
+| An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 item 9**: skip the deleted-row rejection for already-stored ids (existence + ownership still enforced, D25), reject only newly added ones. Both directions must be unit-tested (§7) |
 | Gating OAuth `Complete` discards a freshly-minted vendor grant: `complete.go:84` deletes the state row and `:88` completes the token exchange BEFORE `:126`, so VoIPBin holds a live GitHub/Linear token and drops it unrevoked | Medium | Preferable to writing onto a deleted row, but the orphaned vendor-side grant must be acknowledged in the PR body (and revocation considered) |
 | `PUT {}` on a deleted server returns 200 with the row because `mcpserverhandler.Update` short-circuits to `h.Get` before any DB write; NO dbhandler gate reaches it | **High** | D20 (§3.7f). Gate inside `mcpserverhandler.Update` ahead of the `len(fields)==0` branch AND ahead of `ValidateURL` |
 | An implementer gates `mcpserverhandler.Get` to fix the above and breaks the GET-after-DELETE 200 contract | **High** | §3.7h names its four contradictory consumers; §5 item 1 forbids it explicitly; defense-in-depth gates go in `mcp_tool.go` |
-| Validation precedes existence, so a deleted row answers 400 `INVALID_MCP_SERVER_URL` on a malformed URL — inconsistent, and a weak existence oracle | Medium | D20 corollary (§3.7g) / §5 item 10 |
+| Validation precedes existence, so a deleted row answers 400 `INVALID_MCP_SERVER_URL` on a malformed URL — inconsistent, and a weak existence oracle | Medium | D20 corollary (§3.7g) / §5 item 7 |
 | Gating `McpServerUpdate` yields a SILENT 200 + spurious `EventTypeUpdated` instead of a rejection, because `RowsAffected` is discarded (`dbhandler/mcpserver.go:154-156`); the same defeats the OAuth Complete gate | **High** | D15 (§3.7a). PR A must return `ErrNotFound` on zero rows; §7's rejection tests are otherwise unachievable |
 | Making `McpServerUpdate` honor `RowsAffected` changes behavior for EVERY existing caller, notably `access_token.go:101-108` token rotation | **High** | §5 item 1; enumerate all callers and add a test per caller for the new error path |
 | `auth_type: "oauth"` settable via POST/PUT with a secret the oauth path ignores, producing an undiagnosable broken server; no OpenAPI validator middleware exists to catch it | **High** | D17 (§3.7c) / §5 item 6 |
@@ -2045,7 +2086,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Coverage for `mcp_server_ids` on `POST /ais` is Go-unit-only, no end-to-end | Medium | §5 item 4 (deferred behind ETC-18) |
 | `GetValidAccessToken`'s error surface changes once `McpServerUpdate` is gated | Low | Desired behavior; needs an explicit test (§7) |
 | PR A "breaks" a customer whose AI depends on a deleted-but-working server | Low | No customer AI can be *calling* those tools today (§3.1); breakage is limited to stopping the unwanted `ListTools` round trip. Note it in the PR body |
-| Field Sync Points drift recurs | Low | Update all four sites + amend the table in PR C |
+| Field Sync Points drift recurs | Low | Update all four sites + amend the table in PR C (§5 item 10) |
 | Teamgraph AI panels are inline, not the shared component | Low | Accept the duplication to match the file's pattern; do not refactor mid-task |
 | PR C lands in the dead nav/layout generation | Low | No nav change needed; `/resources/mcpservers/*` routes already live (`routes.js:333-336`, `_nav.js:239`). Changes are inside existing AI forms only |
 
@@ -2055,7 +2096,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 test ./... && golangci-lint run -v --timeout 5m` in `bin-ai-manager`. New unit
 tests proving a soft-deleted server is: skipped in resolution, refused in dispatch,
 refused in transport, rejected by `ValidateMcpServerIDs` **when newly added and
-skipped when already stored** (§5 item 11 — assert BOTH directions: a PUT adding a
+skipped when already stored** (§5 item 9 — assert BOTH directions: a PUT adding a
 deleted id 400s, and a PUT that merely re-submits an already-stored deleted id
 succeeds). **New in v16 (D25), MANDATORY:** a test that a PUT re-submitting an
 **already-stored id owned by a DIFFERENT customer is still rejected** — the
@@ -2120,7 +2161,7 @@ that a malformed-URL PUT on a deleted row returns the gate's 404, not 400
 error and falls through to the read-back, so this asserts the mechanism, not just the
 status code); and that `mcpserverhandler.Get` is NOT gated, i.e.
 `v1_mcpservers.go:142`'s customer GET still answers 200 while `mcp_tool.go:73`/`:160`
-fail closed. **New in v8 (D21), per §5 item 11:** a test that an
+fail closed. **New in v8 (D21), per §5 item 9:** a test that an
 existing AI holding a deleted MCP server id can still be saved when editing an
 unrelated field (name/prompt/engine) — this is the regression that freezes customer
 AIs, and it spans both repos, so PR C must exercise it in a real browser against a
@@ -2138,10 +2179,10 @@ test gate; `npm run build`; production build served and verified in a real brows
 (reviews and RTL do not catch unmount races — 대표님 has repeatedly found real bugs
 this way after green reviews). Verified no existing test breaks: `ais_create.test.js:157`
 is a blanket `ProviderGet.mockResolvedValue`, `:320/:380/:398/:431` use
-`expect.objectContaining`, `:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
+`expect.objectContaining`, `ais_create.test.js:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
 asserts only the PUT body. All four form bodies (§4) must be exercised.
 
-## 8. Retrospective (twenty-one rounds)
+## 8. Retrospective (twenty-two rounds)
 
 **v1** asserted "exactly ONE grep hit" and "no `mcpserver*.rst` files exist." Both
 false. Root cause: a case-sensitive `grep mcp` that missed uppercase `MCP`, written
@@ -2387,7 +2428,7 @@ Lessons now in effect:
   (D22).
 - **Every new rejection predicate needs its own frontend trace; an exemption written
   for one predicate does not cover another.** Round 10 proved this lesson was written
-  and then violated in the same document: §5 item 11's exemption was implemented as a filter on
+  and then violated in the same document: §5 item 9's exemption was implemented as a filter on
   the id LIST, which silently exempted existence and ownership along with `tm_delete`
   (D25, §3.5a). **Write exemptions as predicate-scoped conditions inside the validator,
   never as a narrowed input set** — a narrowed input set cannot express "skip check A but
@@ -2415,6 +2456,6 @@ Lessons now in effect:
   Cross-check every prescribed enforcement point against this document's own reachability
   findings before calling a defect closed.
 
-  (superseded, kept for the record) §5 item 11's skip exempts already-stored ids
+  (superseded, kept for the record) §5 item 9's skip exempts already-stored ids
   from the deleted-server check, and that exemption gave false comfort about the type
   check, which is a different predicate hitting the same unconditional PUT body.

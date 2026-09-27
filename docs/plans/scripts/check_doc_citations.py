@@ -184,11 +184,70 @@ def is_external(cited):
     return any(hint in cited for hint in EXTERNAL_HINTS)
 
 
+# Each probe is a document this gate MUST reject (or, for the two marked 0,
+# must accept). Three consecutive rounds of this document shipped a check that
+# silently passed the very defect it was written to catch, so the gate now
+# ships with the probes that refuted it.
+SELF_TEST_PROBES = [
+    (1, "cross-repo bogus line",
+     "`square-admin/src/views/ais/ais_detail.js:999999`"),
+    (1, "api-validator bogus line",
+     "`api-validator/tests/test_ai_lifecycle.py:999999`"),
+    (1, "substring anchor pins nothing",
+     "`bin-ai-manager/pkg/aicallhandler/helpers.go:21 resolveActiveAI`"),
+    (1, "range END drifted",
+     "`bin-ai-manager/pkg/aicallhandler/helpers.go:194-999 resolveActiveAIForMcp`"),
+    (1, "continuation binds to nearest PRECEDING path",
+     "`bin-common-handler/models/identity/identity.go:9` and `:73` then "
+     "`bin-ai-manager/pkg/aicallhandler/mcp_tool.go:52`"),
+    (1, "nonexistent commit", "commit `deadbeefcafe1` did it"),
+    (1, "reference beyond the last section 5 item",
+     "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee item 7.\n"),
+    (0, "correct anchor must PASS",
+     "`bin-ai-manager/pkg/aicallhandler/start.go:375 refreshMcpToolMap`"),
+    (0, "correct cross-repo citation must PASS",
+     "`square-admin/src/views/ais/ais_detail.js:421`"),
+]
+
+
+def self_test(doc):
+    """Run the gate against its own probes. Exit non-zero if any misbehaves."""
+    probe = os.path.join(os.path.dirname(os.path.abspath(doc)),
+                         "_gate_self_test.md")
+    failures = 0
+    try:
+        for want, name, body in SELF_TEST_PROBES:
+            with open(probe, "w", encoding="utf-8") as fh:
+                fh.write(body if body.endswith("\n") else body + "\n")
+            got = subprocess.run(
+                [sys.executable, os.path.abspath(__file__), probe],
+                capture_output=True, text=True,
+            ).returncode
+            ok = (got != 0) == (want != 0)
+            failures += 0 if ok else 1
+            print("%-5s %-50s exit=%d want%s0"
+                  % ("ok" if ok else "FAIL", name, got,
+                     "!=" if want else "=="))
+    finally:
+        if os.path.exists(probe):
+            os.remove(probe)
+    print("\n%s: %d/%d probes behaved correctly."
+          % ("PASS" if not failures else "FAIL",
+             len(SELF_TEST_PROBES) - failures, len(SELF_TEST_PROBES)))
+    return 1 if failures else 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("doc")
     ap.add_argument("--verbose", action="store_true",
                     help="print the source line every citation lands on")
+    ap.add_argument("--self-test", action="store_true",
+                    help="run the gate against deliberately broken probe "
+                         "documents and verify it FAILS each one. Three "
+                         "rounds shipped a check that silently passed its "
+                         "own target defect; run this before trusting a "
+                         "green result.")
     ap.add_argument("--strict-anchors", action="store_true",
                     help="fail when any citation lacks a symbol anchor")
     ap.add_argument("--extra-root", action="append", default=[],
@@ -197,6 +256,9 @@ def main():
                          "(repeatable; e.g. ../monorepo-javascript). Defaults "
                          "to the sibling repos this document cites.")
     args = ap.parse_args()
+
+    if args.self_test:
+        return self_test(args.doc)
 
     doc_path = os.path.abspath(args.doc)
     root = repo_root(os.path.dirname(doc_path))
@@ -274,7 +336,10 @@ def main():
                             % (doc_line, cited, num, stripped[:100]))
 
     last_path = None
+    carried_span = None
     for doc_line, line in enumerate(text.split("\n"), start=1):
+        # Paths cited on THIS line, with the offset where each appears.
+        path_spans = []
         # Prose wraps, so a bullet may cite the path on one line and continue
         # with bare `:N` on the next. Carry the path across wrapped lines and
         # drop it at a paragraph or heading boundary, where a new subject
@@ -304,6 +369,10 @@ def main():
                 last_path = None
                 continue
             last_path = (cited, path)
+            # Record WHERE this path was cited, so a bare `:N` later on the
+            # line binds to the path that precedes it rather than to whichever
+            # path happens to come last. Prose means "nearest preceding".
+            path_spans.append((match.start(), cited, path))
             # A symbol anchor counts only when it sits INSIDE the code span:
             # `start.go:375 refreshMcpToolMap`. Prose after a closing backtick
             # is not an anchor.
@@ -317,18 +386,50 @@ def main():
                 check_one(doc_line, cited, path, int(match.group("end")), symbol)
 
         conts = list(CONTINUATION.finditer(line))
-        if last_path is not None:
-            cited, path = last_path
-            for cont in conts:
-                check_one(doc_line, cited, path, int(cont.group("start")), None)
-                if cont.group("end"):
-                    check_one(doc_line, cited, path, int(cont.group("end")), None)
-        elif conts:
+        bound = []
+        for cont in conts:
+            # Nearest path cited BEFORE this continuation on the same line;
+            # if none, the path carried over from the previous wrapped line.
+            prior = [sp for sp in path_spans if sp[0] < cont.start()]
+            src = (prior[-1][1], prior[-1][2]) if prior else carried_span
+            if src is None:
+                continue
+            bound.append((cont, src))
+        for cont, (cited, path) in bound:
+            check_one(doc_line, cited, path, int(cont.group("start")), None)
+            if cont.group("end"):
+                check_one(doc_line, cited, path, int(cont.group("end")), None)
+        carried_span = last_path
+        if len(bound) < len(conts):
+            conts = [c for c in conts if all(c is not b[0] for b in bound)]
             # A bare `:N` with no resolvable path on its line is silently
             # unverifiable. Say so rather than dropping it.
             dropped.extend(
                 "doc:%d  :%s has no resolvable file on its line (cite the path "
                 "explicitly)" % (doc_line, c.group("start")) for c in conts
+            )
+
+    # Section 5 is an ordered markdown list whose items are referenced by
+    # ordinal ("§5 item 9"). Renumbering by hand has silently broken those
+    # references, so derive the valid range from the rendered list and flag
+    # any reference outside it, plus any ordinal the list defines that nothing
+    # points at (the fingerprint of a half-finished remap).
+    sec5 = re.search(r"^## 5[^\n]*\n(.*?)(?=^## 6)", text, re.S | re.M)
+    if sec5:
+        n_items = len(re.findall(r"^\d+\. \*\*", sec5.group(1), re.M))
+        refs = {int(m) for m in re.findall(r"item (\d+)", text)}
+        for r in sorted(refs):
+            if r > n_items:
+                problems.append(
+                    "§5 has %d items but the text references item %d"
+                    % (n_items, r)
+                )
+        unused = [n for n in range(1, n_items + 1) if n not in refs]
+        if unused:
+            warnings.append(
+                "§5 items %s are referenced by nothing -- check a renumbering "
+                "did not leave references on the old ordinals"
+                % ", ".join(str(n) for n in unused)
             )
 
     bad_commits = check_commits(text, root)
