@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v28, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v29, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v28, Analysis Review Loop round 20 pending
+Status: v29, Analysis Review Loop round 21 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -113,6 +113,22 @@ reading the AI. The fact-checker found §5 item 1(c) still prescribing the delet
 surviving pre-fix `mcp_tool.go` anchors, three stale subtest counts, and §3.5c's heading still
 announcing a live BLOCKER. See §3.5c v27.
 
+Round 20: **both tracks CHANGES_REQUESTED, and this time the anti-drift mechanism itself was the
+defect.** The code was confirmed correct by ten independent mutations, all caught. Every blocking
+finding was in prose or in the new script. (1) The commit that mechanised the citation sweep
+expanded a comment by five lines and shifted `refreshMcpToolMap` from `:372` to `:375`, stale in
+ten places including §5 item 1(b) — the sixth consecutive instance of the same class, in the same
+file, by the same mechanism. (2) The script could not see it: a range check passes any anchor that
+stays inside the file, and a reviewer proved it by making a probe document cite `start.go:1` for an
+arbitrary claim and still exiting 0. (3) The script's commit-hash check was logically inverted: it
+reported tokens git resolved to a non-commit but silently skipped tokens git could not find at all,
+so the round-17 blocker (a cited commit that had never existed) would pass today. (4) The
+"fails twice over" test comment named a second failure mechanism that gomock's `Fatalf` makes
+unreachable. Closed by giving the script symbol anchors, a corrected commit check, continuation and
+comma citation forms, and `--extra-root` so sibling-repo citations are verified instead of
+suppressed; the first run of the anchored gate immediately caught two of my own fresh errors.
+See §3.5c v29.
+
 Round 19: **both tracks CHANGES_REQUESTED, but neither blocking finding survived verification
 intact.** The code reviewer reported that removing the reuse branch's team gate left the package
 green ("NOT CAUGHT"). Re-running that mutation shows it FAILS
@@ -167,7 +183,7 @@ separately.
 | Q18 | Does the already-stored-id exemption cover the ownership check too? | **NO — D25 (§3.5a), SIXTH instance.** The exemption applies to the `tm_delete` predicate ONLY. `ValidateMcpServerIDs` gains a `storedIDs` parameter so existence and ownership run on every id; v12-v15's "no signature change" claim created a cross-tenant hole and is retracted |
 | Q19 | Where does the D12 ownership assertion live? | **BOTH resolution and dispatch** — D26 (§3.5b), SEVENTH instance. Dispatch-only was dead code (§3.1); resolution is where the credential is decrypted and sent. `resolveTools` already holds `a.CustomerID`, so cost is zero |
 | Q20 | Do pre-deploy soft-deleted rows get their credentials zeroed? | **Yes — one-off Alembic data migration** ("a 로 가자"), all seven columns where `tm_delete IS NOT NULL`, authored in PR A and applied by 대표님, downgrade an explicit no-op. The affected-row count is unmeasured and remains a design-doc precondition (it changes the PR body's impact claim, not the decision) |
-| Q21 | How is D12's team-member half enforced? | **IMPLEMENTED, not prescribed** (`3fca779e2`, `dd2fb0b39`): `resolveActiveAIForMcp` (`helpers.go:194`) resolves the CURRENT member and degrades to the start member on ALL failure modes; used at `start.go:372` (team-gated — applying it unconditionally there breaks three existing tests) and `mcp_tool.go:151` (all types, with a fail-closed `default`). Shared resolver untouched. The reorder of `resolveTeamMemberForSend` was deliberately NOT done. v19/v21/v22/v23 prescriptions ALL withdrawn — D28 (§3.5c) |
+| Q21 | How is D12's team-member half enforced? | **IMPLEMENTED, not prescribed** (`3fca779e2`, `dd2fb0b39`): `resolveActiveAIForMcp` (`helpers.go:194`) resolves the CURRENT member and degrades to the start member on ALL failure modes; used at `start.go:375` (team-gated — applying it unconditionally there breaks three existing tests) and `mcp_tool.go:151` (all types, with a fail-closed `default`). Shared resolver untouched. The reorder of `resolveTeamMemberForSend` was deliberately NOT done. v19/v21/v22/v23 prescriptions ALL withdrawn — D28 (§3.5c) |
 
 ## 2. Issue statement (PR A/C scope)
 
@@ -246,7 +262,7 @@ separately.
   a mid-conversation member switch a team aicall built its tool map from, and authorised tool
   calls against, the wrong member's whitelist. Fixed by `resolveActiveAIForMcp`
   (`helpers.go:194`), a dedicated resolver that returns the CURRENT member's AI and degrades to
-  the start member on every failure mode, used at `start.go:372` (team-gated) and
+  the start member on every failure mode, used at `start.go:375` (team-gated) and
   `mcp_tool.go:151` (all types). The shared `resolveActiveAIIDFromAIcall` was deliberately NOT
   modified — six callers plus a twin in `messagehandler/event.go:45`. Four prescriptions were
   withdrawn before the code was written (§3.5c); the code then exposed two more errors that
@@ -289,8 +305,8 @@ authenticated outbound HTTP request to the customer's URL. That is the real,
 ongoing defect in PR A's scope.
 
 `CallTool` dispatch is currently **unreachable in production** because the merged
-tool list `resolveTools` returns is discarded by every caller (`start.go:1184`,
-`insight_session.go:225`, `mcp_tool.go:293` all use `_,`), and the lists actually
+tool list `resolveTools` returns is discarded by every caller (`start.go:1184 resolveTools`,
+`insight_session.go:225 resolveTools`, `mcp_tool.go:293 resolveTools` all use `_,`), and the lists actually
 sent to models are built elsewhere with no MCP awareness. That is D7's subject
 matter and belongs to the PR B document; it is stated here only to keep PR A's
 severity claim honest and to explain why PR A must precede PR B.
@@ -376,9 +392,9 @@ directions: a tool the current member legitimately whitelists is refused, and a
 tool only the start member whitelists is ACCEPTED for the current member.
 
 **Corrected blast radius (round 4).** The same mismatch affects
-`start.go:1184` and `mcp_tool.go:293` (`refreshMcpToolMap`, called from
-`start.go:372` with the `a` resolved at `start.go:187`). It does **NOT** affect
-`insight_session.go:225`: `writeInsightSessionMetadata` is reached only from
+`start.go:1184 resolveTools` and `mcp_tool.go:293 resolveTools` (`refreshMcpToolMap`, called from
+`start.go:375` with the `a` resolved at `start.go:187`). It does **NOT** affect
+`insight_session.go:225 resolveTools`: `writeInsightSessionMetadata` is reached only from
 `insight_session.go:143` inside `runInsightSessionRefresh`, which returns early at
 `:68-72` when `AssistanceType != AssistanceTypeAI`, and its `a` comes from
 `h.aiHandler.Get(...)` at `:104`, not from `resolveAI`'s team branch. Teams never
@@ -412,7 +428,7 @@ AI-whitelist → consume path (the REST surface and the OAuth reconnect path hav
 own, per `servicehandler/mcpserver.go:121` and `mcpoauthhandler/start.go:48`). Verified again in v16: neither consume-path site compares
 `CustomerID` — `resolveTools:72-88` checks `Get` success and `Status` only, and
 `toolHandleMcpCall:160-176` checks whitelist membership, `Get` success, and `Status`
-only. §5 item 1 prescribes an ownership assertion at **dispatch** (`:160-176`), not at
+only. §5 item 1 as v16 wrote it prescribed an ownership assertion at **dispatch** (`:160-176`), not at
 resolution. So a foreign `mcp_server_id`, once stored, reaches `resolveTools:84`
 → `ListTools` → `client.go:190-196`, whose `buildAuthHeader` decrypts the stored
 credential at `client.go:73` (bearer) / `:80` (api_key) and attaches it to an outbound
@@ -442,8 +458,8 @@ place:
 
 1. **Dispatch does not execute in production.** §3.1 already establishes this
    for a different purpose: every caller of `resolveTools` discards the merged tool list
-   — `start.go:1184`, `insight_session.go:225`, `mcp_tool.go:293` all bind `_,` — so no
-   MCP tool name is ever advertised to the LLM and `tool.go:142` never dispatches one.
+   — `start.go:1184 resolveTools`, `insight_session.go:225 resolveTools`, `mcp_tool.go:293 resolveTools` all bind `_,` — so no
+   MCP tool name is ever advertised to the LLM and `tool.go:142 toolHandleMcpCall` never dispatches one.
    Placing the only ownership assertion there makes it **dead code until PR B lands**.
 2. **Resolution is where the credential is used.** `resolveTools:84` calls `ListTools`,
    which reaches `client.go:190-196` (takes `serverID` only, no customer context, no
@@ -471,12 +487,12 @@ itself in §3.3), `complete.go:68` guards the state row, and
 surface. The accurate and still-sufficient claim is that it is **the only ownership check
 on the AI-whitelist → consume path**. Corrected wherever it appeared.
 
-### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, and the round-18 reuse-path coverage) — see the v24/v25/v26 notes at the end of this section.**
+### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v29 notes at the end of this section; the NEWEST is v29.**
 
 > **Reading order.** Everything between here and the v24 note is the ORIGINAL DIAGNOSIS,
 > written in the present tense while the defect was live, and kept as the record of how four
 > prose prescriptions went wrong. It does NOT describe the current code. For what the code
-> does now, and for what an implementer must not undo, read the v26 note and §5 item 1.
+> does now, and for what an implementer must not undo, read the v29 note (the newest) and §5 item 1.
 
 **EIGHTH instance**, and the third in a row created by a fix-up edit. D26 corrected the
 ownership half of D12 from dispatch to resolution. It did not look at the **member**
@@ -484,11 +500,11 @@ half of the same defect, which has the identical shape.
 
 **The live defect.** On a team AIcall, `resolveAI` resolves the **start** member
 (`start.go:75`, `h.resolveTeamMemberAI(ctx, t, t.StartMemberID)`). On the reuse branch,
-`start.go:372` called `refreshMcpToolMap(ctx, res, a)` with that start-member `a` (it now passes the resolved `mcpAI`), which
-reaches `resolveTools` (`mcp_tool.go:293`) and fires `ListTools` at `:84` — a credentialed
+`start.go:375` called `refreshMcpToolMap(ctx, res, a)` with that start-member `a` (it now passes the resolved `mcpAI`), which
+reaches `resolveTools` (`mcp_tool.go:293 resolveTools`) and fires `ListTools` at `:84` — a credentialed
 outbound request to the **start** member's MCP servers, not the running member's.
 
-**And the mechanism to fix it already exists, two lines later.** `start.go:382-386`
+**And the mechanism to fix it already exists, two lines later.** `start.go:383-387`
 calls `resolveTeamMemberForSend(ctx, res)`, which resolves `c.CurrentMemberID`
 (`send.go:166`) and overrides the engine model in memory. So the reuse branch already
 knows how to get the current member's AI — it just does the MCP refresh **before** that
@@ -538,11 +554,11 @@ introduced by the edit that closed the previous one.
 **What v21 got wrong.** `resolveActiveAIIDFromAIcall` (`helpers.go:21`) returns `uuid.Nil`
 with only a `Warnf` when `ac.CurrentMemberID` is not in `t.Members` (`:35`). It has **no
 start-member fallback**. `resolveTeamMemberAI` (`start.go:42-52`) **does** have one, and
-`resolveTeamMemberForSend` (`start.go:382`) is the only thing that repairs a stale
-`CurrentMemberID`, persisting the repair (`send.go:176-183`). v21 placed its call at `:361`,
-**nine lines before that repair**, and then asserted "Ordering is irrelevant." For a stale
+`resolveTeamMemberForSend` (`start.go:384`) is the only thing that repairs a stale
+`CurrentMemberID`, persisting the repair (`send.go:176-183`). v21 placed its call in the reuse
+branch above that repair (at the line the refresh now occupies), **before it**, and then asserted "Ordering is irrelevant." For a stale
 member that yields `uuid.Nil` → `aiHandler.Get` fails → the refresh is skipped (its error is
-only `Warnf`'d at `:362`) → **the stale map survives, which is the exact state D28 exists to
+only `Warnf`'d) → **the stale map survives, which is the exact state D28 exists to
 remove.** Today's code, by passing the start-member AI, at least refreshes with the correct
 fallback target. So v21 regressed the degraded case while fixing the normal one, and
 "ordering is irrelevant" was written with `resolveTeamMemberForSend` quoted three lines away.
@@ -575,15 +591,50 @@ discards (it returns `error`), so it costs either a signature change or a third
 `teamHandler.Get` — which v22's own clause (d) forbids. "Give the helper the same fallback"
 touches `resolveActiveAIIDFromAIcall`, which has **six other callers**
 (`send.go:78`, `:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
-`start.go:381`) driving message attribution, **plus a duplicate copy in
+`start.go:396`) driving message attribution, **plus a duplicate copy in
 `messagehandler/event.go:45`** that would silently diverge. v22 called that "one place, one
 behaviour" without enumerating any of it.
 
 **The reorder is NOT load-bearing.** Stated plainly, because v22 presented a cosmetic and a
 load-bearing mechanism as co-required. `resolveTeamMemberForSend`'s caller only `Warnf`s
-(`start.go:382`), so when the repair fails `CurrentMemberID` is still stale when the refresh
+(`start.go:384`), so when the repair fails `CurrentMemberID` is still stale when the refresh
 runs; and when the resolution itself carries the fallback, it yields the same AI whether it
 runs before or after the repair. **The fallback-bearing resolution does all the work.**
+
+**ROUND 20 (v29): the mechanism written to stop citation drift could not see citation drift, and
+the commit that added it drifted six anchors.**
+
+1. **A range check does not close this class.** `check_doc_citations.py` verified only that a cited
+   line number existed in the file. Every one of the six recurrences was an anchor that stayed in
+   range and slid onto the wrong construct, so the gate reported OK on live drift in §5 item 1(b) —
+   the one line an implementer opens first. Closed by SYMBOL ANCHORS: a citation may carry the
+   identifier its line must contain (`` `start.go:375 refreshMcpToolMap` ``), and a mismatch fails
+   the run. The summary now prints how many citations are unanchored, so the unverifiable remainder
+   is a visible number instead of an invisible assumption; `--strict-anchors` fails on any.
+2. **The commit-hash check was inverted.** It reported tokens `git cat-file -t` resolved to a
+   non-commit but silently skipped tokens git could not resolve at all (exit 128) — exactly the
+   round-17 blocker, a hash cited three times that had never existed. Now a nonexistent token fails,
+   with an allowlist for the five Alembic revision ids, which are 12-hex but not git objects.
+3. **Cross-repo citations were suppressed, not checked.** `EXTERNAL_HINTS` skipped every
+   square-admin and api-validator path. Adding `--extra-root` and resolving them for real
+   immediately exposed a `:514-528` continuation bound to the wrong file. Two more forms the regex
+   never extracted (`client.go:190,213` and the `62c10f986f07…:30,:31,:33,:34` column list, the most
+   load-bearing citation in PR A) are now parsed.
+4. **`refreshMcpToolMap` moved `:372`→`:375`** because round 19's own comment fix added five lines.
+   Ten sites corrected, plus `:382-386`→`:383-387`, `:388-391`→`:392-395`, the
+   `resolveActiveAIIDFromAIcall` caller →`:396`, and `:600`→`:603`. The anchored gate caught two
+   fresh errors of mine on its first run (`validateMcpServerIDs` is exported, and
+   `McpServerUpdate` is at `:134`, not `:146`).
+5. **The "fails twice over" test comment was half false.** gomock's `Fatalf` Goexits inside
+   `resolveTools`, so the persist-step callback never runs on that mutation. Verified by executing
+   it and grepping the output for the callback's message: absent. Rewritten to say what each
+   mechanism actually catches.
+
+Lesson recorded: *a verification mechanism must be tested against the defect it exists to catch,
+with a deliberately broken input, before it is trusted. Both of this script's original checks
+passed their target defects.*
+
+**Earlier note (v28), retained as the record of the fifth implementation round.**
 
 **ROUND 19 (v28): the coverage added in v27 ran, but it ran on the wrong assistance type — every
 reuse fixture was untyped, so the gate that keeps D28 fixed was still unobservable on the reuse
@@ -620,10 +671,16 @@ Lesson recorded: *never write "the tests cover this" in a comment without runnin
 proves it. Two consecutive rounds shipped that exact false claim, in the very commit that fixed the
 previous one.*
 
-Mechanism now in place: `docs/plans/scripts/check_doc_citations.py` resolves every `file:line` in
-this document against the tree and exits non-zero on any out-of-range anchor, with `--verbose`
-printing the source line each citation lands on. Five rounds of hand re-derivation failed five
-times; run the script before committing any revision instead.
+Mechanism now in place, and now actually load-bearing:
+
+    python3 docs/plans/scripts/check_doc_citations.py docs/plans/<doc>.md \
+        --extra-root ~/gitvoipbin/monorepo-javascript \
+        --extra-root ~/gitvoipbin/monorepo-monitoring
+
+It resolves every citation (including `:N,M` and bare `:N` continuations), verifies symbol-anchored
+ones against the landed line, validates every commit-like token, and warns on landings on blank
+lines and lone braces. Run it before committing ANY revision. When you touch an anchor, give it a
+symbol anchor rather than a bare line number: bare numbers are the form that drifted six times.
 
 **Earlier note (v27), retained as the record of the fourth implementation round.**
 
@@ -751,7 +808,7 @@ sites, and no change to the shared helper.**
     error, team fetch error) fall back to the START member's AI; if even that fails, return
     `nil`. It is the only place the three error modes are handled, and it does not touch
     `resolveActiveAIIDFromAIcall` or its six callers or the `messagehandler` twin.
-(b) **Reuse branch (`start.go:372`)**: pass its result to `refreshMcpToolMap` instead of the
+(b) **Reuse branch (`start.go:375`)**: pass its result to `refreshMcpToolMap` instead of the
     start-member `a`. On `nil`, keep today's behaviour — pass the start-member `a` already in
     hand, so the map is still refreshed. **Never skip the refresh**; a skipped refresh is how
     v21 preserved the stale map.
@@ -760,11 +817,11 @@ sites, and no change to the shared helper.**
     rather than `fillFailed`. Dispatch must not become more failure-prone than before our fix.
 (d) **The reorder is OPTIONAL, not required.** Moving the team repair above the refresh is
     harmless and desirable (it persists `CurrentMemberID` via `send.go:176-183` and keeps
-    `start.go:381` consistent, and nothing between `:361` and `:394` reads `AIEngineModel`),
+    `start.go:396` consistent, and nothing between `:364` and `:397` reads `AIEngineModel`),
     but it is **not** what protects the degraded case. Recorded as hygiene so no implementer
     believes ordering is the safety mechanism.
 (e) **One team RPC.** `resolveActiveAIForMcp` performs the single `teamHandler.Get` the two
-    MCP sites need; the pre-existing duplicate flagged by the TODO at `start.go:388-391` is
+    MCP sites need; the pre-existing duplicate flagged by the TODO at `start.go:392-395` is
     **out of scope** for PR A and stays as-is.
 
 **Why the start-member fallback is correct at dispatch, not a cross-member leak.** When
@@ -783,7 +840,7 @@ member and `mcpServerIDIsWhitelisted` (call site `mcp_tool.go:160`, func `:248`)
 server the active member does not whitelist, so the residual is **under-availability**, not
 exposure: the active member's own newly whitelisted tools are missing until the next Start.
 Two paths never refresh the map — the send path (`refreshMcpToolMap` has exactly one caller,
-`start.go:372`) and a reused contact_case AIcall (`start.go:600` →
+`start.go:375`) and a reused contact_case AIcall (`start.go:603` →
 `refreshInsightSessionIfIdle`, which returns "kept" for a team). Every prescribed gate
 re-reads the row, so a deleted or foreign server stays inert whichever member's map is
 loaded. **PR B precondition: refresh the map on member switch, covering both paths.**
@@ -1417,7 +1474,7 @@ silently succeed, and the docs/config must stop describing things that are not t
 D8 + `types/api.ts` + the CLAUDE.md Field Sync Points table row + re-verification
 of the `mcpservers_detail.js:496` delete-dialog copy (PR A makes it true).
 **Per the Field Sync Points rule this covers FOUR form bodies, not one:**
-`ais_create.js:114-129`, and `teamgraph/sidebar.js` AI-create `:514-528` and
+`ais_create.js:114-129`, and `teamgraph/sidebar.js:514-528` (AI-create) and
 AI-edit `:753-768` (both verified to carry `tool_names` and omit
 `mcp_server_ids`), plus `ais_detail.js`'s existing implementation left intact.
 `sidebar.js` has no `mcpservers` fetch of its own, so the
@@ -1470,15 +1527,15 @@ Redis cache (§3.9), because there is no measured signal for it.
 ## 5. Decisions to lock before the PR A design doc
 
 1. **Gate placement.** Mandatory: transport (`client.go:190,213`), whitelist
-   validation (`mcpserver_validation.go:35-60`), `McpServerUpdate`
+   validation (`mcpserver_validation.go:35 ValidateMcpServerIDs`), `McpServerUpdate`
    (`dbhandler/mcpserver.go:146-149`), OAuth `start.go:37` AND `complete.go:112`
    independently, plus the D12 ownership assertion at **BOTH `mcp_tool.go:72-88`
    (resolution) AND `:160-176` (dispatch)**.
    **CORRECTED in v17 (D26, SEVENTH instance).** v5-v16 put the ownership assertion at
    dispatch only. That is the one place it cannot help: §3.1 establishes
    dispatch is **unreachable in production** until PR B advertises MCP tools to the LLM
-   (verified again in v17 — `start.go:1184`, `insight_session.go:225` and
-   `mcp_tool.go:293` all discard the merged tool list with `_,`, so `tool.go:142` never
+   (verified again in v17 — `start.go:1184 resolveTools`, `insight_session.go:225 resolveTools` and
+   `mcp_tool.go:293 resolveTools` all discard the merged tool list with `_,`, so `tool.go:142 toolHandleMcpCall` never
    fires on an MCP name), while §3.5a shows the customer-visible harm happens at
    **resolution**: `resolveTools:84` → `ListTools` → `client.go:190-196` →
    `buildAuthHeader:73`/`:80` decrypts the stored credential → authenticated outbound
@@ -1499,8 +1556,8 @@ Redis cache (§3.9), because there is no measured signal for it.
    the START member's AI on ANY failure (member absent, AI fetch error, team fetch error),
    else `nil`. **Do NOT modify `resolveActiveAIIDFromAIcall`** — it has six other callers
    (`send.go:78`, `:106`, `tool.go:87`, `tool_insight.go:1430`, `listen_trigger.go:155`,
-   `start.go:381`) plus a duplicate in `messagehandler/event.go:45`.
-   (b) Reuse branch `start.go:372`: pass its result to `refreshMcpToolMap` instead of the
+   `start.go:396`) plus a duplicate in `messagehandler/event.go:45`.
+   (b) Reuse branch `start.go:375`: pass its result to `refreshMcpToolMap` instead of the
    start-member `a`, **but ONLY when `res.AssistanceType == aicall.AssistanceTypeTeam`** — for a
    plain AI aicall `a` already IS the governing AI, and resolving again both adds an RPC and
    breaks three existing tests (verified: `Test_startReferenceTypeConversation/reuse:_alive…`,
@@ -1514,7 +1571,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    enumerated 480 reachable shapes and found zero recoveries; the fallback v25 added here was
    deleted in `7dced7a90`. Dispatch is still not more failure-prone than before the fix: every
    shape in which the old code succeeded is one in which the resolver also succeeds.
-   (d) **DECLINED — do not perform.** Moving the team repair (`start.go:382-386`) above the
+   (d) **DECLINED — do not perform.** Moving the team repair (`start.go:383-387`) above the
    refresh was considered and rejected: its caller only `Warnf`s (`:382`), so a failed repair
    leaves `CurrentMemberID` stale regardless and the reorder protects nothing. The fallback
    contract in (a) is the entire mechanism. The committed code deliberately does not do this.
@@ -1824,7 +1881,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    | PUT, id newly added to the list | **reject** (`INVALID_MCP_SERVER_ID`) | attaching a deleted server is a user error and must not fail silently |
 
    **The exemption is per-PREDICATE, not per-id. CORRECTED in v16 — see D25 (§3.5a).**
-   `ValidateMcpServerIDs` (`mcpserver_validation.go:35-60`) runs **two** checks in one
+   `ValidateMcpServerIDs` (`mcpserver_validation.go:35 ValidateMcpServerIDs`) runs **two** checks in one
    loop: existence (`:37-48`) and **customer ownership** (`:50-56`). v12-v15 said the
    diff needs "zero extra DB reads and no signature change", which forces the diff to
    be computed at the call sites and the function to be invoked **with the new subset
@@ -1903,7 +1960,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | Gating inside `dbhandler.McpServerGet` breaks `Delete`/`Update` read-back and the validator's GET-after-DELETE 200 contract | **High** | §5 item 1 forbids it explicitly; run the full 21-test api-validator mcpserver suite |
 | Credential zeroing as a separate UPDATE is silently no-op'd by the new `tm_delete` predicate (`RowsAffected` ignored at `dbhandler/mcpserver.go:154-156`) | **High** | §5 item 2 resolved: same statement; test that ciphertext columns are actually null after delete |
 | Credential zeroing is irreversible; a mis-fire destroys a live server's secret | **High** | Zero only on the delete path, never on update; unit test that update paths never clear ciphertext columns |
-| No customer-ownership assertion in dispatch; team path resolves the START member's AI before refreshing the MCP tool map, so a reused team AIcall calls the wrong member's MCP servers | **High** | D12 (§3.5) prescribed; **D28 (§3.5c) CLOSED IN CODE** (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`) — `resolveActiveAIForMcp` (`helpers.go:194`) resolves the CURRENT member and degrades to the start member on every failure mode, at `start.go:372` (team-gated) and `mcp_tool.go:151` (fail-closed `default` for unknown types). 18 subtests, incl. dispatch team cases verified to FAIL against the pre-fix code. Shared resolver untouched; the `resolveTeamMemberForSend` reorder deliberately NOT done. v19/v21/v22/v23 prescriptions all withdrawn. Residual, stated: TWO paths never refresh the map (send, and reused contact_case via `start.go:600`) — **under-availability**, not exposure (every gate re-reads the row), deferred to PR B |
+| No customer-ownership assertion in dispatch; team path resolves the START member's AI before refreshing the MCP tool map, so a reused team AIcall calls the wrong member's MCP servers | **High** | D12 (§3.5) prescribed; **D28 (§3.5c) CLOSED IN CODE** (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`) — `resolveActiveAIForMcp` (`helpers.go:194`) resolves the CURRENT member and degrades to the start member on every failure mode, at `start.go:375` (team-gated) and `mcp_tool.go:151` (fail-closed `default` for unknown types). 18 subtests, incl. dispatch team cases verified to FAIL against the pre-fix code. Shared resolver untouched; the `resolveTeamMemberForSend` reorder deliberately NOT done. v19/v21/v22/v23 prescriptions all withdrawn. Residual, stated: TWO paths never refresh the map (send, and reused contact_case via `start.go:603`) — **under-availability**, not exposure (every gate re-reads the row), deferred to PR B |
 | A stored FOREIGN id freezes the AI for every unrelated edit | Medium | **D25's ownership predicate reconstructs D21's dead end one predicate over.** `storedIDs` exempts only the deleted-row rejection, so a stored foreign id makes every PUT 400, and the picker is customer-scoped (`servicehandler/mcpserver.go:67-70`) so the id is invisible and unremovable in the UI while `ais_detail.js:421` re-submits it unconditionally. **Accepted, not fixed:** today's code validates ownership on every write, so a stored foreign id cannot be created going forward, and the production walk found **zero** AIs holding any `mcp_server_ids`, so no such legacy row is known to exist. The decision stands (ownership must not be exempt); what PR A owes is this sentence in the PR body, so the state is documented rather than discovered by a stuck customer. If one is ever reported, the remedy is a targeted data fix, not an exemption |
 | A deleted server can be resurrected to `active` with a new URL + secret | **High** | D2 |
 | Published docs give a 404 endpoint path | **High** (live) | D5 |
@@ -2027,7 +2084,7 @@ is a blanket `ProviderGet.mockResolvedValue`, `:320/:380/:398/:431` use
 `expect.objectContaining`, `:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
 asserts only the PUT body. All four form bodies (§4) must be exercised.
 
-## 8. Retrospective (nineteen rounds)
+## 8. Retrospective (twenty rounds)
 
 **v1** asserted "exactly ONE grep hit" and "no `mcpserver*.rst` files exist." Both
 false. Root cause: a case-sensitive `grep mcp` that missed uppercase `MCP`, written

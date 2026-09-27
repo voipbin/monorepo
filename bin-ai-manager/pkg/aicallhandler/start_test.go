@@ -516,7 +516,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			name: "reuse: alive previous pipecat — interrupt invoked",
 
 			// Wired so the reuse branch's MCP refresh actually runs on a PLAIN AI
-			// aicall: this is what makes the team gate at start.go:367 observable
+			// aicall: this is what makes the team gate at start.go:370 observable
 			// here (without it the resolver would fetch the AI a second time).
 			wireMcpHandlers: true,
 
@@ -1220,9 +1220,12 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				// refreshMcpToolMap -> resolveTools, driven by whichever AI the
 				// reuse branch chose. Only the CURRENT member's server is set
-				// up, so a start-member refresh fails twice over: gomock rejects
-				// the unexpected fetch of the start member's server, and the
-				// callback below finds no current-member entry in the map.
+				// up, so a start-member refresh is rejected by gomock as an
+				// unexpected fetch of the start member's server. That aborts the
+				// test goroutine inside resolveTools, so the callback below never
+				// runs on that mutation -- it is the assertion that catches a
+				// refresh which reaches the persist step with the wrong contents
+				// (an empty map, or a map missing the current member's server).
 				m.mcpServer.EXPECT().Get(ctx, curServerID).Return(&mcpserver.McpServer{
 					Identity: commonidentity.Identity{ID: curServerID},
 					Status:   mcpserver.StatusActive,
