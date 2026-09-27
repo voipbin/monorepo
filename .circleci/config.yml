@@ -63,3 +63,4 @@ workflows:
 
             \.golangci\.yml             run-lint-config-check true
             scripts/.*                  run-lint-config-check true
+            docs/plans/2026-09-26-monorepo-convention-enforcement-and-readme-refresh\.md run-lint-config-check true

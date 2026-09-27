@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
 #
 # Enforces the test conventions declared in docs/conventions/testing.md
-# that no Go linter can express. Only inspects files changed relative to
-# the merge base with main, so the existing backlog does not fail the build.
+# that no Go linter can express. Only inspects lines a change adds relative
+# to the merge base with main, so the existing backlog does not fail the build.
 #
 # Fail-closed: if the merge base cannot be resolved the script exits non-zero.
 # The CI job is responsible for fetching origin/main before running this
 # (CircleCI's checkout only fetches the current branch's refspec).
 #
 set -uo pipefail
+
+# Set by scan() when awk itself fails. A dead pattern prints nothing, which a
+# caller would otherwise read as "no violations" -- the gate would go green while
+# checking nothing. scan() therefore writes its result into SCAN_OUT rather than
+# stdout, so it runs in this shell and can flip this flag directly.
+scan_broken=0
+SCAN_OUT=""
 
 BASE_REF="origin/main"
 
@@ -52,7 +59,7 @@ fi
 # Inspect ADDED LINES ONLY, not whole files.
 #
 # Checking whole files would make any repo-wide reformat fail this gate: a
-# gofmt-only pass rewrites 151 test files, and those files carry 178
+# gofmt-only pass rewrites over a hundred test files, and those files carry
 # pre-existing violations that the branch never introduced. Scoping to added
 # lines keeps the gate on what the branch actually wrote, which is what
 # "changed files only" was meant to express in the first place.
@@ -82,50 +89,78 @@ report() {
 # (@@ -a,b +c,d @@) carry the new-file line number, so walk the diff and keep
 # a running counter; a bare grep over added lines would lose the location.
 scan() {
-  # $1 = ERE to match against added lines.
+  # $1 = ERE to match against added lines. Result lands in SCAN_OUT.
+  #
   # Note the patterns below are POSIX EREs as awk understands them: no \b, no
   # \<, no \s. awk warns about (and ignores) unknown escapes, which silently
   # disables a rule -- Rule 3 was lost this way during review.
-  awk -v pat="$1" '
-    /^\+\+\+ b\// { file = substr($0, 7); next }
-    /^@@ / {
-      # @@ -old,cnt +new,cnt @@
-      split($3, a, ",")
-      line = a[1]; sub(/^\+/, "", line)
-      next
-    }
-    /^\+/ {
-      body = substr($0, 2)
-      if (body ~ pat) printf "%s:%d:%s\n", file, line, body
-      line++
-    }
-  ' <<< "${DIFF_U0}"
+  #
+  # This assigns SCAN_OUT instead of printing, so callers invoke it as a plain
+  # statement rather than inside $( ). A subshell could not report awk's failure
+  # back to the main shell, and an empty result reads as "clean".
+  local rc
+  SCAN_OUT="$(
+    awk -v pat="$1" '
+      /^\+\+\+ b\// { file = substr($0, 7); next }
+      /^@@ / {
+        # @@ -old,cnt +new,cnt @@
+        split($3, a, ",")
+        line = a[1]; sub(/^\+/, "", line)
+        next
+      }
+      /^\+/ {
+        body = substr($0, 2)
+        if (body ~ pat) printf "%s:%d:%s\n", file, line, body
+        line++
+      }
+    ' <<< "${DIFF_U0}"
+  )"
+  rc=$?
+  if [ "${rc}" -ne 0 ]; then
+    printf 'check-test-conventions: awk failed (exit %s) on pattern: %s\n' \
+      "${rc}" "$1" >&2
+    scan_broken=1
+  fi
 }
 
-# Rule 1 — Test_<MethodName>, not TestXxx_Case. See 6.4.1 for why bare
-# TestXxx (no underscore) is deliberately NOT matched.
-m="$(scan '^func Test[A-Z][A-Za-z0-9]*_')"
+# Rule 1 — every test name starts with Test_. See 13.6: what follows the
+# underscore is the method, optionally plus a scenario, so both Test_Create
+# and Test_Create_HappyPath pass. TestMain is Go's own entry point and is
+# excluded; it is the only name the toolchain itself reserves.
+# The trailing [([] also catches generic tests (func TestFoo[T any](...)),
+# and [[:space:]]+ tolerates more than one space after func.
+scan '^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]'
+m="$(grep -vE '^[^:]*:[0-9]+:func[[:space:]]+TestMain\(' <<< "${SCAN_OUT}" || true)"
 [ -n "${m}" ] && report \
-  "Test function must be named Test_<MethodName> (got TestXxx_Case)." \
+  "Test function must start with Test_ (got TestXxx)." \
   " (13.6 Test Function Naming)" "${m}"
 
 # Rule 2 — assertions use reflect.DeepEqual + t.Errorf, not testify.
-m="$(scan '"github[.]com/stretchr/testify')"
+scan '"github[.]com/stretchr/testify'
+m="${SCAN_OUT}"
 [ -n "${m}" ] && report \
   "testify is not used in this repository; use reflect.DeepEqual + t.Errorf." \
   " (13.5 Assertion Pattern)" "${m}"
 
 # Rule 3 — the gomock controller variable is named mc.
-m="$(scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController')"
+scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController'
+m="${SCAN_OUT}"
 [ -n "${m}" ] && report \
   "Name the gomock controller 'mc' (mc := gomock.NewController(t))." \
   " (13.3 Test Structure Conventions)" "${m}"
 
+if [ "${scan_broken}" -ne 0 ]; then
+  echo ""
+  echo "check-test-conventions: a scan failed, so the rules above could not be"
+  echo "evaluated. Failing instead of reporting a clean run."
+  exit 1
+fi
+
 if [ "${fail}" -ne 0 ]; then
   echo ""
   echo "Test convention check failed. These rules are documented in"
-  echo "docs/conventions/testing.md and are enforced only on files this"
-  echo "branch changes; pre-existing violations elsewhere are untouched."
+  echo "docs/conventions/testing.md and are enforced only on lines this"
+  echo "branch adds; pre-existing violations elsewhere are untouched."
   exit 1
 fi
 

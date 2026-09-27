@@ -1,9 +1,19 @@
 # 2026-09-26 monorepo 코드 컨벤션 강제 계층 복구 및 README 현행화
 
-Status: Draft (design review loop 대기)
+Status: Merged (PR #1338, squash `ec3d0790e`, 2026-09-26 UTC / 09-27 KST)
 Branch: `NOJIRA-Monorepo-code-convention-and-readme-cleanup`
 Worktree: `~/gitvoipbin/monorepo/.worktrees/NOJIRA-Monorepo-code-convention-and-readme-cleanup`
 Base: `origin/main` @ `fb8e8d58a`
+
+**이 문서의 기준 시점.** 본문의 측정값·검증 결과·인용 위치는 별도 표기가 없으면 Base
+`fb8e8d58a` 에서 PR #1338 머지(`ec3d0790e`)까지의 상태를 가리킨다. 그 이후 Rule 1 명명
+규칙이 개정되었고(§6.4.1 "결정 ... 개정"), 개정 후 기준이 현행이다. 두 기준이 갈리는
+문장에는 "구 규칙 기준" 또는 "개정 후" 를 명시했다. 표를 현재 동작의 근거로 읽지 말고,
+현행 동작은 §6.4.1 개정 단락과 `scripts/check-test-conventions.sh` 를 보라.
+
+**행번호 인용 주의.** 다른 파일을 행번호로 가리킨 인용은 Base 시점 기준이며, 이후 그
+파일이 변경되면 어긋난다. 새로 쓰는 인용은 섹션명이나 `git show <sha>:<path> | grep`
+형태의 앵커를 쓴다.
 
 ---
 
@@ -23,7 +33,7 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 | `go mod vendor` | `CLAUDE.md:49` | ✅ 실행 | `config_work.yml:2223` |
 | `go generate ./...` | `CLAUDE.md:50` | ⚠️ **부분 강제** | `go-test` command에는 없으나, `bin-openapi-manager-validate` job(L1498-1523)이 `go generate ./...` 후 `git diff --exit-code gens/models/gen.go`로 생성물 drift를 차단한다. **단 bin-openapi-manager 한정** |
 | `go test ./...` | `CLAUDE.md:51` | ✅ 실행 | `config_work.yml:2237-2243` (`go test` 자체는 2241) |
-| `golangci-lint run` | `CLAUDE.md:52` | ❌ **주석 처리** | `config_work.yml:2224-2236`, 동일 블록이 2267, 2315에도 존재 |
+| `golangci-lint run` | `CLAUDE.md:52` | ❌ **주석 처리** | `config_work.yml`의 주석 블록 3곳 (`git show fb8e8d58a:.circleci/config_work.yml \| grep -n 'Re-enable golangci-lint'`) |
 
 추가로 `go vet`이 같은 주석 블록(`config_work.yml:2236`)에 묻혀 함께 비활성화되어 있다.
 주석 사유는 `# TODO: Re-enable golangci-lint after fixing OOM on small resource_class`로,
@@ -37,7 +47,7 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 | 항목 | 실측치 |
 |---|---|
 | gofmt 미준수 파일 | **313개** (프로덕션 162 / 테스트 151, **35개** 서비스에 분포 — `voip-kamailio-proxy`·`voip-rtpengine-proxy` 포함) |
-| 테스트 함수명 `TestXxx_Case` (규약 위반) | **626건 / 131파일** (`bin-*` 한정 599건 / 126파일, `voip-*` 27건) |
+| 테스트 함수명 `TestXxx_Case` (구 규칙 기준 위반) | **626건 / 131파일** (`bin-*` 한정 599건 / 126파일, `voip-*` 27건). 개정 후 위반 총량은 1,724건이다 |
 | testify 사용 (규약 위반, 외부 의존성) | **9파일** (api 5, ai 3, storage 1) |
 | gomock 컨트롤러 변수 `ctrl` (규약 위반) | **194회 / 22파일** (`bin-*` 한정 171회 / 19파일) |
 | 루트 README 서비스 표 누락 | 3건 (schedule / trigger-sender / webchat) |
@@ -50,16 +60,19 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 
 ### 1.3 중요: 컨벤션 문서는 이미 완비되어 있다
 
-`docs/conventions/testing.md`(383줄)는 위반된 규칙을 **이미 전부 정확히 명문화**하고 있다.
+`docs/conventions/testing.md`는 위반된 규칙을 **이미 전부 정확히 명문화**하고 있다.
+
+아래 표는 섹션으로 가리킨다. 행번호로 적었다가 이 브랜치가 13.6을 16줄 늘리면서
+이후 참조 8곳이 한꺼번에 거짓이 된 적이 있다. 문서 길이에 의존하지 않는 참조를 쓴다.
 
 | 규칙 | testing.md 선언 위치 |
 |---|---|
-| `Test_<MethodName>` 함수명 | L128 `Use `Test_<MethodName>`:`, L132-134 예시 |
-| `mc := gomock.NewController(t)` | L33, L272, L305 |
-| `defer mc.Finish()` 페어링 | L380 (체크리스트 항목) |
-| `reflect.DeepEqual` 어서션 | L116, L292 |
-| `<source>_test.go` 1:1 파일명 | L342-344 (디렉터리 트리 예시) |
-| `t.Run(tt.name, ...)` 서브테스트 | L32, L271 |
+| `Test_<MethodName>` 함수명 | §13.6 Test Function Naming (CORRECT/WRONG 예시 포함) |
+| `mc := gomock.NewController(t)` | §13.1 Table-Driven Tests, §Test Utilities |
+| `defer mc.Finish()` 페어링 | §13.1, §Test Utilities (체크리스트 항목) |
+| `reflect.DeepEqual` 어서션 | §13.5 Assertion Pattern, §13.8 |
+| `<source>_test.go` 1:1 파일명 | §Test Utilities (디렉터리 트리 예시) |
+| `t.Run(tt.name, ...)` 서브테스트 | §13.1 Table-Driven Tests |
 
 **따라서 "컨벤션을 문서에 명문화한다"는 조치는 이미 완료된 일을 반복하는 것이며, 드리프트를 막지 못함이 실증되었다.**
 이번 작업은 문서 추가가 아니라 **기계적 강제 수단의 도입**에 집중한다.
@@ -71,7 +84,12 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 - 프로덕션 코드 7개 축 중 5개 축에서 드리프트 없음. 생성자 패턴 280/280 준수, 파일 구조 위반 3건은 **전부 2024년 구(舊) 코호트**.
 - 최대 결함인 에러 체인 파괴(`fmt.Errorf("...%v", err)` 1,602건)도 **64%(1,028건)가 구 코호트**.
 - 드리프트가 실재하는 영역은 **테스트 코드에 한정**되며, 여기서는 서비스 연령과 상관관계가 뚜렷하다
-  (`TestXxx_Case`가 bin-call/flow/queue/conference/agent-manager에서 정확히 0건, bin-timeline 127건·bin-rag 41건).
+  (구 규칙의 `TestXxx_Case`가 bin-call/flow/queue/conference/agent-manager에서 정확히 0건,
+bin-timeline 127건·bin-rag 41건). 개정 규칙에서는 이 서비스들도 각각
+108·39·22·29·17·163·53건이 매치되므로 "0건" 은 구 규칙에서만 참이다.
+다만 상관관계 자체는 개정 규칙에서도 유지된다. 서비스별 테스트 함수 총수로 정규화하면
+위반율이 bin-call 17%·flow 17%·queue 17%·conference 26%·agent 12% 대
+bin-timeline 63%·bin-rag 59% 로 갈린다.
 
 이 결론은 조치의 방향을 바꾼다: "AI 산출물 교정"이 아니라 **작성 주체와 무관한 기계적 게이트 설치**가 옳은 해법이다.
 
@@ -83,7 +101,7 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 2. **G2.** 루트 `.golangci.yml`을 신설하고 CI에서 `golangci-lint`를 복구한다. 단 OOM을 유발하지 않아야 한다.
 3. **G3.** gofmt 미준수 313개 파일을 일괄 정리하고, 이후 재발을 CI가 차단한다.
 4. **G4.** `docs/conventions/testing.md`가 이미 규정한 테스트 규칙 중 린터로 잡히지 않는 3건
-   (`TestXxx_Case` 함수명 / testify import / `ctrl` 변수명)을 **변경된 파일에 한해** CI가 차단한다.
+   (`Test_` 접두사 미준수 함수명 / testify import / `ctrl` 변수명)을 **변경이 추가한 라인에 한해** CI가 차단한다.
 5. **G5.** 루트 `README.md`의 서비스 표 누락 3건을 보완하고, 셀프호스팅 경로를 현행화한다.
 
 각 목표는 §9 검증 계획에서 실행 가능한 명령으로 확인한다.
@@ -99,7 +117,7 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 | D3 | README 정비 범위는 **루트 README만**. 서비스별 37개 README는 제외 | 스코프 제어 |
 | D4 | OOM 회피는 **변경된 서비스만 린트**. resource_class 상향하지 않음 | 비용 증가 최소화 |
 | D5 | 테스트 컨벤션은 **기존 방식 유지**(`Test_FuncName`, `reflect.DeepEqual`, `mc`). Go 커뮤니티 표준으로 전환하지 않음 | 정통성 + 다수파 일치 (§1.3) |
-| D6 | 존량 드리프트(테스트 함수명 599건 등)는 **이번 PR 범위 밖**. 점진 교체 방침 | 스코프 제어. 단 D7로 신규 유입은 차단 |
+| D6 | 존량 드리프트는 **이번 PR 범위 밖**. 점진 교체 방침 | 스코프 제어. 단 D7로 신규 유입은 차단. 당시 집계 599건은 구 규칙 `TestXxx_Case`의 `bin-*` 한정 수치이고, 개정 후 총량은 1,724건이다 |
 | D7 | 테스트 규칙 강제는 **grep 기반 경량 CI 게이트 스크립트**. 신규/변경 파일만 검사 | golangci-lint로는 함수명 규칙을 잡을 수 없음 |
 | D8 | 에러 체인 복구(`fmt.Errorf` 1,602건)는 **이번 PR 범위 밖** | 별도 설계 필요. 64%가 구 코호트라 "AI 교정" 프레이밍이 부적절 |
 
@@ -109,10 +127,10 @@ monorepo(Go 모듈 39개, 31,291 파일)의 코드 컨벤션이 서비스 연령
 
 | 제외 항목 | 규모 | 사유 / 후속 |
 |---|---|---|
-| 테스트 함수명 존량 수정 | 599건 / 126파일 | D6. 게이트 설치 후 서비스별 후속 PR |
+| 테스트 함수명 존량 수정 | **1,724건 / 221 디렉터리** | D6. `Test_` 밑줄이 빠진 형태(`TestCreate` → `Test_Create`). 게이트 매치 1,755건에서 개명 대상이 아닌 `TestMain` 31건을 뺀 수다. 목표명 충돌은 3건(0.17%)뿐이라 거의 기계적이나 파일 수가 많아 서비스별 후속 PR로 분리. 게이트가 추가 라인만 보므로 존량은 CI를 붉히지 않는다 |
 | testify 제거 존량 | 9파일 | D6. 단 D7 게이트가 신규 유입 차단 |
-| `ctrl` → `mc` 존량 리네이밍 | 171회 / 19파일 | D6 |
-| `exepct` 오타 정정 | 179회 / 37파일 | D6. 정통 관용구의 오타이나 기능 영향 없음 |
+| `ctrl` → `mc` 존량 리네이밍 | 202회 / 22파일 (`ctrl :=` 전체. §1.2의 194회는 `ctrl := gomock.NewController` 한정이며 둘 다 각자의 술어로 참이다) | D6 |
+| `exepct` 오타 정정 | 182회 / 38파일 | D6. 정통 관용구의 오타이나 기능 영향 없음 |
 | 에러 체인 복구 (`%v` → `%w`) | 1,602건 | D8. 별도 설계 문서 필요 |
 | 서비스별 README 37개 표준화 | 16개는 `##` 섹션 0개 | D3 |
 | 서비스별 CLAUDE.md 37개 정리 | 중복률 7.9% | 실질 모순 없음이 확인됨. 불필요 |
@@ -294,7 +312,9 @@ CircleCI 공식 Configuration Reference의 Docker x86 표는 다음과 같다.
 
 ### 6.2 `.circleci/config_work.yml` 수정
 
-현재 상태 (`config_work.yml:2224-2236`, 동일 블록이 2267·2315에 반복):
+당시 상태 (Base `fb8e8d58a` 의 주석 블록 3곳.
+`git show fb8e8d58a:.circleci/config_work.yml | grep -n 'Re-enable golangci-lint'` 로 확인.
+이 브랜치를 포함한 현재 트리에서는 이미 활성화되어 있다):
 
 ```yaml
       # TODO: Re-enable golangci-lint after fixing OOM on small resource_class
@@ -749,9 +769,9 @@ MULTISET-CHANGED: bin-call-manager/pkg/dbhandler/json_expr.go
 ### 6.4 `scripts/check-test-conventions.sh` (신규)
 
 `docs/conventions/testing.md`가 규정하지만 어떤 린터로도 잡히지 않는 3개 규칙을 강제한다.
-**변경된 파일만 검사**하여 존량(D6)에 걸리지 않게 한다.
+**변경이 추가한 라인만 검사**하여 존량(D6)에 걸리지 않게 한다(§6.4.1).
 
-#### 6.4.1 Rule 1의 범위 축소 및 검사 단위 (실측에 따른 결정)
+#### 6.4.1 Rule 1의 강제 범위와 검사 단위 (실측에 따른 결정)
 
 **검사 단위: 변경된 "파일"이 아니라 변경된 "라인"이다.**
 
@@ -761,10 +781,15 @@ G3(gofmt 313파일)이 그 중 **테스트 파일 151개**를 변경 목록에 �
 
 | 규칙 | 위반 | 파일 |
 |---|---|---|
-| Rule 1 (`TestXxx_Case`) | 122 | 20 |
+| Rule 1 (`TestXxx_Case`, 구 정규식 기준) | 122 | 20 |
 | Rule 2 (testify) | 2 | 2 |
 | Rule 3 (`ctrl :=`) | 54 | 4 |
-| **합계** | **178** | — |
+| **합계** | **178** (구 정규식 기준. 개정 후 318) | — |
+
+Rule 1 개정 후 같은 151개 파일에 현 정규식을 적용하면 262건 / 50파일(합계 318)이다.
+수치만 커지고 결론은 동일하므로 아래 논지는 그대로 유효하다.
+(참고: PR 이 변경한 테스트 파일 전체는 156개이고 그 집합에서는 271건 / 51파일이다.
+구 정규식 수치 122건 / 20파일은 두 집합에서 우연히 같다.)
 
 게이트는 `when:` 없이 무조건 실행되므로 첫 파이프라인에서 확정적으로 적색이 된다.
 D6("존량은 범위 밖")과 G3+G4 동시 진행이 정면으로 충돌한다.
@@ -773,7 +798,7 @@ D6("존량은 범위 밖")과 G3+G4 동시 진행이 정면으로 충돌한다.
 
 | 입력 | 기존(파일 단위) | 변경(라인 단위) |
 |---|---|---|
-| gofmt 전용 변경 | **178건 위반, exit 1** | **0건, exit 0** |
+| gofmt 전용 변경 | **178건 위반, exit 1** (구 정규식 기준. 개정 후 318건) | **0건, exit 0** |
 | 실제 위반 신규 추가 | 검출 | **3종 전부 검출, exit 1** |
 
 gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므로, 포맷 전용 변경은
@@ -805,36 +830,120 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 
 | 분류 | 건수 | 판정 |
 |---|---|---|
-| `Test_<Method>` 정통 | 5,433 | 통과 |
-| `TestXxx_Case` (밑줄 있음) | **626** | **위반 — 게이트 대상** |
-| `TestXxx` (밑줄 없음) | 1,098 | **규정 없음 — 게이트 대상 아님** |
-| `TestMain` | 31 | Go 표준 엔트리포인트 — 정당 |
+| `Test_<Method>` / `Test_<Method>_<Scenario>` 정통 | 5,433 | 통과 |
+| `TestXxx_Case` (밑줄 없이 시작) | 626 | **위반** — 밑줄 삽입 대상 |
+| `TestXxx` (밑줄 없음, 접미사도 없음) | 1,098 | **위반** — 밑줄 삽입 대상 |
+| `TestMain` | 31 | Go 표준 엔트리포인트 — 유일 예외, 제외 |
+
+개정 전에는 아래 626건만 위반으로 보고 1,098건은 "규정 없음"으로 분류했다.
+개정 후 기준은 `Test_` 접두사 하나이므로 둘 다 위반이며 합계 1,724건이 개명 대상이다.
 
 `TestXxx` 1,098건에는 `TestFieldConstants`(46), `TestEventTypeConstants`(43),
 `TestGoldenRoutingKeys`(26)처럼 **메서드가 아닌 대상(상수군·골든파일·부트스트랩)을 검증하는 테스트**가 다수 포함된다.
-`testing.md` §13.6은 `Test_<MethodName>`만 규정하며, 이런 비메서드 테스트의 표기를 정의하지 않는다
-(`grep -i 'constant|golden|TestMain|non-method|package-level' docs/conventions/testing.md` → **0건**).
+개정 전 `testing.md` §13.6은 `Test_<MethodName>`만 규정하고 이런 비메서드 테스트의 표기를
+정의하지 않았다(당시 `grep -i 'constant|golden|TestMain|non-method|package-level'
+docs/conventions/testing.md` → 0건). 개정으로 `Test_` 접두사가 표기 종류와 무관하게
+적용되고 `TestMain`이 유일 예외로 명기되었으므로, 이 공백은 해소되었다.
 
-**결정(대표님 확정): Rule 1은 `TestXxx_Case` 형태만 잡는다.**
-문서가 규정하지 않은 것을 게이트가 강제해서는 안 된다. `TestXxx` 표기의 정통성 여부는
-testing.md 개정이 선행되어야 하므로 이번 범위 밖이다(§4 Non-goals).
+**결정(대표님 확정, 2026-09-26 개정): Rule 1은 `Test_` 접두사 자체를 강제한다.**
 
-이 축소로 `TestMain` 예외 처리도 자동으로 불필요해진다(`TestMain`에는 밑줄이 없다).
+초기 판단은 "`TestXxx_Case`만 잡는다"였다. 이는 `TestCreate_HappyPath` 같은 이름을
+`Test_HappyPath`로 줄여야 하는 것으로 오독한 결과다. 올바른 변환은 밑줄 하나를
+삽입하는 것(`TestCreate_HappyPath` → `Test_Create_HappyPath`)이며, 이때 시나리오
+접미사는 그대로 보존된다. 즉 626건은 위반 형태가 아니라 **밑줄이 빠진 정상 형태**였다.
+
+따라서 규칙과 게이트를 다음과 같이 정렬한다.
+
+- `testing.md` 13.6에 `Test_<Method>_<Scenario>`를 정식 허용으로 명문화한다.
+  시나리오 접미사는 실패 케이스를 `go test` 출력에서 바로 보여주므로 권장한다.
+- 게이트 정규식은 **밑줄 없는 형태**를 잡는다. 최종 패턴은 아래 표에 정리한
+  `^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]` 이다(초안 `^func Test[A-Z][A-Za-z0-9_]*[(]`
+  에서 제네릭·다중공백 변종을 막도록 확장했다).
+  `TestMain`은 Go 툴체인이 예약한 엔트리포인트이므로 유일한 예외로 제외한다.
+
+개명 대상 존량은 **1,724건**이며(전체 매치 1,755에서 `TestMain` 31건을 뺀 수)
+목표명 충돌은 **3건(0.17%)** 에 불과하다.
+게이트가 추가 라인만 보므로 존량은 그대로 남고 신규 유입만 차단된다. 존량 정리는
+별도 후속으로 분리한다(§4 Non-goals).
+
+`awk` 정규식에서 `\(`는 무효다(gawk는 경고 후 fatal, 패턴 전체가 죽어 게이트가
+아무것도 잡지 못한다). 괄호는 `[(]` 문자클래스로 써야 한다. gawk·mawk·busybox awk
+3종에서 동일 동작을 실측 확인했다.
+
+최종 패턴은 `^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]` 이다. 세 가지를 함께 막는다.
+
+| 형태 | 왜 필요한가 |
+|---|---|
+| `[[:space:]]+` | `func  TestX(`(공백 2개)를 놓치지 않는다 |
+| `[([]` | 제네릭 `func TestFoo[T any](...)`를 놓치지 않는다 |
+| `([A-Z]...)?` 선택 | 이름이 `Test`뿐인 `func Test(`도 잡는다 |
+
+`TestMain` 제외는 `grep -vE '...:func[[:space:]]+TestMain\('` 로 하며, 여는 괄호를
+포함하므로 `TestMainHandler`는 제외되지 않고 정상 검출된다(실측 확인).
+
+**scan 실패 시 fail-closed (리뷰 지적으로 발견, 이 세션에서 실제로 당한 결함).**
+`awk`가 죽으면 아무 줄도 출력하지 않는다. 호출부는 그것을 "위반 없음"으로 읽고
+게이트 전체가 녹색이 된다. 실제로 이 브랜치 작업 중 패턴에 `\(`를 써서
+`awk: fatal: invalid regexp` 가 났는데도 `check-test-conventions: OK` 가 나왔다.
+`bash -n` 과 자기 브랜치 실행은 둘 다 통과했으므로 합성 시나리오 없이는 보이지 않는다.
+
+`scan()` 을 `$( )` 안에서 호출하면 그 안의 `exit 1` 은 서브셸만 죽이고 전파되지
+않는다(실측: 에러 메시지만 늘고 `EXIT=0` 유지). 첫 수정안은 `mktemp` 마커 파일에
+실패를 기록했으나 **그 방식에도 구멍이 있었다**. `TMPDIR` 이 없거나 읽기전용이면
+`mktemp` 자체가 실패해 마커 경로가 빈 문자열이 되고, awk 까지 고장난 경우 다시
+`EXIT=0` 으로 통과한다(실측 확인).
+
+따라서 임시파일 의존을 없앴다. `scan()` 이 stdout 에 출력하는 대신 전역 `SCAN_OUT`
+에 대입하고, 호출부는 `$( )` 없이 평문 호출한다. `scan()` 이 메인 셸에서 돌므로
+`scan_broken=1` 을 직접 세울 수 있다. 실패한 회차의 `SCAN_OUT` 은 빈 문자열로 덮이므로
+앞 규칙의 결과가 새지 않는다(실측 확인).
+
+`local rc` 를 먼저 선언하고 대입을 분리한 것은 의도적이다. `local out="$(cmd)"` 형태는
+`local` 의 종료코드를 잡아 `$?` 가 항상 0 이 된다(실측: 분리 시 `rc=7`, 합칠 시 `rc=0`).
+
+재현 검증: 패턴을 `\(` 로 되돌린 사본은 `EXIT=1` + `awk failed (exit 2)` 를 낸다.
+`awk` 를 `exit 2` 로 shim 하면 위반이 0건이어도 `EXIT=1` 이며, `TMPDIR` 정상·없음·
+읽기전용 3상태에서 모두 동일하다. Rule 1 만 죽고 Rule 3 위반이 있는 부분 고장에서는
+Rule 3 위반을 정상 보고한 뒤 scan 실패로 실패한다.
+
+위 세 형태는 현재 저장소에 0건이지만, 게이트는 앞으로 들어올 코드를 막는 장치이므로
+미리 닫아 둔다. 강화 후에도 전역 매치 수는 1,755건으로 동일하다(과탐 없음).
+합성 저장소 16종 시나리오 전수 통과를 실측했다(Rule 2·3 포함, 3종 awk 동일).
 
 #### 6.4.2 스크립트
+
+아래 블록은 `scripts/check-test-conventions.sh` **전문이며 바이트 일치해야 한다.**
+이 문서를 손으로 갱신하다 같은 자리(`SCAN_OUT=""` 다음)에서 **두 번 연속** 줄이
+병합되어 실행 불가 상태가 되었다(`BASE_REF: unbound variable`, 그 전 회차는
+`trap: EXITBASE_REF=...: invalid signal specification`). 사람이 지킬 규칙으로는
+부족하다고 판단해 `lint-config-check` 잡에 대조 step을 넣었다.
+
+- `.circleci/config_work.yml`: 스니펫을 추출해 `diff -u` 로 스크립트와 대조하고
+  `bash -n` 까지 돌린다. 불일치면 잡이 실패한다.
+- `.circleci/config.yml`: 이 문서 경로를 `run-lint-config-check` 매핑에 추가했다.
+  문서만 고친 변경에서도 대조가 돌아야 하기 때문이다(추가 전에는 돌지 않았다).
+
+고의로 스니펫에 한 글자를 넣은 사본으로 검출을 실측 확인했다.
 
 ```bash
 #!/usr/bin/env bash
 #
 # Enforces the test conventions declared in docs/conventions/testing.md
-# that no Go linter can express. Only inspects files changed relative to
-# the merge base with main, so the existing backlog does not fail the build.
+# that no Go linter can express. Only inspects lines a change adds relative
+# to the merge base with main, so the existing backlog does not fail the build.
 #
 # Fail-closed: if the merge base cannot be resolved the script exits non-zero.
 # The CI job is responsible for fetching origin/main before running this
 # (CircleCI's checkout only fetches the current branch's refspec).
 #
 set -uo pipefail
+
+# Set by scan() when awk itself fails. A dead pattern prints nothing, which a
+# caller would otherwise read as "no violations" -- the gate would go green while
+# checking nothing. scan() therefore writes its result into SCAN_OUT rather than
+# stdout, so it runs in this shell and can flip this flag directly.
+scan_broken=0
+SCAN_OUT=""
 
 BASE_REF="origin/main"
 
@@ -878,7 +987,7 @@ fi
 # Inspect ADDED LINES ONLY, not whole files.
 #
 # Checking whole files would make any repo-wide reformat fail this gate: a
-# gofmt-only pass rewrites 151 test files, and those files carry 178
+# gofmt-only pass rewrites over a hundred test files, and those files carry
 # pre-existing violations that the branch never introduced. Scoping to added
 # lines keeps the gate on what the branch actually wrote, which is what
 # "changed files only" was meant to express in the first place.
@@ -908,50 +1017,78 @@ report() {
 # (@@ -a,b +c,d @@) carry the new-file line number, so walk the diff and keep
 # a running counter; a bare grep over added lines would lose the location.
 scan() {
-  # $1 = ERE to match against added lines.
+  # $1 = ERE to match against added lines. Result lands in SCAN_OUT.
+  #
   # Note the patterns below are POSIX EREs as awk understands them: no \b, no
   # \<, no \s. awk warns about (and ignores) unknown escapes, which silently
   # disables a rule -- Rule 3 was lost this way during review.
-  awk -v pat="$1" '
-    /^\+\+\+ b\// { file = substr($0, 7); next }
-    /^@@ / {
-      # @@ -old,cnt +new,cnt @@
-      split($3, a, ",")
-      line = a[1]; sub(/^\+/, "", line)
-      next
-    }
-    /^\+/ {
-      body = substr($0, 2)
-      if (body ~ pat) printf "%s:%d:%s\n", file, line, body
-      line++
-    }
-  ' <<< "${DIFF_U0}"
+  #
+  # This assigns SCAN_OUT instead of printing, so callers invoke it as a plain
+  # statement rather than inside $( ). A subshell could not report awk's failure
+  # back to the main shell, and an empty result reads as "clean".
+  local rc
+  SCAN_OUT="$(
+    awk -v pat="$1" '
+      /^\+\+\+ b\// { file = substr($0, 7); next }
+      /^@@ / {
+        # @@ -old,cnt +new,cnt @@
+        split($3, a, ",")
+        line = a[1]; sub(/^\+/, "", line)
+        next
+      }
+      /^\+/ {
+        body = substr($0, 2)
+        if (body ~ pat) printf "%s:%d:%s\n", file, line, body
+        line++
+      }
+    ' <<< "${DIFF_U0}"
+  )"
+  rc=$?
+  if [ "${rc}" -ne 0 ]; then
+    printf 'check-test-conventions: awk failed (exit %s) on pattern: %s\n' \
+      "${rc}" "$1" >&2
+    scan_broken=1
+  fi
 }
 
-# Rule 1 — Test_<MethodName>, not TestXxx_Case. See 6.4.1 for why bare
-# TestXxx (no underscore) is deliberately NOT matched.
-m="$(scan '^func Test[A-Z][A-Za-z0-9]*_')"
+# Rule 1 — every test name starts with Test_. See 13.6: what follows the
+# underscore is the method, optionally plus a scenario, so both Test_Create
+# and Test_Create_HappyPath pass. TestMain is Go's own entry point and is
+# excluded; it is the only name the toolchain itself reserves.
+# The trailing [([] also catches generic tests (func TestFoo[T any](...)),
+# and [[:space:]]+ tolerates more than one space after func.
+scan '^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]'
+m="$(grep -vE '^[^:]*:[0-9]+:func[[:space:]]+TestMain\(' <<< "${SCAN_OUT}" || true)"
 [ -n "${m}" ] && report \
-  "Test function must be named Test_<MethodName> (got TestXxx_Case)." \
+  "Test function must start with Test_ (got TestXxx)." \
   " (13.6 Test Function Naming)" "${m}"
 
 # Rule 2 — assertions use reflect.DeepEqual + t.Errorf, not testify.
-m="$(scan '"github[.]com/stretchr/testify')"
+scan '"github[.]com/stretchr/testify'
+m="${SCAN_OUT}"
 [ -n "${m}" ] && report \
   "testify is not used in this repository; use reflect.DeepEqual + t.Errorf." \
   " (13.5 Assertion Pattern)" "${m}"
 
 # Rule 3 — the gomock controller variable is named mc.
-m="$(scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController')"
+scan '(^|[^A-Za-z0-9_])ctrl[ \t]*:=[ \t]*gomock[.]NewController'
+m="${SCAN_OUT}"
 [ -n "${m}" ] && report \
   "Name the gomock controller 'mc' (mc := gomock.NewController(t))." \
   " (13.3 Test Structure Conventions)" "${m}"
 
+if [ "${scan_broken}" -ne 0 ]; then
+  echo ""
+  echo "check-test-conventions: a scan failed, so the rules above could not be"
+  echo "evaluated. Failing instead of reporting a clean run."
+  exit 1
+fi
+
 if [ "${fail}" -ne 0 ]; then
   echo ""
   echo "Test convention check failed. These rules are documented in"
-  echo "docs/conventions/testing.md and are enforced only on files this"
-  echo "branch changes; pre-existing violations elsewhere are untouched."
+  echo "docs/conventions/testing.md and are enforced only on lines this"
+  echo "branch adds; pre-existing violations elsewhere are untouched."
   exit 1
 fi
 
@@ -968,7 +1105,7 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 | 4 | 파일이 1개일 때 `grep -n`이 파일명을 출력하지 않아 위반 위치를 알 수 없음 | `grep -H` 추가 |
 | 5 | 마지막 줄 `(${CHANGED} checked)`가 파일 목록 전체를 개행 포함 출력 | `${#CHANGED[@]}` 개수로 변경 |
 | 6 | Rule 3의 `mockCtrl` 분기가 사문 (저장소 내 **0건**) | 제거 |
-| 7 | Rule 1이 `TestMain` 31건과 비메서드 테스트 1,098건을 오탐 | §6.4.1대로 `TestXxx_Case`만 매치하도록 축소 |
+| 7 | Rule 1이 `TestMain` 31건을 오탐 | `grep -vE`로 `TestMain`만 제외 (§6.4.1 개정. 초안은 `TestXxx_Case`만 매치하도록 축소했으나 철회했다) |
 | 8 | `mapfile -t CHANGED < <(... \|\| true)`가 **fail-open을 되살림**. `mapfile`의 종료 상태는 프로세스 치환 내부 파이프라인이 아니라 리다이렉트 결과라 항상 0이다. `git diff`가 실패해도(shallow clone에서 merge base는 풀렸으나 objects 미확보 등) 배열이 비어 `exit 0`으로 조용히 통과 | `DIFF_OUT="$(git diff ...)"` 로 분리하여 상태를 명시 검사. `\|\| true`는 `set -e`가 없어 애초에 죽은 표현이었다 |
 | 9 | `mapfile`은 bash 4+ 전용이며 CI 이미지의 bash 버전을 확인하지 못함 | `while IFS= read -r` 루프로 대체하여 의존 제거. vendor 필터도 `case` 문으로 옮겨 `grep` 프로세스 하나를 줄였다 |
 
@@ -976,14 +1113,18 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 
 참고로 §10 Q6이 예고했던 수정안 `grep -vE '^func TestMain\('`은 **동작하지 않는다**.
 `grep -n`은 다중 파일에서 `경로:행번호:본문`을 출력하므로 `^func` 앵커가 결코 매치되지 않는다
-(실행 확인). Rule 1 축소로 이 필터 자체가 불필요해졌다.
+(실행 확인). 개정 후에는 경로·행번호 접두를 포함한 `^[^:]*:[0-9]+:func[[:space:]]+TestMain\(`
+를 쓴다.
 
 설계 근거:
 
-- **정규식 `^func Test[A-Z][A-Za-z0-9]*_`** — 정통 `Test_Create`는 `Test` 뒤가 `_`이므로 매치되지 않는다.
-  위반 `TestCreate_Success`는 `Test` 뒤가 대문자이고 이후 `_`가 있어 매치된다.
-  밑줄 없는 `TestCreate`·`TestMain`은 의도적으로 매치하지 않는다(§6.4.1).
-  실제 정통 파일 100개(bin-call/flow/queue-manager)에 강제 실행하여 **오탐 0건**을 확인했다.
+- **정규식 `^func[[:space:]]+Test([A-Z][A-Za-z0-9_]*)?[([]`** — 정통 `Test_Create`와
+  `Test_Create_HappyPath`는 `Test` 뒤가 `_`이므로 매치되지 않는다. 밑줄 없이 시작하는
+  `TestCreate`·`TestCreate_Success`는 매치된다. `TestMain`만 `grep -vE`로 제외한다(§6.4.1 개정).
+  "정통 파일 100개(bin-call/flow/queue-manager)에 오탐 0건" 은 구 규칙 기준 측정이다.
+  개정 규칙에서는 그 100파일 표본에 103건, 세 서비스 전체 248파일에는 169건
+  (각각 108·39·22)이 매치된다(밑줄 없는 존량). 오탐이 아니라
+  실제 위반이며, 게이트가 추가 라인만 보므로 CI는 붉어지지 않는다.
 - **`--diff-filter=d`** — 삭제된 파일을 grep 대상에서 제외한다 (파일 부재로 인한 오류 방지).
 - **merge base 해석 실패 시 exit 1 (fail-closed)** — 초안은 exit 0이었으나 철회했다.
   CircleCI `checkout`은 현재 브랜치의 refspec만 fetch하므로 `origin/main`이 없을 수 있고,
@@ -994,22 +1135,28 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 
 #### 6.4.4 스크립트 실행 검증 (설계 단계에서 완료)
 
+**이 절의 표는 전부 `ec3d0790e` 머지 시점, 즉 Rule 1 개정 전 기준이다.** 당시 규칙은
+`TestXxx_Case`만 위반으로 보았으므로 `TestFieldConstants`·`TestGoldenRoutingKeys` 같은
+밑줄 없는 이름이 "정통 표기"로 분류되어 있다. §6.4.1 개정 후 이들은 위반이며, 표가
+`exit 0`이라 적은 그 입력은 실제로 `exit 1`을 낸다(실측 확인). 표는 당시 검증 이력으로
+남기되, 현재 동작의 근거로 읽어서는 안 된다. 개정 후 동작 검증은 §6.4.1 개정 단락에 있다.
+
 임시 git 저장소를 만들어 실제로 실행한 결과:
 
 | 케이스 | 입력 | 결과 |
 |---|---|---|
-| 오탐 검사 | `TestMain` + `TestFieldConstants` + `Test_Get` | **OK, exit 0** |
+| 오탐 검사 | `TestMain` + `TestFieldConstants` + `Test_Get` | **OK, exit 0** (구 규칙 기준. 개정 후 `TestFieldConstants`는 위반이며 이 입력은 exit 1이다) |
 | 위반 검출 | `TestCreate_EmptyName` + testify import + `ctrl :=` | **3종 전부 검출, exit 1** |
 | 단일 파일 리포트 | 변경 파일 1개 | `pkg/d_test.go:3:` — **파일명 출력됨** |
 | fail-closed | `origin/main` ref 삭제 | **exit 1 + 조치 안내 출력** |
-| 실저장소 오탐 | 정통 테스트 파일 100개 | **Rule 1/2/3 전부 0건** |
+| 실저장소 오탐 | 정통 테스트 파일 100개 | **Rule 1/2/3 전부 0건** (구 규칙 기준) |
 
 **라운드 3 수정(§6.4.3 #8·#9) 후 재검증 (`while read` 방식):**
 
 | 케이스 | 결과 |
 |---|---|
 | 위반 3종 검출 | **3건 전부, 파일명·행번호 정상, exit 1** |
-| 정통 파일 오탐 (`TestMain`·`TestGoldenRoutingKeys`) | **OK (1 file(s) checked), exit 0** |
+| 정통 파일 오탐 (`TestMain`·`TestGoldenRoutingKeys`) | **OK (1 file(s) checked), exit 0** (구 규칙 기준) |
 | merge base 해석 실패 | **exit 1 + 조치 안내** |
 
 `mapfile` fail-open도 별도 재현으로 확인했다: `git diff`를 잘못된 ref로 실행해도
@@ -1023,7 +1170,7 @@ echo "check-test-conventions: OK (${#CHANGED[@]} file(s) checked)"
 |---|---|---|
 | **gofmt 전용 변경 (B1 시나리오)** | exit 0 | **OK (60 file(s) checked), exit 0** |
 | 위반 3종 신규 추가 | exit 1 | **3종 전부, 행번호 정확(L5/L3/L6), exit 1** |
-| 정통 표기(`TestMain`·`TestFieldConstants`·`TestGoldenRoutingKeys`) | exit 0 | **OK, exit 0** |
+| 정통 표기(`TestMain`·`TestFieldConstants`·`TestGoldenRoutingKeys`) | exit 0 | **OK, exit 0** (구 규칙 기준) |
 | vendor 경로 테스트 파일 | 무시 | **OK, exit 0** |
 | merge base 해석 실패 | exit 1 | **exit 1 + 안내** |
 
@@ -1134,7 +1281,8 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 당초 계획에는 "CLAUDE.md에 테스트 7규칙 명문화"가 포함되어 있었으나 **철회**한다.
 
 - §1.3에서 확인했듯 `docs/conventions/testing.md`가 7규칙을 이미 정확히 규정하고 있다.
-- 그럼에도 599건의 위반이 발생했다. 즉 **문서화는 이미 시도되었고 실패한 대책**이다.
+- 그럼에도 599건의 위반이 발생했다(구 규칙 `TestXxx_Case`의 `bin-*` 한정 집계.
+  개정 규칙으로는 1,724건이다). 즉 **문서화는 이미 시도되었고 실패한 대책**이다.
 - 동일한 내용을 다른 파일에 한 번 더 쓰는 것은 중복 서술을 늘리고, 두 사본이 갈라질 위험만 만든다.
 - 올바른 대책은 §6.4의 기계적 게이트다.
 
@@ -1179,7 +1327,7 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 | V5 | **CI 버전으로 실제 실행** (스키마 검증만으로는 불충분) | 핀한 버전을 설치 후 대표 서비스에서 `golangci-lint run` | 정상 종료. **`config verify` 통과만으로 합격 처리하지 않는다** (§6.2.2 발견 2) |
 | V5b | 설치 체크섬 검증 | `sha256sum -c` | OK |
 | V5c | 설치 후 버전 일치 가드 동작 | 의도적으로 다른 버전을 PATH에 둔 뒤 step 실행 | exit 1로 실패 |
-| V6 | 게이트 스크립트 오탐 없음 | 정통 파일 100개(bin-call/flow/queue-manager)를 대상으로 강제 실행 | 위반 0 **(완료: §6.4.4)** |
+| V6 | 게이트 스크립트 오탐 없음 | 정통 파일 100개(bin-call/flow/queue-manager)를 대상으로 강제 실행 | 위반 0 **(완료: §6.4.4. 구 규칙 기준. 개정 후 같은 100파일 표본에는 103건이 매치되고, 세 서비스 전체 248파일로는 169건(108+39+22)이다)** |
 | V7 | 게이트 스크립트 검출 동작 | 위반 3종을 담은 임시 저장소로 실행 | 3건 모두 검출, exit 1 **(완료: §6.4.4)** |
 | V8 | **게이트 fail-closed 동작** | `origin/main` ref 삭제 후 실행 | **exit 1** + 조치 안내 출력 **(완료: §6.4.4)** |
 | V8b | **게이트가 CI에서 실제로 merge base를 해석했는지** | CI 로그에서 `check-test-conventions: OK (N file(s) checked)` 확인 | N ≥ 1이며 skip/실패 메시지가 아님. **이 확인 없이는 G4 달성으로 간주하지 않는다** |
@@ -1217,8 +1365,10 @@ Risk: None이 아니다. R2(발생 확인됨)·R3·R4가 실질 리스크이며,
 **Q5 — 해결됨 (§6.2.2).** v2.5.0은 스키마는 통과하나 **실행이 불가능**했다(go1.25 빌드 vs 1.27.1 타깃).
 v2.14.0(go1.27.0 빌드)으로 교체하여 실제 `run` 성공을 확인했다. `install.sh`도 버그가 있어 제거했다.
 
-**Q6 — 해소됨 (§6.4.1).** Rule 1을 `TestXxx_Case`만 매치하도록 축소하여 `TestMain` 오탐이 사라졌다.
-예고했던 필터 `grep -vE '^func TestMain\('`은 애초에 동작하지 않는 코드였다(§6.4.3).
+**Q6 — 해소됨 (§6.4.1 개정).** `TestMain`은 `grep -vE '^[^:]*:[0-9]+:func[[:space:]]+TestMain\('`
+로 제외한다. 경로·행번호 접두를 포함하므로 `^func` 앵커가 매치되지 않던 초안 필터의 결함을
+해결했고, `TestMainHandler`가 함께 제외되지 않는 것도 실측 확인했다.
+초안의 "Rule 1을 `TestXxx_Case`만 매치하도록 축소" 방안은 철회되었다.
 
 **Q7 — 해결됨 (§6.5(c), 대표님 확정).** README의 em dash 11건을 **전부 정리**한다.
 `open-source`(하이픈) 2건도 `opensource` 한 단어로 통일한다.
@@ -1386,5 +1536,5 @@ stale tracking ref를 포함한다는 지적을 받아 "살아있는 원격 브�
 | `concurrency`가 메모리를 줄이지 못함 (-1.8%) | 콜드 캐시 재측정 | OOM 미해결 상태로 배포 |
 | `goimports`가 gofmt보다 13파일 더 잡음 | `goimports -l` 대조 | 6개 서비스 job 실패 |
 | `gofmt`가 SQL 주석을 스마트쿼트로 치환 | 전체 diff 비ASCII 스캔 | 문서화된 SQL 식 손상 |
-| Rule 1 정규식이 1,755건 매치 (의도는 626건) | 실제 저장소 grep | 정당한 테스트 1,129건 오탐 |
+| Rule 1 정규식이 1,755건 매치 (당시 의도는 626건) | 실제 저장소 grep | 오탐으로 오판. 개정 후 1,724건은 실제 위반이고 `TestMain` 31건만 제외 대상이다 |
 | `grep -n` 다중 파일 출력 형식으로 필터 무효화 | 임시 저장소 실행 | 예외 처리가 조용히 동작 안 함 |
