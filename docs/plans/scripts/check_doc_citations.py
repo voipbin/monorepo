@@ -54,8 +54,16 @@ CITATION = re.compile(
     r"(?P<endtick>`?)"
 )
 # A bare `:N` or `:N-M` continuation, e.g. "same file, `:53-59`". Bound to the
-# most recent path cited on the same document line.
-CONTINUATION = re.compile(r"`:(?P<start>\d+)(?:[-,](?P<end>\d+))?`")
+# most recent path cited on the same document line. An optional trailing symbol
+# (`:327 resolveTools`) is the mirror image of SYMBOL_CONTINUATION below, and it
+# was invisible for the same reason: the closing backtick used to be required
+# immediately after the digits, so a trailing symbol broke this match, while the
+# leading colon broke the other one. Nine citations in the MCP analysis document
+# were written this way and a mutation to line 999999 kept every one of them
+# green. Capture the symbol so it is verified rather than skipped.
+CONTINUATION = re.compile(
+    r"`:(?P<start>\d+)(?:[-,](?P<end>\d+))?(?: (?P<symbol>[A-Za-z_][A-Za-z0-9_.]*))?`"
+)
 # A symbol-qualified continuation, e.g. "`Update:205-207`" or "`Get:104-112`",
 # also bound to the most recent path on the line. This spelling carried four
 # stale citations through five review rounds untouched, because it looks like
@@ -315,6 +323,20 @@ SELF_TEST_PROBES = [
      "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `IsValid:999999`\n"),
     (0, "Symbol:N continuation naming its real line must PASS", None,
      "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `IsValid:205`\n"),
+    # The mirror spelling, `:N Symbol`. Nine citations in the MCP analysis
+    # document were written this way and NONE was checked: the trailing symbol
+    # broke CONTINUATION's closing backtick, and the leading colon broke
+    # SYMBOL_CONTINUATION's [A-Z] start. The two rules had a gap exactly between
+    # them. A range's END is deliberately not symbol-checked, since the symbol
+    # describes the construct the range opens, so that case gets a PASS probe too.
+    (1, ":N Symbol continuation whose line moved is refused", "ANCHOR MISMATCH",
+     "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `:1 IsValid`\n"),
+    (1, ":N Symbol continuation past EOF is refused", "OUT OF RANGE",
+     "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `:999999 IsValid`\n"),
+    (0, ":N Symbol continuation naming its real line must PASS", None,
+     "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `:205 IsValid`\n"),
+    (0, ":N-M Symbol must not check the symbol against the range end", None,
+     "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `:205-207 IsValid`\n"),
     (0, "correct cross-repo citation must PASS", None,
      "`square-admin/src/views/ais/ais_detail.js:421`"),
 ]
@@ -481,7 +503,7 @@ def self_test(doc):
     # it is written down, not derived, so removing a probe fails this run.
     # No self-test can do better -- a check cannot notice its own absence
     # unless something outside it remembers how many there should be.
-    EXPECTED_CHECKS = 41
+    EXPECTED_CHECKS = 45
     if performed != EXPECTED_CHECKS:
         failures += 1
         print("FAIL  %-58s (harness)"
@@ -690,11 +712,13 @@ def main():
                 continue
             bound.append((cont, src, not prior))
         for cont, (cited, path), carried in bound:
-            check_one(doc_line, cited, path, int(cont.group("start")), None,
-                      carried=carried)
+            check_one(doc_line, cited, path, int(cont.group("start")),
+                      cont.group("symbol"), carried=carried)
             if cont.group("end"):
                 # The END of a range is expected to be a block's closing brace,
-                # so landing quality proves nothing there.
+                # so landing quality proves nothing there. A trailing symbol
+                # describes the construct the range OPENS, so it is not expected
+                # on the closing line and must not be checked against it.
                 check_one(doc_line, cited, path, int(cont.group("end")), None,
                           carried_end=carried)
         for cont in sym_conts:
