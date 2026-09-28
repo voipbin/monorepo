@@ -73,8 +73,14 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 	if !ok {
 		// Should be unreachable (Start already validated the vendor at
 		// state-creation time), but fail closed rather than panic on a
-		// map lookup for an unknown key.
-		return nil, cerrors.Internal(commonoutline.ServiceNameAIManager, "INVALID_MCP_OAUTH_VENDOR", "the oauth state names an unknown vendor")
+		// map lookup for an unknown key. This is deliberately NOT
+		// INVALID_MCP_OAUTH_VENDOR: that reason is published as a 400 the
+		// customer can fix by choosing a supported vendor, and reusing it
+		// for a 500 would put one reason code behind two HTTP statuses on a
+		// page that promises they map one to one. Reaching here means the
+		// vendor was removed from the catalog while a state row was open,
+		// which is ours to fix, not theirs.
+		return nil, cerrors.Internal(commonoutline.ServiceNameAIManager, "MCP_OAUTH_VENDOR_UNAVAILABLE", "the oauth state names a vendor that is no longer configured")
 	}
 
 	// Reconnect (design §9). Ownership was verified in Start before the state

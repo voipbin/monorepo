@@ -3,6 +3,7 @@ package mcpoauthhandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/models/mcpoauthstate"
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	commonerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -538,5 +540,63 @@ func Test_Complete_ReconnectSuccessPersistsTokens(t *testing.T) {
 	}
 	if res == nil || res.ID != serverID {
 		t.Fatalf("expected the reconnected server %s, got: %#v", serverID, res)
+	}
+}
+
+// Test_Complete_UnconfiguredVendorIsNotAnInvalidArgument pins the reason and
+// status of the vendor-disappeared path.
+//
+// It matters because the reason code is published. INVALID_MCP_OAUTH_VENDOR is
+// documented as a 400 the customer fixes by choosing a supported vendor; this
+// path is a 500 the customer cannot fix, since the vendor was removed from the
+// platform catalog while their authorization was pending. Reusing the 400's
+// reason here would put one reason code behind two HTTP statuses on a page that
+// promises they map one to one, and a client branching on the reason would retry
+// a request that can never succeed.
+//
+// The state row is deliberately valid in every other respect -- owned, live,
+// unexpired -- so the only thing under test is the unknown vendor.
+func Test_Complete_UnconfiguredVendorIsNotAnInvalidArgument(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	h := newTestHandler(t, mockDB)
+	h.utilHandler = mockUtil
+
+	state := "test-state-token"
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	future := now.Add(time.Minute)
+	customerID := uuid.Must(uuid.NewV4())
+
+	mockDB.EXPECT().McpOAuthStateGet(gomock.Any(), state).Return(&mcpoauthstate.McpOAuthState{
+		State:        state,
+		CustomerID:   customerID,
+		Vendor:       "a-vendor-that-is-no-longer-configured",
+		PKCEVerifier: "verifier",
+		TMExpire:     &future,
+	}, nil)
+	mockUtil.EXPECT().TimeNow().Return(&now)
+
+	// The state must NOT be consumed: the failure is ours, so the customer's
+	// pending authorization is not silently burned on our behalf.
+	_, err := h.Complete(context.Background(), customerID, state, "auth-code")
+	if err == nil {
+		t.Fatal("expected Complete to refuse a state naming an unconfigured vendor")
+	}
+
+	var ve *commonerrors.VoipbinError
+	if !errors.As(err, &ve) {
+		t.Fatalf("expected a VoipbinError, got %T: %v", err, err)
+	}
+	if ve.Status != commonerrors.StatusInternal {
+		t.Errorf("expected status %v (HTTP 500), got %v", commonerrors.StatusInternal, ve.Status)
+	}
+	if ve.Reason != "MCP_OAUTH_VENDOR_UNAVAILABLE" {
+		t.Errorf("expected reason %q, got %q", "MCP_OAUTH_VENDOR_UNAVAILABLE", ve.Reason)
+	}
+	if ve.Reason == "INVALID_MCP_OAUTH_VENDOR" {
+		t.Error("this path must not reuse the 400 reason: one reason code cannot carry two HTTP statuses")
 	}
 }

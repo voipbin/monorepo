@@ -1714,7 +1714,7 @@ anything below.**
 |---|---|
 | SSRF / URL validation | `ValidateURL` IS applied on both write paths: `mcpserverhandler/handler.go:38` (Create) and `mcpserverhandler/handler.go:146-150` (Update, under `if url != nil`). Literal private/loopback/link-local addresses are rejected (`ssrf.go:31-57`, `rejectDisallowedIP:63-77`), and the DNS-rebinding case is closed at dial time by `controlRejectDisallowedAddr` (`ssrf.go:117-133`) via the shared guarded client (`mcptoolhandler/client.go:140-144`). **Nothing for PR A to add** beyond §5 item 7's precedence fix |
 | Key rotation | **No rotation or re-encryption job exists anywhere in the repo.** Rotation is config-side and decrypt-by-row-version (`mcpserverhandler/secret.go:123-130`, `NewSecretCrypto:79-89`); nothing iterates rows, so zeroed rows would be encountered by no job. Credential zeroing is safe on this axis |
-| Caller-set completeness | Full non-test, non-mock enumeration. `db.McpServerUpdate`: exactly 3 callers (`mcpserverhandler/handler.go:206`, `mcpoauthhandler/access_token.go:108`, `mcpoauthhandler/complete.go:126`) — all named in §5 item 1/§6. `db.McpServerDelete`: exactly 1 (`handler.go:226`) — named. `db.McpServerGet`: 10; the three not named in this analysis (`handler.go:82`, `complete.go:129`, `complete.go:161`) are post-write read-backs of a row the same function just wrote, harmless once `:126` is gated. **No caller of consequence is unmentioned** |
+| Caller-set completeness | Full non-test, non-mock enumeration. `db.McpServerUpdate`: exactly 3 callers (`mcpserverhandler/handler.go:303 McpServerUpdate`, `mcpoauthhandler/access_token.go:108`, `mcpoauthhandler/complete.go:155 McpServerUpdate`) — all named in §5 item 1/§6. `db.McpServerDelete`: exactly 1 (`handler.go:329 McpServerDelete`) — named. `db.McpServerGet`: 10; the three not named in this analysis (`handler.go:82`, `complete.go:129`, `complete.go:161`) are post-write read-backs of a row the same function just wrote, harmless once `:155` is gated. **No caller of consequence is unmentioned** |
 | Concurrency | No transaction or row lock on any mcpserver path — `McpServerDelete` is a bare UPDATE, unlike `dbhandler/ai.go:243`+`dbhandler/ai.go:294` and `dbhandler/aipromptproposal.go:227`+`dbhandler/aipromptproposal.go:253` which use `BeginTx` + `FOR UPDATE`. For delete-vs-tool-call, the fail-closed re-read per call (`client.go:191`, `:214`) is **sufficient**: the residual window is at most one already-dispatched outbound request. **No transaction warranted.** State this bound in the PR body, since `mcpservers_detail.js:496` promises immediacy |
 | Tool-path error surface | `toolHandleMcpCall` converts every failure into a generic `fillFailed(...)` tool result (`mcp_tool.go:137-174`), so gating never leaks a status code to a customer through the AI path |
 
@@ -1898,7 +1898,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    by `test_delete_mcpserver_soft_delete_then_get_still_200`), so answering 404 only on
    the *second* DELETE while GET keeps answering 200 would be incoherent.
    **Mechanism the design doc must specify (v16):** the new zero-row error from
-   `McpServerDelete` is **swallowed at the handler** (`handler.go:226`), which then falls
+   `McpServerDelete` is **swallowed at the handler** (`handler.go:329 McpServerDelete`), which then falls
    through to the existing read-back at `:230` and returns 200 while skipping the
    duplicate `EventTypeDeleted`. Without stating this, the naive implementation
    propagates the error and yields 404, contradicting this very decision.
@@ -1922,7 +1922,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    `McpServerDelete` would be **silently no-op'd** by the `tm_delete IS NULL` predicate
    §5 item 1 mandates, because `McpServerUpdate` ignores `RowsAffected`
    (`dbhandler/mcpserver.go:154-156`). Confirmed acceptable side effect: `has_secret`
-   flips to false on the `EventTypeDeleted` payload (`mcpserverhandler/handler.go:242`)
+   flips to false on the `EventTypeDeleted` payload (`mcpserverhandler/handler.go:349 EventTypeDeleted`)
    and on the GET-after-DELETE response; no validator test asserts it (§3.14), no
    square-admin consumer breaks (§3.12), no documented contract exists (§3.7), and it is
    truthful.
@@ -2093,7 +2093,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    POST/PUT with a customer-supplied secret," and the OpenAPI spec enumerates only
    `["", "bearer", "api_key"]` (`paths/mcpservers/main.yaml:57`, `id.yaml:74`). But
    `models/mcpserver/main.go:27 validAuthTypes` (`:27-29`) includes `AuthTypeOAuth: true`, the write paths check
-   only `IsValid()` (`handler.go:48-50`, `:154-156`), and there is no OpenAPI
+   only `IsValid()` (`handler.go:48-50`, `:205-207`), and there is no OpenAPI
    request-validator middleware in `bin-api-manager` to fall back on (§3.7c). Option
    (b) — relaxing the docs to match — would deliberately make an already-correct
    document wrong.
