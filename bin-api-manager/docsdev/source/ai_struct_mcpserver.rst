@@ -52,6 +52,12 @@ MCP Server
 
    MCP servers do **not** use the ``9999-01-01 00:00:00.000000`` sentinel that some older VoIPBin resources use for "not yet occurred." ``tm_update`` and ``tm_delete`` are ``null`` until the server is first updated or deleted, so test for ``null`` rather than comparing against a sentinel date.
 
+.. note:: **Deleting a server destroys its credentials**
+
+   ``DELETE /mcpservers/{id}`` is a revocation, not an archive. The stored secret, and any OAuth access and refresh tokens, are erased at the moment of deletion and cannot be recovered -- not by VoIPBin support either. The record itself is retained so that audit history and existing AI references stay readable, but ``has_secret`` becomes ``false`` and the server stops serving tools immediately.
+
+   To use the same endpoint again, register a new MCP server and supply the secret again (or complete the OAuth flow again). If you only want to stop the server temporarily, set ``status`` to ``disabled`` instead: that keeps the credential and is reversible.
+
 Example
 +++++++
 

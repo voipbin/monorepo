@@ -689,6 +689,12 @@
 <p><strong>MCP Server Implementation Hint</strong></p>
 <p>MCP servers do <strong>not</strong> use the <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> sentinel that some older VoIPBin resources use for “not yet occurred.” <code class="docutils literal notranslate"><span class="pre">tm_update</span></code> and <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> are <code class="docutils literal notranslate"><span class="pre">null</span></code> until the server is first updated or deleted, so test for <code class="docutils literal notranslate"><span class="pre">null</span></code> rather than comparing against a sentinel date.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Deleting a server destroys its credentials</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/mcpservers/{id}</span></code> is a revocation, not an archive. The stored secret, and any OAuth access and refresh tokens, are erased at the moment of deletion and cannot be recovered – not by VoIPBin support either. The record itself is retained so that audit history and existing AI references stay readable, but <code class="docutils literal notranslate"><span class="pre">has_secret</span></code> becomes <code class="docutils literal notranslate"><span class="pre">false</span></code> and the server stops serving tools immediately.</p>
+<p>To use the same endpoint again, register a new MCP server and supply the secret again (or complete the OAuth flow again). If you only want to stop the server temporarily, set <code class="docutils literal notranslate"><span class="pre">status</span></code> to <code class="docutils literal notranslate"><span class="pre">disabled</span></code> instead: that keeps the credential and is reversible.</p>
+</div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>

@@ -678,6 +678,19 @@ External AI Agent Integration
 =============================
 For users who prefer to use external AI services, VoIPBin offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
 
+VoIPBin MCP Server
+------------------
+VoIPBin publishes an official MCP (Model Context Protocol) server that exposes the VoIPBin API as tools to any MCP-compatible AI client, so an assistant can place calls, build flows, and manage contacts on your account directly.
+
+* Source: https://github.com/voipbin/mcp
+* Run it without installing: ``uvx voipbin-mcp``
+
+Authenticate it with an access key from your account and set that key in the ``VOIPBIN_API_KEY`` environment variable.
+
+.. note::
+
+   This is the reverse direction from :ref:`MCP Server <mcpserver-struct-mcpserver>` resources. Here an external AI client calls **into** VoIPBin. An MCP Server resource points **out** to a server you host, so that a VoIPBin AI can call your tools during a conversation.
+
 
 Common Scenarios
 ================

@@ -48,9 +48,10 @@ func (h *mcpServerHandler) Create(
 	if !authType.IsValid() {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_AUTH_TYPE", "invalid auth_type: "+string(authType))
 	}
-	// See Update: `oauth` is a state the OAuth flow produces, not an input.
-	// Creating a server already claiming it would advertise a bearer token that
-	// does not exist.
+	// A create has no prior row to transition from, so unlike Update this is a
+	// plain value rejection: `oauth` is a state the OAuth flow produces, not
+	// an input. Creating a server already claiming it would advertise a bearer
+	// token that does not exist.
 	if authType == mcpserver.AuthTypeOAuth {
 		return nil, cerrors.InvalidArgument(
 			commonoutline.ServiceNameAIManager,
@@ -188,7 +189,8 @@ func (h *mcpServerHandler) Update(
 	// other consumers require the opposite behaviour (the REST read of a
 	// soft-deleted server must keep answering 200, and Delete reads the row back
 	// after deleting it).
-	if _, err := h.getLive(ctx, id); err != nil {
+	live, err := h.getLive(ctx, id)
+	if err != nil {
 		return nil, err
 	}
 
@@ -203,11 +205,18 @@ func (h *mcpServerHandler) Update(
 	if authType != nil && !authType.IsValid() {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_AUTH_TYPE", "invalid auth_type: "+string(*authType))
 	}
-	// `oauth` is reachable only by completing the OAuth flow, which is what
-	// writes the tokens. Accepting it on a direct PUT would produce a server
-	// whose auth_type promises a bearer token it has no way to obtain, and the
-	// published docs enumerate only "", "bearer" and "api_key" as settable.
-	if authType != nil && *authType == mcpserver.AuthTypeOAuth {
+	// Validate the TRANSITION, not the value: `oauth` is reachable only by
+	// completing the OAuth flow, which is what writes the tokens. Accepting a
+	// direct move INTO oauth would produce a server whose auth_type promises a
+	// bearer token it has no way to obtain.
+	//
+	// A server that already completed OAuth must stay editable. square-admin
+	// re-submits auth_type unchanged on every save (it builds the PUT body
+	// from form state, not from a diff), so rejecting the VALUE would 400
+	// every rename, URL change, and enable/disable of a connected server --
+	// the same permanent-freeze shape as an unremovable whitelist id. Compare
+	// against the stored row and reject only an actual transition.
+	if authType != nil && *authType == mcpserver.AuthTypeOAuth && live.AuthType != mcpserver.AuthTypeOAuth {
 		return nil, cerrors.InvalidArgument(
 			commonoutline.ServiceNameAIManager,
 			"INVALID_MCP_SERVER_AUTH_TYPE",

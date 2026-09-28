@@ -1415,6 +1415,19 @@ fault.</p></li>
 <section id="external-ai-agent-integration">
 <h1>External AI Agent Integration<a class="headerlink" href="#external-ai-agent-integration" title="Link to this heading">¶</a></h1>
 <p>For users who prefer to use external AI services, VoIPBin offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.</p>
+<section id="voipbin-mcp-server">
+<h2>VoIPBin MCP Server<a class="headerlink" href="#voipbin-mcp-server" title="Link to this heading">¶</a></h2>
+<p>VoIPBin publishes an official MCP (Model Context Protocol) server that exposes the VoIPBin API as tools to any MCP-compatible AI client, so an assistant can place calls, build flows, and manage contacts on your account directly.</p>
+<ul class="simple">
+<li><p>Source: <a class="reference external" href="https://github.com/voipbin/mcp">https://github.com/voipbin/mcp</a></p></li>
+<li><p>Run it without installing: <code class="docutils literal notranslate"><span class="pre">uvx</span> <span class="pre">voipbin-mcp</span></code></p></li>
+</ul>
+<p>Authenticate it with an access key from your account and set that key in the <code class="docutils literal notranslate"><span class="pre">VOIPBIN_API_KEY</span></code> environment variable.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is the reverse direction from <a class="reference internal" href="ai_struct_mcpserver.html#mcpserver-struct-mcpserver"><span class="std std-ref">MCP Server</span></a> resources. Here an external AI client calls <strong>into</strong> VoIPBin. An MCP Server resource points <strong>out</strong> to a server you host, so that a VoIPBin AI can call your tools during a conversation.</p>
+</div>
+</section>
 </section>
 <section id="common-scenarios">
 <h1>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h1>
