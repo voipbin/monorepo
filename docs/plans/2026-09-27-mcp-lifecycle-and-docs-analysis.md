@@ -410,8 +410,8 @@ not, which is why gating reads alone leaves a resurrection path.
   does not close this.
 - `pkg/mcpoauthhandler/access_token.go:37-112` `GetValidAccessToken` receives an
   already-fetched `*mcpserver.McpServer` from `pkg/mcptoolhandler/client.go:97`
-  and persists rotated tokens via `McpServerUpdate:108`. It has NO independent
-  read, so a transport gate at `client.go:191/214` also closes the refresh path —
+  and persists rotated tokens via `access_token.go:108 McpServerUpdate`. It has NO independent
+  read, so a transport gate at `client.go:211/237` also closes the refresh path —
   no separate gate needed. Until then, `ListTools` against a deleted OAuth server
   keeps refreshing and re-persisting vendor tokens on it.
 - **Verified clean, do NOT over-gate:** the public unauthenticated
@@ -596,8 +596,8 @@ named — for the second time in two rounds, on the two halves of one defect.
 literal no-op.** Both round-13 reviewers found this independently, and they are right.
 
 **Why the v19 prescription cannot work.** `refreshMcpToolMap(ctx, existing *aicall.AIcall,
-a *ai.AI)` (`mcp_tool.go:288`) reads the whitelist from its **`a` parameter** only
-(`:293` `h.resolveTools(ctx, a)`); `existing` is used solely for `existing.ID` on the
+a *ai.AI)` (`mcp_tool.go:322 refreshMcpToolMap`) reads the whitelist from its **`a` parameter** only
+(`:327 resolveTools`); `existing` is used solely for `existing.ID` on the
 re-read and write (`:332 AIcallGet`, `:343 AIcallUpdateNoTouchTMUpdate`). And `resolveTeamMemberForSend(ctx, c *aicall.AIcall)`
 (`send.go:154`) returns **only `error`**: it resolves the current member's AI into a local
 at `:166`, then keeps just the engine model (`:173` `c.AIEngineModel = a.EngineModel`) and,
@@ -1186,7 +1186,7 @@ So a PUT against a deleted server would return **200 with unchanged fields and a
 spurious `EventTypeUpdated` webhook**. Today's visible resurrection becomes a
 silent success, which is arguably worse: the customer believes the update applied.
 
-The same mechanic defeats the OAuth `Complete` gate, since `complete.go:126` writes
+The same mechanic defeats the OAuth `Complete` gate, since `complete.go:155 McpServerUpdate` writes
 through `McpServerUpdate`.
 
 **Therefore §7's promised tests ("rejected by `McpServerUpdate`", "rejected by
@@ -1219,7 +1219,7 @@ at `handler.go:329 McpServerDelete` so the response stays 200, stop re-publishin
 POST/PUT." Nothing enforces that:
 - `AuthType.IsValid()` (`models/mcpserver/main.go:27-34`) **accepts**
   `AuthTypeOAuth`.
-- `mcpserverhandler.Create:48-50` and `Update:154-156` check only `IsValid()`.
+- `mcpserverhandler/handler.go:48-50` (Create) and `:205-207` (Update) check only `IsValid()`.
 - `bin-api-manager/server/mcpservers.go:91-94` (POST) and `:185-189` (PUT) cast the
   raw string straight through.
 - **There is no OpenAPI request-validator middleware.** `grep -rn
@@ -1713,7 +1713,7 @@ anything below.**
 | Area | Finding |
 |---|---|
 | SSRF / URL validation | `ValidateURL` IS applied on both write paths: `mcpserverhandler/handler.go:38` (Create) and `mcpserverhandler/handler.go:146-150` (Update, under `if url != nil`). Literal private/loopback/link-local addresses are rejected (`ssrf.go:31-57`, `rejectDisallowedIP:63-77`), and the DNS-rebinding case is closed at dial time by `controlRejectDisallowedAddr` (`ssrf.go:117-133`) via the shared guarded client (`mcptoolhandler/client.go:140-144`). **Nothing for PR A to add** beyond §5 item 7's precedence fix |
-| Key rotation | **No rotation or re-encryption job exists anywhere in the repo.** Rotation is config-side and decrypt-by-row-version (`mcpserverhandler/secret.go:123-130`, `NewSecretCrypto:79-89`); nothing iterates rows, so zeroed rows would be encountered by no job. Credential zeroing is safe on this axis |
+| Key rotation | **No rotation or re-encryption job exists anywhere in the repo.** Rotation is config-side and decrypt-by-row-version (`mcpserverhandler/secret.go:123-130`, `NewSecretCrypto:34`); nothing iterates rows, so zeroed rows would be encountered by no job. Credential zeroing is safe on this axis |
 | Caller-set completeness | Full non-test, non-mock enumeration. `db.McpServerUpdate`: exactly 3 callers (`mcpserverhandler/handler.go:303 McpServerUpdate`, `mcpoauthhandler/access_token.go:108`, `mcpoauthhandler/complete.go:155 McpServerUpdate`) — all named in §5 item 1/§6. `db.McpServerDelete`: exactly 1 (`handler.go:329 McpServerDelete`) — named. `db.McpServerGet`: 10; the three not named in this analysis (`handler.go:93 McpServerGet`, `complete.go:158 McpServerGet`, `complete.go:190 McpServerGet`) are post-write read-backs of a row the same function just wrote, harmless once `:155` is gated. **No caller of consequence is unmentioned** |
 | Concurrency | No transaction or row lock on any mcpserver path — `McpServerDelete` is a bare UPDATE, unlike `dbhandler/ai.go:243`+`dbhandler/ai.go:294` and `dbhandler/aipromptproposal.go:227`+`dbhandler/aipromptproposal.go:253` which use `BeginTx` + `FOR UPDATE`. For delete-vs-tool-call, the fail-closed re-read per call (`client.go:211 McpServerGet`, `:214`) is **sufficient**: the residual window is at most one already-dispatched outbound request. **No transaction warranted.** State this bound in the PR body, since `mcpservers_detail.js:496` promises immediacy |
 | Tool-path error surface | `toolHandleMcpCall` converts every failure into a generic `fillFailed(...)` tool result (`mcp_tool.go:137-174`), so gating never leaks a status code to a customer through the AI path |
@@ -2139,7 +2139,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    produces. `handler.go:206-208` wraps with a plain `errors.Wrapf`, so a bare
    `dbhandler.ErrNotFound` from a `RowsAffected`-gated `McpServerUpdate` resolves via
    `listenhandler/main.go:194-195` to `RESOURCE_NOT_FOUND`. PR A must translate it at
-   `handler.go:206` (mirroring `Get:96-101`), or the gate path and the TOCTOU race
+   `handler.go:206` (mirroring `Get:104-112`), or the gate path and the TOCTOU race
    path return two different codes for the same condition.
 8. **Does PR A prune stale ids from `ai.mcp_server_ids` on delete?** **RESOLVED: no.**
    §5 item 9's skip-not-reject removes the reason pruning existed (D21's frozen AI), and the

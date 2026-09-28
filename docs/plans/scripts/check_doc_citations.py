@@ -56,6 +56,16 @@ CITATION = re.compile(
 # A bare `:N` or `:N-M` continuation, e.g. "same file, `:53-59`". Bound to the
 # most recent path cited on the same document line.
 CONTINUATION = re.compile(r"`:(?P<start>\d+)(?:[-,](?P<end>\d+))?`")
+# A symbol-qualified continuation, e.g. "`Update:205-207`" or "`Get:104-112`",
+# also bound to the most recent path on the line. This spelling carried four
+# stale citations through five review rounds untouched, because it looks like
+# neither a path citation (no file extension) nor a bare continuation (the colon
+# is not the first character), so BOTH patterns above skipped it and the line was
+# never opened. The leading capital is what separates `Update:205` from a path;
+# treat the symbol as an anchor so a shifted line is reported, not just counted.
+SYMBOL_CONTINUATION = re.compile(
+    r"`(?P<symbol>[A-Z][A-Za-z0-9_.]*):(?P<start>\d+)(?:[-,](?P<end>\d+))?`"
+)
 HEXTOKEN = re.compile(r"\b([0-9a-f]{7,40})\b")
 
 # Cited files that legitimately live outside every root we were given.
@@ -288,6 +298,23 @@ SELF_TEST_PROBES = [
      "Line one.\nSee doc:1 \"Line one\" for the statement.\n"),
     (0, "correct anchor must PASS", None,
      "`bin-ai-manager/pkg/aicallhandler/start.go:375 refreshMcpToolMap`"),
+    # `Symbol:N` continuations. This spelling was invisible to both the path and
+    # the bare-continuation patterns, so four stale citations written this way
+    # survived five review rounds unopened. A probe per outcome, because a rule
+    # nobody exercises is a rule that silently stops working (this file's own
+    # `:79-86` probe did exactly that two commits ago).
+    #
+    # The PASS probe names a symbol that really is ON its cited line. Note what
+    # that implies for authors: `Update:205-207` does NOT pass, because a Go
+    # function's name lives on its signature, not on the lines inside it. That is
+    # the intended pressure -- cite the file and line, or anchor on a symbol the
+    # line actually contains.
+    (1, "Symbol:N continuation whose line moved is refused", "ANCHOR MISMATCH",
+     "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `IsValid:1`\n"),
+    (1, "Symbol:N continuation past EOF is refused", "OUT OF RANGE",
+     "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `IsValid:999999`\n"),
+    (0, "Symbol:N continuation naming its real line must PASS", None,
+     "`bin-ai-manager/pkg/mcpserverhandler/handler.go:48` and `IsValid:205`\n"),
     (0, "correct cross-repo citation must PASS", None,
      "`square-admin/src/views/ais/ais_detail.js:421`"),
 ]
@@ -454,7 +481,7 @@ def self_test(doc):
     # it is written down, not derived, so removing a probe fails this run.
     # No self-test can do better -- a check cannot notice its own absence
     # unless something outside it remembers how many there should be.
-    EXPECTED_CHECKS = 38
+    EXPECTED_CHECKS = 41
     if performed != EXPECTED_CHECKS:
         failures += 1
         print("FAIL  %-58s (harness)"
@@ -649,6 +676,10 @@ def main():
                 check_one(doc_line, cited, path, int(match.group("end")), symbol)
 
         conts = list(CONTINUATION.finditer(line))
+        # `Update:205-207` binds to the same carried path as `:205-207` does, but
+        # carries a symbol we can verify, so route it through the same binding
+        # logic and hand check_one the symbol as an anchor.
+        sym_conts = list(SYMBOL_CONTINUATION.finditer(line))
         bound = []
         for cont in conts:
             # Nearest path cited BEFORE this continuation on the same line;
@@ -666,6 +697,22 @@ def main():
                 # so landing quality proves nothing there.
                 check_one(doc_line, cited, path, int(cont.group("end")), None,
                           carried_end=carried)
+        for cont in sym_conts:
+            # A SYMBOL_CONTINUATION overlapping a real path citation is that
+            # citation's own text (e.g. the `Main.go:12` inside a longer path),
+            # already checked above. Skip it rather than double-reporting.
+            if any(sp[0] <= cont.start() < sp[0] + 1 for sp in path_spans):
+                continue
+            if any(not (cont.end() <= c.start() or c.end() <= cont.start())
+                   for c in conts):
+                continue
+            prior = [sp for sp in path_spans if sp[0] < cont.start()]
+            src = (prior[-1][1], prior[-1][2]) if prior else carried_span
+            if src is None:
+                continue
+            cited, path = src
+            check_one(doc_line, cited, path, int(cont.group("start")),
+                      cont.group("symbol"), carried=not prior)
         carried_span = last_path
         if len(bound) < len(conts):
             conts = [c for c in conts if all(c is not b[0] for b in bound)]
