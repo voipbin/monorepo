@@ -250,6 +250,10 @@ func Test_toolHandleMcpCall(t *testing.T) {
 
 		wantResult      string
 		wantCallToolHit bool
+		// Which refusal. Every gate fills the same "failed" result, so
+		// asserting only on that lets a nil AI be replaced by an empty one and
+		// still pass: the NEXT gate refuses and the outcome is identical.
+		wantMessage string
 	}{
 		{
 			name:     "success: Go-value metadata resolves and dispatches",
@@ -359,6 +363,10 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			},
 			wantResult:      "failed",
 			wantCallToolHit: false,
+			// The resolver's OWN refusal, not the whitelist gate's. An empty
+			// AI substituted for the nil would produce the whitelist
+			// message instead, and that mutation used to survive.
+			wantMessage: "could not retrieve AI configuration",
 		},
 	}
 
@@ -389,6 +397,10 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			got := h.toolHandleMcpCall(context.Background(), tt.aicall, tc)
 			if got.Result != tt.wantResult {
 				t.Errorf("expected result %q, got %q (message: %q)", tt.wantResult, got.Result, got.Message)
+			}
+
+			if tt.wantMessage != "" && got.Message != tt.wantMessage {
+				t.Errorf("wrong refusal. expect: %q, got: %q", tt.wantMessage, got.Message)
 			}
 
 			if tt.wantResult == "failed" {

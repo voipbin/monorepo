@@ -1,8 +1,8 @@
-# Analysis: MCP server lifecycle correctness + square-admin parity (v34, PR A/C only)
+# Analysis: MCP server lifecycle correctness + square-admin parity (v35, PR A/C only)
 
 Date: 2026-09-27
 Author: CPO (Hermes)
-Status: v34, Analysis Review Loop round 26 pending
+Status: v35, Analysis Review Loop round 27 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
 Round 7: fact-check **APPROVED** (3 consecutive); adversarial CHANGES_REQUESTED
@@ -114,6 +114,16 @@ path built the handler without MCP mocks so `refreshMcpToolMap` returned at its 
 reading the AI. The fact-checker found §5 item 1(c) still prescribing the deleted fallback, 7
 surviving pre-fix `mcp_tool.go` anchors, three stale subtest counts, and §3.5c's heading still
 announcing a live BLOCKER. See §3.5c v27.
+
+Round 26: **both tracks CHANGES_REQUESTED; the Go code clean for a seventh consecutive round.**
+Twenty-six mutations across the two reviewers, all caught but two, one a true equivalent and one a
+real test weakness (a refusal was asserted to happen but not to be the resolver's, so an empty AI
+substituted for the nil passed because the next gate produced the same outcome). Both reviewers
+converged on the same blocking defect, from opposite directions: the `doc:N` self-reference this
+branch had just repaired was stale again, shifted by the very commit that repaired it. One
+reviewer then ran fifty-three gate sabotages, eighteen of which survived: four of the harness's
+own grading rules, three of four brace shapes, and both halves of the anchor window. All are now
+probed, `doc:N` references require verified anchors, and the harness grades itself. See §3.5c v35.
 
 Round 25: **both tracks CHANGES_REQUESTED; the Go code clean for a sixth consecutive round.**
 Twelve mutations across the two reviewers, eleven caught, one correctly judged equivalent. One
@@ -545,12 +555,12 @@ itself in §3.3), `complete.go:68` guards the state row, and
 surface. The accurate and still-sufficient claim is that it is **the only ownership check
 on the AI-whitelist → consume path**. Corrected wherever it appeared.
 
-### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v34 notes at the end of this section; the NEWEST is v34.**
+### 3.5c D28: D12's team half had no enforcement point and its only promised test was on the dead path. **CLOSED IN CODE (`3fca779e2`, `dd2fb0b39`, `7dced7a90`, `90d2e2f44`, `66c00676e`) — see the v24 through v35 notes at the end of this section; the NEWEST is v35.**
 
 > **Reading order.** Everything between here and the v24 note is the ORIGINAL DIAGNOSIS,
 > written in the present tense while the defect was live, and kept as the record of how four
 > prose prescriptions went wrong. It does NOT describe the current code. For what the code
-> does now, and for what an implementer must not undo, read the v34 note (the newest) and §5 item 1.
+> does now, and for what an implementer must not undo, read the v35 note (the newest) and §5 item 1.
 
 **EIGHTH instance**, and the third in a row created by a fix-up edit. D26 corrected the
 ownership half of D12 from dispatch to resolution. It did not look at the **member**
@@ -610,7 +620,7 @@ load-bearing.** Round 14 found this; it is the **TENTH instance**, the fifth con
 introduced by the edit that closed the previous one.
 
 **What v21 got wrong.** `resolveActiveAIIDFromAIcall` (`helpers.go:21`) returns `uuid.Nil`
-with only a `Warnf` when `ac.CurrentMemberID` is not in `t.Members` (`helpers.go:36 member_id`). It has **no
+with only a `Warnf` when `ac.CurrentMemberID` is not in `t.Members` (`helpers.go:36 not found in team`). It has **no
 start-member fallback**. `resolveTeamMemberAI` (`start.go:42-52`) **does** have one, and
 `resolveTeamMemberForSend` (`start.go:384`) is the only thing that repairs a stale
 `CurrentMemberID`, persisting the repair (`send.go:176-183`). v21 placed its call in the reuse
@@ -696,6 +706,42 @@ passed their target defects.*
 
 **Earlier note (v29), retained as the record of round 20's response.**
 
+**ROUND 26 (v35): the harness that grades the checks was itself ungraded.**
+
+1. **`doc:N` self-references had no mechanism at all, and this branch broke one while
+   repairing it.** v34 replaced a stale `:97-98` with a self-reference to line 247, and the SAME commit prepended an
+   11-line log entry above it, so D4 moved to 258 and the new reference was wrong the moment it
+   was written. A second instance (line 2160, since moved) had been stale since v32. This is the
+   class in its purest form: the repair invalidates itself, because the commit that fixes a
+   citation is usually the commit that adds lines above it. The gate now requires every `doc:N`
+   to carry a quoted anchor and verifies the target line still contains it, so an edit that
+   shifts the target fails the build instead of silently re-pointing the reference.
+2. **Four of the harness's own rules were unasserted, and every one could be deleted while it
+   printed a full green result.** Disabling the reason-matching rule (the mechanism v32 added so
+   that a probe cannot pass "for the wrong reason"), matching the reason case-insensitively,
+   making the report-channel assertions unconditional, and hardcoding the total all passed
+   23/23. The grading logic is now extracted into two functions that the harness runs against
+   its own known-good and known-bad inputs, so weakening a rule fails the run. The one figure
+   that must be maintained by hand is the expected check count: a run cannot notice a probe's
+   absence unless something outside it remembers how many there should be. An earlier version of
+   that guard "cross-checked" the count against the probe table's length, which is the same
+   quantity, and therefore proved nothing -- the false-guarantee pattern committed into the
+   apparatus built to refuse it.
+3. **Three of four brace shapes and both halves of the anchor window were unprobed.** Each
+   accepted a single-token deletion in silence. The probes were written from one example apiece,
+   so they proved that *something* was checked rather than that the check covered its stated
+   range. Every shape and both directions now have their own probe.
+
+Also: a Go test asserted only that a refusal happened, not WHICH gate refused, so substituting an
+empty AI for the nil one passed -- the next gate produced an identical outcome. It now asserts the
+refusal message. (Making the whitelist gate nil-tolerant remains a true equivalent mutant: the
+early return makes the condition unreachable.)
+
+The lesson this round adds to v30-v34: **a probe written from a single example proves only that
+the check ran once, and the code that GRADES the probes is code, so it needs probes too.** Three
+consecutive rounds found a just-announced check to be decorative; all three were cases of
+grading, coverage or exemption being asserted in prose and never exercised.
+
 **ROUND 25 (v34): the mechanism added to close the class had an exempt path, and half of it
 was unprobed.**
 
@@ -732,7 +778,7 @@ two holes every earlier recurrence used.
 
 1. **A bare `:N` carried from an EARLIER line landed on a blank line** (section 7's dispatch-test
    prescription). The path came from a preceding line, so no reader could see which file was
-   meant, and the gate only warned. Worse, this commit CAUSED it: adding an anchor at doc:2160
+   meant, and the gate only warned. Worse, this commit CAUSED it: adding an anchor at doc:2296 "exercises this path"
    re-bound the carry from one wrong construct to another. A carried bare `:N` landing on a blank
    line or a lone brace is now an ERROR, not a warning, on the reasoning that the only available
    evidence the binding is right is that the landing looks like a construct. Turning it on
@@ -1888,7 +1934,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    after `ScanRow`, but one convention must be picked and the in-file precedent is `0`.
 
    **(iii) The pre-deploy backfill.** §5 item 2 as written only zeroes credentials going **forward**, inside the `McpServerDelete`
-   statement. D4 (doc:247, §3.4) states the defect as ciphertext surviving *indefinitely*
+   statement. D4 (doc:268 "McpServerDelete` retains `SecretCiphertext", §3.4) states the defect as ciphertext surviving *indefinitely*
    on already-deleted rows — exactly what the forward fix cannot reach. Worse, the obvious
    remediation fails silently: `McpServerDelete` gains `tm_delete IS NULL` (§5 item 1), so
    re-deleting an already-deleted server matches **zero rows**, the handler swallows that
@@ -2263,7 +2309,7 @@ dispatch rejects a tool belonging to a server only the START member whitelists**
 dispatch side — host: `toolHandleMcpCall`. REINSTATED in v21: v19 withdrew this as
 unimplementable, which was true of `resolveAI` and false of the package, since
 `resolveActiveAIIDFromAIcall` sees `c.CurrentMemberID` and
-`mcp_tool.go:127 messageContent` holds the aicall. It is a
+`toolHandleMcpCall` (`mcp_tool.go:127 messageContent`) holds the aicall. It is a
 unit test, not E2E, because dispatch is dead code until PR B per §3.1); and `GetValidAccessToken`'s new
 error when rotating against a row deleted mid-flight. **§5 item 5 (D13) REVERSED in v14 — assert the OPPOSITE:** a test that an
 Insight AI CAN hold and use `mcp_server_ids` (`ValidateMcpServerIDs` accepts it, and
@@ -2316,7 +2362,7 @@ is a blanket `ProviderGet.mockResolvedValue`, `:320/:380/:398/:431` use
 `expect.objectContaining`, `ais_create.test.js:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
 asserts only the PUT body. All four form bodies (§4) must be exercised.
 
-## 8. Retrospective (twenty-five rounds)
+## 8. Retrospective (twenty-six rounds)
 
 **v1** asserted "exactly ONE grep hit" and "no `mcpserver*.rst` files exist." Both
 false. Root cause: a case-sensitive `grep mcp` that missed uppercase `MCP`, written

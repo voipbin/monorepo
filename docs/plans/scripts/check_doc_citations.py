@@ -255,6 +255,29 @@ SELF_TEST_PROBES = [
     # file. A preference probe that survives re-sorting proves nothing.
     (0, "ambiguous basename honours preference ORDER, not any order", None,
      "`start.go:1200`"),
+    # One brace shape was probed and three were not, so each of the other three
+    # could be deleted from the exempt list in silence. Every shape now has a
+    # carried citation that must be REFUSED when it lands on that shape.
+    (1, "carried bare :N landing on '})'", "CARRIED",
+     "See `bin-ai-manager/pkg/aihandler/db_test.go:54 name`\n"
+     "and also `:142` there.\n"),
+    (1, "carried bare :N landing on '},'", "CARRIED",
+     "See `bin-ai-manager/pkg/aihandler/db_test.go:142 name`\n"
+     "and also `:54` there.\n"),
+    (1, "carried bare :N landing on '};'", "CARRIED",
+     "See `square-admin/src/views/ais/ais_detail.js:45 export`\n"
+     "and also `:1422` there.\n"),
+    # `doc:N` self-references. Adding this check without probing it would have
+    # repeated, in the very commit that closes the class, the mistake the class
+    # is made of.
+    (1, "doc:N with no anchor is refused", "carries no anchor",
+     "Line one.\nSee doc:1 for the statement.\n"),
+    (1, "doc:N whose anchor no longer matches is refused", "ANCHOR MISMATCH",
+     "Line one.\nSee doc:1 \"absent phrase\" for the statement.\n"),
+    (1, "doc:N past the end of the document is refused", "outside this document",
+     "Line one.\nSee doc:9999 \"anything\" here.\n"),
+    (0, "doc:N whose anchor still matches must PASS", None,
+     "Line one.\nSee doc:1 \"Line one\" for the statement.\n"),
     (0, "correct anchor must PASS", None,
      "`bin-ai-manager/pkg/aicallhandler/start.go:375 refreshMcpToolMap`"),
     (0, "correct cross-repo citation must PASS", None,
@@ -271,62 +294,168 @@ def self_test(doc):
     """
     probe = os.path.join(os.path.dirname(os.path.abspath(doc)),
                          "_gate_self_test.md")
-    failures = 0
-    try:
-        for want, name, reason, body in SELF_TEST_PROBES:
+
+    def judge(want, reason, body):
+        """Run one probe and decide whether it behaved. Returns (ok, why, rc).
+
+        Extracted so the harness's OWN rules can be tested below: while this
+        logic was inline, disabling the reason check or hardcoding the total
+        left the self-test printing a full green result.
+        """
+        try:
             with open(probe, "w", encoding="utf-8") as fh:
                 fh.write(body if body.endswith("\n") else body + "\n")
             run = subprocess.run(
                 [sys.executable, os.path.abspath(__file__), probe],
                 capture_output=True, text=True,
             )
-            got = run.returncode
-            ok = (got != 0) == (want != 0)
-            why = ""
-            if ok and reason and reason not in run.stdout:
-                # Failed, but not for the reason the probe exists to prove.
-                ok = False
-                why = " (wrong reason: expected %r)" % reason
-            failures += 0 if ok else 1
-            print("%-5s %-58s exit=%d want%s0%s"
-                  % ("ok" if ok else "FAIL", name, got,
-                     "!=" if want else "==", why))
-    finally:
-        if os.path.exists(probe):
-            os.remove(probe)
-    # Some channels REPORT without failing (the unbindable-`:N` list, the
-    # section 5 orphan warning). An exit-code probe cannot see those deleted,
-    # so assert on stdout directly against a body that must produce them.
-    for name, body, must_print in (
-        ("anchor that repeats within +/-5 lines is reported",
-         "`bin-ai-manager/pkg/aicallhandler/mcp_tool.go:127 toolHandleMcpCall`\n",
-         "NOT unique"),
-        ("unbindable bare :N is reported",
-         "A paragraph naming no path at all.\n\nThen `:4321` alone.\n",
-         "has no resolvable file on its line"),
-        ("section 5 ordinal nothing references is reported",
-         "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee item 1.\n",
-         "referenced by nothing"),
-    ):
-        try:
-            with open(probe, "w", encoding="utf-8") as fh:
-                fh.write(body)
-            out = subprocess.run(
-                [sys.executable, os.path.abspath(__file__), probe],
-                capture_output=True, text=True,
-            ).stdout
         finally:
             if os.path.exists(probe):
                 os.remove(probe)
-        ok = must_print in out
-        failures += 0 if ok else 1
-        print("%-5s %-58s (report channel)"
-              % ("ok" if ok else "FAIL", name))
+        ok = (run.returncode != 0) == (want != 0)
+        why = ""
+        if ok and reason and reason not in run.stdout:
+            # Failed, but not for the reason the probe exists to prove.
+            ok = False
+            why = " (wrong reason: expected %r)" % reason
+        return ok, why, run.returncode
 
-    total_checks = len(SELF_TEST_PROBES) + 3
+    def judge_report(body, must_print, clean_body):
+        """Decide whether a REPORT-only channel behaved. Returns (ok, why).
+
+        Also extracted, for the same reason: inline, `ok = True` here printed a
+        green line for four channels at once.
+        """
+        outs = []
+        for b in (body, clean_body):
+            try:
+                with open(probe, "w", encoding="utf-8") as fh:
+                    fh.write(b)
+                outs.append(subprocess.run(
+                    [sys.executable, os.path.abspath(__file__), probe],
+                    capture_output=True, text=True,
+                ).stdout)
+            finally:
+                if os.path.exists(probe):
+                    os.remove(probe)
+        if must_print not in outs[0]:
+            return False, ""
+        if must_print in outs[1]:
+            # Fires on a document that has nothing to report: the assertion is
+            # unconditional, so it proves nothing.
+            return False, " (negative control ALSO reported it)"
+        return True, ""
+
+    failures = 0
+    performed = 0
+    for want, name, reason, body in SELF_TEST_PROBES:
+        performed += 1
+        ok, why, got = judge(want, reason, body)
+        failures += 0 if ok else 1
+        print("%-5s %-58s exit=%d want%s0%s"
+              % ("ok" if ok else "FAIL", name, got,
+                 "!=" if want else "==", why))
+    # Some channels REPORT without failing (the unbindable-`:N` list, the
+    # section 5 orphan warning). An exit-code probe cannot see those deleted,
+    # so assert on stdout directly against a body that must produce them.
+    # Each carries a NEGATIVE CONTROL: a body that must NOT produce the
+    # message. Without one, replacing the whole assertion with `ok = True`
+    # keeps printing a green line, which is how three of these went unprobed.
+    for name, body, must_print, clean_body in (
+        # A neighbour ABOVE the cited line and a neighbour BELOW must each be
+        # reported on their own; one probe whose symbol repeats in BOTH
+        # directions stays green when either half of the window is amputated.
+        ("anchor repeating ABOVE the cited line is reported",
+         "`bin-ai-manager/pkg/aicallhandler/helpers.go:36 CurrentMemberID`\n",
+         "NOT unique",
+         "`bin-ai-manager/pkg/aicallhandler/helpers.go:36 member_id`\n"),
+        ("anchor repeating BELOW the cited line is reported",
+         "`bin-ai-manager/pkg/aicallhandler/mcp_tool.go:122 toolHandleMcpCall`\n",
+         "NOT unique",
+         "`bin-ai-manager/pkg/aicallhandler/mcp_tool.go:127 messageContent`\n"),
+        ("unbindable bare :N is reported",
+         "A paragraph naming no path at all.\n\nThen `:4321` alone.\n",
+         "has no resolvable file on its line",
+         "`bin-ai-manager/pkg/aicallhandler/helpers.go:194 "
+         "resolveActiveAIForMcp`\n"),
+        ("section 5 ordinal nothing references is reported",
+         "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee item 1.\n",
+         "referenced by nothing",
+         "## 5. x\n1. **a** t\n2. **b** t\n\n## 6. y\nSee item 1 and item 2.\n"),
+    ):
+        performed += 1
+        ok, why = judge_report(body, must_print, clean_body)
+        failures += 0 if ok else 1
+        print("%-5s %-58s (report channel)%s"
+              % ("ok" if ok else "FAIL", name, why))
+
+    # THE HARNESS'S OWN RULES. With the reason check disabled, or matched
+    # case-insensitively, or the total hardcoded, or the report assertions made
+    # unconditional, this self-test still printed a full green result. Each rule
+    # is now exercised through `judge`, so weakening it is a FAILURE here.
+    out_of_range = "`bin-ai-manager/pkg/aicallhandler/helpers.go:999999`"
+    for name, args, want_ok in (
+        # Right answer, right reason: must be accepted.
+        ("harness accepts a probe failing for its declared reason",
+         (1, "OUT OF RANGE", out_of_range), True),
+        # Right answer (it does fail), wrong reason: must be REJECTED, which is
+        # the rule that makes every `reason` in the table load-bearing.
+        ("harness rejects a probe failing for the WRONG reason",
+         (1, "ANCHOR MISMATCH", out_of_range), False),
+        # Same text in the wrong case: rejected, or `reason` stops being exact.
+        ("harness reason matching is case-SENSITIVE",
+         (1, "out of range", out_of_range), False),
+        # A probe expected to pass that instead fails: rejected.
+        ("harness rejects a pass-probe that fails",
+         (0, None, out_of_range), False),
+    ):
+        performed += 1
+        ok = judge(*args)[0]
+        good = ok == want_ok
+        failures += 0 if good else 1
+        print("%-5s %-58s (harness)" % ("ok" if good else "FAIL", name))
+
+    # The report-channel rules, likewise. An unconditional `ok` there muted four
+    # channels at once while still printing four green lines.
+    anchor_repeats = ("`bin-ai-manager/pkg/aicallhandler/"
+                      "mcp_tool.go:122 toolHandleMcpCall`\n")
+    anchor_unique = ("`bin-ai-manager/pkg/aicallhandler/"
+                     "mcp_tool.go:127 messageContent`\n")
+    for name, args, want_ok in (
+        ("harness accepts a report channel that fires only when it should",
+         (anchor_repeats, "NOT unique", anchor_unique), True),
+        # Message absent from the positive body: must be rejected.
+        ("harness rejects a report channel that never fires",
+         (anchor_unique, "NOT unique", anchor_unique), False),
+        # Message present in BOTH bodies: the assertion is unconditional.
+        ("harness rejects a report channel with no negative control",
+         (anchor_repeats, "citations extracted", anchor_unique), False),
+    ):
+        performed += 1
+        good = judge_report(*args)[0] == want_ok
+        failures += 0 if good else 1
+        print("%-5s %-58s (harness)" % ("ok" if good else "FAIL", name))
+
+    # A probe DELETED from the table lowers both the count and the total, so the
+    # run stays green with a smaller number. An earlier version of this block
+    # "cross-checked" `performed` against `len(SELF_TEST_PROBES) + ...`, which
+    # is the same quantity and therefore proved nothing -- exactly the false
+    # guarantee this harness exists to refuse, committed into the harness.
+    #
+    # The number below is the ONE figure here that must be maintained by hand:
+    # it is written down, not derived, so removing a probe fails this run.
+    # No self-test can do better -- a check cannot notice its own absence
+    # unless something outside it remembers how many there should be.
+    EXPECTED_CHECKS = 38
+    if performed != EXPECTED_CHECKS:
+        failures += 1
+        print("FAIL  %-58s (harness)"
+              % ("performed %d checks, expected %d -- a probe was added or "
+                 "removed without updating EXPECTED_CHECKS"
+                 % (performed, EXPECTED_CHECKS)))
     print("\n%s: %d/%d checks behaved correctly."
           % ("PASS" if not failures else "FAIL",
-             total_checks - failures, total_checks))
+             performed - failures, performed))
     return 1 if failures else 0
 
 
@@ -537,6 +666,41 @@ def main():
             dropped.extend(
                 "doc:%d  :%s has no resolvable file on its line (cite the path "
                 "explicitly)" % (doc_line, c.group("start")) for c in conts
+            )
+
+    # `doc:N` points at THIS document's own line numbers -- the one citation
+    # class no mechanism covered, and the only one still producing findings.
+    # It is strictly worse than a file citation: any edit above the target
+    # shifts it, and the commit that ADDS lines is usually the one repairing a
+    # citation, so the repair invalidates itself. Require a quoted anchor and
+    # verify the line still contains it.
+    doc_lines = text.splitlines()
+    for m in re.finditer(r"doc:(\d+)(?:\s+\u201c([^\u201d]+)\u201d|\s+\"([^\"]+)\")?",
+                         text):
+        doc_line = text[:m.start()].count("\n") + 1
+        num = int(m.group(1))
+        anchor = m.group(2) or m.group(3)
+        if num < 1 or num > len(doc_lines):
+            problems.append(
+                "doc:%d  doc:%d is outside this document (%d lines)"
+                % (doc_line, num, len(doc_lines))
+            )
+            continue
+        landed = doc_lines[num - 1]
+        if not anchor:
+            problems.append(
+                "doc:%d  doc:%d carries no anchor -- quote a phrase from the "
+                "target line so an edit above it cannot silently re-point this"
+                % (doc_line, num)
+            )
+        elif anchor not in landed:
+            problems.append(
+                "doc:%d  doc:%d ANCHOR MISMATCH: expected %r, line reads %r"
+                % (doc_line, num, anchor, landed.strip()[:60])
+            )
+        elif not landed.strip():
+            problems.append(
+                "doc:%d  doc:%d lands on a blank line" % (doc_line, num)
             )
 
     # Section 5 is an ordered markdown list whose items are referenced by
