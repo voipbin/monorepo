@@ -65,9 +65,10 @@ type AIHandler interface {
 	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 
 	// ValidateMcpServerIDs checks that every id in ids refers to an
-	// existing McpServer row owned by customerID (IDOR guard). Callers
-	// MUST call this before UpdateMcpServerIDs whenever the ids come from
-	// an untrusted request body.
+	// existing, not-deleted McpServer row owned by customerID (IDOR guard).
+	// Callers MUST call this BEFORE the AI write, not merely before
+	// UpdateMcpServerIDs: validating afterwards leaves an orphaned or
+	// half-updated AI behind on rejection.
 	ValidateMcpServerIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) error
 
 	// UpdateMcpServerIDs persists the McpServerIDs whitelist onto the AI.

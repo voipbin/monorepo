@@ -564,6 +564,9 @@ func Test_processV1AIsIDPut_McpServerIDsEmptyArrayClears(t *testing.T) {
 		},
 	}
 
+	// Get now precedes Update: the whitelist owner must be known before the
+	// AI is mutated, and a PUT body carries no customer id.
+	mockAI.EXPECT().Get(gomock.Any(), id).Return(preUpdate, nil)
 	mockAI.EXPECT().Update(
 		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
 		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
@@ -654,10 +657,53 @@ func Test_processV1AIsIDPut_McpServerIDsInvalidReturns400(t *testing.T) {
 		},
 	}
 
-	mockAI.EXPECT().Update(
-		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
-		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
-	).Return(preUpdate, nil)
+	// Get supplies the owner to validate against; Update must NOT be reached.
+	// This is the D18 assertion: the rejection has to happen before the AI is
+	// mutated, so a 400 leaves the AI exactly as it was. gomock's strict mode
+	// fails the test on any unexpected Update call.
+	mockAI.EXPECT().Get(gomock.Any(), id).Return(preUpdate, nil)
+
+	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{invalidServerID}).Return(
+		cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_ID", "mcp_server_id "+invalidServerID.String()+" is not accessible"),
+	)
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if res.StatusCode != 400 {
+		t.Fatalf("expected status 400, got %d (body: %s)", res.StatusCode, res.Data)
+	}
+}
+
+// Test_processV1AIsPost_McpServerIDsInvalidCreatesNothing covers D18 on the
+// POST path. Validation used to run AFTER aiHandler.Create had committed, so a
+// rejected whitelist still returned 400 but left an orphaned AI behind: the
+// customer saw a failed request and an extra AI they never asked for.
+//
+// Create must NOT be reached -- gomock's strict mode fails the test on any
+// unexpected call, which is the whole assertion. The owner checked against is
+// the request's own customer id, since there is no AI to read it from yet.
+func Test_processV1AIsPost_McpServerIDsInvalidCreatesNothing(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+
+	h := &listenHandler{
+		sockHandler: mockSock,
+		aiHandler:   mockAI,
+	}
+
+	customerID := uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8")
+	invalidServerID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+
+	req := &sock.Request{
+		URI:    "/v1/ais",
+		Method: sock.RequestMethodPost,
+		Data:   []byte(`{"customer_id":"` + customerID.String() + `","mcp_server_ids":["` + invalidServerID.String() + `"]}`),
+	}
 
 	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{invalidServerID}).Return(
 		cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_ID", "mcp_server_id "+invalidServerID.String()+" is not accessible"),

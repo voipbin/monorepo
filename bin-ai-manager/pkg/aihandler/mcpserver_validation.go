@@ -13,14 +13,20 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
-// ValidateMcpServerIDs checks that every id in ids refers to an existing
-// McpServer row owned by customerID. Returns a *cerrors.VoipbinError
-// (InvalidArgument, surfaced as HTTP 400) naming the first non-existent or
-// cross-customer id it finds -- listenhandler's errorResponse() only maps
+// ValidateMcpServerIDs checks that every id in ids refers to an existing,
+// NOT-deleted McpServer row owned by customerID. Returns a
+// *cerrors.VoipbinError (InvalidArgument, surfaced as HTTP 400) naming the
+// first inaccessible id it finds -- listenhandler's errorResponse() only maps
 // *cerrors.VoipbinError to a non-500 status, so a plain error here would
 // otherwise reach the customer as an opaque 500 for a client-input mistake
 // (mirrors the existing ai.ValidateToolNames -> cerrors.InvalidArgument
 // pattern in chatbot.go).
+//
+// "Not deleted" is checked here and not left to McpServerGet, which returns
+// soft-deleted rows on purpose (the REST read of a deleted server answers
+// 200). Without the TMDelete check a customer could whitelist a server they
+// had already deleted, and the AI would carry an id that no consumer will
+// ever honour.
 //
 // A genuine infra failure from McpServerGet (query build/exec/scan error,
 // as opposed to dbhandler.ErrNotFound) is deliberately NOT mapped to 400
@@ -47,7 +53,7 @@ func (h *aiHandler) ValidateMcpServerIDs(ctx context.Context, customerID uuid.UU
 			return errors.Wrapf(err, "could not get mcp server %s", id)
 		}
 
-		if srv == nil || srv.CustomerID != customerID {
+		if srv == nil || srv.CustomerID != customerID || srv.TMDelete != nil {
 			return cerrors.InvalidArgument(
 				commonoutline.ServiceNameAIManager,
 				"INVALID_MCP_SERVER_ID",

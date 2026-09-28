@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -24,6 +25,7 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 	sameCustomerServerID := uuid.Must(uuid.NewV4())
 	crossCustomerServerID := uuid.Must(uuid.NewV4())
 	nonexistentServerID := uuid.Must(uuid.NewV4())
+	deletedServerID := uuid.Must(uuid.NewV4())
 
 	tests := []struct {
 		name      string
@@ -52,6 +54,23 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 			setupMock: func(mockDB *dbhandler.MockDBHandler) {
 				mockDB.EXPECT().McpServerGet(gomock.Any(), crossCustomerServerID).Return(&mcpserver.McpServer{
 					Identity: identity.Identity{ID: crossCustomerServerID, CustomerID: otherCustomerID},
+				}, nil)
+			},
+			wantError: true,
+			wantTyped: true,
+		},
+		{
+			// The read path deliberately returns soft-deleted rows (GET on a
+			// deleted server answers 200), so the TMDelete check has to live
+			// here. Without it a customer can whitelist a server they already
+			// deleted, leaving the AI carrying an id no consumer will honour.
+			name: "soft-deleted id rejects",
+			ids:  []uuid.UUID{deletedServerID},
+			setupMock: func(mockDB *dbhandler.MockDBHandler) {
+				ts := time.Now()
+				mockDB.EXPECT().McpServerGet(gomock.Any(), deletedServerID).Return(&mcpserver.McpServer{
+					Identity: identity.Identity{ID: deletedServerID, CustomerID: customerID},
+					TMDelete: &ts,
 				}, nil)
 			},
 			wantError: true,
