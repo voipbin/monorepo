@@ -143,23 +143,48 @@ func (h *handler) McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[
 		return fmt.Errorf("McpServerUpdate: could not prepare fields. err: %v", err)
 	}
 
+	// A soft-deleted server must not be mutable: without this predicate a
+	// deleted row stays editable and resurrectable through every write path.
 	query, args, err := sq.Update(mcpserverTable).
 		SetMap(preparedFields).
 		Where(sq.Eq{"id": id.Bytes()}).
+		Where("tm_delete IS NULL").
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("McpServerUpdate: could not build query. err: %v", err)
 	}
 
-	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+	result, err := h.db.ExecContext(ctx, query, args...)
+	if err != nil {
 		return fmt.Errorf("McpServerUpdate: could not execute. err: %v", err)
+	}
+
+	// The predicate alone is not enough. Discarding RowsAffected turns a
+	// refused write into a silent success, so the caller returns 200 and
+	// publishes an update event for a change that never happened.
+	n, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("McpServerUpdate: could not get rows affected. err: %v", err)
+	}
+	if n == 0 {
+		return ErrNotFound
 	}
 
 	return nil
 }
 
 // McpServerDelete soft deletes the McpServer (tm_delete), mirroring
-// Team/AI's soft-delete pattern.
+// Team/AI's soft-delete pattern, and zeroes every stored credential in the
+// SAME statement.
+//
+// Same statement, not a follow-up update: a separate McpServerUpdate would be
+// refused by that method's own `tm_delete IS NULL` predicate, so the
+// credentials would survive the delete that was supposed to revoke them.
+//
+// Returns ErrNotFound when no live row matched. The handler SWALLOWS that and
+// still answers 200, because DELETE is idempotent by contract and GET keeps
+// returning the soft-deleted row; it only skips re-publishing the deleted
+// event.
 func (h *handler) McpServerDelete(ctx context.Context, id uuid.UUID) error {
 	ts := h.utilHandler.TimeNow()
 
@@ -167,15 +192,36 @@ func (h *handler) McpServerDelete(ctx context.Context, id uuid.UUID) error {
 		SetMap(map[string]any{
 			"tm_update": ts,
 			"tm_delete": ts,
+
+			// Revoking access must not leave decryptable material behind.
+			// oauth_vendor and access_token_expires_at are metadata, not
+			// secrets, and are deliberately retained for audit.
+			"secret_ciphertext":        nil,
+			"secret_nonce":             nil,
+			"key_version":              0,
+			"access_token_ciphertext":  nil,
+			"access_token_nonce":       nil,
+			"refresh_token_ciphertext": nil,
+			"refresh_token_nonce":      nil,
 		}).
 		Where(sq.Eq{"id": id.Bytes()}).
+		Where("tm_delete IS NULL").
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("McpServerDelete: could not build query. err: %v", err)
 	}
 
-	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+	result, err := h.db.ExecContext(ctx, query, args...)
+	if err != nil {
 		return fmt.Errorf("McpServerDelete: could not execute. err: %v", err)
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("McpServerDelete: could not get rows affected. err: %v", err)
+	}
+	if n == 0 {
+		return ErrNotFound
 	}
 
 	return nil

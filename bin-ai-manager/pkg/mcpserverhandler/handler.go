@@ -48,6 +48,16 @@ func (h *mcpServerHandler) Create(
 	if !authType.IsValid() {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_AUTH_TYPE", "invalid auth_type: "+string(authType))
 	}
+	// See Update: `oauth` is a state the OAuth flow produces, not an input.
+	// Creating a server already claiming it would advertise a bearer token that
+	// does not exist.
+	if authType == mcpserver.AuthTypeOAuth {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAIManager,
+			"INVALID_MCP_SERVER_AUTH_TYPE",
+			"auth_type \"oauth\" is set by completing the OAuth authorization flow, not directly",
+		)
+	}
 
 	m := &mcpserver.McpServer{
 		Identity: identity.Identity{
@@ -106,6 +116,31 @@ func (h *mcpServerHandler) Get(ctx context.Context, id uuid.UUID) (*mcpserver.Mc
 	return res, nil
 }
 
+// getLive returns the McpServer only if it exists AND has not been
+// soft-deleted, mapping both cases to the same NotFound the REST layer already
+// translates.
+//
+// Separate from Get on purpose. Get must keep returning soft-deleted rows: the
+// REST read of a deleted server answers 200 by design (asserted by the
+// validator), and Delete reads the row back after deleting it. Write paths need
+// the opposite, so they call this instead. Gating Get itself, or
+// dbhandler.McpServerGet, would break those consumers.
+func (h *mcpServerHandler) getLive(ctx context.Context, id uuid.UUID) (*mcpserver.McpServer, error) {
+	res, err := h.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if res.TMDelete != nil {
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameAIManager,
+			"MCP_SERVER_NOT_FOUND",
+			"The MCP server was not found.",
+		)
+	}
+
+	return res, nil
+}
+
 // List returns a list of McpServers.
 func (h *mcpServerHandler) List(ctx context.Context, size uint64, token string, filters map[mcpserver.Field]any) ([]*mcpserver.McpServer, error) {
 	res, err := h.db.McpServerList(ctx, size, token, filters)
@@ -143,6 +178,20 @@ func (h *mcpServerHandler) Update(
 		"func": "Update",
 	})
 
+	// Existence gate, placed ahead of BOTH the validation block below and the
+	// `len(fields) == 0` short-circuit further down. Without it a `PUT {}` on a
+	// deleted server still returns 200 with the row, and a malformed-URL PUT on
+	// a deleted server returns 400 instead of 404 -- validation would otherwise
+	// decide the status code for a resource that no longer exists.
+	//
+	// This gate lives here and NOT inside h.Get or dbhandler.McpServerGet: Get's
+	// other consumers require the opposite behaviour (the REST read of a
+	// soft-deleted server must keep answering 200, and Delete reads the row back
+	// after deleting it).
+	if _, err := h.getLive(ctx, id); err != nil {
+		return nil, err
+	}
+
 	if url != nil {
 		if err := ValidateURL(*url); err != nil {
 			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_URL", err.Error()).Wrap(err)
@@ -153,6 +202,17 @@ func (h *mcpServerHandler) Update(
 	}
 	if authType != nil && !authType.IsValid() {
 		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_AUTH_TYPE", "invalid auth_type: "+string(*authType))
+	}
+	// `oauth` is reachable only by completing the OAuth flow, which is what
+	// writes the tokens. Accepting it on a direct PUT would produce a server
+	// whose auth_type promises a bearer token it has no way to obtain, and the
+	// published docs enumerate only "", "bearer" and "api_key" as settable.
+	if authType != nil && *authType == mcpserver.AuthTypeOAuth {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAIManager,
+			"INVALID_MCP_SERVER_AUTH_TYPE",
+			"auth_type \"oauth\" is set by completing the OAuth authorization flow, not directly",
+		)
 	}
 
 	fields := map[mcpserver.Field]any{}
@@ -223,8 +283,17 @@ func (h *mcpServerHandler) Delete(ctx context.Context, id uuid.UUID) (*mcpserver
 		"func": "Delete",
 	})
 
+	// A repeat DELETE reaches no live row. Swallow that rather than 404ing:
+	// DELETE is idempotent by contract, and GET on a soft-deleted server still
+	// answers 200, so 404ing only the SECOND delete while GET keeps succeeding
+	// would be incoherent. The read-back below still returns the row; the only
+	// difference is that the deleted event is not published twice.
+	alreadyDeleted := false
 	if err := h.db.McpServerDelete(ctx, id); err != nil {
-		return nil, errors.Wrapf(err, "could not delete mcp server")
+		if !stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, errors.Wrapf(err, "could not delete mcp server")
+		}
+		alreadyDeleted = true
 	}
 
 	res, err := h.db.McpServerGet(ctx, id)
@@ -239,7 +308,9 @@ func (h *mcpServerHandler) Delete(ctx context.Context, id uuid.UUID) (*mcpserver
 		return nil, errors.Wrapf(err, "could not get deleted mcp server")
 	}
 	log.WithField("mcp_server", res).Debugf("Deleted mcp server. mcp_server_id: %s", res.ID)
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, mcpserver.EventTypeDeleted, res)
+	if !alreadyDeleted {
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, mcpserver.EventTypeDeleted, res)
+	}
 
 	return res, nil
 }

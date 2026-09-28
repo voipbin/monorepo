@@ -89,10 +89,11 @@ func Test_Update_PartialFields(t *testing.T) {
 					return nil
 				},
 			)
+			// Twice: the existence gate, then the read-back.
 			mockDB.EXPECT().McpServerGet(gomock.Any(), id).Return(&mcpserver.McpServer{
 				Identity: identityFor(id, customerID),
 				Status:   mcpserver.StatusActive,
-			}, nil)
+			}, nil).Times(2)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, mcpserver.EventTypeUpdated, gomock.Any())
 
 			_, err := h.Update(context.Background(), id, tt.fieldName, tt.fieldDetail, tt.fieldURL, tt.fieldStatus, tt.fieldAuth, tt.fieldAPIKey, tt.fieldSecret)
@@ -133,10 +134,10 @@ func Test_Update_AllFieldsOmitted_IsANoOp(t *testing.T) {
 		Identity: identityFor(id, customerID),
 		Status:   mcpserver.StatusActive,
 	}
-	// db.McpServerGet is expected exactly once (via the Get() fallback);
-	// db.McpServerUpdate and notifyHandler.PublishWebhookEvent are NOT
-	// expected at all -- an unexpected call to either fails the test.
-	mockDB.EXPECT().McpServerGet(gomock.Any(), id).Return(current, nil)
+	// db.McpServerGet is expected twice (the existence gate, then the Get()
+	// fallback); db.McpServerUpdate and notifyHandler.PublishWebhookEvent are
+	// NOT expected at all -- an unexpected call to either fails the test.
+	mockDB.EXPECT().McpServerGet(gomock.Any(), id).Return(current, nil).Times(2)
 
 	res, err := h.Update(context.Background(), id, nil, nil, nil, nil, nil, nil, nil)
 	if err != nil {
