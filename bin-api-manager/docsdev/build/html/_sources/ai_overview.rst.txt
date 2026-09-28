@@ -689,7 +689,7 @@ Authenticate it with an access key from your account and set that key in the ``V
 
 .. note::
 
-   This is the reverse direction from :ref:`MCP Server <mcpserver-struct-mcpserver>` resources. Here an external AI client calls **into** VoIPBin. An MCP Server resource points **out** to a server you host, so that a VoIPBin AI can call your tools during a conversation.
+   This is the reverse direction from :ref:`MCP Server <mcpserver-struct-mcpserver>` resources. Here an external AI client calls **into** VoIPBin. An MCP Server resource points **out** to a server you host, so that a VoIPBin AI can call your tools during a conversation. That outbound direction is not yet available: a whitelisted server's tools are not currently presented to the AI, though VoIPBin does already connect to a whitelisted server to discover them on every AI session except realtime voice calls. Until it ships, an AI's callable actions come from its built-in ``tool_names`` set, and custom logic is reached from a :ref:`Flow <flow-overview>` rather than from the AI's tool list. Servers registered and whitelisted now are preserved and take effect when the feature ships; no delivery date is committed yet.
 
 
 Common Scenarios

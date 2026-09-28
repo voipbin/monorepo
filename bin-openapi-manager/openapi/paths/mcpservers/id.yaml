@@ -67,7 +67,7 @@ put:
             status:
               type: string
               enum: ["active", "disabled"]
-              description: "Set to disabled to exclude this server from ListTools/CallTool without deleting it. Omit to leave the current status unchanged."
+              description: "Set to disabled to stop VoIPBin connecting to this server, without deleting it: it is skipped during tool discovery immediately, and its tools will be excluded from every referencing AI when tool use ships. Omit to leave the current status unchanged."
               example: "active"
             auth_type:
               type: string

@@ -3852,7 +3852,7 @@ type AIManagerAI struct {
 	// IsInsightActive Whether this is the customer's active Insight AI, i.e. the one the Case Insight Assistant panel auto-attaches to a case. Only meaningful when `type` is `insight`. A customer may hold any number of Insight AIs but at most one may be active. Newly created AIs are always inactive; use `POST /ais/{id}/activate_insight` to activate one. When no Insight AI is active, the most recently created one is used.
 	IsInsightActive bool `json:"is_insight_active"`
 
-	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer, returned from the `id` field of the `POST /mcpservers` or `GET /mcpservers` response. The server's tools are merged into this AI's tool list, namespaced `mcp_<server_id_prefix>_<tool_name>`.
+	// McpServerIds List of customer-registered MCP server IDs whitelisted for this AI. Each ID must reference an MCP server owned by the same customer, returned from the `id` field of the `POST /mcpservers` or `GET /mcpservers` response. **Tool use is not yet available.** A whitelisted server's tools are not currently presented to the AI, so whitelisting one does not change how a conversation behaves. VoIPBin does already connect to a whitelisted server to discover its tools on every AI session except realtime voice calls. Sessions that do discover include chat, Insight, `ai_task` flow actions and API-created sessions, so expect `tools/list` requests authenticated per the server's `auth_type` in its logs. Of what is discovered, the tool names are stored on the AI session record and outlive the request, while the input schemas and descriptions are not stored. Whitelists stored now are preserved and take effect when the feature ships; no delivery date is committed yet. When it ships, the server's tools will be merged into this AI's tool list, namespaced `mcp_<server_id_prefix>_<tool_name>`.
 	McpServerIds *[]string `json:"mcp_server_ids,omitempty"`
 
 	// Name Name of the AI.
@@ -4105,7 +4105,7 @@ type AIManagerAIcallReferenceType string
 // AIManagerAIcallStatus Status of the ai call.
 type AIManagerAIcallStatus string
 
-// AIManagerMcpServer A customer-registered remote MCP (Model Context Protocol) server. Excludes the stored secret entirely; `has_secret` indicates whether one is configured. Whitelist a server for an AI via that AI's `mcp_server_ids` field.
+// AIManagerMcpServer A customer-registered remote MCP (Model Context Protocol) server. Excludes the stored secret entirely; `has_secret` indicates whether one is configured. Whitelist a server for an AI via that AI's `mcp_server_ids` field. **Tool use is not yet available:** a whitelisted server's tools are not currently presented to the AI, though VoIPBin does already connect to the server to discover them on every AI session except realtime voice calls.
 type AIManagerMcpServer struct {
 	// ApiKeyHeader Header name used when auth_type is api_key.
 	ApiKeyHeader *string `json:"api_key_header,omitempty"`
@@ -9473,7 +9473,7 @@ type PutMcpserversIdJSONBody struct {
 	// Secret Omit this field to leave the existing secret unchanged. Send an empty string to clear it.
 	Secret *string `json:"secret,omitempty"`
 
-	// Status Set to disabled to exclude this server from ListTools/CallTool without deleting it. Omit to leave the current status unchanged.
+	// Status Set to disabled to stop VoIPBin connecting to this server, without deleting it: it is skipped during tool discovery immediately, and its tools will be excluded from every referencing AI when tool use ships. Omit to leave the current status unchanged.
 	Status *PutMcpserversIdJSONBodyStatus `json:"status,omitempty"`
 
 	// Url Streamable-HTTP MCP endpoint. Must be https. Omit to leave the current URL unchanged.
