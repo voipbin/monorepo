@@ -44,6 +44,26 @@ of them are right to: `writeInsightSessionMetadata`
 (`insight_session.go:225`) and `refreshMcpToolMap` (`mcp_tool.go:327`) exist
 only to write the name-to-ref map.
 
+**Reachability, corrected in round 6 after five rounds asserted it wrongly.**
+Only **discovery** is live. `resolveTools` runs on three real paths
+(`start.go:1184`, `insight_session.go:225`, `mcp_tool.go:327`) and does issue real
+outbound `tools/list` requests to a customer-hosted server, so everything on the
+outbound request path is a live defect. **Dispatch is unreachable**, and the chain
+was traced end to end: `toolHandleMcpCall` has one caller (`tool.go:142`),
+`ToolHandle` has one caller (`listenhandler/v1_aicalls.go:321`), whose only
+producer is pipecat's `RunnerToolHandle`, reachable only through a closure created
+at registration time by `tool_register` (`scripts/pipecat/tools.py:101-116`),
+which iterates the **built-in-only** static catalogue. An `mcp_`-named tool is
+never in it, and this runner registers **no catch-all**: the docstring of
+`register_missing_tool_logging` (`tools.py:29-31`) states that it never registers
+a `None` catch-all handler, so pipecat drops the call and our `[missing_tool]`
+ERROR fires. The name never crosses the wire. **`CallTool` has no live caller.**
+
+That correction invalidates reasoning several earlier rounds relied on, including
+A.9's claim that a team AIcall's stored map lets a model reach a real server. It
+does not. Every dispatch-path finding is real as a **mechanism** and **dormant**
+in effect, and must be stated that way rather than as a live leak.
+
 **Second cause, proven by experiment.** Even with a transport, the MCP client
 cannot read tools from a spec-conformant server. It POSTs `tools/list` directly
 with `Accept: application/json` (`pkg/mcptoolhandler/client.go:125-138`), which
@@ -98,7 +118,7 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | B24 | Honour `isError`: a remote tool failure must not be reported to the model as a success | `pkg/mcptoolhandler/client.go:61`, `mcp_tool.go:185` | `IsError` is declared and **never read**; `CallTool` returns the error text as a normal result and `fillSuccess` labels it `success`. A hostile server's prose reaches the model under a success label |
 | B25 | Cancel an in-flight `tools/call` when the call ends | `mcp_tool.go:127`, `listenhandler/main.go:279` | Dispatch runs under `context.Background()`, so a hangup mid-call leaves a side-effecting request running with no consumer for the result. This is the other half of the double-fire class |
 | B26 | `clearListenState` must not lose `mcp_tool_map` | `pkg/aicallhandler/listen.go:539-546` | It copies keys from `c.Metadata`, the caller's **in-memory snapshot**, and writes the whole column, so a map written after `c` was fetched is lost. Dispatch then fails closed for the rest of that AIcall's life |
-| B27 | Rollback: a global config disable, plus a per-customer enable | `internal/config/main.go`, `bin-customer-manager/models/customer/metadata.go` | Nothing can turn this feature off today. See A.15 |
+| B27 | Rollback: a global config disable. The per-customer flag is **not** viable as first assumed | `internal/config/main.go` | Nothing can turn this feature off today, and the precedent this was modelled on does not transfer. See A.15 |
 
 Hardening, cuttable to a follow-up: retryable/terminal reason codes beyond the
 401 case (B19 covers the one that matters).
@@ -220,56 +240,79 @@ dispatch works today for any customer who sets `mcp_server_ids`, which nothing
 prevents. So steps 1 through 8 are not preparation for a dormant feature, they
 are fixes to a live one.
 
-0. B21 re-enable the pipecat CI job. It is green at HEAD today, so it costs
-   nothing, and landing python changes at the end with its job disabled is the
-   failure class this analysis exists to punish
-1. B1, B2, B3, B23, B24 the MCP client: protocol, schema tag, redirect guard,
-   pagination, and honouring `isError`, with L1 and L2 conformance tests
-2. B6 tool-result cap, B25 dispatch cancellation
-3. B4 built-in resolver type filter. Note D12: this is not optional, because the
-   callback supplements rather than replaces pipecat's filter
-4. B5, B7 name policy and the token-based description cap
-5. B13, B14, B20 fan-out budget, cache with negative caching and the usability
-   gate outside it (D14), single-flight
-6. B10, B11, B9, B26 the scope gates, the dispatch-time gates, and the metadata
-   clobber, **before** anything is advertised
-7. B22's webhook projection fix, ahead of B16 rather than after it, so the key is
-   off the webhook before voice starts writing it
-8. B16 voice metadata write, subject to O3
-9. B17, B18 metric cardinality then MCP metrics
-10. B27 the rollback switches, before the feature can be turned on
-11. **B12 the transport. Advertisement turns on here.**
-12. B15 registration-time probe, subject to O8
-13. The python test cases
-14. B22's docs and OpenAPI regeneration
+PR B1, in order:
 
-Known weakness, stated rather than hidden. Only B5, B7, B13, B14, B17, B18 and
-B20 lack a consumer until step 11; their only test is against `resolveTools`'
-first return value, which no production caller reads yet. Everything else in
-steps 0 through 10 fixes a live, customer-reachable surface, which is why the
-earlier framing of this whole sequence as preparation for a dormant feature was
-wrong.
+0. B21 re-enable the pipecat CI job. Green at HEAD today, so it costs nothing,
+   and it must gate the work rather than follow it
+1. B1, B3 the MCP client's protocol and the redirect guard, with the L1 and L2
+   conformance tests. Includes making the JSON-RPC request id monotonic (A.20),
+   without which a paginated or multi-step session cannot match responses
+2. B19 the 401/403 refresh-and-retry, bypassing the expiry check
+3. B10 the Insight write gate in both locations
+4. B13, B20 the aggregate fan-out budget and single-flight, plus D14's rule that
+   the usability gate stays outside any cache
 
-**The split is authorised.** The standing rule is one PR per repository, and the
-CEO has granted an exception for this work, so the build order above is a real
-sequencing constraint rather than a review aid. The boundary is whether an item
-has a live consumer today.
+PR B2, in order, after PR B1 merges:
 
-**PR B1, the live-defect PR.** B1 through B4, B6, B9, B10, B11, B19, B21, B23,
-B24, B25 and B26. Every one fixes shipped, customer-reachable code, and none of
-them leaves dead code behind, because discovery and dispatch are both live today
-for any customer who sets `mcp_server_ids`. Landing this first means the MCP
-client is correct, its credentials stop leaking on a redirect, a remote failure
-stops being reported as a success, the tool list stops being silently truncated,
-the scope gates hold, and the dispatch index stops being destroyed, all while
-advertisement stays off. It is independently valuable and independently testable
-against the L1 and L2 conformance gate.
+5. B2, B23, B24, B6, B25 the schema tag, pagination, the error flag, the result
+   cap, and dispatch cancellation
+6. B4 the built-in resolver type filter, mandatory per D12
+7. B5, B7 name policy and the token-based description cap
+8. B14 the cache with negative caching
+9. B9, B11, B26 the dispatch-time gates, team symmetry, and the metadata clobber,
+   **before** anything is advertised
+10. B22's webhook projection fix, ahead of the voice write
+11. B16 voice metadata write, subject to O3
+12. B17, B18 metric cardinality then MCP metrics
+13. B27 the global rollback key, before the feature can be turned on
+14. **B12 the transport. Advertisement turns on here.**
+15. B15 registration-time probe, subject to O8
+16. The python test cases
+17. B22's docs and OpenAPI regeneration
 
-**PR B2, the activation PR.** B5, B7, B12 through B18, B20, B22 and B27: the
-caps, the cache, the transport, the metrics, the rollback switches, and the
-documentation. This is the half that turns advertisement on, and it must not
-land before PR B1, because every item in it assumes a client that works and
-gates that hold.
+Known weakness, stated rather than hidden. Every PR B2 item lacks a live
+consumer until step 14, so most of them can only be tested against
+`resolveTools`' first return value, which no production caller reads yet, or
+against `CallTool`, which has no caller at all. That is the price of the honest
+boundary: PR B1 is smaller than the first attempt claimed, and PR B2 is mostly
+work whose effect cannot be observed end to end until its last step.
+
+**The split is authorised, and round 6 re-derived its boundary.** The standing
+rule is one PR per repository and the CEO granted an exception for this work. The
+first boundary attempt used dispatch reachability, which the code refutes (see
+section 0), so eight of the fourteen items originally placed in the first PR were
+dead code by the split's own criterion. The boundary is **discovery**
+reachability: does the item fix something that runs today, given that
+`resolveTools` issues real outbound requests and nothing consumes its tool list.
+
+**PR B1, the live outbound-path PR.** B1, B3, B19, B10, B21, B13, B20, plus B14's
+usability gate only.
+
+Every item here fixes code that executes today. B1, B3 and B19 are the outbound
+request itself: the protocol is wrong, the redirect leaks credentials, and a
+vendor-revoked token is never refreshed. B10 is live because
+`writeInsightSessionMetadata` reaches `resolveTools`, so an Insight AI already
+performs MCP discovery. B13 and B20 move **into** this PR from the activation
+half, because the unbounded sequential fan-out and the absence of single-flight
+are properties of a loop that runs now: they are latent only in the sense that
+every production AI has an empty whitelist, and any customer setting the field
+makes them immediate. B14 contributes only the rule that the usability gate is
+evaluated outside any cache (D14), which is a correctness constraint on this PR's
+outbound path rather than the cache itself.
+
+**PR B2, the activation PR.** B2, B4, B5, B6, B7, B9, B11, B12, B15, B16, B17,
+B18, B22, B23, B24, B25, B26, B27, and the rest of B14.
+
+These are correct findings whose consequence is dormant until advertisement
+exists. The schema tag matters when a tool is advertised. The resolver type filter
+is harmless while the list is discarded. The result cap, the error flag, the
+cancellation and the dispatch gates all sit on `CallTool`, which has no live
+caller. The metadata clobber protects a map that only dispatch reads. Pagination's
+request is live but its harm is not, because a truncated list feeds nothing.
+Filing them here is not a downgrade of their validity; it keeps the first PR
+honest about what it fixes.
+
+B27's rollback switches stay in PR B2 and must land before B12 within it.
 
 The ordering inside each PR follows the numbered steps above. B27's rollback
 switches belong to PR B2 rather than PR B1, because there is nothing to roll
@@ -484,11 +527,12 @@ a team AIcall would advertise nothing. Dispatch is not: the map is written
 unconditionally (`start.go:1184`, refreshed for the current member at
 `start.go:369-375`), and `tool.go:141` routes any `mcp_`-prefixed name to
 `toolHandleMcpCall` with **no** team check anywhere on that path, while
-`resolveActiveAIForMcp` explicitly supports team AIcalls. So a model emitting a
-name it was never given reaches a real server that is genuinely whitelisted,
-active and owned, which is exactly the case PR A's gates cannot catch. Hence
-B11: make the exclusion symmetric by not writing the map at all for team
-AIcalls. Blocking `mcp_server_ids` on a member's AI would be the wrong
+`resolveActiveAIForMcp` explicitly supports team AIcalls. v1 concluded from this that a model emitting a name it was never
+given reaches a real server. **Round 6 refuted that**: pipecat drops an
+unregistered name before it crosses the wire (section 0), so the hazard is
+mechanism-only until advertisement exists. B11 is still right, because the moment
+B12 lands the mechanism becomes live, but it belongs to the activation PR rather
+than being presented as a live leak. Blocking `mcp_server_ids` on a member's AI would be the wrong
 instrument, since the same AI may be used standalone.
 
 ## A.10 The cache's invalidation mechanism does not exist (round 4)
@@ -652,3 +696,58 @@ each has a different window:
    `CurrentMemberID` and never refreshes the map, so dispatch validates the *new*
    member's whitelist against the *old* member's stored map. Fail-closed, and
    moot once B11 stops writing the map for team AIcalls.
+
+## A.19 The kill switch precedent does not transfer (round 6)
+
+A.15 proposed following the per-customer `rtp_debug` toggle. The precedent is real
+and it is read live at call start, but round 6 found three reasons it cannot be
+copied for this feature, all verified:
+
+1. **bin-ai-manager cannot read customer metadata at all.** Every
+   `reqHandler.*` call in `bin-ai-manager/pkg` was enumerated: **zero**
+   `CustomerV1*` calls. The only `bin-customer-manager` imports are for sentinel
+   ID constants. The RPC exists in common-handler, so it is callable, but adding it
+   means a **new cross-service call on the session-start critical path**,
+   uncached, per session, against a greeting budget that O4 already says has no
+   slack. That is much larger than "one metadata field".
+2. **The customer can re-enable themselves.** `CustomerSelfUpdateMetadata`
+   (`bin-api-manager/pkg/servicehandler/customer.go:679-702`) requires only
+   `PermissionCustomerAdmin` on the caller's own customer, so an operator
+   disabling a misbehaving tenant can be reverted by that tenant with one PUT.
+   For a safety control that is disqualifying, and the shared `Metadata` struct
+   cannot express a ProjectSuperAdmin-only field.
+3. **Metadata is replaced wholesale.** `UpdateMetadata` sets the whole field, so a
+   PUT carrying only an MCP flag would silently clear `rtp_debug`. Adding a second
+   field to that struct is a regression vector for the first.
+
+So B27 reduces to a **global config key**, defaulting off for the first release,
+read at `resolveTools` and at the B12 handler. The PR body must state plainly that
+flipping it needs a redeploy and a pod restart, so nobody discovers that during an
+incident. A per-tenant control, if it is wanted later, needs its own design: a
+ProjectSuperAdmin-only field on a resource ai-manager already reads, not customer
+metadata.
+
+## A.20 Further items round 6 found
+
+- **The JSON-RPC request id is hardcoded.** `doJSONRPCRequest` sends `ID: 1` for
+  every request (`client.go:115`). Harmless for one-shot POSTs, but B1 introduces
+  an `initialize` followed by `tools/list` on one session and a paginated loop
+  issuing several requests, so responses become indistinguishable. B1 must make
+  the id monotonic per session and assert the response id matches.
+- **The response size cap is applied before the status check**
+  (`client.go:152-160`), so a hostile server's 1 MiB error body is read in full
+  and then truncated to 512 characters for the message. Bounded, wasteful, worth
+  one line in B6.
+- **`resolveTools` cannot distinguish a platform failure from a disabled server.**
+  A `mcpServerHandler.Get` error is swallowed with a Warn and the loop continues
+  (`mcp_tool.go:73-77`), so a DB outage produces a partial tool list shaped
+  exactly like "the customer disabled it". D2 requires observability; B18 must
+  separate the two outcomes.
+- **B15's registration probe would call `ListTools` with no AI in hand**, so
+  `mcpServerIsUsable` never runs for it and the only remaining guard is
+  `refuseDeleted` on the transport. B15's design must state which checks it
+  performs instead.
+- **B22's webhook exposure is smaller than stated.** The key is written today, but
+  `mcpToolMap` is empty for every production AI, so the webhook carries
+  `"mcp_tool_map": {}`. That is an undocumented empty key, not a data leak. The
+  projection change is still right; the urgency claimed for it was not.
