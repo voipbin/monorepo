@@ -137,9 +137,9 @@ const (
 // mcpDiscoverySlots bounds how many tools/list requests this process runs at
 // once, and mcpDiscoverySlotWait how long one resolution may wait for them in
 // total; see discoverMcpTools. Measured with ten concurrent session starts of
-// eight servers each returning a worst-case 1 MiB list: 11 to 17 MiB of peak
-// heap above baseline with two slots (JSON and SSE framing), 33 to 60 MiB with
-// no bound, against a 40M container limit.
+// eight servers each returning a worst-case 1 MiB list: about 8 to 20 MiB of
+// peak heap above baseline with two slots (JSON and SSE framing), 17 to 75 MiB
+// with no bound, against a 40M container limit.
 //
 // The price is throughput: the process lists at most two servers at a time,
 // so a burst of session starts whose servers are slow can exhaust the wait
@@ -285,7 +285,11 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 
 		mcpTools, listed, err := h.listToolsWithSlot(ctx, serverID, &waitLeft)
 		if !listed {
-			log.Warnf("Skipped an mcp server: no discovery slot was free in time. mcp_server_id: %s", serverID)
+			if ctx.Err() != nil {
+				log.Warnf("Skipped an mcp server: the session start was cancelled while waiting to list it. mcp_server_id: %s", serverID)
+			} else {
+				log.Warnf("Skipped an mcp server: no discovery slot was free in time. mcp_server_id: %s", serverID)
+			}
 			continue
 		}
 		if err != nil {

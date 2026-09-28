@@ -1097,9 +1097,19 @@ them, so PR B1 closes them rather than deferring them.
   total blocked waiting for a turn (time spent listing its own servers does not
   count), so one customer's slow servers cannot hold up other customers' session
   starts for longer. Measured with ten concurrent session starts of eight servers
-  each returning a worst-case list: 11 to 17 MiB of peak heap above baseline over
-  JSON and SSE, against 132.8 MiB before; without the two-request bound, 33 to 60
-  MiB.
+  each returning a worst-case list: about 8 to 20 MiB of peak heap above baseline
+  over JSON and SSE, against 132.8 MiB before; without the two-request bound, 17 to
+  75 MiB.
+
+**Redirects are refused (B3), and so is any request that is not https.** The
+production client follows no redirect: a custom API-key header crossed hosts and
+`Authorization` survived an https to http downgrade when it did (A.5). The error
+names the target by scheme and host only, and for the reference SDK's
+trailing-slash redirect (A.23) it says to fix the registered URL; a conformance
+test checks that against the real SDK. A request whose URL is not https is refused
+before it is sent, which closes the gap A.24 found: stored URLs are validated when
+written but were not re-checked before each call. The OAuth vendor exchange uses a
+separate client and is unaffected.
 
 The two-request bound costs throughput, and that is a product trade-off, not a
 defect. Measured: ten simultaneous session starts whose single server answers in

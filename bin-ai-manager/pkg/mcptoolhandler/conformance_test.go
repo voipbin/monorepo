@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -90,5 +91,37 @@ func Test_Conformance_ReferenceServer(t *testing.T) {
 
 	if ran == 0 {
 		t.Skip("set MCP_CONFORMANCE_STATEFUL_URL and/or MCP_CONFORMANCE_STATELESS_URL to run against a reference MCP server")
+	}
+}
+
+// Test_Conformance_TrailingSlashRedirectIsRefused pins, against the real
+// reference server, the one redirect a customer can hit by accident: the SDK
+// answers the registered path with a trailing slash added by redirecting to
+// the path without it. The client refuses it, and the error tells the
+// customer what to change. A hermetic fake never emits this redirect, which is
+// why it is checked here.
+func Test_Conformance_TrailingSlashRedirectIsRefused(t *testing.T) {
+	base := os.Getenv("MCP_CONFORMANCE_STATEFUL_URL")
+	if base == "" {
+		t.Skip("set MCP_CONFORMANCE_STATEFUL_URL to run against a reference MCP server")
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	serverID := uuid.Must(uuid.NewV4())
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+		URL:      strings.TrimSuffix(base, "/") + "/",
+		Status:   mcpserver.StatusActive,
+		AuthType: mcpserver.AuthTypeNone,
+	}, nil)
+
+	_, err := newTestHandler(t, mockDB).ListTools(context.Background(), serverID)
+	if err == nil {
+		t.Fatal("expected the trailing-slash redirect to be refused")
+	}
+	if !strings.Contains(err.Error(), "redirect") || !strings.Contains(err.Error(), "trailing slash") {
+		t.Fatalf("the error must name the redirect and the trailing slash, got: %v", err)
 	}
 }

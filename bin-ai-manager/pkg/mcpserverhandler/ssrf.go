@@ -1,11 +1,14 @@
 package mcpserverhandler
 
 import (
+	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -96,17 +99,25 @@ func rejectDisallowedIP(ip net.IP) error {
 // original hostname is unaffected. Every resolved IP for a hostname is
 // subject to this check: http.Transport retries each address in the
 // resolver's list in turn, and Control runs again for each attempt.
+//
+// The client also refuses redirects (RefuseRedirects) and any request that is
+// not https (httpsOnlyTransport), so a credential is only ever sent, over TLS,
+// to the host the customer registered.
 func NewSSRFGuardedClient(timeout time.Duration) *http.Client {
 	dialer := &net.Dialer{
 		Timeout: timeout,
 		Control: controlRejectDisallowedAddr,
 	}
+	return newGuardedClient(timeout, dialer.DialContext, &tls.Config{MinVersion: tls.VersionTLS12})
+}
 
+// newGuardedClient assembles the client around a given dialer and TLS
+// configuration, so tests can reach a local TLS server through everything
+// else the production client does.
+func newGuardedClient(timeout time.Duration, dial func(ctx context.Context, network, addr string) (net.Conn, error), tlsConfig *tls.Config) *http.Client {
 	transport := &http.Transport{
-		DialContext: dialer.DialContext,
-		TLSClientConfig: &tls.Config{
-			MinVersion: tls.VersionTLS12,
-		},
+		DialContext:     dial,
+		TLSClientConfig: tlsConfig,
 		// The peer is a customer-controlled server. Bound its response
 		// headers well below net/http's 10 MB default: the MCP client echoes
 		// one of them (Mcp-Session-Id) back on every later request.
@@ -114,9 +125,84 @@ func NewSSRFGuardedClient(timeout time.Duration) *http.Client {
 	}
 
 	return &http.Client{
-		Transport: transport,
-		Timeout:   timeout,
+		Transport:     &httpsOnlyTransport{next: transport},
+		Timeout:       timeout,
+		CheckRedirect: RefuseRedirects,
 	}
+}
+
+// ErrRedirectRefused is returned, wrapped, when an MCP server answers with a
+// redirect.
+var ErrRedirectRefused = errors.New("mcp server answered with a redirect, which is refused")
+
+// RefuseRedirects is an http.Client CheckRedirect policy that follows no
+// redirect.
+//
+// Following one hands net/http the decision of which headers go to the new
+// location, and that decision is wrong for this client in two proven ways:
+// a custom API-key header is not on net/http's sensitive list and reaches a
+// different host intact, and Authorization survives an https to http
+// downgrade on the same host because net/http compares host names only. Re-
+// checking each hop would mean re-implementing that decision. An MCP endpoint
+// is a URL the customer registered, so a server redirecting it is
+// misconfigured, and refusing gives a clear error instead of a silent leak.
+//
+// The error names the target by scheme and host only, since the path and
+// query of a URL the server chose may carry anything. net/http wraps it in a
+// *url.Error carrying the full target URL, so callers must report it through
+// RedirectRefusal rather than the wrapped error's text. The one common cause
+// gets a specific hint: the reference MCP SDK answers the registered path with
+// a trailing slash added or removed by redirecting to the other spelling.
+func RefuseRedirects(req *http.Request, via []*http.Request) error {
+	target := req.URL
+	hint := ""
+	if len(via) > 0 {
+		orig := via[0].URL
+		if target.Scheme == orig.Scheme && target.Host == orig.Host && target.Path != orig.Path &&
+			strings.TrimSuffix(target.Path, "/") == strings.TrimSuffix(orig.Path, "/") {
+			hint = "; the server serves the registered path with a different trailing slash, so update the registered URL to match"
+		}
+	}
+	return fmt.Errorf("%w: to %s://%s%s", ErrRedirectRefused, target.Scheme, target.Host, hint)
+}
+
+// RedirectRefusal returns the refusal from RefuseRedirects inside err, without
+// the *url.Error net/http wraps it in, whose text includes the full redirect
+// target. ok is false when err is not a refused redirect.
+func RedirectRefusal(err error) (refusal error, ok bool) {
+	if !errors.Is(err, ErrRedirectRefused) {
+		return nil, false
+	}
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) {
+		return urlErr.Err, true
+	}
+	return err, true
+}
+
+// httpsOnlyTransport refuses any request whose scheme is not https before it
+// is sent. URLs are validated as https when they are stored, but not again
+// before each call, so without this a row holding an http URL would send its
+// credential in cleartext on the first request.
+type httpsOnlyTransport struct {
+	next *http.Transport
+}
+
+func (t *httpsOnlyTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if req.URL.Scheme != "https" {
+		if req.Body != nil {
+			_ = req.Body.Close()
+		}
+		return nil, fmt.Errorf("refusing a %q request: mcp servers are reached over https only", req.URL.Scheme)
+	}
+	return t.next.RoundTrip(req)
+}
+
+// CloseIdleConnections forwards to the wrapped transport. http.Client calls
+// it through an interface check, so without it a caller closing idle
+// connections would silently close nothing.
+func (t *httpsOnlyTransport) CloseIdleConnections() {
+	t.next.CloseIdleConnections()
 }
 
 // controlRejectDisallowedAddr is the net.Dialer.Control hook: address is the

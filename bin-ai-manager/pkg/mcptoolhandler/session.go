@@ -238,6 +238,9 @@ func (h *mcpToolHandler) closeSession(callCtx context.Context, s *mcpSession) {
 
 	resp, err := s.client.Do(req)
 	if err != nil {
+		if refusal, ok := mcpserverhandler.RedirectRefusal(err); ok {
+			err = refusal
+		}
 		logrus.Debugf("Could not close mcp session. err: %s", truncateForError([]byte(err.Error())))
 		return
 	}
@@ -336,6 +339,11 @@ func (h *mcpToolHandler) post(ctx context.Context, s *mcpSession, msg any) (*htt
 
 	resp, err := s.client.Do(req)
 	if err != nil {
+		// Report a refused redirect by its own text: the transport's error
+		// wraps it with the full target URL the server chose.
+		if refusal, ok := mcpserverhandler.RedirectRefusal(err); ok {
+			return nil, fmt.Errorf("request failed: %w", refusal)
+		}
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
 

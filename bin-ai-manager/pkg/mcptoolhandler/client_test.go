@@ -21,8 +21,12 @@ import (
 // httptest.Server binds to 127.0.0.1 which the production SSRF guard
 // correctly rejects; SSRF guarding itself is covered by
 // pkg/mcpserverhandler's own tests.
+// testClient is the client unit tests reach local plain-http servers with.
+// It keeps the production redirect policy, so no test can pass by following
+// a redirect production would refuse; only the dial hook that rejects
+// loopback and the https-only check are left out.
 func testClient(timeout time.Duration) *http.Client {
-	return &http.Client{Timeout: timeout}
+	return &http.Client{Timeout: timeout, CheckRedirect: mcpserverhandler.RefuseRedirects}
 }
 
 func newTestHandler(t *testing.T, mockDB dbhandler.DBHandler) *mcpToolHandler {

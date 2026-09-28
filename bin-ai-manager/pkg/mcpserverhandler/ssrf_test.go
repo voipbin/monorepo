@@ -1,10 +1,15 @@
 package mcpserverhandler
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -132,12 +137,12 @@ func Test_NewSSRFGuardedClient_WiringRejectsLocalTestServer(t *testing.T) {
 // plain client, so without this the limit would be untested where it
 // actually runs.
 func Test_NewSSRFGuardedClient_BoundsResponseHeaders(t *testing.T) {
-	transport, ok := NewSSRFGuardedClient(time.Second).Transport.(*http.Transport)
+	transport, ok := NewSSRFGuardedClient(time.Second).Transport.(*httpsOnlyTransport)
 	if !ok {
-		t.Fatal("expected an *http.Transport")
+		t.Fatal("expected the https-only transport")
 	}
-	if transport.MaxResponseHeaderBytes != mcpMaxResponseHeaderBytes {
-		t.Fatalf("MaxResponseHeaderBytes = %d, want %d", transport.MaxResponseHeaderBytes, mcpMaxResponseHeaderBytes)
+	if transport.next.MaxResponseHeaderBytes != mcpMaxResponseHeaderBytes {
+		t.Fatalf("MaxResponseHeaderBytes = %d, want %d", transport.next.MaxResponseHeaderBytes, mcpMaxResponseHeaderBytes)
 	}
 
 	// Exercise the limit through the production transport itself, with only
@@ -149,7 +154,7 @@ func Test_NewSSRFGuardedClient_BoundsResponseHeaders(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	probe := transport.Clone()
+	probe := transport.next.Clone()
 	probe.DialContext = (&net.Dialer{Timeout: time.Second}).DialContext
 	resp, err := (&http.Client{Transport: probe, Timeout: 2 * time.Second}).Get(srv.URL)
 	if err == nil {
@@ -158,5 +163,132 @@ func Test_NewSSRFGuardedClient_BoundsResponseHeaders(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "exceeded") {
 		t.Fatalf("expected the header limit error, got: %v", err)
+	}
+}
+
+// loopbackGuardedClient is the production client with only the dial hook
+// that rejects loopback removed, trusting srv's certificate, so tests reach a
+// local TLS server through the same redirect and scheme policy.
+func loopbackGuardedClient(srv *httptest.Server) *http.Client {
+	pool := x509.NewCertPool()
+	pool.AddCert(srv.Certificate())
+	return newGuardedClient(2*time.Second, (&net.Dialer{Timeout: time.Second}).DialContext, &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: pool})
+}
+
+// Test_NewSSRFGuardedClient_RefusesRedirects pins that no redirect is
+// followed, so neither a custom API-key header nor Authorization can be
+// carried to another host or downgraded to http, and that the error names
+// the target without its path or query.
+func Test_NewSSRFGuardedClient_RefusesRedirects(t *testing.T) {
+	var elsewhere atomic.Int32
+	other := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		elsewhere.Add(1)
+	}))
+	defer other.Close()
+
+	tests := []struct {
+		name        string
+		location    func(self string) string
+		wantHint    bool
+		mustNotShow string
+	}{
+		{name: "another host", location: func(string) string { return other.URL + "/steal?token=secret-in-query" }, mustNotShow: "secret-in-query"},
+		{name: "same host over http", location: func(self string) string { return strings.Replace(self, "https://", "http://", 1) + "/mcp" }},
+		{name: "same path with a trailing slash removed", location: func(self string) string { return self + "/mcp" }, wantHint: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var srv *httptest.Server
+			srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				http.Redirect(w, r, tt.location(srv.URL), http.StatusTemporaryRedirect)
+			}))
+			defer srv.Close()
+
+			req, _ := http.NewRequest(http.MethodPost, srv.URL+"/mcp/", strings.NewReader(`{}`))
+			req.Header.Set("X-API-Key", "api-key-value")
+			req.Header.Set("Authorization", "Bearer bearer-value")
+			resp, err := loopbackGuardedClient(srv).Do(req)
+			if err == nil {
+				_ = resp.Body.Close()
+				t.Fatal("expected the redirect to be refused")
+			}
+			refusal, ok := RedirectRefusal(err)
+			if !ok {
+				t.Fatalf("expected a refused redirect, got: %v", err)
+			}
+			err = refusal
+			if tt.wantHint != strings.Contains(err.Error(), "trailing slash") {
+				t.Fatalf("trailing slash hint present=%v, want %v: %v", !tt.wantHint, tt.wantHint, err)
+			}
+			if tt.mustNotShow != "" && strings.Contains(err.Error(), tt.mustNotShow) {
+				t.Fatalf("refusal exposes the redirect target's query: %v", err)
+			}
+			if strings.Contains(err.Error(), "/steal") || strings.Contains(err.Error(), "/mcp") {
+				t.Fatalf("refusal exposes the redirect target's path: %v", err)
+			}
+		})
+	}
+
+	if n := elsewhere.Load(); n != 0 {
+		t.Fatalf("the redirect target received %d request(s); no credential may leave the registered host", n)
+	}
+}
+
+// Test_NewSSRFGuardedClient_RefusesPlainHTTP pins that a request that is
+// not https is refused before anything is sent, even though stored URLs are
+// only validated when they are written.
+func Test_NewSSRFGuardedClient_RefusesPlainHTTP(t *testing.T) {
+	var received atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		received.Add(1)
+	}))
+	defer srv.Close()
+
+	tlsSrv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer tlsSrv.Close()
+
+	resp, err := loopbackGuardedClient(tlsSrv).Get(srv.URL)
+	if err == nil {
+		_ = resp.Body.Close()
+		t.Fatal("expected a plain http request to be refused")
+	}
+	if !strings.Contains(err.Error(), "https only") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if n := received.Load(); n != 0 {
+		t.Fatalf("the plain http server received %d request(s)", n)
+	}
+}
+
+// Test_NewSSRFGuardedClient_ClosesIdleConnections pins that wrapping the
+// transport kept CloseIdleConnections working. http.Client reaches it only
+// through an interface check, so a wrapper without it would compile and
+// silently leak every call's idle connections.
+func Test_NewSSRFGuardedClient_ClosesIdleConnections(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer srv.Close()
+
+	client := loopbackGuardedClient(srv)
+	if _, ok := client.Transport.(interface{ CloseIdleConnections() }); !ok {
+		t.Fatal("the guarded transport does not forward CloseIdleConnections")
+	}
+
+	before := runtime.NumGoroutine()
+	for i := 0; i < 20; i++ {
+		c := loopbackGuardedClient(srv)
+		resp, err := c.Get(srv.URL)
+		if err != nil {
+			t.Fatalf("request failed: %v", err)
+		}
+		_, _ = io.Copy(io.Discard, resp.Body)
+		_ = resp.Body.Close()
+		c.CloseIdleConnections()
+	}
+	deadline := time.Now().Add(2 * time.Second)
+	for runtime.NumGoroutine() > before+5 && time.Now().Before(deadline) {
+		time.Sleep(20 * time.Millisecond)
+	}
+	if after := runtime.NumGoroutine(); after > before+5 {
+		t.Fatalf("goroutines grew from %d to %d over 20 closed clients", before, after)
 	}
 }
