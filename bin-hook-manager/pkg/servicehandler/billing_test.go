@@ -49,7 +49,7 @@ func Test_Billing(t *testing.T) {
 			signature: validSignature,
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/billing/paddle",
+				ReceivedURI:  "hook.voipbin.net/v1.0/billing/paddle",
 				ReceivedData: body,
 			},
 		},
@@ -114,7 +114,7 @@ func Test_Billing_Error(t *testing.T) {
 			signature: validSignature,
 
 			expectReq: &hmhook.Hook{
-				ReceviedURI:  "hook.voipbin.net/v1.0/billing/paddle",
+				ReceivedURI:  "hook.voipbin.net/v1.0/billing/paddle",
 				ReceivedData: body,
 			},
 			expectError: fmt.Errorf("billing hook error"),

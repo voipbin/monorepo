@@ -10,7 +10,7 @@ import (
 	"monorepo/bin-message-manager/models/target"
 )
 
-// dbGets returns list of messges info with filters
+// dbGets returns list of messages info with filters
 func (h *messageHandler) dbList(ctx context.Context, token string, size uint64, filters map[message.Field]any) ([]*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "dbGets",

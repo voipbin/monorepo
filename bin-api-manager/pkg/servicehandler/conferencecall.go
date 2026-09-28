@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// conferencecallGet vaildates the customer's ownership and returns the conferencecall info.
+// conferencecallGet validates the customer's ownership and returns the conferencecall info.
 func (h *serviceHandler) conferencecallGet(ctx context.Context, id uuid.UUID) (*cfconferencecall.Conferencecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "conferencecallGet",
@@ -32,7 +32,7 @@ func (h *serviceHandler) conferencecallGet(ctx context.Context, id uuid.UUID) (*
 	return res, nil
 }
 
-// ConferencecallGet vaildates the customer's ownership and returns the conferencecall info.
+// ConferencecallGet validates the customer's ownership and returns the conferencecall info.
 func (h *serviceHandler) ConferencecallGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cfconferencecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "ConferencecallGet",

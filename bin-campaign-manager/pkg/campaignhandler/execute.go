@@ -327,7 +327,7 @@ func (h *campaignHandler) executeFlow(
 	}
 	log.WithField("campaigncall", tmpCC).Debugf("Created a new campaigncall. campaigncall_id: %s", tmpCC.ID)
 
-	// upate the campaigncall status to progressing
+	// update the campaigncall status to progressing
 	cc, err := h.campaigncallHandler.Progressing(ctx, tmpCC.ID)
 	if err != nil {
 		log.Errorf("Could not update the campaigncall status to progressing. err: %v", err)

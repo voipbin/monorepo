@@ -264,7 +264,7 @@ func Test_Update(t *testing.T) {
 				"test_header1": "val1",
 				"test_header2": "val2",
 			},
-			"upate name",
+			"update name",
 			"update detail",
 
 			&provider.Provider{

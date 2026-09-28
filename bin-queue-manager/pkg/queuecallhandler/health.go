@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// HealthCheck checks the given call is still vaild
+// HealthCheck checks the given call is still valid
 // and hangup the call if the call is not valid over the default retry count.
 func (h *queuecallHandler) HealthCheck(ctx context.Context, id uuid.UUID, retryCount int) {
 	log := logrus.WithFields(logrus.Fields{

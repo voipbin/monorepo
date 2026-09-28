@@ -261,7 +261,7 @@ func (h *whatsappHandler) VerifyWebhook(ctx, ac, mode, verifyToken, challenge st
 
 ```go
 type Hook struct {
-    ReceviedURI       string `json:"received_uri"`        // existing (typo preserved)
+    ReceivedURI       string `json:"received_uri"`        // existing
     ReceivedData      []byte `json:"received_data"`       // existing
     ReceivedMethod    string `json:"received_method"`     // new: "GET" or "POST"
     ReceivedSignature string `json:"received_signature"`  // new: X-Hub-Signature-256 header value
@@ -279,7 +279,7 @@ func (h *serviceHandler) Conversation(ctx context.Context, r *http.Request) (str
     data, _ := io.ReadAll(r.Body)
 
     req := &hmhook.Hook{
-        ReceviedURI:       r.Host + r.URL.RequestURI(), // was r.URL.Path — now includes query string
+        ReceivedURI:       r.Host + r.URL.RequestURI(), // was r.URL.Path — now includes query string
         ReceivedData:      data,
         ReceivedMethod:    r.Method,
         ReceivedSignature: r.Header.Get("X-Hub-Signature-256"),
@@ -294,7 +294,7 @@ func (h *serviceHandler) Conversation(ctx context.Context, r *http.Request) (str
     }
 
     // POST: existing fire-and-forget path (existing LINE POST hooks unaffected by
-    // the added query string in ReceviedURI, since account-ID parsing uses URL path only)
+    // the added query string in ReceivedURI, since account-ID parsing uses URL path only)
     return "", h.reqHandler.ConversationV1Hook(ctx, req)
 }
 ```
@@ -347,14 +347,14 @@ case regV1Hooks.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 
 ```go
 func (h *listenHandler) processV1HooksGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-    var req request.V1DataHooksPost // reuses same model — ReceviedURI contains the full URI with query string
+    var req request.V1DataHooksPost // reuses same model — ReceivedURI contains the full URI with query string
     if err := json.Unmarshal(m.Data, &req); err != nil {
         return simpleResponse(400), nil
     }
 
-    // hub.* params live in req.ReceviedURI query string (the forwarded external URL),
+    // hub.* params live in req.ReceivedURI query string (the forwarded external URL),
     // NOT in m.URI (which is the internal RPC path "/v1/hooks")
-    u, err := url.Parse(req.ReceviedURI)
+    u, err := url.Parse(req.ReceivedURI)
     if err != nil {
         return simpleResponse(400), nil
     }
@@ -363,7 +363,7 @@ func (h *listenHandler) processV1HooksGet(ctx context.Context, m *sock.Request) 
     token     := q.Get("hub.verify_token")
     challenge := q.Get("hub.challenge")
 
-    result, err := h.conversationHandler.HookVerify(ctx, req.ReceviedURI, mode, token, challenge)
+    result, err := h.conversationHandler.HookVerify(ctx, req.ReceivedURI, mode, token, challenge)
     if err != nil {
         return simpleResponse(403), nil
     }

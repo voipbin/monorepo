@@ -2061,7 +2061,7 @@ func Test_actionHandleBranch(t *testing.T) {
 			mockDB.EXPECT().ActiveflowUpdate(ctx, tt.activeflow.ID, tt.expectUpdateFields).Return(nil)
 
 			if err := h.actionHandleBranch(ctx, tt.activeflow); err != nil {
-				t.Errorf("Wrong match. exepct: ok, got: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 		})

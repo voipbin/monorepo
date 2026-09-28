@@ -84,7 +84,7 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	num := numbs[0]
 	log.WithField("number", num).Infof("Found number info. number_id: %s", num.ID)
 
-	// get informations
+	// get information
 	source := hm.GetSource()
 	targets := hm.GetTargets()
 	text := hm.GetText()

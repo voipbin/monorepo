@@ -77,7 +77,7 @@ func Test_processV1ServicesTypeConferencecallPost(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}

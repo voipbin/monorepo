@@ -396,7 +396,7 @@ func Test_ExecuteNextAction(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.responseAction) != true {
-				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.responseAction, res)
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAction, res)
 			}
 		})
 	}

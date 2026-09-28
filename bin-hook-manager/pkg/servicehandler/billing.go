@@ -104,7 +104,7 @@ func (h *serviceHandler) Billing(ctx context.Context, r *http.Request) error {
 	}
 
 	req := &hmhook.Hook{
-		ReceviedURI:  r.Host + r.URL.Path,
+		ReceivedURI:  r.Host + r.URL.Path,
 		ReceivedData: data,
 	}
 

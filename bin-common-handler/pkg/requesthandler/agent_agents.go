@@ -280,7 +280,7 @@ func (r *requestHandler) AgentV1AgentUpdatePassword(ctx context.Context, timeout
 }
 
 // AgentV1AgentUpdate sends a request to agent-manager
-// to update teh agent basic info
+// to update the agent basic info
 // it returns error if something went wrong.
 func (r *requestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, name *string, detail *string, ringMethod *amagent.RingMethod) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s", id)
@@ -313,7 +313,7 @@ func (r *requestHandler) AgentV1AgentUpdate(ctx context.Context, id uuid.UUID, n
 }
 
 // AgentV1AgentUpdate sends a request to agent-manager
-// to update teh agent's tag_ids info
+// to update the agent's tag_ids info
 // it returns error if something went wrong.
 func (r *requestHandler) AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uuid.UUID) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/tag_ids", id)
@@ -341,7 +341,7 @@ func (r *requestHandler) AgentV1AgentUpdateTagIDs(ctx context.Context, id uuid.U
 }
 
 // AgentV1AgentUpdateStatus sends a request to agent-manager
-// to update teh agent's status info
+// to update the agent's status info
 // it returns error if something went wrong.
 func (r *requestHandler) AgentV1AgentUpdateStatus(ctx context.Context, id uuid.UUID, status amagent.Status) (*amagent.Agent, error) {
 	uri := fmt.Sprintf("/v1/agents/%s/status", id)

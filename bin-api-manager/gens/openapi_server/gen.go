@@ -10183,11 +10183,6 @@ type GetServiceAgentsContactInteractionsParams struct {
 	// AddressId Filter by contact address ID.
 	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
 
-	// Since Lookback window in days (e.g. "7d", "30d"), used only when no filter
-	// (peer_type+peer_target, contact_id, address_id) is provided. Default "30d", max "180d".
-	// Ignored when a filter is provided.
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
 	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
@@ -21038,14 +21033,6 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsContactInteractions(c *gin.Co
 	err = runtime.BindQueryParameterWithOptions("form", true, false, "address_id", c.Request.URL.Query(), &params.AddressId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "since" -------------
-
-	err = runtime.BindQueryParameterWithOptions("form", true, false, "since", c.Request.URL.Query(), &params.Since, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter since: %w", err), http.StatusBadRequest)
 		return
 	}
 
