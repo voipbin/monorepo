@@ -229,6 +229,23 @@ func Test_Update_OAuthAuthTypeTransition(t *testing.T) {
 							t.Errorf("%s must be cleared when the server leaves oauth, got %#v (present: %v)",
 								mcpserver.FieldOAuthVendor, v, ok)
 						}
+						// Over-clearing is its own bug, so the columns that must
+						// SURVIVE the downgrade are asserted too. The secret
+						// envelope belongs to the static credential the customer
+						// is switching to -- destroying it here would wipe out
+						// the very thing that replaces the OAuth connection --
+						// and this request supplied no secret, so nothing may
+						// write those columns on this path.
+						for _, f := range []mcpserver.Field{
+							mcpserver.FieldSecretCiphertext,
+							mcpserver.FieldSecretNonce,
+							mcpserver.FieldKeyVersion,
+							mcpserver.FieldAccessTokenExpiresAt,
+						} {
+							if _, ok := fields[f]; ok {
+								t.Errorf("%s must survive the downgrade, but it was written", f)
+							}
+						}
 						return nil
 					})
 				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, mcpserver.EventTypeUpdated, gomock.Any())
