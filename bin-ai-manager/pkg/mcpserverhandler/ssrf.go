@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -253,7 +252,11 @@ func (t *httpsOnlyTransport) RoundTrip(req *http.Request) (*http.Response, error
 		return nil, err
 	}
 	if loc := resp.Header.Get("Location"); loc != "" && redirectStatuses[resp.StatusCode] {
-		_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 2<<10))
+		// Close without draining: a server that sends the headers and then
+		// stalls would otherwise hold the call to its deadline, and the
+		// client's timeout error would replace this refusal. Reusing the
+		// connection is worth nothing here, since every call closes its idle
+		// connections.
 		_ = resp.Body.Close()
 		target, errParse := req.URL.Parse(loc)
 		if errParse != nil {

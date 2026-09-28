@@ -386,3 +386,35 @@ func Test_redirectRefusal_TrailingSlashHint(t *testing.T) {
 		}
 	}
 }
+
+// Test_NewSSRFGuardedClient_StalledRedirectBodyIsRefusedAtOnce pins that a
+// redirect whose body never arrives is refused as soon as its headers are
+// read, keeping ErrRedirectRefused, instead of waiting out the deadline and
+// surfacing as a timeout.
+func Test_NewSSRFGuardedClient_StalledRedirectBodyIsRefusedAtOnce(t *testing.T) {
+	release := make(chan struct{})
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", "/elsewhere")
+		w.WriteHeader(http.StatusTemporaryRedirect)
+		w.(http.Flusher).Flush()
+		select {
+		case <-release:
+		case <-r.Context().Done():
+		}
+	}))
+	defer srv.Close()
+	defer close(release)
+
+	start := time.Now()
+	resp, err := loopbackGuardedClient(srv).Post(srv.URL+"/mcp", "application/json", strings.NewReader(`{}`))
+	if err == nil {
+		_ = resp.Body.Close()
+		t.Fatal("expected the redirect to be refused")
+	}
+	if !errors.Is(RedactTransportError(err), ErrRedirectRefused) {
+		t.Fatalf("expected a refused redirect, got: %v", err)
+	}
+	if elapsed := time.Since(start); elapsed > time.Second {
+		t.Fatalf("refusal took %v; it must not wait for the body", elapsed)
+	}
+}

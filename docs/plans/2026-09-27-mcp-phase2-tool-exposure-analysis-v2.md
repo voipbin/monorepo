@@ -170,7 +170,7 @@ blocking it.
 
 | Risk | Status |
 |---|---|
-| SSRF to internal networks | Mitigated by a dial-time `Control` hook (`ssrf.go:95-112`), which survives DNS rebinding |
+| SSRF to internal networks | Mitigated by a dial-time `Control` hook (`controlRejectDisallowedAddr` in `ssrf.go`; the line range cited in earlier rounds is the pre-B1 layout), which survives DNS rebinding |
 | Credential leak via redirect | **NOT mitigated.** B3. Proven: a custom API-key header survives a cross-host redirect, and `Authorization` survives a same-host `https` to `http` downgrade. A.5 |
 | Deleted, foreign or inactive server still callable | Mitigated by PR A, re-verified in this tree |
 | AI flipped to Insight, or deleted, mid-call | **NOT mitigated.** B9. A.8 |
