@@ -130,6 +130,59 @@ func (h *handler) McpServerList(ctx context.Context, size uint64, token string, 
 	return res, nil
 }
 
+// McpServerUpdateOAuthTokensIfCurrent stores the result of an OAuth refresh,
+// but only while the row still holds the refresh token that refresh spent.
+//
+// A refresh runs to completion on its own and can finish after the row has
+// moved on: the customer reconnected (possibly to a different account), left
+// OAuth for a static credential, or another refresh already stored a newer
+// rotation. An unconditional write would then put the old grant's tokens
+// back over the new ones, or restore vendor tokens a downgrade erased. With
+// this predicate such a write matches no row and ErrNotFound is returned, as
+// it is for a deleted row; either way the row is not the one refreshed.
+func (h *handler) McpServerUpdateOAuthTokensIfCurrent(ctx context.Context, id uuid.UUID, spentRefreshTokenCiphertext []byte, fields map[mcpserver.Field]any) error {
+	if len(spentRefreshTokenCiphertext) == 0 {
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: the spent refresh token is required")
+	}
+
+	updateFields := make(map[string]any, len(fields)+1)
+	for k, v := range fields {
+		updateFields[string(k)] = v
+	}
+	updateFields["tm_update"] = h.utilHandler.TimeNow()
+
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
+	if err != nil {
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Update(mcpserverTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		Where("tm_delete IS NULL").
+		Where(sq.Eq{"auth_type": string(mcpserver.AuthTypeOAuth)}).
+		Where(sq.Eq{"refresh_token_ciphertext": spentRefreshTokenCiphertext}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not build query. err: %v", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not execute. err: %v", err)
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("McpServerUpdateOAuthTokensIfCurrent: could not get rows affected. err: %v", err)
+	}
+	if n == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
 // McpServerUpdate updates the McpServer fields.
 func (h *handler) McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[mcpserver.Field]any) error {
 	updateFields := make(map[string]any, len(fields)+1)

@@ -2,13 +2,16 @@ package mcpoauthhandler
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
 	"sync"
 	"time"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/mcpserver"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
 // accessTokenExpiryMargin is the safety margin subtracted from
@@ -38,8 +41,13 @@ type tokenExchange struct {
 	done        chan struct{}
 	accessToken string
 	expiresAt   *time.Time
+	finishedAt  *time.Time
 	err         error
 }
+
+// exchangeRetention is how long a finished exchange is kept for callers that
+// read the row before its result was stored; see tokenExchange.usable.
+const exchangeRetention = 10 * time.Minute
 
 // refreshExchanges holds the exchange in flight, or the last successful one,
 // per server and refresh token. Process-local, like refreshBackoff: callers in
@@ -78,10 +86,6 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 		return "", errors.New("oauth access token expired and no refresh token is available; reconnect required")
 	}
 
-	if h.isInRefreshBackoff(m.ID.String()) {
-		return "", errors.New("oauth token refresh recently failed for this server; skipping retry (backoff)")
-	}
-
 	refreshToken, err := h.crypto.Decrypt(m.RefreshTokenCiphertext, m.RefreshTokenNonce, m.KeyVersion)
 	if err != nil {
 		return "", errors.Wrap(err, "could not decrypt oauth refresh token")
@@ -105,7 +109,10 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 	// token it spent, is given its result. Presenting a spent refresh token
 	// again fails at every vendor, and a vendor that detects reuse revokes
 	// the whole grant.
-	ex := h.refreshExchange(ctx, m, vc, refreshToken, now)
+	ex, err := h.refreshExchange(ctx, m, vc, refreshToken, now)
+	if err != nil {
+		return "", err
+	}
 
 	select {
 	case <-ex.done:
@@ -119,11 +126,18 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 }
 
 // refreshExchange returns the exchange for m's current refresh token,
-// starting it if none is running or recorded. Exchanges are keyed by server
-// and refresh token ciphertext, so a server whose row now holds a newer
-// refresh token starts a new exchange rather than reusing an old answer.
-func (h *mcpOAuthHandler) refreshExchange(ctx context.Context, m *mcpserver.McpServer, vc vendorConfig, refreshToken string, now *time.Time) *tokenExchange {
-	key := m.ID.String() + ":" + hex.EncodeToString(m.RefreshTokenCiphertext)
+// starting it if none is running or usable. Exchanges are keyed by server and
+// a digest of the refresh token itself, not its ciphertext: every encryption
+// draws a fresh nonce, so keying on ciphertext would split callers holding the
+// same token under two keys, and each would spend it. A server whose row now
+// holds a different refresh token gets a different key and a new exchange.
+//
+// The backoff is checked only when a new exchange would start: a caller that
+// can join one in flight, or be handed a usable result, costs the vendor
+// nothing, and refusing it would fail a call that has a valid token to use.
+func (h *mcpOAuthHandler) refreshExchange(ctx context.Context, m *mcpserver.McpServer, vc vendorConfig, refreshToken string, now *time.Time) (*tokenExchange, error) {
+	digest := sha256.Sum256([]byte(refreshToken))
+	key := m.ID.String() + ":" + hex.EncodeToString(digest[:])
 
 	refreshExchangesMu.Lock()
 	defer refreshExchangesMu.Unlock()
@@ -131,24 +145,25 @@ func (h *mcpOAuthHandler) refreshExchange(ctx context.Context, m *mcpserver.McpS
 	if ex, ok := refreshExchanges[key]; ok {
 		select {
 		case <-ex.done:
-			// Finished: reuse only a success whose access token is still
-			// valid. A failure is not reused here; the backoff already
-			// throttles retries against the vendor.
-			if ex.err == nil && (ex.expiresAt == nil || now.Add(accessTokenExpiryMargin).Before(*ex.expiresAt)) {
-				return ex
+			if ex.usable(now) {
+				return ex, nil
 			}
 			delete(refreshExchanges, key)
 		default:
-			return ex
+			return ex, nil
 		}
 	}
 
-	// Drop finished exchanges whose access token has expired, so the map
-	// holds at most one live entry per server plus those still in flight.
+	if h.isInRefreshBackoff(m.ID.String()) {
+		return nil, errors.New("oauth token refresh recently failed for this server; skipping retry (backoff)")
+	}
+
+	// Drop finished exchanges that can no longer be handed out, so the map
+	// holds only what is in flight or recently finished.
 	for k, old := range refreshExchanges {
 		select {
 		case <-old.done:
-			if old.err != nil || (old.expiresAt != nil && !now.Before(*old.expiresAt)) {
+			if !old.usable(now) {
 				delete(refreshExchanges, k)
 			}
 		default:
@@ -162,6 +177,7 @@ func (h *mcpOAuthHandler) refreshExchange(ctx context.Context, m *mcpserver.McpS
 	go func() {
 		defer close(ex.done)
 		ex.accessToken, ex.expiresAt, ex.err = h.exchangeAndStore(exchangeCtx, m, vc, refreshToken, now)
+		ex.finishedAt = h.utilHandler.TimeNow()
 		if ex.err != nil {
 			refreshExchangesMu.Lock()
 			if refreshExchanges[key] == ex {
@@ -171,7 +187,24 @@ func (h *mcpOAuthHandler) refreshExchange(ctx context.Context, m *mcpserver.McpS
 		}
 	}()
 
-	return ex
+	return ex, nil
+}
+
+// usable reports whether a finished exchange may be handed to a caller at
+// now: it succeeded, its access token is valid with the same margin used to
+// decide a refresh, and it finished within exchangeRetention. Only callers
+// that read the row before the refresh was stored need it, and a call holds
+// its row for seconds, so the retention bound costs nothing and keeps a
+// decrypted access token out of memory once no caller can want it. It must
+// only be called after done is closed.
+func (ex *tokenExchange) usable(now *time.Time) bool {
+	if ex.err != nil || ex.finishedAt == nil {
+		return false
+	}
+	if now.Sub(*ex.finishedAt) > exchangeRetention {
+		return false
+	}
+	return ex.expiresAt == nil || now.Add(accessTokenExpiryMargin).Before(*ex.expiresAt)
 }
 
 // exchangeAndStore performs one refresh against the vendor and stores the
@@ -217,8 +250,24 @@ func (h *mcpOAuthHandler) exchangeAndStore(ctx context.Context, m *mcpserver.Mcp
 	}
 	persistCtx, cancel := context.WithTimeout(ctx, persistRotatedTokenTimeout)
 	defer cancel()
-	if err := h.db.McpServerUpdate(persistCtx, m.ID, fields); err != nil {
-		return "", nil, errors.Wrap(err, "could not persist refreshed oauth tokens")
+	err = h.db.McpServerUpdateOAuthTokensIfCurrent(persistCtx, m.ID, m.RefreshTokenCiphertext, fields)
+	switch {
+	case err == nil:
+	case errors.Is(err, dbhandler.ErrNotFound):
+		// The row moved on while the vendor was answering: it was
+		// reconnected, left OAuth, was deleted, or holds a newer rotation.
+		// The tokens are not stored, so they cannot overwrite that, but the
+		// caller still gets the access token it was refreshed for; its row
+		// predates the change.
+		log.WithField("mcp_server_id", m.ID).Info("Discarded an oauth refresh whose server row changed while it ran.")
+	default:
+		// The vendor has rotated the refresh token, so the row now holds a
+		// spent one. Backing off keeps the next callers from presenting it
+		// again, which a vendor that detects reuse answers by revoking the
+		// grant. The result is still returned, and kept for callers that
+		// hold the same row, so this refresh is not wasted.
+		h.setRefreshBackoff(m.ID.String())
+		log.WithField("mcp_server_id", m.ID).Errorf("Could not persist a rotated oauth refresh token; the server may need to be reconnected. err: %v", err)
 	}
 
 	return tok.AccessToken, expiresAt, nil

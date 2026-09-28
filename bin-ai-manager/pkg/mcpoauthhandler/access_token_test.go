@@ -180,8 +180,8 @@ func Test_GetValidAccessToken_RefreshesAndPersists(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(func() *time.Time { n := time.Now(); return &n }()).AnyTimes()
 	h.utilHandler = mockUtil
 
-	mockDB.EXPECT().McpServerUpdate(gomock.Any(), serverID, gomock.Any()).DoAndReturn(
-		func(ctx context.Context, id uuid.UUID, fields map[mcpserver.Field]any) error {
+	mockDB.EXPECT().McpServerUpdateOAuthTokensIfCurrent(gomock.Any(), serverID, m.RefreshTokenCiphertext, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, id uuid.UUID, _ []byte, fields map[mcpserver.Field]any) error {
 			// The persisted access token ciphertext must decrypt back
 			// to the NEW token, not the stale one -- proves the update
 			// actually happened before the function returns the token.
@@ -406,8 +406,8 @@ func Test_GetValidAccessToken_RefreshOutlivesCaller(t *testing.T) {
 	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
 
 	stored := make(chan map[mcpserver.Field]any, 1)
-	mockDB.EXPECT().McpServerUpdate(gomock.Any(), m.ID, gomock.Any()).DoAndReturn(
-		func(writeCtx context.Context, _ uuid.UUID, fields map[mcpserver.Field]any) error {
+	mockDB.EXPECT().McpServerUpdateOAuthTokensIfCurrent(gomock.Any(), m.ID, m.RefreshTokenCiphertext, gomock.Any()).DoAndReturn(
+		func(writeCtx context.Context, _ uuid.UUID, _ []byte, fields map[mcpserver.Field]any) error {
 			if writeCtx.Err() != nil {
 				t.Errorf("the rotated token write ran on a cancelled context: %v", writeCtx.Err())
 			}
@@ -466,7 +466,7 @@ func Test_GetValidAccessToken_ConcurrentCallersShareOneRefresh(t *testing.T) {
 	vendor := newRotatingVendor("refresh-0")
 	vendor.delay = 100 * time.Millisecond
 	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
-	mockDB.EXPECT().McpServerUpdate(gomock.Any(), m.ID, gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().McpServerUpdateOAuthTokensIfCurrent(gomock.Any(), m.ID, m.RefreshTokenCiphertext, gomock.Any()).Return(nil).Times(1)
 
 	const callers = 8
 	var wg sync.WaitGroup
@@ -502,7 +502,7 @@ func Test_GetValidAccessToken_LateCallerWithSpentTokenReusesResult(t *testing.T)
 
 	vendor := newRotatingVendor("refresh-0")
 	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
-	mockDB.EXPECT().McpServerUpdate(gomock.Any(), m.ID, gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().McpServerUpdateOAuthTokensIfCurrent(gomock.Any(), m.ID, m.RefreshTokenCiphertext, gomock.Any()).Return(nil).Times(1)
 
 	for i := 0; i < 2; i++ {
 		token, err := h.GetValidAccessToken(context.Background(), m)
@@ -547,5 +547,120 @@ func Test_GetValidAccessToken_FailedRefreshIsNotReused(t *testing.T) {
 	}
 	if calls, _ := vendor.counts(); calls != 2 {
 		t.Fatalf("vendor saw %d refreshes; want 2, a failed exchange must not be reused", calls)
+	}
+}
+
+// Test_GetValidAccessToken_RowMovedOnIsNotOverwritten pins that a refresh
+// finishing after its row changed (reconnected, possibly to another account;
+// downgraded out of OAuth; or already rotated) stores nothing, and that the
+// caller still receives the token it was refreshed for without the server
+// being put into backoff.
+func Test_GetValidAccessToken_RowMovedOnIsNotOverwritten(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	vendor := newRotatingVendor("refresh-0")
+	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+	mockDB.EXPECT().McpServerUpdateOAuthTokensIfCurrent(gomock.Any(), m.ID, m.RefreshTokenCiphertext, gomock.Any()).Return(dbhandler.ErrNotFound)
+
+	token, err := h.GetValidAccessToken(context.Background(), m)
+	if err != nil || token != "access-1" {
+		t.Fatalf("got %q, %v; want access-1", token, err)
+	}
+	if h.isInRefreshBackoff(m.ID.String()) {
+		t.Fatal("a row that moved on is not a refresh failure and must not back off")
+	}
+}
+
+// Test_GetValidAccessToken_PersistFailureBacksOff pins that when the vendor
+// rotated the refresh token but storing it failed, the server backs off, so
+// the next caller does not present the spent refresh token (which a vendor
+// that detects reuse answers by revoking the grant). The refreshed access
+// token is still returned, and callers holding the same row reuse it.
+func Test_GetValidAccessToken_PersistFailureBacksOff(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	vendor := newRotatingVendor("refresh-0")
+	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+	mockDB.EXPECT().McpServerUpdateOAuthTokensIfCurrent(gomock.Any(), m.ID, m.RefreshTokenCiphertext, gomock.Any()).Return(fmt.Errorf("connection reset")).Times(1)
+
+	for i := 0; i < 2; i++ {
+		token, err := h.GetValidAccessToken(context.Background(), m)
+		if err != nil || token != "access-1" {
+			t.Fatalf("call %d got %q, %v; want access-1", i, token, err)
+		}
+	}
+	if !h.isInRefreshBackoff(m.ID.String()) {
+		t.Fatal("a rotated token that could not be stored must put the server into backoff")
+	}
+	if calls, reused := vendor.counts(); calls != 1 || reused != 0 {
+		t.Fatalf("vendor saw %d refreshes and %d reused refresh tokens; want 1 and 0", calls, reused)
+	}
+}
+
+// Test_GetValidAccessToken_SameTokenDifferentCiphertextShares pins that two
+// rows holding the same refresh token under different ciphertexts (each
+// encryption draws a fresh nonce) share one exchange instead of each
+// spending the token.
+func Test_GetValidAccessToken_SameTokenDifferentCiphertextShares(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	vendor := newRotatingVendor("refresh-0")
+	vendor.delay = 100 * time.Millisecond
+	h, m1 := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+
+	m2 := *m1
+	ct, nonce, _, err := h.crypto.Encrypt("refresh-0")
+	if err != nil {
+		t.Fatalf("could not encrypt: %v", err)
+	}
+	m2.RefreshTokenCiphertext, m2.RefreshTokenNonce = ct, nonce
+	mockDB.EXPECT().McpServerUpdateOAuthTokensIfCurrent(gomock.Any(), m1.ID, gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	var wg sync.WaitGroup
+	for _, row := range []*mcpserver.McpServer{m1, &m2} {
+		wg.Add(1)
+		go func(row *mcpserver.McpServer) {
+			defer wg.Done()
+			if token, err := h.GetValidAccessToken(context.Background(), row); err != nil || token != "access-1" {
+				t.Errorf("got %q, %v; want access-1", token, err)
+			}
+		}(row)
+	}
+	wg.Wait()
+
+	if calls, reused := vendor.counts(); calls != 1 || reused != 0 {
+		t.Fatalf("vendor saw %d refreshes and %d reused refresh tokens; want 1 and 0", calls, reused)
+	}
+}
+
+// Test_tokenExchange_usable pins when a finished exchange may be handed out.
+func Test_tokenExchange_usable(t *testing.T) {
+	now := time.Now()
+	at := func(d time.Duration) *time.Time { v := now.Add(d); return &v }
+
+	tests := []struct {
+		name string
+		ex   tokenExchange
+		want bool
+	}{
+		{name: "fresh success", ex: tokenExchange{finishedAt: at(-time.Minute), expiresAt: at(time.Hour)}, want: true},
+		{name: "fresh success with no expiry", ex: tokenExchange{finishedAt: at(-time.Minute)}, want: true},
+		{name: "failed", ex: tokenExchange{finishedAt: at(-time.Minute), err: fmt.Errorf("x")}, want: false},
+		{name: "past retention", ex: tokenExchange{finishedAt: at(-exchangeRetention - time.Second), expiresAt: at(time.Hour)}, want: false},
+		{name: "no expiry past retention", ex: tokenExchange{finishedAt: at(-exchangeRetention - time.Second)}, want: false},
+		{name: "access token within the expiry margin", ex: tokenExchange{finishedAt: at(-time.Minute), expiresAt: at(accessTokenExpiryMargin / 2)}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.ex.usable(&now); got != tt.want {
+				t.Fatalf("usable = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

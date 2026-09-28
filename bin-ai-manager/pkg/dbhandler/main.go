@@ -83,6 +83,7 @@ type DBHandler interface {
 	McpServerGet(ctx context.Context, id uuid.UUID) (*mcpserver.McpServer, error)
 	McpServerList(ctx context.Context, size uint64, token string, filters map[mcpserver.Field]any) ([]*mcpserver.McpServer, error)
 	McpServerUpdate(ctx context.Context, id uuid.UUID, fields map[mcpserver.Field]any) error
+	McpServerUpdateOAuthTokensIfCurrent(ctx context.Context, id uuid.UUID, spentRefreshTokenCiphertext []byte, fields map[mcpserver.Field]any) error
 	McpServerDelete(ctx context.Context, id uuid.UUID) error
 
 	McpOAuthStateCreate(ctx context.Context, s *mcpoauthstate.McpOAuthState) error
