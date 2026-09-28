@@ -56,6 +56,8 @@ MCP Server
 
    ``DELETE /mcpservers/{id}`` is a revocation, not an archive. The stored secret, and any OAuth access and refresh tokens, are erased at the moment of deletion and cannot be recovered -- not by VoIPBin support either. The record itself is retained so that audit history and existing AI references stay readable, but ``has_secret`` becomes ``false`` and the server stops serving tools immediately.
 
+   Deletion is not the only irreversible path. Changing ``auth_type`` away from ``oauth`` also erases the stored OAuth access and refresh tokens, and clears ``oauth_vendor``: the server is being told to authenticate a different way, so the connection it replaces is not kept. Re-running ``POST /mcpservers/oauth/start`` is the way back, not an undo.
+
    To use the same endpoint again, register a new MCP server and supply the secret again (or complete the OAuth flow again). If you only want to stop the server temporarily, set ``status`` to ``disabled`` instead: that keeps the credential and is reversible.
 
 Example

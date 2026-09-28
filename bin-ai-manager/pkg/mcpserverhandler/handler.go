@@ -252,10 +252,14 @@ func (h *mcpServerHandler) Update(
 		// that buildAuthHeader cannot use, and every tool call fails with no
 		// way for the customer to see why.
 		//
-		// This mirrors McpServerDelete, which zeroes the same columns for the
-		// same reason. access_token_expires_at is left alone there as audit
-		// metadata; oauth_vendor is cleared here because the field is
-		// documented as set only while auth_type is oauth.
+		// This mirrors the token-column zeroing in McpServerDelete, for the
+		// same reason. The column sets are not identical: Delete also clears
+		// the secret envelope and retains oauth_vendor, while this path leaves
+		// the secret envelope alone (the same request may be supplying a new
+		// secret) and does clear oauth_vendor, which is documented as set only
+		// while auth_type is oauth. access_token_expires_at is retained by
+		// both as audit metadata; it is read only on the oauth path, which a
+		// downgraded row no longer takes.
 		if *authType != mcpserver.AuthTypeOAuth && live.AuthType == mcpserver.AuthTypeOAuth {
 			fields[mcpserver.FieldOAuthVendor] = ""
 			fields[mcpserver.FieldAccessTokenCiphertext] = []byte(nil)

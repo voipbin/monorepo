@@ -4278,7 +4278,7 @@ type AIManagerMcpServer struct {
 	// Example: X-API-Key
 	ApiKeyHeader *string `json:"api_key_header,omitempty"`
 
-	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. "oauth" is set implicitly by completing POST /mcpservers/oauth/complete -- never set directly via POST/PUT with a customer-supplied secret.
+	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. A server is moved INTO "oauth" only by completing POST /mcpservers/oauth/complete; sending "oauth" on a server that is not already connected is rejected. Re-sending the current "oauth" value on an already-connected server is accepted. Moving a connected server OUT of "oauth" is allowed and irreversibly erases its stored OAuth access and refresh tokens.
 	//
 	// Example: bearer
 	AuthType AIManagerMcpServerAuthType `json:"auth_type"`
@@ -4308,7 +4308,7 @@ type AIManagerMcpServer struct {
 	// Example: Internal Ticketing System
 	Name *string `json:"name,omitempty"`
 
-	// OauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth".
+	// OauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth"; it is cleared along with the stored tokens when a server is moved out of "oauth".
 	//
 	// Example: github
 	OauthVendor *AIManagerMcpServerOauthVendor `json:"oauth_vendor,omitempty"`
@@ -4339,12 +4339,12 @@ type AIManagerMcpServer struct {
 	Url *string `json:"url,omitempty"`
 }
 
-// AIManagerMcpServerAuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. "oauth" is set implicitly by completing POST /mcpservers/oauth/complete -- never set directly via POST/PUT with a customer-supplied secret.
+// AIManagerMcpServerAuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. A server is moved INTO "oauth" only by completing POST /mcpservers/oauth/complete; sending "oauth" on a server that is not already connected is rejected. Re-sending the current "oauth" value on an already-connected server is accepted. Moving a connected server OUT of "oauth" is allowed and irreversibly erases its stored OAuth access and refresh tokens.
 //
 // Example: bearer
 type AIManagerMcpServerAuthType string
 
-// AIManagerMcpServerOauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth".
+// AIManagerMcpServerOauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth"; it is cleared along with the stored tokens when a server is moved out of "oauth".
 //
 // Example: github
 type AIManagerMcpServerOauthVendor string
