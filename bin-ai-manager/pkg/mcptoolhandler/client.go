@@ -190,7 +190,7 @@ func truncateForError(b []byte) string {
 
 // refuseDeleted stops a transport call to a soft-deleted MCP server.
 //
-// This is the last line of defence, not the primary one: resolveTools and
+// This is the last line of defence, not the primary one: discoverMcpTools and
 // toolHandleMcpCall already refuse deleted servers with the AI's customer in
 // hand, which this layer does not have. It exists because McpServerGet returns
 // soft-deleted rows on purpose, so without it any present or future caller

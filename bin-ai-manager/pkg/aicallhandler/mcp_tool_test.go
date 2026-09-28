@@ -1118,6 +1118,8 @@ func Test_discoverMcpTools_SlotsBoundConcurrency(t *testing.T) {
 // wait indefinitely for a slot held by someone else's slow servers: it skips
 // the server once its total wait is spent.
 func Test_discoverMcpTools_SlotWaitIsBounded(t *testing.T) {
+	defer shortenSlotWait(t, 300*time.Millisecond)()
+
 	// Occupy every slot, as another customer's slow listings would.
 	for i := 0; i < cap(mcpDiscoverySlots); i++ {
 		mcpDiscoverySlots <- struct{}{}
@@ -1150,7 +1152,7 @@ func Test_discoverMcpTools_SlotWaitIsBounded(t *testing.T) {
 	var toolMap map[string]aicall.McpToolRef
 	select {
 	case toolMap = <-resolved:
-	case <-time.After(mcpDiscoverySlotWait + 2*time.Second):
+	case <-time.After(mcpDiscoverySlotWait + time.Second):
 		t.Fatal("the resolution waited for a slot past its bound")
 	}
 	elapsed := time.Since(start)
@@ -1159,7 +1161,106 @@ func Test_discoverMcpTools_SlotWaitIsBounded(t *testing.T) {
 		t.Fatalf("got %d tools with no slot free", len(toolMap))
 	}
 	// Two servers share one total wait, not one wait each.
-	if elapsed < mcpDiscoverySlotWait || elapsed > mcpDiscoverySlotWait+time.Second {
+	if elapsed < mcpDiscoverySlotWait || elapsed > mcpDiscoverySlotWait+500*time.Millisecond {
 		t.Fatalf("resolution took %v; its total slot wait is %v", elapsed, mcpDiscoverySlotWait)
+	}
+}
+
+// shortenSlotWait sets mcpDiscoverySlotWait for one test and returns the
+// function that restores it.
+func shortenSlotWait(t *testing.T, d time.Duration) func() {
+	t.Helper()
+	prev := mcpDiscoverySlotWait
+	mcpDiscoverySlotWait = d
+	return func() { mcpDiscoverySlotWait = prev }
+}
+
+// Test_discoverMcpTools_ListingTimeIsNotWaitTime pins that time spent
+// listing a customer's own servers is not charged to the slot wait. With no
+// other load, a first server slower than the whole wait must not cause the
+// servers after it to be skipped.
+func Test_discoverMcpTools_ListingTimeIsNotWaitTime(t *testing.T) {
+	defer shortenSlotWait(t, 100*time.Millisecond)()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	ids := []uuid.UUID{}
+	for i := 0; i < 4; i++ {
+		id := uuid.Must(uuid.NewV4())
+		ids = append(ids, id)
+		srv.EXPECT().Get(gomock.Any(), id).Return(&mcpserver.McpServer{Identity: commonidentityFor(id), Status: mcpserver.StatusActive}, nil)
+		delay := time.Duration(0)
+		if i == 0 {
+			delay = 250 * time.Millisecond
+		}
+		tl.EXPECT().ListTools(gomock.Any(), id).DoAndReturn(func(context.Context, uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+			time.Sleep(delay)
+			return []mcptoolhandler.McpTool{{Name: "t"}}, nil
+		})
+	}
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	// Several runs: the defect this pins dropped servers at random.
+	for run := 0; run < 5; run++ {
+		if run > 0 {
+			for _, id := range ids {
+				srv.EXPECT().Get(gomock.Any(), id).Return(&mcpserver.McpServer{Identity: commonidentityFor(id), Status: mcpserver.StatusActive}, nil)
+			}
+			for i, id := range ids {
+				delay := time.Duration(0)
+				if i == 0 {
+					delay = 250 * time.Millisecond
+				}
+				tl.EXPECT().ListTools(gomock.Any(), id).DoAndReturn(func(context.Context, uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+					time.Sleep(delay)
+					return []mcptoolhandler.McpTool{{Name: "t"}}, nil
+				})
+			}
+		}
+		toolMap := h.resolveMcpToolMap(context.Background(), &ai.AI{Identity: commonidentity.Identity{CustomerID: testCustomerID}, McpServerIDs: ids})
+		if len(toolMap) != len(ids) {
+			t.Fatalf("run %d: got %d servers' tools, want all %d; listing time must not count as waiting", run, len(toolMap), len(ids))
+		}
+	}
+}
+
+// Test_listToolsWithSlot_ReleasesOnPanic pins that a panic out of ListTools
+// does not keep a slot, so one failure cannot starve every later discovery
+// in the process.
+func Test_listToolsWithSlot_ReleasesOnPanic(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+	id := uuid.Must(uuid.NewV4())
+	tl.EXPECT().ListTools(gomock.Any(), id).DoAndReturn(func(context.Context, uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+		panic("boom")
+	})
+
+	h := &aicallHandler{mcptoolHandler: tl}
+	func() {
+		defer func() { _ = recover() }()
+		wait := time.Second
+		_, _, _ = h.listToolsWithSlot(context.Background(), id, &wait)
+	}()
+
+	if held := len(mcpDiscoverySlots); held != 0 {
+		t.Fatalf("%d slot(s) still held after a panic", held)
+	}
+}
+
+// Test_sampleToolNames pins that dropped names are logged boundedly.
+func Test_sampleToolNames(t *testing.T) {
+	got := sampleToolNames([]string{"a.b", "c/d", strings.Repeat("x", 500), "fourth"})
+	if strings.Contains(got, "fourth") {
+		t.Errorf("more than three names logged: %s", got)
+	}
+	if !strings.Contains(got, `"a.b"`) || !strings.Contains(got, `"c/d"`) {
+		t.Errorf("names missing: %s", got)
+	}
+	if len(got) > 3*(80+8) {
+		t.Errorf("log text not bounded: %d bytes", len(got))
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -16,6 +17,7 @@ import (
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/tool"
+	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
 )
 
 // mcpToolNamePrefix is the reserved namespace prefix marking a tool name as
@@ -135,11 +137,65 @@ const (
 // mcpDiscoverySlots bounds how many tools/list requests this process runs at
 // once, and mcpDiscoverySlotWait how long one resolution may wait for them in
 // total; see discoverMcpTools. Measured with ten concurrent session starts of
-// eight servers each returning a worst-case 1 MiB list: about 11 MiB of peak
-// heap with two slots, about 36 to 43 MiB with no bound.
+// eight servers each returning a worst-case 1 MiB list: 11 to 17 MiB of peak
+// heap above baseline with two slots (JSON and SSE framing), 33 to 60 MiB with
+// no bound, against a 40M container limit.
+//
+// The price is throughput: the process lists at most two servers at a time,
+// so a burst of session starts whose servers are slow can exhaust the wait
+// and start some sessions without their MCP tools (logged). Raising the slot
+// count needs the per-listing memory lowered first.
 var mcpDiscoverySlots = make(chan struct{}, 2)
 
-const mcpDiscoverySlotWait = 2 * time.Second
+// mcpDiscoverySlotWait is a variable only so tests can shorten it.
+var mcpDiscoverySlotWait = 2 * time.Second
+
+// listToolsWithSlot lists serverID's tools while holding one of
+// mcpDiscoverySlots, charging only the time spent blocked on a slot to
+// *waitLeft. listed is false when no slot came free within what was left;
+// the slot is released on every path out of ListTools, a panic included.
+func (h *aicallHandler) listToolsWithSlot(ctx context.Context, serverID uuid.UUID, waitLeft *time.Duration) (tools []mcptoolhandler.McpTool, listed bool, err error) {
+	select {
+	case mcpDiscoverySlots <- struct{}{}:
+	default:
+		if *waitLeft <= 0 {
+			return nil, false, nil
+		}
+		timer := time.NewTimer(*waitLeft)
+		start := time.Now()
+		select {
+		case mcpDiscoverySlots <- struct{}{}:
+			timer.Stop()
+			*waitLeft -= time.Since(start)
+		case <-timer.C:
+			*waitLeft = 0
+			return nil, false, nil
+		case <-ctx.Done():
+			timer.Stop()
+			*waitLeft -= time.Since(start)
+			return nil, false, nil
+		}
+	}
+	defer func() { <-mcpDiscoverySlots }()
+
+	tools, err = h.mcptoolHandler.ListTools(ctx, serverID)
+	return tools, true, err
+}
+
+// sampleToolNames renders up to three names for a log line, each cut short,
+// so an operator can see which tools were dropped without the server
+// controlling how much is logged.
+func sampleToolNames(names []string) string {
+	const maxNames, maxLen = 3, 80
+	out := make([]string, 0, maxNames)
+	for i, n := range names {
+		if i == maxNames {
+			break
+		}
+		out = append(out, strconv.Quote(capErrText(n, maxLen)))
+	}
+	return strings.Join(out, ", ")
+}
 
 // validMcpToolName reports whether a remote tool name can be namespaced and
 // stored as is. Names outside the provider function-name character set or
@@ -182,10 +238,12 @@ func isToolNameByte(c byte) bool {
 //
 // The slots are shared by every customer, so waiting for one is bounded:
 // a resolution spends at most mcpDiscoverySlotWait in total waiting, and a
-// server it cannot get a slot for in that time is skipped and logged. The
-// session-start context has no deadline of its own, so without this bound
-// one customer's slow servers holding both slots would delay every other
-// customer's session starts by up to the per-server timeout each.
+// server it cannot get a slot for in that time is skipped and logged. Only
+// time spent blocked on a slot counts; time spent listing the customer's own
+// servers does not. The session-start context has no deadline of its own, so
+// without this bound one customer's slow servers holding both slots would
+// delay every other customer's session starts by up to the per-server
+// timeout each.
 //
 // Each McpServer in a.McpServerIDs is best-effort: a non-active server is
 // silently skipped (no error, no tools), and a ListTools failure for one
@@ -206,12 +264,11 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 		return res
 	}
 
-	waitCtx, cancelWait := context.WithTimeout(ctx, mcpDiscoverySlotWait)
-	defer cancelWait()
+	waitLeft := mcpDiscoverySlotWait
 
-	for _, serverID := range a.McpServerIDs {
+	for i, serverID := range a.McpServerIDs {
 		if len(res) >= mcpMaxToolsPerResolution {
-			log.Warnf("Reached the limit of %d mcp tools per session; not listing the remaining servers.", mcpMaxToolsPerResolution)
+			log.Warnf("Reached the limit of %d mcp tools per session; %d whitelisted servers were not listed.", mcpMaxToolsPerResolution, len(a.McpServerIDs)-i)
 			break
 		}
 
@@ -226,29 +283,29 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 			continue
 		}
 
-		select {
-		case mcpDiscoverySlots <- struct{}{}:
-		case <-waitCtx.Done():
+		mcpTools, listed, err := h.listToolsWithSlot(ctx, serverID, &waitLeft)
+		if !listed {
 			log.Warnf("Skipped an mcp server: no discovery slot was free in time. mcp_server_id: %s", serverID)
 			continue
 		}
-		mcpTools, err := h.mcptoolHandler.ListTools(ctx, serverID)
-		<-mcpDiscoverySlots
 		if err != nil {
 			log.Warnf("Could not list tools from mcp server, skipping. mcp_server_id: %s, err: %s", serverID, capErrText(err.Error(), 1024))
 			continue
 		}
 
 		prefix := mcpToolNamePrefix + mcpServerIDShort(serverID) + "_"
-		invalidNames := 0
+		invalidNames := []string{}
+		taken := 0
 		for _, mt := range mcpTools {
 			if !validMcpToolName(mt.Name) {
-				invalidNames++
+				invalidNames = append(invalidNames, mt.Name)
 				continue
 			}
 			if len(res) >= mcpMaxToolsPerResolution {
+				log.Warnf("Reached the limit of %d mcp tools per session partway through a server's list. mcp_server_id: %s, taken: %d, listed: %d", mcpMaxToolsPerResolution, serverID, taken, len(mcpTools))
 				break
 			}
+			taken++
 			d := discoveredMcpTool{
 				name: prefix + mt.Name,
 				ref:  aicall.McpToolRef{ServerID: serverID, ToolName: mt.Name},
@@ -259,8 +316,8 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 			}
 			res = append(res, d)
 		}
-		if invalidNames > 0 {
-			log.Warnf("Skipped mcp tools with names that are empty, longer than %d bytes, or outside [A-Za-z0-9_-]. mcp_server_id: %s, skipped: %d", mcpMaxToolNameLen, serverID, invalidNames)
+		if len(invalidNames) > 0 {
+			log.Warnf("Skipped mcp tools with names that are empty, longer than %d bytes, or outside [A-Za-z0-9_-]. mcp_server_id: %s, skipped: %d, first: %s", mcpMaxToolNameLen, serverID, len(invalidNames), sampleToolNames(invalidNames))
 		}
 	}
 
@@ -402,7 +459,7 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 
 // lookupMcpToolRef resolves name against c.Metadata[aicall.MetaKeyMcpToolMap].
 // The map is stored as a Go value (map[string]aicall.McpToolRef) by
-// resolveTools' callers at write time, but AIcall.Metadata may also come
+// resolveMcpToolMap's callers at write time, but AIcall.Metadata may also come
 // back from a JSON round trip (map[string]any with a nested
 // map[string]any), so both shapes are handled.
 func lookupMcpToolRef(c *aicall.AIcall, name string) (aicall.McpToolRef, bool) {
@@ -462,7 +519,7 @@ func decodeMcpToolRef(v any) (aicall.McpToolRef, bool) {
 // the given AI: it must not be soft-deleted, it must be active, and it must
 // belong to the AI's customer.
 //
-// All three are checked on BOTH the resolution path (resolveTools, which
+// All three are checked on BOTH the resolution path (discoverMcpTools, which
 // decides what the LLM is even told about) and the dispatch path
 // (toolHandleMcpCall, which decides what actually runs). The two run at
 // different times -- an AIcall can be reused for hours after its tool map was

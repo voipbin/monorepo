@@ -1093,11 +1093,25 @@ them, so PR B1 closes them rather than deferring them.
   without reading descriptions or schemas (`resolveMcpToolMap`); `resolveTools`,
   which decodes schemas within a 64 KiB per-tool and 256 KiB per-resolution limit,
   has no session-start caller and is kept for PR B2. At most two tools/list
-  requests run at once per process, and a resolution waits at most two seconds in
-  total for a turn, so one customer's slow servers cannot hold up other customers'
-  session starts for longer. Measured with ten concurrent session starts of eight
-  servers each returning a worst-case list: about 11 to 13 MiB of peak heap above
-  baseline, against 132.8 MiB before; without the two-request bound, 36 to 43 MiB.
+  requests run at once per process, and a resolution spends at most two seconds in
+  total blocked waiting for a turn (time spent listing its own servers does not
+  count), so one customer's slow servers cannot hold up other customers' session
+  starts for longer. Measured with ten concurrent session starts of eight servers
+  each returning a worst-case list: 11 to 17 MiB of peak heap above baseline over
+  JSON and SSE, against 132.8 MiB before; without the two-request bound, 33 to 60
+  MiB.
+
+The two-request bound costs throughput, and that is a product trade-off, not a
+defect. Measured: ten simultaneous session starts whose single server answers in
+500 ms finish in about 2 s instead of 0.5 s, and two of the ten start without
+their MCP tools (logged); a steady stream of starts is served at about two
+servers at a time for the whole process. With no AI in production using MCP
+servers today this costs nothing, but it must be revisited before MCP tools are a
+supported feature: lowering the memory one listing needs (decoding straight from
+the capped body rather than buffering and copying it) is what would let the
+bound rise. A resolution whose own servers are slow is still bounded only by the
+per-server timeout times the number of servers; a separate deadline for a whole
+resolution belongs with PR B2's aggregate fan-out budget (D16).
 
 That bounds memory, not meaning: description length is still unchecked, and PR B2
 must enforce it before anything is advertised to a model. The pod also sets no

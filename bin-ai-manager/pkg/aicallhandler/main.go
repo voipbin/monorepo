@@ -150,7 +150,8 @@ type aicallHandler struct {
 	messageHandler     messagehandler.MessageHandler
 	participantHandler participanthandler.ParticipantHandler
 
-	// mcptoolHandler and mcpServerHandler back resolveTools/toolHandleMcpCall
+	// mcptoolHandler and mcpServerHandler back MCP tool discovery
+	// (discoverMcpTools) and dispatch (toolHandleMcpCall)
 	// (design docs/plans/2026-09-11-mcp-tool-integration-design.md §9.1/§9.2).
 	mcptoolHandler   mcptoolhandler.McpToolHandler
 	mcpServerHandler mcpserverhandler.McpServerHandler

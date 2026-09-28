@@ -61,7 +61,7 @@ const MetaKeyInsightSessionStart = "insight_session_start"
 // namespaced MCP tool name (mcp_<8-hex-server-id-prefix>_<tool_name>) back to
 // the McpToolRef (server id + original tool name) it was resolved from, per
 // docs/plans/2026-09-11-mcp-tool-integration-design.md §9.1/§9.2. Written by
-// aicallHandler.resolveTools at every point an AIcall starts serving a
+// aicallHandler.resolveMcpToolMap at every point an AIcall starts serving a
 // session (create or reuse) and read by toolHandleMcpCall to dispatch a
 // tool_call whose function name carries the mcp_ prefix.
 const MetaKeyMcpToolMap = "mcp_tool_map"
