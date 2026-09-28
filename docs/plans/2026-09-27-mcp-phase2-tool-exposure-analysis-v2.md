@@ -93,7 +93,7 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | # | Item | Where | Notes |
 |---|---|---|---|
 | B1 | MCP protocol client: dual `Accept`, `initialize` and session lifecycle, `MCP-Protocol-Version`, SSE `data:` parsing, session-expiry re-init | `pkg/mcptoolhandler/client.go:108-176` | Largest single item. See A.2 |
-| B2a | `inputSchema` json tag | `pkg/mcptoolhandler/main.go:26` | **Live inbound-parse defect.** `ListTools` runs today and silently drops the schema of every tool from every conformant server, because the tag reads `input_schema` and the wire field is `inputSchema`. Belongs to PR B1: it needs no consumer to be wrong, and PR B1's own acceptance gate asserts a non-nil schema |
+| B2a | `inputSchema` json tag | `pkg/mcptoolhandler/main.go:26` | **Live inbound-parse defect.** `ListTools` runs today and silently drops the schema of every tool it can currently read, because the tag reads `input_schema` and the wire field is `inputSchema`. Narrower than first written: against a default-configuration conformant server the request fails at 406 before any body, so the live drop is against the stateless plus json-response configuration that A.2 shows does work today. Belongs to PR B1: it needs no consumer to be wrong, and PR B1's own acceptance gate asserts a non-nil schema |
 | B2b | Non-nil `Parameters` default | `mcp_tool.go:97`, and note `models/tool/main.go:108` has no `omitempty` | The half that kills the python pipeline, which requires advertisement. PR B2. See A.3 |
 | B3 | Redirect guard: re-validate on every hop, or refuse redirects | `pkg/mcpserverhandler/ssrf.go:95-112` | Credential leak, proven. See A.5 |
 | B4 | Type-filter ai-manager's built-in resolver | `pkg/toolhandler/main.go:29`, caller `mcp_tool.go:60` | Fail-open today. See A.4 |
@@ -105,7 +105,7 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | B10 | Insight write gate in **two** locations | `pkg/aihandler/chatbot.go:155` and `mcpserver_validation.go:57` | One location is bypassable. See A.9 |
 | B11 | Team symmetry: do not write `mcp_tool_map` for `AssistanceTypeTeam` | `start.go:1191`, `insight_session.go:232`, `mcp_tool.go:341` | Today unadvertised but dispatchable. See A.9 |
 | B12 | Transport: per-AIcall callback RPC | new `AIV1AIcallToolList`, consumer `runner.go:150` | The feature turns on here |
-| B13 | Parallel fan-out with an aggregate budget derived from the greeting budget | `mcp_tool.go:72-106` | Sequential 10s per server today |
+| B13 | Parallel fan-out with an aggregate budget, defended against the greeting target rather than derived from it (D16) | `mcp_tool.go:72-106` | Sequential 10s per server today |
 | B14 | Tool-list cache with negative caching and working invalidation | `pkg/mcptoolhandler/`, `pkg/subscribehandler/main.go` | Reclassified to blocker. See A.10 |
 | B15 | Registration-time `tools/list` probe | `POST /mcpservers`, OAuth complete | Turns discovery into lookup; the cheapest cure for shipping inert |
 | B16 | Realtime voice writes `MetaKeyMcpToolMap` | `start.go:1127-1130` | Reconcile against B12, see open decision O3 |
@@ -120,7 +120,7 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | B25 | Cancel an in-flight `tools/call` when the call ends | `mcp_tool.go:127`, `listenhandler/main.go:279` | Dispatch runs under `context.Background()`, so a hangup mid-call leaves a side-effecting request running with no consumer for the result. This is the other half of the double-fire class |
 | B26 | `clearListenState` must not lose `mcp_tool_map` | `pkg/aicallhandler/listen.go:539-546` | It copies keys from `c.Metadata`, the caller's **in-memory snapshot**, and writes the whole column, so a map written after `c` was fetched is lost. Dispatch then fails closed for the rest of that AIcall's life |
 | B27 | Rollback: a global config disable. The per-customer flag is **not** viable as first assumed | `internal/config/main.go` | Nothing can turn this feature off today, and the precedent this was modelled on does not transfer. See A.15, A.19 |
-| B28 | Cap and dedupe `mcp_server_ids` on the write path | `pkg/aihandler/mcpserver_validation.go:57-96`, `bin-openapi-manager/openapi/openapi.yaml` | **Live and unconditional, no feature involved.** One serial `McpServerGet` per submitted id with no cardinality cap and no dedupe, under a handler running on `context.Background()`, and the schema declares no `maxItems` or `uniqueItems` (verified: zero occurrences in the whole file). One authenticated PUT with N ids is N serial DB round trips today. It also uncaps the discovery fan-out, which makes B20 correctness-load-bearing rather than an optimisation |
+| B28 | Cap and dedupe `mcp_server_ids` on the write path | `pkg/aihandler/mcpserver_validation.go:57-96`, `bin-openapi-manager/openapi/openapi.yaml` | **Live and unconditional, no feature involved.** One serial `McpServerGet` per submitted id with no cardinality cap and no dedupe, under a handler running on `context.Background()`, and the schema declares no `maxItems` or `uniqueItems` (verified: zero occurrences in the whole file). One authenticated PUT with N ids is N serial DB round trips today. Its absence is what leaves the discovery fan-out uncapped, which makes B20 correctness-load-bearing rather than an optimisation until this lands |
 
 Hardening, cuttable to a follow-up: retryable/terminal reason codes beyond the
 401 case (B19 covers the one that matters).
@@ -153,6 +153,9 @@ blocking it.
 | O2 | Caps, final numbers | A character cap does not bound tokens: measured 284 tok/tool for English prose at 1,024 chars, 622 for filler, and **2,069 for Korean**, which is most of the current market. Must be a token cap, and the per-AI count must be sized against the worst case | **OPEN**, A.6 |
 | O3 | Does the transport RPC also write `MetaKeyMcpToolMap`? | If yes, B16's separate write is redundant and the staleness window shrinks. If no, both exist | **OPEN** |
 | D16 | Aggregate fan-out budget | **6s aggregate, 5s per server**, defended rather than derived. The latency design targets a 3.0-3.5s greeting and reaches it by removing about 2.3s from a measured 5.8s, with every phase allocated and no slack line, so no number can be derived from it. B1 makes the current worst case worse (initialize plus tools/list is two round trips per server, so three servers is 60s under today's 10s per-request bound), and that is the number the budget exists to kill. Revisit against B18's histogram once it exists | SETTLED, replaces O4 |
+| D18 | Whitelist cap, error, and dedupe policy (B28) | **8 servers per AI**, rejected with a new `TOO_MANY_MCP_SERVER_IDS` reason rather than the existing `INVALID_MCP_SERVER_ID`, which means "not accessible" and would mislead. Duplicates are **rejected**, not silently collapsed, consistent with D5's rule against silent rewriting: collapsing makes the persisted whitelist differ from the submitted one and the update event then echoes back something the caller did not send. 8 is chosen against D16's budget, which at two round trips and 5s per server only closes for a handful of servers | SETTLED |
+| D19 | Where the Insight gate actually binds (B10) | **`UpdateMcpServerIDs` (`pkg/aihandler/mcpserver_validation.go:108`) is the common chokepoint and must refuse**, because both the create and the update listen paths write the whitelist through it as a second write (`v1_ais.go:133` and `:307`). The two edge gates stay, since they give the caller a better error before the AI is touched, but each is bypassable from the other direction on its own. The gate is evaluated against the **effective post-default type**, not the submitted field | SETTLED |
+| D20 | Does the OpenAPI constraint enforce anything? | **No.** Verified: bin-api-manager registers no request-validation middleware (`OapiRequestValidator` and `GetSwagger` both return zero non-generated hits), and the spec is consumed only by codegen and redoc. `maxItems` and `uniqueItems` are documentation; the Go check in `ValidateMcpServerIDs` is the only enforcement, and the PR body must say so | SETTLED |
 | D17 | How the conformance test runs in CI | **No build tag.** Verified: all three `go test` invocations run `$(go list ./...)` with no `-tags`, and the repo has zero `//go:build` test files, so a tagged test would compile out and silently never run. Use a runtime skip gated on an environment variable, set only on the `bin-ai-manager-test` job, with one pip step to install the reference SDK there | SETTLED, replaces O5 |
 | O6 | Where the per-AI count cap is applied, given a per-server cache | 3 servers at 32 each exceeds a 64 per-AI cap; the drop must be deterministic | **OPEN** |
 | O7 | Is the square-admin picker change in PR B or PR C? | Converting an AI to Insight with a stored whitelist will 400 with the picker still showing the cause | **OPEN**, A.9 |
@@ -174,7 +177,7 @@ blocking it.
 | Prompt injection via tool description | **NOT mitigated.** B7. The asymmetry is the argument: remote error text is capped at 200 chars for a log line (`mcp_tool.go:180`) while the description goes uncapped into the prompt |
 | Prompt injection into the **auditor** | **NOT mitigated.** B8. A.7 |
 | Tool output exceeding the 64 KiB column | **NOT mitigated.** B6 |
-| Slow or hanging server delaying the greeting | **NOT mitigated.** B13, O4 |
+| Slow or hanging server delaying the greeting | **NOT mitigated.** B13, D16 |
 | Metric cardinality via tool names | **NOT mitigated.** B17. Note `server_id` is also unbounded over time, so bucket to a constant |
 | Concurrent discovery against one third-party server | **NOT mitigated.** B20 |
 | Vendor-side token revocation producing a permanently silent tool list | **NOT mitigated.** B19. A.11 |
@@ -213,7 +216,7 @@ fails today. The reason the 406 was never caught is that all eight existing
 
 L2, integration against the reference MCP server as a subprocess, in both
 default and stateless modes. This is the test that would have caught the inert
-feature. **Blocked on O5**: as a build-tagged test it would never run.
+feature. Runs as a runtime skip gated on an environment variable, never a build tag (D17).
 
 L3, the pipecat half. Re-enable the commented-out job and add a python job
 asserting an `mcp_`-named tool with a valid schema reaches `tool_register`, that
@@ -228,8 +231,8 @@ and that step needs no model cooperation. Not automatable: the SSRF guard blocks
 localhost, a real completion costs money, and a model cannot be made to choose a
 tool deterministically.
 
-Definition of done: L1 through L3 green in CI with O5 resolved, and L4's log
-line quoted in the PR body.
+Definition of done: L1 through L3 green in CI per D17's runtime-skip gating, and
+L4's log line quoted in the PR body.
 
 ## 6. Build order
 
@@ -507,8 +510,9 @@ state. True for the vectors that were checked, false for three that were not.
 `mcpServerIsUsable` (`mcp_tool.go:266-279`) takes the AI as a parameter and
 inspects only `a.CustomerID`: it never reads `a.Type` and never reads the AI's
 deletion state, and `aiGetFromDB` has no `tm_delete IS NULL` filter on the
-single-row read. So an AI flipped to Insight mid-call, or deleted mid-call,
-keeps dispatching MCP tools for the rest of that call, and a vendor-side token
+single-row read. So an AI flipped to Insight mid-call, or deleted mid-call, would keep dispatching
+MCP tools for the rest of that call once dispatch is reachable. Stated as a
+mechanism deliberately: per section 0 dispatch is unreachable today, and a vendor-side token
 revocation is invisible (A.11). Note the belt-and-braces suggested earlier, a
 Type skip inside `resolveTools`, does **not** close this, because that is the
 advertising path and this is dispatch. Hence B9.
@@ -798,3 +802,75 @@ metadata.
   and `capErrText` (`mcp_tool.go:294`) slice bytes, so a multi-byte character
   becomes invalid UTF-8 in a log line. `client.go:159` runs on every non-2xx,
   which per A.2 is every conformant server today. One line each.
+
+## A.22 Round 8: a reviewer claim that did not survive verification
+
+Round 8 reported that A.21's protocol-version rule is refuted, on the evidence
+that echoing the negotiated version returns 400 on a server that negotiates
+`2025-11-25`. **Reproduced and it does not hold.** Against the reference SDK
+(mcp 2.2.0, `MCPServer.streamable_http_app()`), on a session negotiated at
+`2025-11-25` reached three separate ways (requesting `2025-06-18`, requesting a
+nonsense version so the server picks its newest, and requesting `2025-11-25`
+explicitly), `tools/list` returned **200** both with the header omitted and with
+the negotiated version echoed. The 400 the reviewer saw carries a
+`params._meta` envelope complaint, which is a **params** validation error, not a
+header rejection, so the diagnosis attributed it to the wrong cause.
+
+A.21's rule therefore stands: send the version the server returned from
+`initialize`. Two things are nonetheless worth taking from the report, because
+both are true and neither depends on the refuted part:
+
+- **The header is optional on this server**, so a test asserting only that the
+  header is present can pass while the client is otherwise broken. The acceptance
+  gate must assert the *value* is the negotiated one, not merely that it is sent.
+- **`initialize` can fail while looking like a success.** A malformed
+  `initialize` returns HTTP 200, an SSE frame carrying a JSON-RPC error, **and a
+  session id** that subsequently serves `tools/list`. So B1 must parse
+  `initialize`'s JSON-RPC result and check its error member before treating the
+  session as open, and must always send `protocolVersion`, `capabilities` and
+  `clientInfo`. A builder who checks only the HTTP status and reads the session
+  header ships something that works by accident.
+
+Recorded because six rounds have corrected this document and this is the first
+time a reviewer's headline finding was itself wrong. The lesson is the same one
+in both directions: reproduce before adopting.
+
+## A.23 Further round 8 items
+
+- **The same-host trailing-slash redirect is real and B3 will start refusing it.**
+  The reference SDK's mount answers `POST /mcp/` with a **307** to `/mcp`. The two
+  hardcoded vendors answer directly at either spelling, so they are unaffected,
+  but a customer self-hosting on the reference SDK who registers a trailing slash
+  is relying on a redirect today. Refusal is still right; the error must name the
+  trailing slash and log the target redacted, and L2 must cover it, because a
+  hermetic test server never emits that 307 and the gap would pass its own tests.
+- **The OAuth token exchange is unaffected by B3.** Verified:
+  `NewSSRFGuardedClient` has exactly two non-test callers, both in
+  `mcptoolhandler`, and `mcpoauthhandler` uses its own plain client for the vendor
+  token endpoint. Neither vendor token endpoint redirects. So B3 is not an OAuth
+  regression, which was the one finding that could have made it one.
+- **B13 must create its own deadline and must keep partial results.** The parent
+  context on the messaging path is `context.Background()`, so an aggregate budget
+  laid on top of it is not the same object as one laid under a shorter deadline.
+  On expiry, keep what was collected and log the server that timed out, matching
+  the existing skip-and-continue posture, and note in the PR body that this makes
+  the advertised list nondeterministic across sessions, which D15 then inherits.
+- **B19's retry must record backoff on a failed retry.** The existing backoff
+  fires only when the refresh itself fails, so refresh-succeeds-then-retry-401
+  records nothing and every later tool call repeats the pair against both the
+  vendor and the customer's server. B19 must also state whether the forced refresh
+  bypasses the backoff check as well as the expiry check: it must **not**, or the
+  amplification A.11 exists to prevent returns through the other door.
+- **B20's caveats.** The key may be the server id alone, since a server row has
+  one owner and the ownership gate runs before `ListTools`. But the PR body must
+  not claim one in-flight request globally, because ai-manager runs two replicas
+  and the single-flight is process-local, and the follower behaviour on a leader
+  error must be stated. The refresh backoff is a package-level variable, so the
+  tests must reset it or they leak state into each other.
+- **The whitelist write is a second, non-atomic write that emits two events.**
+  Both listen paths call `Create` or `Update` and then `UpdateMcpServerIDs`, so
+  creating an AI with a whitelist emits a created event without it followed by an
+  updated event with it, and a failure of the second write returns an error while
+  the first is already committed. Same code region as B28 and the same fix window.
+- **B2a fixes `inputSchema` only.** Real servers also send `outputSchema`, which
+  the struct drops. Leaving that is a deliberate choice, not an oversight.
