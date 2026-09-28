@@ -724,8 +724,16 @@
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">number</span></code></p></td>
 <td><p>Number provisioning events</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mcpserver</span></code></p></td>
+<td><p>MCP server created/updated/deleted events</p></td>
+</tr>
 </tbody>
 </table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>MCP Server Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">mcp_server_created</span></code>, <code class="docutils literal notranslate"><span class="pre">mcp_server_updated</span></code>, and <code class="docutils literal notranslate"><span class="pre">mcp_server_deleted</span></code> events carry the same MCP server payload as the REST API (see <a class="reference internal" href="ai_struct_mcpserver.html#mcpserver-struct-mcpserver"><span class="std std-ref">MCP Server</span></a>), which means the secret is never included – only <code class="docutils literal notranslate"><span class="pre">has_secret</span></code>. Treat <code class="docutils literal notranslate"><span class="pre">mcp_server_deleted</span></code> as a revocation signal: the stored credentials are erased when the server is deleted, so any tooling that cached them must drop them.</p>
 </div>
 </section>
 <section id="payload-structure">

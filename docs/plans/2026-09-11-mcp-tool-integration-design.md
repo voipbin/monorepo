@@ -702,8 +702,12 @@ New `bin-ai-manager` config (Cobra+Viper, 3-edit pattern: flag registration
 | Flag | Env | Default | Purpose |
 |---|---|---|---|
 | `mcp_secret_encryption_keys` | `MCP_SECRET_ENCRYPTION_KEYS` | (required if any McpServer row exists) | comma-separated `<version>:<base64-32-byte-key>` pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows (§6 key rotation) |
-| `mcp_tools_list_cache_ttl_seconds` | `MCP_TOOLS_LIST_CACHE_TTL_SECONDS` | 60 | Redis cache TTL for a server's `tools/list` result |
 | `mcp_tool_call_timeout_seconds` | `MCP_TOOL_CALL_TIMEOUT_SECONDS` | 10 | Bounded HTTP timeout for `tools/call` |
+
+A `mcp_tools_list_cache_ttl_seconds` flag was also added here, but no
+`tools/list` cache was ever built, so nothing read it. It was removed rather
+than left advertising a cache that does not exist; reintroduce it with the
+cache, not before.
 
 No feature flag gating the feature on/off globally -- the whitelist opt-in
 (`mcp:<id>` in `ToolNames`) is itself the gate; a customer who never

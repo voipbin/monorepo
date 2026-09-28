@@ -678,12 +678,6 @@ External AI Agent Integration
 =============================
 For users who prefer to use external AI services, VoIPBin offers media stream access. This allows third-party AI engines to process voice data directly, enabling deeper customization and advanced AI capabilities.
 
-MCP Server
-----------
-A recommended open-source implementation is available here:
-
-* https://github.com/nrjchnd/voipbin-mcp
-
 
 Common Scenarios
 ================

@@ -26,7 +26,7 @@ MCP Server
         "tm_delete": "<string>"
     }
 
-* ``id`` (UUID): The MCP server registration's unique identifier. Returned when creating an MCP server via ``POST /mcp_servers`` or when listing via ``GET /mcp_servers``. Referenced from an AI's :ref:`mcp_server_ids <ai-struct-ai-tool_names>` list.
+* ``id`` (UUID): The MCP server registration's unique identifier. Returned when creating an MCP server via ``POST /mcpservers`` or when listing via ``GET /mcpservers``. Referenced from an AI's :ref:`mcp_server_ids <ai-struct-ai-tool_names>` list.
 * ``customer_id`` (UUID): The customer that owns this MCP server registration. Obtained from the ``id`` field of ``GET /customers``.
 * ``name`` (String, Required): A human-readable name for the MCP server (e.g., ``"Internal Ticketing MCP"``).
 * ``detail`` (String, Optional): A description of the MCP server's purpose.
@@ -38,19 +38,19 @@ MCP Server
 * ``has_secret`` (Boolean): Whether a secret (bearer token, API key, or OAuth access token) is currently stored for this server. The secret/token value itself is never returned in any response.
 * ``tm_create`` (String, ISO 8601): Timestamp when the MCP server was registered.
 * ``tm_update`` (String, ISO 8601): Timestamp when the MCP server was last updated.
-* ``tm_delete`` (String, ISO 8601): Timestamp when the MCP server was deleted, if applicable.
+* ``tm_delete`` (String or null, ISO 8601): Timestamp when the MCP server was deleted. ``null`` while the server has not been deleted.
 
 .. note:: **MCP Server Implementation Hint**
 
-   The secret (bearer token or API key) is write-only: it is accepted on ``POST /mcp_servers`` and ``PUT /mcp_servers/{id}`` but is **never returned** in any ``GET`` response. On ``PUT``, omitting the secret field leaves the currently stored secret unchanged; sending an explicit value (including an empty string) replaces it. This distinguishes "I'm not touching the secret" from "clear the secret."
+   The secret (bearer token or API key) is write-only: it is accepted on ``POST /mcpservers`` and ``PUT /mcpservers/{id}`` but is **never returned** in any ``GET`` response. On ``PUT``, omitting the secret field leaves the currently stored secret unchanged; sending an explicit value (including an empty string) replaces it. This distinguishes "I'm not touching the secret" from "clear the secret."
 
 .. note:: **MCP Server Implementation Hint**
 
-   ``PUT /mcp_servers/{id}`` is a true partial update: every field (``name``, ``detail``, ``url``, ``status``, ``auth_type``, ``api_key_header``, in addition to ``secret`` above) is optional, and omitting a field leaves its current value unchanged. A full resend of every field is never required -- for example, ``PUT {"name": "new name"}`` renames the server and leaves everything else (including ``url``, ``status``, and ``auth_type``) exactly as it was. One exception worth calling out: ``auth_type: ""`` is a valid, meaningful value (no authentication) and is distinct from omitting the ``auth_type`` field entirely -- sending the empty string explicitly sets no-auth, while omitting the field preserves whatever ``auth_type`` the server already had.
+   ``PUT /mcpservers/{id}`` is a true partial update: every field (``name``, ``detail``, ``url``, ``status``, ``auth_type``, ``api_key_header``, in addition to ``secret`` above) is optional, and omitting a field leaves its current value unchanged. A full resend of every field is never required -- for example, ``PUT {"name": "new name"}`` renames the server and leaves everything else (including ``url``, ``status``, and ``auth_type``) exactly as it was. One exception worth calling out: ``auth_type: ""`` is a valid, meaningful value (no authentication) and is distinct from omitting the ``auth_type`` field entirely -- sending the empty string explicitly sets no-auth, while omitting the field preserves whatever ``auth_type`` the server already had.
 
 .. note:: **MCP Server Implementation Hint**
 
-   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the MCP server has not been deleted and is still active. This sentinel value is used across all VoIPBin resources to represent "not yet occurred."
+   MCP servers do **not** use the ``9999-01-01 00:00:00.000000`` sentinel that some older VoIPBin resources use for "not yet occurred." ``tm_update`` and ``tm_delete`` are ``null`` until the server is first updated or deleted, so test for ``null`` rather than comparing against a sentinel date.
 
 Example
 +++++++
@@ -68,8 +68,8 @@ Example
         "api_key_header": "",
         "has_secret": true,
         "tm_create": "2026-09-11 03:00:00.000000",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_update": null,
+        "tm_delete": null
     }
 
 .. _mcpserver-struct-mcpserver-status:

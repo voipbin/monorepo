@@ -51,7 +51,12 @@ Resource Type             Events
 ``activeflow``            Flow execution events
 ``campaign``              Campaign status changes
 ``number``                Number provisioning events
+``mcpserver``             MCP server created/updated/deleted events
 ========================= ======================================================
+
+.. note:: **MCP Server Implementation Hint**
+
+   The ``mcp_server_created``, ``mcp_server_updated``, and ``mcp_server_deleted`` events carry the same MCP server payload as the REST API (see :ref:`mcpserver-struct-mcpserver`), which means the secret is never included -- only ``has_secret``. Treat ``mcp_server_deleted`` as a revocation signal: the stored credentials are erased when the server is deleted, so any tooling that cached them must drop them.
 
 Payload Structure
 -----------------
