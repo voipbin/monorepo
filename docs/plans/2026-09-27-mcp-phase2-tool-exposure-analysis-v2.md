@@ -1003,3 +1003,57 @@ remaining risk is not that PR B1 ships something wrong, because its gate fails t
 on every assertion and its blast radius is five AIs with empty whitelists. The
 remaining risk is that the published documentation stays false while the work sits,
 and that risk grows with every further round.
+
+## A.26 Round 11: the loop closes, and the blast-radius numbers are re-measured
+
+Both reviewers approved, and with round 10 that is two consecutive approvals, so
+the review loop's termination condition is met.
+
+**The narrow review confirmed both of the edits that reset the count.** The OAuth
+backoff map and its setter are package-private on an unexported struct and appear
+on no exported interface, while the component that observes the second 401 holds
+only the interface, so a second exported method is genuinely required rather than
+invented. The mock it forces is `pkg/mcpoauthhandler/mock_main.go` alone;
+`bin-common-handler`'s 8,108-line mock is untouched, because its MCP OAuth
+references are RPC wrappers on a different interface. And the shared `go-test`
+command does declare exactly `source-directory` and `enable-lint` with 35
+consumers, so the amended D17 states the choice accurately.
+
+**The PR body exists and is written to ship.** One correction it carries is worth
+recording here: **the branch this analysis lives on is named for what PR B2 does,
+not PR B1.** The repository requires the PR title to match the branch name, and PR
+B1 advertises nothing, so PR B1 must be cut on its own branch named for its own
+scope. That is a process item, not a design one, but it would have produced a PR
+whose title lied about its contents.
+
+**The one thing a reviewer could not verify, now measured.** The reviewer writing
+the PR body flagged the blast-radius numbers as the load-bearing claim he had to
+take on trust, since they are production facts with no read path from a worktree,
+and noted that three separate paragraphs of the PR body become wrong at once if any
+of them has drifted. That is the right instinct, and the numbers were re-measured
+against production read-only on **2026-09-28**:
+
+- **5 AIs**, and the type distribution is `{normal: 5}`, so there is no Insight AI
+  in production at all.
+- **0 AIs with a non-empty `mcp_server_ids`**, confirmed by inspecting every row
+  rather than by a filter.
+- **104 MCP server rows**, confirmed by walking the pagination rather than reading
+  the first page, which returns 100 and would have understated it. All 104 are
+  named `api-validator*` and all are `active`.
+
+So every number in the PR body holds as of that date. The PR body must carry the
+date with them, because a single customer setting `mcp_server_ids` between the
+measurement and the merge invalidates the argument that shipping knowingly-false
+public documentation is acceptable, and that argument is load-bearing.
+
+**The deferral question is raised deliberately rather than inherited.** The same
+reviewer said the paragraph he was least comfortable writing, after the numbers, was
+the one explaining why the false documentation is not corrected in PR B1. The
+reasoning holds (the sentences needing rewriting are the ones that become true in PR
+B2, and their caveats cannot be written until the caps and the failure posture are
+code), but the honest consequence is that the platform carries a documented promise
+it does not keep for the whole life of PR B2, which is the larger half. The cheap
+alternative he names is a one-sentence not-yet-available caveat in the RST inside PR
+B1, at the cost of a clean Sphinx rebuild and a force-add of the build output. This
+analysis does not decide that. It is a CEO decision and it is now on the record as
+one rather than as a consequence of where B22 happened to be filed.
