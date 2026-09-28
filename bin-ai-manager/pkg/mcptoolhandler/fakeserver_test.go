@@ -50,14 +50,27 @@ type fakeMCPServer struct {
 	statusOnMethod int
 	statusBody     string
 
+	// methodRawReply, when set, is written verbatim as the JSON-RPC message
+	// answering the method call, to exercise method-stage failures (an error
+	// member, a null or malformed result) after a successful handshake.
+	methodRawReply string
+	// methodRawBody, when set, replaces the whole HTTP body of the method
+	// answer, bypassing JSON-RPC framing entirely.
+	methodRawBody string
+	// deleteStatus is the status DELETE answers with. Defaults to 200.
+	deleteStatus int
+
 	tools      string
 	callResult string
 
 	sessions int
+	closed   []string
 	requests []recordedRequest
 }
 
 type recordedRequest struct {
+	// HTTPMethod is POST for JSON-RPC messages and DELETE for a session close.
+	HTTPMethod      string
 	Method          string
 	ID              json.RawMessage
 	SessionID       string
@@ -81,9 +94,20 @@ func (f *fakeMCPServer) methods() []string {
 	defer f.mu.Unlock()
 	out := make([]string, 0, len(f.requests))
 	for _, r := range f.requests {
+		if r.HTTPMethod == http.MethodDelete {
+			out = append(out, "DELETE")
+			continue
+		}
 		out = append(out, r.Method)
 	}
 	return out
+}
+
+// closedSessions lists the session ids a DELETE ended, in order.
+func (f *fakeMCPServer) closedSessions() []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return append([]string(nil), f.closed...)
 }
 
 func (f *fakeMCPServer) recorded() []recordedRequest {
@@ -93,6 +117,11 @@ func (f *fakeMCPServer) recorded() []recordedRequest {
 }
 
 func (f *fakeMCPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodDelete {
+		f.handleDelete(w, r)
+		return
+	}
+
 	var msg struct {
 		ID     json.RawMessage `json:"id"`
 		Method string          `json:"method"`
@@ -105,6 +134,7 @@ func (f *fakeMCPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	f.mu.Lock()
 	f.requests = append(f.requests, recordedRequest{
+		HTTPMethod:      r.Method,
 		Method:          msg.Method,
 		ID:              msg.ID,
 		SessionID:       r.Header.Get("Mcp-Session-Id"),
@@ -148,7 +178,9 @@ func (f *fakeMCPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !known {
-			http.Error(w, "Bad Request: unknown session", http.StatusBadRequest)
+			// The reference server answers an id it does not know with 404,
+			// which is exactly what tells the client to re-initialize.
+			http.Error(w, "Not Found: Session not found", http.StatusNotFound)
 			return
 		}
 	}
@@ -167,6 +199,15 @@ func (f *fakeMCPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, f.statusBody, f.statusOnMethod)
 		return
 	}
+	if f.methodRawBody != "" {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(f.methodRawBody))
+		return
+	}
+	if f.methodRawReply != "" {
+		f.replyRaw(w, strings.ReplaceAll(f.methodRawReply, "{{id}}", string(msg.ID)))
+		return
+	}
 
 	switch msg.Method {
 	case "tools/list":
@@ -176,6 +217,36 @@ func (f *fakeMCPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		f.replyRaw(w, fmt.Sprintf(`{"jsonrpc":"2.0","id":%s,"error":{"code":-32601,"message":"Method not found"}}`, msg.ID))
 	}
+}
+
+// handleDelete ends a session the way the reference server does: it must
+// carry a known session id, and it answers 200 unless configured otherwise.
+func (f *fakeMCPServer) handleDelete(w http.ResponseWriter, r *http.Request) {
+	sid := r.Header.Get("Mcp-Session-Id")
+
+	f.mu.Lock()
+	f.requests = append(f.requests, recordedRequest{
+		HTTPMethod:      r.Method,
+		SessionID:       sid,
+		ProtocolVersion: r.Header.Get("MCP-Protocol-Version"),
+		Accept:          r.Header.Get("Accept"),
+		Authorization:   r.Header.Get("Authorization"),
+	})
+	status := f.deleteStatus
+	if status == 0 && sid != "" {
+		f.closed = append(f.closed, sid)
+	}
+	f.mu.Unlock()
+
+	if sid == "" {
+		http.Error(w, "Bad Request: Missing session ID", http.StatusBadRequest)
+		return
+	}
+	if status != 0 {
+		w.WriteHeader(status)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (f *fakeMCPServer) handleInitialize(w http.ResponseWriter, id, params json.RawMessage) {

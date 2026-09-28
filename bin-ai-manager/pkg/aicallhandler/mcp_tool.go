@@ -84,7 +84,7 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 
 		mcpTools, err := h.mcptoolHandler.ListTools(ctx, serverID)
 		if err != nil {
-			log.Warnf("Could not list tools from mcp server, skipping. mcp_server_id: %s, err: %v", serverID, err)
+			log.Warnf("Could not list tools from mcp server, skipping. mcp_server_id: %s, err: %s", serverID, capErrText(err.Error(), 1024))
 			continue
 		}
 

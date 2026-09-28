@@ -17,6 +17,10 @@ import (
 // McpHTTPResponseSizeCapBytes) before decoding.
 const McpHTTPResponseSizeCapBytes = 1 << 20 // 1 MiB
 
+// mcpMaxResponseHeaderBytes bounds the response headers an SSRF-guarded MCP
+// client accepts from a customer server, in place of net/http's 10 MB default.
+const mcpMaxResponseHeaderBytes = 64 << 10 // 64 KiB
+
 // ValidateURL enforces the static (create/update-time and pre-dial)
 // checks from design §7: https-only scheme, and -- for a literal IP host --
 // rejection of private/loopback/link-local/multicast ranges via net.IP's
@@ -103,6 +107,10 @@ func NewSSRFGuardedClient(timeout time.Duration) *http.Client {
 		TLSClientConfig: &tls.Config{
 			MinVersion: tls.VersionTLS12,
 		},
+		// The peer is a customer-controlled server. Bound its response
+		// headers well below net/http's 10 MB default: the MCP client echoes
+		// one of them (Mcp-Session-Id) back on every later request.
+		MaxResponseHeaderBytes: mcpMaxResponseHeaderBytes,
 	}
 
 	return &http.Client{

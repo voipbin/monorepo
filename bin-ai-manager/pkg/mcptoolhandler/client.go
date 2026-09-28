@@ -108,21 +108,30 @@ func (h *mcpToolHandler) buildAuthHeader(ctx context.Context, m *mcpserver.McpSe
 }
 
 // doJSONRPCRequest runs one MCP method on a fresh session: initialize, the
-// method itself, and nothing else. The session is scoped to this call and
-// dropped when it returns (requirement 7 in section 4b of
+// method itself, and a best-effort session close. The session is scoped to
+// this call and dropped when it returns (requirement 7 in section 4b of
 // docs/plans/2026-09-27-mcp-phase2-tool-exposure-analysis-v2.md).
 //
+// h.timeout bounds the whole call, not each request. A call is several
+// requests, and a per-request timeout would let a slow server hold one call
+// for a multiple of the configured limit on the session-start path.
+//
 // A 404 on the method means the server discarded the session. That is retried
-// exactly once with a new session, guarded by its own flag so it can never
-// compose with another retry into a request storm (requirement 11). A 404 on
-// initialize is not retried: it means the URL is wrong, not that a session
-// expired.
+// exactly once with a new session (requirement 11): the retry is straight-line
+// code, not a loop, and its own failure is returned. A 404 on initialize is
+// not retried: it means the URL is wrong, not that a session expired.
 func (h *mcpToolHandler) doJSONRPCRequest(ctx context.Context, m *mcpserver.McpServer, method string, params any) (json.RawMessage, error) {
+	ctx, cancel := context.WithTimeout(ctx, h.timeout)
+	defer cancel()
+
 	newClient := h.newClient
 	if newClient == nil {
 		newClient = mcpserverhandler.NewSSRFGuardedClient
 	}
 	client := newClient(h.timeout)
+	// Each call builds its own client and transport, so its idle
+	// connections would otherwise outlive it indefinitely.
+	defer client.CloseIdleConnections()
 
 	session, err := h.openSession(ctx, client, m)
 	if err != nil {
@@ -131,21 +140,32 @@ func (h *mcpToolHandler) doJSONRPCRequest(ctx context.Context, m *mcpserver.McpS
 
 	result, _, err := h.request(ctx, session, method, params)
 
-	// The retry below is reachable once per call by construction: it is not
-	// in a loop and its own failure is returned, never retried.
-	var statusErr *httpStatusError
-	if err != nil && session.id != "" && errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusNotFound {
+	if sessionGone(session, err) {
+		// The server already discarded this session, so it is not closed.
 		session, err = h.openSession(ctx, client, m)
 		if err != nil {
 			return nil, fmt.Errorf("mcptoolhandler: could not re-initialize after the session expired: %w", err)
 		}
 		result, _, err = h.request(ctx, session, method, params)
 	}
+
+	if !sessionGone(session, err) {
+		h.closeSession(session)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("mcptoolhandler: %s failed: %w", method, err)
 	}
 
 	return result, nil
+}
+
+// sessionGone reports whether err is the server saying it no longer knows the
+// session: a 404 on a request that carried a session id. A stateless server
+// has no session, so its 404 means something else and is final.
+func sessionGone(s *mcpSession, err error) bool {
+	var statusErr *httpStatusError
+	return err != nil && s.id != "" && errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusNotFound
 }
 
 // truncateForError caps error-message body echoes to avoid dumping

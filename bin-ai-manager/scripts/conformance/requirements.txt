@@ -1,4 +1,37 @@
-# Pinned: the conformance test encodes this version's transport behaviour.
-# Bump deliberately, together with any client change the new version needs.
+# Fully pinned environment for the MCP reference server used by the
+# bin-ai-manager conformance test (pkg/mcptoolhandler). Every transitive
+# dependency is pinned so the CI job cannot drift without a change here.
+#
+# Generated with `pip freeze` after installing mcp==2.2.0 and uvicorn==0.54.0
+# into a fresh venv inside cimg/go:1.27.1 (Python 3.12.3), the image the job
+# runs in. To bump: install the new top-level versions the same way, freeze,
+# replace this list, and update the client together with anything the new
+# server version changes.
+annotated-types==0.8.0
+anyio==4.15.1
+attrs==26.1.0
+cffi==2.1.1
+click==8.5.0
+cryptography==50.0.1
+h11==0.16.0
+httpcore2==2.13.1
+httpx2==2.13.1
+idna==3.20
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
 mcp==2.2.0
+mcp-types==2.2.0
+opentelemetry-api==1.45.0
+pycparser==3.0
+pydantic==2.13.5
+pydantic_core==2.46.5
+PyJWT==2.15.0
+python-multipart==0.0.32
+referencing==0.37.0
+rpds-py==2026.6.3
+sse-starlette==3.5.0
+starlette==1.7.0
+truststore==0.10.4
+typing-inspection==0.4.4
+typing_extensions==4.16.0
 uvicorn==0.54.0

@@ -101,75 +101,81 @@ func Test_ListTools_Timeout(t *testing.T) {
 	}
 }
 
-func Test_ListTools_NonSuccessStatus(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte(`internal error`))
-	}))
-	defer srv.Close()
-
-	serverID := uuid.Must(uuid.NewV4())
-	m := &mcpserver.McpServer{URL: srv.URL, Status: mcpserver.StatusActive, AuthType: mcpserver.AuthTypeNone}
-	mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(m, nil)
-
-	h := newTestHandler(t, mockDB)
-
-	_, err := h.ListTools(context.Background(), serverID)
-	if err == nil {
-		t.Fatalf("expected error for non-2xx status")
+// Test_ListTools_MethodStageFailures pins failures that happen AFTER a
+// successful handshake. Each server completes initialize normally and only
+// the tools/list answer is bad, and each case asserts the error names that
+// specific failure. An earlier version of these tests used raw handlers that
+// failed at initialize, so they passed on any error and pinned nothing.
+func Test_ListTools_MethodStageFailures(t *testing.T) {
+	tests := []struct {
+		name      string
+		configure func(f *fakeMCPServer)
+		wantErr   string
+	}{
+		{
+			name: "non-2xx status keeps the server's reason",
+			configure: func(f *fakeMCPServer) {
+				f.statusOnMethod = http.StatusInternalServerError
+				f.statusBody = "internal error"
+			},
+			wantErr: "unexpected status code 500, body: internal error",
+		},
+		{
+			name:      "malformed JSON body",
+			configure: func(f *fakeMCPServer) { f.methodRawBody = `not json at all {{{` },
+			wantErr:   "could not parse JSON-RPC response",
+		},
+		{
+			name: "JSON-RPC error member on the method",
+			configure: func(f *fakeMCPServer) {
+				f.methodRawReply = `{"jsonrpc":"2.0","id":{{id}},"error":{"code":-32601,"message":"method not found"}}`
+			},
+			wantErr: "JSON-RPC error (code -32601): method not found",
+		},
+		{
+			name:      "null result",
+			configure: func(f *fakeMCPServer) { f.methodRawReply = `{"jsonrpc":"2.0","id":{{id}},"result":null}` },
+			wantErr:   "JSON-RPC response has no result",
+		},
+		{
+			// JSON-RPC answers with a null id when it could not read the
+			// request id; the reason must still reach the caller.
+			name: "error with a null id",
+			configure: func(f *fakeMCPServer) {
+				f.methodRawReply = `{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"parse error"}}`
+			},
+			wantErr: "JSON-RPC error (code -32700): parse error",
+		},
+		{
+			// The body is read through the size cap, so an oversized answer
+			// is cut and fails to parse instead of being buffered whole.
+			name: "body over the size cap",
+			configure: func(f *fakeMCPServer) {
+				f.methodRawBody = `{"jsonrpc":"2.0","id":2,"result":{"tools":[],"pad":"` + strings.Repeat("x", mcpserverhandler.McpHTTPResponseSizeCapBytes) + `"}}`
+			},
+			wantErr: "could not parse JSON-RPC response",
+		},
 	}
-}
 
-func Test_ListTools_MalformedJSONRPC(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fake := newFakeMCPServer(t)
+			fake.jsonResponse = true
+			tt.configure(fake)
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
+			_, err := listToolsAgainst(t, fake)
+			if err == nil {
+				t.Fatalf("expected an error containing %q", tt.wantErr)
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("expected error to contain %q, got: %v", tt.wantErr, err)
+			}
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`not json at all {{{`))
-	}))
-	defer srv.Close()
-
-	serverID := uuid.Must(uuid.NewV4())
-	m := &mcpserver.McpServer{URL: srv.URL, Status: mcpserver.StatusActive, AuthType: mcpserver.AuthTypeNone}
-	mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(m, nil)
-
-	h := newTestHandler(t, mockDB)
-
-	_, err := h.ListTools(context.Background(), serverID)
-	if err == nil {
-		t.Fatalf("expected error for malformed JSON-RPC body")
-	}
-}
-
-func Test_ListTools_JSONRPCErrorObject(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockDB := dbhandler.NewMockDBHandler(mc)
-
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"method not found"}}`))
-	}))
-	defer srv.Close()
-
-	serverID := uuid.Must(uuid.NewV4())
-	m := &mcpserver.McpServer{URL: srv.URL, Status: mcpserver.StatusActive, AuthType: mcpserver.AuthTypeNone}
-	mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(m, nil)
-
-	h := newTestHandler(t, mockDB)
-
-	_, err := h.ListTools(context.Background(), serverID)
-	if err == nil {
-		t.Fatalf("expected error for JSON-RPC error object")
+			// The handshake completed, so the failure is the method's.
+			if got := strings.Join(fake.methods(), ","); !strings.HasPrefix(got, "initialize,notifications/initialized,tools/list") {
+				t.Errorf("failure did not happen at the method stage; requests: %s", got)
+			}
+		})
 	}
 }
 
@@ -219,7 +225,7 @@ func Test_CallTool_Success(t *testing.T) {
 			t.Fatalf("request %q carried auth header %q", r.Method, r.Authorization)
 		}
 	}
-	if got := fake.methods(); strings.Join(got, ",") != "initialize,notifications/initialized,tools/call" {
+	if got := fake.methods(); strings.Join(got, ",") != "initialize,notifications/initialized,tools/call,DELETE" {
 		t.Fatalf("unexpected request sequence: %v", got)
 	}
 }
@@ -230,10 +236,9 @@ func Test_CallTool_MalformedJSONRPC(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{{{not-json`))
-	}))
+	fake := newFakeMCPServer(t)
+	fake.methodRawBody = `{{{not-json`
+	srv := httptest.NewServer(fake)
 	defer srv.Close()
 
 	serverID := uuid.Must(uuid.NewV4())
@@ -243,8 +248,11 @@ func Test_CallTool_MalformedJSONRPC(t *testing.T) {
 	h := newTestHandler(t, mockDB)
 
 	_, err := h.CallTool(context.Background(), serverID, "echo", `{}`)
-	if err == nil {
-		t.Fatalf("expected error for malformed JSON-RPC body")
+	if err == nil || !strings.Contains(err.Error(), "could not parse JSON-RPC response") {
+		t.Fatalf("expected a method-stage parse error, got: %v", err)
+	}
+	if got := strings.Join(fake.methods(), ","); !strings.HasPrefix(got, "initialize,notifications/initialized,tools/call") {
+		t.Errorf("failure did not happen at the method stage; requests: %s", got)
 	}
 }
 
@@ -267,7 +275,8 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 
 	// A conformant fake: a live row must complete the whole handshake, so the
 	// only reason a deleted row can fail is the gate. The count is of HTTP
-	// requests the server actually received.
+	// requests the server actually received: initialize, the notification,
+	// the method and the closing DELETE.
 	var fake *fakeMCPServer
 	reqCount := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -305,7 +314,7 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 			// would pass the deleted cases below.
 			name:         "live row: ListTools reaches the server",
 			row:          liveRow(),
-			wantRequests: 3,
+			wantRequests: 4,
 		},
 		{
 			name:         "deleted row: ListTools refuses without sending anything",
@@ -344,7 +353,7 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 		{
 			name:         "live row: CallTool reaches the server",
 			row:          liveRow(),
-			wantRequests: 3,
+			wantRequests: 4,
 		},
 		{
 			name:         "deleted row: CallTool refuses without sending anything",

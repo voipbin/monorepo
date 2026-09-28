@@ -12,7 +12,10 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
+
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
@@ -36,6 +39,16 @@ const (
 
 	clientName    = "voipbin-ai-manager"
 	clientVersion = "1.0.0"
+
+	// maxSessionIDBytes bounds the session id a server may hand back. The
+	// id is echoed on every later request, so an unbounded one would be
+	// reflected into our own request headers.
+	maxSessionIDBytes = 1024
+
+	// sessionCloseTimeout bounds the best-effort DELETE that ends a session.
+	// It runs after the call's own deadline may already have passed, so it
+	// has a deadline of its own.
+	sessionCloseTimeout = 2 * time.Second
 )
 
 // handshakeProtocolVersions are the protocol versions negotiated through the
@@ -143,26 +156,90 @@ func (h *mcpToolHandler) openSession(ctx context.Context, client *http.Client, m
 	// a usable session id, so success is decided by the JSON-RPC result
 	// alone (requirement 3). request() fails on any JSON-RPC error member.
 	result, header, err := h.request(ctx, s, "initialize", params)
+
+	// Adopt the session id before judging the result: a server that issued
+	// one alongside an error still holds that session open, and it is closed
+	// below rather than left to the server's idle timeout.
+	if header != nil {
+		sessionID := header.Get(headerSessionID)
+		if errID := validateSessionID(sessionID); errID != nil {
+			return nil, errID
+		}
+		s.id = sessionID
+	}
+
 	if err != nil {
+		h.closeSession(s)
 		return nil, fmt.Errorf("initialize failed: %w", err)
 	}
 
 	var res initializeResult
 	if errUnmarshal := json.Unmarshal(result, &res); errUnmarshal != nil {
+		h.closeSession(s)
 		return nil, fmt.Errorf("could not parse initialize result: %w", errUnmarshal)
 	}
 	if !handshakeProtocolVersions[res.ProtocolVersion] {
-		return nil, fmt.Errorf("server negotiated protocol version %q, which is not a handshake-era version this client can drive", res.ProtocolVersion)
+		h.closeSession(s)
+		return nil, fmt.Errorf("server negotiated protocol version %q, which is not a handshake-era version this client can drive", truncateUTF8(res.ProtocolVersion, 64))
 	}
 
 	s.protocolVersion = res.ProtocolVersion
-	s.id = header.Get(headerSessionID)
 
 	if err := h.notify(ctx, s, "notifications/initialized"); err != nil {
+		h.closeSession(s)
 		return nil, fmt.Errorf("initialized notification failed: %w", err)
 	}
 
 	return s, nil
+}
+
+// closeSession ends a stateful session with a best-effort DELETE, as the
+// transport asks of a client that no longer needs one. Without it every call
+// would leave a session open on the customer's server until its idle timeout,
+// and the reference server refuses all new sessions, from every client, once
+// its session limit is reached. A stateless session (no id) has nothing to
+// close. Failure is logged and never fails the call; 405 means the server
+// does not support explicit termination, which is allowed.
+func (h *mcpToolHandler) closeSession(s *mcpSession) {
+	if s == nil || s.id == "" {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), sessionCloseTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, s.server.URL, nil)
+	if err != nil {
+		return
+	}
+	h.setSessionHeaders(req, s)
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		logrus.Debugf("Could not close mcp session. err: %v", err)
+		return
+	}
+	defer func() { _ = resp.Body.Close() }()
+	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, maxErrorBodyBytes))
+
+	if resp.StatusCode != http.StatusMethodNotAllowed && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
+		logrus.Debugf("Mcp server did not close the session. status: %d", resp.StatusCode)
+	}
+}
+
+// validateSessionID enforces the transport's rule that a session id is
+// visible ASCII (0x21 to 0x7E), plus a length bound, before the id is echoed
+// back in a request header.
+func validateSessionID(id string) error {
+	if len(id) > maxSessionIDBytes {
+		return fmt.Errorf("server issued a session id of %d bytes, over the %d byte limit", len(id), maxSessionIDBytes)
+	}
+	for i := 0; i < len(id); i++ {
+		if id[i] < 0x21 || id[i] > 0x7E {
+			return fmt.Errorf("server issued a session id containing a byte outside visible ASCII")
+		}
+	}
+	return nil
 }
 
 // request sends one JSON-RPC request on the session and returns the result
@@ -192,7 +269,7 @@ func (h *mcpToolHandler) request(ctx context.Context, s *mcpSession, method stri
 		return nil, resp.Header, err
 	}
 	if rpcResp.Error != nil {
-		return nil, resp.Header, fmt.Errorf("JSON-RPC error (code %d): %s", rpcResp.Error.Code, rpcResp.Error.Message)
+		return nil, resp.Header, fmt.Errorf("JSON-RPC error (code %d): %s", rpcResp.Error.Code, truncateForError([]byte(rpcResp.Error.Message)))
 	}
 	if len(rpcResp.Result) == 0 || bytes.Equal(bytes.TrimSpace(rpcResp.Result), []byte("null")) {
 		return nil, resp.Header, fmt.Errorf("JSON-RPC response has no result")
@@ -233,6 +310,21 @@ func (h *mcpToolHandler) post(ctx context.Context, s *mcpSession, msg any) (*htt
 		return nil, fmt.Errorf("could not build request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	h.setSessionHeaders(req, s)
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+
+	return resp, nil
+}
+
+// setSessionHeaders applies the headers every request on a session carries:
+// the Accept pair, the session id and negotiated protocol version once known,
+// and the credential. initialize carries neither of the first two because
+// neither is known yet.
+func (h *mcpToolHandler) setSessionHeaders(req *http.Request, s *mcpSession) {
 	req.Header.Set("Accept", acceptHeader)
 	if s.id != "" {
 		req.Header.Set(headerSessionID, s.id)
@@ -243,13 +335,6 @@ func (h *mcpToolHandler) post(ctx context.Context, s *mcpSession, msg any) (*htt
 	if s.authName != "" {
 		req.Header.Set(s.authName, s.authValue)
 	}
-
-	resp, err := s.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-
-	return resp, nil
 }
 
 // statusError reads a bounded prefix of a non-2xx body into the error, so the
@@ -285,8 +370,8 @@ func readJSONRPCResponse(contentType string, body io.Reader, wantID int) (*jsonR
 	if err != nil {
 		return nil, fmt.Errorf("could not parse JSON-RPC response: %w", err)
 	}
-	if !idMatches(resp.ID, wantID) {
-		return nil, fmt.Errorf("JSON-RPC response id %s does not match request id %d", string(resp.ID), wantID)
+	if !answers(resp, wantID) {
+		return nil, fmt.Errorf("JSON-RPC response id %s does not match request id %d", truncateForError(resp.ID), wantID)
 	}
 
 	return resp, nil
@@ -306,7 +391,7 @@ func readSSEResponse(body io.Reader, wantID int) (*jsonRPCResponse, error) {
 			return nil
 		}
 		resp, err := decodeResponse([]byte(data.String()))
-		if err != nil || !idMatches(resp.ID, wantID) {
+		if err != nil || !answers(resp, wantID) {
 			return nil
 		}
 		return resp
@@ -321,7 +406,11 @@ func readSSEResponse(body io.Reader, wantID int) (*jsonRPCResponse, error) {
 				if resp := dispatch(); resp != nil {
 					return resp, nil
 				}
-			case strings.HasPrefix(line, "data:"):
+			case line == "data" || strings.HasPrefix(line, "data:"):
+				// A field line without a colon has an empty value, per the
+				// SSE specification. Bare CR line endings are not handled:
+				// the reader splits on LF, which covers LF and CRLF, the only
+				// endings MCP servers emit.
 				if hasData {
 					data.WriteByte('\n')
 				}
@@ -354,8 +443,16 @@ func decodeResponse(raw []byte) (*jsonRPCResponse, error) {
 	return &resp, nil
 }
 
-func idMatches(raw json.RawMessage, want int) bool {
-	return string(bytes.TrimSpace(raw)) == strconv.Itoa(want)
+// answers reports whether resp is the answer to request want. Besides a
+// matching id, an error with a null id counts: JSON-RPC uses a null id when
+// the server could not determine the request id, and dropping it would lose
+// the only reason the server gave.
+func answers(resp *jsonRPCResponse, want int) bool {
+	id := string(bytes.TrimSpace(resp.ID))
+	if id == strconv.Itoa(want) {
+		return true
+	}
+	return resp.Error != nil && (id == "" || id == "null")
 }
 
 // truncateUTF8 cuts s to at most maxBytes without splitting a multi-byte
