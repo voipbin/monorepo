@@ -6,7 +6,7 @@ This is the current, normative analysis. It supersedes
 corrections refuted, so a builder reading its first page acquired a false causal
 model of the defect. The corrections are folded in here. The evidence that
 produced them (three live experiments and a token measurement) is preserved in
-Appendix A, which is a non-normative decision log.
+Appendix A, the decision log. It carries evidence **and** requirements not restated in the body, so it is not optional reading; section 7 lists what a builder must take from it.
 
 Rounds 1 through 4 each demolished part of the round before. Where a claim below
 is the survivor of that, it is stated plainly rather than annotated.
@@ -95,7 +95,7 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | B1 | MCP protocol client: dual `Accept`, `initialize` and session lifecycle, `MCP-Protocol-Version`, SSE `data:` parsing, session-expiry re-init | `pkg/mcptoolhandler/client.go:108-176` | Largest single item. See A.2 |
 | B2a | `inputSchema` json tag | `pkg/mcptoolhandler/main.go:26` | **Live inbound-parse defect.** `ListTools` runs today and silently drops the schema of every tool it can currently read, because the tag reads `input_schema` and the wire field is `inputSchema`. Narrower than first written: against a default-configuration conformant server the request fails at 406 before any body, so the live drop is against the stateless plus json-response configuration that A.2 shows does work today. Belongs to PR B1: it needs no consumer to be wrong, and PR B1's own acceptance gate asserts a non-nil schema |
 | B2b | Non-nil `Parameters` default | `mcp_tool.go:97`, and note `models/tool/main.go:108` has no `omitempty` | The half that kills the python pipeline, which requires advertisement. PR B2. See A.3 |
-| B3 | Redirect guard: re-validate on every hop, or refuse redirects | `pkg/mcpserverhandler/ssrf.go:95-112` | Credential leak, proven. See A.5 |
+| B3 | Redirect guard: **refuse redirects** (settled, A.21), error naming a trailing slash, target logged redacted | `pkg/mcpserverhandler/ssrf.go:95-112` | Credential leak, proven. See A.5 |
 | B4 | Type-filter ai-manager's built-in resolver | `pkg/toolhandler/main.go:29`, caller `mcp_tool.go:60` | Fail-open today. See A.4 |
 | B5 | Name policy: reject invalid charset and over-length, drop duplicates instead of last-write-wins, count caps | `mcp_tool.go:90-105` | An invalid name fails the whole completion, not one tool |
 | B6 | Tool-result cap well under 64 KiB | `pkg/mcptoolhandler/client.go:267-274` | `ai_messages.content` is `TEXT`; also feeds the auditor, see B8 |
@@ -204,6 +204,44 @@ publish a documented `mcp_tool_status` summary instead. This is a breaking
 payload change and the PR body must say so; the blast radius is nil because no
 AI has a non-empty whitelist, so the key is empty in every webhook emitted
 today.
+
+## 4b. PR B1 required behaviour, in one place
+
+The protocol client is the largest item and its requirements accumulated across
+four rounds of appendix entries. They are restated here because a builder who
+reads only the body would otherwise ship a client that passes its own tests:
+
+1. `Accept: application/json, text/event-stream` on every request. A conformant
+   server answers 406 otherwise (A.2).
+2. `initialize` first, then the session. A request without a session is rejected
+   400 **before** any auth check, so the handshake cannot be skipped (A.2).
+3. **Check `initialize`'s JSON-RPC error member, not the HTTP status.** A malformed
+   `initialize` returns 200, an SSE frame carrying `-32602`, **and a usable session
+   id**, so a status-only check ships a client that works by accident (A.22).
+4. `initialize` params always carry `protocolVersion`, `capabilities` and
+   `clientInfo` (A.22).
+5. Echo the `protocolVersion` the server returned, **only when it is a known
+   handshake-era value**; anything else means the server is on a different
+   transport and must not be driven this way (A.22). Never send a hardcoded
+   constant: the header is optional but a value outside the handshake set is
+   fatal.
+6. Session id header is `Mcp-Session-Id`, read from the `initialize` response.
+   Absence of the header **is** stateless mode; no separate branch exists (A.21).
+7. Session scope is one `ListTools` call, as a local variable, never cached. B20's
+   single-flight shares it only because coalesced callers share one execution
+   (A.21).
+8. Parse either a bare JSON body or an SSE `data:` body, tolerating multiple
+   events and returning the first whose id matches the request (A.2, A.21).
+9. Monotonic JSON-RPC request id per session, with the response id asserted. The
+   current hardcoded `1` makes a multi-step session's responses
+   indistinguishable (A.20).
+10. Read a bounded prefix of the body for diagnostics, **then** check the status.
+    The error body is needed for exactly the 406 and 400 cases above, so the
+    reorder must not discard it (A.20).
+11. One 404 re-initialisation per call, with its own once-flag so it cannot
+    compose with B19's 401 retry into four requests (A.21).
+12. Rune-safe truncation in `truncateForError` and `capErrText`: both slice bytes
+    today and run on every non-2xx (A.21).
 
 ## 5. Acceptance gate
 
@@ -357,8 +395,8 @@ applies to the merged list or moves.
 
 # Appendix A: decision log (non-normative)
 
-Four review rounds, eight reviewers. Each round found what the previous missed:
-five items, then three, then four, then four. What follows is the evidence, kept
+Nine review rounds, eighteen reviewers. Each round found what the previous missed:
+five items, then three, four, four, four, six, five, five, then two. What follows is the evidence, kept
 because it is the most valuable content in this file and because several
 conclusions are counter-intuitive.
 
@@ -813,8 +851,30 @@ that echoing the negotiated version returns 400 on a server that negotiates
 nonsense version so the server picks its newest, and requesting `2025-11-25`
 explicitly), `tools/list` returned **200** both with the header omitted and with
 the negotiated version echoed. The 400 the reviewer saw carries a
-`params._meta` envelope complaint, which is a **params** validation error, not a
-header rejection, so the diagnosis attributed it to the wrong cause.
+`params._meta` envelope complaint, and this document first dismissed that as a
+params error unrelated to the header. **Round 9 proved that dismissal wrong, and
+the correction matters more than the original refutation.** The 400 *is*
+header-caused: the reference SDK's own router (external, `mcp` python package 2.2.0,
+`mcp/server/streamable_http_manager.py` line 194, not a file in this repo) routes a
+request whose
+`MCP-Protocol-Version` is **not** in `HANDSHAKE_PROTOCOL_VERSIONS` to a different
+protocol era, and the `_meta` envelope is that era's requirement, so the envelope
+message is the symptom and the header is the cause. Reproduced here: on one
+session, with the body held constant, `2025-11-25` returns 200 while
+`2026-07-28` and `1999-01-01` both return 400 with that message, and
+`HANDSHAKE_PROTOCOL_VERSIONS` is `('2024-11-05', '2025-03-26', '2025-06-18',
+'2025-11-25')`.
+
+**So echoing is safe only because of a clamp.** Verified: asking `initialize`
+for `2026-07-28` makes the server negotiate **`2025-11-25`**, the newest handshake
+value, so a negotiated version can never fall outside the set today. That is a
+property of the current server, not a guarantee. B1 must therefore carry the
+guard: **echo the negotiated version only when it is a known handshake-era value,
+and treat anything else as a server that is not on the `initialize` plus session
+transport at all.** Without that guard a future server negotiating outside the set
+produces a 400 on every `tools/list`, which `resolveTools` swallows at
+`mcp_tool.go:83-87` and turns into a silently empty tool list, the exact
+inert-feature failure this document exists to prevent.
 
 A.21's rule therefore stands: send the version the server returned from
 `initialize`. Two things are nonetheless worth taking from the report, because
@@ -874,3 +934,31 @@ in both directions: reproduce before adopting.
   the first is already committed. Same code region as B28 and the same fix window.
 - **B2a fixes `inputSchema` only.** Real servers also send `outputSchema`, which
   the struct drops. Leaving that is a deliberate choice, not an oversight.
+
+## A.24 Round 9
+
+- **A.22's diagnosis was wrong and is corrected in place.** Its conclusion held
+  (echoing the negotiated version succeeds) but it attributed the 400 to a params
+  error when the header is what routes the request to another protocol era. The
+  corrected entry adds the guard that follows: echo only a known handshake-era
+  value. Three consecutive rounds have now mis-handled this one fact, which is why
+  requirement 5 in section 4b states it as a rule rather than a reference.
+- **`ListTools` never re-validates the stored URL's scheme.** `ValidateURL`
+  (`ssrf.go:31`) runs at create and update time only, and `doJSONRPCRequest` passes
+  `m.URL` straight through. The dial-time control hook blocks private addresses but
+  is scheme-blind, so a row whose URL is `http://` would send the decrypted token in
+  cleartext on the **first** hop, not only on a redirect. No writer bypassing
+  `ValidateURL` was found, so this is mechanism-only, but B3's remedy does not cover
+  it and B1 adds a second request per server on the same unvalidated URL. One line
+  in B3.
+- **B19's retry is OAuth-only and the no-refresh-token branch is terminal.** Both
+  follow from the document's own reasoning but neither was stated: a 401 on bearer
+  or API-key auth has nothing to refresh, and retrying it doubles load on the
+  customer's server, which is the amplification A.11 exists to prevent.
+- **B13's 5s bounds the per-server sequence, not each request.** D16's arithmetic
+  counts two round trips inside it, and A.6 requires the session-start read to have
+  its own deadline distinct from the call timeout, so the existing
+  `McpToolCallTimeoutSeconds` knob is not the right lever for it.
+- **Remaining cosmetic drift**, recorded rather than silently fixed so the pattern
+  stays visible: the PR B2 build order has two steps numbered 6, and line 11 still
+  says "Rounds 1 through 4" where the document now covers nine.
