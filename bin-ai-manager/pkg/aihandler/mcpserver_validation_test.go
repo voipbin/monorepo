@@ -26,10 +26,12 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 	crossCustomerServerID := uuid.Must(uuid.NewV4())
 	nonexistentServerID := uuid.Must(uuid.NewV4())
 	deletedServerID := uuid.Must(uuid.NewV4())
+	secondDeletedServerID := uuid.Must(uuid.NewV4())
 
 	tests := []struct {
 		name      string
 		ids       []uuid.UUID
+		storedIDs []uuid.UUID
 		setupMock func(*dbhandler.MockDBHandler)
 		wantError bool
 		// wantTyped asserts the error is a *cerrors.VoipbinError with
@@ -64,7 +66,10 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 			// deleted server answers 200), so the TMDelete check has to live
 			// here. Without it a customer can whitelist a server they already
 			// deleted, leaving the AI carrying an id no consumer will honour.
-			name: "soft-deleted id rejects",
+			//
+			// storedIDs is empty: this is an id being ADDED, which is the
+			// case the rejection is for.
+			name: "soft-deleted id rejects when newly added",
 			ids:  []uuid.UUID{deletedServerID},
 			setupMock: func(mockDB *dbhandler.MockDBHandler) {
 				ts := time.Now()
@@ -106,6 +111,91 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 			setupMock: func(mockDB *dbhandler.MockDBHandler) {},
 			wantError: false,
 		},
+		{
+			// D21. Deleting an MCP server does not prune the id from any AI
+			// that referenced it, and square-admin builds its picker from the
+			// deleted:"false" list -- so the stale id is invisible and
+			// unremovable in the UI while every PUT re-submits it. Rejecting
+			// it would 400 every save of that AI forever, including edits to
+			// unrelated fields. Already-carried deleted ids are tolerated.
+			name:      "soft-deleted id accepts when already stored",
+			ids:       []uuid.UUID{deletedServerID},
+			storedIDs: []uuid.UUID{deletedServerID},
+			setupMock: func(mockDB *dbhandler.MockDBHandler) {
+				ts := time.Now()
+				mockDB.EXPECT().McpServerGet(gomock.Any(), deletedServerID).Return(&mcpserver.McpServer{
+					Identity: identity.Identity{ID: deletedServerID, CustomerID: customerID},
+					TMDelete: &ts,
+				}, nil)
+			},
+			wantError: false,
+		},
+		{
+			// D25. The exemption covers deletion ONLY. A stored id whose row
+			// now belongs to another customer is still rejected -- otherwise
+			// a cross-customer reference, once stored, could never be caught
+			// again, which is the IDOR this validation exists to stop.
+			name:      "cross-customer id rejects even when already stored",
+			ids:       []uuid.UUID{crossCustomerServerID},
+			storedIDs: []uuid.UUID{crossCustomerServerID},
+			setupMock: func(mockDB *dbhandler.MockDBHandler) {
+				mockDB.EXPECT().McpServerGet(gomock.Any(), crossCustomerServerID).Return(&mcpserver.McpServer{
+					Identity: identity.Identity{ID: crossCustomerServerID, CustomerID: otherCustomerID},
+				}, nil)
+			},
+			wantError: true,
+			wantTyped: true,
+		},
+		{
+			// D25. Existence is not exempted either: a stored id whose row is
+			// gone entirely is rejected, since nothing can ever honour it and
+			// (unlike a soft-deleted row) no UI state explains its presence.
+			name:      "nonexistent id rejects even when already stored",
+			ids:       []uuid.UUID{nonexistentServerID},
+			storedIDs: []uuid.UUID{nonexistentServerID},
+			setupMock: func(mockDB *dbhandler.MockDBHandler) {
+				mockDB.EXPECT().McpServerGet(gomock.Any(), nonexistentServerID).Return(nil, dbhandler.ErrNotFound)
+			},
+			wantError: true,
+			wantTyped: true,
+		},
+		{
+			// The exemption is per id, not per request: carrying one deleted
+			// id must not let a DIFFERENT deleted id be added in the same PUT.
+			name:      "newly added deleted id rejects alongside a stored deleted id",
+			ids:       []uuid.UUID{deletedServerID, secondDeletedServerID},
+			storedIDs: []uuid.UUID{deletedServerID},
+			setupMock: func(mockDB *dbhandler.MockDBHandler) {
+				ts := time.Now()
+				mockDB.EXPECT().McpServerGet(gomock.Any(), deletedServerID).Return(&mcpserver.McpServer{
+					Identity: identity.Identity{ID: deletedServerID, CustomerID: customerID},
+					TMDelete: &ts,
+				}, nil)
+				mockDB.EXPECT().McpServerGet(gomock.Any(), secondDeletedServerID).Return(&mcpserver.McpServer{
+					Identity: identity.Identity{ID: secondDeletedServerID, CustomerID: customerID},
+					TMDelete: &ts,
+				}, nil)
+			},
+			wantError: true,
+			wantTyped: true,
+		},
+		{
+			// Guards against keying the exemption on position or count rather
+			// than identity: the stored list holds a different id than the
+			// one being added, so the addition must still be rejected.
+			name:      "deleted id rejects when a different id is stored",
+			ids:       []uuid.UUID{deletedServerID},
+			storedIDs: []uuid.UUID{sameCustomerServerID},
+			setupMock: func(mockDB *dbhandler.MockDBHandler) {
+				ts := time.Now()
+				mockDB.EXPECT().McpServerGet(gomock.Any(), deletedServerID).Return(&mcpserver.McpServer{
+					Identity: identity.Identity{ID: deletedServerID, CustomerID: customerID},
+					TMDelete: &ts,
+				}, nil)
+			},
+			wantError: true,
+			wantTyped: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -127,7 +217,7 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 				db:            mockDB,
 			}
 
-			err := h.ValidateMcpServerIDs(context.Background(), customerID, tt.ids)
+			err := h.ValidateMcpServerIDs(context.Background(), customerID, tt.ids, tt.storedIDs)
 			if tt.wantError && err == nil {
 				t.Fatalf("expected error, got nil")
 			}

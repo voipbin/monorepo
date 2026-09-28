@@ -572,7 +572,8 @@ func Test_processV1AIsIDPut_McpServerIDsEmptyArrayClears(t *testing.T) {
 		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
 	).Return(preUpdate, nil)
 
-	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{}).Return(nil)
+	// storedIDs comes from the pre-update AI, whose whitelist is nil here.
+	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{}, []uuid.UUID(nil)).Return(nil)
 	mockAI.EXPECT().UpdateMcpServerIDs(gomock.Any(), id, []uuid.UUID{}).Return(preUpdate, nil)
 
 	res, err := h.processRequest(req)
@@ -663,7 +664,7 @@ func Test_processV1AIsIDPut_McpServerIDsInvalidReturns400(t *testing.T) {
 	// fails the test on any unexpected Update call.
 	mockAI.EXPECT().Get(gomock.Any(), id).Return(preUpdate, nil)
 
-	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{invalidServerID}).Return(
+	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{invalidServerID}, []uuid.UUID(nil)).Return(
 		cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_ID", "mcp_server_id "+invalidServerID.String()+" is not accessible"),
 	)
 
@@ -705,7 +706,7 @@ func Test_processV1AIsPost_McpServerIDsInvalidCreatesNothing(t *testing.T) {
 		Data:   []byte(`{"customer_id":"` + customerID.String() + `","mcp_server_ids":["` + invalidServerID.String() + `"]}`),
 	}
 
-	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{invalidServerID}).Return(
+	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{invalidServerID}, []uuid.UUID(nil)).Return(
 		cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_MCP_SERVER_ID", "mcp_server_id "+invalidServerID.String()+" is not accessible"),
 	)
 
@@ -715,5 +716,71 @@ func Test_processV1AIsPost_McpServerIDsInvalidCreatesNothing(t *testing.T) {
 	}
 	if res.StatusCode != 400 {
 		t.Fatalf("expected status 400, got %d (body: %s)", res.StatusCode, res.Data)
+	}
+}
+
+// Test_processV1AIsIDPut_McpServerIDsPassesStoredWhitelist pins D21's wiring.
+//
+// The exemption that keeps an AI carrying a since-deleted id saveable lives in
+// ValidateMcpServerIDs, but it can only fire if the PUT path actually hands it
+// the AI's STORED whitelist. Passing nil there compiles, passes every other
+// test in this file (their pre-update AIs have nil whitelists), and silently
+// re-freezes the AI -- so the stored list is asserted explicitly here.
+//
+// The request re-submits the stored id unchanged, which is exactly what
+// square-admin does on every save: its picker is built from the
+// deleted:"false" list, so a deleted id is invisible there yet still present
+// in the body.
+func Test_processV1AIsIDPut_McpServerIDsPassesStoredWhitelist(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+
+	h := &listenHandler{
+		sockHandler: mockSock,
+		aiHandler:   mockAI,
+	}
+
+	id := uuid.FromStringOrNil("de99e522-a770-11ed-a0ab-5b39ee2db203")
+	customerID := uuid.FromStringOrNil("24676972-7f49-11ec-bc89-b7d33e9d3ea8")
+	storedServerID := uuid.FromStringOrNil("0c3b4f6a-1e2d-11ef-9a3b-0242ac120002")
+
+	req := &sock.Request{
+		URI:    "/v1/ais/" + id.String(),
+		Method: sock.RequestMethodPut,
+		Data:   []byte(`{"mcp_server_ids":["` + storedServerID.String() + `"]}`),
+	}
+
+	preUpdate := &ai.AI{
+		Identity: identity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		// The stored whitelist that must reach the validator as storedIDs.
+		McpServerIDs: []uuid.UUID{storedServerID},
+	}
+
+	mockAI.EXPECT().Get(gomock.Any(), id).Return(preUpdate, nil)
+
+	// The assertion: storedIDs is the AI's stored whitelist, not nil and not
+	// the request's list.
+	mockAI.EXPECT().ValidateMcpServerIDs(
+		gomock.Any(), customerID, []uuid.UUID{storedServerID}, []uuid.UUID{storedServerID},
+	).Return(nil)
+
+	mockAI.EXPECT().Update(
+		gomock.Any(), id, "", "", ai.Type(""), ai.EngineModel(""), map[string]any(nil), "",
+		uuid.Nil, "", ai.TTSType(""), "", ai.STTType(""), "", []tool.ToolName(nil), (*ai.VADConfig)(nil), false, false,
+	).Return(preUpdate, nil)
+	mockAI.EXPECT().UpdateMcpServerIDs(gomock.Any(), id, []uuid.UUID{storedServerID}).Return(preUpdate, nil)
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if res.StatusCode != 200 {
+		t.Errorf("expected status 200, got %d", res.StatusCode)
 	}
 }

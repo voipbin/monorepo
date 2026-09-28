@@ -65,11 +65,18 @@ type AIHandler interface {
 	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 
 	// ValidateMcpServerIDs checks that every id in ids refers to an
-	// existing, not-deleted McpServer row owned by customerID (IDOR guard).
+	// existing McpServer row owned by customerID (IDOR guard), and that any
+	// id NOT already in storedIDs is also not-deleted.
+	//
 	// Callers MUST call this BEFORE the AI write, not merely before
 	// UpdateMcpServerIDs: validating afterwards leaves an orphaned or
 	// half-updated AI behind on rejection.
-	ValidateMcpServerIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) error
+	//
+	// storedIDs is the AI's currently stored whitelist, or nil on create.
+	// Pass it so an AI that already carries a since-deleted id stays
+	// saveable (D21) -- the id is invisible in the picker and re-submitted
+	// on every save, so rejecting it would freeze the AI permanently.
+	ValidateMcpServerIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID, storedIDs []uuid.UUID) error
 
 	// UpdateMcpServerIDs persists the McpServerIDs whitelist onto the AI.
 	UpdateMcpServerIDs(ctx context.Context, id uuid.UUID, mcpServerIDs []uuid.UUID) (*ai.AI, error)
