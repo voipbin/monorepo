@@ -48,7 +48,6 @@ import (
 	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
 	kase "monorepo/bin-contact-manager/models/kase"
-	request "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 	account0 "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media "monorepo/bin-conversation-manager/models/media"
@@ -4006,7 +4005,7 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressUpdate(ctx, cus
 }
 
 // ContactV1ContactCreate mocks base method.
-func (m *MockRequestHandler) ContactV1ContactCreate(ctx context.Context, customerID uuid.UUID, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, addresses []request.AddressCreate, tagIDs []uuid.UUID) (*contact.Contact, error) {
+func (m *MockRequestHandler) ContactV1ContactCreate(ctx context.Context, customerID uuid.UUID, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, addresses []contact.AddressInput, tagIDs []uuid.UUID) (*contact.Contact, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactV1ContactCreate", ctx, customerID, firstName, lastName, displayName, company, jobTitle, source, externalID, notes, addresses, tagIDs)
 	ret0, _ := ret[0].(*contact.Contact)

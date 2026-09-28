@@ -42,7 +42,6 @@ import (
 	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
 	kase "monorepo/bin-contact-manager/models/kase"
-	request "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 	account0 "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media "monorepo/bin-conversation-manager/models/media"
@@ -2281,7 +2280,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactAddressUpdateIndependent(ctx, a
 }
 
 // ContactCreate mocks base method.
-func (m *MockServiceHandler) ContactCreate(ctx context.Context, a *auth.AuthIdentity, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, addresses []request.AddressCreate, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactCreate(ctx context.Context, a *auth.AuthIdentity, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, addresses []contact.AddressInput, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactCreate", ctx, a, firstName, lastName, displayName, company, jobTitle, source, externalID, notes, addresses, tagIDs)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -4983,7 +4982,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressUpdateIndepe
 }
 
 // ServiceAgentContactCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactCreate(ctx context.Context, a *auth.AuthIdentity, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, addresses []request.AddressCreate, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactCreate(ctx context.Context, a *auth.AuthIdentity, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, addresses []contact.AddressInput, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactCreate", ctx, a, firstName, lastName, displayName, company, jobTitle, source, externalID, notes, addresses, tagIDs)
 	ret0, _ := ret[0].(*contact.WebhookMessage)

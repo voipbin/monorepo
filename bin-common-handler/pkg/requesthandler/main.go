@@ -51,7 +51,6 @@ import (
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cmkase "monorepo/bin-contact-manager/models/kase"
-	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
@@ -908,7 +907,7 @@ type RequestHandler interface {
 		source string,
 		externalID string,
 		notes string,
-		addresses []cmrequest.AddressCreate,
+		addresses []cmcontact.AddressInput,
 		tagIDs []uuid.UUID,
 	) (*cmcontact.Contact, error)
 	ContactV1ContactGet(ctx context.Context, contactID uuid.UUID) (*cmcontact.Contact, error)

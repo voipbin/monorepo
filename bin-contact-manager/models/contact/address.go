@@ -8,19 +8,44 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// AddressInput is the domain input shape for creating a contact address
+// (see pkg/contacthandler.CreateUnresolvedAddress and requesthandler's
+// ContactV1ContactCreate). Embeds commonaddress.Address for the same reason
+// and with the same caveats as Address below -- see Address's comment.
+//
+// Not named AddressCreate to avoid reading as the wire
+// pkg/listenhandler/models/request.AddressCreate DTO it replaces: this is a
+// plain domain type, not a listenhandler wire DTO -- callers outside
+// bin-contact-manager (e.g. bin-api-manager) use this instead of importing
+// pkg/listenhandler/models/request directly (see root CLAUDE.md "Layering
+// -- transport DTO ownership").
+//
+// Carries json tags (unlike a typical write-input shape) because Address
+// below embeds AddressInput rather than duplicating its fields: Address IS
+// marshaled directly as part of Contact/WebhookMessage API responses, so
+// AddressInput's tags are load-bearing for that outer marshal even though
+// AddressInput itself is never marshaled on its own -- requesthandler's
+// ContactV1ContactCreate maps it field-by-field into the wire
+// request.AddressCreate before marshal instead.
+type AddressInput struct {
+	commonaddress.Address
+	IsPrimary bool `json:"is_primary"`
+}
+
 // Address represents a single row in contact_addresses.
 // type = "tel"   -> target holds an E.164 phone number
 // type = "email" -> target holds a lowercase email address
 //
-// Embeds commonaddress.Address (Type/Target/TargetName/Name/Detail) rather
+// Embeds AddressInput (Type/Target/TargetName/Name/Detail/IsPrimary) rather
 // than hand-copying its fields -- this is the monorepo's standing convention
 // for reusing a shared struct (see kase.Case embedding commonidentity.Owner).
+// AddressInput itself embeds commonaddress.Address, so Address transitively
+// carries every commonaddress.Address field too.
 type Address struct {
-	commonaddress.Address
+	AddressInput
 	ID         uuid.UUID  `json:"id"`
 	CustomerID uuid.UUID  `json:"customer_id"`
 	ContactID  uuid.UUID  `json:"contact_id"`
-	IsPrimary  bool       `json:"is_primary"`
 	TMCreate   *time.Time `json:"tm_create"`
 }
 
