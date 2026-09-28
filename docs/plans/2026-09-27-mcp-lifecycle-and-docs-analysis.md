@@ -374,7 +374,7 @@ ongoing defect in PR A's scope.
 
 `CallTool` dispatch is currently **unreachable in production** because the merged
 tool list `resolveTools` returns is discarded by every caller (`start.go:1184 resolveTools`,
-`insight_session.go:225 resolveTools`, `mcp_tool.go:52 resolveTools` all use `_,`), and the lists actually
+`insight_session.go:225 resolveTools`, `mcp_tool.go:327 resolveTools` all use `_,`), and the lists actually
 sent to models are built elsewhere with no MCP awareness. That is D7's subject
 matter and belongs to the PR B document; it is stated here only to keep PR A's
 severity claim honest and to explain why PR A must precede PR B.
@@ -460,7 +460,7 @@ directions: a tool the current member legitimately whitelists is refused, and a
 tool only the start member whitelists is ACCEPTED for the current member.
 
 **Corrected blast radius (round 4).** The same mismatch affects
-`start.go:1184 resolveTools` and `mcp_tool.go:52 resolveTools` (`refreshMcpToolMap`, called from
+`start.go:1184 resolveTools` and `mcp_tool.go:327 resolveTools` (`refreshMcpToolMap`, called from
 `start.go:375` with the `a` resolved at `start.go:187`). It does **NOT** affect
 `insight_session.go:225 resolveTools`: `writeInsightSessionMetadata` is reached only from
 `insight_session.go:143` inside `runInsightSessionRefresh`, which returns early at
@@ -526,7 +526,7 @@ place:
 
 1. **Dispatch does not execute in production.** §3.1 already establishes this
    for a different purpose: every caller of `resolveTools` discards the merged tool list
-   — `start.go:1184 resolveTools`, `insight_session.go:225 resolveTools`, `mcp_tool.go:52 resolveTools` all bind `_,` — so no
+   — `start.go:1184 resolveTools`, `insight_session.go:225 resolveTools`, `mcp_tool.go:327 resolveTools` all bind `_,` — so no
    MCP tool name is ever advertised to the LLM and `tool.go:142 toolHandleMcpCall` never dispatches one.
    Placing the only ownership assertion there makes it **dead code until PR B lands**.
 2. **Resolution is where the credential is used.** `resolveTools:84` calls `ListTools`,
@@ -569,7 +569,7 @@ half of the same defect, which has the identical shape.
 **The live defect.** On a team AIcall, `resolveAI` resolves the **start** member
 (`start.go:75`, `h.resolveTeamMemberAI(ctx, t, t.StartMemberID)`). On the reuse branch,
 `start.go:375` called `refreshMcpToolMap(ctx, res, a)` with that start-member `a` (it now passes the resolved `mcpAI`), which
-reaches `resolveTools` (`mcp_tool.go:52 resolveTools`) and fires `ListTools` at `:84` — a credentialed
+reaches `resolveTools` (`mcp_tool.go:327 resolveTools`) and fires `ListTools` at `:84` — a credentialed
 outbound request to the **start** member's MCP servers, not the running member's.
 
 **And the mechanism to fix it already exists, two lines later.** `start.go:383-387`
@@ -598,7 +598,7 @@ literal no-op.** Both round-13 reviewers found this independently, and they are 
 **Why the v19 prescription cannot work.** `refreshMcpToolMap(ctx, existing *aicall.AIcall,
 a *ai.AI)` (`mcp_tool.go:288`) reads the whitelist from its **`a` parameter** only
 (`:293` `h.resolveTools(ctx, a)`); `existing` is used solely for `existing.ID` on the
-re-read and write (`:294 capErrText`, `:304 errMcpToolCallFailed`). And `resolveTeamMemberForSend(ctx, c *aicall.AIcall)`
+re-read and write (`:332 AIcallGet`, `:343 AIcallUpdateNoTouchTMUpdate`). And `resolveTeamMemberForSend(ctx, c *aicall.AIcall)`
 (`send.go:154`) returns **only `error`**: it resolves the current member's AI into a local
 at `:166`, then keeps just the engine model (`:173` `c.AIEngineModel = a.EngineModel`) and,
 on fallback, `c.CurrentMemberID` (`:181`). **It never returns or rebinds `a`.** So moving
@@ -1632,7 +1632,7 @@ relying on the form's option list.
   not exist.
 - **Both internal oauth writes are exempt, not one.** §5 item 6 cites `complete.go:165-188`
   (new row). The **reconnect branch also writes it**: `complete.go:144-162` sets
-  `FieldAuthType: AuthTypeOAuth` at `:117` via `McpServerUpdate` at `:126`. Neither
+  `FieldAuthType: AuthTypeOAuth` at `:146 FieldAuthType` via `McpServerUpdate` at `:155`. Neither
   passes through `mcpserverhandler`, so the decision is unchanged, but §7 must assert
   both survive the gate.
 
@@ -1807,7 +1807,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    dispatch only. That is the one place it cannot help: §3.1 establishes
    dispatch is **unreachable in production** until PR B advertises MCP tools to the LLM
    (verified again in v17 — `start.go:1184 resolveTools`, `insight_session.go:225 resolveTools` and
-   `mcp_tool.go:52 resolveTools` all discard the merged tool list with `_,`, so `tool.go:142 toolHandleMcpCall` never
+   `mcp_tool.go:327 resolveTools` all discard the merged tool list with `_,`, so `tool.go:142 toolHandleMcpCall` never
    fires on an MCP name), while §3.5a shows the customer-visible harm happens at
    **resolution**: `resolveTools:84` → `ListTools` → `client.go:190-196` →
    `buildAuthHeader:73`/`:80` decrypts the stored credential → authenticated outbound
@@ -2252,7 +2252,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 | A foreign customer's MCP server id, once stored, is used at resolution with its decrypted credential on an outbound request | **High** | D25 (§3.5a) + D26 (§3.5b) — the exemption must be predicate-scoped (`storedIDs` param), AND ownership must be asserted at resolution, not only at the dead dispatch path. Both need §7 assertions or the regression is silent |
 | Credentials on rows soft-deleted before the deploy are never zeroed, and re-deleting reports 200 while zeroing nothing | **Medium** | D27 — **RESOLVED**, §5 item 2: one-off Alembic data migration over all seven credential columns. Residual: the affected-row count is unmeasured, so the PR body must not claim an impact figure until 대표님 runs the count |
 | An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 item 9**: skip the deleted-row rejection for already-stored ids (existence + ownership still enforced, D25), reject only newly added ones. Both directions must be unit-tested (§7) |
-| Gating OAuth `Complete` discards a freshly-minted vendor grant: `complete.go:116 McpOAuthStateDelete` deletes the state row and `:88` completes the token exchange BEFORE `:126`, so VoIPBin holds a live GitHub/Linear token and drops it unrevoked | Medium | Preferable to writing onto a deleted row, but the orphaned vendor-side grant must be acknowledged in the PR body (and revocation considered) |
+| Gating OAuth `Complete` discards a freshly-minted vendor grant: `complete.go:116 McpOAuthStateDelete` deletes the state row and `:120 exchangeCode` completes the token exchange BEFORE `:155 McpServerUpdate`, so VoIPBin holds a live GitHub/Linear token and drops it unrevoked | Medium | Preferable to writing onto a deleted row, but the orphaned vendor-side grant must be acknowledged in the PR body (and revocation considered) |
 | `PUT {}` on a deleted server returns 200 with the row because `mcpserverhandler.Update` short-circuits to `h.Get` before any DB write; NO dbhandler gate reaches it | **High** | D20 (§3.7f). Gate inside `mcpserverhandler.Update` ahead of the `len(fields)==0` branch AND ahead of `ValidateURL` |
 | An implementer gates `mcpserverhandler.Get` to fix the above and breaks the GET-after-DELETE 200 contract | **High** | §3.7h names its four contradictory consumers; §5 item 1 forbids it explicitly; defense-in-depth gates go in `mcp_tool.go` |
 | Validation precedes existence, so a deleted row answers 400 `INVALID_MCP_SERVER_URL` on a malformed URL — inconsistent, and a weak existence oracle | Medium | D20 corollary (§3.7g) / §5 item 7 |
@@ -2323,8 +2323,8 @@ POST/PUT setting `auth_type: "oauth"` is rejected; that a PUT re-submitting an
 unchanged `auth_type: "oauth"` on an OAuth-completed row still succeeds (transition
 gate, not a value gate — a value gate 400s every save from
 `mcpservers_detail.js:156`); and that BOTH internal oauth writers still succeed —
-`complete.go:165-188` (new row) and the reconnect branch `complete.go:144-162` (`:117`
-via `McpServerUpdate` at `:126`).
+`complete.go:165-188` (new row) and the reconnect branch `complete.go:144-162` (`:146 FieldAuthType`
+via `McpServerUpdate` at `:155`).
 **New in v6:** that a PUT against a deleted server returns an
 error rather than a silent 200 with no `EventTypeUpdated` published (D15 — assert
 BOTH the status and the absence of the webhook); that every other
