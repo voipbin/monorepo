@@ -8,8 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/team"
 )
 
 // resolveActiveAIIDFromAIcall returns the active AI UUID for the given AIcall.
@@ -163,4 +165,106 @@ func (h *aicallHandler) interruptPreviousPipecatcall(ctx context.Context, pcID u
 		return
 	}
 	promAIcallInterruptAttemptedTotal.WithLabelValues("alive").Inc()
+}
+
+// resolveActiveAIForMcp resolves the AI whose MCP whitelist governs this AIcall.
+//
+// It exists because the MCP paths need the CURRENT team member's whitelist, while
+// resolveAI resolves the START member and resolveActiveAIIDFromAIcall has no
+// fallback at all (it returns uuid.Nil and only warns). Neither is usable here:
+// using the start member calls the wrong member's MCP servers, and propagating a
+// uuid.Nil would make the MCP paths fail for a team whose current member is
+// momentarily unresolvable -- strictly worse than today.
+//
+// The start-member fallback is therefore attempted, but only where it can change
+// the outcome. resolveTeamMemberAI already retries the start member when the
+// current member is absent from the roster, so this function retries it only for
+// the one mode that callee misses: the member IS on the roster and its AI fetch
+// failed. The retry is skipped when it would re-issue an identical request --
+// either member off the roster, or both members pointing at the same AI id (which
+// teamhandler permits: it requires member ids to be unique, never AI ids).
+//
+// A nil return therefore means no further attempt could have succeeded, so callers
+// must fail closed rather than substituting another AI. It also means this function
+// subsumes resolveAI on every path: do not add a resolveAI fallback behind it.
+//
+// Deliberately separate from resolveActiveAIIDFromAIcall: that helper has six
+// other callers driving message attribution, plus a twin in messagehandler, and
+// giving it a fallback would change all of them.
+func (h *aicallHandler) resolveActiveAIForMcp(ctx context.Context, c *aicall.AIcall) *ai.AI {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "resolveActiveAIForMcp",
+		"aicall_id": c.ID,
+	})
+
+	switch c.AssistanceType {
+	case aicall.AssistanceTypeAI:
+		a, err := h.aiHandler.Get(ctx, c.AssistanceID)
+		if err != nil {
+			log.Warnf("Could not get the ai. ai_id: %s, err: %v", c.AssistanceID, err)
+			return nil
+		}
+		return a
+
+	case aicall.AssistanceTypeTeam:
+		// handled below
+
+	default:
+		// Mirror resolveAI's default arm: an unrecognised assistance type must not
+		// be treated as an AI id. Returning nil keeps the MCP gates fail-closed
+		// instead of authorising against whatever row AssistanceID happens to hit.
+		log.Warnf("Unsupported assistance type for mcp resolution. assistance_type: %s", c.AssistanceType)
+		return nil
+	}
+
+	t, err := h.teamHandler.Get(ctx, c.AssistanceID)
+	if err != nil {
+		// no team, no start member to fall back to.
+		log.Warnf("Could not get the team. team_id: %s, err: %v", c.AssistanceID, err)
+		return nil
+	}
+
+	// resolveTeamMemberAI falls back to the start member only when the requested
+	// member is absent; it errors out when the member is present but its AI is
+	// unfetchable. Retry explicitly for the start member to cover that mode too.
+	a, resolvedMemberID, err := h.resolveTeamMemberAI(ctx, t, c.CurrentMemberID)
+	if err == nil {
+		log.Debugf("Resolved the team member AI for mcp. member_id: %s, ai_id: %s", resolvedMemberID, a.ID)
+		return a
+	}
+	// Decide whether a retry can differ from what was just attempted. The fetch being
+	// deduplicated is keyed on AIID, not on member id: two distinct members may share
+	// one AIID (teamhandler validates member-id uniqueness and a non-nil AIID only,
+	// never AIID uniqueness), so comparing member ids would re-issue a byte-identical
+	// aiHandler.Get. resolveTeamMemberAI's own fallback loop already tried the start
+	// member whenever CurrentMemberID was absent from the roster.
+	curAIID, curOnRoster := teamMemberAIID(t, c.CurrentMemberID)
+	startAIID, startOnRoster := teamMemberAIID(t, t.StartMemberID)
+	if !curOnRoster || !startOnRoster || curAIID == startAIID {
+		log.Warnf("Could not resolve the current team member AI and no distinct start-member AI to fall back to. member_id: %s, err: %v", c.CurrentMemberID, err)
+		return nil
+	}
+	log.Warnf("Could not resolve the current team member AI, falling back to the start member. member_id: %s, err: %v", c.CurrentMemberID, err)
+
+	a, resolvedMemberID, err = h.resolveTeamMemberAI(ctx, t, t.StartMemberID)
+	if err != nil {
+		log.Warnf("Could not resolve the start member AI either. start_member_id: %s, err: %v", t.StartMemberID, err)
+		return nil
+	}
+	log.Debugf("Resolved the start member AI as fallback. member_id: %s", resolvedMemberID)
+
+	return a
+}
+
+// teamMemberAIID returns the AIID of the given member and whether it is on the
+// team's roster. Callers compare the AIID rather than the member id when they need
+// to know whether a second aiHandler.Get would differ from the first: distinct
+// members may legally share one AIID.
+func teamMemberAIID(t *team.Team, memberID uuid.UUID) (uuid.UUID, bool) {
+	for _, m := range t.Members {
+		if m.ID == memberID {
+			return m.AIID, true
+		}
+	}
+	return uuid.Nil, false
 }

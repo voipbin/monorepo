@@ -14,9 +14,13 @@ const (
 	AuthTypeNone   AuthType = ""        // no Authorization header sent
 	AuthTypeBearer AuthType = "bearer"  // Authorization: Bearer ***
 	AuthTypeAPIKey AuthType = "api_key" // <APIKeyHeader>: <secret>
-	// AuthTypeOAuth is set implicitly by completing the OAuth flow (see
-	// docs/plans/2026-09-12-mcp-server-oauth-support-design.md §4) --
-	// never set directly via POST/PUT with a customer-supplied secret.
+	// AuthTypeOAuth is entered only by completing the OAuth flow (see
+	// docs/plans/2026-09-12-mcp-server-oauth-support-design.md §4), never by
+	// a customer sending it on a server that is not already connected.
+	// Re-sending it on a connected server is accepted rather than refused: the
+	// row is still written and mcp_server_updated still published, so this is
+	// not a silent no-op that can be optimised away. Moving away from it
+	// erases the stored tokens.
 	AuthTypeOAuth AuthType = "oauth"
 )
 
@@ -77,8 +81,10 @@ type McpServer struct {
 	HasSecret  bool `json:"has_secret" db:"-"` // derived, true whenever SecretCiphertext OR AccessTokenCiphertext is non-empty
 
 	// OAuthVendor identifies which entry of the vendor catalog (design §6)
-	// this row is bound to. Empty for non-oauth auth types. Immutable once
-	// set (changing vendor requires disconnect + reconnect, not an update).
+	// this row is bound to. Empty for non-oauth auth types: it is set by
+	// completing the flow and cleared, along with the stored tokens, when the
+	// row moves to a static auth type. Changing vendor while connected
+	// requires reconnecting, not an update.
 	OAuthVendor string `json:"oauth_vendor,omitempty" db:"oauth_vendor"`
 
 	// AccessTokenCiphertext/-Nonce hold the encrypted OAuth access token,

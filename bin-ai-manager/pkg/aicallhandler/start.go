@@ -358,7 +358,21 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		// reuse and Metadata staleness" -- this reuse branch does not otherwise
 		// touch Metadata, so the write is a single new key, read-modify-write
 		// against whatever else may already be there).
-		if errMcp := h.refreshMcpToolMap(ctx, res, a); errMcp != nil {
+		// The MCP whitelist belongs to the CURRENT team member, not the start member
+		// bound in a. Only a team can have an active member that differs from a: for
+		// a plain AI aicall a already IS the governing AI, so resolving again would
+		// only add an RPC. Removing this gate fails both
+		// Test_ServiceStart_serviceStartReferenceTypeConversation/normal and
+		// Test_startReferenceTypeConversation/reuse:_alive_previous_pipecat_—_interrupt_invoked
+		// on the unexpected AI fetch. On failure keep a and still
+		// refresh -- skipping the refresh would leave a previous member's stale map.
+		mcpAI := a
+		if res.AssistanceType == aicall.AssistanceTypeTeam {
+			if resolved := h.resolveActiveAIForMcp(ctx, res); resolved != nil {
+				mcpAI = resolved
+			}
+		}
+		if errMcp := h.refreshMcpToolMap(ctx, res, mcpAI); errMcp != nil {
 			log.Warnf("Could not refresh the mcp tool map on aicall reuse. aicall_id: %s, err: %v", res.ID, errMcp)
 		}
 
@@ -375,9 +389,10 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	log.WithField("aicall", res).Debugf("AIcall ready. aicall_id: %s", res.ID)
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
-	// TODO: for AssistanceTypeTeam this calls teamHandler.Get via resolveTeamMemberForSend above,
-	// and resolveActiveAIIDFromAIcall below calls it again. Same fix needed as send.go: refactor
-	// resolveTeamMemberForSend to accept an optionally pre-fetched *team.Team.
+	// TODO: for AssistanceTypeTeam the reuse path now fetches the team THREE times:
+	// resolveActiveAIForMcp, resolveTeamMemberForSend above, and
+	// resolveActiveAIIDFromAIcall below. Same fix needed as send.go: thread one
+	// optionally pre-fetched *team.Team through all three.
 	convUserActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, res)
 	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, res.CustomerID, res.ID, res.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "",
 		messagehandler.WithActiveAIID(convUserActiveAIID))

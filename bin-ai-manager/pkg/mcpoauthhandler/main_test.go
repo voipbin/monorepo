@@ -2,6 +2,10 @@ package mcpoauthhandler
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -11,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/models/mcpoauthstate"
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	commonerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -74,6 +79,18 @@ func Test_Start_OwnershipVerification(t *testing.T) {
 			name: "mcp server exists but belongs to a different customer",
 			getReturn: &mcpserver.McpServer{
 				Identity: identity.Identity{ID: serverID, CustomerID: otherCustomerID},
+			},
+			getErr: nil,
+		},
+		{
+			// A deleted server is treated exactly like a missing one:
+			// reconnecting would write fresh OAuth tokens onto a row the
+			// customer has already revoked, and the delete path zeroes
+			// precisely those token columns.
+			name: "mcp server is owned but soft-deleted",
+			getReturn: &mcpserver.McpServer{
+				Identity: identity.Identity{ID: serverID, CustomerID: requestingCustomerID},
+				TMDelete: func() *time.Time { ts := time.Now(); return &ts }(),
 			},
 			getErr: nil,
 		},
@@ -310,5 +327,276 @@ func Test_Complete_SingleUse(t *testing.T) {
 	}
 	if !deleted {
 		t.Error("expected the state row to be deleted before attempting the token exchange")
+	}
+}
+
+// Test_Complete_ReconnectRefusesDeletedServer covers D3 on the callback side.
+// Start verified ownership before the state row was created, but the customer
+// can delete the server while the vendor's consent screen is up. Trusting
+// Start's verdict would write fresh OAuth tokens onto a revoked row.
+//
+// The refusal must precede BOTH the single-use state delete and the token
+// exchange: gomock's Times(0) on the delete is the assertion that nothing was
+// burned on the way to refusing.
+func Test_Complete_ReconnectRefusesDeletedServer(t *testing.T) {
+	serverID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	otherCustomerID := uuid.Must(uuid.NewV4())
+	ts := time.Now()
+
+	tests := []struct {
+		name      string
+		getReturn *mcpserver.McpServer
+	}{
+		{
+			name: "server soft-deleted between start and callback",
+			getReturn: &mcpserver.McpServer{
+				Identity: identity.Identity{ID: serverID, CustomerID: customerID},
+				TMDelete: &ts,
+			},
+		},
+		{
+			// Re-checked rather than assumed: the row could also have been
+			// reassigned, and Start's verdict is stale by this point.
+			name: "server reassigned to another customer",
+			getReturn: &mcpserver.McpServer{
+				Identity: identity.Identity{ID: serverID, CustomerID: otherCustomerID},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := newTestHandler(t, mockDB)
+			h.utilHandler = mockUtil
+
+			state := "test-state-token"
+			now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+			future := now.Add(time.Minute)
+
+			mockDB.EXPECT().McpOAuthStateGet(gomock.Any(), state).Return(&mcpoauthstate.McpOAuthState{
+				State:        state,
+				CustomerID:   customerID,
+				McpServerID:  &serverID,
+				Vendor:       VendorGitHub,
+				PKCEVerifier: "verifier",
+				TMExpire:     &future,
+			}, nil)
+			mockUtil.EXPECT().TimeNow().Return(&now)
+
+			mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(tt.getReturn, nil)
+
+			// Neither may happen: refusing after either would have burned the
+			// single-use state row or minted tokens for an unusable server.
+			mockDB.EXPECT().McpOAuthStateDelete(gomock.Any(), gomock.Any()).Times(0)
+			mockDB.EXPECT().McpServerUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			if _, err := h.Complete(context.Background(), customerID, state, "some-code"); err == nil {
+				t.Fatal("expected the reconnect to be refused, got nil")
+			}
+		})
+	}
+}
+
+// Test_Complete_ReconnectSuccessPersistsTokens is the success-side control for
+// the reconnect gate added in Test_Complete_ReconnectRefusesDeletedServer.
+// Every other Complete test asserts a refusal or an exchange failure, so a
+// gate that refused EVERY reconnect -- or a reconnect that wrote no tokens at
+// all -- would ship green.
+//
+// The vendor token endpoint is stubbed with an httptest server (same approach
+// as access_token_test.go's refresh tests) so the exchange actually succeeds
+// and the reconnect runs end to end. The assertion inspects the real fields
+// map handed to McpServerUpdate: both token ciphertext columns must be present
+// and non-empty, and the access token must decrypt back to what the vendor
+// returned.
+func Test_Complete_ReconnectSuccessPersistsTokens(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	h := newTestHandler(t, mockDB)
+	h.utilHandler = mockUtil
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"access_token":  "reconnect-access-token",
+			"refresh_token": "reconnect-refresh-token",
+			"token_type":    "Bearer",
+			"expires_in":    3600,
+		})
+	}))
+	defer srv.Close()
+
+	h.vendors[VendorLinear] = vendorConfig{
+		MCPServerURL: "https://mcp.linear.app/mcp",
+		AuthorizeURL: "https://linear.app/oauth/authorize",
+		TokenURL:     srv.URL,
+		ClientID:     "linear-client-id",
+		ClientSecret: "linear-client-secret",
+	}
+	h.httpClient = &http.Client{Timeout: 2 * time.Second}
+
+	state := "test-state-token"
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	future := now.Add(time.Minute)
+	customerID := uuid.Must(uuid.NewV4())
+	serverID := uuid.Must(uuid.NewV4())
+
+	mockDB.EXPECT().McpOAuthStateGet(gomock.Any(), state).Return(&mcpoauthstate.McpOAuthState{
+		State:        state,
+		CustomerID:   customerID,
+		McpServerID:  &serverID,
+		Vendor:       VendorLinear,
+		PKCEVerifier: "verifier",
+		TMExpire:     &future,
+	}, nil)
+	mockUtil.EXPECT().TimeNow().Return(&now)
+
+	// An owned, live server: the reconnect gate must let this through.
+	existing := &mcpserver.McpServer{
+		Identity: identity.Identity{ID: serverID, CustomerID: customerID},
+	}
+	reconnected := &mcpserver.McpServer{
+		Identity:    identity.Identity{ID: serverID, CustomerID: customerID},
+		AuthType:    mcpserver.AuthTypeOAuth,
+		OAuthVendor: VendorLinear,
+	}
+	// First Get is the gate's ownership re-check, second is the post-update
+	// read-back Complete returns.
+	gomock.InOrder(
+		mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(existing, nil),
+		mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(reconnected, nil),
+	)
+
+	mockDB.EXPECT().McpOAuthStateDelete(gomock.Any(), state).Return(nil)
+
+	updateCalled := false
+	mockDB.EXPECT().McpServerUpdate(gomock.Any(), serverID, gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID, fields map[mcpserver.Field]any) error {
+			updateCalled = true
+
+			// Every token column the reconnect is supposed to persist must be
+			// present and non-empty. An empty (or partially populated) fields
+			// map means the reconnect wrote no tokens -- the server would be
+			// marked OAuth-connected while carrying nothing to authenticate
+			// with.
+			accessCT, _ := fields[mcpserver.FieldAccessTokenCiphertext].([]byte)
+			if len(accessCT) == 0 {
+				t.Errorf("FieldAccessTokenCiphertext missing, wrong type, or empty: %#v", fields[mcpserver.FieldAccessTokenCiphertext])
+			}
+			accessNonce, _ := fields[mcpserver.FieldAccessTokenNonce].([]byte)
+			if len(accessNonce) == 0 {
+				t.Errorf("FieldAccessTokenNonce missing, wrong type, or empty: %#v", fields[mcpserver.FieldAccessTokenNonce])
+			}
+			if refreshCT, _ := fields[mcpserver.FieldRefreshTokenCiphertext].([]byte); len(refreshCT) == 0 {
+				t.Errorf("FieldRefreshTokenCiphertext missing, wrong type, or empty: %#v", fields[mcpserver.FieldRefreshTokenCiphertext])
+			}
+			if refreshNonce, _ := fields[mcpserver.FieldRefreshTokenNonce].([]byte); len(refreshNonce) == 0 {
+				t.Errorf("FieldRefreshTokenNonce missing, wrong type, or empty: %#v", fields[mcpserver.FieldRefreshTokenNonce])
+			}
+			kv, kvOK := fields[mcpserver.FieldKeyVersion].(int)
+			if !kvOK {
+				t.Errorf("FieldKeyVersion missing or wrong type: %#v", fields[mcpserver.FieldKeyVersion])
+			}
+
+			// The persisted ciphertext must be the token the vendor actually
+			// returned -- not a leftover, not an empty column.
+			if kvOK && len(accessCT) > 0 && len(accessNonce) > 0 {
+				decrypted, err := h.crypto.Decrypt(accessCT, accessNonce, kv)
+				if err != nil {
+					t.Errorf("could not decrypt persisted access token: %v", err)
+				} else if decrypted != "reconnect-access-token" {
+					t.Errorf("persisted access token = %q, want reconnect-access-token", decrypted)
+				}
+			}
+
+			if fields[mcpserver.FieldAuthType] != mcpserver.AuthTypeOAuth {
+				t.Errorf("FieldAuthType = %#v, want %v", fields[mcpserver.FieldAuthType], mcpserver.AuthTypeOAuth)
+			}
+			if fields[mcpserver.FieldOAuthVendor] != VendorLinear {
+				t.Errorf("FieldOAuthVendor = %#v, want %v", fields[mcpserver.FieldOAuthVendor], VendorLinear)
+			}
+			return nil
+		},
+	)
+
+	// A reconnect must never create a second server row.
+	mockDB.EXPECT().McpServerCreate(gomock.Any(), gomock.Any()).Times(0)
+
+	res, err := h.Complete(context.Background(), customerID, state, "some-code")
+	if err != nil {
+		t.Fatalf("expected the reconnect to succeed, got: %v", err)
+	}
+	if !updateCalled {
+		t.Fatal("expected McpServerUpdate to be called on a successful reconnect")
+	}
+	if res == nil || res.ID != serverID {
+		t.Fatalf("expected the reconnected server %s, got: %#v", serverID, res)
+	}
+}
+
+// Test_Complete_UnconfiguredVendorIsNotAnInvalidArgument pins the reason and
+// status of the vendor-disappeared path.
+//
+// It matters because the reason code is published. INVALID_MCP_OAUTH_VENDOR is
+// documented as a 400 the customer fixes by choosing a supported vendor; this
+// path is a 500 the customer cannot fix, since the vendor was removed from the
+// platform catalog while their authorization was pending. Reusing the 400's
+// reason here would put one reason code behind two HTTP statuses on a page that
+// promises they map one to one, and a client branching on the reason would retry
+// a request that can never succeed.
+//
+// The state row is deliberately valid in every other respect -- owned, live,
+// unexpired -- so the only thing under test is the unknown vendor.
+func Test_Complete_UnconfiguredVendorIsNotAnInvalidArgument(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	h := newTestHandler(t, mockDB)
+	h.utilHandler = mockUtil
+
+	state := "test-state-token"
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	future := now.Add(time.Minute)
+	customerID := uuid.Must(uuid.NewV4())
+
+	mockDB.EXPECT().McpOAuthStateGet(gomock.Any(), state).Return(&mcpoauthstate.McpOAuthState{
+		State:        state,
+		CustomerID:   customerID,
+		Vendor:       "a-vendor-that-is-no-longer-configured",
+		PKCEVerifier: "verifier",
+		TMExpire:     &future,
+	}, nil)
+	mockUtil.EXPECT().TimeNow().Return(&now)
+
+	// The state must NOT be consumed: the failure is ours, so the customer's
+	// pending authorization is not silently burned on our behalf.
+	_, err := h.Complete(context.Background(), customerID, state, "auth-code")
+	if err == nil {
+		t.Fatal("expected Complete to refuse a state naming an unconfigured vendor")
+	}
+
+	var ve *commonerrors.VoipbinError
+	if !errors.As(err, &ve) {
+		t.Fatalf("expected a VoipbinError, got %T: %v", err, err)
+	}
+	if ve.Status != commonerrors.StatusInternal {
+		t.Errorf("expected status %v (HTTP 500), got %v", commonerrors.StatusInternal, ve.Status)
+	}
+	if ve.Reason != "MCP_OAUTH_VENDOR_UNAVAILABLE" {
+		t.Errorf("expected reason %q, got %q", "MCP_OAUTH_VENDOR_UNAVAILABLE", ve.Reason)
+	}
+	if ve.Reason == "INVALID_MCP_OAUTH_VENDOR" {
+		t.Error("this path must not reuse the 400 reason: one reason code cannot carry two HTTP statuses")
 	}
 }

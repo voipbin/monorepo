@@ -420,7 +420,7 @@ covering the other six fields:
 .. note:: **MCP Server Implementation Hint**
 
    The secret (bearer token or API key) is write-only: it is accepted on
-   ``POST /mcp_servers`` and ``PUT /mcp_servers/{id}`` but is **never
+   ``POST /mcpservers`` and ``PUT /mcpservers/{id}`` but is **never
    returned** in any ``GET`` response. On ``PUT``, omitting the secret
    field leaves the currently stored secret unchanged; sending an explicit
    value (including an empty string) replaces it. This distinguishes "I'm
@@ -428,7 +428,7 @@ covering the other six fields:
 
 .. note:: **MCP Server Implementation Hint**
 
-   ``PUT /mcp_servers/{id}`` is a true partial update: every field
+   ``PUT /mcpservers/{id}`` is a true partial update: every field
    (``name``, ``detail``, ``url``, ``status``, ``auth_type``,
    ``api_key_header``, in addition to ``secret`` above) is optional, and
    omitting a field leaves its current value unchanged. A full resend of

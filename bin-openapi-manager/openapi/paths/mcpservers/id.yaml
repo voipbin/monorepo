@@ -71,8 +71,8 @@ put:
               example: "active"
             auth_type:
               type: string
-              enum: ["", "bearer", "api_key"]
-              description: "Omit to leave the current auth_type unchanged. NOTE: an explicit empty string (\"\") is a valid value meaning no-auth, distinct from omitting the field."
+              enum: ["", "bearer", "api_key", "oauth"]
+              description: "Omit to leave the current auth_type unchanged. NOTE: an explicit empty string (\"\") is a valid value meaning no-auth, distinct from omitting the field. \"oauth\" is accepted only on a server that is already OAuth-connected, so a client that re-submits the current auth_type unchanged is never rejected; moving a server INTO oauth is done by completing the OAuth authorization flow, not by this field, and is rejected with INVALID_MCP_SERVER_AUTH_TYPE. Moving a connected server OUT of oauth is allowed and erases its stored OAuth tokens."
             api_key_header:
               type: string
               description: "Omit to leave the current api_key_header unchanged."

@@ -45,9 +45,12 @@ func (h *mcpOAuthHandler) Start(ctx context.Context, customerID uuid.UUID, vendo
 			}
 			return "", "", errors.Wrapf(err, "could not get mcp server for reconnect")
 		}
-		if existing.CustomerID != customerID {
+		if existing.CustomerID != customerID || existing.TMDelete != nil {
 			// Do not leak "found but not yours" -- same NotFound the
-			// customer would see for a nonexistent id (design §9).
+			// customer would see for a nonexistent id (design §9). A deleted
+			// server gets the same treatment: reconnecting OAuth to it would
+			// write fresh tokens onto a row the customer has already revoked,
+			// and the delete path zeroes exactly those columns.
 			return "", "", cerrors.NotFound(
 				commonoutline.ServiceNameAIManager,
 				"MCP_SERVER_NOT_FOUND",

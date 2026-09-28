@@ -3591,6 +3591,7 @@ const (
 	ApiKey PutMcpserversIdJSONBodyAuthType = "api_key"
 	Bearer PutMcpserversIdJSONBodyAuthType = "bearer"
 	Empty  PutMcpserversIdJSONBodyAuthType = ""
+	Oauth  PutMcpserversIdJSONBodyAuthType = "oauth"
 )
 
 // Valid indicates whether the value is a known member of the PutMcpserversIdJSONBodyAuthType enum.
@@ -3601,6 +3602,8 @@ func (e PutMcpserversIdJSONBodyAuthType) Valid() bool {
 	case Bearer:
 		return true
 	case Empty:
+		return true
+	case Oauth:
 		return true
 	default:
 		return false
@@ -4107,7 +4110,7 @@ type AIManagerMcpServer struct {
 	// ApiKeyHeader Header name used when auth_type is api_key.
 	ApiKeyHeader *string `json:"api_key_header,omitempty"`
 
-	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. "oauth" is set implicitly by completing POST /mcpservers/oauth/complete -- never set directly via POST/PUT with a customer-supplied secret.
+	// AuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. A server is moved INTO "oauth" only by completing POST /mcpservers/oauth/complete; sending "oauth" on a server that is not already connected is rejected. Re-sending the current "oauth" value on an already-connected server is accepted. Moving a connected server OUT of "oauth" is allowed and irreversibly erases its stored OAuth access and refresh tokens.
 	AuthType AIManagerMcpServerAuthType `json:"auth_type"`
 
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
@@ -4125,7 +4128,7 @@ type AIManagerMcpServer struct {
 	// Name Name of the MCP server.
 	Name *string `json:"name,omitempty"`
 
-	// OauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth".
+	// OauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth"; it is cleared along with the stored tokens when a server is moved out of "oauth".
 	OauthVendor *AIManagerMcpServerOauthVendor `json:"oauth_vendor,omitempty"`
 
 	// Status disabled servers are excluded from tool list resolution and tool calls.
@@ -4144,10 +4147,10 @@ type AIManagerMcpServer struct {
 	Url *string `json:"url,omitempty"`
 }
 
-// AIManagerMcpServerAuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. "oauth" is set implicitly by completing POST /mcpservers/oauth/complete -- never set directly via POST/PUT with a customer-supplied secret.
+// AIManagerMcpServerAuthType How the outbound MCP call authenticates. Empty string sends no Authorization header. A server is moved INTO "oauth" only by completing POST /mcpservers/oauth/complete; sending "oauth" on a server that is not already connected is rejected. Re-sending the current "oauth" value on an already-connected server is accepted. Moving a connected server OUT of "oauth" is allowed and irreversibly erases its stored OAuth access and refresh tokens.
 type AIManagerMcpServerAuthType string
 
-// AIManagerMcpServerOauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth".
+// AIManagerMcpServerOauthVendor Which OAuth vendor this server is connected to. Only set when auth_type is "oauth"; it is cleared along with the stored tokens when a server is moved out of "oauth".
 type AIManagerMcpServerOauthVendor string
 
 // AIManagerMcpServerStatus disabled servers are excluded from tool list resolution and tool calls.
@@ -9458,7 +9461,7 @@ type PutMcpserversIdJSONBody struct {
 	// ApiKeyHeader Omit to leave the current api_key_header unchanged.
 	ApiKeyHeader *string `json:"api_key_header,omitempty"`
 
-	// AuthType Omit to leave the current auth_type unchanged. NOTE: an explicit empty string ("") is a valid value meaning no-auth, distinct from omitting the field.
+	// AuthType Omit to leave the current auth_type unchanged. NOTE: an explicit empty string ("") is a valid value meaning no-auth, distinct from omitting the field. "oauth" is accepted only on a server that is already OAuth-connected, so a client that re-submits the current auth_type unchanged is never rejected; moving a server INTO oauth is done by completing the OAuth authorization flow, not by this field, and is rejected with INVALID_MCP_SERVER_AUTH_TYPE. Moving a connected server OUT of oauth is allowed and erases its stored OAuth tokens.
 	AuthType *PutMcpserversIdJSONBodyAuthType `json:"auth_type,omitempty"`
 
 	// Detail Omit to leave the current detail unchanged.

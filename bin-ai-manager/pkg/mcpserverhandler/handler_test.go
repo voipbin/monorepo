@@ -101,10 +101,12 @@ func Test_Update_SecretPointerSemantics(t *testing.T) {
 					return nil
 				},
 			)
+			// Twice: once for the existence gate that now precedes the write
+			// (a deleted server must not be updatable), once for the read-back.
 			mockDB.EXPECT().McpServerGet(gomock.Any(), id).Return(&mcpserver.McpServer{
 				Identity: identityFor(id, customerID),
 				Status:   mcpserver.StatusActive,
-			}, nil)
+			}, nil).Times(2)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, mcpserver.EventTypeUpdated, gomock.Any())
 
 			_, err := h.Update(context.Background(), id, strPtr("name"), strPtr("detail"), strPtr("https://mcp.example.com/"), statusPtr(mcpserver.StatusActive), authTypePtr(mcpserver.AuthTypeNone), strPtr(""), tt.secret)

@@ -73,8 +73,40 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 	if !ok {
 		// Should be unreachable (Start already validated the vendor at
 		// state-creation time), but fail closed rather than panic on a
-		// map lookup for an unknown key.
-		return nil, cerrors.Internal(commonoutline.ServiceNameAIManager, "INVALID_MCP_OAUTH_VENDOR", "the oauth state names an unknown vendor")
+		// map lookup for an unknown key. This is deliberately NOT
+		// INVALID_MCP_OAUTH_VENDOR: that reason is published as a 400 the
+		// customer can fix by choosing a supported vendor, and reusing it
+		// for a 500 would put one reason code behind two HTTP statuses on a
+		// page that promises they map one to one. Reaching here means the
+		// vendor was removed from the catalog while a state row was open,
+		// which is ours to fix, not theirs.
+		return nil, cerrors.Internal(commonoutline.ServiceNameAIManager, "MCP_OAUTH_VENDOR_UNAVAILABLE", "the oauth state names a vendor that is no longer configured")
+	}
+
+	// Reconnect (design §9). Ownership was verified in Start before the state
+	// row was created, but the customer can delete the server between Start
+	// and the vendor's callback -- an interval that includes a full round trip
+	// through the vendor's consent screen. Re-check here rather than trusting
+	// Start's verdict.
+	//
+	// Placed ahead of the single-use delete and the token exchange: refusing
+	// later would still refuse, but only after burning the state row and
+	// minting vendor tokens for a server that cannot receive them.
+	//
+	// McpServerUpdate's own tm_delete predicate would also refuse the write,
+	// as an opaque ErrNotFound. This keeps the refusal explicit.
+	if row.McpServerID != nil {
+		existing, err := h.db.McpServerGet(ctx, *row.McpServerID)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not get mcp server for oauth reconnect")
+		}
+		if existing.TMDelete != nil || existing.CustomerID != customerID {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"MCP_SERVER_NOT_FOUND",
+				"The MCP server was not found.",
+			)
+		}
 	}
 
 	// Single-use: delete the state row BEFORE the token exchange (design
@@ -110,9 +142,6 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 	}
 
 	if row.McpServerID != nil {
-		// Reconnect (design §9): ownership was already verified in
-		// Start before the state row was created, so this is a plain
-		// update, not a second ownership check.
 		fields := map[mcpserver.Field]any{
 			mcpserver.FieldAuthType:               mcpserver.AuthTypeOAuth,
 			mcpserver.FieldOAuthVendor:            row.Vendor,

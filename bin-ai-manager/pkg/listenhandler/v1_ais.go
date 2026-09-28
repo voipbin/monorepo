@@ -89,6 +89,21 @@ func (h *listenHandler) processV1AIsPost(ctx context.Context, m *sock.Request) (
 		return simpleResponse(400), nil
 	}
 
+	// Validate the whitelist BEFORE creating the AI. Validating afterwards
+	// still returns 400 but leaves an orphaned AI behind: the customer sees a
+	// rejected request and an extra AI they never asked for. The request's own
+	// customer id is the right owner to check against -- it is what Create is
+	// about to persist.
+	//
+	// No stored whitelist to exempt: the AI does not exist yet, so every id
+	// here is newly added and a deleted one is rejected.
+	if req.McpServerIDs != nil {
+		if err := h.aiHandler.ValidateMcpServerIDs(ctx, req.CustomerID, *req.McpServerIDs, nil); err != nil {
+			log.Errorf("Could not validate mcp_server_ids. err: %v", err)
+			return errorResponse(err), nil
+		}
+	}
+
 	tmp, err := h.aiHandler.Create(
 		ctx,
 		req.CustomerID,
@@ -115,11 +130,6 @@ func (h *listenHandler) processV1AIsPost(ctx context.Context, m *sock.Request) (
 	}
 
 	if req.McpServerIDs != nil {
-		if err := h.aiHandler.ValidateMcpServerIDs(ctx, tmp.CustomerID, *req.McpServerIDs); err != nil {
-			log.Errorf("Could not validate mcp_server_ids. err: %v", err)
-			return errorResponse(err), nil
-		}
-
 		tmp, err = h.aiHandler.UpdateMcpServerIDs(ctx, tmp.ID, *req.McpServerIDs)
 		if err != nil {
 			log.Errorf("Could not update ai mcp_server_ids. err: %v", err)
@@ -244,6 +254,30 @@ func (h *listenHandler) processV1AIsIDPut(ctx context.Context, m *sock.Request) 
 		return simpleResponse(400), nil
 	}
 
+	// Validate the whitelist BEFORE mutating the AI, for the same reason as
+	// the POST path: a rejected whitelist must not leave the AI already
+	// half-updated with the request's other fields.
+	//
+	// The owner has to come from a read here. Unlike POST, a PUT body carries
+	// no customer id, and taking it from the updated AI (as this did before)
+	// means the mutation has already committed by the time the check runs.
+	//
+	// The same read supplies the stored whitelist, so exempting an already
+	// stored (since-deleted) id costs no extra query -- Update does not take
+	// McpServerIDs, so this list is still the unmodified stored one.
+	if req.McpServerIDs != nil {
+		preUpdateAI, err := h.aiHandler.Get(ctx, id)
+		if err != nil {
+			log.Errorf("Could not get ai for mcp_server_ids validation. err: %v", err)
+			return errorResponse(err), nil
+		}
+
+		if err := h.aiHandler.ValidateMcpServerIDs(ctx, preUpdateAI.CustomerID, *req.McpServerIDs, preUpdateAI.McpServerIDs); err != nil {
+			log.Errorf("Could not validate mcp_server_ids. err: %v", err)
+			return errorResponse(err), nil
+		}
+	}
+
 	tmp, err := h.aiHandler.Update(
 		ctx,
 		id,
@@ -270,11 +304,6 @@ func (h *listenHandler) processV1AIsIDPut(ctx context.Context, m *sock.Request) 
 	}
 
 	if req.McpServerIDs != nil {
-		if err := h.aiHandler.ValidateMcpServerIDs(ctx, tmp.CustomerID, *req.McpServerIDs); err != nil {
-			log.Errorf("Could not validate mcp_server_ids. err: %v", err)
-			return errorResponse(err), nil
-		}
-
 		tmp, err = h.aiHandler.UpdateMcpServerIDs(ctx, tmp.ID, *req.McpServerIDs)
 		if err != nil {
 			log.Errorf("Could not update ai mcp_server_ids. err: %v", err)

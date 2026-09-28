@@ -351,6 +351,43 @@ Reasons fired by RAG endpoints (``/rags``, ``/rags/{id}*``).
      - 404
      - RAG document/source ID does not exist or belongs to another customer. Fired by ``DELETE /rags/{id}/sources/{source_id}`` when the source is missing. **Fix:** Verify the source ID was obtained from a recent ``GET /rags/{id}`` response.
 
+MCP Server Reasons
+^^^^^^^^^^^^^^^^^^
+
+Reasons fired by MCP server endpoints (``/mcpservers``, ``/mcpservers/{id}``, ``/mcpservers/oauth/*``) and by the ``mcp_server_ids`` field on ``/ais``.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``MCP_SERVER_NOT_FOUND``
+     - 404
+     - MCP server ID does not exist, belongs to another customer, or has already been deleted. A deleted server keeps returning its record from ``GET``, but every write that changes it refuses, so this is the expected result of editing a server that is already gone. ``DELETE /mcpservers/{id}`` is the exception and is idempotent: a repeat delete returns 200 with the record, publishing no second ``mcp_server_deleted`` event. **Fix:** Verify the ID against a recent ``GET /mcpservers`` list, which omits deleted servers. A deleted server cannot be restored; register a new one.
+   * - ``INVALID_MCP_SERVER_URL``
+     - 400
+     - The ``url`` is not a valid ``https://`` MCP endpoint. Plain ``http://``, a missing host, and addresses that resolve into private or link-local ranges are all refused, because VoIPBin calls this URL from its own network. **Fix:** Publish the server on a public ``https://`` address.
+   * - ``INVALID_MCP_SERVER_STATUS``
+     - 400
+     - The ``status`` is not one of ``active`` or ``disabled``. **Fix:** Send one of those two values, or omit the field to leave it unchanged.
+   * - ``INVALID_MCP_SERVER_AUTH_TYPE``
+     - 400
+     - Three conditions share this reason. The value is not one of ``""``, ``bearer``, ``api_key`` or ``oauth`` (both ``POST`` and ``PUT``); or ``POST /mcpservers`` sent ``oauth``, which a create can never carry because there is no completed flow behind it; or ``PUT /mcpservers/{id}`` tried to move a server INTO ``oauth``, which is entered only by completing the OAuth authorization flow. Re-sending ``oauth`` on a server that is already connected is accepted, so the third condition fires only on a real transition. **Fix:** For an unknown value, send a supported one. To put a server on OAuth, call ``POST /mcpservers/oauth/start`` with ``mcp_server_id`` set to it and complete the flow, rather than setting the field.
+   * - ``INVALID_MCP_SERVER_ID``
+     - 400
+     - An entry in an AI's ``mcp_server_ids`` is not a usable server: it does not exist, is owned by another customer, or has been deleted. Fired by ``POST /ais`` and ``PUT /ais/{id}``, before the AI is written, so a rejected list leaves the AI unchanged. An ID already stored on the AI is exempt from the deleted check, so an AI holding a stale ID stays saveable. **Fix:** Submit ``mcp_server_ids`` without the offending ID.
+   * - ``INVALID_MCP_OAUTH_VENDOR``
+     - 400
+     - The ``vendor`` is not one of the supported OAuth vendors. **Fix:** See ``POST /mcpservers/oauth/start`` for the current list.
+   * - ``MCP_OAUTH_VENDOR_UNAVAILABLE``
+     - 500
+     - The flow was started against a vendor that is no longer configured on the platform, so the pending authorization can no longer be completed. This is a platform-side condition, not a malformed request. **Fix:** Start the flow again with a currently supported vendor; if it recurs, contact support@voipbin.net.
+   * - ``MCP_OAUTH_STATE_NOT_FOUND``
+     - 404
+     - The ``state`` (the ``link_token`` from ``POST /mcpservers/oauth/start``) is not usable. It is deliberately indistinguishable between unknown, already used, expired, and belonging to another customer, so that the token cannot be probed. A token is single-use and expires 10 minutes after it is issued, so a consent screen left open past that window ends here. **Fix:** Call ``POST /mcpservers/oauth/start`` again for a fresh token and complete the flow without a long pause.
+
 Speaking Reasons
 ^^^^^^^^^^^^^^^^
 

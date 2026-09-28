@@ -66,11 +66,11 @@ AI
 * ``smart_turn_enabled`` (Boolean, Optional): Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3 for more natural turn-taking. When ``true``, the VAD ``stop_secs`` parameter is automatically forced to ``0.2`` regardless of ``vad_config`` settings. Defaults to ``false``. See :ref:`Smart Turn <ai-struct-ai-smart_turn>`.
 * ``auto_aicall_audit_enabled`` (Boolean, Optional): When ``true``, any AICall that finishes while using this AI configuration automatically triggers an AICall audit. Defaults to ``false`` (opt-in).
 * ``tool_names`` (Array of String, Optional): List of enabled tool functions. Use ``["all"]`` to enable all tools, ``[]`` to disable all tools, or list specific tool names. **For** ``type=insight`` **AIs, only Insight tool names are permitted** (currently ``get_contact_interactions``, ``get_conversation_content``, ``get_related_cases``, ``get_case_notes``, ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, ``notify_agent``); ``["all"]`` is not valid for Insight AIs. **For** ``type=normal`` **AIs, any Normal tool name or** ``["all"]`` **is permitted; Insight-only tool names are rejected.** Mismatched combinations return ``400``. See :ref:`Tool Functions <ai-struct-tool>`.
-* ``mcp_server_ids`` (Array of UUID, Optional): List of customer-owned MCP (Model Context Protocol) server IDs whose tools are made available to this AI, in addition to ``tool_names``. Each ID must reference an :ref:`MCP Server <mcpserver-struct-mcpserver>` owned by the same customer; a cross-customer or nonexistent ID is rejected. Tools discovered from an active MCP server are namespaced as ``mcp_<first 8 hex chars of the server id>_<tool name>`` when presented to the LLM. Tools from a server whose ``status`` is not ``active`` are silently omitted rather than erroring. Defaults to ``[]``.
+* ``mcp_server_ids`` (Array of UUID, Optional): List of customer-owned MCP (Model Context Protocol) server IDs whose tools are made available to this AI, in addition to ``tool_names``. Adding an ID requires an :ref:`MCP Server <mcpserver-struct-mcpserver>` that exists, is owned by the same customer, and has not been deleted; a cross-customer, nonexistent, or deleted ID is rejected with ``400``. Tools discovered from a usable MCP server are namespaced as ``mcp_<first 8 hex chars of the server id>_<tool name>`` when presented to the LLM. At call time a server is skipped silently, rather than failing the call, when its ``status`` is not ``active``, when it has been deleted, or when it is no longer owned by this customer. Deleting a server does not rewrite the AIs referencing it; see the note below. Defaults to ``[]``.
 * ``direct_hash`` (String): Hash for direct AI access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /ais/{id}/direct-hash-regenerate``.
 * ``tm_create`` (String, ISO 8601): Timestamp when the AI configuration was created.
 * ``tm_update`` (String, ISO 8601): Timestamp when the AI configuration was last updated.
-* ``tm_delete`` (String, ISO 8601): Timestamp when the AI configuration was deleted, if applicable.
+* ``tm_delete`` (String or null, ISO 8601): Timestamp when the AI configuration was deleted. ``null`` while the AI configuration has not been deleted.
 
 .. note:: **AI Implementation Hint**
 
@@ -78,7 +78,11 @@ AI
 
 .. note:: **AI Implementation Hint**
 
-   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` indicates the AI configuration has not been deleted and is still active. This sentinel value is used across all VoIPBin resources to represent "not yet occurred."
+   AI configurations do **not** use the ``9999-01-01 00:00:00.000000`` sentinel that some older VoIPBin resources use for "not yet occurred." ``tm_update`` and ``tm_delete`` are ``null`` until the configuration is first updated or deleted, so test for ``null`` rather than comparing against a sentinel date.
+
+.. note:: **Deleting an MCP server an AI still references**
+
+   Deleting an MCP server does not rewrite the AIs that reference it. The ID stays in ``mcp_server_ids`` so that saving an unrelated field on the AI keeps working, but the server contributes no tools from the moment it is deleted, and the ID is no longer offered in the admin UI's server picker. To remove it, submit ``mcp_server_ids`` without that ID.
 
 Example
 +++++++

@@ -14,13 +14,35 @@ import (
 )
 
 // ValidateMcpServerIDs checks that every id in ids refers to an existing
-// McpServer row owned by customerID. Returns a *cerrors.VoipbinError
-// (InvalidArgument, surfaced as HTTP 400) naming the first non-existent or
-// cross-customer id it finds -- listenhandler's errorResponse() only maps
+// McpServer row owned by customerID. An id that is NOT already in storedIDs
+// must additionally be not-deleted. Returns a
+// *cerrors.VoipbinError (InvalidArgument, surfaced as HTTP 400) naming the
+// first inaccessible id it finds -- listenhandler's errorResponse() only maps
 // *cerrors.VoipbinError to a non-500 status, so a plain error here would
 // otherwise reach the customer as an opaque 500 for a client-input mistake
 // (mirrors the existing ai.ValidateToolNames -> cerrors.InvalidArgument
 // pattern in chatbot.go).
+//
+// "Not deleted" is checked here and not left to McpServerGet, which returns
+// soft-deleted rows on purpose (the REST read of a deleted server answers
+// 200). Without the TMDelete check a customer could whitelist a server they
+// had already deleted, and the AI would carry an id that no consumer will
+// ever honour.
+//
+// storedIDs is that check's ONLY exemption, and it exists to keep an AI
+// saveable (D21). Deleting an MCP server does not prune the id from any AI
+// that referenced it, and square-admin's picker is built from the
+// deleted:"false" list, so the stale id is invisible and unremovable in the
+// UI while every PUT re-submits it. Rejecting it would 400 every save of
+// that AI forever, including edits to unrelated fields like name or prompt.
+// So a deleted id the AI already carries is tolerated; a deleted id the
+// request is ADDING is still rejected.
+//
+// Existence and ownership are NOT exempted for stored ids (D25): a stored id
+// whose row is gone, or whose row now belongs to another customer, is still
+// rejected. The exemption is narrow on purpose -- widening it to skip stored
+// ids entirely would turn the whitelist into a place where a cross-customer
+// reference, once stored, could never be caught again.
 //
 // A genuine infra failure from McpServerGet (query build/exec/scan error,
 // as opposed to dbhandler.ErrNotFound) is deliberately NOT mapped to 400
@@ -32,7 +54,12 @@ import (
 // Lives in pkg/aihandler (has db access), not models/ai, mirroring why
 // ai.ValidateToolNames itself takes no ctx/db today -- see
 // docs/plans/2026-09-11-mcp-tool-integration-design.md §5.
-func (h *aiHandler) ValidateMcpServerIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) error {
+func (h *aiHandler) ValidateMcpServerIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID, storedIDs []uuid.UUID) error {
+	stored := make(map[uuid.UUID]struct{}, len(storedIDs))
+	for _, id := range storedIDs {
+		stored[id] = struct{}{}
+	}
+
 	for _, id := range ids {
 		srv, err := h.db.McpServerGet(ctx, id)
 		if err != nil {
@@ -48,6 +75,15 @@ func (h *aiHandler) ValidateMcpServerIDs(ctx context.Context, customerID uuid.UU
 		}
 
 		if srv == nil || srv.CustomerID != customerID {
+			return cerrors.InvalidArgument(
+				commonoutline.ServiceNameAIManager,
+				"INVALID_MCP_SERVER_ID",
+				"mcp_server_id "+id.String()+" is not accessible",
+			)
+		}
+
+		// Deleted rows: rejected unless the AI already carries this id.
+		if _, alreadyStored := stored[id]; !alreadyStored && srv.TMDelete != nil {
 			return cerrors.InvalidArgument(
 				commonoutline.ServiceNameAIManager,
 				"INVALID_MCP_SERVER_ID",
