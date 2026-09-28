@@ -239,6 +239,30 @@ func (h *mcpServerHandler) Update(
 	}
 	if authType != nil {
 		fields[mcpserver.FieldAuthType] = *authType
+
+		// Leaving oauth is a legitimate downgrade to a static credential, but
+		// the vendor tokens must not survive it. Keeping them would leave
+		// decryptable GitHub/Linear material in a row that no longer claims to
+		// be an OAuth connection, with no customer gesture left that erases it:
+		// the UI offers no way back into oauth (mcpservers_detail.js renders the
+		// type as a fixed badge once connected), and re-running the OAuth flow
+		// overwrites rather than reveals. It would also make has_secret lie --
+		// it is derived from secret_ciphertext OR access_token_ciphertext, so a
+		// bearer row carrying a stale access token reports a stored credential
+		// that buildAuthHeader cannot use, and every tool call fails with no
+		// way for the customer to see why.
+		//
+		// This mirrors McpServerDelete, which zeroes the same columns for the
+		// same reason. access_token_expires_at is left alone there as audit
+		// metadata; oauth_vendor is cleared here because the field is
+		// documented as set only while auth_type is oauth.
+		if *authType != mcpserver.AuthTypeOAuth && live.AuthType == mcpserver.AuthTypeOAuth {
+			fields[mcpserver.FieldOAuthVendor] = ""
+			fields[mcpserver.FieldAccessTokenCiphertext] = []byte(nil)
+			fields[mcpserver.FieldAccessTokenNonce] = []byte(nil)
+			fields[mcpserver.FieldRefreshTokenCiphertext] = []byte(nil)
+			fields[mcpserver.FieldRefreshTokenNonce] = []byte(nil)
+		}
 	}
 	if apiKeyHeader != nil {
 		fields[mcpserver.FieldAPIKeyHeader] = *apiKeyHeader

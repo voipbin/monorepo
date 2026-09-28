@@ -113,6 +113,11 @@ func Test_Update_OAuthAuthTypeTransition(t *testing.T) {
 		requestAuthType *mcpserver.AuthType
 
 		wantRefused bool
+
+		// wantCleared asserts on the fields map the handler actually writes:
+		// true means the vendor token columns must be zeroed by this update,
+		// false means they must not appear in the map at all.
+		wantCleared bool
 	}{
 		{
 			// The transition the gate exists for.
@@ -137,12 +142,34 @@ func Test_Update_OAuthAuthTypeTransition(t *testing.T) {
 			wantRefused:     false,
 		},
 		{
-			// Leaving oauth is a legitimate downgrade: the customer is
-			// replacing the connection with a static credential.
-			name:            "moving an oauth server to bearer is allowed",
+			// Leaving oauth is a legitimate downgrade, but the vendor tokens
+			// must not survive it: has_secret is derived from
+			// access_token_ciphertext, so a retained token would report a
+			// stored credential that the bearer path cannot read.
+			name:            "moving an oauth server to bearer clears the vendor tokens",
 			storedAuthType:  mcpserver.AuthTypeOAuth,
 			requestAuthType: authTypePtr(mcpserver.AuthTypeBearer),
 			wantRefused:     false,
+			wantCleared:     true,
+		},
+		{
+			// The same downgrade to no-auth. Enumerated separately because the
+			// gate keys off "not oauth", not off bearer specifically.
+			name:            "moving an oauth server to no auth clears the vendor tokens",
+			storedAuthType:  mcpserver.AuthTypeOAuth,
+			requestAuthType: authTypePtr(mcpserver.AuthType("")),
+			wantRefused:     false,
+			wantCleared:     true,
+		},
+		{
+			// Negative control: a downgrade between two non-oauth types has no
+			// tokens to clear, so the clearing must NOT fire. Without this a
+			// gate that always cleared would pass every other case.
+			name:            "changing between static auth types clears nothing",
+			storedAuthType:  mcpserver.AuthTypeBearer,
+			requestAuthType: authTypePtr(mcpserver.AuthTypeAPIKey),
+			wantRefused:     false,
+			wantCleared:     false,
 		},
 	}
 
@@ -167,9 +194,43 @@ func Test_Update_OAuthAuthTypeTransition(t *testing.T) {
 				mockDB.EXPECT().McpServerGet(gomock.Any(), id).Return(stored, nil)
 			} else {
 				// Allowed: the write and its read-back must both happen, so a
-				// gate that refused everything could not pass this case.
+				// gate that refused everything could not pass this case. The
+				// fields map is inspected rather than ignored, so a downgrade
+				// that leaves the vendor tokens behind fails here.
 				mockDB.EXPECT().McpServerGet(gomock.Any(), id).Return(stored, nil).Times(2)
-				mockDB.EXPECT().McpServerUpdate(gomock.Any(), id, gomock.Any()).Return(nil)
+				mockDB.EXPECT().McpServerUpdate(gomock.Any(), id, gomock.Any()).
+					DoAndReturn(func(_ context.Context, _ uuid.UUID, fields map[mcpserver.Field]any) error {
+						cleared := []mcpserver.Field{
+							mcpserver.FieldAccessTokenCiphertext,
+							mcpserver.FieldAccessTokenNonce,
+							mcpserver.FieldRefreshTokenCiphertext,
+							mcpserver.FieldRefreshTokenNonce,
+						}
+						if !tt.wantCleared {
+							for _, f := range append(cleared, mcpserver.FieldOAuthVendor) {
+								if _, ok := fields[f]; ok {
+									t.Errorf("%s must not be written when the server was not leaving oauth", f)
+								}
+							}
+							return nil
+						}
+
+						for _, f := range cleared {
+							v, ok := fields[f]
+							if !ok {
+								t.Errorf("%s must be zeroed when the server leaves oauth, but it was not written", f)
+								continue
+							}
+							if b, isBytes := v.([]byte); !isBytes || len(b) != 0 {
+								t.Errorf("%s must be zeroed, got %#v", f, v)
+							}
+						}
+						if v, ok := fields[mcpserver.FieldOAuthVendor]; !ok || v != "" {
+							t.Errorf("%s must be cleared when the server leaves oauth, got %#v (present: %v)",
+								mcpserver.FieldOAuthVendor, v, ok)
+						}
+						return nil
+					})
 				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, mcpserver.EventTypeUpdated, gomock.Any())
 			}
 

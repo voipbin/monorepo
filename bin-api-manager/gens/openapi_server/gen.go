@@ -3591,6 +3591,7 @@ const (
 	ApiKey PutMcpserversIdJSONBodyAuthType = "api_key"
 	Bearer PutMcpserversIdJSONBodyAuthType = "bearer"
 	Empty  PutMcpserversIdJSONBodyAuthType = ""
+	Oauth  PutMcpserversIdJSONBodyAuthType = "oauth"
 )
 
 // Valid indicates whether the value is a known member of the PutMcpserversIdJSONBodyAuthType enum.
@@ -3601,6 +3602,8 @@ func (e PutMcpserversIdJSONBodyAuthType) Valid() bool {
 	case Bearer:
 		return true
 	case Empty:
+		return true
+	case Oauth:
 		return true
 	default:
 		return false
@@ -9458,7 +9461,7 @@ type PutMcpserversIdJSONBody struct {
 	// ApiKeyHeader Omit to leave the current api_key_header unchanged.
 	ApiKeyHeader *string `json:"api_key_header,omitempty"`
 
-	// AuthType Omit to leave the current auth_type unchanged. NOTE: an explicit empty string ("") is a valid value meaning no-auth, distinct from omitting the field.
+	// AuthType Omit to leave the current auth_type unchanged. NOTE: an explicit empty string ("") is a valid value meaning no-auth, distinct from omitting the field. "oauth" is accepted only on a server that is already OAuth-connected, so a client that re-submits the current auth_type unchanged is never rejected; moving a server INTO oauth is done by completing the OAuth authorization flow, not by this field, and is rejected with INVALID_MCP_SERVER_AUTH_TYPE. Moving a connected server OUT of oauth is allowed and erases its stored OAuth tokens.
 	AuthType *PutMcpserversIdJSONBodyAuthType `json:"auth_type,omitempty"`
 
 	// Detail Omit to leave the current detail unchanged.
