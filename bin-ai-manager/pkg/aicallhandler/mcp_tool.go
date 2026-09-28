@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/gofrs/uuid"
@@ -33,25 +34,31 @@ type toolNameResolver interface {
 	GetByNames(names []tool.ToolName) []tool.Tool
 }
 
+// resolveMcpToolMap discovers the tools of the AI a's whitelisted MCP servers
+// and returns the mapping from each namespaced tool name back to the
+// (server_id, original_tool_name) pair it was resolved from, for storage
+// under aicall.MetaKeyMcpToolMap. It is what the session-start paths need:
+// they store the map and advertise nothing, so no input schema is decoded.
+func (h *aicallHandler) resolveMcpToolMap(ctx context.Context, a *ai.AI) map[string]aicall.McpToolRef {
+	toolMap := map[string]aicall.McpToolRef{}
+	for _, d := range h.discoverMcpTools(ctx, a, false) {
+		toolMap[d.name] = d.ref
+	}
+	return toolMap
+}
+
 // resolveTools builds the merged LLM tool list (VoIPBin built-ins + the
-// customer's whitelisted McpServer tools) for the AI a, and the mapping from
-// each namespaced MCP tool name back to the (server_id, original_tool_name)
-// pair it was resolved from, for storage under aicall.MetaKeyMcpToolMap.
+// customer's whitelisted McpServer tools) for the AI a, and the same tool map
+// resolveMcpToolMap returns. Unlike resolveMcpToolMap it decodes each input
+// schema, within the limits in decodeToolSchema.
+//
+// No session-start path calls this yet: they need only the map, and decoding
+// schemas nobody reads would cost memory on every session start. It is the
+// entry point for advertising MCP tools to a model (PR B2), which must also
+// enforce description limits before it does.
 //
 // Built-ins are resolved via the existing toolhandler.ToolHandler.GetByNames
-// (unchanged, not duplicated here). toolhandler.toolHandler carries no
-// state, so a fresh instance is equivalent to any other; this avoids adding
-// a third constructor dependency to aicallHandler for a call that is
-// stateless.
-//
-// Each McpServer in a.McpServerIDs is best-effort: a non-active server is
-// silently skipped (no error, no tools), and a ListTools failure for one
-// server is logged and skipped rather than failing the whole resolution --
-// a single misbehaving customer MCP server must never break the built-in
-// tool list or any other server's tools. The only errors this can return
-// come from the caller having already resolved a in hand; today there is no
-// such failure mode inside this function, but the error return is kept so
-// resolveTools composes cleanly with callers that may gain one.
+// (unchanged, not duplicated here).
 func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool, map[string]aicall.McpToolRef, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "resolveTools",
@@ -68,12 +75,146 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 
 	toolMap := map[string]aicall.McpToolRef{}
 	schemaBudget := mcpToolSchemaBudgetBytes
+	skipped := map[uuid.UUID]*schemaSkips{}
 
-	if h.mcpServerHandler == nil || h.mcptoolHandler == nil {
-		return merged, toolMap, nil
+	for _, d := range h.discoverMcpTools(ctx, a, true) {
+		params, why := decodeToolSchema(d.inputSchema, &schemaBudget)
+		if why != schemaOK {
+			s := skipped[d.ref.ServerID]
+			if s == nil {
+				s = &schemaSkips{}
+				skipped[d.ref.ServerID] = s
+			}
+			if why == schemaOverBudget {
+				s.overBudget++
+			} else {
+				s.invalid++
+			}
+			continue
+		}
+
+		merged = append(merged, tool.Tool{
+			Name:        tool.ToolName(d.name),
+			Description: d.description,
+			Parameters:  params,
+			RunLLM:      true,
+		})
+		toolMap[d.name] = d.ref
 	}
 
+	for serverID, s := range skipped {
+		log.Warnf("Skipped mcp tools whose input schema could not be used. mcp_server_id: %s, too_large_or_malformed: %d, over_shared_budget: %d", serverID, s.invalid, s.overBudget)
+	}
+
+	return merged, toolMap, nil
+}
+
+// discoveredMcpTool is one tool taken from a whitelisted server, already
+// namespaced and validated. description and inputSchema are set only when
+// the caller asked for content, and the schema is still raw.
+type discoveredMcpTool struct {
+	name        string
+	ref         aicall.McpToolRef
+	description string
+	inputSchema json.RawMessage
+}
+
+const (
+	// mcpMaxToolNameLen is the longest remote tool name accepted. With the
+	// 13-byte "mcp_<8 hex>_" prefix the namespaced name stays within the
+	// 64-character function-name limit LLM providers enforce.
+	mcpMaxToolNameLen = 64 - len(mcpToolNamePrefix) - 8 - 1
+
+	// mcpMaxToolsPerResolution caps the tools taken across all of an AI's
+	// servers. Together with the name limit it bounds the tool map stored
+	// on the aicall and published in its webhooks to a few tens of KiB,
+	// whatever the number of whitelisted servers.
+	mcpMaxToolsPerResolution = 256
+)
+
+// mcpDiscoverySlots bounds how many tools/list requests this process runs at
+// once, and mcpDiscoverySlotWait how long one resolution may wait for them in
+// total; see discoverMcpTools. Measured with ten concurrent session starts of
+// eight servers each returning a worst-case 1 MiB list: about 11 MiB of peak
+// heap with two slots, about 36 to 43 MiB with no bound.
+var mcpDiscoverySlots = make(chan struct{}, 2)
+
+const mcpDiscoverySlotWait = 2 * time.Second
+
+// validMcpToolName reports whether a remote tool name can be namespaced and
+// stored as is. Names outside the provider function-name character set or
+// over the length limit are dropped, never rewritten (design D5): a
+// rewritten name would not be the name the server knows.
+func validMcpToolName(name string) bool {
+	if name == "" || len(name) > mcpMaxToolNameLen {
+		return false
+	}
+	for i := 0; i < len(name); i++ {
+		if !isToolNameByte(name[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+// isToolNameByte reports whether c is in [A-Za-z0-9_-].
+func isToolNameByte(c byte) bool {
+	switch {
+	case c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c >= '0' && c <= '9':
+		return true
+	case c == '_', c == '-':
+		return true
+	}
+	return false
+}
+
+// discoverMcpTools lists the tools of each of a's usable whitelisted servers,
+// in whitelist order. With keepContent false only names are kept, so a
+// server's descriptions and schemas (up to its whole 1 MiB response) become
+// garbage as soon as the next server is listed rather than living until the
+// resolution ends.
+//
+// Listing holds one of mcpDiscoverySlots for the duration of the request.
+// Each listing briefly holds several copies of a response of up to 1 MiB,
+// and the RPC consumer runs ten workers, so without a process-wide bound a
+// burst of session starts for AIs with MCP servers would multiply that by
+// ten against a 40M container limit.
+//
+// The slots are shared by every customer, so waiting for one is bounded:
+// a resolution spends at most mcpDiscoverySlotWait in total waiting, and a
+// server it cannot get a slot for in that time is skipped and logged. The
+// session-start context has no deadline of its own, so without this bound
+// one customer's slow servers holding both slots would delay every other
+// customer's session starts by up to the per-server timeout each.
+//
+// Each McpServer in a.McpServerIDs is best-effort: a non-active server is
+// silently skipped (no error, no tools), and a ListTools failure for one
+// server is logged and skipped rather than failing the whole resolution --
+// a single misbehaving customer MCP server must never break the built-in
+// tool list or any other server's tools. A tool with an invalid name is
+// dropped and the server's other tools are kept, logged once per server.
+// Once mcpMaxToolsPerResolution tools are taken, later tools and servers
+// are not listed.
+func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepContent bool) []discoveredMcpTool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "discoverMcpTools",
+		"ai_id": a.ID,
+	})
+
+	res := []discoveredMcpTool{}
+	if h.mcpServerHandler == nil || h.mcptoolHandler == nil {
+		return res
+	}
+
+	waitCtx, cancelWait := context.WithTimeout(ctx, mcpDiscoverySlotWait)
+	defer cancelWait()
+
 	for _, serverID := range a.McpServerIDs {
+		if len(res) >= mcpMaxToolsPerResolution {
+			log.Warnf("Reached the limit of %d mcp tools per session; not listing the remaining servers.", mcpMaxToolsPerResolution)
+			break
+		}
+
 		server, err := h.mcpServerHandler.Get(ctx, serverID)
 		if err != nil {
 			log.Warnf("Could not get mcp server, skipping its tools. mcp_server_id: %s, err: %v", serverID, err)
@@ -85,41 +226,61 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 			continue
 		}
 
+		select {
+		case mcpDiscoverySlots <- struct{}{}:
+		case <-waitCtx.Done():
+			log.Warnf("Skipped an mcp server: no discovery slot was free in time. mcp_server_id: %s", serverID)
+			continue
+		}
 		mcpTools, err := h.mcptoolHandler.ListTools(ctx, serverID)
+		<-mcpDiscoverySlots
 		if err != nil {
 			log.Warnf("Could not list tools from mcp server, skipping. mcp_server_id: %s, err: %s", serverID, capErrText(err.Error(), 1024))
 			continue
 		}
 
 		prefix := mcpToolNamePrefix + mcpServerIDShort(serverID) + "_"
-		skipped := 0
+		invalidNames := 0
 		for _, mt := range mcpTools {
-			params, ok := decodeToolSchema(mt.InputSchema, &schemaBudget)
-			if !ok {
-				skipped++
+			if !validMcpToolName(mt.Name) {
+				invalidNames++
 				continue
 			}
-			namespacedName := prefix + mt.Name
-
-			merged = append(merged, tool.Tool{
-				Name:        tool.ToolName(namespacedName),
-				Description: mt.Description,
-				Parameters:  params,
-				RunLLM:      true,
-			})
-
-			toolMap[namespacedName] = aicall.McpToolRef{
-				ServerID: serverID,
-				ToolName: mt.Name,
+			if len(res) >= mcpMaxToolsPerResolution {
+				break
 			}
+			d := discoveredMcpTool{
+				name: prefix + mt.Name,
+				ref:  aicall.McpToolRef{ServerID: serverID, ToolName: mt.Name},
+			}
+			if keepContent {
+				d.description = mt.Description
+				d.inputSchema = mt.InputSchema
+			}
+			res = append(res, d)
 		}
-		if skipped > 0 {
-			log.Warnf("Skipped mcp tools whose input schema is too large or malformed. mcp_server_id: %s, skipped: %d", serverID, skipped)
+		if invalidNames > 0 {
+			log.Warnf("Skipped mcp tools with names that are empty, longer than %d bytes, or outside [A-Za-z0-9_-]. mcp_server_id: %s, skipped: %d", mcpMaxToolNameLen, serverID, invalidNames)
 		}
 	}
 
-	return merged, toolMap, nil
+	return res
 }
+
+// schemaSkips counts one server's tools dropped by decodeToolSchema.
+type schemaSkips struct {
+	invalid    int
+	overBudget int
+}
+
+// schemaVerdict is why decodeToolSchema did or did not decode a schema.
+type schemaVerdict int
+
+const (
+	schemaOK schemaVerdict = iota
+	schemaInvalid
+	schemaOverBudget
+)
 
 const (
 	// mcpMaxToolSchemaBytes is the largest input schema, in raw JSON bytes,
@@ -133,28 +294,32 @@ const (
 )
 
 // decodeToolSchema decodes one tool's input schema if it fits both the
-// per-tool limit and what is left of budget, charging it to budget. A tool
-// that does not fit, or whose schema is not a JSON object, is reported as
-// not ok and dropped by the caller, keeping the server's other tools. An
+// per-tool limit and what is left of budget, charging it to budget. A schema
+// that is too large or is not a JSON object is schemaInvalid; one that would
+// fit on its own but not in what is left of the budget is schemaOverBudget.
+// Either way the caller drops that tool and keeps the server's others. An
 // absent or null schema decodes to nil and costs nothing.
 //
 // The budget is shared across the AI's servers in whitelist order, so one
 // server's large schemas can leave nothing for a later server. That fails
 // closed: the later tools are dropped and logged, never decoded.
-func decodeToolSchema(raw json.RawMessage, budget *int) (map[string]any, bool) {
+func decodeToolSchema(raw json.RawMessage, budget *int) (map[string]any, schemaVerdict) {
 	// An explicit null means the same as an absent schema.
 	if len(raw) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
-		return nil, true
+		return nil, schemaOK
 	}
-	if len(raw) > mcpMaxToolSchemaBytes || len(raw) > *budget {
-		return nil, false
+	if len(raw) > mcpMaxToolSchemaBytes {
+		return nil, schemaInvalid
+	}
+	if len(raw) > *budget {
+		return nil, schemaOverBudget
 	}
 	var params map[string]any
 	if err := json.Unmarshal(raw, &params); err != nil {
-		return nil, false
+		return nil, schemaInvalid
 	}
 	*budget -= len(raw)
-	return params, true
+	return params, schemaOK
 }
 
 // mcpServerIDShort returns the first 8 lowercase-hex characters of id, with
@@ -378,10 +543,7 @@ func (h *aicallHandler) refreshMcpToolMap(ctx context.Context, existing *aicall.
 		return nil
 	}
 
-	_, mcpToolMap, err := h.resolveTools(ctx, a)
-	if err != nil {
-		return err
-	}
+	mcpToolMap := h.resolveMcpToolMap(ctx, a)
 
 	cur, err := h.db.AIcallGet(ctx, existing.ID)
 	if err != nil {

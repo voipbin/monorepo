@@ -1070,33 +1070,39 @@ non-rotating refresh token written back under a key version it was not encrypted
 with. (The first of these was introduced during PR B1's own development and caught
 by its review; the rest are older.)
 
-**Discovery succeeding makes the size of a tool list matter.** The round-7
-adversarial review measured a hostile `tools/list` inside the 1 MiB body cap
-allocating about 60 MiB and holding about 35 MiB once its input schema was decoded
-into a generic map, against a 40M pod memory limit (`k8s/deployment.yml`). The same
-decode existed on main, but no conformant server could get that far there. PR B1
-keeps input schemas raw in `pkg/mcptoolhandler`, takes at most 128 tools per server,
-and decodes a schema in `resolveTools` only if it is at most 64 KiB and fits a
-256 KiB budget per resolution; a tool that does not fit is dropped and the server's
-other tools are kept. That bounds memory, not meaning: tool name validity (length,
-character set) and description length are still unchecked, and PR B2 must enforce
-them before anything is advertised to a model.
+**Discovery succeeding makes the size of a tool list matter.** Code review measured
+three ways one customer's server, answering within the 1 MiB body cap, could take a
+shared pod past its 40M memory limit (`k8s/deployment.yml`). Each existed on main,
+where no conformant server could reach it; making discovery work is what exposes
+them, so PR B1 closes them rather than deferring them.
 
-The first version of that bound truncated the list after decoding all of it, which
-bounded nothing: round 8 measured a body of about 340,000 empty objects still
-allocating over 100 MiB. The list is now read element by element and reading stops
-at the cap, which brings the same body to about 5 MiB. Measured through the whole
-resolver with a worst-case body per server (15 tools with schemas just under the
-per-tool limit, made of empty objects, the costliest shape to decode), the heap
-still live after the resolver returns is about 5.5 MiB whether one or eight servers
-answer, because only four schemas fit the budget. What grows with the number of
-servers is short-lived garbage, about 5 MiB per server; one run with eight such
-servers peaked at about 24 MiB above its baseline before collection. The pod sets
-no `GOMEMLIMIT`, so the collector does not know about the 40M limit. Two things
-belong with PR B2's whitelist cap (D18, 8 servers) rather than here: setting
-`GOMEMLIMIT` below the container limit, and re-measuring this peak against the cap. Two hazards remain, both older than PR B1 and neither made worse by it, and
-both need a schema change, so they are deferred to their own change rather than
-folded into the discovery fix.
+- **Decoding the list.** A body of about 340,000 empty objects allocated over 100
+  MiB when the whole array was decoded. `pkg/mcptoolhandler` now reads the array
+  element by element and stops at 128 tools per server, and keeps input schemas raw:
+  about 5 MiB for the same body over JSON.
+- **The stored tool map.** The namespaced-name map is written to the aicall row,
+  three cache keys, the event and the webhook. With no byte bound, 128 long names
+  per server measured 16 to 97 MiB at one session start depending on how the names
+  escape. Tool names are now accepted only if they are 1 to 51 bytes of
+  `[A-Za-z0-9_-]` (so the namespaced name is at most 64 characters, the provider
+  function-name limit), invalid names are dropped rather than rewritten (D5), and a
+  resolution takes at most 256 tools across all servers. The stored map is now tens
+  of KiB at most (about 47 KiB measured for eight servers of maximal names).
+- **Concurrency.** The RPC consumer runs ten workers, and the session-start paths
+  decoded up to 256 KiB of schemas they then discarded. Those paths now build the map
+  without reading descriptions or schemas (`resolveMcpToolMap`); `resolveTools`,
+  which decodes schemas within a 64 KiB per-tool and 256 KiB per-resolution limit,
+  has no session-start caller and is kept for PR B2. At most two tools/list
+  requests run at once per process, and a resolution waits at most two seconds in
+  total for a turn, so one customer's slow servers cannot hold up other customers'
+  session starts for longer. Measured with ten concurrent session starts of eight
+  servers each returning a worst-case list: about 11 to 13 MiB of peak heap above
+  baseline, against 132.8 MiB before; without the two-request bound, 36 to 43 MiB.
+
+That bounds memory, not meaning: description length is still unchecked, and PR B2
+must enforce it before anything is advertised to a model. The pod also sets no
+`GOMEMLIMIT`; with these bounds it made no measurable difference to the peaks above,
+but it belongs with PR B2's whitelist cap (D18) and a re-measurement against it.
 
 **A rotated refresh token that could not be stored is eventually spent again.** If
 the vendor answers a refresh and the conditional write fails (a database error, not
