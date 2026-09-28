@@ -17,7 +17,9 @@ const (
 	// AuthTypeOAuth is entered only by completing the OAuth flow (see
 	// docs/plans/2026-09-12-mcp-server-oauth-support-design.md §4), never by
 	// a customer sending it on a server that is not already connected.
-	// Re-sending it on a connected server is a no-op; moving away from it
+	// Re-sending it on a connected server is accepted rather than refused: the
+	// row is still written and mcp_server_updated still published, so this is
+	// not a silent no-op that can be optimised away. Moving away from it
 	// erases the stored tokens.
 	AuthTypeOAuth AuthType = "oauth"
 )

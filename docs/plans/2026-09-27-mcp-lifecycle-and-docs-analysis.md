@@ -1217,7 +1217,7 @@ at `handler.go:226` so the response stays 200, stop re-publishing the webhook.
 
 `ai_struct_mcpserver.rst:35` states `oauth` "can never be set directly via
 POST/PUT." Nothing enforces that:
-- `AuthType.IsValid()` (`models/mcpserver/main.go:23-30`) **accepts**
+- `AuthType.IsValid()` (`models/mcpserver/main.go:27-34`) **accepts**
   `AuthTypeOAuth`.
 - `mcpserverhandler.Create:48-50` and `Update:154-156` check only `IsValid()`.
 - `bin-api-manager/server/mcpservers.go:91-94` (POST) and `:185-189` (PUT) cast the
@@ -1282,7 +1282,7 @@ value for **both** `tm_update` and `tm_delete`. The API cannot produce that outp
   `customer_struct_customer.rst:67`.
 
 Also in the same file: `:37` labels `oauth_vendor` "(enum string)", but the model
-field is a plain `string` (`models/mcpserver/main.go:82`) populated from the
+field is a plain `string` (`models/mcpserver/main.go:88`) populated from the
 runtime-configurable vendor catalog (`internal/config/main.go:151-154`) with no
 `IsValid`. And neither the Status table (`ai_struct_mcpserver.rst:77-86`) nor the delete note states what
 DELETE does to tool access — which becomes the headline customer-visible change once
@@ -1442,7 +1442,7 @@ carry `,omitempty` (`:38`), so it is ABSENT, not empty, when unset —
 `ai_struct_mcpserver.rst:37` says "empty otherwise" (imprecise) and the example at
 `:60-73` omits the field entirely.
 
-Enums (`models/mcpserver/main.go:13-45`): `auth_type` = `""` | `bearer` |
+Enums (`models/mcpserver/main.go:13-49`): `auth_type` = `""` | `bearer` |
 `api_key` | `oauth`; `status` = `active` | `disabled`. OAuth vendors wired:
 GitHub, Linear only (`internal/config/main.go:151-154`).
 
@@ -2091,7 +2091,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    failed to follow: `models/mcpserver/main.go:17-19` says "never set directly via
    POST/PUT with a customer-supplied secret," and the OpenAPI spec enumerates only
    `["", "bearer", "api_key"]` (`paths/mcpservers/main.yaml:57`, `id.yaml:74`). But
-   `models/mcpserver/main.go:23 validAuthTypes` (`:23-25`) includes `AuthTypeOAuth: true`, the write paths check
+   `models/mcpserver/main.go:27 validAuthTypes` (`:27-29`) includes `AuthTypeOAuth: true`, the write paths check
    only `IsValid()` (`handler.go:48-50`, `:154-156`), and there is no OpenAPI
    request-validator middleware in `bin-api-manager` to fall back on (§3.7c). Option
    (b) — relaxing the docs to match — would deliberately make an already-correct
