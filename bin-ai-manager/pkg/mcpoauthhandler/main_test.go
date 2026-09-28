@@ -2,6 +2,9 @@ package mcpoauthhandler
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -395,5 +398,145 @@ func Test_Complete_ReconnectRefusesDeletedServer(t *testing.T) {
 				t.Fatal("expected the reconnect to be refused, got nil")
 			}
 		})
+	}
+}
+
+// Test_Complete_ReconnectSuccessPersistsTokens is the success-side control for
+// the reconnect gate added in Test_Complete_ReconnectRefusesDeletedServer.
+// Every other Complete test asserts a refusal or an exchange failure, so a
+// gate that refused EVERY reconnect -- or a reconnect that wrote no tokens at
+// all -- would ship green.
+//
+// The vendor token endpoint is stubbed with an httptest server (same approach
+// as access_token_test.go's refresh tests) so the exchange actually succeeds
+// and the reconnect runs end to end. The assertion inspects the real fields
+// map handed to McpServerUpdate: both token ciphertext columns must be present
+// and non-empty, and the access token must decrypt back to what the vendor
+// returned.
+func Test_Complete_ReconnectSuccessPersistsTokens(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	h := newTestHandler(t, mockDB)
+	h.utilHandler = mockUtil
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"access_token":  "reconnect-access-token",
+			"refresh_token": "reconnect-refresh-token",
+			"token_type":    "Bearer",
+			"expires_in":    3600,
+		})
+	}))
+	defer srv.Close()
+
+	h.vendors[VendorLinear] = vendorConfig{
+		MCPServerURL: "https://mcp.linear.app/mcp",
+		AuthorizeURL: "https://linear.app/oauth/authorize",
+		TokenURL:     srv.URL,
+		ClientID:     "linear-client-id",
+		ClientSecret: "linear-client-secret",
+	}
+	h.httpClient = &http.Client{Timeout: 2 * time.Second}
+
+	state := "test-state-token"
+	now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	future := now.Add(time.Minute)
+	customerID := uuid.Must(uuid.NewV4())
+	serverID := uuid.Must(uuid.NewV4())
+
+	mockDB.EXPECT().McpOAuthStateGet(gomock.Any(), state).Return(&mcpoauthstate.McpOAuthState{
+		State:        state,
+		CustomerID:   customerID,
+		McpServerID:  &serverID,
+		Vendor:       VendorLinear,
+		PKCEVerifier: "verifier",
+		TMExpire:     &future,
+	}, nil)
+	mockUtil.EXPECT().TimeNow().Return(&now)
+
+	// An owned, live server: the reconnect gate must let this through.
+	existing := &mcpserver.McpServer{
+		Identity: identity.Identity{ID: serverID, CustomerID: customerID},
+	}
+	reconnected := &mcpserver.McpServer{
+		Identity:    identity.Identity{ID: serverID, CustomerID: customerID},
+		AuthType:    mcpserver.AuthTypeOAuth,
+		OAuthVendor: VendorLinear,
+	}
+	// First Get is the gate's ownership re-check, second is the post-update
+	// read-back Complete returns.
+	gomock.InOrder(
+		mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(existing, nil),
+		mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(reconnected, nil),
+	)
+
+	mockDB.EXPECT().McpOAuthStateDelete(gomock.Any(), state).Return(nil)
+
+	updateCalled := false
+	mockDB.EXPECT().McpServerUpdate(gomock.Any(), serverID, gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID, fields map[mcpserver.Field]any) error {
+			updateCalled = true
+
+			// Every token column the reconnect is supposed to persist must be
+			// present and non-empty. An empty (or partially populated) fields
+			// map means the reconnect wrote no tokens -- the server would be
+			// marked OAuth-connected while carrying nothing to authenticate
+			// with.
+			accessCT, _ := fields[mcpserver.FieldAccessTokenCiphertext].([]byte)
+			if len(accessCT) == 0 {
+				t.Errorf("FieldAccessTokenCiphertext missing, wrong type, or empty: %#v", fields[mcpserver.FieldAccessTokenCiphertext])
+			}
+			accessNonce, _ := fields[mcpserver.FieldAccessTokenNonce].([]byte)
+			if len(accessNonce) == 0 {
+				t.Errorf("FieldAccessTokenNonce missing, wrong type, or empty: %#v", fields[mcpserver.FieldAccessTokenNonce])
+			}
+			if refreshCT, _ := fields[mcpserver.FieldRefreshTokenCiphertext].([]byte); len(refreshCT) == 0 {
+				t.Errorf("FieldRefreshTokenCiphertext missing, wrong type, or empty: %#v", fields[mcpserver.FieldRefreshTokenCiphertext])
+			}
+			if refreshNonce, _ := fields[mcpserver.FieldRefreshTokenNonce].([]byte); len(refreshNonce) == 0 {
+				t.Errorf("FieldRefreshTokenNonce missing, wrong type, or empty: %#v", fields[mcpserver.FieldRefreshTokenNonce])
+			}
+			kv, kvOK := fields[mcpserver.FieldKeyVersion].(int)
+			if !kvOK {
+				t.Errorf("FieldKeyVersion missing or wrong type: %#v", fields[mcpserver.FieldKeyVersion])
+			}
+
+			// The persisted ciphertext must be the token the vendor actually
+			// returned -- not a leftover, not an empty column.
+			if kvOK && len(accessCT) > 0 && len(accessNonce) > 0 {
+				decrypted, err := h.crypto.Decrypt(accessCT, accessNonce, kv)
+				if err != nil {
+					t.Errorf("could not decrypt persisted access token: %v", err)
+				} else if decrypted != "reconnect-access-token" {
+					t.Errorf("persisted access token = %q, want reconnect-access-token", decrypted)
+				}
+			}
+
+			if fields[mcpserver.FieldAuthType] != mcpserver.AuthTypeOAuth {
+				t.Errorf("FieldAuthType = %#v, want %v", fields[mcpserver.FieldAuthType], mcpserver.AuthTypeOAuth)
+			}
+			if fields[mcpserver.FieldOAuthVendor] != VendorLinear {
+				t.Errorf("FieldOAuthVendor = %#v, want %v", fields[mcpserver.FieldOAuthVendor], VendorLinear)
+			}
+			return nil
+		},
+	)
+
+	// A reconnect must never create a second server row.
+	mockDB.EXPECT().McpServerCreate(gomock.Any(), gomock.Any()).Times(0)
+
+	res, err := h.Complete(context.Background(), customerID, state, "some-code")
+	if err != nil {
+		t.Fatalf("expected the reconnect to succeed, got: %v", err)
+	}
+	if !updateCalled {
+		t.Fatal("expected McpServerUpdate to be called on a successful reconnect")
+	}
+	if res == nil || res.ID != serverID {
+		t.Fatalf("expected the reconnected server %s, got: %#v", serverID, res)
 	}
 }

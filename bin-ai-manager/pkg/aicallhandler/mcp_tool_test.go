@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -359,6 +360,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			},
 			wantResult:      "failed",
 			wantCallToolHit: false,
+			wantMessage:     "unknown mcp tool call",
 		},
 		{
 			// The dispatch gate is not redundant with the resolution gate: an
@@ -442,6 +444,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			},
 			wantResult:      "failed",
 			wantCallToolHit: false,
+			wantMessage:     "mcp tool is no longer available",
 		},
 		{
 			name:     "fail closed: server flipped to disabled since resolution",
@@ -460,6 +463,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			},
 			wantResult:      "failed",
 			wantCallToolHit: false,
+			wantMessage:     "mcp tool is no longer available",
 		},
 		{
 			name:     "fail closed: downstream CallTool failure never leaks the raw error to the LLM",
@@ -479,6 +483,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			},
 			wantResult:      "failed",
 			wantCallToolHit: true,
+			wantMessage:     "MCP tool call failed",
 		},
 		{
 			name:     "fail closed: resolveAI failure produces a generic failure, not the raw AIHandler error",
@@ -534,6 +539,22 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			if tt.wantResult == "failed" {
 				if strings.Contains(got.Message, "super-secret-upstream-value") {
 					t.Errorf("the remote MCP server's raw error text must never reach the LLM-facing message, got: %q", got.Message)
+				}
+				// No refusal message may carry an internal identifier. A
+				// UUID-shaped substring can only have come from a server/ai/aicall
+				// id, and no legitimate generic refusal contains one, so this is a
+				// leak regardless of which gate produced it.
+				if uuidShapedRe.MatchString(got.Message) {
+					t.Errorf("refusal message must not contain a UUID-shaped identifier, got: %q", got.Message)
+				}
+				// mcpServerIsUsable's internal `why` strings describe the
+				// customer's configuration to the LLM. Only the unambiguous ones
+				// are listed: "not found"/"deleted" are ordinary English a future
+				// generic message could legitimately use.
+				for _, internal := range []string{"owned by another customer", "not active:"} {
+					if strings.Contains(got.Message, internal) {
+						t.Errorf("refusal message must not contain the internal reason %q, got: %q", internal, got.Message)
+					}
 				}
 			}
 		})
@@ -661,6 +682,13 @@ func Test_mcpServerIDIsWhitelisted(t *testing.T) {
 		t.Errorf("expected a nil whitelist to reject everything")
 	}
 }
+
+// uuidShapedRe matches any RFC-4122-shaped identifier. An LLM-facing refusal
+// message has no legitimate reason to contain one: every internal id (MCP
+// server, AI, aicall) is UUID-shaped, so a match is a leak. It cannot produce
+// a false positive on the generic refusals this package emits, none of which
+// embed any identifier.
+var uuidShapedRe = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}`)
 
 // errorWithSecret simulates a misbehaving remote MCP server whose error
 // carries a value that must never reach the LLM-facing message verbatim.

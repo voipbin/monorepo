@@ -784,3 +784,95 @@ func Test_processV1AIsIDPut_McpServerIDsPassesStoredWhitelist(t *testing.T) {
 		t.Errorf("expected status 200, got %d", res.StatusCode)
 	}
 }
+
+// Test_processV1AIsPost_McpServerIDsValidAccepted is the success-side control
+// for the POST whitelist gate. Every other POST test that carries
+// mcp_server_ids asserts a REJECTION, so a gate that refused EVERYTHING -- or
+// one that validated and then simply dropped the whitelist -- would ship
+// green. This pins the accepting path: validation succeeds, Create runs, and
+// the validated whitelist is actually persisted via UpdateMcpServerIDs with
+// the requested ids before a 200 is returned.
+func Test_processV1AIsPost_McpServerIDsValidAccepted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+
+	h := &listenHandler{
+		sockHandler: mockSock,
+		aiHandler:   mockAI,
+	}
+
+	aiID := uuid.FromStringOrNil("59230ca2-a770-11ed-b5dd-2783587ed477")
+	customerID := uuid.FromStringOrNil("58e7502c-a770-11ed-9b86-7fabe2dba847")
+	serverID := uuid.FromStringOrNil("0c3b4f6a-1e2d-11ef-9a3b-0242ac120002")
+
+	req := &sock.Request{
+		URI:      "/v1/ais",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`{"customer_id":"` + customerID.String() + `","name":"test name","mcp_server_ids":["` + serverID.String() + `"]}`),
+	}
+
+	created := &ai.AI{
+		Identity: identity.Identity{
+			ID:         aiID,
+			CustomerID: customerID,
+		},
+	}
+	updated := &ai.AI{
+		Identity: identity.Identity{
+			ID:         aiID,
+			CustomerID: customerID,
+		},
+		McpServerIDs: []uuid.UUID{serverID},
+	}
+
+	// There is no AI yet, so the owner checked is the request's own customer
+	// id and there is no stored whitelist to exempt.
+	mockAI.EXPECT().ValidateMcpServerIDs(gomock.Any(), customerID, []uuid.UUID{serverID}, []uuid.UUID(nil)).Return(nil)
+
+	mockAI.EXPECT().Create(
+		gomock.Any(),
+		customerID,
+		"test name",
+		"",
+		gomock.Any(), // aiType
+		ai.EngineModel(""),
+		map[string]any(nil),
+		"",
+		uuid.Nil, // ragID
+		"",
+		ai.TTSType(""),
+		"",
+		ai.STTType(""),
+		"",                   // sttLanguage
+		[]tool.ToolName(nil), // toolNames
+		(*ai.VADConfig)(nil), // vadConfig
+		false,                // smartTurnEnabled
+		false,                // autoAICallAuditEnabled
+	).Return(created, nil)
+
+	// The whole point of the accepting path: the validated whitelist is
+	// persisted, with exactly the requested ids.
+	mockAI.EXPECT().UpdateMcpServerIDs(gomock.Any(), aiID, []uuid.UUID{serverID}).Return(updated, nil)
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+	if res.StatusCode != 200 {
+		t.Fatalf("expected status 200, got %d (body: %s)", res.StatusCode, res.Data)
+	}
+	if res.DataType != "application/json" {
+		t.Errorf("expected application/json, got %q", res.DataType)
+	}
+
+	// The response body must be the UPDATED AI (the one carrying the
+	// whitelist), not the pre-update one Create returned.
+	expectData := `{"id":"` + aiID.String() + `","customer_id":"` + customerID.String() + `","is_insight_active":false,"rag_id":"00000000-0000-0000-0000-000000000000","current_prompt_history_id":"00000000-0000-0000-0000-000000000000","mcp_server_ids":["` + serverID.String() + `"],"direct_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`
+	if string(res.Data) != expectData {
+		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expectData, res.Data)
+	}
+}

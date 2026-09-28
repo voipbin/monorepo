@@ -25,6 +25,7 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 	sameCustomerServerID := uuid.Must(uuid.NewV4())
 	crossCustomerServerID := uuid.Must(uuid.NewV4())
 	nonexistentServerID := uuid.Must(uuid.NewV4())
+	nilServerID := uuid.Must(uuid.NewV4())
 	deletedServerID := uuid.Must(uuid.NewV4())
 	secondDeletedServerID := uuid.Must(uuid.NewV4())
 
@@ -77,6 +78,22 @@ func Test_ValidateMcpServerIDs(t *testing.T) {
 					Identity: identity.Identity{ID: deletedServerID, CustomerID: customerID},
 					TMDelete: &ts,
 				}, nil)
+			},
+			wantError: true,
+			wantTyped: true,
+		},
+		{
+			// Defensive arm: a (nil, nil) return from McpServerGet -- no row
+			// and no error -- must still be rejected. Weakening the guard to
+			// `srv != nil && srv.CustomerID != customerID`, or skipping nil
+			// servers with a `continue`, silently ACCEPTS the id and bypasses
+			// the IDOR check wholesale for that id. Same defensive arm the
+			// sibling packages pin (aicallhandler's mcp_tool_test.go,
+			// mcptoolhandler's Test_TransportRefusesNilServer).
+			name: "nil server with no error rejects",
+			ids:  []uuid.UUID{nilServerID},
+			setupMock: func(mockDB *dbhandler.MockDBHandler) {
+				mockDB.EXPECT().McpServerGet(gomock.Any(), nilServerID).Return(nil, nil)
 			},
 			wantError: true,
 			wantTyped: true,
