@@ -156,7 +156,7 @@ blocking it.
 | D18 | Whitelist cap, error, and dedupe policy (B28) | **8 servers per AI**, rejected with a new `TOO_MANY_MCP_SERVER_IDS` reason rather than the existing `INVALID_MCP_SERVER_ID`, which means "not accessible" and would mislead. Duplicates are **rejected**, not silently collapsed, consistent with D5's rule against silent rewriting: collapsing makes the persisted whitelist differ from the submitted one and the update event then echoes back something the caller did not send. 8 is chosen against D16's budget, which at two round trips and 5s per server only closes for a handful of servers | SETTLED |
 | D19 | Where the Insight gate actually binds (B10) | **`UpdateMcpServerIDs` (`pkg/aihandler/mcpserver_validation.go:108`) is the common chokepoint and must refuse**, because both the create and the update listen paths write the whitelist through it as a second write (`v1_ais.go:133` and `:307`). The two edge gates stay, since they give the caller a better error before the AI is touched, but each is bypassable from the other direction on its own. The gate is evaluated against the **effective post-default type**, not the submitted field | SETTLED |
 | D20 | Does the OpenAPI constraint enforce anything? | **No.** Verified: bin-api-manager registers no request-validation middleware (`OapiRequestValidator` and `GetSwagger` both return zero non-generated hits), and the spec is consumed only by codegen and redoc. `maxItems` and `uniqueItems` are documentation; the Go check in `ValidateMcpServerIDs` is the only enforcement, and the PR body must say so | SETTLED |
-| D17 | How the conformance test runs in CI | **No build tag.** Verified: all three `go test` invocations run `$(go list ./...)` with no `-tags`, and the repo has zero `//go:build` test files, so a tagged test would compile out and silently never run. Use a runtime skip gated on an environment variable, set only on the `bin-ai-manager-test` job, with one pip step to install the reference SDK there | SETTLED, replaces O5 |
+| D17 | How the conformance test runs in CI | **No build tag.** Verified: all three `go test` invocations run `$(go list ./...)` with no `-tags`, and the repo has zero `//go:build` test files, so a tagged test would compile out and silently never run. Use a runtime skip gated on an environment variable. **Not a one-line change**, and round 10 corrected this: `bin-ai-manager-test` (`.circleci/config_work.yml:1077-1082`) invokes the shared `go-test` command, which takes only `source-directory` and `enable-lint` and has **35 consumers**, so it offers no hook for an extra env var or a pip step. Either parameterise that shared command (touching a path all 35 jobs take) or give this one job its own steps. Decide in the PR, and land the CI change in the same commit as the test it gates | SETTLED, replaces O5 |
 | O6 | Where the per-AI count cap is applied, given a per-server cache | 3 servers at 32 each exceeds a 64 per-AI cap; the drop must be deterministic | **OPEN** |
 | O7 | Is the square-admin picker change in PR B or PR C? | Converting an AI to Insight with a stored whitelist will 400 with the picker still showing the cause | **OPEN**, A.9 |
 | D12 | Does the callback **replace** or **supplement** `GetByNames` at `runner.go:150`? | **Supplement.** Replacing it would bypass pipecat's AIType whitelist for the built-in half, which makes B4 a hard blocker rather than an independent fix | SETTLED, forced by A.4 |
@@ -962,3 +962,44 @@ in both directions: reproduce before adopting.
 - **Remaining cosmetic drift**, recorded rather than silently fixed so the pattern
   stays visible: the PR B2 build order has two steps numbered 6, and line 11 still
   says "Rounds 1 through 4" where the document now covers nine.
+
+## A.25 Round 10: two real gaps the plan exposed, and the close
+
+Both reviewers approved, which is the first consecutive approval in ten rounds. One
+built a client from section 4b alone, with no SDK borrowing, and it worked against
+the reference server in both its stateful default and its stateless plus
+json-response configuration, so requirement 5 and its handshake-era guard are
+correct **and** sufficient. The other wrote the commit-by-commit plan and, in doing
+so, surfaced two places where this document left a decision to the builder while
+implying it had settled one. Both are verified here.
+
+**The forced refresh has no owner for its second failure.** A.23 requires recording
+backoff when a refresh succeeds and the retry still 401s, but `refreshBackoff` and
+`setRefreshBackoff` are package-private to `mcpoauthhandler`
+(`pkg/mcpoauthhandler/access_token.go:28`), while the component that observes the
+second 401 is `mcptoolhandler`. So B19 needs a **second** exported entry point
+alongside the forced refresh, not just the one this document named, and that means a
+mock regeneration this document never mentioned. Recording it rather than leaving the
+builder to invent it.
+
+**The CI gating is not a one-line change.** D17 said to set an environment variable
+on `bin-ai-manager-test` and add a pip step there. That job invokes the shared
+`go-test` command, which accepts only `source-directory` and `enable-lint` and is
+used by **35 jobs** (both verified by reading the config). There is no hook for
+either. The choice is to parameterise a command every service's test job takes, or
+to give this one job its own steps. D17 is amended above.
+
+Neither gap changes what PR B1 does, and neither blocked a commit in the plan. They
+are recorded because the honest signal of whether an analysis is ready is what a
+planner had to work around, and these were the two things that were not in it.
+
+**The loop's own record, for the next person.** Ten rounds, twenty reviewers, yield
+per round 5, 3, 4, 4, 4, 6, 5, 5, 2, 2. Three rounds overturned a premise the
+previous rounds had built on: round 4 the document's structure, round 6 the
+reachability of dispatch, round 9 the cause of a protocol failure that two prior
+rounds had each got wrong in a different way. One round's headline finding was
+itself wrong and had to be reproduced and refuted. The curve is flat now, and the
+remaining risk is not that PR B1 ships something wrong, because its gate fails today
+on every assertion and its blast radius is five AIs with empty whitelists. The
+remaining risk is that the published documentation stays false while the work sits,
+and that risk grows with every further round.
