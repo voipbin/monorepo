@@ -48,7 +48,6 @@ import (
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cmkase "monorepo/bin-contact-manager/models/kase"
-	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 
 	cvaccount "monorepo/bin-conversation-manager/models/account"
@@ -491,7 +490,7 @@ type ServiceHandler interface {
 		source string,
 		externalID string,
 		notes string,
-		addresses []cmrequest.AddressCreate,
+		addresses []cmcontact.AddressInput,
 		tagIDs []uuid.UUID,
 	) (*cmcontact.WebhookMessage, error)
 	ContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
@@ -1084,7 +1083,7 @@ type ServiceHandler interface {
 		source string,
 		externalID string,
 		notes string,
-		addresses []cmrequest.AddressCreate,
+		addresses []cmcontact.AddressInput,
 		tagIDs []uuid.UUID,
 	) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)

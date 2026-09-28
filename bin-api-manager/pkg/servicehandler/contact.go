@@ -6,10 +6,9 @@ import (
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
+	cmcontact "monorepo/bin-contact-manager/models/contact"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	cmcontact "monorepo/bin-contact-manager/models/contact"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -47,7 +46,7 @@ func (h *serviceHandler) ContactCreate(
 	source string,
 	externalID string,
 	notes string,
-	addresses []cmrequest.AddressCreate,
+	addresses []cmcontact.AddressInput,
 	tagIDs []uuid.UUID,
 ) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{

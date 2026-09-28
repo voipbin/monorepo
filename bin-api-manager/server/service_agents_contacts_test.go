@@ -15,7 +15,6 @@ import (
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
-	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -162,7 +161,7 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 		expectSource      string
 		expectExternalID  string
 		expectNotes       string
-		expectAddresses   []cmrequest.AddressCreate
+		expectAddresses   []cmcontact.AddressInput
 		expectTagIDs      []uuid.UUID
 		expectRes         string
 	}{
@@ -202,7 +201,7 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 			expectSource:      "api",
 			expectExternalID:  "ext-123",
 			expectNotes:       "test note",
-			expectAddresses:   []cmrequest.AddressCreate{},
+			expectAddresses:   []cmcontact.AddressInput{},
 			expectTagIDs:      []uuid.UUID{},
 			expectRes:         `{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"Acme","job_title":"Engineer","source":"api","external_id":"ext-123","notes":"test note","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
@@ -651,7 +650,7 @@ func Test_PostServiceAgentsContactsIdAddresses(t *testing.T) {
 			expectAddrType:  "tel",
 			expectTarget:    "+121****1234",
 			expectIsPrimary: false,
-			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"type":"tel","target":"+121****1234","id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"type":"tel","target":"+121****1234","is_primary":false,"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 

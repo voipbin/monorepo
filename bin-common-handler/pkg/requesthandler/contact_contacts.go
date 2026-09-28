@@ -26,10 +26,21 @@ func (r *requestHandler) ContactV1ContactCreate(
 	source string,
 	externalID string,
 	notes string,
-	addresses []cmrequest.AddressCreate,
+	addresses []cmcontact.AddressInput,
 	tagIDs []uuid.UUID,
 ) (*cmcontact.Contact, error) {
 	uri := "/v1/contacts"
+
+	wireAddresses := make([]cmrequest.AddressCreate, len(addresses))
+	for i, a := range addresses {
+		wireAddresses[i] = cmrequest.AddressCreate{
+			Type:      string(a.Type),
+			Target:    a.Target,
+			Name:      a.Name,
+			Detail:    a.Detail,
+			IsPrimary: a.IsPrimary,
+		}
+	}
 
 	data := &cmrequest.ContactCreate{
 		CustomerID:  customerID,
@@ -41,7 +52,7 @@ func (r *requestHandler) ContactV1ContactCreate(
 		Source:      source,
 		ExternalID:  externalID,
 		Notes:       notes,
-		Addresses:   addresses,
+		Addresses:   wireAddresses,
 		TagIDs:      tagIDs,
 	}
 

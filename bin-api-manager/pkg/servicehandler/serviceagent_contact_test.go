@@ -12,7 +12,6 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
-	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -32,7 +31,7 @@ func Test_ServiceAgentContactCreate(t *testing.T) {
 		source      string
 		externalID  string
 		notes       string
-		addresses   []cmrequest.AddressCreate
+		addresses   []cmcontact.AddressInput
 		tagIDs      []uuid.UUID
 
 		responseContact *cmcontact.Contact
@@ -58,7 +57,7 @@ func Test_ServiceAgentContactCreate(t *testing.T) {
 			source:      "api",
 			externalID:  "ext-123",
 			notes:       "test note",
-			addresses:   []cmrequest.AddressCreate{},
+			addresses:   []cmcontact.AddressInput{},
 			tagIDs:      []uuid.UUID{},
 
 			responseContact: &cmcontact.Contact{

@@ -7,7 +7,6 @@ import (
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
-	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -26,7 +25,7 @@ func (h *serviceHandler) ServiceAgentContactCreate(
 	source string,
 	externalID string,
 	notes string,
-	addresses []cmrequest.AddressCreate,
+	addresses []cmcontact.AddressInput,
 	tagIDs []uuid.UUID,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {

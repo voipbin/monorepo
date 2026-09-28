@@ -2,9 +2,10 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
-	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
+	cmcontact "monorepo/bin-contact-manager/models/contact"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -129,7 +130,7 @@ func (h *server) PostContacts(c *gin.Context) {
 		notes = *req.Notes
 	}
 
-	addresses := []cmrequest.AddressCreate{}
+	addresses := []cmcontact.AddressInput{}
 	if req.Addresses != nil {
 		for _, v := range *req.Addresses {
 			if v.Type == nil || *v.Type == "" {
@@ -148,9 +149,11 @@ func (h *server) PostContacts(c *gin.Context) {
 				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ADDRESS_TARGET", "Each address must have a target."))
 				return
 			}
-			addr := cmrequest.AddressCreate{
-				Type:   addrType,
-				Target: *v.Target,
+			addr := cmcontact.AddressInput{
+				Address: commonaddress.Address{
+					Type:   commonaddress.Type(addrType),
+					Target: *v.Target,
+				},
 			}
 			if v.IsPrimary != nil {
 				addr.IsPrimary = *v.IsPrimary

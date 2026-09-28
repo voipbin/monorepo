@@ -61,7 +61,7 @@ func Test_GetContactAddresses(t *testing.T) {
 			expectFilters:   map[string]any{},
 			expectPageToken: "",
 			expectPageSize:  20,
-			expectRes:       `{"result":[{"type":"tel","target":"+121****9999","id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"3147612c-5066-11ec-ab34-23643cfdc1c5","is_primary":false,"tm_create":"2020-09-20T03:23:20.995Z"}],"next_page_token":"2020-09-20T03:23:20.995000Z"}`,
+			expectRes:       `{"result":[{"type":"tel","target":"+121****9999","is_primary":false,"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"3147612c-5066-11ec-ab34-23643cfdc1c5","tm_create":"2020-09-20T03:23:20.995Z"}],"next_page_token":"2020-09-20T03:23:20.995000Z"}`,
 		},
 		{
 			name: "empty list serializes as result:[] with empty token",
@@ -154,7 +154,7 @@ func Test_PutContactAddressesId(t *testing.T) {
 
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
 			expectFields:    map[string]any{"target": "+121****9999"},
-			expectRes:       `{"type":"tel","target":"+121****9999","id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"3147612c-5066-11ec-ab34-23643cfdc1c5","is_primary":false,"tm_create":null}`,
+			expectRes:       `{"type":"tel","target":"+121****9999","is_primary":false,"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"3147612c-5066-11ec-ab34-23643cfdc1c5","tm_create":null}`,
 		},
 		{
 			name: "update name and detail",
@@ -177,7 +177,7 @@ func Test_PutContactAddressesId(t *testing.T) {
 
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
 			expectFields:    map[string]any{"name": "Main Office", "detail": "Primary contact number"},
-			expectRes:       `{"type":"tel","target":"+121****9999","name":"Main Office","detail":"Primary contact number","id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"3147612c-5066-11ec-ab34-23643cfdc1c5","is_primary":false,"tm_create":null}`,
+			expectRes:       `{"type":"tel","target":"+121****9999","name":"Main Office","detail":"Primary contact number","is_primary":false,"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"3147612c-5066-11ec-ab34-23643cfdc1c5","tm_create":null}`,
 		},
 	}
 
