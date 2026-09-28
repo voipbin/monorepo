@@ -1,11 +1,10 @@
 package mcptoolhandler
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
@@ -30,10 +29,13 @@ type jsonRPCError struct {
 }
 
 // jsonRPCResponse is the generic inbound JSON-RPC 2.0 envelope; Result is
-// decoded per-call into the shape the caller expects.
+// decoded per-call into the shape the caller expects. ID stays raw so it is
+// compared exactly rather than coerced, and Method is decoded only to tell a
+// server-sent request or notification apart from a response.
 type jsonRPCResponse struct {
 	JSONRPC string          `json:"jsonrpc"`
-	ID      int             `json:"id"`
+	ID      json.RawMessage `json:"id"`
+	Method  string          `json:"method,omitempty"`
 	Result  json.RawMessage `json:"result"`
 	Error   *jsonRPCError   `json:"error"`
 }
@@ -105,84 +107,57 @@ func (h *mcpToolHandler) buildAuthHeader(ctx context.Context, m *mcpserver.McpSe
 	}
 }
 
-// doJSONRPCRequest sends the JSON-RPC envelope to the server's URL using an
-// SSRF-guarded client, applies auth per the server's AuthType, caps the
-// response body, and decodes the outer JSON-RPC envelope. Returns the raw
-// result payload on success.
+// doJSONRPCRequest runs one MCP method on a fresh session: initialize, the
+// method itself, and nothing else. The session is scoped to this call and
+// dropped when it returns (requirement 7 in section 4b of
+// docs/plans/2026-09-27-mcp-phase2-tool-exposure-analysis-v2.md).
+//
+// A 404 on the method means the server discarded the session. That is retried
+// exactly once with a new session, guarded by its own flag so it can never
+// compose with another retry into a request storm (requirement 11). A 404 on
+// initialize is not retried: it means the URL is wrong, not that a session
+// expired.
 func (h *mcpToolHandler) doJSONRPCRequest(ctx context.Context, m *mcpserver.McpServer, method string, params any) (json.RawMessage, error) {
-	reqBody := jsonRPCRequest{
-		JSONRPC: "2.0",
-		ID:      1,
-		Method:  method,
-		Params:  params,
-	}
-
-	bodyBytes, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, fmt.Errorf("mcptoolhandler: could not marshal request body: %w", err)
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, m.URL, bytes.NewReader(bodyBytes))
-	if err != nil {
-		return nil, fmt.Errorf("mcptoolhandler: could not build request: %w", err)
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("Accept", "application/json")
-
-	headerName, headerValue, err := h.buildAuthHeader(ctx, m)
-	if err != nil {
-		return nil, fmt.Errorf("mcptoolhandler: could not build auth header: %w", err)
-	}
-	if headerName != "" {
-		httpReq.Header.Set(headerName, headerValue)
-	}
-
 	newClient := h.newClient
 	if newClient == nil {
 		newClient = mcpserverhandler.NewSSRFGuardedClient
 	}
 	client := newClient(h.timeout)
 
-	resp, err := client.Do(httpReq)
+	session, err := h.openSession(ctx, client, m)
 	if err != nil {
-		return nil, fmt.Errorf("mcptoolhandler: request failed: %w", err)
+		return nil, fmt.Errorf("mcptoolhandler: %w", err)
 	}
-	defer func() { _ = resp.Body.Close() }()
 
-	limited := io.LimitReader(resp.Body, mcpserverhandler.McpHTTPResponseSizeCapBytes)
-	respBytes, err := io.ReadAll(limited)
+	result, _, err := h.request(ctx, session, method, params)
+
+	// The retry below is reachable once per call by construction: it is not
+	// in a loop and its own failure is returned, never retried.
+	var statusErr *httpStatusError
+	if err != nil && session.id != "" && errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusNotFound {
+		session, err = h.openSession(ctx, client, m)
+		if err != nil {
+			return nil, fmt.Errorf("mcptoolhandler: could not re-initialize after the session expired: %w", err)
+		}
+		result, _, err = h.request(ctx, session, method, params)
+	}
 	if err != nil {
-		return nil, fmt.Errorf("mcptoolhandler: could not read response body: %w", err)
+		return nil, fmt.Errorf("mcptoolhandler: %s failed: %w", method, err)
 	}
 
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("mcptoolhandler: unexpected status code %d, body: %s", resp.StatusCode, truncateForError(respBytes))
-	}
-
-	var rpcResp jsonRPCResponse
-	if err := json.Unmarshal(respBytes, &rpcResp); err != nil {
-		return nil, fmt.Errorf("mcptoolhandler: could not parse JSON-RPC response: %w", err)
-	}
-
-	if rpcResp.Error != nil {
-		return nil, fmt.Errorf("mcptoolhandler: JSON-RPC error (code %d): %s", rpcResp.Error.Code, rpcResp.Error.Message)
-	}
-
-	if rpcResp.Result == nil {
-		return nil, fmt.Errorf("mcptoolhandler: JSON-RPC response has no result")
-	}
-
-	return rpcResp.Result, nil
+	return result, nil
 }
 
 // truncateForError caps error-message body echoes to avoid dumping
-// unbounded remote content into logs/errors.
+// unbounded remote content into logs/errors. It cuts on a rune boundary so
+// the result stays valid UTF-8.
 func truncateForError(b []byte) string {
-	const cap = 512
-	if len(b) > cap {
-		return string(b[:cap]) + "...(truncated)"
+	const maxBytes = 512
+	s := string(b)
+	if len(s) > maxBytes {
+		return truncateUTF8(s, maxBytes) + "...(truncated)"
 	}
-	return string(b)
+	return s
 }
 
 // refuseDeleted stops a transport call to a soft-deleted MCP server.

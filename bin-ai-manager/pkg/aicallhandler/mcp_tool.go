@@ -3,6 +3,7 @@ package aicallhandler
 import (
 	"context"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -290,12 +291,17 @@ func mcpServerIDIsWhitelisted(ids []uuid.UUID, serverID uuid.UUID) bool {
 
 // capErrText bounds a remote MCP server's error text before it appears in a
 // log line -- a misbehaving customer server should not be able to inject
-// unbounded content there either.
+// unbounded content there either. It cuts on a rune boundary so a multi-byte
+// character is never split into invalid UTF-8.
 func capErrText(s string, max int) string {
 	if len(s) <= max {
 		return s
 	}
-	return s[:max]
+	cut := max
+	for cut > 0 && !utf8.RuneStart(s[cut]) {
+		cut--
+	}
+	return s[:cut]
 }
 
 // errMcpToolCallFailed builds the generic, size-bounded failure message

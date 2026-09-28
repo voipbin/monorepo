@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -847,6 +848,39 @@ func Test_toolHandleMcpCall_team(t *testing.T) {
 			got := h.toolHandleMcpCall(context.Background(), tt.aicall, tc)
 			if got.Result != tt.wantResult {
 				t.Errorf("Wrong match. expect: %s, got: %s (message: %s)", tt.wantResult, got.Result, got.Message)
+			}
+		})
+	}
+}
+
+// Test_capErrText_RuneSafe pins that the log-line cap never splits a
+// multi-byte character. The previous byte slice turned a remote server's
+// Korean or emoji error text into invalid UTF-8 at the cut point.
+func Test_capErrText_RuneSafe(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		max  int
+		want string
+	}{
+		{name: "shorter than the cap is untouched", in: "short", max: 200, want: "short"},
+		{name: "ascii is cut at the cap", in: "abcdef", max: 3, want: "abc"},
+		{name: "cut inside a three-byte rune backs off to its start", in: "ab가나", max: 4, want: "ab"},
+		{name: "cut exactly on a rune boundary keeps the rune", in: "ab가나", max: 5, want: "ab가"},
+		{name: "cut inside a four-byte rune", in: "x\U0001F600y", max: 3, want: "x"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := capErrText(tt.in, tt.max)
+			if got != tt.want {
+				t.Errorf("capErrText(%q, %d) = %q, want %q", tt.in, tt.max, got, tt.want)
+			}
+			if !utf8.ValidString(got) {
+				t.Errorf("result is not valid UTF-8: %q", got)
+			}
+			if len(got) > tt.max {
+				t.Errorf("result is %d bytes, over the %d cap", len(got), tt.max)
 			}
 		})
 	}

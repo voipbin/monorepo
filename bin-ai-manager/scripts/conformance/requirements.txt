@@ -1,0 +1,4 @@
+# Pinned: the conformance test encodes this version's transport behaviour.
+# Bump deliberately, together with any client change the new version needs.
+mcp==2.2.0
+uvicorn==0.54.0

@@ -1077,7 +1077,49 @@ jobs:
   bin-ai-manager-test:
     docker: *go_image
     resource_class: small
+    # The MCP client conformance test (pkg/mcptoolhandler) runs against the
+    # reference MCP server started below. It is gated at runtime on these two
+    # variables rather than by a build tag, because the shared go-test command
+    # passes no -tags. Only this job sets them, so the 34 other go-test jobs
+    # are unaffected.
+    environment:
+      MCP_CONFORMANCE_STATEFUL_URL: http://127.0.0.1:8871/mcp
+      MCP_CONFORMANCE_STATELESS_URL: http://127.0.0.1:8872/mcp
     steps:
+      - checkout
+      - run:
+          name: Install MCP reference server
+          command: |
+            sudo apt-get update && sudo apt-get install -y python3-venv
+            python3 -m venv /tmp/mcp-ref
+            /tmp/mcp-ref/bin/pip install -r bin-ai-manager/scripts/conformance/requirements.txt
+      - run:
+          name: MCP reference server (stateful)
+          working_directory: bin-ai-manager/scripts/conformance
+          command: /tmp/mcp-ref/bin/uvicorn mcp_reference_server:app --host 127.0.0.1 --port 8871
+          background: true
+      - run:
+          name: MCP reference server (stateless)
+          working_directory: bin-ai-manager/scripts/conformance
+          command: STATELESS=1 /tmp/mcp-ref/bin/uvicorn mcp_reference_server:app --host 127.0.0.1 --port 8872
+          background: true
+      - run:
+          name: Wait for MCP reference servers
+          # Probe the TCP port, not the HTTP endpoint: a GET on the MCP
+          # endpoint of a stateless server answers 200 and holds an event
+          # stream open indefinitely, so an HTTP probe would hang the job.
+          command: |
+            for port in 8871 8872; do
+              ready=0
+              for i in $(seq 1 30); do
+                if (exec 3<>"/dev/tcp/127.0.0.1/${port}") 2>/dev/null; then
+                  ready=1
+                  break
+                fi
+                sleep 1
+              done
+              [ "${ready}" = 1 ] || { echo "reference server on ${port} did not start"; exit 1; }
+            done
       - go-test:
           source-directory: bin-ai-manager
 

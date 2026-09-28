@@ -2,7 +2,6 @@ package mcptoolhandler
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -46,10 +45,9 @@ func Test_ListTools_Success(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"echo","description":"echoes input"}]}}`))
-	}))
+	fake := newFakeMCPServer(t)
+	fake.tools = `[{"name":"echo","description":"echoes input"}]`
+	srv := httptest.NewServer(fake)
 	defer srv.Close()
 
 	serverID := uuid.Must(uuid.NewV4())
@@ -181,18 +179,8 @@ func Test_CallTool_Success(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 
-	var gotAuth string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotAuth = r.Header.Get("Authorization")
-		var req jsonRPCRequest
-		_ = json.NewDecoder(r.Body).Decode(&req)
-		if req.Method != "tools/call" {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":{"content":[{"type":"text","text":"hello"},{"type":"text","text":"world"}]}}`))
-	}))
+	fake := newFakeMCPServer(t)
+	srv := httptest.NewServer(fake)
 	defer srv.Close()
 
 	serverID := uuid.Must(uuid.NewV4())
@@ -224,8 +212,15 @@ func Test_CallTool_Success(t *testing.T) {
 	if result != "hello\nworld" {
 		t.Fatalf("unexpected result: %q", result)
 	}
-	if gotAuth != "Bearer my-secret-token" {
-		t.Fatalf("unexpected auth header: %q", gotAuth)
+	// Every request on the session carries the credential, not only the
+	// method call: the reference server authenticates initialize too.
+	for _, r := range fake.recorded() {
+		if r.Authorization != "Bearer my-secret-token" {
+			t.Fatalf("request %q carried auth header %q", r.Method, r.Authorization)
+		}
+	}
+	if got := fake.methods(); strings.Join(got, ",") != "initialize,notifications/initialized,tools/call" {
+		t.Fatalf("unexpected request sequence: %v", got)
 	}
 }
 
@@ -270,21 +265,14 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 	serverID := uuid.Must(uuid.NewV4())
 	ts := time.Now()
 
+	// A conformant fake: a live row must complete the whole handshake, so the
+	// only reason a deleted row can fail is the gate. The count is of HTTP
+	// requests the server actually received.
+	var fake *fakeMCPServer
 	reqCount := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqCount++
-		var req struct {
-			ID     any    `json:"id"`
-			Method string `json:"method"`
-		}
-		_ = json.NewDecoder(r.Body).Decode(&req)
-
-		result := `{"tools":[{"name":"probe_tool"}]}`
-		if req.Method == "tools/call" {
-			result = `{"content":[{"type":"text","text":"ok"}]}`
-		}
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":` + result + `}`))
+		fake.ServeHTTP(w, r)
 	}))
 	defer srv.Close()
 
@@ -317,7 +305,7 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 			// would pass the deleted cases below.
 			name:         "live row: ListTools reaches the server",
 			row:          liveRow(),
-			wantRequests: 1,
+			wantRequests: 3,
 		},
 		{
 			name:         "deleted row: ListTools refuses without sending anything",
@@ -337,6 +325,7 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 			h := newTestHandler(t, mockDB)
 			mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(tt.row, nil)
 
+			fake = newFakeMCPServer(t)
 			reqCount = 0
 			_, err := h.ListTools(context.Background(), serverID)
 			assertGate(t, err, tt.wantErr, tt.wantErrText, reqCount, tt.wantRequests)
@@ -355,7 +344,7 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 		{
 			name:         "live row: CallTool reaches the server",
 			row:          liveRow(),
-			wantRequests: 1,
+			wantRequests: 3,
 		},
 		{
 			name:         "deleted row: CallTool refuses without sending anything",
@@ -375,6 +364,7 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 			h := newTestHandler(t, mockDB)
 			mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(tt.row, nil)
 
+			fake = newFakeMCPServer(t)
 			reqCount = 0
 			_, err := h.CallTool(context.Background(), serverID, "probe_tool", "{}")
 			assertGate(t, err, tt.wantErr, tt.wantErrText, reqCount, tt.wantRequests)

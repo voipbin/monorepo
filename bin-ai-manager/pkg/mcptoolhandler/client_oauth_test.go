@@ -2,7 +2,6 @@ package mcptoolhandler
 
 import (
 	"context"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -29,12 +28,9 @@ func Test_CallTool_OAuth_Success(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockOAuth := mcpoauthhandler.NewMockMcpOAuthHandler(mc)
 
-	var gotAuth string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotAuth = r.Header.Get("Authorization")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":{"content":[{"type":"text","text":"ok"}]}}`))
-	}))
+	fake := newFakeMCPServer(t)
+	fake.callResult = `{"content":[{"type":"text","text":"ok"}]}`
+	srv := httptest.NewServer(fake)
 	defer srv.Close()
 
 	serverID := uuid.Must(uuid.NewV4())
@@ -60,8 +56,10 @@ func Test_CallTool_OAuth_Success(t *testing.T) {
 	if result != "ok" {
 		t.Fatalf("unexpected result: %q", result)
 	}
-	if gotAuth != "Bearer gho_livetoken" {
-		t.Fatalf("unexpected auth header: %q", gotAuth)
+	for _, r := range fake.recorded() {
+		if r.Authorization != "Bearer gho_livetoken" {
+			t.Fatalf("request %q carried auth header %q", r.Method, r.Authorization)
+		}
 	}
 }
 

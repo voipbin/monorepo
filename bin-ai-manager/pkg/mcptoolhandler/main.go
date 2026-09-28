@@ -19,11 +19,13 @@ import (
 )
 
 // McpTool is one tool definition returned by a remote MCP server's
-// tools/list call.
+// tools/list call. The wire field is inputSchema (camelCase, per the MCP
+// specification and the reference server); the snake_case tag this struct
+// used to carry silently dropped every tool's schema.
 type McpTool struct {
 	Name        string         `json:"name"`
 	Description string         `json:"description"`
-	InputSchema map[string]any `json:"input_schema,omitempty"`
+	InputSchema map[string]any `json:"inputSchema,omitempty"`
 }
 
 // McpToolHandler discovers and calls tools exposed by a customer's remote
