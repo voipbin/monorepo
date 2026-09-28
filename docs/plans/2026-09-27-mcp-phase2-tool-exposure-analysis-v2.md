@@ -1057,3 +1057,48 @@ alternative he names is a one-sentence not-yet-available caveat in the RST insid
 B1, at the cost of a clean Sphinx rebuild and a force-add of the build output. This
 analysis does not decide that. It is a CEO decision and it is now on the record as
 one rather than as a consequence of where B22 happened to be filed.
+
+## A.27 PR B1 code review: two OAuth refresh hazards deferred to their own change
+
+Code review of PR B1 went deeper into the OAuth refresh than this analysis did,
+because PR B1's whole-call deadline cut through `GetValidAccessToken`. Fixing that
+exposed, and PR B1 now fixes, several refresh defects: a refresh spent twice on the
+session re-opened after a 404; concurrent callers in one process each spending the
+same refresh token; a caller held for the refresh's own bounds; a refresh finishing
+after a reconnect or downgrade writing its tokens over the change; and a
+non-rotating refresh token written back under a key version it was not encrypted
+with. Two hazards remain, both older than PR B1 and neither made worse by it, and
+both need a schema change, so they are deferred to their own change rather than
+folded into the discovery fix.
+
+**A rotated refresh token that could not be stored is eventually spent again.** If
+the vendor answers a refresh and the conditional write fails (a database error, not
+a row that moved on), the row still holds the refresh token the vendor has just
+invalidated. PR B1 backs the server off for 60 seconds and keeps the result for up
+to ten minutes, so callers holding that row reuse it instead of calling the vendor.
+Once both lapse, the next caller presents the spent token, and a vendor that
+detects reuse revokes the grant. The round-5 adversarial review measured this
+against a fake vendor that revokes on reuse: the grant ends revoked at about
+min(access-token lifetime minus the 60-second margin, ten minutes). The rotated
+refresh token lived only in memory. A durable fix persists it, or marks the row as
+needing a reconnect, so a spent token is never presented.
+
+**Two pods can still spend one refresh token.** Coalescing is per process, and
+production runs two replicas. The conditional write guarantees the row ends
+holding the latest rotation and never a spent one, which the round-5 review
+confirmed on a real row, but it cannot stop the losing pod from presenting the
+token it read, and a vendor that detects reuse then revokes the grant. The fix is
+a lease taken in the database before calling the vendor (a conditional update
+claiming the row while it still holds the refresh token about to be spent), so
+only one pod refreshes and the others re-read.
+
+**Whether GitHub or Linear actually revoke on reuse is not verified.** Both rotate
+refresh tokens; reuse detection with grant revocation is the OAuth 2.1 security
+recommendation, not something either vendor was observed doing. Both hazards are
+therefore stated at their worst case. Their exposure today is small: on 2026-09-28
+all 104 production MCP server rows were `api-validator*` test rows (A.26; their
+auth types were not recorded), and no AI had a non-empty `mcp_server_ids`, so no
+customer conversation reaches an OAuth refresh through discovery. They must be
+closed before OAuth MCP servers are offered as a supported path, which makes them
+a gate on PR B2's activation rather than on PR B1.
+

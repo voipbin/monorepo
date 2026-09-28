@@ -224,14 +224,24 @@ func (h *mcpOAuthHandler) exchangeAndStore(ctx context.Context, m *mcpserver.Mcp
 
 	// OAuth 2.1 refresh token rotation: both GitHub and Linear issue a
 	// new refresh token on every refresh (design §8 step 3) -- persist
-	// it, or fall back to keeping the existing one if the vendor didn't
-	// return a new one for this call.
-	refreshCiphertext, refreshNonce := m.RefreshTokenCiphertext, m.RefreshTokenNonce
-	if tok.RefreshToken != "" {
-		refreshCiphertext, refreshNonce, _, err = h.crypto.Encrypt(tok.RefreshToken)
-		if err != nil {
-			return "", nil, errors.Wrap(err, "could not encrypt rotated oauth refresh token")
-		}
+	// it, or keep the existing one if the vendor didn't return a new one
+	// for this call.
+	//
+	// Either way it is encrypted afresh, under the same key as the access
+	// token. The row has one key_version for both, so writing back the old
+	// ciphertext alongside an access token encrypted under a newer key
+	// would leave a refresh token that no longer decrypts, and the next
+	// refresh would fail until the customer reconnects.
+	keptRefreshToken := tok.RefreshToken
+	if keptRefreshToken == "" {
+		keptRefreshToken = refreshToken
+	}
+	refreshCiphertext, refreshNonce, refreshKeyVersion, err := h.crypto.Encrypt(keptRefreshToken)
+	if err != nil {
+		return "", nil, errors.Wrap(err, "could not encrypt oauth refresh token")
+	}
+	if refreshKeyVersion != keyVersion {
+		return "", nil, errors.Errorf("oauth tokens were encrypted under different keys (%d, %d)", keyVersion, refreshKeyVersion)
 	}
 
 	var expiresAt *time.Time

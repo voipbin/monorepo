@@ -16,6 +16,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -662,5 +663,73 @@ func Test_tokenExchange_usable(t *testing.T) {
 				t.Fatalf("usable = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// Test_GetValidAccessToken_NonRotatingVendorSurvivesKeyRotation pins that a
+// refresh token the vendor did not rotate is re-encrypted under the key the
+// row now claims. The row has one key_version for both tokens; writing back
+// the old ciphertext beside an access token encrypted under a newer key left
+// a refresh token that no longer decrypted, so the next refresh failed until
+// the customer reconnected.
+func Test_GetValidAccessToken_NonRotatingVendorSurvivesKeyRotation(t *testing.T) {
+	const keyV1 = "1:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
+	const keyV2 = "2:ZmVkY2JhOTg3NjU0MzIxMGZlZGNiYTk4NzY1NDMyMTA="
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	// A vendor that answers every refresh with a new access token and no
+	// refresh token, leaving the one it was given in place.
+	var calls int
+	vendor := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"access_token": fmt.Sprintf("access-%d", calls),
+			"token_type":   "Bearer",
+			"expires_in":   3600,
+		})
+	})
+
+	// The row was written under key 1.
+	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+	oldCrypto, err := mcpserverhandler.NewSecretCrypto(keyV1)
+	if err != nil {
+		t.Fatalf("could not build crypto: %v", err)
+	}
+	m.AccessTokenCiphertext, m.AccessTokenNonce, m.KeyVersion, _ = oldCrypto.Encrypt("stale-access-token")
+	m.RefreshTokenCiphertext, m.RefreshTokenNonce, _, _ = oldCrypto.Encrypt("refresh-0")
+
+	// The operator then adds key 2, which becomes current.
+	h.crypto, err = mcpserverhandler.NewSecretCrypto(keyV1 + "," + keyV2)
+	if err != nil {
+		t.Fatalf("could not build crypto: %v", err)
+	}
+
+	var stored map[mcpserver.Field]any
+	mockDB.EXPECT().McpServerUpdateOAuthTokensIfCurrent(gomock.Any(), m.ID, m.RefreshTokenCiphertext, gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID, _ []byte, fields map[mcpserver.Field]any) error {
+			stored = fields
+			return nil
+		},
+	)
+
+	if token, err := h.GetValidAccessToken(context.Background(), m); err != nil || token != "access-1" {
+		t.Fatalf("got %q, %v; want access-1", token, err)
+	}
+
+	// The stored row must be self-consistent: both tokens decrypt under the
+	// single key version it records, so the next refresh can read them.
+	kv, _ := stored[mcpserver.FieldKeyVersion].(int)
+	if kv != 2 {
+		t.Fatalf("stored key version = %d, want the current key 2", kv)
+	}
+	rct, _ := stored[mcpserver.FieldRefreshTokenCiphertext].([]byte)
+	rnonce, _ := stored[mcpserver.FieldRefreshTokenNonce].([]byte)
+	got, err := h.crypto.Decrypt(rct, rnonce, kv)
+	if err != nil || got != "refresh-0" {
+		t.Fatalf("stored refresh token does not decrypt under the stored key version: %q, %v", got, err)
 	}
 }
