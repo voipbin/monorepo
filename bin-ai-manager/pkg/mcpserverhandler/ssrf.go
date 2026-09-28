@@ -5,12 +5,14 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
 	"syscall"
 	"time"
+	"unicode/utf8"
 )
 
 // McpHTTPResponseSizeCapBytes bounds the response body an SSRF-guarded MCP
@@ -147,43 +149,93 @@ var ErrRedirectRefused = errors.New("mcp server answered with a redirect, which 
 // is a URL the customer registered, so a server redirecting it is
 // misconfigured, and refusing gives a clear error instead of a silent leak.
 //
-// The error names the target by scheme and host only, since the path and
-// query of a URL the server chose may carry anything. net/http wraps it in a
-// *url.Error carrying the full target URL, so callers must report it through
-// RedirectRefusal rather than the wrapped error's text. The one common cause
-// gets a specific hint: the reference MCP SDK answers the registered path with
-// a trailing slash added or removed by redirecting to the other spelling.
+// In the production client httpsOnlyTransport refuses the redirect response
+// before net/http sees it, which also covers a Location net/http cannot parse
+// (it reports those without calling CheckRedirect, quoting the full value).
+// This policy stays as the second line, and is what test clients use.
 func RefuseRedirects(req *http.Request, via []*http.Request) error {
-	target := req.URL
-	hint := ""
+	var orig *url.URL
 	if len(via) > 0 {
-		orig := via[0].URL
-		if target.Scheme == orig.Scheme && target.Host == orig.Host && target.Path != orig.Path &&
-			strings.TrimSuffix(target.Path, "/") == strings.TrimSuffix(orig.Path, "/") {
-			hint = "; the server serves the registered path with a different trailing slash, so update the registered URL to match"
-		}
+		orig = via[0].URL
 	}
-	return fmt.Errorf("%w: to %s://%s%s", ErrRedirectRefused, target.Scheme, target.Host, hint)
+	return redirectRefusal(orig, req.URL)
 }
 
-// RedirectRefusal returns the refusal from RefuseRedirects inside err, without
-// the *url.Error net/http wraps it in, whose text includes the full redirect
-// target. ok is false when err is not a refused redirect.
-func RedirectRefusal(err error) (refusal error, ok bool) {
-	if !errors.Is(err, ErrRedirectRefused) {
-		return nil, false
+// redirectStatuses are the statuses net/http follows as redirects.
+var redirectStatuses = map[int]bool{
+	http.StatusMovedPermanently:  true,
+	http.StatusFound:             true,
+	http.StatusSeeOther:          true,
+	http.StatusTemporaryRedirect: true,
+	http.StatusPermanentRedirect: true,
+}
+
+// maxReportedHostBytes bounds the redirect host quoted in a refusal. The host
+// comes from a header the server chose, so without it the error could run to
+// the full response-header limit.
+const maxReportedHostBytes = 255
+
+// redirectRefusal builds the refusal for a redirect from orig to target. It
+// names the target by scheme and host only, since the path and query of a URL
+// the server chose may carry anything. The one common cause gets a specific
+// hint: the reference MCP SDK answers the registered path with a trailing
+// slash added or removed by redirecting to the other spelling. A nil target
+// means the Location could not be parsed.
+func redirectRefusal(orig, target *url.URL) error {
+	if target == nil {
+		return fmt.Errorf("%w: to a location that could not be parsed", ErrRedirectRefused)
 	}
+	hint := ""
+	if orig != nil && target.Scheme == orig.Scheme && target.Host == orig.Host &&
+		target.EscapedPath() != orig.EscapedPath() &&
+		strings.TrimSuffix(target.EscapedPath(), "/") == strings.TrimSuffix(orig.EscapedPath(), "/") {
+		hint = "; the server serves the registered path with a different trailing slash, so update the registered URL to match"
+	}
+	return fmt.Errorf("%w: to %s://%s%s", ErrRedirectRefused, capText(target.Scheme, 16), capText(target.Host, maxReportedHostBytes), hint)
+}
+
+// capText cuts s to at most n bytes on a UTF-8 boundary.
+func capText(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	for n > 0 && !utf8.RuneStart(s[n]) {
+		n--
+	}
+	return s[:n] + "..."
+}
+
+// RedactTransportError returns err, as returned by the guarded client, with
+// any URL it carries reduced to scheme and host. net/http wraps every
+// transport failure in a *url.Error quoting the full request URL, whose query
+// a customer may have put a key in, and for a refused redirect the full
+// target the server chose. Callers log and return these errors, so they must
+// pass them through here first. The wrapped cause is kept for errors.Is.
+func RedactTransportError(err error) error {
 	var urlErr *url.Error
-	if errors.As(err, &urlErr) {
-		return urlErr.Err, true
+	if !errors.As(err, &urlErr) {
+		return err
 	}
-	return err, true
+	if errors.Is(urlErr.Err, ErrRedirectRefused) {
+		return urlErr.Err
+	}
+	where := "the mcp server"
+	if u, errParse := url.Parse(urlErr.URL); errParse == nil && u.Host != "" {
+		where = capText(u.Scheme, 16) + "://" + capText(u.Host, maxReportedHostBytes)
+	}
+	return fmt.Errorf("%s %s: %w", urlErr.Op, where, urlErr.Err)
 }
 
 // httpsOnlyTransport refuses any request whose scheme is not https before it
-// is sent. URLs are validated as https when they are stored, but not again
-// before each call, so without this a row holding an http URL would send its
-// credential in cleartext on the first request.
+// is sent, and any redirect response before net/http can follow it. URLs are
+// validated as https when they are stored, but not again before each call, so
+// without the first check a row holding an http URL would send its credential
+// in cleartext on the first request.
+//
+// Wrapping the transport means net/http no longer recognises it as its own and
+// cancels requests through the older Request.Cancel mechanism. That is
+// expected: context deadlines still apply, and CancelRequest is deliberately
+// not implemented (it is deprecated).
 type httpsOnlyTransport struct {
 	next *http.Transport
 }
@@ -195,7 +247,21 @@ func (t *httpsOnlyTransport) RoundTrip(req *http.Request) (*http.Response, error
 		}
 		return nil, fmt.Errorf("refusing a %q request: mcp servers are reached over https only", req.URL.Scheme)
 	}
-	return t.next.RoundTrip(req)
+
+	resp, err := t.next.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	if loc := resp.Header.Get("Location"); loc != "" && redirectStatuses[resp.StatusCode] {
+		_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 2<<10))
+		_ = resp.Body.Close()
+		target, errParse := req.URL.Parse(loc)
+		if errParse != nil {
+			target = nil
+		}
+		return nil, redirectRefusal(req.URL, target)
+	}
+	return resp, nil
 }
 
 // CloseIdleConnections forwards to the wrapped transport. http.Client calls

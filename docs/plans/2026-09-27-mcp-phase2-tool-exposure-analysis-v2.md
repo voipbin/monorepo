@@ -95,7 +95,7 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | B1 | MCP protocol client: dual `Accept`, `initialize` and session lifecycle, `MCP-Protocol-Version`, SSE `data:` parsing, session-expiry re-init | `pkg/mcptoolhandler/client.go:108-176` | Largest single item. See A.2 |
 | B2a | `inputSchema` json tag | `pkg/mcptoolhandler/main.go:26` | **Live inbound-parse defect.** `ListTools` runs today and silently drops the schema of every tool it can currently read, because the tag reads `input_schema` and the wire field is `inputSchema`. Narrower than first written: against a default-configuration conformant server the request fails at 406 before any body, so the live drop is against the stateless plus json-response configuration that A.2 shows does work today. Belongs to PR B1: it needs no consumer to be wrong, and PR B1's own acceptance gate asserts a non-nil schema |
 | B2b | Non-nil `Parameters` default | `mcp_tool.go:97`, and note `models/tool/main.go:108` has no `omitempty` | The half that kills the python pipeline, which requires advertisement. PR B2. See A.3 |
-| B3 | Redirect guard: **refuse redirects** (settled, A.21), error naming a trailing slash, target logged redacted | `pkg/mcpserverhandler/ssrf.go:95-112` | Credential leak, proven. See A.5 |
+| B3 | Redirect guard: **refuse redirects** (settled, A.21), error naming a trailing slash, target logged redacted | `pkg/mcpserverhandler/ssrf.go` (`NewSSRFGuardedClient`; the line range cited in earlier rounds is the pre-B1 layout) | Credential leak, proven. See A.5 |
 | B4 | Type-filter ai-manager's built-in resolver | `pkg/toolhandler/main.go:29`, caller `mcp_tool.go:60` | Fail-open today. See A.4 |
 | B5 | Name policy: reject invalid charset and over-length, drop duplicates instead of last-write-wins, count caps | `mcp_tool.go:90-105` | An invalid name fails the whole completion, not one tool |
 | B6 | Tool-result cap well under 64 KiB | `pkg/mcptoolhandler/client.go:267-274` | `ai_messages.content` is `TEXT`; also feeds the auditor, see B8 |
@@ -1108,8 +1108,15 @@ names the target by scheme and host only, and for the reference SDK's
 trailing-slash redirect (A.23) it says to fix the registered URL; a conformance
 test checks that against the real SDK. A request whose URL is not https is refused
 before it is sent, which closes the gap A.24 found: stored URLs are validated when
-written but were not re-checked before each call. The OAuth vendor exchange uses a
-separate client and is unaffected.
+written but were not re-checked before each call. The transport itself refuses a
+redirect response before net/http sees it, because a `Location` net/http cannot
+parse never reaches the redirect policy and net/http's own error quotes it in
+full; every transport error is also reported with the URL reduced to scheme and
+host, since a customer may keep a key in the registered URL's query. The OAuth
+vendor exchange uses a separate client and is unaffected; it still follows
+redirects by net/http's defaults, which is harmless while its only targets are the
+two hard-coded vendor token endpoints, but it should adopt the same policy before
+any vendor URL becomes configurable.
 
 The two-request bound costs throughput, and that is a product trade-off, not a
 defect. Measured: ten simultaneous session starts whose single server answers in

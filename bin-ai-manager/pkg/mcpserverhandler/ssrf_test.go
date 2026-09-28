@@ -3,10 +3,12 @@ package mcpserverhandler
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"runtime"
 	"strings"
 	"sync/atomic"
@@ -212,11 +214,10 @@ func Test_NewSSRFGuardedClient_RefusesRedirects(t *testing.T) {
 				_ = resp.Body.Close()
 				t.Fatal("expected the redirect to be refused")
 			}
-			refusal, ok := RedirectRefusal(err)
-			if !ok {
+			err = RedactTransportError(err)
+			if !errors.Is(err, ErrRedirectRefused) {
 				t.Fatalf("expected a refused redirect, got: %v", err)
 			}
-			err = refusal
 			if tt.wantHint != strings.Contains(err.Error(), "trailing slash") {
 				t.Fatalf("trailing slash hint present=%v, want %v: %v", !tt.wantHint, tt.wantHint, err)
 			}
@@ -290,5 +291,98 @@ func Test_NewSSRFGuardedClient_ClosesIdleConnections(t *testing.T) {
 	}
 	if after := runtime.NumGoroutine(); after > before+5 {
 		t.Fatalf("goroutines grew from %d to %d over 20 closed clients", before, after)
+	}
+}
+
+// Test_NewSSRFGuardedClient_UnparseableLocationIsRedacted pins the redirect
+// net/http cannot follow at all: a Location it cannot parse never reaches
+// CheckRedirect, and net/http's own error quotes the value in full. The
+// transport refuses it first, so the query never reaches an error.
+func Test_NewSSRFGuardedClient_UnparseableLocationIsRedacted(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", "https://bad host/%zz?token=SECRETPATH")
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	}))
+	defer srv.Close()
+
+	resp, err := loopbackGuardedClient(srv).Post(srv.URL+"/mcp", "application/json", strings.NewReader(`{}`))
+	if err == nil {
+		_ = resp.Body.Close()
+		t.Fatal("expected the redirect to be refused")
+	}
+	err = RedactTransportError(err)
+	if !errors.Is(err, ErrRedirectRefused) {
+		t.Fatalf("expected a refused redirect, got: %v", err)
+	}
+	if strings.Contains(err.Error(), "SECRETPATH") || strings.Contains(err.Error(), "%zz") {
+		t.Fatalf("refusal quotes the unparseable location: %v", err)
+	}
+}
+
+// Test_NewSSRFGuardedClient_RefusalBoundsTheHost pins that a server choosing
+// a very long redirect host cannot make the error arbitrarily long.
+func Test_NewSSRFGuardedClient_RefusalBoundsTheHost(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", "https://"+strings.Repeat("a", 50000)+".example.com/x")
+		w.WriteHeader(http.StatusFound)
+	}))
+	defer srv.Close()
+
+	resp, err := loopbackGuardedClient(srv).Get(srv.URL)
+	if err == nil {
+		_ = resp.Body.Close()
+		t.Fatal("expected the redirect to be refused")
+	}
+	if msg := RedactTransportError(err).Error(); len(msg) > 512 {
+		t.Fatalf("refusal is %d bytes; the server-chosen host must be cut", len(msg))
+	}
+}
+
+// Test_RedactTransportError pins that a transport failure is reported
+// without the request URL's path or query, where a customer may have put a
+// key, while keeping the cause for errors.Is.
+func Test_RedactTransportError(t *testing.T) {
+	cause := errors.New("connection refused")
+	err := RedactTransportError(&url.Error{Op: "Post", URL: "https://mcp.example.com/v1/mcp?api_key=SECRETQUERY", Err: cause})
+	if strings.Contains(err.Error(), "SECRETQUERY") || strings.Contains(err.Error(), "/v1/mcp") {
+		t.Fatalf("path or query survived: %v", err)
+	}
+	if !strings.Contains(err.Error(), "https://mcp.example.com") || !errors.Is(err, cause) {
+		t.Fatalf("host or cause lost: %v", err)
+	}
+
+	plain := errors.New("not a url error")
+	if RedactTransportError(plain) != plain {
+		t.Fatal("an error without a URL must pass through unchanged")
+	}
+}
+
+// Test_redirectRefusal_TrailingSlashHint pins when the trailing-slash hint is
+// given.
+func Test_redirectRefusal_TrailingSlashHint(t *testing.T) {
+	mustURL := func(s string) *url.URL {
+		u, err := url.Parse(s)
+		if err != nil {
+			t.Fatalf("bad url %q: %v", s, err)
+		}
+		return u
+	}
+	tests := []struct {
+		from, to string
+		want     bool
+	}{
+		{"https://h/mcp/", "https://h/mcp", true},
+		{"https://h/mcp", "https://h/mcp/", true},
+		{"https://h/", "https://h", true},
+		{"https://h/mcp", "https://h/other", false},
+		{"https://h/mcp/", "http://h/mcp", false},
+		{"https://h/mcp/", "https://other/mcp", false},
+		{"https://h/mcp", "https://h/mcp%2F", false},
+	}
+	for _, tt := range tests {
+		got := strings.Contains(redirectRefusal(mustURL(tt.from), mustURL(tt.to)).Error(), "trailing slash")
+		if got != tt.want {
+			t.Errorf("%s -> %s: hint %v, want %v", tt.from, tt.to, got, tt.want)
+		}
 	}
 }
