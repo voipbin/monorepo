@@ -93,7 +93,8 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | # | Item | Where | Notes |
 |---|---|---|---|
 | B1 | MCP protocol client: dual `Accept`, `initialize` and session lifecycle, `MCP-Protocol-Version`, SSE `data:` parsing, session-expiry re-init | `pkg/mcptoolhandler/client.go:108-176` | Largest single item. See A.2 |
-| B2 | `inputSchema` json tag, non-nil `Parameters` default | `pkg/mcptoolhandler/main.go:26`, `mcp_tool.go:97` | Two lines. Without it every session with one MCP tool dies. See A.3 |
+| B2a | `inputSchema` json tag | `pkg/mcptoolhandler/main.go:26` | **Live inbound-parse defect.** `ListTools` runs today and silently drops the schema of every tool from every conformant server, because the tag reads `input_schema` and the wire field is `inputSchema`. Belongs to PR B1: it needs no consumer to be wrong, and PR B1's own acceptance gate asserts a non-nil schema |
+| B2b | Non-nil `Parameters` default | `mcp_tool.go:97`, and note `models/tool/main.go:108` has no `omitempty` | The half that kills the python pipeline, which requires advertisement. PR B2. See A.3 |
 | B3 | Redirect guard: re-validate on every hop, or refuse redirects | `pkg/mcpserverhandler/ssrf.go:95-112` | Credential leak, proven. See A.5 |
 | B4 | Type-filter ai-manager's built-in resolver | `pkg/toolhandler/main.go:29`, caller `mcp_tool.go:60` | Fail-open today. See A.4 |
 | B5 | Name policy: reject invalid charset and over-length, drop duplicates instead of last-write-wins, count caps | `mcp_tool.go:90-105` | An invalid name fails the whole completion, not one tool |
@@ -118,7 +119,8 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | B24 | Honour `isError`: a remote tool failure must not be reported to the model as a success | `pkg/mcptoolhandler/client.go:61`, `mcp_tool.go:185` | `IsError` is declared and **never read**; `CallTool` returns the error text as a normal result and `fillSuccess` labels it `success`. A hostile server's prose reaches the model under a success label |
 | B25 | Cancel an in-flight `tools/call` when the call ends | `mcp_tool.go:127`, `listenhandler/main.go:279` | Dispatch runs under `context.Background()`, so a hangup mid-call leaves a side-effecting request running with no consumer for the result. This is the other half of the double-fire class |
 | B26 | `clearListenState` must not lose `mcp_tool_map` | `pkg/aicallhandler/listen.go:539-546` | It copies keys from `c.Metadata`, the caller's **in-memory snapshot**, and writes the whole column, so a map written after `c` was fetched is lost. Dispatch then fails closed for the rest of that AIcall's life |
-| B27 | Rollback: a global config disable. The per-customer flag is **not** viable as first assumed | `internal/config/main.go` | Nothing can turn this feature off today, and the precedent this was modelled on does not transfer. See A.15 |
+| B27 | Rollback: a global config disable. The per-customer flag is **not** viable as first assumed | `internal/config/main.go` | Nothing can turn this feature off today, and the precedent this was modelled on does not transfer. See A.15, A.19 |
+| B28 | Cap and dedupe `mcp_server_ids` on the write path | `pkg/aihandler/mcpserver_validation.go:57-96`, `bin-openapi-manager/openapi/openapi.yaml` | **Live and unconditional, no feature involved.** One serial `McpServerGet` per submitted id with no cardinality cap and no dedupe, under a handler running on `context.Background()`, and the schema declares no `maxItems` or `uniqueItems` (verified: zero occurrences in the whole file). One authenticated PUT with N ids is N serial DB round trips today. It also uncaps the discovery fan-out, which makes B20 correctness-load-bearing rather than an optimisation |
 
 Hardening, cuttable to a follow-up: retryable/terminal reason codes beyond the
 401 case (B19 covers the one that matters).
@@ -150,8 +152,8 @@ blocking it.
 | O1 | Cache location and invalidation mechanism | ai-manager runs 2 replicas, so an in-process cache means a per-pod TTL and two customers' views. Redis via `pkg/cachehandler` is the alternative. Invalidation needs a subscription case that does not exist: `mcp_server_updated` is published (`models/mcpserver/event.go:6`) but ai-manager's `processEvent` (`pkg/subscribehandler/main.go:201-241`) has no case for it | **OPEN** |
 | O2 | Caps, final numbers | A character cap does not bound tokens: measured 284 tok/tool for English prose at 1,024 chars, 622 for filler, and **2,069 for Korean**, which is most of the current market. Must be a token cap, and the per-AI count must be sized against the worst case | **OPEN**, A.6 |
 | O3 | Does the transport RPC also write `MetaKeyMcpToolMap`? | If yes, B16's separate write is redundant and the staleness window shrinks. If no, both exist | **OPEN** |
-| O4 | Aggregate fan-out budget, as a number | Must be defended **against** the greeting target, not derived from it. The latency design targets a 3.0-3.5s initial greeting and reaches it by removing about 2.3s from a measured 5.8s; every phase it lists is already allocated and it contains no slack line, so there is no residual to derive a budget from. Pick a number and justify it | **OPEN**, A.13 |
-| O5 | How the build-tagged conformance test runs in CI | `bin-ai-manager-test` invokes `go test ... $(go list ./...)` with no `-tags`, so a tagged test is compiled out and silently never runs | **OPEN**, A.14 |
+| D16 | Aggregate fan-out budget | **6s aggregate, 5s per server**, defended rather than derived. The latency design targets a 3.0-3.5s greeting and reaches it by removing about 2.3s from a measured 5.8s, with every phase allocated and no slack line, so no number can be derived from it. B1 makes the current worst case worse (initialize plus tools/list is two round trips per server, so three servers is 60s under today's 10s per-request bound), and that is the number the budget exists to kill. Revisit against B18's histogram once it exists | SETTLED, replaces O4 |
+| D17 | How the conformance test runs in CI | **No build tag.** Verified: all three `go test` invocations run `$(go list ./...)` with no `-tags`, and the repo has zero `//go:build` test files, so a tagged test would compile out and silently never run. Use a runtime skip gated on an environment variable, set only on the `bin-ai-manager-test` job, with one pip step to install the reference SDK there | SETTLED, replaces O5 |
 | O6 | Where the per-AI count cap is applied, given a per-server cache | 3 servers at 32 each exceeds a 64 per-AI cap; the drop must be deterministic | **OPEN** |
 | O7 | Is the square-admin picker change in PR B or PR C? | Converting an AI to Insight with a stored whitelist will 400 with the picker still showing the cause | **OPEN**, A.9 |
 | D12 | Does the callback **replace** or **supplement** `GetByNames` at `runner.go:150`? | **Supplement.** Replacing it would bypass pipecat's AIType whitelist for the built-in half, which makes B4 a hard blocker rather than an independent fix | SETTLED, forced by A.4 |
@@ -231,31 +233,43 @@ line quoted in the PR body.
 
 ## 6. Build order
 
-The property that matters is narrower than v1 claimed, and the earlier wording
-was wrong. **Advertisement** is unreachable until step 9. The feature is not:
-three call sites consume `resolveTools`' *second* return value (the tool map) and
-`tool.go:141` routes any `mcp_`-prefixed name into dispatch, so against the
-stateless server configuration that A.2 shows does work, discovery succeeds and
-dispatch works today for any customer who sets `mcp_server_ids`, which nothing
-prevents. So steps 1 through 8 are not preparation for a dormant feature, they
-are fixes to a live one.
+**The split criterion, stated once so it is not re-derived a fourth time.**
+Earlier attempts justified the boundary twice and contradicted themselves both
+times, because "the loop runs" admits pagination and "a truncated list feeds
+nothing" excludes the fan-out bound. The criterion that actually separates the two
+PRs is:
+
+> **PR B1 is defects whose harm does not require a consumer of the tool list.**
+> Wire behaviour, leaked credentials, latency on the session-start path, and load
+> against a third party all hurt with nothing reading the result. **PR B2 is
+> defects whose harm requires a consumer**, which does not exist until the
+> transport lands.
+
+Section 0 records that only discovery is live and that dispatch is unreachable
+because pipecat drops an unregistered name before it crosses the wire. That holds
+here too: nothing in PR B1 depends on dispatch, and every PR B2 item is a real
+finding whose effect waits on advertisement.
 
 PR B1, in order:
 
 0. B21 re-enable the pipecat CI job. Green at HEAD today, so it costs nothing,
    and it must gate the work rather than follow it
-1. B1, B3 the MCP client's protocol and the redirect guard, with the L1 and L2
-   conformance tests. Includes making the JSON-RPC request id monotonic (A.20),
-   without which a paginated or multi-step session cannot match responses
+1. B1, B2a, B3 the MCP client's protocol, the `inputSchema` tag, and the redirect
+   guard, with the L1 and L2 conformance tests. Includes making the JSON-RPC
+   request id monotonic (A.20), without which a multi-step session cannot match
+   responses, and moving the status check ahead of the body read
 2. B19 the 401/403 refresh-and-retry, bypassing the expiry check
 3. B10 the Insight write gate in both locations
-4. B13, B20 the aggregate fan-out budget and single-flight, plus D14's rule that
-   the usability gate stays outside any cache
+4. B28 cap and dedupe the whitelist on the write path, which bounds what the
+   fan-out can be asked to do
+5. B13, B20 the aggregate fan-out budget and single-flight, plus D14's rule that
+   the usability gate stays outside any cache. B20 is correctness, not
+   optimisation, until B28 lands
 
 PR B2, in order, after PR B1 merges:
 
-5. B2, B23, B24, B6, B25 the schema tag, pagination, the error flag, the result
-   cap, and dispatch cancellation
+6. B2b, B23, B24, B6, B25 the parameters default, pagination, the error flag, the
+   result cap, and dispatch cancellation
 6. B4 the built-in resolver type filter, mandatory per D12
 7. B5, B7 name policy and the token-based description cap
 8. B14 the cache with negative caching
@@ -285,8 +299,8 @@ dead code by the split's own criterion. The boundary is **discovery**
 reachability: does the item fix something that runs today, given that
 `resolveTools` issues real outbound requests and nothing consumes its tool list.
 
-**PR B1, the live outbound-path PR.** B1, B3, B19, B10, B21, B13, B20, plus B14's
-usability gate only.
+**PR B1, the live outbound-path PR.** B1, B2a, B3, B19, B10, B13, B20, B21, B28,
+plus B14's usability gate rule only.
 
 Every item here fixes code that executes today. B1, B3 and B19 are the outbound
 request itself: the protocol is wrong, the redirect leaks credentials, and a
@@ -300,15 +314,18 @@ makes them immediate. B14 contributes only the rule that the usability gate is
 evaluated outside any cache (D14), which is a correctness constraint on this PR's
 outbound path rather than the cache itself.
 
-**PR B2, the activation PR.** B2, B4, B5, B6, B7, B9, B11, B12, B15, B16, B17,
+**PR B2, the activation PR.** B2b, B4, B5, B6, B7, B9, B11, B12, B15, B16, B17,
 B18, B22, B23, B24, B25, B26, B27, and the rest of B14.
 
 These are correct findings whose consequence is dormant until advertisement
-exists. The schema tag matters when a tool is advertised. The resolver type filter
+exists. The non-nil parameters default matters when a tool is advertised; the tag
+that makes the schema parse at all does not, which is why B2 was split. The resolver type filter
 is harmless while the list is discarded. The result cap, the error flag, the
 cancellation and the dispatch gates all sit on `CallTool`, which has no live
-caller. The metadata clobber protects a map that only dispatch reads. Pagination's
-request is live but its harm is not, because a truncated list feeds nothing.
+caller. The metadata clobber protects a map that only dispatch reads. Pagination's request is live but its harm is not. The stated reason for that was
+wrong and is corrected here: a truncated list does **not** feed nothing, it is
+persisted at all three map write sites and rides the aicall webhook. It is
+harmless because nothing **reads** it, since `lookupMcpToolRef` is dispatch-only.
 Filing them here is not a downgrade of their validity; it keeps the first PR
 honest about what it fixes.
 
@@ -751,3 +768,33 @@ metadata.
   `mcpToolMap` is empty for every production AI, so the webhook carries
   `"mcp_tool_map": {}`. That is an undocumented empty key, not a data leak. The
   projection change is still right; the urgency claimed for it was not.
+
+## A.21 Round 7 additions
+
+- **The protocol version header must echo the server, not a constant.** Round 7
+  re-ran the reference server and found the header is **optional** but a wrong
+  value is **fatal** (400, listing the versions it supports). So hardcoding our
+  own constant is strictly more dangerous than omitting the header, and B1 must
+  store the `protocolVersion` the server returns from `initialize` and echo that.
+  The acceptance gate's "assert the header is present" would otherwise pass while
+  the client is broken against any server older than us.
+- **Session scope, stated because B14 and B20 make it sharp.** The session lives
+  for one `ListTools` call, as a local variable, never stored and never cached.
+  B20's single-flight shares it only because coalesced callers share one function
+  execution, which is the only safe sharing: a cached session id would outlive the
+  credential that opened it, which is the same error D14 forbids for the usability
+  gate. PR B2 must not add session reuse without its own design.
+- **Refuse redirects rather than re-validating each hop.** Both were left open.
+  Re-validating means re-implementing Go's per-hop header-forwarding decision,
+  which A.5 proved is exactly what gets this wrong. An MCP endpoint is a URL the
+  customer registered and that is already pinned to https, so a server redirecting
+  its own endpoint is misconfigured; refusal gives a clear error instead of a
+  silent leak, and the redirect target must be logged redacted.
+- **The two retries must not compose.** B1's re-init fires on 404 only and B19's
+  refresh on 401 or 403 only, each with its own once-flag, so a server cannot be
+  made to produce four requests. B19 retries on the **same** session, because a
+  401 is an auth failure rather than a session failure.
+- **Error truncation cuts UTF-8 mid-rune.** `truncateForError` (`client.go:180`)
+  and `capErrText` (`mcp_tool.go:294`) slice bytes, so a multi-byte character
+  becomes invalid UTF-8 in a log line. `client.go:159` runs on every non-2xx,
+  which per A.2 is every conformant server today. One line each.
