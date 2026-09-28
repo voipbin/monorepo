@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -23,8 +24,19 @@ import (
 
 // commonidentityFor builds the minimal Identity embedded in an AI/McpServer
 // test fixture; only ID matters for these tests.
+// testCustomerID is the owner shared by the AI and its MCP servers in these
+// tests. It is explicit rather than the zero UUID so an ownership gate cannot
+// pass by two zero values happening to match.
+var testCustomerID = uuid.FromStringOrNil("c0000000-1111-4000-8000-00000000000c")
+
 func commonidentityFor(id uuid.UUID) commonidentity.Identity {
-	return commonidentity.Identity{ID: id}
+	return commonidentity.Identity{ID: id, CustomerID: testCustomerID}
+}
+
+// otherCustomerIdentityFor builds a server identity owned by a DIFFERENT
+// customer, for the ownership-gate cases.
+func otherCustomerIdentityFor(id uuid.UUID) commonidentity.Identity {
+	return commonidentity.Identity{ID: id, CustomerID: uuid.FromStringOrNil("d0000000-1111-4000-8000-00000000000d")}
 }
 
 // Test_resolveTools covers the fail-closed/best-effort properties resolveTools
@@ -45,6 +57,7 @@ func Test_resolveTools(t *testing.T) {
 		{
 			name: "active server contributes namespaced tools",
 			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
 				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("aaaaaaaa-1111-4000-8000-000000000001")},
 			},
 			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
@@ -68,6 +81,7 @@ func Test_resolveTools(t *testing.T) {
 		{
 			name: "disabled server contributes no tools and does not call ListTools",
 			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
 				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("bbbbbbbb-1111-4000-8000-000000000002")},
 			},
 			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
@@ -82,8 +96,52 @@ func Test_resolveTools(t *testing.T) {
 			expectToolMap:   map[string]aicall.McpToolRef{},
 		},
 		{
+			// Deleted is distinct from disabled: McpServerGet returns
+			// soft-deleted rows on purpose (the REST read of a deleted server
+			// answers 200), so Status alone stays Active and the row would
+			// still contribute tools without an explicit tm_delete check.
+			name: "soft-deleted server contributes no tools and does not call ListTools",
+			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("eeeeeeee-1111-4000-8000-00000000000e")},
+			},
+			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				serverID := uuid.FromStringOrNil("eeeeeeee-1111-4000-8000-00000000000e")
+				ts := time.Now()
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+					TMDelete: &ts,
+				}, nil)
+				// ListTools must NOT be called for a deleted server.
+			},
+			expectToolNames: []string{},
+			expectToolMap:   map[string]aicall.McpToolRef{},
+		},
+		{
+			// A stored id outlives the validation that admitted it: the server
+			// can be reassigned, or the whitelist can predate a tightening.
+			// Resolution must not hand another customer's tools to this LLM.
+			name: "server owned by another customer contributes no tools",
+			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("ffffffff-1111-4000-8000-00000000000f")},
+			},
+			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				serverID := uuid.FromStringOrNil("ffffffff-1111-4000-8000-00000000000f")
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: otherCustomerIdentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				// ListTools must NOT be called for a foreign server.
+			},
+			expectToolNames: []string{},
+			expectToolMap:   map[string]aicall.McpToolRef{},
+		},
+		{
 			name: "one server's ListTools failure does not affect the other server's tools",
 			ai: &ai.AI{
+				Identity: commonidentity.Identity{CustomerID: testCustomerID},
 				McpServerIDs: []uuid.UUID{
 					uuid.FromStringOrNil("cccccccc-1111-4000-8000-000000000003"),
 					uuid.FromStringOrNil("dddddddd-1111-4000-8000-000000000004"),
@@ -118,6 +176,7 @@ func Test_resolveTools(t *testing.T) {
 		{
 			name: "McpServer.Get failure for one server does not affect others",
 			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
 				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("eeeeeeee-1111-4000-8000-000000000005")},
 			},
 			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
@@ -131,6 +190,7 @@ func Test_resolveTools(t *testing.T) {
 		{
 			name: "no McpServerIDs resolves to empty tool map without touching the handlers",
 			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
 				McpServerIDs: nil,
 			},
 			setupMock:       func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {},
@@ -299,6 +359,74 @@ func Test_toolHandleMcpCall(t *testing.T) {
 			},
 			wantResult:      "failed",
 			wantCallToolHit: false,
+		},
+		{
+			// The dispatch gate is not redundant with the resolution gate: an
+			// AIcall can be reused for hours after its tool map was built, so
+			// the server may be deleted between resolution and this call.
+			name:     "fail closed: server soft-deleted since resolution",
+			aicall:   baseAIcall(goValueToolMap),
+			toolName: namespacedName,
+			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				aiH.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{
+					Identity:     commonidentityFor(aiID),
+					McpServerIDs: []uuid.UUID{serverID},
+				}, nil)
+				ts := time.Now()
+				// Status is still Active: only tm_delete marks it gone, and
+				// McpServerGet returns deleted rows on purpose.
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+					TMDelete: &ts,
+				}, nil)
+				// CallTool must NOT be reached.
+			},
+			wantResult:      "failed",
+			wantCallToolHit: false,
+			wantMessage:     "mcp tool is no longer available",
+		},
+		{
+			// Being on the whitelist proves the AI still lists the server; it
+			// does not prove the server still belongs to the AI's customer.
+			name:     "fail closed: whitelisted server owned by another customer",
+			aicall:   baseAIcall(goValueToolMap),
+			toolName: namespacedName,
+			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				aiH.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{
+					Identity:     commonidentityFor(aiID),
+					McpServerIDs: []uuid.UUID{serverID},
+				}, nil)
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: otherCustomerIdentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				// CallTool must NOT be reached.
+			},
+			wantResult:      "failed",
+			wantCallToolHit: false,
+			wantMessage:     "mcp tool is no longer available",
+		},
+		{
+			// Defensive, not reachable through the current mcpServerHandler
+			// (its Get returns a non-nil row whenever err is nil). The gate
+			// keeps it because that is an implementation detail of one
+			// implementation, not a guarantee of the interface, and a nil
+			// dereference here would panic inside an LLM tool dispatch.
+			name:     "fail closed: resolver returns a nil server without an error",
+			aicall:   baseAIcall(goValueToolMap),
+			toolName: namespacedName,
+			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				aiH.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{
+					Identity:     commonidentityFor(aiID),
+					McpServerIDs: []uuid.UUID{serverID},
+				}, nil)
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(nil, nil)
+				// CallTool must NOT be reached, and this must not panic.
+			},
+			wantResult:      "failed",
+			wantCallToolHit: false,
+			wantMessage:     "mcp tool is no longer available",
 		},
 		{
 			name:     "fail closed: server dropped from the AI's whitelist since resolution (stale reference)",

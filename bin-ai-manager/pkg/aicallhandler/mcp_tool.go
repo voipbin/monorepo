@@ -76,8 +76,8 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 			continue
 		}
 
-		if server.Status != mcpserver.StatusActive {
-			log.Debugf("Mcp server is not active, skipping its tools. mcp_server_id: %s, status: %s", serverID, server.Status)
+		if ok, why := mcpServerIsUsable(server, a); !ok {
+			log.Debugf("Mcp server is not usable, skipping its tools. mcp_server_id: %s, reason: %s", serverID, why)
 			continue
 		}
 
@@ -122,8 +122,8 @@ func mcpServerIDShort(id uuid.UUID) string {
 // toolHandleMcpCall dispatches an LLM tool_call whose function name carries
 // the mcp_ namespace prefix (design §9.2). It fails closed at every step: an
 // unresolvable name, a server no longer in the AI's whitelist, or a server
-// that is no longer active all produce a generic failure rather than routing
-// the call through.
+// that is deleted, inactive, or no longer owned by the AI's customer all
+// produce a generic failure rather than routing the call through.
 func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleMcpCall",
@@ -169,8 +169,8 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 		fillFailed(res, errMcpToolCallFailed("mcp tool is no longer available"))
 		return res
 	}
-	if server.Status != mcpserver.StatusActive {
-		log.Warnf("Mcp server is not active, refusing the call. mcp_server_id: %s, status: %s", ref.ServerID, server.Status)
+	if ok, why := mcpServerIsUsable(server, tmpAI); !ok {
+		log.Warnf("Mcp server is not usable, refusing the call. mcp_server_id: %s, reason: %s", ref.ServerID, why)
 		fillFailed(res, errMcpToolCallFailed("mcp tool is no longer available"))
 		return res
 	}
@@ -242,6 +242,40 @@ func decodeMcpToolRef(v any) (aicall.McpToolRef, bool) {
 	}
 
 	return aicall.McpToolRef{ServerID: serverID, ToolName: toolName}, true
+}
+
+// mcpServerIsUsable reports whether a resolved MCP server may serve tools for
+// the given AI: it must not be soft-deleted, it must be active, and it must
+// belong to the AI's customer.
+//
+// All three are checked on BOTH the resolution path (resolveTools, which
+// decides what the LLM is even told about) and the dispatch path
+// (toolHandleMcpCall, which decides what actually runs). The two run at
+// different times -- an AIcall can be reused for hours after its tool map was
+// built -- so a gate on only one of them still leaves a window where a
+// deleted, paused, or reassigned server is reachable.
+//
+// tm_delete has to be checked here rather than left to the Get: McpServerGet
+// returns soft-deleted rows on purpose, because the REST read of a deleted
+// server answers 200.
+//
+// The customer check is not redundant with the whitelist check in
+// toolHandleMcpCall. The whitelist proves the AI still lists this server; it
+// does not prove the server still belongs to the AI's customer, and stored ids
+// outlive the validation that admitted them.
+func mcpServerIsUsable(server *mcpserver.McpServer, a *ai.AI) (bool, string) {
+	switch {
+	case server == nil:
+		return false, "not found"
+	case server.TMDelete != nil:
+		return false, "deleted"
+	case server.Status != mcpserver.StatusActive:
+		return false, "not active: " + string(server.Status)
+	case server.CustomerID != a.CustomerID:
+		return false, "owned by another customer"
+	}
+
+	return true, ""
 }
 
 // mcpServerIDIsWhitelisted reports whether serverID is present in ids.

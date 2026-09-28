@@ -592,7 +592,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				// governed by `a` itself. No team or member lookup is registered,
 				// so removing the reuse branch's team gate fails here.
 				m.mcpServer.EXPECT().Get(ctx, uuid.FromStringOrNil("a8888888-0002-11f0-9999-999999999999")).Return(&mcpserver.McpServer{
-					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("a8888888-0002-11f0-9999-999999999999")},
+					Identity: commonidentity.Identity{CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"), ID: uuid.FromStringOrNil("a8888888-0002-11f0-9999-999999999999")},
 					Status:   mcpserver.StatusActive,
 				}, nil)
 				m.mcpTool.EXPECT().ListTools(ctx, uuid.FromStringOrNil("a8888888-0002-11f0-9999-999999999999")).Return([]mcptoolhandler.McpTool{
@@ -1213,7 +1213,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				// different server, so the tool map below proves which AI
 				// governed the refresh.
 				m.ai.EXPECT().Get(ctx, memberAIID).Return(&ai.AI{
-					Identity:     commonidentity.Identity{ID: memberAIID},
+					Identity:     commonidentity.Identity{CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"), ID: memberAIID},
 					EngineModel:  "grok.grok-3", // resolved engine model overrides the stale snapshot
 					McpServerIDs: []uuid.UUID{curServerID},
 				}, nil).Times(2)
@@ -1227,7 +1227,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				// refresh which reaches the persist step with the wrong contents
 				// (an empty map, or a map missing the current member's server).
 				m.mcpServer.EXPECT().Get(ctx, curServerID).Return(&mcpserver.McpServer{
-					Identity: commonidentity.Identity{ID: curServerID},
+					Identity: commonidentity.Identity{CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"), ID: curServerID},
 					Status:   mcpserver.StatusActive,
 				}, nil)
 				m.mcpTool.EXPECT().ListTools(ctx, curServerID).Return([]mcptoolhandler.McpTool{
@@ -1385,7 +1385,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				// The refresh runs anyway, governed by the start-member `a`.
 				m.mcpServer.EXPECT().Get(ctx, startServerID).Return(&mcpserver.McpServer{
-					Identity: commonidentity.Identity{ID: startServerID},
+					Identity: commonidentity.Identity{CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"), ID: startServerID},
 					Status:   mcpserver.StatusActive,
 				}, nil)
 				m.mcpTool.EXPECT().ListTools(ctx, startServerID).Return([]mcptoolhandler.McpTool{
