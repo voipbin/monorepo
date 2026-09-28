@@ -250,14 +250,30 @@ steps 0 through 10 fixes a live, customer-reachable surface, which is why the
 earlier framing of this whole sequence as preparation for a dormant feature was
 wrong.
 
-**This build order is only meaningful if the work is split across more than one
-PR, and the standing rule is one PR per repository.** Inside a single PR the tree
-is observed only in its final state, so the ordering above is a review aid rather
-than a safety property. The natural boundary, if a split is authorised, is
-whether an item has a live consumer today: B1 through B4, B6, B9, B10, B11, B19,
-B21, B23, B24, B25 and B26 all fix shipped reachable code and leave no dead code
-behind, while B5, B7, B12 through B18, B20, B22 and B27 are the turn-it-on half.
-That question is for the CEO, not for this document to decide.
+**The split is authorised.** The standing rule is one PR per repository, and the
+CEO has granted an exception for this work, so the build order above is a real
+sequencing constraint rather than a review aid. The boundary is whether an item
+has a live consumer today.
+
+**PR B1, the live-defect PR.** B1 through B4, B6, B9, B10, B11, B19, B21, B23,
+B24, B25 and B26. Every one fixes shipped, customer-reachable code, and none of
+them leaves dead code behind, because discovery and dispatch are both live today
+for any customer who sets `mcp_server_ids`. Landing this first means the MCP
+client is correct, its credentials stop leaking on a redirect, a remote failure
+stops being reported as a success, the tool list stops being silently truncated,
+the scope gates hold, and the dispatch index stops being destroyed, all while
+advertisement stays off. It is independently valuable and independently testable
+against the L1 and L2 conformance gate.
+
+**PR B2, the activation PR.** B5, B7, B12 through B18, B20, B22 and B27: the
+caps, the cache, the transport, the metrics, the rollback switches, and the
+documentation. This is the half that turns advertisement on, and it must not
+land before PR B1, because every item in it assumes a client that works and
+gates that hold.
+
+The ordering inside each PR follows the numbered steps above. B27's rollback
+switches belong to PR B2 rather than PR B1, because there is nothing to roll
+back until advertisement exists, but they must land before B12 within that PR.
 
 ## 7. What the design document must still specify
 
