@@ -185,12 +185,35 @@ func truncateForError(b []byte) string {
 	return string(b)
 }
 
+// refuseDeleted stops a transport call to a soft-deleted MCP server.
+//
+// This is the last line of defence, not the primary one: resolveTools and
+// toolHandleMcpCall already refuse deleted servers with the AI's customer in
+// hand, which this layer does not have. It exists because McpServerGet returns
+// soft-deleted rows on purpose, so without it any present or future caller
+// that reaches the transport directly would happily open a connection to a
+// server the customer has revoked -- and the delete path has already zeroed
+// the credentials, so the attempt would authenticate as nobody.
+func refuseDeleted(op string, m *mcpserver.McpServer) error {
+	if m == nil {
+		return fmt.Errorf("mcptoolhandler.%s: mcp server not found", op)
+	}
+	if m.TMDelete != nil {
+		return fmt.Errorf("mcptoolhandler.%s: mcp server is deleted", op)
+	}
+
+	return nil
+}
+
 // ListTools sends an MCP tools/list request to the server identified by
 // serverID and returns its advertised tools.
 func (h *mcpToolHandler) ListTools(ctx context.Context, serverID uuid.UUID) ([]McpTool, error) {
 	m, err := h.db.McpServerGet(ctx, serverID)
 	if err != nil {
 		return nil, fmt.Errorf("mcptoolhandler.ListTools: could not get mcp server: %w", err)
+	}
+	if err := refuseDeleted("ListTools", m); err != nil {
+		return nil, err
 	}
 
 	result, err := h.doJSONRPCRequest(ctx, m, "tools/list", map[string]any{})
@@ -214,6 +237,9 @@ func (h *mcpToolHandler) CallTool(ctx context.Context, serverID uuid.UUID, toolN
 	m, err := h.db.McpServerGet(ctx, serverID)
 	if err != nil {
 		return "", fmt.Errorf("mcptoolhandler.CallTool: could not get mcp server: %w", err)
+	}
+	if err := refuseDeleted("CallTool", m); err != nil {
+		return "", err
 	}
 
 	var args any
