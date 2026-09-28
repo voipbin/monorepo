@@ -3,8 +3,11 @@ package mcpoauthhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -286,33 +289,70 @@ func Test_GetValidAccessToken_RefreshFailureSetsBackoff(t *testing.T) {
 	}
 }
 
-// Test_GetValidAccessToken_PersistSurvivesCallerDeadline pins that a refresh
-// completes and is persisted even when the caller's context is cancelled
-// while the vendor call is in flight. The vendor rotates the refresh token as
-// it answers, so dropping that answer, or abandoning the write after it,
-// would leave a dead refresh token and force the customer to reconnect.
-func Test_GetValidAccessToken_PersistSurvivesCallerDeadline(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+// rotatingVendor is a fake token endpoint that rotates the refresh token on
+// every successful refresh and rejects a refresh token it has already seen,
+// as GitHub and Linear do. delay holds each answer, to widen races.
+type rotatingVendor struct {
+	mu      sync.Mutex
+	live    string
+	seen    map[string]bool
+	calls   int
+	reused  int
+	delay   time.Duration
+	release chan struct{}
+}
 
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	h := newTestHandler(t, mockDB)
+func newRotatingVendor(initial string) *rotatingVendor {
+	return &rotatingVendor{live: initial, seen: map[string]bool{}}
+}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func (v *rotatingVendor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	presented := r.PostForm.Get("refresh_token")
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// The vendor answers, but the caller's deadline passes meanwhile.
-		cancel()
+	if v.release != nil {
+		<-v.release
+	}
+	time.Sleep(v.delay)
+
+	v.mu.Lock()
+	v.calls++
+	if v.seen[presented] || presented != v.live {
+		v.reused++
+		v.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"access_token":  "new-access-token",
-			"refresh_token": "new-refresh-token",
-			"token_type":    "Bearer",
-			"expires_in":    3600,
-		})
-	}))
-	defer srv.Close()
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":"invalid_grant"}`))
+		return
+	}
+	v.seen[presented] = true
+	v.live = fmt.Sprintf("refresh-%d", v.calls)
+	next := v.live
+	v.mu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"access_token":  fmt.Sprintf("access-%d", v.calls),
+		"refresh_token": next,
+		"token_type":    "Bearer",
+		"expires_in":    3600,
+	})
+}
+
+func (v *rotatingVendor) counts() (calls int, reused int) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return v.calls, v.reused
+}
+
+// expiredOAuthServer builds a handler pointed at vendor and a server row
+// whose access token has expired and whose refresh token is refreshToken.
+func expiredOAuthServer(t *testing.T, mockDB *dbhandler.MockDBHandler, vendor http.Handler, refreshToken string) (*mcpOAuthHandler, *mcpserver.McpServer) {
+	t.Helper()
+
+	h := newTestHandler(t, mockDB)
+	srv := httptest.NewServer(vendor)
+	t.Cleanup(srv.Close)
 
 	h.vendors[VendorLinear] = vendorConfig{
 		AuthorizeURL: "https://linear.app/oauth/authorize",
@@ -320,18 +360,17 @@ func Test_GetValidAccessToken_PersistSurvivesCallerDeadline(t *testing.T) {
 		ClientID:     "linear-client-id",
 		ClientSecret: "linear-client-secret",
 	}
-	h.httpClient = &http.Client{Timeout: 2 * time.Second}
+	h.httpClient = &http.Client{Timeout: 5 * time.Second}
 
 	accessCT, accessNonce, ver, err := h.crypto.Encrypt("stale-access-token")
 	if err != nil {
 		t.Fatalf("could not encrypt access token: %v", err)
 	}
-	refreshCT, refreshNonce, _, err := h.crypto.Encrypt("old-refresh-token")
+	refreshCT, refreshNonce, _, err := h.crypto.Encrypt(refreshToken)
 	if err != nil {
 		t.Fatalf("could not encrypt refresh token: %v", err)
 	}
 
-	serverID := uuid.Must(uuid.NewV4())
 	past := time.Now().Add(-1 * time.Hour)
 	m := &mcpserver.McpServer{
 		OAuthVendor:            VendorLinear,
@@ -342,25 +381,171 @@ func Test_GetValidAccessToken_PersistSurvivesCallerDeadline(t *testing.T) {
 		RefreshTokenCiphertext: refreshCT,
 		RefreshTokenNonce:      refreshNonce,
 	}
-	m.ID = serverID
+	m.ID = uuid.Must(uuid.NewV4())
 
+	mc := gomock.NewController(t)
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockUtil.EXPECT().TimeNow().Return(func() *time.Time { n := time.Now(); return &n }()).AnyTimes()
+	mockUtil.EXPECT().TimeNow().DoAndReturn(func() *time.Time { n := time.Now(); return &n }).AnyTimes()
 	h.utilHandler = mockUtil
 
-	mockDB.EXPECT().McpServerUpdate(gomock.Any(), serverID, gomock.Any()).DoAndReturn(
-		func(writeCtx context.Context, _ uuid.UUID, _ map[mcpserver.Field]any) error {
+	return h, m
+}
+
+// Test_GetValidAccessToken_RefreshOutlivesCaller pins that a caller whose
+// context ends while the vendor is answering is released at once, while the
+// refresh runs on and its rotated token is still stored. The vendor has
+// already invalidated the old refresh token by then, so dropping the answer
+// or abandoning the write would force the customer to reconnect.
+func Test_GetValidAccessToken_RefreshOutlivesCaller(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	vendor := newRotatingVendor("refresh-0")
+	vendor.release = make(chan struct{})
+	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+
+	stored := make(chan map[mcpserver.Field]any, 1)
+	mockDB.EXPECT().McpServerUpdate(gomock.Any(), m.ID, gomock.Any()).DoAndReturn(
+		func(writeCtx context.Context, _ uuid.UUID, fields map[mcpserver.Field]any) error {
 			if writeCtx.Err() != nil {
 				t.Errorf("the rotated token write ran on a cancelled context: %v", writeCtx.Err())
 			}
 			if _, ok := writeCtx.Deadline(); !ok {
 				t.Error("the rotated token write must still be bounded by a deadline")
 			}
+			stored <- fields
 			return nil
 		},
 	)
 
-	if _, err := h.GetValidAccessToken(ctx, m); err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+
+	// The vendor does not answer until the caller has returned, so a caller
+	// that waited for the exchange instead of its own context would never
+	// return. Run it aside and fail cleanly rather than hang.
+	returned := make(chan error, 1)
+	go func() {
+		_, err := h.GetValidAccessToken(ctx, m)
+		returned <- err
+	}()
+	select {
+	case err := <-returned:
+		if err == nil || !strings.Contains(err.Error(), "gave up waiting") {
+			t.Fatalf("expected the caller to give up at its deadline, got: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		close(vendor.release)
+		t.Fatal("the caller was held past its own deadline waiting for the refresh")
+	}
+
+	close(vendor.release)
+	select {
+	case fields := <-stored:
+		ct, _ := fields[mcpserver.FieldRefreshTokenCiphertext].([]byte)
+		nonce, _ := fields[mcpserver.FieldRefreshTokenNonce].([]byte)
+		got, err := h.crypto.Decrypt(ct, nonce, m.KeyVersion)
+		if err != nil || got != "refresh-1" {
+			t.Fatalf("stored refresh token = %q (err %v), want the rotated refresh-1", got, err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("the rotated token was never stored after the caller gave up")
+	}
+}
+
+// Test_GetValidAccessToken_ConcurrentCallersShareOneRefresh pins that a burst
+// of callers holding the same expired token spends the refresh token once.
+// Without this every caller but one presents a spent refresh token, and a
+// vendor that detects reuse revokes the grant.
+func Test_GetValidAccessToken_ConcurrentCallersShareOneRefresh(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	vendor := newRotatingVendor("refresh-0")
+	vendor.delay = 100 * time.Millisecond
+	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+	mockDB.EXPECT().McpServerUpdate(gomock.Any(), m.ID, gomock.Any()).Return(nil).Times(1)
+
+	const callers = 8
+	var wg sync.WaitGroup
+	tokens := make([]string, callers)
+	errs := make([]error, callers)
+	for i := 0; i < callers; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			tokens[i], errs[i] = h.GetValidAccessToken(context.Background(), m)
+		}(i)
+	}
+	wg.Wait()
+
+	for i := 0; i < callers; i++ {
+		if errs[i] != nil || tokens[i] != "access-1" {
+			t.Errorf("caller %d got %q, %v; want access-1", i, tokens[i], errs[i])
+		}
+	}
+	if calls, reused := vendor.counts(); calls != 1 || reused != 0 {
+		t.Fatalf("vendor saw %d refreshes and %d reused refresh tokens; want 1 and 0", calls, reused)
+	}
+}
+
+// Test_GetValidAccessToken_LateCallerWithSpentTokenReusesResult pins that a
+// caller arriving after a refresh finished, still holding the row it read
+// before, is given that refresh's result instead of presenting the spent
+// refresh token again.
+func Test_GetValidAccessToken_LateCallerWithSpentTokenReusesResult(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	vendor := newRotatingVendor("refresh-0")
+	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+	mockDB.EXPECT().McpServerUpdate(gomock.Any(), m.ID, gomock.Any()).Return(nil).Times(1)
+
+	for i := 0; i < 2; i++ {
+		token, err := h.GetValidAccessToken(context.Background(), m)
+		if err != nil || token != "access-1" {
+			t.Fatalf("call %d got %q, %v; want access-1", i, token, err)
+		}
+	}
+	if calls, reused := vendor.counts(); calls != 1 || reused != 0 {
+		t.Fatalf("vendor saw %d refreshes and %d reused refresh tokens; want 1 and 0", calls, reused)
+	}
+}
+
+// Test_GetValidAccessToken_FailedRefreshIsNotReused pins that a failed
+// exchange is not handed to later callers: the backoff decides when a retry
+// is allowed, and once it lapses the next caller starts a new exchange
+// rather than receiving the old failure.
+func Test_GetValidAccessToken_FailedRefreshIsNotReused(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	vendor := newRotatingVendor("some-other-token")
+	h, m := expiredOAuthServer(t, mockDB, vendor, "refresh-0")
+
+	if _, err := h.GetValidAccessToken(context.Background(), m); err == nil || !strings.Contains(err.Error(), "could not refresh") {
+		t.Fatalf("expected the vendor refusal, got: %v", err)
+	}
+	if _, err := h.GetValidAccessToken(context.Background(), m); err == nil || !strings.Contains(err.Error(), "backoff") {
+		t.Fatalf("expected the second call to hit the backoff, got: %v", err)
+	}
+	if calls, _ := vendor.counts(); calls != 1 {
+		t.Fatalf("vendor saw %d refreshes; want 1", calls)
+	}
+
+	// Let the backoff lapse. The next caller must reach the vendor again.
+	refreshBackoffMu.Lock()
+	delete(refreshBackoff, m.ID.String())
+	refreshBackoffMu.Unlock()
+
+	if _, err := h.GetValidAccessToken(context.Background(), m); err == nil || !strings.Contains(err.Error(), "could not refresh") {
+		t.Fatalf("expected a fresh vendor refusal after the backoff, got: %v", err)
+	}
+	if calls, _ := vendor.counts(); calls != 2 {
+		t.Fatalf("vendor saw %d refreshes; want 2, a failed exchange must not be reused", calls)
 	}
 }

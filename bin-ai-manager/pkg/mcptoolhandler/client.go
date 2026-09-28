@@ -115,7 +115,10 @@ func (h *mcpToolHandler) buildAuthHeader(ctx context.Context, m *mcpserver.McpSe
 // h.timeout bounds the whole call, not each request. A call is several
 // requests, and a per-request timeout would let a slow server hold one call
 // for a multiple of the configured limit on the session-start path. The only
-// work past it is the session close's short floor (sessionCloseFloor).
+// work that may run past it is the session close's short floor
+// (sessionCloseFloor). An OAuth refresh in progress keeps running after the
+// call gives up, so a rotated token is still stored, but the call itself
+// does not wait for it; see mcpoauthhandler.GetValidAccessToken.
 //
 // A 404 on the method means the server discarded the session. That is retried
 // exactly once with a new session (requirement 11): the retry is straight-line
@@ -134,7 +137,14 @@ func (h *mcpToolHandler) doJSONRPCRequest(ctx context.Context, m *mcpserver.McpS
 	// connections would otherwise outlive it indefinitely.
 	defer client.CloseIdleConnections()
 
-	session, err := h.openSession(ctx, client, m)
+	// Resolved once and reused by the replacement session below; see
+	// openSession.
+	authName, authValue, err := h.buildAuthHeader(ctx, m)
+	if err != nil {
+		return nil, fmt.Errorf("mcptoolhandler: could not build auth header: %w", err)
+	}
+
+	session, err := h.openSession(ctx, client, m, authName, authValue)
 	if err != nil {
 		return nil, fmt.Errorf("mcptoolhandler: %w", err)
 	}
@@ -143,7 +153,7 @@ func (h *mcpToolHandler) doJSONRPCRequest(ctx context.Context, m *mcpserver.McpS
 
 	if sessionGone(session, err) {
 		// The server already discarded this session, so it is not closed.
-		session, err = h.openSession(ctx, client, m)
+		session, err = h.openSession(ctx, client, m, authName, authValue)
 		if err != nil {
 			return nil, fmt.Errorf("mcptoolhandler: could not re-initialize after the session expired: %w", err)
 		}

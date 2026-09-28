@@ -135,12 +135,11 @@ func (s *mcpSession) nextID() int {
 // openSession runs the handshake: initialize, check the JSON-RPC result
 // rather than the HTTP status, adopt the negotiated protocol version and the
 // session id, then send notifications/initialized.
-func (h *mcpToolHandler) openSession(ctx context.Context, client *http.Client, m *mcpserver.McpServer) (*mcpSession, error) {
-	authName, authValue, err := h.buildAuthHeader(ctx, m)
-	if err != nil {
-		return nil, fmt.Errorf("could not build auth header: %w", err)
-	}
-
+// authName and authValue are resolved once per call by the caller, not here:
+// resolving an OAuth token can spend the stored refresh token, and m is not
+// updated in memory afterwards, so resolving again for a replacement session
+// would spend the same refresh token a second time.
+func (h *mcpToolHandler) openSession(ctx context.Context, client *http.Client, m *mcpserver.McpServer, authName string, authValue string) (*mcpSession, error) {
 	s := &mcpSession{
 		client:    client,
 		server:    m,
@@ -191,7 +190,9 @@ func (h *mcpToolHandler) openSession(ctx context.Context, client *http.Client, m
 	s.protocolVersion = res.ProtocolVersion
 
 	if err := h.notify(ctx, s, "notifications/initialized"); err != nil {
-		h.closeSession(ctx, s)
+		if !sessionGone(s, err) {
+			h.closeSession(ctx, s)
+		}
 		return nil, fmt.Errorf("initialized notification failed: %w", err)
 	}
 
