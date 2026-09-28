@@ -447,7 +447,13 @@ func readSSEResponse(body io.Reader, wantID int) (*jsonRPCResponse, error) {
 				if hasData {
 					data.WriteByte('\n')
 				}
-				data.WriteString(strings.TrimPrefix(strings.TrimPrefix(line, "data:"), " "))
+				// Strip the field name, then the colon if any, then one
+				// leading space, so a bare "data" contributes an empty value
+				// rather than its own name.
+				value := strings.TrimPrefix(line, "data")
+				value = strings.TrimPrefix(value, ":")
+				value = strings.TrimPrefix(value, " ")
+				data.WriteString(value)
 				hasData = true
 			}
 		}

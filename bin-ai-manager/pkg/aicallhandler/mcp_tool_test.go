@@ -2,6 +2,8 @@ package aicallhandler
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -883,5 +885,95 @@ func Test_capErrText_RuneSafe(t *testing.T) {
 				t.Errorf("result is %d bytes, over the %d cap", len(got), tt.max)
 			}
 		})
+	}
+}
+
+// Test_decodeToolSchema pins the per-tool and per-resolution limits on
+// decoding remote input schemas, and that a rejected schema costs nothing.
+func Test_decodeToolSchema(t *testing.T) {
+	big := json.RawMessage(`{"type":"object","description":"` + strings.Repeat("x", mcpMaxToolSchemaBytes) + `"}`)
+
+	tests := []struct {
+		name       string
+		raw        json.RawMessage
+		budget     int
+		wantOK     bool
+		wantParams bool
+		wantBudget int
+	}{
+		{name: "absent schema", raw: nil, budget: 100, wantOK: true, wantBudget: 100},
+		{name: "small object", raw: json.RawMessage(`{"type":"object"}`), budget: 100, wantOK: true, wantParams: true, wantBudget: 100 - len(`{"type":"object"}`)},
+		{name: "over the per-tool limit", raw: big, budget: mcpToolSchemaBudgetBytes, wantOK: false, wantBudget: mcpToolSchemaBudgetBytes},
+		{name: "over what is left of the budget", raw: json.RawMessage(`{"type":"object"}`), budget: 5, wantOK: false, wantBudget: 5},
+		{name: "not an object", raw: json.RawMessage(`[1,2]`), budget: 100, wantOK: false, wantBudget: 100},
+		{name: "malformed", raw: json.RawMessage(`{"type":`), budget: 100, wantOK: false, wantBudget: 100},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			budget := tt.budget
+			params, ok := decodeToolSchema(tt.raw, &budget)
+			if ok != tt.wantOK || (params != nil) != tt.wantParams || budget != tt.wantBudget {
+				t.Fatalf("got ok=%v params=%v budget=%d; want ok=%v params=%v budget=%d", ok, params != nil, budget, tt.wantOK, tt.wantParams, tt.wantBudget)
+			}
+		})
+	}
+}
+
+// Test_resolveTools_SchemaLimits pins that a tool whose schema is too large
+// is dropped while the server's other tools are kept, and that the total
+// decoded across a resolution is bounded.
+func Test_resolveTools_SchemaLimits(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	serverID := uuid.FromStringOrNil("eeeeeeee-1111-4000-8000-000000000005")
+	srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+		Identity: commonidentityFor(serverID),
+		Status:   mcpserver.StatusActive,
+	}, nil)
+
+	// Each schema is just under the per-tool limit, so the budget admits
+	// only a few of them; one more is far over the per-tool limit.
+	nearLimit := json.RawMessage(`{"type":"object","description":"` + strings.Repeat("x", mcpMaxToolSchemaBytes-64) + `"}`)
+	tools := []mcptoolhandler.McpTool{
+		{Name: "huge", InputSchema: json.RawMessage(`{"d":"` + strings.Repeat("x", 2*mcpMaxToolSchemaBytes) + `"}`)},
+		{Name: "plain"},
+	}
+	for i := 0; i < 8; i++ {
+		tools = append(tools, mcptoolhandler.McpTool{Name: fmt.Sprintf("big%d", i), InputSchema: nearLimit})
+	}
+	tl.EXPECT().ListTools(gomock.Any(), serverID).Return(tools, nil)
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	merged, toolMap, err := h.resolveTools(context.Background(), &ai.AI{
+		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+		McpServerIDs: []uuid.UUID{serverID},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if _, ok := toolMap["mcp_eeeeeeee_huge"]; ok {
+		t.Error("a schema over the per-tool limit must be dropped")
+	}
+	if _, ok := toolMap["mcp_eeeeeeee_plain"]; !ok {
+		t.Error("a tool with no schema must be kept")
+	}
+
+	decoded := 0
+	for _, tl := range merged {
+		if strings.HasPrefix(string(tl.Name), "mcp_eeeeeeee_big") {
+			decoded++
+		}
+	}
+	wantDecoded := mcpToolSchemaBudgetBytes / len(nearLimit)
+	if decoded != wantDecoded {
+		t.Fatalf("decoded %d near-limit schemas, want %d within the %d byte budget", decoded, wantDecoded, mcpToolSchemaBudgetBytes)
+	}
+	if len(toolMap) != len(merged) {
+		t.Fatalf("tool map (%d) and merged list (%d) must describe the same tools", len(toolMap), len(merged))
 	}
 }

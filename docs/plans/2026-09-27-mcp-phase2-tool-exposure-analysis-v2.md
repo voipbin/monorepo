@@ -1067,7 +1067,20 @@ session re-opened after a 404; concurrent callers in one process each spending t
 same refresh token; a caller held for the refresh's own bounds; a refresh finishing
 after a reconnect or downgrade writing its tokens over the change; and a
 non-rotating refresh token written back under a key version it was not encrypted
-with. Two hazards remain, both older than PR B1 and neither made worse by it, and
+with. (The first of these was introduced during PR B1's own development and caught
+by its review; the rest are older.)
+
+**Discovery succeeding makes the size of a tool list matter.** The round-7
+adversarial review measured a hostile `tools/list` inside the 1 MiB body cap
+allocating about 60 MiB and holding about 35 MiB once its input schema was decoded
+into a generic map, against a 40M pod memory limit (`k8s/deployment.yml`). The same
+decode existed on main, but no conformant server could get that far there. PR B1
+keeps input schemas raw in `pkg/mcptoolhandler`, takes at most 128 tools per server,
+and decodes a schema in `resolveTools` only if it is at most 64 KiB and fits a
+256 KiB budget per resolution; a tool that does not fit is dropped and the server's
+other tools are kept. That bounds memory, not meaning: tool name validity (length,
+character set) and description length are still unchecked, and PR B2 must enforce
+them before anything is advertised to a model. Two hazards remain, both older than PR B1 and neither made worse by it, and
 both need a schema change, so they are deferred to their own change rather than
 folded into the discovery fix.
 

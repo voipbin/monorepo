@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 	"unicode/utf8"
 
@@ -65,6 +66,7 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 	merged = append(merged, builtins...)
 
 	toolMap := map[string]aicall.McpToolRef{}
+	schemaBudget := mcpToolSchemaBudgetBytes
 
 	if h.mcpServerHandler == nil || h.mcptoolHandler == nil {
 		return merged, toolMap, nil
@@ -89,13 +91,19 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 		}
 
 		prefix := mcpToolNamePrefix + mcpServerIDShort(serverID) + "_"
+		skipped := 0
 		for _, mt := range mcpTools {
+			params, ok := decodeToolSchema(mt.InputSchema, &schemaBudget)
+			if !ok {
+				skipped++
+				continue
+			}
 			namespacedName := prefix + mt.Name
 
 			merged = append(merged, tool.Tool{
 				Name:        tool.ToolName(namespacedName),
 				Description: mt.Description,
-				Parameters:  mt.InputSchema,
+				Parameters:  params,
 				RunLLM:      true,
 			})
 
@@ -104,9 +112,43 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 				ToolName: mt.Name,
 			}
 		}
+		if skipped > 0 {
+			log.Warnf("Skipped mcp tools whose input schema is too large or malformed. mcp_server_id: %s, skipped: %d", serverID, skipped)
+		}
 	}
 
 	return merged, toolMap, nil
+}
+
+const (
+	// mcpMaxToolSchemaBytes is the largest input schema, in raw JSON bytes,
+	// that is decoded. Decoding into a generic map costs up to about thirty
+	// times the raw size, so the limits here are what keep one tools/list
+	// from taking a pod near its memory limit.
+	mcpMaxToolSchemaBytes = 64 << 10
+	// mcpToolSchemaBudgetBytes is the total raw schema size decoded for one
+	// resolution, across every server.
+	mcpToolSchemaBudgetBytes = 256 << 10
+)
+
+// decodeToolSchema decodes one tool's input schema if it fits both the
+// per-tool limit and what is left of budget, charging it to budget. A tool
+// that does not fit, or whose schema is not a JSON object, is reported as
+// not ok and dropped by the caller, keeping the server's other tools. An
+// absent schema decodes to nil and costs nothing.
+func decodeToolSchema(raw json.RawMessage, budget *int) (map[string]any, bool) {
+	if len(raw) == 0 {
+		return nil, true
+	}
+	if len(raw) > mcpMaxToolSchemaBytes || len(raw) > *budget {
+		return nil, false
+	}
+	var params map[string]any
+	if err := json.Unmarshal(raw, &params); err != nil {
+		return nil, false
+	}
+	*budget -= len(raw)
+	return params, true
 }
 
 // mcpServerIDShort returns the first 8 lowercase-hex characters of id, with

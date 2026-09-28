@@ -2,9 +2,11 @@ package mcptoolhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -266,8 +268,62 @@ func Test_Protocol_InputSchemaParsed(t *testing.T) {
 	if tools[0].InputSchema == nil {
 		t.Fatal("inputSchema was dropped")
 	}
-	if tools[0].InputSchema["type"] != "object" {
-		t.Errorf("unexpected schema: %+v", tools[0].InputSchema)
+	var schema map[string]any
+	if err := json.Unmarshal(tools[0].InputSchema, &schema); err != nil || schema["type"] != "object" {
+		t.Errorf("unexpected schema: %s (err %v)", tools[0].InputSchema, err)
+	}
+}
+
+// Test_ListTools_CapsToolCount pins that one server contributes at most
+// MaxToolsPerServer tools, keeping the first ones it listed.
+func Test_ListTools_CapsToolCount(t *testing.T) {
+	var b strings.Builder
+	b.WriteString(`{"tools":[`)
+	for i := 0; i < MaxToolsPerServer+50; i++ {
+		if i > 0 {
+			b.WriteByte(',')
+		}
+		fmt.Fprintf(&b, `{"name":"t%d"}`, i)
+	}
+	b.WriteString(`]}`)
+
+	fake := newFakeMCPServer(t)
+	fake.jsonResponse = true
+	fake.methodRawReply = `{"jsonrpc":"2.0","id":{{id}},"result":` + b.String() + `}`
+
+	tools, err := listToolsAgainst(t, fake)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(tools) != MaxToolsPerServer || tools[0].Name != "t0" || tools[len(tools)-1].Name != fmt.Sprintf("t%d", MaxToolsPerServer-1) {
+		t.Fatalf("got %d tools (%s..%s), want the first %d", len(tools), tools[0].Name, tools[len(tools)-1].Name, MaxToolsPerServer)
+	}
+}
+
+// Test_ListTools_SchemaStaysRaw pins that ListTools does not decode input
+// schemas. A schema of many empty objects inside the 1 MiB body cap costs
+// tens of MiB once decoded into a generic map, so it must stay raw until a
+// consumer has checked its size.
+func Test_ListTools_SchemaStaysRaw(t *testing.T) {
+	schema := `{"type":"object","properties":{"p":[` + strings.TrimSuffix(strings.Repeat("{},", 300000), ",") + `]}}`
+	fake := newFakeMCPServer(t)
+	fake.jsonResponse = true
+	fake.methodRawReply = `{"jsonrpc":"2.0","id":{{id}},"result":{"tools":[{"name":"a","inputSchema":` + schema + `}]}}`
+
+	runtime.GC()
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
+	tools, err := listToolsAgainst(t, fake)
+	runtime.ReadMemStats(&after)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(tools) != 1 || len(tools[0].InputSchema) != len(schema) {
+		t.Fatalf("schema not passed through raw: %d bytes, want %d", len(tools[0].InputSchema), len(schema))
+	}
+	// Decoded, this schema allocates about 50 MiB; raw, a few MiB of copies.
+	if allocated := after.TotalAlloc - before.TotalAlloc; allocated > 20<<20 {
+		t.Fatalf("ListTools allocated %d MiB for a %d KiB schema; it must not decode schemas", allocated>>20, len(schema)>>10)
 	}
 }
 
@@ -326,6 +382,22 @@ func Test_readJSONRPCResponse(t *testing.T) {
 			name:        "SSE data field with no space after the colon",
 			contentType: "text/event-stream",
 			body:        "data:{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"ok\":true}}\n\n",
+			wantID:      2,
+			wantResult:  `{"ok":true}`,
+		},
+		{
+			// A field line with no colon has an empty value (SSE spec); it
+			// must not add the literal field name to the payload.
+			name:        "SSE bare data line after the payload",
+			contentType: "text/event-stream",
+			body:        "data: {\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"ok\":true}}\ndata\n\n",
+			wantID:      2,
+			wantResult:  `{"ok":true}`,
+		},
+		{
+			name:        "SSE bare data line before the payload",
+			contentType: "text/event-stream",
+			body:        "data\ndata: {\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"ok\":true}}\n\n",
 			wantID:      2,
 			wantResult:  `{"ok":true}`,
 		},
@@ -665,5 +737,51 @@ func Test_Protocol_NoCloseAfterRefusedInitialize(t *testing.T) {
 				t.Fatalf("sent %d DELETE(s) for a session the server never created", deletes)
 			}
 		})
+	}
+}
+
+// Test_Protocol_InvalidSessionIDFailsTheCall pins that the session id an
+// initialize answer carries is validated where it is adopted, so an id that
+// could not safely be echoed in a header fails the call instead of being
+// sent back.
+func Test_Protocol_InvalidSessionIDFailsTheCall(t *testing.T) {
+	for name, id := range map[string]string{
+		"contains a space":    "a b",
+		"over the size limit": strings.Repeat("a", maxSessionIDBytes+1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			fake := newFakeMCPServer(t)
+			fake.sessionIDOverride = id
+
+			_, err := listToolsAgainst(t, fake)
+			if err == nil || !strings.Contains(err.Error(), "session id") {
+				t.Fatalf("expected the invalid session id to fail the call, got: %v", err)
+			}
+			for _, r := range fake.recorded() {
+				if r.Method != "initialize" {
+					t.Fatalf("nothing may be sent after an invalid session id, got %s %q", r.HTTPMethod, r.Method)
+				}
+			}
+		})
+	}
+}
+
+// Test_Protocol_SessionCloseFloor pins that a call whose deadline has
+// already passed still sends the closing DELETE, within the short floor.
+// That is exactly when a session is most likely to be left open otherwise.
+func Test_Protocol_SessionCloseFloor(t *testing.T) {
+	fake := newFakeMCPServer(t)
+	srv := httptest.NewServer(fake)
+	defer srv.Close()
+
+	h := newTestHandler(t, nil)
+	s := &mcpSession{client: testClient(time.Second), server: &mcpserver.McpServer{URL: srv.URL}, id: "session-9", protocolVersion: "2025-11-25"}
+
+	expired, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
+	defer cancel()
+	h.closeSession(expired, s)
+
+	if got := fake.closedSessions(); strings.Join(got, ",") != "session-9" {
+		t.Fatalf("closed sessions = %v; a call past its deadline must still close its session", got)
 	}
 }

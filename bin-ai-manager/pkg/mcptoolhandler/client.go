@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
@@ -230,6 +231,11 @@ func (h *mcpToolHandler) ListTools(ctx context.Context, serverID uuid.UUID) ([]M
 	var listResult toolsListResult
 	if err := json.Unmarshal(result, &listResult); err != nil {
 		return nil, fmt.Errorf("mcptoolhandler.ListTools: could not parse tools/list result: %w", err)
+	}
+
+	if len(listResult.Tools) > MaxToolsPerServer {
+		logrus.WithField("mcp_server_id", serverID).Warnf("Mcp server listed %d tools; keeping the first %d.", len(listResult.Tools), MaxToolsPerServer)
+		listResult.Tools = listResult.Tools[:MaxToolsPerServer]
 	}
 
 	return listResult.Tools, nil

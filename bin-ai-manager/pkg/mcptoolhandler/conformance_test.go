@@ -2,6 +2,7 @@ package mcptoolhandler
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"testing"
 
@@ -72,8 +73,9 @@ func Test_Conformance_ReferenceServer(t *testing.T) {
 			if found == nil {
 				t.Fatalf("lookup_order not advertised: %+v", tools)
 			}
-			if found.InputSchema == nil || found.InputSchema["type"] != "object" {
-				t.Fatalf("inputSchema missing or malformed: %+v", found.InputSchema)
+			var schema map[string]any
+			if err := json.Unmarshal(found.InputSchema, &schema); err != nil || schema["type"] != "object" {
+				t.Fatalf("inputSchema missing or malformed: %s (err %v)", found.InputSchema, err)
 			}
 
 			text, err := h.CallTool(context.Background(), serverID, "lookup_order", `{"order_id":"A-1"}`)

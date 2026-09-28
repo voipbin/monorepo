@@ -57,6 +57,9 @@ type fakeMCPServer struct {
 	// methodRawBody, when set, replaces the whole HTTP body of the method
 	// answer, bypassing JSON-RPC framing entirely.
 	methodRawBody string
+	// sessionIDOverride, when set, is issued as the session id instead of
+	// the generated one, to exercise session id validation.
+	sessionIDOverride string
 	// deleteStatus is the status DELETE answers with. Defaults to 200.
 	deleteStatus int
 
@@ -260,6 +263,9 @@ func (f *fakeMCPServer) handleInitialize(w http.ResponseWriter, id, params json.
 	f.mu.Lock()
 	f.sessions++
 	sid := fmt.Sprintf("session-%d", f.sessions)
+	if f.sessionIDOverride != "" {
+		sid = f.sessionIDOverride
+	}
 	f.mu.Unlock()
 
 	if !f.stateless {

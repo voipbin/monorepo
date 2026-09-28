@@ -8,6 +8,7 @@ package mcptoolhandler
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -22,11 +23,22 @@ import (
 // tools/list call. The wire field is inputSchema (camelCase, per the MCP
 // specification and the reference server); the snake_case tag this struct
 // used to carry silently dropped every tool's schema.
+//
+// InputSchema is kept as the raw JSON the server sent. Decoding it into a
+// generic map costs about thirty times its size in memory, so a single
+// hostile tools/list within the 1 MiB body cap could otherwise take a pod
+// near its memory limit. The consumer decodes a schema only after checking
+// its size.
 type McpTool struct {
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	InputSchema map[string]any `json:"inputSchema,omitempty"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	InputSchema json.RawMessage `json:"inputSchema,omitempty"`
 }
+
+// MaxToolsPerServer is the most tools taken from one server's tools/list.
+// Tools past it are dropped. It bounds what one server can add to a
+// session's tool list and to the tool map stored on the aicall.
+const MaxToolsPerServer = 128
 
 // McpToolHandler discovers and calls tools exposed by a customer's remote
 // MCP server. Every outbound call goes through the SSRF-guarded HTTP client
