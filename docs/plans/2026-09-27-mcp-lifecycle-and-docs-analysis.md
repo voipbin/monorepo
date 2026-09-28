@@ -778,7 +778,7 @@ two holes every earlier recurrence used.
 
 1. **A bare `:N` carried from an EARLIER line landed on a blank line** (section 7's dispatch-test
    prescription). The path came from a preceding line, so no reader could see which file was
-   meant, and the gate only warned. Worse, this commit CAUSED it: adding an anchor at doc:2296 "exercises this path"
+   meant, and the gate only warned. Worse, this commit CAUSED it: adding an anchor at doc:2297 "exercises this path"
    re-bound the carry from one wrong construct to another. A carried bare `:N` landing on a blank
    line or a lone brace is now an ERROR, not a warning, on the reasoning that the only available
    evidence the binding is right is that the landing looks like a construct. Turning it on
@@ -1269,7 +1269,7 @@ reason to do it here.
 `ai_struct_mcpserver.rst:53` asserts that `tm_delete` = `9999-01-01
 00:00:00.000000` means "not deleted," and the example block at `:71-72` prints that
 value for **both** `tm_update` and `tm_delete`. The API cannot produce that output:
-- `models/mcpserver/main.go:98` is `TMDelete *time.Time` (pointer, so `null` on the
+- `models/mcpserver/main.go:104 TMDelete` is `TMDelete *time.Time` (pointer, so `null` on the
   wire).
 - `ai_mcp_servers` was created 2026-09-11
   (`9b0ad37e0360_ai_mcp_servers_create_table.py:22-42`), **after**
@@ -2088,7 +2088,8 @@ Redis cache (§3.9), because there is no measured signal for it.
    reject it (option a).** ("좋아, 네 제안대로 가자")
 
    The code already declares this the correct behavior and only the implementation
-   failed to follow: `models/mcpserver/main.go:17-19` says "never set directly via
+   failed to follow: `models/mcpserver/main.go` said, at the time of this analysis,
+   "never set directly via
    POST/PUT with a customer-supplied secret," and the OpenAPI spec enumerates only
    `["", "bearer", "api_key"]` (`paths/mcpservers/main.yaml:57`, `id.yaml:74`). But
    `models/mcpserver/main.go:27 validAuthTypes` (`:27-29`) includes `AuthTypeOAuth: true`, the write paths check

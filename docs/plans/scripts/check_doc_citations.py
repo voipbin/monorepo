@@ -243,9 +243,17 @@ SELF_TEST_PROBES = [
     # A carried RANGE is exempt from the brace rule (a block's last line is a
     # brace) but NOT from the blank-line rule -- a blank line ends no block in
     # any language, and one such landing escaped through the first exemption.
+    #
+    # This probe depends on the cited END line actually being blank in the real
+    # tree, so it breaks silently whenever that file shifts: an earlier commit on
+    # this branch deleted two struct fields and the old `:79-86` anchor landed on
+    # a comment instead, leaving the probe green-by-accident while testing
+    # nothing. Keep the END on a line that is blank for a structural reason (the
+    # separator before a commented field group), and re-check it whenever
+    # internal/config/main.go changes shape.
     (1, "carried range END landing on a blank line", "CARRIED",
      "See `bin-ai-manager/internal/config/main.go:151-154` here\n"
-     "and the table at `:79-86` there.\n"),
+     "and the table at `:79-85` there.\n"),
     (0, "carried range END landing on a closing brace must PASS", None,
      "See `bin-ai-manager/pkg/aicallhandler/helpers.go:194 "
      "resolveActiveAIForMcp`\nand also `:196-225` there.\n"),

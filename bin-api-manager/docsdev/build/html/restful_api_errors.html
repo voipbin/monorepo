@@ -1143,6 +1143,55 @@
 </table>
 </div>
 </section>
+<section id="mcp-server-reasons">
+<h3>MCP Server Reasons<a class="headerlink" href="#mcp-server-reasons" title="Link to this heading">¶</a></h3>
+<p>Reasons fired by MCP server endpoints (<code class="docutils literal notranslate"><span class="pre">/mcpservers</span></code>, <code class="docutils literal notranslate"><span class="pre">/mcpservers/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">/mcpservers/oauth/*</span></code>) and by the <code class="docutils literal notranslate"><span class="pre">mcp_server_ids</span></code> field on <code class="docutils literal notranslate"><span class="pre">/ais</span></code>.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35.0%" />
+<col style="width: 10.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MCP_SERVER_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>MCP server ID does not exist, belongs to another customer, or has already been deleted. A deleted server keeps returning its record from <code class="docutils literal notranslate"><span class="pre">GET</span></code>, but every write refuses it, so this is the expected result of editing or re-deleting a server that is already gone. <strong>Fix:</strong> Verify the ID against a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/mcpservers</span></code> list, which omits deleted servers. A deleted server cannot be restored; register a new one.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_MCP_SERVER_URL</span></code></p></td>
+<td><p>400</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">url</span></code> is not a valid <code class="docutils literal notranslate"><span class="pre">https://</span></code> MCP endpoint. Plain <code class="docutils literal notranslate"><span class="pre">http://</span></code>, a missing host, and addresses that resolve into private or link-local ranges are all refused, because VoIPBin calls this URL from its own network. <strong>Fix:</strong> Publish the server on a public <code class="docutils literal notranslate"><span class="pre">https://</span></code> address.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_MCP_SERVER_STATUS</span></code></p></td>
+<td><p>400</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> is not one of <code class="docutils literal notranslate"><span class="pre">active</span></code> or <code class="docutils literal notranslate"><span class="pre">disabled</span></code>. <strong>Fix:</strong> Send one of those two values, or omit the field to leave it unchanged.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_MCP_SERVER_AUTH_TYPE</span></code></p></td>
+<td><p>400</p></td>
+<td><p>The request tried to move a server INTO <code class="docutils literal notranslate"><span class="pre">auth_type</span></code> <code class="docutils literal notranslate"><span class="pre">oauth</span></code>, which is entered only by completing the OAuth authorization flow and never by sending the value directly. Re-sending <code class="docutils literal notranslate"><span class="pre">oauth</span></code> on a server that is already connected is accepted, so this fires only on a real transition. <strong>Fix:</strong> Call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers/oauth/start</span></code> with <code class="docutils literal notranslate"><span class="pre">mcp_server_id</span></code> set to this server instead.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_MCP_SERVER_ID</span></code></p></td>
+<td><p>400</p></td>
+<td><p>An entry in an AI’s <code class="docutils literal notranslate"><span class="pre">mcp_server_ids</span></code> is not a usable server: it does not exist, is owned by another customer, or has been deleted. Fired by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code>, before the AI is written, so a rejected list leaves the AI unchanged. An ID already stored on the AI is exempt from the deleted check, so an AI holding a stale ID stays saveable. <strong>Fix:</strong> Submit <code class="docutils literal notranslate"><span class="pre">mcp_server_ids</span></code> without the offending ID.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_MCP_OAUTH_VENDOR</span></code></p></td>
+<td><p>400</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">vendor</span></code> is not one of the supported OAuth vendors. <strong>Fix:</strong> See <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers/oauth/start</span></code> for the current list.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MCP_OAUTH_STATE_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">state</span></code> (the <code class="docutils literal notranslate"><span class="pre">link_token</span></code> from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers/oauth/start</span></code>) is not usable. It is deliberately indistinguishable between unknown, already used, expired, and belonging to another customer, so that the token cannot be probed. A token is single-use and expires 10 minutes after it is issued, so a consent screen left open past that window ends here. <strong>Fix:</strong> Call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers/oauth/start</span></code> again for a fresh token and complete the flow without a long pause.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="speaking-reasons">
 <h3>Speaking Reasons<a class="headerlink" href="#speaking-reasons" title="Link to this heading">¶</a></h3>
 <p>Reasons fired by TTS speaking endpoints (<code class="docutils literal notranslate"><span class="pre">/speakings</span></code>, <code class="docutils literal notranslate"><span class="pre">/speakings/{id}*</span></code>). <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/stop</span></code> is idempotent today — stopping an already-stopped speaking session returns success (no-op).</p>
@@ -1605,6 +1654,7 @@
 <li><a class="reference internal" href="#email-reasons">Email Reasons</a></li>
 <li><a class="reference internal" href="#ai-reasons">AI Reasons</a></li>
 <li><a class="reference internal" href="#rag-reasons">RAG Reasons</a></li>
+<li><a class="reference internal" href="#mcp-server-reasons">MCP Server Reasons</a></li>
 <li><a class="reference internal" href="#speaking-reasons">Speaking Reasons</a></li>
 <li><a class="reference internal" href="#transcribe-reasons">Transcribe Reasons</a></li>
 <li><a class="reference internal" href="#agent-reasons">Agent Reasons</a></li>
