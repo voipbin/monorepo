@@ -26,6 +26,10 @@ MCP Server
         "tm_delete": "<string>"
     }
 
+.. note:: **Tool use is not yet available**
+
+   An MCP server's tools are not currently presented to any AI. Registration, whitelisting and ``status`` work today, and discovery does run on every AI session except realtime voice calls, but nothing consumes the discovered tools yet. See :ref:`Status <mcpserver-struct-mcpserver-status>`.
+
 * ``id`` (UUID): The MCP server registration's unique identifier. Returned when creating an MCP server via ``POST /mcpservers`` or when listing via ``GET /mcpservers``. Referenced from an AI's :ref:`mcp_server_ids <ai-struct-ai-tool_names>` list.
 * ``customer_id`` (UUID): The customer that owns this MCP server registration. Obtained from the ``id`` field of ``GET /customers``.
 * ``name`` (String, Required): A human-readable name for the MCP server (e.g., ``"Internal Ticketing MCP"``).
@@ -54,7 +58,7 @@ MCP Server
 
 .. note:: **Deleting a server destroys its credentials**
 
-   ``DELETE /mcpservers/{id}`` is a revocation, not an archive. The stored secret, and any OAuth access and refresh tokens, are erased at the moment of deletion and cannot be recovered -- not by VoIPBin support either. The record itself is retained so that audit history and existing AI references stay readable, but ``has_secret`` becomes ``false`` and the server stops serving tools immediately.
+   ``DELETE /mcpservers/{id}`` is a revocation, not an archive. The stored secret, and any OAuth access and refresh tokens, are erased at the moment of deletion and cannot be recovered -- not by VoIPBin support either. The record itself is retained so that audit history and existing AI references stay readable, but ``has_secret`` becomes ``false`` and the server is excluded from every AI that references it immediately, including from tool discovery. Tool use is not yet available in any case; see the note under :ref:`Status <mcpserver-struct-mcpserver-status>`.
 
    Deletion is not the only irreversible path. Changing ``auth_type`` away from ``oauth`` also erases the stored OAuth access and refresh tokens, and clears ``oauth_vendor``: the server is being told to authenticate a different way, so the connection it replaces is not kept. Re-running ``POST /mcpservers/oauth/start`` is the way back, not an undo.
 
@@ -86,11 +90,19 @@ Status
 ------
 The ``status`` field controls whether the MCP server's tools are made available to AIs that reference it.
 
+.. note:: **Tool use is not yet available**
+
+   A whitelisted server's tools are not currently presented to the AI, so whitelisting a server does not change how a conversation behaves. VoIPBin does already connect to a whitelisted server to discover its tools on every AI session except realtime voice calls. Sessions that do discover include chat, Insight, ``ai_task`` flow actions and API-created sessions, so expect ``tools/list`` requests authenticated per this server's ``auth_type`` in its logs; nothing consumes the discovered tools yet. Of what is discovered, the tool **names** are stored on the AI session record that resolved them, so they outlive the request; the input schemas and descriptions are held only for the lifetime of that resolution and are not stored. Stored names live as long as that session record does: deleting the MCP server, or the AI, does not remove names already written to past session records, and session deletion is a soft delete that retains the record. Ask support@voipbin.net if you need names purged from historical sessions. The source ranges these connections originate from are available on request from support@voipbin.net.
+
+   **Discovery runs today, so setting the status to disabled stops VoIPBin connecting to this server immediately.** The tool-availability and call-time behaviour in the table below takes effect when tool use ships. Servers registered and whitelisted now are preserved until then; no delivery date is committed yet.
+
+   Until tool use ships, an AI's callable actions come from its built-in ``tool_names`` set, and custom logic is reached from a :ref:`Flow <flow-overview>`.
+
 ================ =======================================
 Status           Description
 ================ =======================================
-active           Default. Tools are discovered and callable from any AI whose ``mcp_server_ids`` includes this server.
-disabled         Customer has deactivated the server. Its tools are silently omitted from every referencing AI's tool list, and any in-flight call attempt against a previously-resolved tool from this server fails closed.
+active           Default. Tools are discovered for every session except realtime voice calls of any AI whose ``mcp_server_ids`` includes this server, and will be callable from it when tool use ships.
+disabled         Customer has deactivated the server. It is skipped during discovery, its tools will be silently omitted from every referencing AI's tool list, and any in-flight call attempt against a previously-resolved tool from this server will fail closed.
 ================ =======================================
 
 .. _mcpserver-struct-mcpserver-auth_type:

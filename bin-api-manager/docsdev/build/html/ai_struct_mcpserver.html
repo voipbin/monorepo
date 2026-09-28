@@ -659,6 +659,11 @@
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Tool use is not yet available</strong></p>
+<p>An MCP server’s tools are not currently presented to any AI. Registration, whitelisting and <code class="docutils literal notranslate"><span class="pre">status</span></code> work today, and discovery does run on every AI session except realtime voice calls, but nothing consumes the discovered tools yet. See <a class="reference internal" href="#mcpserver-struct-mcpserver-status"><span class="std std-ref">Status</span></a>.</p>
+</div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The MCP server registration’s unique identifier. Returned when creating an MCP server via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers</span></code> or when listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/mcpservers</span></code>. Referenced from an AI’s <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-tool-names"><span class="std std-ref">mcp_server_ids</span></a> list.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this MCP server registration. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
@@ -692,7 +697,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Deleting a server destroys its credentials</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/mcpservers/{id}</span></code> is a revocation, not an archive. The stored secret, and any OAuth access and refresh tokens, are erased at the moment of deletion and cannot be recovered – not by VoIPBin support either. The record itself is retained so that audit history and existing AI references stay readable, but <code class="docutils literal notranslate"><span class="pre">has_secret</span></code> becomes <code class="docutils literal notranslate"><span class="pre">false</span></code> and the server stops serving tools immediately.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/mcpservers/{id}</span></code> is a revocation, not an archive. The stored secret, and any OAuth access and refresh tokens, are erased at the moment of deletion and cannot be recovered – not by VoIPBin support either. The record itself is retained so that audit history and existing AI references stay readable, but <code class="docutils literal notranslate"><span class="pre">has_secret</span></code> becomes <code class="docutils literal notranslate"><span class="pre">false</span></code> and the server is excluded from every AI that references it immediately, including from tool discovery. Tool use is not yet available in any case; see the note under <a class="reference internal" href="#mcpserver-struct-mcpserver-status"><span class="std std-ref">Status</span></a>.</p>
 <p>Deletion is not the only irreversible path. Changing <code class="docutils literal notranslate"><span class="pre">auth_type</span></code> away from <code class="docutils literal notranslate"><span class="pre">oauth</span></code> also erases the stored OAuth access and refresh tokens, and clears <code class="docutils literal notranslate"><span class="pre">oauth_vendor</span></code>: the server is being told to authenticate a different way, so the connection it replaces is not kept. Re-running <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/mcpservers/oauth/start</span></code> is the way back, not an undo.</p>
 <p>To use the same endpoint again, register a new MCP server and supply the secret again (or complete the OAuth flow again). If you only want to stop the server temporarily, set <code class="docutils literal notranslate"><span class="pre">status</span></code> to <code class="docutils literal notranslate"><span class="pre">disabled</span></code> instead: that keeps the credential and is reversible.</p>
 </div>
@@ -719,6 +724,13 @@
 <section id="status">
 <span id="mcpserver-struct-mcpserver-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field controls whether the MCP server’s tools are made available to AIs that reference it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Tool use is not yet available</strong></p>
+<p>A whitelisted server’s tools are not currently presented to the AI, so whitelisting a server does not change how a conversation behaves. VoIPBin does already connect to a whitelisted server to discover its tools on every AI session except realtime voice calls. Sessions that do discover include chat, Insight, <code class="docutils literal notranslate"><span class="pre">ai_task</span></code> flow actions and API-created sessions, so expect <code class="docutils literal notranslate"><span class="pre">tools/list</span></code> requests authenticated per this server’s <code class="docutils literal notranslate"><span class="pre">auth_type</span></code> in its logs; nothing consumes the discovered tools yet. Of what is discovered, the tool <strong>names</strong> are stored on the AI session record that resolved them, so they outlive the request; the input schemas and descriptions are held only for the lifetime of that resolution and are not stored. Stored names live as long as that session record does: deleting the MCP server, or the AI, does not remove names already written to past session records, and session deletion is a soft delete that retains the record. Ask <a class="reference external" href="mailto:support&#37;&#52;&#48;voipbin&#46;net">support<span>&#64;</span>voipbin<span>&#46;</span>net</a> if you need names purged from historical sessions. The source ranges these connections originate from are available on request from <a class="reference external" href="mailto:support&#37;&#52;&#48;voipbin&#46;net">support<span>&#64;</span>voipbin<span>&#46;</span>net</a>.</p>
+<p><strong>Discovery runs today, so setting the status to disabled stops VoIPBin connecting to this server immediately.</strong> The tool-availability and call-time behaviour in the table below takes effect when tool use ships. Servers registered and whitelisted now are preserved until then; no delivery date is committed yet.</p>
+<p>Until tool use ships, an AI’s callable actions come from its built-in <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> set, and custom logic is reached from a <a class="reference internal" href="flow_overview.html#flow-overview"><span class="std std-ref">Flow</span></a>.</p>
+</div>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -728,10 +740,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>active</p></td>
-<td><p>Default. Tools are discovered and callable from any AI whose <code class="docutils literal notranslate"><span class="pre">mcp_server_ids</span></code> includes this server.</p></td>
+<td><p>Default. Tools are discovered for every session except realtime voice calls of any AI whose <code class="docutils literal notranslate"><span class="pre">mcp_server_ids</span></code> includes this server, and will be callable from it when tool use ships.</p></td>
 </tr>
 <tr class="row-odd"><td><p>disabled</p></td>
-<td><p>Customer has deactivated the server. Its tools are silently omitted from every referencing AI’s tool list, and any in-flight call attempt against a previously-resolved tool from this server fails closed.</p></td>
+<td><p>Customer has deactivated the server. It is skipped during discovery, its tools will be silently omitted from every referencing AI’s tool list, and any in-flight call attempt against a previously-resolved tool from this server will fail closed.</p></td>
 </tr>
 </tbody>
 </table>
