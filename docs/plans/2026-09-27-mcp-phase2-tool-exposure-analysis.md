@@ -969,3 +969,245 @@ built on a client that returns 406.
 mid-conversation tool-set stability interact with P8, P17 and the
 `llm_messages` replay path simultaneously, and no round has decided them. Every
 other open question in section 4 now has an answer above.
+
+### Round 3 (2 reviewers: one APPROVED, one CHANGES_REQUESTED)
+
+The two reviewers disagreed about P12, so the CPO adjudicated against real
+code rather than averaging the verdicts. Reviewer 1 settled P12 with live
+provider calls and approved; reviewer 2 built the scope ledger nobody had built
+and rejected on two holes in the scope reductions. Both findings are recorded
+because both survived verification.
+
+#### 8.15 P12 is settled, and the corruption half of it is REFUTED
+
+Reviewer 1 made live calls to three provider families with a history containing
+a completed `tool_calls` pair for a function absent from the current `tools`
+array:
+
+| provider | result |
+|---|---|
+| openai gpt-4o-mini, gpt-4o, gpt-5-mini, gpt-4.1-mini | **200**, answered normally |
+| google gemini-2.5-flash | **200** |
+| x-ai grok-4.3 | **200** |
+| same history with no `tools` array at all | **200** everywhere |
+
+Control that proves the harness can detect rejection: an **orphaned** `role:tool`
+with no preceding call returns **400** from OpenAI. So providers police
+*pairing*, not membership in the current tool array. **P12's claim that this
+corrupts provider state is refuted.**
+
+What remains is real but smaller: the replayed pair is a strong few-shot
+prompt. With only `get_weather` advertised, gemini-2.5-flash emitted the
+unadvertised `mcp_` function 3/3 times. That lands on pipecat's missing-function
+handler, which returns a polite refusal and fires VoIPBin's `[missing_tool]`
+ERROR into an **alerted** Prometheus counter. So the failure mode is graceful
+degradation plus a false-positive page, not corruption.
+
+**Correction to P12's mechanism, verified directly.** P12 said the tool list is
+re-fetched on every conversation turn. That is true for chat, contact_case and
+task, and **false for voice, the flagship surface.** `Send` branches on
+reference type (`send.go:35-41`): `ReferenceTypeCall` goes to
+`SendReferenceTypeCall`, which *fetches* the existing pipecatcall
+(`PipecatV1PipecatcallGet`), pings the host and sends the message
+(`send.go:65-90`) with **no new pipecatcall and no tool rebuild**. Everything
+else goes to `SendReferenceTypeOthers`, which mints a new pipecatcall ID and
+calls `startPipecatcall` (`send.go:118-138`), rebuilding the list. The
+`startReferenceTypeConversation` reuse branch reuses the AIcall row, not the
+pipecat session; it allocates a fresh `PipecatcallID` at `start.go:351`. There
+is no session reuse to find.
+
+So voice fetches **once per call** and can hold a stale list for the length of
+a call, while chat re-fetches per turn. Those are opposite problems and the
+design must state both.
+
+**Cache decision, amended.** The 60s TTL keyed on `mcp_server_id` stands, and
+pinning for a conversation's lifetime is rejected: `mcp_server_ids` edits and a
+`status` flip to inactive must take effect promptly, which is PR A's whole
+revocation story, and dispatch re-checks live state on every call anyway. Three
+amendments:
+1. **Negative caching is required, not optional.** Caching only success means a
+   down server is re-probed every turn at 10s each, which defeats the stated
+   motivation. Cache failures at a shorter TTL (10-15s).
+2. **Suppress `[missing_tool]` for `mcp_`-prefixed names**, or the first
+   tool-set shrink pages an operator for correct behaviour. This is also a
+   precondition for the L3 gate assertion being meaningful.
+3. **Revocation is already safe on voice** because dispatch re-checks live
+   state; say so explicitly rather than inventing a mid-call refresh.
+
+#### 8.16 Two holes in the scope reductions, both confirmed
+
+H1. **The Insight exclusion (S1) is bypassable by a PUT that never mentions
+MCP.** Verified: `listenhandler/v1_ais.go:268` guards the whole validation block
+with `if req.McpServerIDs != nil`, so a request sending only `{"type":"insight"}`
+never reaches `ValidateMcpServerIDs`. `aihandler.Update` then resolves the
+effective type at `chatbot.go:145-151` (`TypeNone` means leave unchanged) and
+validates only `ToolNames` at `chatbot.go:155`. It already holds `preUpdateAI`
+(`chatbot.go:136`), so the stored whitelist is in hand and unchecked.
+Adding a type parameter to `ValidateMcpServerIDs` therefore does **not** close
+this; the gate must also sit at `chatbot.go:155`, refusing a transition to
+`TypeInsight` while a non-empty stored whitelist exists. Recommended belt and
+braces: also skip `TypeInsight` inside `resolveTools`, so any path that writes
+the column without going through `UpdateMcpServerIDs` is still covered.
+
+H2. **The team exclusion (S2) leaves MCP tools unadvertised but still
+dispatchable.** Advertising is clean: `resolveTeamForPython`
+(`pipecatcallhandler/run.go:137-216`) has no MCP reference, so a team AIcall
+would advertise nothing. Dispatch is not: `start.go:1184` calls `resolveTools`
+unconditionally and stores the map at `:1191`, and the reuse path refreshes it
+for the current member at `start.go:369-375`. On the dispatch side,
+`tool.go:141` routes any unmapped name carrying the `mcp_` prefix to
+`toolHandleMcpCall`, and `lookupMcpToolRef` reads the stored map. Verified:
+**there is no `AssistanceType` or team check anywhere on that path.** So a model
+emitting an `mcp_` name it was never given, which is plausible on a team
+pipeline where members switch and history carries prior names, gets a real call
+to a real server. PR A's live gates do not help, because the server genuinely is
+whitelisted, active and owned.
+
+Fix: make the exclusion symmetric by not writing `mcp_tool_map` at all for
+`AssistanceTypeTeam` AIcalls. Blocking `mcp_server_ids` on a team member's AI is
+the wrong instrument, because the same AI may legitimately be used standalone.
+
+#### 8.17 Corrections to round 2's own numbers and claims
+
+G1. **The token arithmetic in 8.13 is wrong by about 2.5x.** Measured with
+tiktoken o200k_base on a realistic capped tool (51-char name, 1,024-char
+description, two parameters): **637 tokens per tool**, so 64 tools is ~40,768
+tokens injected on every turn, not the ~16k claimed. At a 400-char description
+it is 325 tokens per tool. The caps are still right in principle; the
+justification figure was not. Choose either ~400-char descriptions at 64 tools,
+or 1,024 at 32 tools.
+
+G2. **F2's nested-budget claim is half wrong, and the wrong half matters.** Both
+RPCs really are `requestTimeoutDefault` = 3000, but on the voice path they are
+**sequential siblings under one caller budget**, not nested:
+`startReferenceTypeCall` calls `startAIcallByRealtime` and then, as a separate
+statement, `startPipecatcall` (`start.go:279`). More importantly, once the
+callback transport of 8.11 is adopted, `resolveTools` runs in `RunnerStart`'s
+goroutine and **neither budget carries MCP latency at all.** The nested framing
+argued for a transport choice that was already made and that dissolves the
+problem.
+
+G3. **The L3 precondition is safe.** `bin-pipecat-manager-test` is confirmed
+commented out at `.circleci/config_work.yml:542-545`, and both `go test ./...`
+and `golangci-lint run` were executed at HEAD: all green, zero issues. Also
+confirmed independently by a background run of `go test ./...` across
+bin-pipecat-manager, all packages `ok`. Re-enabling it does not silently expand
+this PR. One correction: the job is Go only, so 8.12's python job is a genuinely
+new job rather than a re-enable.
+
+G4. **8.11's transport reasoning verified in full.** `prepareFieldsFromStruct`
+(`bin-common-handler/pkg/databasehandler/mapping.go:270-314`) maps every
+exported `db`-tagged field into the insert map, so a new field on
+`pipecatcall.Pipecatcall` would name a nonexistent column and break every
+create. `RunnerStart` really does run in a goroutine outside the 3s deadline
+(`start.go:139-142`, `:244-247`, `:280-284`). Nothing survives a pod restart.
+Minor: `PipecatV1PipecatcallStart` has **three** call sites reached from five
+places, not four callers as F3 said.
+
+#### 8.18 Prerequisites round 3 found
+
+P18. **The Insight gate needs two locations, not one** (see H1). Recorded
+separately from S1 because S1 as written would ship a bypassable gate.
+
+P19. **OAuth refresh exists and is sound, but is blind to a 401.**
+`GetValidAccessToken` (`mcpoauthhandler/access_token.go:37-113`) is complete:
+60s expiry margin, refresh-token decrypt, vendor token endpoint, rotation
+persistence, per-server failure backoff. The gap is one layer up: refresh is
+driven only by the stored expiry, and `doJSONRPCRequest` treats every non-2xx
+identically (`client.go:159-161`). A vendor-side revoked token, or a token with
+no recorded expiry (which takes an early return at `access_token.go:46` and is
+never refreshed), produces a 401 that is never retried and never triggers a
+refresh. Today that is one failed call; with this PR it is a permanently silent
+tool list, because `resolveTools:85-88` skips the server and logs at Warn. The
+design must specify refresh-and-retry once on 401/403, which is also the case
+that proves P13's retryable/terminal split is needed.
+
+P20. **The flow layer needs nothing.** `grep -rni mcp bin-flow-manager
+--include=*.go` excluding vendor returns zero. MCP dispatch lives entirely in
+`aicallhandler`. Recorded so it is not re-asked.
+
+P21. **P15 understated the webhook work.** `ConvertWebhookMessage`
+(`models/aicall/webhook.go:78`) copies `Metadata` as a whole struct field with
+**no key filtering**, so there is no projection to exclude from; building one is
+real work rather than a docs sentence. And once this PR writes the key on the
+voice path too, every AIcall webhook carries the customer's server UUIDs and
+remote tool names.
+
+**Decision: remove `mcp_tool_map` from the webhook projection and publish a
+documented `mcp_tool_status` summary instead** (per-server outcome and counts,
+no remote tool names). The raw map is an internal dispatch index; publishing it
+would freeze a name-to-server format forever and leak the customer's tool
+taxonomy to every endpoint they have configured. This is technically a breaking
+payload change and the PR body must say so, but the blast radius is verifiably
+nil: production has 5 AIs, all `type=normal`, **zero** with a non-empty
+`mcp_server_ids`, so the key is empty in every webhook emitted today. The
+exclusion belongs in `ConvertWebhookMessage`, not at the write site, so dispatch
+keeps its index.
+
+#### 8.19 Three ways this still fails after shipping
+
+Not a risk table. These are predictions about what the analysis remains blind
+to, each with the cheapest thing that would catch it.
+
+W1. **It ships inert on voice again and nothing says so.**
+`runner.go:131-148` is a fail-closed branch that sets an empty tool list and
+increments one generic fallback counter, and 8.11 deliberately slots the new
+RPC's failure into that same posture. So "the RPC failed", "the customer's
+server was down" and "this customer has no MCP servers" become one
+indistinguishable outcome. That is the exact shape that let this feature sit
+inert through a release. The L4 manual check runs once in the PR body and
+detects nothing after merge. **Catch:** one counter incremented at the moment of
+**advertisement** (not fetch), labelled by server id and outcome, plus one
+api-validator AI whitelisting a VoIPBin-hosted reference server and a daily
+read-only assertion that the counter moved.
+
+W2. **The python and Go timeouts are inverted, so a slow customer tool
+double-fires.** `tools.py:165` wraps the tool round trip in an aiohttp total of
+**10s**, and `McpToolCallTimeoutSeconds` is also **10s**
+(`internal/config/main.go`) but covers only the outbound HTTP call, before the
+RabbitMQ round trip and two lookups inside `toolHandleMcpCall`. The python side
+therefore gives up first for any tool near its budget while ai-manager completes
+the call, the model is told the call failed, retries, and a side effect fires
+twice. P14 noted the absence of idempotency; it did not notice that the two
+configured numbers **guarantee** the race rather than merely permitting it.
+**Catch:** assert at startup or in a test that the python timeout strictly
+exceeds the Go timeout plus RPC overhead.
+
+W3. **Chat tool-set drift produces the ghost-tool alert described in 8.15.**
+Now that corruption is refuted this is an observability and UX problem rather
+than a correctness one, but it is the most likely first support ticket.
+**Catch:** the `[missing_tool]` suppression in 8.15 amendment 2, plus a two-turn
+test with the customer's server stopped between turns.
+
+#### 8.20 Scope ledger and build order
+
+Reviewer 2 produced the artefact three rounds never had: an ordered ledger. It
+is adopted with the additions from 8.16 and 8.18. Eighteen items, of which the
+correctness blockers are the MCP protocol client, the `inputSchema` tag, the
+built-in resolver type filter, the name policy, the transport, the parallel
+fan-out, the voice metadata write, the metric cardinality fix, the tool-result
+cap, the two scope gates, the CI job, and the docs. Hardening that can be cut:
+the description cap, the reason codes, and (conditionally) the cache.
+
+**The build order's key property is that the feature is not reachable until the
+last steps.** Every commit before the transport is a fix to code that is
+already shipped and already wrong, so the transport lands ninth, not first:
+
+1. MCP protocol client + `inputSchema`, with L1/L2 conformance tests
+2. Tool-result cap
+3. Built-in resolver type filter (a security fix on its own)
+4. Name policy, dedupe, caps, description cap
+5. Parallel fan-out, aggregate budget, per-server cache with negative caching
+6. Insight write gates (both locations) and team symmetry, **before** anything
+   is advertised
+7. Realtime voice metadata write
+8. Metric cardinality fix, then MCP metrics
+9. **The transport. The feature turns on here.**
+10. Re-enable the pipecat CI job, add the python cases
+11. Error reason codes
+12. Docs, OpenAPI regeneration, webhook projection change
+
+One conditional coupling to respect: the published sentence that a disabled
+server "stops serving tools immediately" is only true if the cache ships with
+delete and status invalidation. Ship the invalidation or change the sentence,
+not neither.
