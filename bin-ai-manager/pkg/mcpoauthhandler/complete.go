@@ -77,6 +77,32 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 		return nil, cerrors.Internal(commonoutline.ServiceNameAIManager, "INVALID_MCP_OAUTH_VENDOR", "the oauth state names an unknown vendor")
 	}
 
+	// Reconnect (design §9). Ownership was verified in Start before the state
+	// row was created, but the customer can delete the server between Start
+	// and the vendor's callback -- an interval that includes a full round trip
+	// through the vendor's consent screen. Re-check here rather than trusting
+	// Start's verdict.
+	//
+	// Placed ahead of the single-use delete and the token exchange: refusing
+	// later would still refuse, but only after burning the state row and
+	// minting vendor tokens for a server that cannot receive them.
+	//
+	// McpServerUpdate's own tm_delete predicate would also refuse the write,
+	// as an opaque ErrNotFound. This keeps the refusal explicit.
+	if row.McpServerID != nil {
+		existing, err := h.db.McpServerGet(ctx, *row.McpServerID)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not get mcp server for oauth reconnect")
+		}
+		if existing.TMDelete != nil || existing.CustomerID != customerID {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"MCP_SERVER_NOT_FOUND",
+				"The MCP server was not found.",
+			)
+		}
+	}
+
 	// Single-use: delete the state row BEFORE the token exchange (design
 	// §7a Layer 1) -- a replayed /oauth/complete call for the same state
 	// (retry or replay attempt) then fails at McpOAuthStateGet above with
@@ -110,9 +136,6 @@ func (h *mcpOAuthHandler) Complete(ctx context.Context, customerID uuid.UUID, st
 	}
 
 	if row.McpServerID != nil {
-		// Reconnect (design §9): ownership was already verified in
-		// Start before the state row was created, so this is a plain
-		// update, not a second ownership check.
 		fields := map[mcpserver.Field]any{
 			mcpserver.FieldAuthType:               mcpserver.AuthTypeOAuth,
 			mcpserver.FieldOAuthVendor:            row.Vendor,

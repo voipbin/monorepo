@@ -77,6 +77,18 @@ func Test_Start_OwnershipVerification(t *testing.T) {
 			},
 			getErr: nil,
 		},
+		{
+			// A deleted server is treated exactly like a missing one:
+			// reconnecting would write fresh OAuth tokens onto a row the
+			// customer has already revoked, and the delete path zeroes
+			// precisely those token columns.
+			name: "mcp server is owned but soft-deleted",
+			getReturn: &mcpserver.McpServer{
+				Identity: identity.Identity{ID: serverID, CustomerID: requestingCustomerID},
+				TMDelete: func() *time.Time { ts := time.Now(); return &ts }(),
+			},
+			getErr: nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -310,5 +322,78 @@ func Test_Complete_SingleUse(t *testing.T) {
 	}
 	if !deleted {
 		t.Error("expected the state row to be deleted before attempting the token exchange")
+	}
+}
+
+// Test_Complete_ReconnectRefusesDeletedServer covers D3 on the callback side.
+// Start verified ownership before the state row was created, but the customer
+// can delete the server while the vendor's consent screen is up. Trusting
+// Start's verdict would write fresh OAuth tokens onto a revoked row.
+//
+// The refusal must precede BOTH the single-use state delete and the token
+// exchange: gomock's Times(0) on the delete is the assertion that nothing was
+// burned on the way to refusing.
+func Test_Complete_ReconnectRefusesDeletedServer(t *testing.T) {
+	serverID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	otherCustomerID := uuid.Must(uuid.NewV4())
+	ts := time.Now()
+
+	tests := []struct {
+		name      string
+		getReturn *mcpserver.McpServer
+	}{
+		{
+			name: "server soft-deleted between start and callback",
+			getReturn: &mcpserver.McpServer{
+				Identity: identity.Identity{ID: serverID, CustomerID: customerID},
+				TMDelete: &ts,
+			},
+		},
+		{
+			// Re-checked rather than assumed: the row could also have been
+			// reassigned, and Start's verdict is stale by this point.
+			name: "server reassigned to another customer",
+			getReturn: &mcpserver.McpServer{
+				Identity: identity.Identity{ID: serverID, CustomerID: otherCustomerID},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := newTestHandler(t, mockDB)
+			h.utilHandler = mockUtil
+
+			state := "test-state-token"
+			now := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+			future := now.Add(time.Minute)
+
+			mockDB.EXPECT().McpOAuthStateGet(gomock.Any(), state).Return(&mcpoauthstate.McpOAuthState{
+				State:        state,
+				CustomerID:   customerID,
+				McpServerID:  &serverID,
+				Vendor:       VendorGitHub,
+				PKCEVerifier: "verifier",
+				TMExpire:     &future,
+			}, nil)
+			mockUtil.EXPECT().TimeNow().Return(&now)
+
+			mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(tt.getReturn, nil)
+
+			// Neither may happen: refusing after either would have burned the
+			// single-use state row or minted tokens for an unusable server.
+			mockDB.EXPECT().McpOAuthStateDelete(gomock.Any(), gomock.Any()).Times(0)
+			mockDB.EXPECT().McpServerUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			if _, err := h.Complete(context.Background(), customerID, state, "some-code"); err == nil {
+				t.Fatal("expected the reconnect to be refused, got nil")
+			}
+		})
 	}
 }
