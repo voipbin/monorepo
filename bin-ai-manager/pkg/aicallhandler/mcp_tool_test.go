@@ -902,6 +902,7 @@ func Test_decodeToolSchema(t *testing.T) {
 		wantBudget int
 	}{
 		{name: "absent schema", raw: nil, budget: 100, wantOK: true, wantBudget: 100},
+		{name: "null schema", raw: json.RawMessage(` null `), budget: 100, wantOK: true, wantBudget: 100},
 		{name: "small object", raw: json.RawMessage(`{"type":"object"}`), budget: 100, wantOK: true, wantParams: true, wantBudget: 100 - len(`{"type":"object"}`)},
 		{name: "over the per-tool limit", raw: big, budget: mcpToolSchemaBudgetBytes, wantOK: false, wantBudget: mcpToolSchemaBudgetBytes},
 		{name: "over what is left of the budget", raw: json.RawMessage(`{"type":"object"}`), budget: 5, wantOK: false, wantBudget: 5},

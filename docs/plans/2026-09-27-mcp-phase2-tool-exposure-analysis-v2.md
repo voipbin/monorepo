@@ -1080,7 +1080,21 @@ and decodes a schema in `resolveTools` only if it is at most 64 KiB and fits a
 256 KiB budget per resolution; a tool that does not fit is dropped and the server's
 other tools are kept. That bounds memory, not meaning: tool name validity (length,
 character set) and description length are still unchecked, and PR B2 must enforce
-them before anything is advertised to a model. Two hazards remain, both older than PR B1 and neither made worse by it, and
+them before anything is advertised to a model.
+
+The first version of that bound truncated the list after decoding all of it, which
+bounded nothing: round 8 measured a body of about 340,000 empty objects still
+allocating over 100 MiB. The list is now read element by element and reading stops
+at the cap, which brings the same body to about 5 MiB. Measured through the whole
+resolver with a worst-case body per server (15 tools with schemas just under the
+per-tool limit, made of empty objects, the costliest shape to decode), the heap
+still live after the resolver returns is about 5.5 MiB whether one or eight servers
+answer, because only four schemas fit the budget. What grows with the number of
+servers is short-lived garbage, about 5 MiB per server; one run with eight such
+servers peaked at about 24 MiB above its baseline before collection. The pod sets
+no `GOMEMLIMIT`, so the collector does not know about the 40M limit. Two things
+belong with PR B2's whitelist cap (D18, 8 servers) rather than here: setting
+`GOMEMLIMIT` below the container limit, and re-measuring this peak against the cap. Two hazards remain, both older than PR B1 and neither made worse by it, and
 both need a schema change, so they are deferred to their own change rather than
 folded into the discovery fix.
 

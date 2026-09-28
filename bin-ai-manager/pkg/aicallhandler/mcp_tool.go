@@ -1,6 +1,7 @@
 package aicallhandler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"strings"
@@ -135,9 +136,14 @@ const (
 // per-tool limit and what is left of budget, charging it to budget. A tool
 // that does not fit, or whose schema is not a JSON object, is reported as
 // not ok and dropped by the caller, keeping the server's other tools. An
-// absent schema decodes to nil and costs nothing.
+// absent or null schema decodes to nil and costs nothing.
+//
+// The budget is shared across the AI's servers in whitelist order, so one
+// server's large schemas can leave nothing for a later server. That fails
+// closed: the later tools are dropped and logged, never decoded.
 func decodeToolSchema(raw json.RawMessage, budget *int) (map[string]any, bool) {
-	if len(raw) == 0 {
+	// An explicit null means the same as an absent schema.
+	if len(raw) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
 		return nil, true
 	}
 	if len(raw) > mcpMaxToolSchemaBytes || len(raw) > *budget {

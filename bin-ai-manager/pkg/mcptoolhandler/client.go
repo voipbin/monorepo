@@ -1,6 +1,7 @@
 package mcptoolhandler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -39,11 +40,6 @@ type jsonRPCResponse struct {
 	Method  string          `json:"method,omitempty"`
 	Result  json.RawMessage `json:"result"`
 	Error   *jsonRPCError   `json:"error"`
-}
-
-// toolsListResult is the result payload of a tools/list call.
-type toolsListResult struct {
-	Tools []McpTool `json:"tools"`
 }
 
 // toolsCallParams is the params payload of a tools/call request.
@@ -228,17 +224,106 @@ func (h *mcpToolHandler) ListTools(ctx context.Context, serverID uuid.UUID) ([]M
 		return nil, fmt.Errorf("mcptoolhandler.ListTools: %w", err)
 	}
 
-	var listResult toolsListResult
-	if err := json.Unmarshal(result, &listResult); err != nil {
+	tools, truncated, err := decodeToolsList(result, MaxToolsPerServer)
+	if err != nil {
 		return nil, fmt.Errorf("mcptoolhandler.ListTools: could not parse tools/list result: %w", err)
 	}
-
-	if len(listResult.Tools) > MaxToolsPerServer {
-		logrus.WithField("mcp_server_id", serverID).Warnf("Mcp server listed %d tools; keeping the first %d.", len(listResult.Tools), MaxToolsPerServer)
-		listResult.Tools = listResult.Tools[:MaxToolsPerServer]
+	if truncated {
+		logrus.WithField("mcp_server_id", serverID).Warnf("Mcp server listed more than %d tools; keeping the first %d.", MaxToolsPerServer, MaxToolsPerServer)
 	}
 
-	return listResult.Tools, nil
+	return tools, nil
+}
+
+// decodeToolsList reads the tools array of a tools/list result one element
+// at a time and stops after max, reporting whether more followed. Decoding
+// the whole array first and truncating afterwards would not bound anything:
+// a body of empty objects inside the 1 MiB cap is several hundred thousand
+// elements, each allocated before the cap could apply. Members other than
+// tools are skipped without being decoded into values.
+func decodeToolsList(result json.RawMessage, max int) ([]McpTool, bool, error) {
+	dec := json.NewDecoder(bytes.NewReader(result))
+
+	if err := expectDelim(dec, '{'); err != nil {
+		return nil, false, err
+	}
+
+	tools := []McpTool{}
+	truncated := false
+	for dec.More() {
+		keyTok, err := dec.Token()
+		if err != nil {
+			return nil, false, err
+		}
+		key, ok := keyTok.(string)
+		if !ok {
+			return nil, false, fmt.Errorf("unexpected object key %v", keyTok)
+		}
+
+		if key != "tools" {
+			if err := skipValue(dec); err != nil {
+				return nil, false, err
+			}
+			continue
+		}
+
+		if err := expectDelim(dec, '['); err != nil {
+			return nil, false, fmt.Errorf("tools: %w", err)
+		}
+		for dec.More() {
+			if len(tools) >= max {
+				truncated = true
+				// Stop reading. The rest of the body is not needed and
+				// reading it would cost what the cap exists to avoid.
+				return tools, truncated, nil
+			}
+			var t McpTool
+			if err := dec.Decode(&t); err != nil {
+				return nil, false, fmt.Errorf("tools[%d]: %w", len(tools), err)
+			}
+			tools = append(tools, t)
+		}
+		if err := expectDelim(dec, ']'); err != nil {
+			return nil, false, fmt.Errorf("tools: %w", err)
+		}
+	}
+
+	return tools, truncated, nil
+}
+
+// expectDelim reads the next token and fails unless it is the delimiter d.
+func expectDelim(dec *json.Decoder, d json.Delim) error {
+	tok, err := dec.Token()
+	if err != nil {
+		return err
+	}
+	if got, ok := tok.(json.Delim); !ok || got != d {
+		return fmt.Errorf("expected %q, got %v", d, tok)
+	}
+	return nil
+}
+
+// skipValue consumes one JSON value of any kind by walking its tokens, so a
+// large unrelated member is passed over without being built in memory.
+func skipValue(dec *json.Decoder) error {
+	depth := 0
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return err
+		}
+		if d, ok := tok.(json.Delim); ok {
+			switch d {
+			case '{', '[':
+				depth++
+			case '}', ']':
+				depth--
+			}
+		}
+		if depth == 0 {
+			return nil
+		}
+	}
 }
 
 // CallTool sends an MCP tools/call request for toolName on the server

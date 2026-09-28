@@ -785,3 +785,80 @@ func Test_Protocol_SessionCloseFloor(t *testing.T) {
 		t.Fatalf("closed sessions = %v; a call past its deadline must still close its session", got)
 	}
 }
+
+// Test_ListTools_ManyEmptyToolsIsBounded pins that the tool count cap is
+// applied while the list is read, not after. A body of empty objects inside
+// the 1 MiB cap is several hundred thousand elements; decoding them all and
+// truncating afterwards allocated over 100 MiB against a 40M pod limit.
+func Test_ListTools_ManyEmptyToolsIsBounded(t *testing.T) {
+	for _, framing := range []string{"json", "sse"} {
+		t.Run(framing, func(t *testing.T) {
+			body := `{"tools":[` + strings.TrimSuffix(strings.Repeat("{},", 340000), ",") + `]}`
+			fake := newFakeMCPServer(t)
+			fake.jsonResponse = framing == "json"
+			fake.methodRawReply = `{"jsonrpc":"2.0","id":{{id}},"result":` + body + `}`
+
+			runtime.GC()
+			var before, after runtime.MemStats
+			runtime.ReadMemStats(&before)
+			tools, err := listToolsAgainst(t, fake)
+			runtime.ReadMemStats(&after)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if len(tools) != MaxToolsPerServer {
+				t.Fatalf("got %d tools, want %d", len(tools), MaxToolsPerServer)
+			}
+			if allocated := after.TotalAlloc - before.TotalAlloc; allocated > 16<<20 {
+				t.Fatalf("ListTools allocated %d MiB for a %d KiB list; the cap must stop the decode", allocated>>20, len(body)>>10)
+			}
+		})
+	}
+}
+
+func Test_decodeToolsList(t *testing.T) {
+	tests := []struct {
+		name          string
+		in            string
+		max           int
+		wantNames     []string
+		wantTruncated bool
+		wantErr       bool
+	}{
+		{name: "tools only", in: `{"tools":[{"name":"a"},{"name":"b"}]}`, max: 5, wantNames: []string{"a", "b"}},
+		{name: "other members before and after are skipped", in: `{"nextCursor":"x","_meta":{"a":[1,{"b":2}]},"tools":[{"name":"a"}],"z":null}`, max: 5, wantNames: []string{"a"}},
+		{name: "empty list", in: `{"tools":[]}`, max: 5, wantNames: []string{}},
+		{name: "no tools member", in: `{"nextCursor":"x"}`, max: 5, wantNames: []string{}},
+		{name: "truncated at max", in: `{"tools":[{"name":"a"},{"name":"b"},{"name":"c"}]}`, max: 2, wantNames: []string{"a", "b"}, wantTruncated: true},
+		{name: "exactly max is not truncated", in: `{"tools":[{"name":"a"},{"name":"b"}]}`, max: 2, wantNames: []string{"a", "b"}},
+		{name: "input schema kept raw", in: `{"tools":[{"name":"a","inputSchema":{"type":"object"}}]}`, max: 5, wantNames: []string{"a"}},
+		{name: "result is not an object", in: `[1]`, max: 5, wantErr: true},
+		{name: "tools is not an array", in: `{"tools":{"name":"a"}}`, max: 5, wantErr: true},
+		{name: "a tool is not an object", in: `{"tools":[1]}`, max: 5, wantErr: true},
+		{name: "malformed", in: `{"tools":[{"name":"a"}`, max: 5, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tools, truncated, err := decodeToolsList(json.RawMessage(tt.in), tt.max)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("expected an error, got %+v", tools)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			names := []string{}
+			for _, tool := range tools {
+				names = append(names, tool.Name)
+			}
+			if strings.Join(names, ",") != strings.Join(tt.wantNames, ",") || truncated != tt.wantTruncated {
+				t.Fatalf("got %v truncated=%v, want %v truncated=%v", names, truncated, tt.wantNames, tt.wantTruncated)
+			}
+			if tt.name == "input schema kept raw" && string(tools[0].InputSchema) != `{"type":"object"}` {
+				t.Fatalf("schema = %s", tools[0].InputSchema)
+			}
+		})
+	}
+}
