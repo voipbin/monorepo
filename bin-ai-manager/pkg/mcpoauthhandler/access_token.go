@@ -30,6 +30,11 @@ var (
 
 const refreshBackoffDuration = 60 * time.Second
 
+// persistRotatedTokenTimeout bounds the write that stores a vendor-rotated
+// refresh token. Like the vendor call before it, it is detached from the
+// caller's deadline on purpose; see GetValidAccessToken.
+const persistRotatedTokenTimeout = 5 * time.Second
+
 // GetValidAccessToken implements McpOAuthHandler.GetValidAccessToken
 // (design §8). Returns a decrypted, currently-valid OAuth access token
 // for m, refreshing it first if it has expired (or is about to) and a
@@ -68,7 +73,17 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 		return "", errors.Errorf("mcp server names an unknown oauth vendor: %q", m.OAuthVendor)
 	}
 
-	tok, err := h.refreshToken(ctx, vc, refreshToken)
+	// From here on the refresh and its persistence are one unit that must not
+	// be cut by the caller's deadline or cancellation. The vendor rotates the
+	// refresh token when it answers, invalidating the one we hold, so a
+	// response dropped mid-flight or a write abandoned after it would strand
+	// the server with a dead refresh token and force the customer to
+	// reconnect. The unit keeps the caller's values and gets its own bound:
+	// the vendor call is bounded by h.httpClient's timeout and the write by
+	// persistRotatedTokenTimeout.
+	exchangeCtx := context.WithoutCancel(ctx)
+
+	tok, err := h.refreshToken(exchangeCtx, vc, refreshToken)
 	if err != nil {
 		h.setRefreshBackoff(m.ID.String())
 		return "", errors.Wrap(err, "could not refresh oauth access token")
@@ -105,7 +120,9 @@ func (h *mcpOAuthHandler) GetValidAccessToken(ctx context.Context, m *mcpserver.
 		mcpserver.FieldRefreshTokenNonce:      refreshNonce,
 		mcpserver.FieldKeyVersion:             keyVersion,
 	}
-	if err := h.db.McpServerUpdate(ctx, m.ID, fields); err != nil {
+	persistCtx, cancel := context.WithTimeout(exchangeCtx, persistRotatedTokenTimeout)
+	defer cancel()
+	if err := h.db.McpServerUpdate(persistCtx, m.ID, fields); err != nil {
 		return "", errors.Wrap(err, "could not persist refreshed oauth tokens")
 	}
 

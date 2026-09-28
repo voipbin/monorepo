@@ -330,11 +330,20 @@ func Test_readJSONRPCResponse(t *testing.T) {
 			wantResult:  `{"ok":true}`,
 		},
 		{
-			name:        "SSE null-id error answers the request",
+			name:        "SSE null-id error answers the request when nothing else does",
 			contentType: "text/event-stream",
 			body:        "data: {\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"bad\"}}\n\n",
 			wantID:      2,
 			wantResult:  ``,
+		},
+		{
+			// An unrelated null-id error earlier in the stream must not
+			// pre-empt the real answer that follows it.
+			name:        "SSE matching answer wins over an earlier null-id error",
+			contentType: "text/event-stream",
+			body:        "data: {\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32600,\"message\":\"unrelated\"}}\n\ndata: {\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"ok\":true}}\n\n",
+			wantID:      2,
+			wantResult:  `{"ok":true}`,
 		},
 		{
 			name:        "SSE stream that never answers",
@@ -457,6 +466,7 @@ func Test_Protocol_WholeCallDeadline(t *testing.T) {
 	const timeout = 300 * time.Millisecond
 
 	fake := newFakeMCPServer(t)
+	fake.stateless = true
 	fake.jsonResponse = true
 	slow := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(timeout * 2 / 3)
@@ -571,4 +581,89 @@ func listToolsBearer(t *testing.T, fake *fakeMCPServer, token string) ([]McpTool
 	h := newTestHandler(t, mockDB)
 	h.crypto = crypto
 	return h.ListTools(context.Background(), serverID)
+}
+
+// Test_Protocol_SessionCloseBounded pins that a server stalling the closing
+// DELETE cannot hold the call much past its deadline: the close runs within
+// what is left of the call's budget, with only a short floor.
+func Test_Protocol_SessionCloseBounded(t *testing.T) {
+	const timeout = 300 * time.Millisecond
+
+	fake := newFakeMCPServer(t)
+	fake.jsonResponse = true
+	stallDelete := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete {
+			select {
+			case <-r.Context().Done():
+			case <-time.After(5 * time.Second):
+			}
+			return
+		}
+		fake.ServeHTTP(w, r)
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	srv := httptest.NewServer(stallDelete)
+	defer srv.Close()
+
+	serverID := uuid.Must(uuid.NewV4())
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+		URL: srv.URL, Status: mcpserver.StatusActive, AuthType: mcpserver.AuthTypeNone,
+	}, nil)
+
+	h := newTestHandler(t, mockDB)
+	h.timeout = timeout
+	// Give the HTTP client itself a generous per-request timeout, so the only
+	// thing that can cut the stalled DELETE short is the close's own budget.
+	// Without this the client's per-request timeout (equal to h.timeout)
+	// would end the DELETE first and the test would pass with the budget
+	// logic removed.
+	h.newClient = func(time.Duration) *http.Client { return &http.Client{Timeout: 10 * time.Second} }
+
+	start := time.Now()
+	if _, err := h.ListTools(context.Background(), serverID); err != nil {
+		t.Fatalf("a stalled close must not fail the call, got: %v", err)
+	}
+	if elapsed := time.Since(start); elapsed > timeout+sessionCloseFloor+200*time.Millisecond {
+		t.Fatalf("call took %v; a stalled DELETE may add at most the %v floor past the %v deadline", elapsed, sessionCloseFloor, timeout)
+	}
+}
+
+// Test_Protocol_NoCloseAfterRefusedInitialize pins that a session id on a
+// non-2xx initialize is ignored: that request was refused, so there is no
+// session to close, and no credentialed DELETE is sent for it.
+func Test_Protocol_NoCloseAfterRefusedInitialize(t *testing.T) {
+	for _, status := range []int{http.StatusUnauthorized, http.StatusNotFound, http.StatusInternalServerError} {
+		t.Run(http.StatusText(status), func(t *testing.T) {
+			var deletes int
+			srv := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method == http.MethodDelete {
+					deletes++
+					return
+				}
+				w.Header().Set("Mcp-Session-Id", "never-created")
+				http.Error(w, "refused", status)
+			})
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			ts := httptest.NewServer(srv)
+			defer ts.Close()
+
+			serverID := uuid.Must(uuid.NewV4())
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+				URL: ts.URL, Status: mcpserver.StatusActive, AuthType: mcpserver.AuthTypeNone,
+			}, nil)
+
+			_, err := newTestHandler(t, mockDB).ListTools(context.Background(), serverID)
+			if err == nil {
+				t.Fatal("expected the refused initialize to fail the call")
+			}
+			if deletes != 0 {
+				t.Fatalf("sent %d DELETE(s) for a session the server never created", deletes)
+			}
+		})
+	}
 }

@@ -114,7 +114,8 @@ func (h *mcpToolHandler) buildAuthHeader(ctx context.Context, m *mcpserver.McpSe
 //
 // h.timeout bounds the whole call, not each request. A call is several
 // requests, and a per-request timeout would let a slow server hold one call
-// for a multiple of the configured limit on the session-start path.
+// for a multiple of the configured limit on the session-start path. The only
+// work past it is the session close's short floor (sessionCloseFloor).
 //
 // A 404 on the method means the server discarded the session. That is retried
 // exactly once with a new session (requirement 11): the retry is straight-line
@@ -150,7 +151,7 @@ func (h *mcpToolHandler) doJSONRPCRequest(ctx context.Context, m *mcpserver.McpS
 	}
 
 	if !sessionGone(session, err) {
-		h.closeSession(session)
+		h.closeSession(ctx, session)
 	}
 
 	if err != nil {

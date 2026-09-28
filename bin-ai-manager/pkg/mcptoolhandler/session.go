@@ -45,10 +45,12 @@ const (
 	// reflected into our own request headers.
 	maxSessionIDBytes = 1024
 
-	// sessionCloseTimeout bounds the best-effort DELETE that ends a session.
-	// It runs after the call's own deadline may already have passed, so it
-	// has a deadline of its own.
+	// sessionCloseTimeout is the most the best-effort DELETE that ends a
+	// session may take, and sessionCloseFloor the least it is given when the
+	// call's own deadline has already run out. A hostile server can therefore
+	// hold a call at most sessionCloseFloor past its deadline.
 	sessionCloseTimeout = 2 * time.Second
+	sessionCloseFloor   = 250 * time.Millisecond
 )
 
 // handshakeProtocolVersions are the protocol versions negotiated through the
@@ -158,9 +160,12 @@ func (h *mcpToolHandler) openSession(ctx context.Context, client *http.Client, m
 	result, header, err := h.request(ctx, s, "initialize", params)
 
 	// Adopt the session id before judging the result: a server that issued
-	// one alongside an error still holds that session open, and it is closed
-	// below rather than left to the server's idle timeout.
-	if header != nil {
+	// one alongside a JSON-RPC error still holds that session open, and it is
+	// closed below rather than left to the server's idle timeout. An id on a
+	// non-2xx answer is ignored: that request was refused, so no session was
+	// created, and a 404 there means the URL itself is wrong.
+	var statusErr *httpStatusError
+	if header != nil && !errors.As(err, &statusErr) {
 		sessionID := header.Get(headerSessionID)
 		if errID := validateSessionID(sessionID); errID != nil {
 			return nil, errID
@@ -169,24 +174,24 @@ func (h *mcpToolHandler) openSession(ctx context.Context, client *http.Client, m
 	}
 
 	if err != nil {
-		h.closeSession(s)
+		h.closeSession(ctx, s)
 		return nil, fmt.Errorf("initialize failed: %w", err)
 	}
 
 	var res initializeResult
 	if errUnmarshal := json.Unmarshal(result, &res); errUnmarshal != nil {
-		h.closeSession(s)
+		h.closeSession(ctx, s)
 		return nil, fmt.Errorf("could not parse initialize result: %w", errUnmarshal)
 	}
 	if !handshakeProtocolVersions[res.ProtocolVersion] {
-		h.closeSession(s)
+		h.closeSession(ctx, s)
 		return nil, fmt.Errorf("server negotiated protocol version %q, which is not a handshake-era version this client can drive", truncateUTF8(res.ProtocolVersion, 64))
 	}
 
 	s.protocolVersion = res.ProtocolVersion
 
 	if err := h.notify(ctx, s, "notifications/initialized"); err != nil {
-		h.closeSession(s)
+		h.closeSession(ctx, s)
 		return nil, fmt.Errorf("initialized notification failed: %w", err)
 	}
 
@@ -200,12 +205,28 @@ func (h *mcpToolHandler) openSession(ctx context.Context, client *http.Client, m
 // its session limit is reached. A stateless session (no id) has nothing to
 // close. Failure is logged and never fails the call; 405 means the server
 // does not support explicit termination, which is allowed.
-func (h *mcpToolHandler) closeSession(s *mcpSession) {
+//
+// callCtx is the call's own context. The close runs within whatever is left
+// of the call's deadline, so a server that stalls the DELETE cannot hold the
+// call past it. When nothing is left it still gets a short floor, because a
+// call that ran out of time is exactly when the session is most likely to be
+// left open otherwise.
+func (h *mcpToolHandler) closeSession(callCtx context.Context, s *mcpSession) {
 	if s == nil || s.id == "" {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), sessionCloseTimeout)
+	budget := sessionCloseTimeout
+	if deadline, ok := callCtx.Deadline(); ok {
+		if remaining := time.Until(deadline); remaining < budget {
+			budget = remaining
+		}
+	}
+	if budget < sessionCloseFloor {
+		budget = sessionCloseFloor
+	}
+
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(callCtx), budget)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, s.server.URL, nil)
@@ -216,7 +237,7 @@ func (h *mcpToolHandler) closeSession(s *mcpSession) {
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		logrus.Debugf("Could not close mcp session. err: %v", err)
+		logrus.Debugf("Could not close mcp session. err: %s", truncateForError([]byte(err.Error())))
 		return
 	}
 	defer func() { _ = resp.Body.Close() }()
@@ -382,6 +403,11 @@ func readSSEResponse(body io.Reader, wantID int) (*jsonRPCResponse, error) {
 	var data strings.Builder
 	hasData := false
 
+	// A null-id error on a stream is only the answer if no event with our id
+	// ever arrives: a server may emit one about something else before its
+	// real answer, and taking it early would fail a call that succeeds.
+	var nullIDError *jsonRPCResponse
+
 	dispatch := func() *jsonRPCResponse {
 		defer func() {
 			data.Reset()
@@ -391,10 +417,16 @@ func readSSEResponse(body io.Reader, wantID int) (*jsonRPCResponse, error) {
 			return nil
 		}
 		resp, err := decodeResponse([]byte(data.String()))
-		if err != nil || !answers(resp, wantID) {
+		if err != nil {
 			return nil
 		}
-		return resp
+		if matchesID(resp, wantID) {
+			return resp
+		}
+		if nullIDError == nil && answers(resp, wantID) {
+			nullIDError = resp
+		}
+		return nil
 	}
 
 	for {
@@ -425,6 +457,9 @@ func readSSEResponse(body io.Reader, wantID int) (*jsonRPCResponse, error) {
 			if resp := dispatch(); resp != nil {
 				return resp, nil
 			}
+			if nullIDError != nil {
+				return nullIDError, nil
+			}
 			return nil, fmt.Errorf("event stream ended without a response to request id %d", wantID)
 		}
 	}
@@ -443,15 +478,21 @@ func decodeResponse(raw []byte) (*jsonRPCResponse, error) {
 	return &resp, nil
 }
 
+// matchesID reports whether resp carries request want's id.
+func matchesID(resp *jsonRPCResponse, want int) bool {
+	return string(bytes.TrimSpace(resp.ID)) == strconv.Itoa(want)
+}
+
 // answers reports whether resp is the answer to request want. Besides a
 // matching id, an error with a null id counts: JSON-RPC uses a null id when
 // the server could not determine the request id, and dropping it would lose
-// the only reason the server gave.
+// the only reason the server gave. On a stream the null-id case is only a
+// fallback; see readSSEResponse.
 func answers(resp *jsonRPCResponse, want int) bool {
-	id := string(bytes.TrimSpace(resp.ID))
-	if id == strconv.Itoa(want) {
+	if matchesID(resp, want) {
 		return true
 	}
+	id := string(bytes.TrimSpace(resp.ID))
 	return resp.Error != nil && (id == "" || id == "null")
 }
 

@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -123,5 +124,39 @@ func Test_NewSSRFGuardedClient_WiringRejectsLocalTestServer(t *testing.T) {
 			_ = resp.Body.Close()
 		}
 		t.Fatalf("expected the SSRF guard to reject a dial to the loopback-bound test server")
+	}
+}
+
+// Test_NewSSRFGuardedClient_BoundsResponseHeaders pins the production
+// client's response-header limit. Unit tests of the MCP client swap in a
+// plain client, so without this the limit would be untested where it
+// actually runs.
+func Test_NewSSRFGuardedClient_BoundsResponseHeaders(t *testing.T) {
+	transport, ok := NewSSRFGuardedClient(time.Second).Transport.(*http.Transport)
+	if !ok {
+		t.Fatal("expected an *http.Transport")
+	}
+	if transport.MaxResponseHeaderBytes != mcpMaxResponseHeaderBytes {
+		t.Fatalf("MaxResponseHeaderBytes = %d, want %d", transport.MaxResponseHeaderBytes, mcpMaxResponseHeaderBytes)
+	}
+
+	// Exercise the limit through the production transport itself, with only
+	// the loopback-rejecting dial hook removed so it can reach the test
+	// server.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Mcp-Session-Id", strings.Repeat("a", 200<<10))
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	probe := transport.Clone()
+	probe.DialContext = (&net.Dialer{Timeout: time.Second}).DialContext
+	resp, err := (&http.Client{Transport: probe, Timeout: 2 * time.Second}).Get(srv.URL)
+	if err == nil {
+		_ = resp.Body.Close()
+		t.Fatal("expected a 200 KiB response header to be refused")
+	}
+	if !strings.Contains(err.Error(), "exceeded") {
+		t.Fatalf("expected the header limit error, got: %v", err)
 	}
 }

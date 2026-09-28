@@ -285,3 +285,82 @@ func Test_GetValidAccessToken_RefreshFailureSetsBackoff(t *testing.T) {
 		t.Fatalf("expected still exactly 1 vendor call (backoff should skip retry), got %d", callCount)
 	}
 }
+
+// Test_GetValidAccessToken_PersistSurvivesCallerDeadline pins that a refresh
+// completes and is persisted even when the caller's context is cancelled
+// while the vendor call is in flight. The vendor rotates the refresh token as
+// it answers, so dropping that answer, or abandoning the write after it,
+// would leave a dead refresh token and force the customer to reconnect.
+func Test_GetValidAccessToken_PersistSurvivesCallerDeadline(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := newTestHandler(t, mockDB)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// The vendor answers, but the caller's deadline passes meanwhile.
+		cancel()
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"access_token":  "new-access-token",
+			"refresh_token": "new-refresh-token",
+			"token_type":    "Bearer",
+			"expires_in":    3600,
+		})
+	}))
+	defer srv.Close()
+
+	h.vendors[VendorLinear] = vendorConfig{
+		AuthorizeURL: "https://linear.app/oauth/authorize",
+		TokenURL:     srv.URL,
+		ClientID:     "linear-client-id",
+		ClientSecret: "linear-client-secret",
+	}
+	h.httpClient = &http.Client{Timeout: 2 * time.Second}
+
+	accessCT, accessNonce, ver, err := h.crypto.Encrypt("stale-access-token")
+	if err != nil {
+		t.Fatalf("could not encrypt access token: %v", err)
+	}
+	refreshCT, refreshNonce, _, err := h.crypto.Encrypt("old-refresh-token")
+	if err != nil {
+		t.Fatalf("could not encrypt refresh token: %v", err)
+	}
+
+	serverID := uuid.Must(uuid.NewV4())
+	past := time.Now().Add(-1 * time.Hour)
+	m := &mcpserver.McpServer{
+		OAuthVendor:            VendorLinear,
+		AccessTokenCiphertext:  accessCT,
+		AccessTokenNonce:       accessNonce,
+		KeyVersion:             ver,
+		AccessTokenExpiresAt:   &past,
+		RefreshTokenCiphertext: refreshCT,
+		RefreshTokenNonce:      refreshNonce,
+	}
+	m.ID = serverID
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockUtil.EXPECT().TimeNow().Return(func() *time.Time { n := time.Now(); return &n }()).AnyTimes()
+	h.utilHandler = mockUtil
+
+	mockDB.EXPECT().McpServerUpdate(gomock.Any(), serverID, gomock.Any()).DoAndReturn(
+		func(writeCtx context.Context, _ uuid.UUID, _ map[mcpserver.Field]any) error {
+			if writeCtx.Err() != nil {
+				t.Errorf("the rotated token write ran on a cancelled context: %v", writeCtx.Err())
+			}
+			if _, ok := writeCtx.Deadline(); !ok {
+				t.Error("the rotated token write must still be bounded by a deadline")
+			}
+			return nil
+		},
+	)
+
+	if _, err := h.GetValidAccessToken(ctx, m); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
