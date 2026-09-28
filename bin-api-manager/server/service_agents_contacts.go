@@ -157,6 +157,12 @@ func (h *server) PostServiceAgentsContacts(c *gin.Context) {
 			if v.IsPrimary != nil {
 				addr.IsPrimary = *v.IsPrimary
 			}
+			if v.Name != nil {
+				addr.Name = *v.Name
+			}
+			if v.Detail != nil {
+				addr.Detail = *v.Detail
+			}
 			addresses = append(addresses, addr)
 		}
 	}

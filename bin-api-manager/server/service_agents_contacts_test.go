@@ -205,6 +205,44 @@ func Test_PostServiceAgentsContacts(t *testing.T) {
 			expectTagIDs:      []uuid.UUID{},
 			expectRes:         `{"id":"bafb72ae-f983-11ea-9b02-67e734510d1a","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"John Doe","company":"Acme","job_title":"Engineer","source":"api","external_id":"ext-123","notes":"test note","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
+		{
+			name: "with addresses including name and detail",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contacts",
+			reqBody:  []byte(`{"first_name":"John","last_name":"Doe","addresses":[{"type":"tel","target":"+821012341234","name":"Mobile","detail":"Primary contact number","is_primary":true}]}`),
+
+			responseContact: &cmcontact.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bafb72ae-f983-11ea-9b02-67e734510d1b"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
+				},
+				FirstName: "John",
+				LastName:  "Doe",
+				TMCreate:  timePtr("2020-09-20T03:23:21.995000Z"),
+			},
+
+			expectFirstName: "John",
+			expectLastName:  "Doe",
+			expectAddresses: []cmcontact.AddressInput{
+				{
+					Address: commonaddress.Address{
+						Type:   commonaddress.Type("tel"),
+						Target: "+821012341234",
+						Name:   "Mobile",
+						Detail: "Primary contact number",
+					},
+					IsPrimary: true,
+				},
+			},
+			expectTagIDs: []uuid.UUID{},
+			expectRes:    `{"id":"bafb72ae-f983-11ea-9b02-67e734510d1b","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+		},
 	}
 
 	for _, tt := range tests {
