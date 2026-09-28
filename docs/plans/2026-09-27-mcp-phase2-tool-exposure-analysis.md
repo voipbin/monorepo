@@ -428,3 +428,243 @@ Rules in effect:
 - Before citing a function, confirm which implementation the caller actually binds
   to (same name, different package, different signature).
 - Before citing a code path as live, grep for its callers.
+
+## 8. Review history
+
+### Round 1 (2 reviewers, both CHANGES_REQUESTED)
+
+Both reviewers rejected the analysis. Five of its claims were wrong or
+understated, and five prerequisites were missing entirely. Every correction
+below was re-verified against real code before being recorded here.
+
+#### 8.1 Corrections to claims this document already made
+
+C1. **D7 was framed as "the value is discarded". That framing hides the real
+work.** Two of the three discard sites are correct code:
+`writeInsightSessionMetadata` (`insight_session.go:225`) and
+`refreshMcpToolMap` (`mcp_tool.go:327`) exist solely to write the name-to-ref
+map, so discarding the tool list there is correct by construction. The actual
+defect is that **there is no consumer to pass the list to**. The live tool list
+is assembled in a different service from its own static catalogue
+(`bin-pipecat-manager/pkg/toolhandler`), and the start RPC carries no tools
+channel: `PipecatV1PipecatcallStart`
+(`bin-common-handler/pkg/requesthandler/pipecat_pipecatcall.go:15-64`) carries
+`LLMMessages` and STT/TTS only, and `bin-pipecat-manager/models/pipecatcall/main.go`
+has no `Tools` field. Verified: grep for `Tools` in both files returns zero
+matches. Fixing D7 is not "stop discarding a value", it is "invent a
+transport", and that is the largest single piece of PR B.
+
+C2. **D10's stated cause is false, and it obscured a live defect.** The claim
+was that `AllowedToolNames` would drop every MCP name. It cannot: pipecat's
+`GetByNames` (`bin-pipecat-manager/pkg/toolhandler/main.go:91-108`) filters
+`h.tools`, the global static catalogue fetched once via `AIV1ToolList`. A
+per-AI, per-customer MCP tool is never a member of that slice, so it never
+reaches the filter at line 100. The filter is not the obstacle; the missing
+transport (C1) is.
+
+The real finding, which this document had described as a hypothetical
+workaround to avoid, is that **`resolveTools` already routes through the
+unfiltered implementation today**: `mcp_tool.go:59-61` calls
+`h.toolNameResolver.GetByNames(a.ToolNames)`, wired at
+`cmd/ai-manager/main.go:167` to `toolhandler.NewToolHandler()`, whose
+`GetByNames` (`bin-ai-manager/pkg/toolhandler/main.go:29`) takes no `aiType`
+and applies no whitelist. The built-in half of the merged list is therefore
+already fail-open with respect to the AIType separation. It is harmless only
+because the list is discarded. **The moment PR B makes that list
+authoritative, it reintroduces the exact leak that
+`bin-pipecat-manager/pkg/toolhandler/main.go:83-90` was written to close.**
+This must be fixed in the same PR, not deferred.
+
+C3. **D9's severity was understated, not overstated.** The nil schema does not
+merely lose the tool list. Traced and executed end to end: `main.py:34` accepts
+`null`; `tools.py:75` `tool.get("parameters", {default})` returns `None`
+because the key exists so the default never fires; `run.py:434-444` then calls
+`params.get("additionalProperties")` on `None`, raising
+`AttributeError: 'NoneType' object has no attribute 'get'` inside the
+`init_llm` task, which `asyncio.gather` re-raises (`run.py:207-213`). The
+result is that **pipeline initialisation fails: no STT, no LLM, no TTS**. It is
+a total outage of the call, not of tool use. The team path has the same shape
+(`team_flow.py:67-68`).
+
+C4. **D15's write-site enumeration was incomplete in two directions.** A fifth
+entry point exists that this document's four-function list omitted: `StartTask`
+(`start.go:1222`) reaches `startAIcallByMessaging` with `ReferenceTypeTask`
+(`start.go:1237`) and does get the map. Separately,
+`startReferenceTypeContactCase` gets the map on create (`start.go:502`) but on
+the reuse path refreshes only through `refreshInsightSessionIfIdle`, gated on
+`AssistanceTypeAI` and `AIcallInsightSessionIdleMinutes > 0` and
+idle-past-threshold and `a.Type == TypeInsight` (`insight_session.go:67-111`).
+Ordinary non-idle reuse therefore carries a **stale** tool map indefinitely, so
+a newly whitelisted server's tools stay uncallable until a refresh. That is the
+fail-closed direction, but it is a functional gap this document did not list.
+The headline D15 conclusion and its "fails closed 100% of the time" on the
+voice path are confirmed precise.
+
+C5. **D11 named the gap but not its consequences.** An invalid name is not a
+per-tool degradation, it is a whole-request failure: OpenAI requires
+`function.name` to match `^[a-zA-Z0-9_-]{1,64}$`, and `mcp_` plus 8 hex plus
+`_` consumes 13 characters, leaving 51 for the remote name. A remote tool whose
+name contains a dot, colon or space, or exceeds 51 characters, makes the entire
+completion call fail. Same outage class as D9. Also unhandled: a server listing
+the same tool name twice produces two identical entries in `merged` (provider
+rejects duplicates; python `tool_register` silently overwrites); and
+`mcpServerIDShort` (`mcp_tool.go:114-120`) gives a 2^32 namespace, so
+cross-server collision is unlikely but undetected.
+
+#### 8.2 Prerequisites this document missed
+
+P7. **Prometheus label cardinality is customer-controlled.**
+`bin-ai-manager/pkg/aicallhandler/tool.go:123` does
+`promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()`,
+declared with `[]string{"tool_name"}` (`main.go:216-223`). Today that value
+comes from a closed enum. Once MCP tools are exposed it becomes
+`mcp_<8hex>_<arbitrary customer string>`, and Prometheus counters never evict a
+label set. A customer with 5 servers advertising 200 tools each adds 1,000
+permanent series per replica, per customer, plus whatever a hostile server
+invents on each `tools/list`. Must be bucketed to a constant or to the server
+id before any MCP name reaches that call site.
+
+P8. **No aggregate time budget, and this is already a live bug.**
+`resolveTools` loops `a.McpServerIDs` **sequentially** (`mcp_tool.go:72-106`),
+one network round trip per server, bounded only per request by
+`McpToolCallTimeoutSeconds` (default 10, `internal/config/main.go:148`). There
+is no aggregate cap and no concurrency. Meanwhile `AIV1AIcallStart` runs under
+`requestTimeoutDefault = 3000` ms
+(`bin-common-handler/pkg/requesthandler/main.go:151`, applied at
+`ai_aicalls.go:44`), and `startAIcallByMessaging` **already calls
+`resolveTools` today** (`start.go:1184`). So one customer server taking 4s to
+answer `tools/list` already makes the API caller's RPC time out at 3s and
+return an error while ai-manager continues past the deadline and creates the
+AIcall anyway. Three servers at 10s each is 30s of hung handler. This is
+shipped behaviour masked only by there being zero customer servers; PR B makes
+it the common case and extends it to voice. Needs parallel fan-out, an
+aggregate budget derived from the caller's deadline, and a cached tool list so
+session start does not depend on a third party's uptime.
+
+P9. **Tool output overruns a hard 64 KiB column and corrupts the
+conversation.** `CallTool` joins every content item's text with no cap
+(`mcptoolhandler/client.go:267-274`); the only bound is the 1 MiB body limit
+(`mcpserverhandler/ssrf.go:18`). That string reaches `messageContent.Message`
+and is stored in `ai_messages.content`, which migration
+`f46d9c5c4438_ai_messages_alter_column_content.py:22` fixes as **`TEXT`**, so
+65,535 bytes. A 300 KB tool result either fails the INSERT, orphaning the
+tool-call request row already persisted at `tool.go:88` and triggering the
+unpaired-message drop in `filter_valid_messages` (the VOIP-1460 corruption
+class), or is silently truncated into invalid JSON so `unmarshalToolResponse`
+fails. PR B needs an explicit result cap well under 64 KiB with a truncation
+marker fed to the model.
+
+P10. **No MCP initialize handshake, and the `Accept` header violates the
+spec.** `doJSONRPCRequest` (`mcptoolhandler/client.go:125-138`) POSTs
+`tools/list` directly with `Accept: application/json` only. There is no
+`initialize`, no `notifications/initialized`, no `Mcp-Session-Id` handling and
+no `MCP-Protocol-Version` header: grep for all four across
+`pkg/mcptoolhandler/*.go` returns 0. The 2025-06-18 Streamable HTTP spec makes
+three of these **MUST** requirements: the client MUST list both
+`application/json` and `text/event-stream` in `Accept`; a server requiring a
+session id SHOULD reject a non-initialize request without one with HTTP 400;
+and the client MUST send `MCP-Protocol-Version` on all requests after
+initialization.
+
+Status of the live check: **unproven, not refuted.** Both hardcoded vendors
+(`mcpoauthhandler/vendors.go:26,36`) reject an unauthenticated probe before any
+protocol validation runs. `https://mcp.linear.app/mcp` returns 401 with an
+empty body and `https://api.githubcopilot.com/mcp/` returns
+`401 bad request: missing required Authorization header`, identically for both
+the current `Accept` header and the spec-conformant one. So the probe
+distinguishes nothing without a real token. The risk stands: PR B could pass
+every unit test against an `httptest.Server` that answers a bare `tools/list`
+and still return zero tools against every real server. **The acceptance gate
+must be an authenticated live call against at least one of the two vendors, not
+a mock.** No such test exists today (`client_test.go`, `client_oauth_test.go`
+drive local `httptest` servers only).
+
+P11. **Tool descriptions are unsanitized and unbounded straight into the model
+context.** `mcp_tool.go:96` passes `Description: mt.Description` verbatim into
+`tool.Tool.Description`, which becomes `FunctionSchema(description=...)`
+(`tools.py:74`) in the model's tool spec on **every turn**. There is no length
+cap, no content inspection, and no tool-count cap. The asymmetry is the
+argument: this codebase already caps remote text bound for logs
+(`capErrText(err.Error(), 200)` at `mcp_tool.go:180`, `truncateForError` at 512
+in `client.go:181`) and already refuses to forward remote error text to the
+model at all (`errMcpToolCallFailed`). The one remote-controlled string that
+goes directly into the prompt received none of that discipline. A single server
+can return one tool whose description is a megabyte of instructions.
+
+#### 8.3 Scope changes accepted from Round 1
+
+S1. **Exclude `TypeInsight` from PR B, and gate it at write time.**
+`AllInsightToolNames` (`models/tool/main.go:90-99`) is a closed set whose
+documented invariant (`:74-89`) is that every member has no side effects
+outside the session. A customer MCP server's tools have an unbounded
+side-effect profile, so admitting them to an Insight AI silently voids that
+invariant. Note that the write-time gate does not exist either:
+`ValidateMcpServerIDs` (`aihandler/mcpserver_validation.go:57`) takes no AI
+type, unlike `ValidateToolNames`. PR B must reject `mcp_server_ids` on
+`TypeInsight` rather than leave the behaviour emergent.
+
+S2. **Exclude the team surface from PR B.** `resolveTools` resolves exactly one
+AI's `McpServerIDs`, while the team pipeline builds tools per member from each
+member's own AI (`run.go:178`). `refreshMcpToolMap` already papers over this by
+resolving the current member (`start.go:369-373`), so a team's advertised set
+and its stored map would disagree the moment the active member switches
+mid-call. Team semantics are genuinely undefined and would be designed blind
+with zero customers. Ship single-AI first.
+
+S3. **In scope: realtime voice, conversation/messaging, task runs.** Voice is
+non-negotiable despite being the larger fix, because it is the flagship surface
+and the one a customer tests first. Task runs come along for free through
+`startAIcallByMessaging` and are the lowest-risk pilot surface.
+
+#### 8.4 Confirmed sound, do not re-litigate
+
+- **The tool-call return path already carries an `mcp_` name end to end.**
+  `tools.py:153-160` posts `{"function":{"name": tool_name}}`, bound at
+  `runner.go:447-460` into `ammessage.FunctionCall` whose `Name` is the
+  unvalidated string alias `FunctionCallName` (`models/message/tool.go:16,25`),
+  through `AIV1AIcallToolExecute` and
+  `processV1AIcallsIDToolExecutePost` (`v1_aicalls.go:302-340`, no name
+  validation) to `ToolHandle`, where the `mapFunctions` miss falls through to
+  the prefix check at `tool.go:141-142` and into `toolHandleMcpCall`. No enum
+  gate and no allowlist on any hop.
+- **The lifecycle gates from PR A do cover dispatch.** `toolHandleMcpCall`
+  trusts stored metadata for nothing but the name-to-ref mapping, then re-reads
+  live state: `resolveActiveAIForMcp` (`helpers.go:194`), a whitelist re-check
+  against the freshly fetched `tmpAI.McpServerIDs`, `mcpServerHandler.Get`, and
+  `mcpServerIsUsable` (`:266-279`, checking nil, `TMDelete`, `Status` and
+  `CustomerID`). The transport backstop `refuseDeleted` (`client.go:197-206`)
+  is invoked on both `ListTools` (`:214`) and `CallTool` (`:239`).
+- **`StreamingSend` is dead code.** Declared at
+  `engine_openai_handler/main.go:24`, implemented at `streaming_send.go:24`,
+  with no non-test non-mock caller anywhere and no listenhandler route reaching
+  it. Its package-level `tools` var (`tool.go:8`) names `connect` and
+  `message_send`, which no longer exist in `models/message/tool.go`. It is not
+  an advertising surface and must not be treated as one.
+- **pipecat is the only live advertising surface.** `runner.go:150` for single
+  AIs, `run.go:178` for teams, both over the static catalogue. `grep -rni mcp`
+  across `bin-pipecat-manager` excluding vendor returns zero matches.
+
+#### 8.5 Severity restated
+
+The published API reference and docs site make unconditional present-tense
+claims that a whitelisted server's tools are merged into the AI's tool list and
+presented to the LLM, with the exact namespacing format quoted. Verified in the
+served artefacts, not the sources: `gens/openapi_redoc/openapi.json` under
+`AIManagerAI.properties.mcp_server_ids.description` and
+`paths./mcpservers.post.description`, and the built HTML
+`docsdev/build/html/ai_struct_ai.html`, `ai_struct_mcpserver.html`,
+`ai_overview.html`. No beta marker, no "coming soon".
+
+A customer following the documentation gets 200 on every call and silence
+afterwards. There is no error, no customer-visible log, and **no MCP metric of
+any kind** anywhere in the repository. The single accidental signal is that
+`aicall.WebhookMessage` carries `Metadata` verbatim
+(`models/aicall/webhook.go:41,78`) and the messaging path writes
+`mcp_tool_map` into it (`start.go:1191`), so a customer subscribed to aicall
+webhooks on a chat AIcall could notice the key. That is undocumented, and on
+the voice path the key is never written at all. The rational customer concludes
+their own server is broken and debugs their own infrastructure.
+
+Blast radius is currently zero: production has no customer-registered MCP
+servers, and all ~100 rows are api-validator data. That is precisely the window
+in which to fix this properly rather than hastily.
