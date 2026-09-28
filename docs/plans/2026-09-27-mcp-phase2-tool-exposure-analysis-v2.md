@@ -94,6 +94,11 @@ Correctness blockers. Each is a defect the moment the feature is reachable.
 | B20 | Single-flight per server | `resolveTools` | Restored after being dropped from v1's ledger |
 | B21 | Re-enable `bin-pipecat-manager-test` | `.circleci/config_work.yml:543-545` | Verified green today, so it does not expand scope |
 | B22 | Docs, OpenAPI, and the webhook projection change | `docsdev/source/*`, `openapi.yaml`, `models/aicall/webhook.go` | See section 4 |
+| B23 | `tools/list` pagination: send `cursor`, follow `nextCursor` | `pkg/mcptoolhandler/client.go:42-44` | `toolsListResult` has only `Tools`; zero cursor handling. A server paginating silently truncates, and which tools vanish is server-chosen. Defeats B5's caps and B15's probe |
+| B24 | Honour `isError`: a remote tool failure must not be reported to the model as a success | `pkg/mcptoolhandler/client.go:61`, `mcp_tool.go:185` | `IsError` is declared and **never read**; `CallTool` returns the error text as a normal result and `fillSuccess` labels it `success`. A hostile server's prose reaches the model under a success label |
+| B25 | Cancel an in-flight `tools/call` when the call ends | `mcp_tool.go:127`, `listenhandler/main.go:279` | Dispatch runs under `context.Background()`, so a hangup mid-call leaves a side-effecting request running with no consumer for the result. This is the other half of the double-fire class |
+| B26 | `clearListenState` must not lose `mcp_tool_map` | `pkg/aicallhandler/listen.go:539-546` | It copies keys from `c.Metadata`, the caller's **in-memory snapshot**, and writes the whole column, so a map written after `c` was fetched is lost. Dispatch then fails closed for the rest of that AIcall's life |
+| B27 | Rollback: a global config disable, plus a per-customer enable | `internal/config/main.go`, `bin-customer-manager/models/customer/metadata.go` | Nothing can turn this feature off today. See A.15 |
 
 Hardening, cuttable to a follow-up: retryable/terminal reason codes beyond the
 401 case (B19 covers the one that matters).
@@ -125,10 +130,16 @@ blocking it.
 | O1 | Cache location and invalidation mechanism | ai-manager runs 2 replicas, so an in-process cache means a per-pod TTL and two customers' views. Redis via `pkg/cachehandler` is the alternative. Invalidation needs a subscription case that does not exist: `mcp_server_updated` is published (`models/mcpserver/event.go:6`) but ai-manager's `processEvent` (`pkg/subscribehandler/main.go:201-241`) has no case for it | **OPEN** |
 | O2 | Caps, final numbers | A character cap does not bound tokens: measured 284 tok/tool for English prose at 1,024 chars, 622 for filler, and **2,069 for Korean**, which is most of the current market. Must be a token cap, and the per-AI count must be sized against the worst case | **OPEN**, A.6 |
 | O3 | Does the transport RPC also write `MetaKeyMcpToolMap`? | If yes, B16's separate write is redundant and the staleness window shrinks. If no, both exist | **OPEN** |
-| O4 | Aggregate fan-out budget, as a number | Must derive from the greeting budget (`docs/plans/2026-03-04-optimize-aicall-conversation-latency-design.md` budgets the initial greeting at 3.0-3.5s total), not from an RPC deadline | **OPEN**, A.13 |
+| O4 | Aggregate fan-out budget, as a number | Must be defended **against** the greeting target, not derived from it. The latency design targets a 3.0-3.5s initial greeting and reaches it by removing about 2.3s from a measured 5.8s; every phase it lists is already allocated and it contains no slack line, so there is no residual to derive a budget from. Pick a number and justify it | **OPEN**, A.13 |
 | O5 | How the build-tagged conformance test runs in CI | `bin-ai-manager-test` invokes `go test ... $(go list ./...)` with no `-tags`, so a tagged test is compiled out and silently never runs | **OPEN**, A.14 |
 | O6 | Where the per-AI count cap is applied, given a per-server cache | 3 servers at 32 each exceeds a 64 per-AI cap; the drop must be deterministic | **OPEN** |
 | O7 | Is the square-admin picker change in PR B or PR C? | Converting an AI to Insight with a stored whitelist will 400 with the picker still showing the cause | **OPEN**, A.9 |
+| D12 | Does the callback **replace** or **supplement** `GetByNames` at `runner.go:150`? | **Supplement.** Replacing it would bypass pipecat's AIType whitelist for the built-in half, which makes B4 a hard blocker rather than an independent fix | SETTLED, forced by A.4 |
+| D13 | Failure posture when the callback fails | **Fail open to built-ins**, not closed to nothing. `runner.go:143-148` clears *all* tools including built-ins, which contradicts D2. A customer's MCP server being down must not remove `connect_call` | SETTLED, corrects A.12 |
+| D14 | Is the usability gate inside or outside the cache? | **Outside.** Only the `tools/list` payload is cached; deleted, status and ownership are evaluated on every resolution, or disabling a server keeps advertising it for up to the TTL | SETTLED, forced by A.15 |
+| D15 | Is the advertised list the same list the map derives from, after the per-AI cap? | **Yes, the map must be built post-cap.** Otherwise a replayed name dispatches a tool the cap excluded, and A.1 shows replay happens 3/3 | SETTLED |
+| O8 | Does B15's probe result get **persisted**? | If yes, this needs a new column or table and bin-dbscheme-manager becomes a fifth service in scope. If it is only returned in the `POST /mcpservers` response, it does not | **OPEN**, and it changes the PR's service count |
+| O9 | What bounds the transport RPC's response payload? | 64 tools with capped descriptions over RabbitMQ. B6 bounds tool results; nothing bounds the tool list | **OPEN** |
 
 ## 3. Risk register
 
@@ -200,28 +211,53 @@ line quoted in the PR body.
 
 ## 6. Build order
 
-The property that matters is that **the feature is unreachable until step 9**.
-Every earlier step fixes code that is already shipped and already wrong, and
-whose only consumer today discards the tool list.
+The property that matters is narrower than v1 claimed, and the earlier wording
+was wrong. **Advertisement** is unreachable until step 9. The feature is not:
+three call sites consume `resolveTools`' *second* return value (the tool map) and
+`tool.go:141` routes any `mcp_`-prefixed name into dispatch, so against the
+stateless server configuration that A.2 shows does work, discovery succeeds and
+dispatch works today for any customer who sets `mcp_server_ids`, which nothing
+prevents. So steps 1 through 8 are not preparation for a dormant feature, they
+are fixes to a live one.
 
-1. B1, B2, B3 with L1 and L2 conformance tests
-2. B6 tool-result cap
-3. B4 built-in resolver type filter, a security fix on its own
+0. B21 re-enable the pipecat CI job. It is green at HEAD today, so it costs
+   nothing, and landing python changes at the end with its job disabled is the
+   failure class this analysis exists to punish
+1. B1, B2, B3, B23, B24 the MCP client: protocol, schema tag, redirect guard,
+   pagination, and honouring `isError`, with L1 and L2 conformance tests
+2. B6 tool-result cap, B25 dispatch cancellation
+3. B4 built-in resolver type filter. Note D12: this is not optional, because the
+   callback supplements rather than replaces pipecat's filter
 4. B5, B7 name policy and the token-based description cap
-5. B13, B14, B20 fan-out budget, cache with negative caching, single-flight
-6. B10, B11, B9 the scope gates and the dispatch-time gates, **before** anything
-   is advertised
-7. B16 voice metadata write, subject to O3
-8. B17, B18 metric cardinality then MCP metrics
-9. **B12 the transport. The feature turns on here.**
-10. B15 registration-time probe
-11. B21 re-enable the pipecat job, add the python cases
-12. B22 docs, OpenAPI regeneration, webhook projection
+5. B13, B14, B20 fan-out budget, cache with negative caching and the usability
+   gate outside it (D14), single-flight
+6. B10, B11, B9, B26 the scope gates, the dispatch-time gates, and the metadata
+   clobber, **before** anything is advertised
+7. B22's webhook projection fix, ahead of B16 rather than after it, so the key is
+   off the webhook before voice starts writing it
+8. B16 voice metadata write, subject to O3
+9. B17, B18 metric cardinality then MCP metrics
+10. B27 the rollback switches, before the feature can be turned on
+11. **B12 the transport. Advertisement turns on here.**
+12. B15 registration-time probe, subject to O8
+13. The python test cases
+14. B22's docs and OpenAPI regeneration
 
-Known weakness, stated rather than hidden: steps 4 and 5 have no consumer until
-step 9, so their only test is against `resolveTools`' first return value, which
-no production caller reads yet. They are verifiable, but against a contract that
-does not exist until step 9.
+Known weakness, stated rather than hidden. Only B5, B7, B13, B14, B17, B18 and
+B20 lack a consumer until step 11; their only test is against `resolveTools`'
+first return value, which no production caller reads yet. Everything else in
+steps 0 through 10 fixes a live, customer-reachable surface, which is why the
+earlier framing of this whole sequence as preparation for a dormant feature was
+wrong.
+
+**This build order is only meaningful if the work is split across more than one
+PR, and the standing rule is one PR per repository.** Inside a single PR the tree
+is observed only in its final state, so the ordering above is a review aid rather
+than a safety property. The natural boundary, if a split is authorised, is
+whether an item has a live consumer today: B1 through B4, B6, B9, B10, B11, B19,
+B21, B23, B24, B25 and B26 all fix shipped reachable code and leave no dead code
+behind, while B5, B7, B12 through B18, B20, B22 and B27 are the turn-it-on half.
+That question is for the CEO, not for this document to decide.
 
 ## 7. What the design document must still specify
 
@@ -494,7 +530,9 @@ into `RunnerStart`'s goroutine does take it off the RPC deadlines, but the
 caller is already connected by then, so an unbounded sequential loop becomes
 **audible dead air** rather than an RPC timeout. Three servers at 10s each is
 three times the entire greeting budget. Hence O4: the budget must be a number
-derived from the latency design, not from an RPC default.
+defended against the latency target rather than derived from it: the cited design
+allocates every phase it lists and leaves no slack line, so v1's claim that a
+number could be derived from it was unsupported.
 
 One genuine side benefit the earlier rounds missed: an in-flight `tools/list` is
 uncancellable today because the listen handler builds its own
@@ -514,3 +552,87 @@ class this analysis exists to punish. Python availability is not the blocker,
 since another job pip-installs freely. Hence O5. Separately verified: the
 commented-out pipecat job passes both `go test ./...` and `golangci-lint run` at
 HEAD today, so re-enabling it does not silently expand this PR.
+
+## A.15 There is no way to turn this off (round 5)
+
+Four rounds found defects in this feature up to and including round 5, and no
+round asked how it gets disabled if the first real customer's server misbehaves.
+Verified three ways, all negative:
+
+- **Config is frozen at process start.** `LoadGlobalConfig` is `sync.Once`
+  guarded (`internal/config/main.go:225`), with no reload, no SIGHUP and no
+  watch.
+- **Config arrives as container environment.** Both the Komodo compose fragment
+  and the k8s manifest inject env, each at 2 replicas, so any flag change is a
+  redeploy and a pod restart.
+- **No flag framework exists.** A repo-wide search for feature-flag or
+  kill-switch machinery across non-vendor Go returns one comment and no code.
+
+**A precedent does exist and no round had found it.**
+`bin-customer-manager/models/customer/metadata.go` defines a per-customer
+`Metadata` with `RTPDebug bool` (key `rtp_debug`), updatable at runtime through
+the customer-metadata endpoints and read live at call start
+(`bin-call-manager/pkg/callhandler/start.go:612`). That is a shipped,
+zero-deploy, per-customer runtime toggle, and it is the right model for an MCP
+enable flag. Hence B27.
+
+**Why "set status to inactive" is not sufficient on its own.** The operator path
+works for new sessions: `resolveTools` (`mcp_tool.go:79`) checks
+`mcpServerIsUsable` *before* `ListTools`, so a disabled server is skipped, which
+is also why D14 must keep that gate outside the cache. But it is one server row
+at a time across 104 rows, it does nothing about a defect in our own code (an SSE
+parser bug, a fan-out eating the greeting budget), and on voice the tool list is
+frozen for the length of the call (A.8). So after a flip, every live call keeps
+seeing and calling the tools and keeps getting refusals from dispatch, which is
+wasted turns and LLM spend for as long as that call lasts. The cache TTL is
+irrelevant to this window; the per-call freeze is.
+
+## A.16 Verified safe, do not re-litigate
+
+Round 5 found that the rewrite dropped v1's re-litigation guard, which cost a
+reviewer time re-deriving it. Restored:
+
+- **A remote tool cannot shadow a built-in.** `mapFunctions` is consulted first
+  (`tool.go:139`) and only a miss falls through to the `mcp_` prefix branch, so
+  even a remote tool literally named `emit_info_card` arrives as
+  `mcp_<hex>_emit_info_card` and the special case at `:176` compares against the
+  bare constant.
+- **Underscores in remote tool names are harmless.** `lookupMcpToolRef`
+  (`mcp_tool.go:194-215`) is a whole-string map lookup, not a parse.
+- **The 8-hex prefix may start with a digit, and that is fine.** The full name
+  always begins with the literal `mcp_`, so it satisfies the provider rule
+  requiring a leading letter or underscore. B5 must not add a needless check.
+- **No non-pipecat engine handler can pick up the merged tool list** (A.7). Only
+  the auditor's *content* path is exposed.
+- **Nothing survives a pipecat pod restart mid-call** (A.12), so no design option
+  needs to.
+
+## A.17 Why "never sanitize silently" is the rule (restored from v1)
+
+D5 rejects sanitizing an invalid remote tool name in favour of dropping it, and
+the rewrite kept the rule while losing the evidence that produced it. The
+contrast is with the python team path, which does the opposite:
+`scripts/pipecat/team_flow.py` has a `_sanitize_function_name` that rewrites
+disallowed characters and truncates to 64 characters with a warning, advertises
+the sanitized name, and closes over the **raw** name for dispatch. Two remote
+names that truncate to the same 64 characters therefore overwrite each other in
+the registry with only a warning, and the collision is invisible. That is the
+behaviour D5 exists to avoid. Teams are out of scope (D8), so the sanitizer is
+not being changed, but the next builder needs to know a second python path exists
+with the opposite policy.
+
+## A.18 Staleness asymmetries, complete list (extended round 5)
+
+A.8 named two. There are four, and the design must state all of them because
+each has a different window:
+
+1. **Voice fetches once per call.** Stale for the length of the call, up to hours.
+2. **Chat, contact_case and task fetch per turn.** Stale for one turn.
+3. **Contact_case reuse** refreshes only through the idle-session path, which is
+   gated on assistance type, a positive idle threshold, the idle interval having
+   elapsed, and the AI being Insight, so ordinary non-idle reuse carries a stale
+   map indefinitely. Fail-closed direction.
+4. **Team member switch** (`pipecat_message.go:66-82`) updates only
+   `CurrentMemberID` and never refreshes the map, so dispatch validates the *new*
+   member's whitelist against the *old* member's stored map. Fail-closed, and
+   moot once B11 stops writing the map for team AIcalls.
