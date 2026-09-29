@@ -137,6 +137,7 @@ type MessageHandler interface {
 	EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message)
 	EventPMTeamMemberSwitched(ctx context.Context, evt *pmmessage.MemberSwitchedEvent)
+	EventPMPipelineError(ctx context.Context, evt *pmmessage.PipelineErrorEvent)
 	EventPMPipecatcallTerminated(ctx context.Context, evt *pmpipecatcall.Pipecatcall) error
 }
 

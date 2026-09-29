@@ -30,7 +30,7 @@ All WebSocket messages between Go and Python use protobuf frames (`proto/frames.
 
 ## Events Published
 
-Every event below is published to the per-service fanout exchange `bin-manager.pipecat-manager.event`, and — since VOIP-1405 — also to the global topic exchange `bin-manager.event` with the routing key `pipecat-manager.<resource>.<pipecatcall-id>.<action>`. The third key segment is the *subscription address*: it is always the pipecatcall-id, across all three resource namespaces, so one AI voice session is followed with `pipecat-manager.pipecatcall.<id>.#`, `pipecat-manager.message.<id>.#`, and `pipecat-manager.team.<id>.#`.
+Every event below is published to the per-service fanout exchange `bin-manager.pipecat-manager.event`, and — since VOIP-1405 — also to the global topic exchange `bin-manager.event` with the routing key `pipecat-manager.<resource>.<pipecatcall-id>.<action>`. The third key segment is the *subscription address*: it is always the pipecatcall-id, across all four resource namespaces, so one AI voice session is followed with `pipecat-manager.pipecatcall.<id>.#`, `pipecat-manager.message.<id>.#`, `pipecat-manager.team.<id>.#`, and `pipecat-manager.pipeline.<id>.#`.
 
 | Event | Data | Trigger | Topic routing key |
 |-------|------|---------|-------------------|
@@ -44,10 +44,22 @@ Every event below is published to the per-service fanout exchange `bin-manager.p
 | `message.EventTypeBotLLMIntermediate` | `*message.Message` | Per-tick delta of an in-flight LLM generation | `pipecat-manager.message.<pipecatcall-id>.bot_llm_intermediate` |
 | `message.EventTypeBotLLM` | `*message.Message` | Final LLM reply for one generation | `pipecat-manager.message.<pipecatcall-id>.bot_llm` |
 | `message.EventTypeTeamMemberSwitched` | `*message.MemberSwitchedEvent` | Team member transition during an AI call | `pipecat-manager.team.<pipecatcall-id>.member_switched` |
+| `message.EventTypePipelineError` | `*message.PipelineErrorEvent` | Runner reported a pipeline error (RTVI `error` frame) that passes the notice policy; see "Pipeline errors" below | `pipecat-manager.pipeline.<pipecatcall-id>.error` |
 
-`Message` and `MemberSwitchedEvent` both implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `PipecatcallID`. `Message` needs the override because its own id is not an address: the transcription and user-llm events mint a fresh uuid per event, while the bot-llm events reuse a per-generation id that no subscriber can know in advance. `MemberSwitchedEvent` needs it because it carries no top-level `id` at all — without the override the key would degrade to the `-` placeholder. `Pipecatcall` needs no override: its own id already is the subscription address.
+`Message`, `MemberSwitchedEvent` and `PipelineErrorEvent` all implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `PipecatcallID`. `Message` needs the override because its own id is not an address: the transcription and user-llm events mint a fresh uuid per event, while the bot-llm events reuse a per-generation id that no subscriber can know in advance. `MemberSwitchedEvent` and `PipelineErrorEvent` need it because they carry no top-level `id` at all — without the override the key would degrade to the `-` placeholder. `Pipecatcall` needs no override: its own id already is the subscription address.
 
 The routing keys are pinned by `models/pipecatcall/routingkey_golden_test.go`; the override behavior (including the "address is never the own id" property) is pinned in `models/message`.
+
+### Pipeline errors (VOIP-1542)
+
+The runner's RTVIProcessor turns every pipeline `ErrorFrame` (LLM, STT, TTS, function-call handler) into an RTVI `error` frame. `receiveMessageFrameTypeMessage` classifies its text (`classifyPipelineError`, `pkg/pipecatcallhandler/pipelineerror.go`) into `authentication`, `rate_limited`, `timeout`, `function_call`, `internal` or `unknown`, counts it (`pipecat_manager_pipeline_error_total`), logs the first frame of each category per session at WARN (repeats at DEBUG), and publishes `pipeline_error` only when `shouldNotifyPipelineError` allows it:
+
+- `function_call` / `internal`: never (platform-side bug, operator signal only).
+- `fatal=true`: always (future-proofing; no wired service pushes fatal today).
+- `authentication` / `rate_limited` / `timeout`: always.
+- `unknown`: only when the session has no STT (`Session.HasSTT=false`). Voice sessions receive transient STT reconnect errors as `unknown`, which would be false alarms.
+
+At most one event per (pipecatcall, category). The raw provider text is never put on the event (it can contain platform-internal detail when the platform key is used); it stays in the WARN log. RTVI `error-response` frames (the runner rejected a request pipecat-manager sent, e.g. `send-text`) are WARN-logged and counted in `pipecat_manager_rtvi_error_response_total`, never published.
 
 ## Pipecat Pipeline
 
