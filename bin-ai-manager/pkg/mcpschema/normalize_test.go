@@ -519,11 +519,10 @@ func Test_Normalize_Rules(t *testing.T) {
 			wantDroppedProps: []string{"/properties/c"},
 		},
 		{
-			name: "object with usable properties keeps a usable anyOf",
+			name: "object with usable properties drops a usable anyOf and keeps its properties (R10a)",
 			in: `{"type":"object","properties":{"o":{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"integer"}},
 				"oneOf":[{"type":"object","properties":{"a":{"type":"string"}},"required":["a"]},{"type":"object","properties":{"b":{"type":"integer"}},"required":["b"]}]}}}`,
-			want: `{"type":"object","properties":{"o":{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"integer"}},
-				"anyOf":[{"type":"object","properties":{"a":{"type":"string"}},"required":["a"]},{"type":"object","properties":{"b":{"type":"integer"}},"required":["b"]}]}}}`,
+			want: `{"type":"object","properties":{"o":{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"integer"}}}}}`,
 		},
 		{
 			name: "root single-element list type object is a plain object",
@@ -536,9 +535,61 @@ func Test_Normalize_Rules(t *testing.T) {
 			want: `{"type":"object","properties":{"v":{"anyOf":[{"type":"string","enum":["x"]},{"type":"null"}]}}}`,
 		},
 		{
-			name: "a non-object type next to anyOf keeps both",
+			name: "a non-object type next to a usable anyOf keeps only the type (R10a)",
 			in:   `{"type":"object","properties":{"v":{"type":"string","anyOf":[{"type":"string"},{"type":"null"}]}}}`,
-			want: `{"type":"object","properties":{"v":{"type":"string","anyOf":[{"type":"string"},{"type":"null"}]}}}`,
+			want: `{"type":"object","properties":{"v":{"type":"string"}}}`,
+		},
+		{
+			name:         "a type next to an anyOf with no usable member is still unusable (R10a gate)",
+			in:           `{"type":"object","properties":{"v":{"type":"string","anyOf":[{"type":"array"}]}},"required":["v"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/v",
+		},
+
+		// R7a constraint-only anyOf/oneOf members next to a type.
+		{
+			name: "required at-least-one-of anyOf on a required object is removed, the tool is kept",
+			in: `{"type":"object","properties":{"q":{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"string"}},
+				"anyOf":[{"required":["a"]},{"required":["b"]}]}},"required":["q"]}`,
+			want: `{"type":"object","properties":{"q":{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"string"}}}},"required":["q"]}`,
+			check: func(t *testing.T, rep Report) {
+				if rep.DroppedKeys != 1 {
+					t.Errorf("Wrong match. DroppedKeys expect: 1, got: %d", rep.DroppedKeys)
+				}
+			},
+		},
+		{
+			name: "format-only oneOf on a required string is removed, the tool is kept",
+			in:   `{"type":"object","properties":{"d":{"type":"string","oneOf":[{"format":"date"},{"format":"date-time"}]}},"required":["d"]}`,
+			want: `{"type":"object","properties":{"d":{"type":"string"}},"required":["d"]}`,
+		},
+		{
+			name: "bound-only anyOf on an integer is removed, the property is kept",
+			in:   `{"type":"object","properties":{"n":{"type":"integer","anyOf":[{"minimum":1},{"maximum":-1}]}}}`,
+			want: `{"type":"object","properties":{"n":{"type":"integer"}}}`,
+		},
+		{
+			name: "constraint-only anyOf next to a list type is removed, the list type is kept",
+			in:   `{"type":"object","properties":{"x":{"type":["string","null"],"anyOf":[{"minLength":1}]}}}`,
+			want: `{"type":"object","properties":{"x":{"anyOf":[{"type":"string"},{"type":"null"}]}}}`,
+		},
+		{
+			name: "one constraint-only member is enough to treat the anyOf as a refinement",
+			in:   `{"type":"object","properties":{"s":{"type":"string","anyOf":[{"type":"string","enum":["a"]},{"pattern":"^b"}]}},"required":["s"]}`,
+			want: `{"type":"object","properties":{"s":{"type":"string"}},"required":["s"]}`,
+		},
+		{
+			name:             "a typeless subschema's constraint-only anyOf is still evaluated (not a refinement of a type)",
+			in:               `{"type":"object","properties":{"v":{"anyOf":[{"minLength":1}]}}}`,
+			want:             `{"type":"object","properties":{}}`,
+			wantDroppedProps: []string{"/properties/v"},
+		},
+		{
+			name: "duplicate list type entries give one member per distinct type",
+			in:   `{"type":"object","properties":{"v":{"type":["string","string","null"],"enum":["x"]}}}`,
+			want: `{"type":"object","properties":{"v":{"anyOf":[{"type":"string","enum":["x"]},{"type":"null"}]}}}`,
 		},
 		{
 			name: "20 dropped optional properties report 8 paths and the full count",
@@ -722,6 +773,24 @@ func Test_Normalize_Rules(t *testing.T) {
 				}
 				if rep.DroppedPropsN > defaultMaxOut/32 {
 					t.Errorf("Wrong match. build must stop after about %d visits, got %d dropped", defaultMaxOut/32, rep.DroppedPropsN)
+				}
+			},
+		},
+		{
+			name:        "allOf chain fan-out is stopped by the work cap",
+			in:          allOfChainFanOut(t, 2000, 256),
+			want:        "null",
+			wantDropped: true,
+			wantReason:  ReasonTooLarge,
+			check:       func(t *testing.T, rep Report) {},
+		},
+		{
+			name: "a short allOf chain is resolved and its sibling keys dropped",
+			in:   `{"type":"object","properties":{"a":{"k0":1,"allOf":[{"k1":1,"allOf":[{"type":"string"}]}]}}}`,
+			want: `{"type":"object","properties":{"a":{"type":"string"}}}`,
+			check: func(t *testing.T, rep Report) {
+				if rep.DroppedKeys != 2 || rep.Rewrites != 2 {
+					t.Errorf("Wrong match. expect: 2 dropped keys, 2 rewrites, got: %d, %d", rep.DroppedKeys, rep.Rewrites)
 				}
 			},
 		},

@@ -670,6 +670,7 @@
 <li><p>Give every <code class="docutils literal notranslate"><span class="pre">array</span></code> an <code class="docutils literal notranslate"><span class="pre">items</span></code> schema.</p></li>
 <li><p>Avoid <code class="docutils literal notranslate"><span class="pre">allOf</span></code> with more than one member.</p></li>
 <li><p>Prefer string enums (<code class="docutils literal notranslate"><span class="pre">{&quot;type&quot;:</span> <span class="pre">&quot;string&quot;,</span> <span class="pre">&quot;enum&quot;:</span> <span class="pre">[...]}</span></code>); enums on other types are removed.</p></li>
+<li><p>Express alternatives either with a list <code class="docutils literal notranslate"><span class="pre">type</span></code> or with <code class="docutils literal notranslate"><span class="pre">anyOf</span></code>/<code class="docutils literal notranslate"><span class="pre">oneOf</span></code> members that each have their own <code class="docutils literal notranslate"><span class="pre">type</span></code>, not both: an <code class="docutils literal notranslate"><span class="pre">anyOf</span></code>/<code class="docutils literal notranslate"><span class="pre">oneOf</span></code> next to a <code class="docutils literal notranslate"><span class="pre">type</span></code> is removed and only the <code class="docutils literal notranslate"><span class="pre">type</span></code> is advertised.</p></li>
 </ul>
 </div>
 <ul class="simple">

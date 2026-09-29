@@ -115,6 +115,34 @@ func droppedPropsAmplification(t *testing.T) string {
 	})
 }
 
+// allOfChainFanOut builds a $def that is an n-level chain of single-member
+// allOf wrappers, each level carrying one non-allowlisted sibling key, and
+// refs properties referencing it. Every chain step copies the whole merged
+// map, so the work is quadratic in n and multiplied by refs, while nothing
+// is emitted but the leaf type. It stays under the 64 KiB raw limit.
+func allOfChainFanOut(t *testing.T, n, refs int) string {
+	var sb strings.Builder
+	sb.WriteString(`{"type":"object","$defs":{"D":`)
+	for i := 0; i < n; i++ {
+		fmt.Fprintf(&sb, `{"k%d":1,"allOf":[`, i)
+	}
+	sb.WriteString(`{"type":"string"}`)
+	sb.WriteString(strings.Repeat(`]}`, n))
+	sb.WriteString(`},"properties":{`)
+	for i := 0; i < refs; i++ {
+		if i > 0 {
+			sb.WriteString(",")
+		}
+		fmt.Fprintf(&sb, `"%d":{"$ref":"#/$defs/D"}`, i)
+	}
+	sb.WriteString(`}}`)
+	raw := sb.String()
+	if len(raw) > 64<<10 {
+		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
+	}
+	return raw
+}
+
 // mustRaw marshals v compactly and asserts it fits the 64 KiB raw input
 // limit, so the shape is one decodeToolSchema would actually admit.
 func mustRaw(t *testing.T, v any) string {

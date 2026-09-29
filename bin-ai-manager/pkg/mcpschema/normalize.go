@@ -25,9 +25,10 @@ type normalizer struct {
 	// maxOut is the per-tool output cap; nodes counts emitted subschemas.
 	// aborted is set once either limit is exceeded: the build stops and the
 	// whole tool is dropped (R12).
-	maxOut  int
-	nodes   int
-	aborted bool
+	maxOut   int
+	nodes    int
+	workDone int
+	aborted  bool
 }
 
 // errTooLarge is the failure every call returns once the build is aborted.
@@ -50,6 +51,17 @@ func (n *normalizer) chargeStr(s string) {
 func (n *normalizer) emitted() {
 	n.nodes++
 	if n.nodes > maxNodes {
+		n.aborted = true
+	}
+}
+
+// work counts k units of transient work (map keys copied or scanned while
+// resolving $ref/allOf and counting dropped keys) and aborts past maxWork.
+// It bounds CPU and garbage on inputs the output charge does not see, such
+// as long allOf chains whose merged keys are all dropped (R12).
+func (n *normalizer) work(k int) {
+	n.workDone += k
+	if n.workDone > maxWork {
 		n.aborted = true
 	}
 }
@@ -164,6 +176,16 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 		return nil, f
 	}
 
+	// R7a: next to a type, an anyOf/oneOf whose members only add
+	// constraints to that type (for example {"required": [...]} or
+	// {"format": ...} variants) says nothing the kept subset can express.
+	// It is removed, not evaluated, so it cannot make a usable subschema
+	// unusable.
+	if hasMembers && len(typ) > 0 && hasRefinementMember(members) {
+		n.rep.DroppedKeys++
+		members, hasMembers = nil, false
+	}
+
 	// R4: a list type becomes an anyOf of one member per type. An explicit
 	// anyOf next to it is evaluated as a usability gate only (see below).
 	if isList {
@@ -213,15 +235,15 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 	n.chargeStr(ts)
 
 	// A typed subschema that also carries anyOf/oneOf: the anyOf is
-	// evaluated first (R7, R10). With no usable member the subschema is
-	// unusable; otherwise it is kept next to the type (R1), except on an
-	// object left without properties, which is free-form (R10, below).
+	// evaluated first as a usability gate (R7, R10). With no usable member
+	// the subschema is unusable; otherwise the anyOf is discarded and only
+	// the type is emitted, so no output ever carries type and anyOf
+	// together (R10a).
 	if hasMembers {
-		am, f := n.anyOf(members, path, depth, stack)
-		if f != nil {
+		if _, f := n.anyOf(members, path, depth, stack); f != nil {
 			return nil, f
 		}
-		out["anyOf"] = am
+		n.rep.DroppedKeys++
 	}
 
 	switch ts {
@@ -266,7 +288,6 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 		// R10: a nested object with no usable properties is free-form,
 		// exactly {type: object, description?}.
 		if len(props) == 0 {
-			delete(out, "anyOf")
 			return out, nil
 		}
 		out["properties"] = props
@@ -380,11 +401,17 @@ func (n *normalizer) typeOf(v map[string]any, path string, hasMembers bool) ([]s
 			return nil, false, &failure{reason: ReasonBadType, path: path}
 		}
 		res := make([]string, 0, len(t))
+		seen := map[string]bool{}
 		for _, x := range t {
 			s, ok := x.(string)
 			if !ok || !validTypes[s] {
 				return nil, false, &failure{reason: ReasonBadType, path: path}
 			}
+			// R4: one anyOf member per distinct listed type.
+			if seen[s] {
+				continue
+			}
+			seen[s] = true
 			res = append(res, s)
 		}
 		return res, len(res) > 1, nil
@@ -415,6 +442,9 @@ func (n *normalizer) enumOf(v map[string]any, t string) any {
 func (n *normalizer) resolve(s map[string]any, path string, stack []string) (map[string]any, []string, *failure) {
 	v := s
 	for {
+		if n.aborted {
+			return nil, nil, errTooLarge
+		}
 		if ref, present := v["$ref"]; present {
 			target, key, f := n.refTarget(ref, path, stack)
 			if f != nil {
@@ -424,6 +454,7 @@ func (n *normalizer) resolve(s map[string]any, path string, stack []string) (map
 			n.rep.Rewrites++
 			stack = append(stack[:len(stack):len(stack)], key)
 			v = mergeUnder(target, v, "$ref")
+			n.work(len(v))
 			continue
 		}
 
@@ -434,6 +465,7 @@ func (n *normalizer) resolve(s map[string]any, path string, stack []string) (map
 		l, ok := raw.([]any)
 		if !ok || len(l) == 0 {
 			v = without(v, "allOf")
+			n.work(len(v))
 			continue
 		}
 		if len(l) > 1 {
@@ -445,6 +477,7 @@ func (n *normalizer) resolve(s map[string]any, path string, stack []string) (map
 		}
 		n.rep.Rewrites++
 		v = mergeUnder(m, v, "allOf")
+		n.work(len(v))
 	}
 }
 
@@ -580,12 +613,39 @@ func (n *normalizer) dropProp(path string) {
 
 // countDropped counts the keys of v that are neither emitted nor consumed.
 func (n *normalizer) countDropped(v map[string]any) {
+	n.work(len(v))
 	for k := range v {
 		if !keepKeys[k] && !consumedKeys[k] {
 			n.rep.DroppedKeys++
 		}
 	}
 }
+
+// hasRefinementMember reports whether any anyOf/oneOf member carries no
+// shape of its own (no type, properties, items, enum, const, $ref or
+// combinator) and so only adds constraints to its parent (R7a).
+func hasRefinementMember(members []member) bool {
+	for _, m := range members {
+		mm, ok := m.raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		shaped := false
+		for _, k := range shapeKeys {
+			if _, ok := mm[k]; ok {
+				shaped = true
+				break
+			}
+		}
+		if !shaped {
+			return true
+		}
+	}
+	return false
+}
+
+// shapeKeys are the keys that give an anyOf member a shape of its own.
+var shapeKeys = []string{"type", "properties", "items", "enum", "const", "$ref", "allOf", "anyOf", "oneOf"}
 
 // stringEnum returns a copy of e when it is a non-empty list of strings.
 func stringEnum(e any) ([]any, bool) {

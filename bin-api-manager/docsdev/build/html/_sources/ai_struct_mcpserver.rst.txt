@@ -40,6 +40,7 @@ MCP Server
    * Give every ``array`` an ``items`` schema.
    * Avoid ``allOf`` with more than one member.
    * Prefer string enums (``{"type": "string", "enum": [...]}``); enums on other types are removed.
+   * Express alternatives either with a list ``type`` or with ``anyOf``/``oneOf`` members that each have their own ``type``, not both: an ``anyOf``/``oneOf`` next to a ``type`` is removed and only the ``type`` is advertised.
 
 * ``id`` (UUID): The MCP server registration's unique identifier. Returned when creating an MCP server via ``POST /mcpservers`` or when listing via ``GET /mcpservers``. Referenced from an AI's :ref:`mcp_server_ids <ai-struct-ai-tool_names>` list.
 * ``customer_id`` (UUID): The customer that owns this MCP server registration. Obtained from the ``id`` field of ``GET /customers``.

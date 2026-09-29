@@ -29,7 +29,8 @@ const (
 	ReasonRef = "unresolvable_ref"
 	// ReasonTooDeep: a subschema nested deeper than maxDepth.
 	ReasonTooDeep = "too_deep"
-	// ReasonTooLarge: the node cap or the per-tool output cap was exceeded.
+	// ReasonTooLarge: the node cap, the work cap or the per-tool output cap
+	// was exceeded.
 	ReasonTooLarge = "too_large"
 )
 
@@ -71,6 +72,9 @@ const (
 	maxRefExpansions = 256
 	// maxNodes bounds emitted subschemas per tool.
 	maxNodes = 4096
+	// maxWork bounds transient work per tool, counted in map keys copied or
+	// scanned by $ref/allOf resolution and dropped-key counting.
+	maxWork = 1 << 18
 )
 
 // Output charge (R12): an estimate of the output size that also bounds the

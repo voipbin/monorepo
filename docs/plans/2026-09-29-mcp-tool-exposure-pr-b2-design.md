@@ -720,7 +720,8 @@ newly reachable.
 
 ## 15. Addendum: provider-safe MCP tool schemas (post-deploy finding)
 
-Status: design addendum, revised after design review round 1. Source analysis:
+Status: design addendum, revised after design review round 1 and amended after code
+review round 1 of `0aa260c84` (R4 dedupe, R7a, R10a, `maxWork` in R12). Source analysis:
 `2026-09-29-mcp-tool-schema-provider-compat-analysis.md` (revision 6, review loop
 closed; "the analysis" below, section numbers prefixed "an."). CEO decision: A (Go
 allowlist normalization in ai-manager) plus E (per-tool Gemini validation in the
@@ -916,7 +917,8 @@ one member per listed type, each member carrying the type-appropriate sibling
 constraints of the original (`enum`, `format`, `items`, `properties`, `required`,
 bounds), filtered by R2/R3 for that member's type. `description` moves to the
 parent, not the members. A `"null"` entry becomes a bare `{type: "null"}` member
-(R9). A single-element list is treated as the plain string. An empty list is
+(R9). A single-element list is treated as the plain string. Duplicate entries are
+collapsed (one member per distinct type, first-occurrence order). An empty list is
 unusable. This is the incident shape
 `issue_fields.items.properties.value.type = ["string","number","boolean"]` (an.2).
 
@@ -972,6 +974,18 @@ absent or unusable, or when it is an `anyOf` left with no usable member. Handlin
   settle it. Reason: a property that can only be null carries no argument, and a
   null-only `anyOf` is not in the probe-verified set.)
 
+**R7a. Constraint-only `anyOf`/`oneOf` next to a type** (added after code review
+round 1). When a subschema has a usable `type` (string or list) and at least one of
+its `anyOf`/`oneOf` members has none of `type`, `properties`, `items`, `enum`,
+`const`, `$ref`, `allOf`, `anyOf`, `oneOf`, the combinator only refines the parent
+(for example `anyOf: [{required: [a]}, {required: [b]}]` "at least one of", or
+`oneOf: [{format: date}, {format: date-time}]`). The whole combinator is removed
+(counted once in `DroppedKeys`) and never evaluated, so it cannot make a usable
+subschema unusable. Without this rule such a member is typeless under R6, the `anyOf`
+has no usable member, and a required property drops a tool that OpenAI and Grok
+accept today. A typeless subschema's `anyOf` is not a refinement and is evaluated
+as usual.
+
 **R8. `required` pruning.** After properties are processed, `required` keeps only
 names present in the emitted `properties`, deduplicated, original order. Emitted
 only when non-empty.
@@ -996,6 +1010,16 @@ dropped by R1, never produced.
   (cascade). Otherwise the `anyOf` is discarded and the result is the free-form shape
   above. Order matters: stripping first would silently keep `updated_field`.
   Expected results are pinned in 15.7 item 4.
+- **R10a. No output carries `type` and `anyOf` together** (added after code review
+  round 1). For any typed subschema (not only objects) that also carries a shaped
+  `anyOf`/`oneOf`, the `anyOf` is evaluated as a usability gate under R7: with no
+  usable member the subschema is unusable; otherwise the `anyOf` is discarded
+  (counted in `DroppedKeys`) and only the type (with its properties, items, enum,
+  bounds) is emitted. Reason: `{type, anyOf}` siblings are accepted by the genai
+  client but are in no probe-verified or live-verified payload, so the server-side
+  acceptance on Gemini is unknown (R-1); the conservative shape is the type alone.
+  The loss (for example a nullable variant, or per-variant `required`) is the same
+  kind of constraint loss as R-3.
 - A nested object that was made unusable by a required unusable property (R7) is
   unusable, not turned into a free-form object. (A free-form object would let the
   LLM omit the required field silently; failing the enclosing branch is the local
@@ -1025,6 +1049,16 @@ against a 40M memory limit (`bin-ai-manager/k8s/deployment.yml:81`). So:
   trip, because every emitted node is also a 32-byte visit and the output cap stops
   the build at 2,049 visits or fewer; it is a backstop for callers passing a larger
   `maxOutBytes` (tests do so to exercise it).
+- `maxWork = 262,144` units of transient work per tool (added after code review
+  round 1). One unit is one map key copied by a `$ref`/`allOf` merge or scanned when
+  counting dropped keys. Exceeding it drops the tool (`ReasonTooLarge`), like the
+  output cap. Reason: resolution work is not emitted, so the output charge does not
+  see it. A 2,000-level single-member `allOf` chain (one dropped sibling key per
+  level) in one `$def`, referenced 256 times, is 49,756 raw bytes and without this
+  cap costs about 23 s of CPU and 32 GB of allocation per resolution while the tool
+  is KEPT (every merged key is dropped, the output is `{type: string}`). With the cap
+  it is dropped in about 14 ms and 16 MB. The largest GitHub MCP tool needs 117 units
+  (2,240x headroom).
 - **Output charge.** While building, `Normalize` keeps a running charge, reported
   as `Report.OutBytes`:
   - 32 bytes per VISITED subschema, usable or not, emitted or later dropped
@@ -1072,7 +1106,7 @@ against a 40M memory limit (`bin-ai-manager/k8s/deployment.yml:81`). So:
   GitHub MCP tools grow slightly under the oracle, for example `issue_write` and
   `get_me`. The caps above are far from that.
 
-**Resource-limit overflow drops the whole tool** (`maxNodes`, output cap), unlike
+**Resource-limit overflow drops the whole tool** (`maxNodes`, `maxWork`, output cap), unlike
 the shape rules, which cascade (R7). Decision: a resource limit says nothing about
 which part of the schema is at fault, so there is no local subschema to remove, and
 a partial build cut at an arbitrary point would advertise a schema that depends on
@@ -1094,8 +1128,8 @@ per line: `mcp_server_id`, `tool_name` (the namespaced name, capped via
 `capErrText(..., 80)` like `sampleToolNames`)):
 - Tool dropped: `Warnf("Dropped an mcp tool whose input schema cannot be made provider-safe. mcp_server_id: %s, tool_name: %s, reason: %s, path: %s", ...)`.
   WARN, one line per dropped tool. `reason` is the fixed `Reason*` constant, `path`
-  capped at 200 bytes. This includes `ReasonTooLarge` (node cap or per-tool output
-  cap, R12; `path` is empty for it). A tool skipped for the per-resolution
+  capped at 200 bytes. This includes `ReasonTooLarge` (node cap, work cap or per-tool
+  output cap, R12; `path` is empty for it). A tool skipped for the per-resolution
   `outBudget` is not a normalization drop; it is counted in the existing
   `over_shared_budget` line (15.2).
 - Optional properties dropped: one WARN line per KEPT tool (not per property), listing
@@ -1458,5 +1492,5 @@ built-in path, so rollback of this addendum alone is a code revert.
 | R-4 | Pre-existing at HEAD, widened by A: name-only paths store every discovered tool's name, including tools `decodeToolSchema` skips, so `mcp_tool_map` can name an unadvertised tool that is dispatched if the LLM invents the exact name. A adds its dropped tools. Variants: (a) a tool E drops stays in `toolMap` and its Python handler is registered; (b) when `persistToolMap` fails (`mcp_tool.go:188-193`, logged, not fatal) the name-only map from session start stays for that session (15.2) | Accept: never advertised, normally replaced by the advertised list on `ResolveMcpTools`, server validates. Fixing it would mean decoding and normalizing on name-only paths, which never decode schemas by design (memory, `mcp_tool.go:356-360`) |
 | R-5 | E is not CI-tested (no pytest job; conftest mocks pipecat) | Mitigated by a small standalone injectable module, mocked control-flow tests, one manual real-library test outside the mocked conftest's directory, recorded in the PR. CI pytest belongs to track B |
 | R-6 | Customer invisibility: the customer still gets no signal when a tool is dropped or a turn fails | Out of scope. O7 (square-admin surfacing) is the natural home; the WARN logs exist for support |
-| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; RTVI error text cap 2048 | For design review |
+| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, `maxWork=262144` (round-1 code review), R7a constraint-only combinator removal and R10a no `type`+`anyOf` siblings (round-1 code review), duplicate list-type collapse, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; RTVI error text cap 2048 | For design review |
 | Q-2 | Should E also run for the team flow path (`team_flow.py`)? | No: team AIcalls never receive MCP tools (§2.4, an.7), and team built-ins already pass. Revisit with track B |
