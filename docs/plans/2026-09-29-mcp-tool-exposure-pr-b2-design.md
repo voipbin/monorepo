@@ -721,7 +721,7 @@ newly reachable.
 ## 15. Addendum: provider-safe MCP tool schemas (post-deploy finding)
 
 Status: design addendum, revised after design review round 1 and amended after code
-review round 1 of `0aa260c84` (R4 dedupe, R7a, R10a, `maxWork` in R12). Source analysis:
+review rounds 1 and 2 of `0aa260c84` (R4 dedupe, R7a, R10a, `maxWork` in R12). Source analysis:
 `2026-09-29-mcp-tool-schema-provider-compat-analysis.md` (revision 6, review loop
 closed; "the analysis" below, section numbers prefixed "an."). CEO decision: A (Go
 allowlist normalization in ai-manager) plus E (per-tool Gemini validation in the
@@ -976,8 +976,11 @@ absent or unusable, or when it is an `anyOf` left with no usable member. Handlin
 
 **R7a. Constraint-only `anyOf`/`oneOf` next to a type** (added after code review
 round 1). When a subschema has a usable `type` (string or list) and at least one of
-its `anyOf`/`oneOf` members has none of `type`, `properties`, `items`, `enum`,
-`const`, `$ref`, `allOf`, `anyOf`, `oneOf`, the combinator only refines the parent
+its `anyOf`/`oneOf` members, after its own `$ref` and single-member `allOf` are
+resolved, has none of `type`, `properties`, `items`, `enum`, `const` (a member that
+is itself only an `anyOf`/`oneOf` is followed into its members, and counts when any
+of those does; a member that cannot be resolved does not count and is left to the
+normal evaluation), the combinator only refines the parent
 (for example `anyOf: [{required: [a]}, {required: [b]}]` "at least one of", or
 `oneOf: [{format: date}, {format: date-time}]`). The whole combinator is removed
 (counted once in `DroppedKeys`) and never evaluated, so it cannot make a usable
@@ -1015,7 +1018,14 @@ dropped by R1, never produced.
   `anyOf`/`oneOf`, the `anyOf` is evaluated as a usability gate under R7: with no
   usable member the subschema is unusable; otherwise the `anyOf` is discarded
   (counted in `DroppedKeys`) and only the type (with its properties, items, enum,
-  bounds) is emitted. Reason: `{type, anyOf}` siblings are accepted by the genai
+  bounds) is emitted. Exception (added after code review round 2), the
+  documented-enum shape: when the type is a scalar (`string`, `number`, `integer`,
+  `boolean`), the parent carries no `enum`/`const`/`format`/`minimum`/`maximum` of
+  its own, and every kept member has that same type (for example
+  `{type: string, oneOf: [{const: a, description}, {const: b, description}]}`), the
+  members are emitted as the `anyOf` and the parent `type` is dropped, which is the
+  same output the schema gets without the parent `type`. Still no `type`+`anyOf`
+  siblings. Reason: `{type, anyOf}` siblings are accepted by the genai
   client but are in no probe-verified or live-verified payload, so the server-side
   acceptance on Gemini is unknown (R-1); the conservative shape is the type alone.
   The loss (for example a nullable variant, or per-variant `required`) is the same
@@ -1050,8 +1060,12 @@ against a 40M memory limit (`bin-ai-manager/k8s/deployment.yml:81`). So:
   the build at 2,049 visits or fewer; it is a backstop for callers passing a larger
   `maxOutBytes` (tests do so to exercise it).
 - `maxWork = 262,144` units of transient work per tool (added after code review
-  round 1). One unit is one map key copied by a `$ref`/`allOf` merge or scanned when
-  counting dropped keys. Exceeding it drops the tool (`ReasonTooLarge`), like the
+  round 1, extended after round 2). One unit is one map key copied by a
+  `$ref`/`allOf` merge or scanned when counting dropped keys, or one list entry
+  scanned in `required`, `anyOf`/`oneOf`, `enum` or a list `type`. List scans are
+  counted because they run once per `$ref` use: a `$def` holding a 7,500-name
+  `required` list, referenced 256 times, cost 350 ms and 394 MB per tool without
+  it. Exceeding it drops the tool (`ReasonTooLarge`), like the
   output cap. Reason: resolution work is not emitted, so the output charge does not
   see it. A 2,000-level single-member `allOf` chain (one dropped sibling key per
   level) in one `$def`, referenced 256 times, is 49,756 raw bytes and without this
@@ -1492,5 +1506,5 @@ built-in path, so rollback of this addendum alone is a code revert.
 | R-4 | Pre-existing at HEAD, widened by A: name-only paths store every discovered tool's name, including tools `decodeToolSchema` skips, so `mcp_tool_map` can name an unadvertised tool that is dispatched if the LLM invents the exact name. A adds its dropped tools. Variants: (a) a tool E drops stays in `toolMap` and its Python handler is registered; (b) when `persistToolMap` fails (`mcp_tool.go:188-193`, logged, not fatal) the name-only map from session start stays for that session (15.2) | Accept: never advertised, normally replaced by the advertised list on `ResolveMcpTools`, server validates. Fixing it would mean decoding and normalizing on name-only paths, which never decode schemas by design (memory, `mcp_tool.go:356-360`) |
 | R-5 | E is not CI-tested (no pytest job; conftest mocks pipecat) | Mitigated by a small standalone injectable module, mocked control-flow tests, one manual real-library test outside the mocked conftest's directory, recorded in the PR. CI pytest belongs to track B |
 | R-6 | Customer invisibility: the customer still gets no signal when a tool is dropped or a turn fails | Out of scope. O7 (square-admin surfacing) is the natural home; the WARN logs exist for support |
-| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, `maxWork=262144` (round-1 code review), R7a constraint-only combinator removal and R10a no `type`+`anyOf` siblings (round-1 code review), duplicate list-type collapse, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; RTVI error text cap 2048 | For design review |
+| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, `maxWork=262144` (round-1 code review), R7a constraint-only combinator removal and R10a no `type`+`anyOf` siblings (round-1 code review) with the same-typed scalar documented-enum exception and R7a judged on resolved members (round-2 code review), duplicate list-type collapse, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, `maxWork`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; RTVI error text cap 2048 | For design review |
 | Q-2 | Should E also run for the team flow path (`team_flow.py`)? | No: team AIcalls never receive MCP tools (§2.4, an.7), and team built-ins already pass. Revisit with track B |

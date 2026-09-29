@@ -143,6 +143,43 @@ func allOfChainFanOut(t *testing.T, n, refs int) string {
 	return raw
 }
 
+// listFanOut builds a $def that carries one n-entry list under key, the kind
+// of list the normalizer scans on every visit, referenced by refs
+// properties. The list is valid enough to be scanned in full and its $def
+// stays usable or is dropped only after the scan:
+//   - required: n distinct names on an object with one property;
+//   - enum: n "a" strings then a number on a string (rejected at the end);
+//   - anyOf: n typed members plus a trailing typeless member on a string;
+//   - type: a list type of "string" then n-1 "null" entries.
+//
+// It stays under the 64 KiB raw limit.
+func listFanOut(t *testing.T, key string, n, refs int) string {
+	var def string
+	switch key {
+	case "required":
+		names := make([]string, n)
+		for i := range names {
+			names[i] = fmt.Sprintf(`"%x"`, i)
+		}
+		def = `{"type":"object","properties":{"a":{"type":"string"}},"required":[` + strings.Join(names, ",") + `]}`
+	case "enum":
+		def = `{"type":"string","enum":[` + strings.Repeat(`"a",`, n) + `0]}`
+	case "anyOf":
+		def = `{"type":"string","anyOf":[` + strings.Repeat(`{"type":"string"},`, n) + `{}]}`
+	case "type":
+		def = `{"type":["string"` + strings.Repeat(`,"null"`, n-1) + `]}`
+	}
+	props := make([]string, refs)
+	for i := range props {
+		props[i] = fmt.Sprintf(`"%d":{"$ref":"#/$defs/D"}`, i)
+	}
+	raw := `{"type":"object","$defs":{"D":` + def + `},"properties":{` + strings.Join(props, ",") + `}}`
+	if len(raw) > 64<<10 {
+		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
+	}
+	return raw
+}
+
 // mustRaw marshals v compactly and asserts it fits the 64 KiB raw input
 // limit, so the shape is one decodeToolSchema would actually admit.
 func mustRaw(t *testing.T, v any) string {

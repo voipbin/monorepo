@@ -587,6 +587,62 @@ func Test_Normalize_Rules(t *testing.T) {
 			wantDroppedProps: []string{"/properties/v"},
 		},
 		{
+			name: "a constraint-only member behind a $ref is a refinement",
+			in: `{"type":"object","$defs":{"A":{"required":["a"]},"B":{"required":["b"]}},
+				"properties":{"q":{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"string"}},
+				"anyOf":[{"$ref":"#/$defs/A"},{"$ref":"#/$defs/B"}]}},"required":["q"]}`,
+			want: `{"type":"object","properties":{"q":{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"string"}}}},"required":["q"]}`,
+			check: func(t *testing.T, rep Report) {
+				if rep.Rewrites != 0 {
+					t.Errorf("Wrong match. the look-ahead must not count rewrites, got: %d", rep.Rewrites)
+				}
+			},
+		},
+		{
+			name: "a constraint-only member behind an allOf wrapper is a refinement",
+			in:   `{"type":"object","properties":{"q":{"type":"object","properties":{"a":{"type":"string"}},"anyOf":[{"allOf":[{"required":["a"]}]}]}},"required":["q"]}`,
+			want: `{"type":"object","properties":{"q":{"type":"object","properties":{"a":{"type":"string"}}}},"required":["q"]}`,
+		},
+		{
+			name: "a nested constraint-only anyOf is a refinement",
+			in:   `{"type":"object","properties":{"s":{"type":"string","anyOf":[{"anyOf":[{"minLength":1}]}]}},"required":["s"]}`,
+			want: `{"type":"object","properties":{"s":{"type":"string"}},"required":["s"]}`,
+		},
+		{
+			name: "a member behind an unresolvable $ref is not a refinement and is removed by the evaluation",
+			in:   `{"type":"object","properties":{"s":{"type":"string","anyOf":[{"$ref":"#/$defs/missing"},{"type":"string","enum":["x"]}]}}}`,
+			want: `{"type":"object","properties":{"s":{"anyOf":[{"type":"string","enum":["x"]}]}}}`,
+		},
+
+		// R10a documented-enum shape.
+		{
+			name: "a string with a oneOf of documented consts keeps the members and drops the parent type",
+			in: `{"type":"object","properties":{"m":{"type":"string","description":"mode","oneOf":[
+				{"const":"a","description":"first"},{"const":"b","description":"second"}]}}}`,
+			want: `{"type":"object","properties":{"m":{"description":"mode","anyOf":[
+				{"type":"string","enum":["a"],"description":"first"},{"type":"string","enum":["b"],"description":"second"}]}}}`,
+		},
+		{
+			name: "same-typed members next to a parent enum keep only the parent",
+			in:   `{"type":"object","properties":{"m":{"type":"string","enum":["a","b"],"oneOf":[{"const":"a"},{"const":"b"}]}}}`,
+			want: `{"type":"object","properties":{"m":{"type":"string","enum":["a","b"]}}}`,
+		},
+		{
+			name: "an integer with same-typed bounded members keeps the members",
+			in:   `{"type":"object","properties":{"n":{"type":"integer","anyOf":[{"type":"integer","minimum":1},{"type":"integer","maximum":-1}]}}}`,
+			want: `{"type":"object","properties":{"n":{"anyOf":[{"type":"integer","minimum":1},{"type":"integer","maximum":-1}]}}}`,
+		},
+		{
+			name: "a shaped anyOf discarded next to a list type is counted as a dropped key",
+			in:   `{"type":"object","properties":{"x":{"type":["string","null"],"anyOf":[{"type":"string"}]}}}`,
+			want: `{"type":"object","properties":{"x":{"anyOf":[{"type":"string"},{"type":"null"}]}}}`,
+			check: func(t *testing.T, rep Report) {
+				if rep.DroppedKeys != 1 {
+					t.Errorf("Wrong match. DroppedKeys expect: 1, got: %d", rep.DroppedKeys)
+				}
+			},
+		},
+		{
 			name: "duplicate list type entries give one member per distinct type",
 			in:   `{"type":"object","properties":{"v":{"type":["string","string","null"],"enum":["x"]}}}`,
 			want: `{"type":"object","properties":{"v":{"anyOf":[{"type":"string","enum":["x"]},{"type":"null"}]}}}`,
@@ -779,6 +835,38 @@ func Test_Normalize_Rules(t *testing.T) {
 		{
 			name:        "allOf chain fan-out is stopped by the work cap",
 			in:          allOfChainFanOut(t, 2000, 256),
+			want:        "null",
+			wantDropped: true,
+			wantReason:  ReasonTooLarge,
+			check:       func(t *testing.T, rep Report) {},
+		},
+		{
+			name:        "a long required list fanned out by $ref is stopped by the work cap",
+			in:          listFanOut(t, "required", 7500, 256),
+			want:        "null",
+			wantDropped: true,
+			wantReason:  ReasonTooLarge,
+			check:       func(t *testing.T, rep Report) {},
+		},
+		{
+			name:        "a long rejected enum fanned out by $ref is stopped by the work cap",
+			in:          listFanOut(t, "enum", 12000, 256),
+			want:        "null",
+			wantDropped: true,
+			wantReason:  ReasonTooLarge,
+			check:       func(t *testing.T, rep Report) {},
+		},
+		{
+			name:        "a long anyOf fanned out by $ref is stopped by the work cap",
+			in:          listFanOut(t, "anyOf", 2000, 256),
+			want:        "null",
+			wantDropped: true,
+			wantReason:  ReasonTooLarge,
+			check:       func(t *testing.T, rep Report) {},
+		},
+		{
+			name:        "a long list type fanned out by $ref is stopped by the work cap",
+			in:          listFanOut(t, "type", 7000, 256),
 			want:        "null",
 			wantDropped: true,
 			wantReason:  ReasonTooLarge,

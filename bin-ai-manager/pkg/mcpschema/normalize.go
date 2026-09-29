@@ -181,7 +181,7 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 	// {"format": ...} variants) says nothing the kept subset can express.
 	// It is removed, not evaluated, so it cannot make a usable subschema
 	// unusable.
-	if hasMembers && len(typ) > 0 && hasRefinementMember(members) {
+	if hasMembers && len(typ) > 0 && n.hasRefinementMember(members, path, depth, stack) {
 		n.rep.DroppedKeys++
 		members, hasMembers = nil, false
 	}
@@ -194,6 +194,7 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 			if _, f := n.anyOf(members, path, depth, stack); f != nil {
 				return nil, f
 			}
+			n.rep.DroppedKeys++
 		}
 		out := map[string]any{}
 		n.setDescription(out, v)
@@ -236,19 +237,28 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 
 	// A typed subschema that also carries anyOf/oneOf: the anyOf is
 	// evaluated first as a usability gate (R7, R10). With no usable member
-	// the subschema is unusable; otherwise the anyOf is discarded and only
-	// the type is emitted, so no output ever carries type and anyOf
-	// together (R10a).
+	// the subschema is unusable. No output ever carries type and anyOf
+	// together (R10a): when the type is a scalar, the parent has no
+	// constraint of its own, and every kept member has that same type (the
+	// documented-enum shape, oneOf of {const, description}), the members
+	// are emitted as the anyOf and the parent type is dropped; otherwise
+	// the anyOf is discarded and only the type is emitted.
 	if hasMembers {
-		if _, f := n.anyOf(members, path, depth, stack); f != nil {
+		am, f := n.anyOf(members, path, depth, stack)
+		if f != nil {
 			return nil, f
+		}
+		if scalarTypes[ts] && !hasScalarConstraint(v) && allMembersOfType(am, ts) {
+			delete(out, "type")
+			out["anyOf"] = am
+			return out, nil
 		}
 		n.rep.DroppedKeys++
 	}
 
 	switch ts {
 	case typeString:
-		if e, ok := stringEnum(n.enumOf(v, ts)); ok {
+		if e, ok := n.stringEnum(n.enumOf(v, ts)); ok {
 			out["enum"] = e
 			for _, x := range e {
 				n.chargeStr(x.(string))
@@ -328,6 +338,7 @@ func (n *normalizer) anyOfMembers(v map[string]any) ([]member, bool) {
 			n.rep.DroppedKeys++
 			continue
 		}
+		n.work(len(l))
 		has = true
 		if k == "oneOf" {
 			n.rep.Rewrites++
@@ -380,7 +391,7 @@ func (n *normalizer) typeOf(v map[string]any, path string, hasMembers bool) ([]s
 			n.rep.Rewrites++
 			return []string{typeArray}, false, nil
 		}
-		if _, ok := stringEnum(v["enum"]); ok {
+		if _, ok := n.stringEnum(v["enum"]); ok {
 			n.rep.Rewrites++
 			return []string{typeString}, false, nil
 		}
@@ -400,6 +411,7 @@ func (n *normalizer) typeOf(v map[string]any, path string, hasMembers bool) ([]s
 		if len(t) == 0 {
 			return nil, false, &failure{reason: ReasonBadType, path: path}
 		}
+		n.work(len(t))
 		res := make([]string, 0, len(t))
 		seen := map[string]bool{}
 		for _, x := range t {
@@ -555,6 +567,7 @@ func (n *normalizer) objectBody(v map[string]any, path string, depth int, stack 
 	required := map[string]bool{}
 	reqOrder := []string{}
 	if rl, ok := v["required"].([]any); ok {
+		n.work(len(rl))
 		for _, r := range rl {
 			rs, ok := r.(string)
 			if !ok || required[rs] {
@@ -621,38 +634,90 @@ func (n *normalizer) countDropped(v map[string]any) {
 	}
 }
 
-// hasRefinementMember reports whether any anyOf/oneOf member carries no
-// shape of its own (no type, properties, items, enum, const, $ref or
-// combinator) and so only adds constraints to its parent (R7a).
-func hasRefinementMember(members []member) bool {
+// hasRefinementMember reports whether any anyOf/oneOf member only adds
+// constraints to its parent (R7a). A member is judged after its own $ref and
+// single-member allOf are resolved, so a constraint-only member behind a
+// $ref or an allOf wrapper counts too; a member that is itself only a
+// combinator is a refinement when any of its own members is. A member that
+// cannot be resolved is not a refinement: it is left to the normal anyOf
+// evaluation, which removes it.
+func (n *normalizer) hasRefinementMember(members []member, path string, depth int, stack []string) bool {
 	for _, m := range members {
-		mm, ok := m.raw.(map[string]any)
-		if !ok {
-			continue
-		}
-		shaped := false
-		for _, k := range shapeKeys {
-			if _, ok := mm[k]; ok {
-				shaped = true
-				break
-			}
-		}
-		if !shaped {
+		if n.isRefinement(m.raw, path+m.path, depth+1, stack) {
 			return true
 		}
 	}
 	return false
 }
 
-// shapeKeys are the keys that give an anyOf member a shape of its own.
-var shapeKeys = []string{"type", "properties", "items", "enum", "const", "$ref", "allOf", "anyOf", "oneOf"}
+// isRefinement reports whether raw, once resolved, has no shape of its own.
+func (n *normalizer) isRefinement(raw any, path string, depth int, stack []string) bool {
+	if n.aborted || depth > maxDepth {
+		return false
+	}
+	mm, ok := raw.(map[string]any)
+	if !ok {
+		return false
+	}
+	// The look-ahead resolve must not change the report or eat into the
+	// $ref expansion limit; its work is still charged (R12).
+	rewrites, expansions := n.rep.Rewrites, n.expansions
+	v, stack, f := n.resolve(mm, path, stack)
+	n.rep.Rewrites, n.expansions = rewrites, expansions
+	if f != nil {
+		return false
+	}
+	for _, k := range shapeKeys {
+		if _, ok := v[k]; ok {
+			return false
+		}
+	}
+	nested, has := n.anyOfMembers(v)
+	if !has {
+		return true
+	}
+	return n.hasRefinementMember(nested, path, depth, stack)
+}
 
-// stringEnum returns a copy of e when it is a non-empty list of strings.
-func stringEnum(e any) ([]any, bool) {
+// shapeKeys are the keys that give a resolved anyOf member a shape of its
+// own. $ref and allOf are resolved before the check; anyOf/oneOf are
+// followed into their members.
+var shapeKeys = []string{"type", "properties", "items", "enum", "const"}
+
+// scalarTypes are the types whose same-typed members may replace the
+// parent type (R10a).
+var scalarTypes = map[string]bool{typeString: true, typeNumber: true, typeInteger: true, typeBoolean: true}
+
+// hasScalarConstraint reports whether a scalar subschema carries its own
+// constraint that its anyOf members would not repeat.
+func hasScalarConstraint(v map[string]any) bool {
+	for _, k := range []string{"enum", "const", "format", "minimum", "maximum"} {
+		if _, ok := v[k]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+// allMembersOfType reports whether every normalized member has type t.
+func allMembersOfType(members []any, t string) bool {
+	for _, m := range members {
+		mm, ok := m.(map[string]any)
+		if !ok || mm["type"] != t {
+			return false
+		}
+	}
+	return true
+}
+
+// stringEnum returns a copy of e when it is a non-empty list of strings. The
+// scan is charged as work (R12) since it runs before the enum is accepted.
+func (n *normalizer) stringEnum(e any) ([]any, bool) {
 	l, ok := e.([]any)
 	if !ok || len(l) == 0 {
 		return nil, false
 	}
+	n.work(len(l))
 	out := make([]any, 0, len(l))
 	for _, x := range l {
 		s, ok := x.(string)
