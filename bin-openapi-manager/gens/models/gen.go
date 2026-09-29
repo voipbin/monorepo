@@ -11953,7 +11953,7 @@ type PutMcpserversIdJSONBody struct {
 	// Example: active
 	Status *PutMcpserversIdJSONBodyStatus `json:"status,omitempty"`
 
-	// Url Streamable-HTTP MCP endpoint. Must be https. Omit to leave the current URL unchanged.
+	// Url Streamable-HTTP MCP endpoint. Must be https. Omit to leave the current URL unchanged. Immutable while auth_type is oauth (the OAuth flow, not this field, wrote it to the vendor's fixed endpoint): a request that changes it is rejected with MCP_SERVER_OAUTH_URL_IMMUTABLE, while re-submitting the current value is accepted so a client that resends every field on every save is never rejected.
 	Url *string `json:"url,omitempty"`
 }
 
