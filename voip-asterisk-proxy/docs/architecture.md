@@ -53,7 +53,7 @@ The listen handler matches incoming RabbitMQ RPC requests by URI pattern:
 |-----------------|---------|--------|
 | `^/ari/` | `ariSendRequestToAsterisk` | HTTP-proxy the request to Asterisk ARI at `http://<ari_address>/<path>` |
 | `^/ami/` | AMI action sender | Serialize the request body as an AMI action and send over the TCP AMI socket |
-| `^/proxy/recording_file_move$` | `serviceHandler.MoveRecordingFile` | Read recording from Asterisk directory, upload to GCS bucket |
+| `^/proxy/recording_file_move$` | `serviceHandler.RecordingFileMove` | Read recording from Asterisk directory, upload to GCS bucket |
 
 Unmatched URIs return HTTP 400. The pattern match runs in `processRequest()` in `pkg/listenhandler/main.go`.
 
