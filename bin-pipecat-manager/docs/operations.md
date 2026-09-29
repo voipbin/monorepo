@@ -59,9 +59,9 @@ Before a Gemini session starts, the runner validates the tool list with the inst
 
 The dropped tool's handler is still registered by name but is inert, since the LLM never sees the tool. Server-side (HTTP 400) provider rejections are not caught by this filter. MCP tool schemas are normalized to a provider-neutral subset by bin-ai-manager before they reach the runner, so a drop here usually means a schema construct that normalization does not cover. No metric; the log lines are the signal.
 
-### WARN `Pipecat runner reported an error`
+### WARN `Pipeline error. fatal: ...`
 
-The Go side logs every RTVI `error` message from the runner (pipecat's pipeline `ErrorFrame`, for example a provider request rejected before it is sent) at WARN with `pipecatcall_id`, `pipecatcall_reference_type`, `pipecatcall_reference_id` (the aicall id, for a Loki join with bin-ai-manager) and `fatal`. The error text is capped at 2048 bytes; the runner's own ERROR record holds the full message. The text can include fragments of customer tool schemas (internal logs only). A malformed error message is logged as `Pipecat runner reported an error that could not be parsed`. No metric.
+The Go side handles every RTVI `error` message from the runner (pipecat's pipeline `ErrorFrame`, for example a provider request rejected before it is sent, such as a tool schema the provider refuses) in `runnerHandlePipelineError`. It classifies the text, counts it in `pipecat_manager_pipeline_error_total{category, fatal}`, and logs the first frame of each category per session at WARN with `pipecatcall_id` and `category` (repeats at DEBUG). The error text is capped at 2000 bytes; the runner's own ERROR record holds the full message. The text can include fragments of customer tool schemas (internal logs only; the customer-facing `pipeline_error` event carries only the category). To join with bin-ai-manager logs, use `pipecatcall_id`. See docs/domain.md "Pipeline errors" for the notice policy.
 
 ## CLI Tool: pipecat-control
 

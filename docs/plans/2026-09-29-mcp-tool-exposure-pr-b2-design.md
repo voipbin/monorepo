@@ -721,7 +721,8 @@ newly reachable.
 ## 15. Addendum: provider-safe MCP tool schemas (post-deploy finding)
 
 Status: design addendum, revised after design review round 1 and amended after code
-review rounds 1 to 6 of `0aa260c84` (R4 dedupe, R7a, R10a, `maxWork` in R12). Source analysis:
+review rounds 1 to 6 of `0aa260c84` (R4 dedupe, R7a, R10a, `maxWork` in R12), and
+15.6 after merging `main` (VOIP-1542). Source analysis:
 `2026-09-29-mcp-tool-schema-provider-compat-analysis.md` (revision 6, review loop
 closed; "the analysis" below, section numbers prefixed "an."). CEO decision: A (Go
 allowlist normalization in ai-manager) plus E (per-tool Gemini validation in the
@@ -1263,45 +1264,40 @@ schema. A handler for a tool the LLM was never shown is inert. No change there.
 request and E cannot see it. A's conservative rules and the live call (15.8) are
 what cover that residual (an.5E, an.6). E also does nothing for OpenAI/Grok.
 
-### 15.6 RTVI `error` frame at WARN (bin-pipecat-manager Go)
+### 15.6 RTVI `error` frame (bin-pipecat-manager Go): superseded by VOIP-1542
 
-`receiveMessageFrameTypeMessage` (`bin-pipecat-manager/pkg/pipecatcallhandler/runner.go:582`)
-logs every unknown RTVI type at DEBUG in its `default:` branch (`runner.go:706-707`),
-including pipecat's `error` message (`{label: "rtvi-ai", type: "error", data: {error:
-str, fatal: bool}}`, pipecat 1.4.0 `processors/frameworks/rtvi/models.py:141-158`).
+Amended after merging `main`. This section originally added an explicit
+`RTVIFrameTypeError` case to `receiveMessageFrameTypeMessage` that logged the runner's
+RTVI `error` message (`{label: "rtvi-ai", type: "error", data: {error: str, fatal:
+bool}}`) at WARN with the pipecatcall reference fields, capped at 2048 bytes by a local
+`capText` helper, with no metric. VOIP-1542 (`6a5e7fc36`, design
+`docs/plans/2026-09-29-surface-llm-pipeline-errors-on-aicall-design.md`) and VOIP-1543
+(`6e9818021`) landed on `main` in parallel and handle the same frame more completely,
+so the merge keeps `main`'s handling and this PR adds nothing here:
 
-Change: add an explicit case before `default:`.
-- New constant `RTVIFrameTypeError = "error"` in
-  `bin-pipecat-manager/models/pipecatframe/helper.go` next to the other RTVI types
-  (`helper.go:13-28`), plus a row in `helper_test.go`'s constants table and in the
-  constants table of `rtvi_test.go` (~line 38).
-- No new struct: unmarshal into the existing `pipecatframe.RTVIError`
-  (`rtvi.go:166-177`, `Data RTVIErrorData{Error, Fatal}`, already tested in
-  `rtvi_test.go`).
-- Case body: unmarshal; on unmarshal failure fall back to logging `frame.Type` only.
-  Log `log.WithFields(logrus.Fields{"pipecatcall_reference_type": se.PipecatcallReferenceType,
-  "pipecatcall_reference_id": se.PipecatcallReferenceID, "fatal": msg.Data.Fatal}).Warnf("Pipecat runner reported an error. error: %s", capText(msg.Data.Error, 2048))`.
-  `log` already carries `func` and `pipecatcall_id` (`runner.go:583-586`); the
-  reference fields (`models/pipecatcall/session.go:16-17`) give the aicall id for a
-  Loki join with ai-manager.
-- Truncation: 2048 bytes, rune-boundary safe (a local helper equivalent to
-  ai-manager's `capErrText`, `mcp_tool.go:729`; pipecat-manager has no such helper
-  today, so add a small unexported one). The incident message was ~40 KB with 76
-  errors; 2 KB keeps the first several errors, which is enough to identify the
-  construct, while the full text stays in the runner's own ERROR record.
-- Data in the logged text. The error string can carry customer data: pydantic's
-  message includes `input_value=...` fragments of the rejected tool declaration
-  (customer MCP schema text), and any other pipeline `ErrorFrame` text passes through
-  the same field. This is acceptable at WARN in internal logs because the same data
-  is already logged today: the runner's own ERROR record holds the full ~40 KB
-  message (an.2), the current `default:` branch logs the whole frame, error text
-  included, at DEBUG (`runner.go:706-707`), and ai-manager logs customer MCP server
-  error text at WARN (`mcp_tool.go:437`, capped at 1024). The 2 KB cap keeps this
-  line smaller than the existing ERROR record. Not logged anywhere customer-visible.
-- No metric in this PR (an.6 marks it optional). The runner-side E WARN plus this
-  WARN are sufficient for diagnosis; a counter can follow if alerting needs it.
-- Not surfaced to the customer or to ai-manager. That is a separate product
-  question (15.10).
+- The `error` case calls `runnerHandlePipelineError`
+  (`pkg/pipecatcallhandler/runner.go`). It classifies the text
+  (`classifyPipelineError`, `pipelineerror.go`), counts every frame in
+  `pipecat_manager_pipeline_error_total{category, fatal}`, logs the first frame of
+  each category per session at WARN `Pipeline error. fatal: <bool>, error: <text>`
+  (repeats at DEBUG), and publishes a `pipeline_error` event to ai-manager when the
+  notice policy allows it (`shouldNotifyPipelineError`).
+- The logged text is capped at 2000 bytes, rune-boundary safe (`truncateForLog`,
+  `pipelineErrorLogMaxLen`). The `capText` helper and its test are removed.
+- An `error` frame that cannot be unmarshalled returns an error from
+  `receiveMessageFrameTypeMessage` instead of the WARN fallback line this section
+  specified.
+- The WARN line carries `func`, `pipecatcall_id` and `category`, not the pipecatcall
+  reference fields. For the aicall join, use the `pipecatcall_id`, or the published
+  `pipeline_error` event, which carries the reference type and id.
+- The data-in-logs reasoning still holds: the error text can carry fragments of
+  customer tool schemas (pydantic `input_value=...`). It goes to internal logs only,
+  capped, while the runner's own ERROR record keeps the full message. The customer
+  sees only the classified category in the `pipeline_error` notice, never the text.
+
+For this PR's purpose (making a provider rejection of an MCP tool schema visible in
+pipecat-manager's logs) the VOIP-1542 handling is a superset, and its metric removes
+the "no metric" limitation.
 
 ### 15.7 Test plan (written at implementation, TDD, tests first)
 
@@ -1406,11 +1402,12 @@ returned slice the same size, and that `schemaBudget` still has bytes left (prov
 `{type: object, properties: {}}` (R0); and `schemaBudget` accounting unchanged
 (`Test_decodeToolSchema` rows at `mcp_tool_test.go:929-935` stay as they are).
 
-**Go, `bin-pipecat-manager`.** Table rows for `receiveMessageFrameTypeMessage` with an
-`error` frame (fatal true/false, oversize error text truncated, malformed data
-falls back), asserting no error returned. No test in `pkg/pipecatcallhandler` uses a
-logrus test hook today, so the rows assert behavior (no error, no panic, truncation
-via the helper's own unit test), not the log level. `helper_test.go` and `rtvi_test.go` get the new constant row.
+**Go, `bin-pipecat-manager`.** None in this PR (amended after merging `main`, 15.6).
+The RTVI `error` frame tests come from VOIP-1542/1543
+(`pkg/pipecatcallhandler/pipelineerror_test.go`: classification, notice policy,
+once-per-category WARN, log truncation, malformed frame), and the
+`RTVIFrameTypeError` constant rows in `helper_test.go` and `rtvi_test.go` are
+`main`'s.
 
 **Python, E.** Current layout: tests are flat files next to `run.py`
 (`scripts/pipecat/test_run.py` and siblings), and `scripts/pipecat/conftest.py`
@@ -1491,8 +1488,9 @@ Checklist:
 - [ ] Negative check for E: temporarily feed one raw (unnormalized) `x-mcp-header`
   tool to the runner locally (no paid call needed, validation is client-side):
   built-ins survive, WARN logged. In the same local run, bypass E once (call the
-  runner without the filter) to confirm the new pipecat-manager WARN
-  `Pipecat runner reported an error` appears with `pipecatcall_reference_id` (15.6).
+  runner without the filter) to confirm the pipecat-manager WARN
+  `Pipeline error. fatal: ...` appears for the session's `pipecatcall_id` and
+  `pipecat_manager_pipeline_error_total` increments (15.6).
 
 Rollback: `MCP_TOOL_EXPOSURE_ENABLED=false` on ai-manager (§8, B27) makes
 `ResolveMcpTools` return nothing, so no MCP schema reaches any provider. The variable
@@ -1514,8 +1512,8 @@ built-in path, so rollback of this addendum alone is a code revert.
   advertisement; a tool whose schema cannot be normalized is not advertised; call
   arguments are forwarded unchanged.
 - `bin-pipecat-manager/docs/operations.md`: note the Gemini per-tool validation
-  filter and the WARN `Pipecat runner reported an error` log line (troubleshooting
-  entry, no new metric).
+  filter (troubleshooting entry, no new metric). The RTVI `error` frame WARN and
+  `pipecat_manager_pipeline_error_total` are documented by VOIP-1542 (15.6).
 - Customer-facing RST (behavior change: tools can be silently omitted from what the
   AI sees): `bin-api-manager/docsdev/source/ai_struct_mcpserver.rst`. The file has
   two "Tool use scope" notes that disagree today: the first (lines 29-35) omits
@@ -1543,5 +1541,5 @@ built-in path, so rollback of this addendum alone is a code revert.
 | R-4 | Pre-existing at HEAD, widened by A: name-only paths store every discovered tool's name, including tools `decodeToolSchema` skips, so `mcp_tool_map` can name an unadvertised tool that is dispatched if the LLM invents the exact name. A adds its dropped tools. Variants: (a) a tool E drops stays in `toolMap` and its Python handler is registered; (b) when `persistToolMap` fails (`mcp_tool.go:188-193`, logged, not fatal) the name-only map from session start stays for that session (15.2) | Accept: never advertised, normally replaced by the advertised list on `ResolveMcpTools`, server validates. Fixing it would mean decoding and normalizing on name-only paths, which never decode schemas by design (memory, `mcp_tool.go:356-360`) |
 | R-5 | E is not CI-tested (no pytest job; conftest mocks pipecat) | Mitigated by a small standalone injectable module, mocked control-flow tests, one manual real-library test outside the mocked conftest's directory, recorded in the PR. CI pytest belongs to track B |
 | R-6 | Customer invisibility: the customer still gets no signal when a tool is dropped or a turn fails | Out of scope. O7 (square-admin surfacing) is the natural home; the WARN logs exist for support |
-| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, `maxWork=262144` (round-1 code review), R7a constraint-only combinator removal and R10a no `type`+`anyOf` siblings (round-1 code review) with the same-typed scalar documented-enum exception and R7a judged on resolved members (round-2 code review), scalar type inheritance for typeless members and the look-ahead's own `$ref` budget (round-3 code review), inheritance judged on resolved members, for list types, through combinator-only members and gated on enum values, and the look-ahead budget per subschema (round-4 code review), the look-ahead's per-`$ref` verdict memo, per-member work charge and no path building (round-5 code review), cycle-safe memo settling and per-ref lookup cache (round-6 code review), duplicate list-type collapse, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, `maxWork`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; RTVI error text cap 2048 | For design review |
+| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, `maxWork=262144` (round-1 code review), R7a constraint-only combinator removal and R10a no `type`+`anyOf` siblings (round-1 code review) with the same-typed scalar documented-enum exception and R7a judged on resolved members (round-2 code review), scalar type inheritance for typeless members and the look-ahead's own `$ref` budget (round-3 code review), inheritance judged on resolved members, for list types, through combinator-only members and gated on enum values, and the look-ahead budget per subschema (round-4 code review), the look-ahead's per-`$ref` verdict memo, per-member work charge and no path building (round-5 code review), cycle-safe memo settling and per-ref lookup cache (round-6 code review), duplicate list-type collapse, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, `maxWork`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; the RTVI `error` frame handling of 15.6 dropped in favor of VOIP-1542's on merging `main` | For design review |
 | Q-2 | Should E also run for the team flow path (`team_flow.py`)? | No: team AIcalls never receive MCP tools (§2.4, an.7), and team built-ins already pass. Revisit with track B |
