@@ -208,7 +208,7 @@ func ptrTime(t time.Time) *time.Time {
 // mcp_tool_map metadata entry must never appear in ConvertWebhookMessage's
 // output -- it carries the customer's own MCP server UUIDs and remote tool
 // names, which must not leak onto the messaging webhook payload.
-func TestConvertWebhookMessage_McpToolMapNeverLeaks(t *testing.T) {
+func Test_ConvertWebhookMessage_McpToolMapNeverLeaks(t *testing.T) {
 	serverID := uuid.Must(uuid.NewV4())
 	h := &AIcall{
 		Metadata: map[string]any{
@@ -238,7 +238,7 @@ func TestConvertWebhookMessage_McpToolMapNeverLeaks(t *testing.T) {
 // TestConvertWebhookMessage_McpToolStatusSummary pins B22's replacement: a
 // non-empty mcp_tool_map projects to mcp_tool_status={servers, tools} --
 // counts only, no server UUIDs, no tool names, no schemas.
-func TestConvertWebhookMessage_McpToolStatusSummary(t *testing.T) {
+func Test_ConvertWebhookMessage_McpToolStatusSummary(t *testing.T) {
 	serverA := uuid.Must(uuid.NewV4())
 	serverB := uuid.Must(uuid.NewV4())
 	h := &AIcall{
@@ -273,7 +273,7 @@ func TestConvertWebhookMessage_McpToolStatusSummary(t *testing.T) {
 // or absent mcp_tool_map produces no mcp_tool_status key at all -- matching
 // existing PR B1 framing that the blast radius is nil until a non-empty map
 // exists in production traffic.
-func TestConvertWebhookMessage_McpToolStatusAbsentWhenEmpty(t *testing.T) {
+func Test_ConvertWebhookMessage_McpToolStatusAbsentWhenEmpty(t *testing.T) {
 	tests := []struct {
 		name     string
 		metadata map[string]any
