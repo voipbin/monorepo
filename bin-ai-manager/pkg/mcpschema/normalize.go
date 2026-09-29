@@ -749,8 +749,9 @@ func (n *normalizer) hasRefinementMember(members []member, path string, depth in
 // (it counts as not a refinement, as a cyclic $ref would). A false verdict
 // that met a ref judged further out is final only once that ref is: it
 // stays on the stack until then, as in Tarjan's strongly connected
-// components algorithm, so no property's verdict depends on which property
-// was judged first.
+// components algorithm, so no R7a verdict depends on which property was
+// judged first. (The build's per-tool $ref budget in refTarget is shared
+// across properties, so which optional property it cascades still can.)
 func (n *normalizer) isRefinement(raw any, path string, depth int, stack []string) bool {
 	if n.aborted || depth > maxDepth {
 		return false

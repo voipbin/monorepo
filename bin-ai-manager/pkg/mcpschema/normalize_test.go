@@ -843,6 +843,21 @@ func Test_Normalize_Rules(t *testing.T) {
 			wantDropPath: "/properties/b",
 		},
 		{
+			name: "a $defs ref to a definitions target of the same name is not a cycle",
+			in: `{"type":"object","$defs":{"A":{"$ref":"#/definitions/A"}},"definitions":{"A":{"type":"string"}},` +
+				`"properties":{"x":{"$ref":"#/$defs/A"}},"required":["x"]}`,
+			want: `{"type":"object","properties":{"x":{"type":"string"}},"required":["x"]}`,
+		},
+		{
+			name: "a ref whose judgement met only itself again is settled when it returns",
+			in: `{"$defs":{"D1":{"anyOf":[{"allOf":[{"$ref":"#/$defs/D3"}]}]},` +
+				`"D3":{"anyOf":[{"$ref":"#/$defs/D1"},{"$ref":"#/$defs/D1","anyOf":[{}]}]}},` +
+				`"properties":{"p1":{"type":"object","anyOf":[{"$ref":"#/$defs/D3"}]},` +
+				`"p2":{"type":"object","anyOf":[{"anyOf":[{"$ref":"#/$defs/D1"}]}]}}}`,
+			want:             `{"type":"object","properties":{"p1":{"type":"object"}}}`,
+			wantDroppedProps: []string{"/properties/p2"},
+		},
+		{
 			name: "a memoized $ref member is judged without the expansion stack that reached it",
 			in: `{"type":"object","$defs":{"X":{"required":["k"]},"R":{"$ref":"#/$defs/X","type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/X"}]}},` +
 				`"properties":{"z":{"$ref":"#/$defs/R"}},"required":["z"]}`,
