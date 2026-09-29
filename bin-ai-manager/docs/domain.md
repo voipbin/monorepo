@@ -151,6 +151,8 @@ Tool definitions live in `pkg/toolhandler/definitions.go`. Only tools listed in 
 | `list_queues` | Lists the customer's Queues (id, name, detail); read-only, used to discover which Queue to route to before calling `join_queue` |
 | `join_queue` | Places the current call into a Queue for human-agent routing by adding a `queue_join` action to the activeflow, then terminates the AIcall; `ReferenceTypeCall` only, mirrors `connect_call`'s add-action-then-terminate shape |
 
+**MCP tools.** In addition to the built-ins above, a Normal-type AI with whitelisted MCP servers (`mcp_server_ids`) gets those servers' tools, namespaced as `mcp_<8 hex of server id>_<remote tool name>`. At session start pipecat-manager keeps resolving built-ins itself and calls `GET /v1/aicalls/<uuid>/tools/mcp` for the MCP half only, appending the result; if that RPC fails the session continues with built-ins only. Insight AIs and team AIcalls never get MCP tools. The name-to-server mapping is stored in the AIcall metadata key `mcp_tool_map` for dispatch and is never published on the webhook; the webhook carries a counts-only `mcp_tool_status` (`servers`, `tools`) instead. A remote result with `isError: true` is returned to the LLM as a failed tool call.
+
 Tool execution flow:
 1. LLM in Pipecat emits a function call
 2. Pipecat sends `POST /v1/aicalls/<uuid>/tool_execute` to AI Manager via RabbitMQ RPC

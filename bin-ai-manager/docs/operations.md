@@ -46,6 +46,8 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `aicall_listen_start_lock_release_timeout_seconds` | `AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS` | Bound on the **detached** context the lock's release runs under, so a stuck Redis call during cleanup cannot hang the releasing goroutine. Independent of, and far below, the TTL above. Default `3` | no |
 | `aicall_listen_conversation_max_message_chars` | `AICALL_LISTEN_CONVERSATION_MAX_MESSAGE_CHARS` | Per-field cap (subject, text and the joined media tokens are each capped, so one message contributes at most about three times this many characters) before a conversation line is buffered (suffix ` [truncated]`). Default `2000` | no |
 | `aicall_listen_conversation_flush_jitter_ms` | `AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS` | Upper bound of the random jitter added to the deferred flush delay (`aicall_listen_evaluate_interval_seconds` + jitter). Default `1000` | no |
+| `mcp_tool_call_timeout_seconds` | `MCP_TOOL_CALL_TIMEOUT_SECONDS` | Bounds one whole MCP `tools/list` or `tools/call` (handshake, method, one re-initialisation). Also bounds the whole MCP tool dispatch path. Session-start discovery across all of an AI's servers is separately capped at 2s aggregate (`mcpSessionStartDiscoveryBudget`, a package constant). Default `10` | no |
+| `mcp_tool_exposure_enabled` | `MCP_TOOL_EXPOSURE_ENABLED` | Global rollback switch for advertising MCP tools to the LLM. `false` makes the `GET /v1/aicalls/<uuid>/tools/mcp` RPC return an empty list for every AIcall, exactly as if no AI had MCP tools; built-in tools are unaffected. Default `true` | no |
 
 **Two ordering invariants hold across the listen timing flags, and both are pinned as standing test assertions (`Test_ListenConfigDefaults`), not one-time default checks:**
 
@@ -75,7 +77,9 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `aicall_create_total` | Counter | `reference_type` | AIcalls created |
 | `aicall_end_total` | Counter | `reference_type` | AIcalls ended |
 | `aicall_duration_seconds` | Histogram | `reference_type` | AIcall duration |
-| `aicall_tool_execute_total` | Counter | `tool_name` | Tool executions |
+| `aicall_tool_execute_total` | Counter | `tool_name` | Tool executions. For a built-in tool the label is its name; every MCP tool (`mcp_` prefix) is labeled the constant `mcp`, since the remote tool name is customer-controlled and unbounded |
+| `mcp_tool_advertised_total` | Counter | — | `ResolveMcpTools` resolutions that returned at least one MCP tool to pipecat |
+| `mcp_tool_call_outcome_total` | Counter | `outcome` | MCP tool dispatch outcomes: `success`, `error` (the remote server returned `isError: true`), `failed` (transport failure or a fail-closed gate refused the call) |
 | `aicall_backstop_reply_total` | Counter | — | Backstop/fallback replies |
 | `aicall_idle_expired_total` | Counter | — | Sessions terminated due to idle timeout |
 | `aicall_insight_session_refresh_total` | Counter | `result` | Insight Case panel reopens evaluated for a session refresh, by outcome: `kept` (the denominator: still live, disabled, not an Insight AI, or not an AI assistance), `refreshed` (a new session started), `failed` (the previous session was kept because the prompt could not be resolved or the write failed) |

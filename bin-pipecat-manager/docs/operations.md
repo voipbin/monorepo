@@ -37,6 +37,7 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `pipecat_manager_llm_flush_exit_total` | Counter | — | LLM flush operations that exited cleanly |
 | `pipecat_manager_llm_flush_finalize_outcome_total` | Counter | `outcome` | LLM flush finalization outcomes |
 | `pipecat_manager_llm_idle_watchdog_fired_total` | Counter | — | Idle watchdog triggers |
+| `pipecat_manager_mcp_tool_list_fallback_total` | Counter | — | runnerStartScript could not fetch the AIcall's MCP tools from ai-manager (`AIV1AIcallToolList` failed) and started the session with built-in tools only (fail-open for the MCP half; the built-in half is unaffected). A sustained non-zero rate means customers' MCP tools are silently unavailable to the LLM |
 | `pipecat_manager_tool_resolve_fallback_total` | Counter | — | runnerStartScript failed CLOSED to an empty tool list after an AI lookup failure. Fail-closed by design (docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.4; this reverses the prior fail-open VOIP-1234 §6 v4 decision) since tool-access control must favor least-privilege over availability. A sustained non-zero rate should still be investigated and alerted on, since it means sessions are running with NO tools instead of the AI's configured whitelist |
 | `receive_request_process_time` | Histogram | `type`, `method` | RPC request latency |
 

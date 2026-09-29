@@ -57,6 +57,7 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `POST /v1/aicalls/<uuid>/terminate` | Terminate AI call |
 | `POST /v1/aicalls/<uuid>/listen` | Start Insight AI realtime call listening (`ProcessListen`); steps 1-6 run synchronously, steps 7-8 detached. Public path is `POST /service_agents/aicalls/{id}/listen` |
 | `POST /v1/aicalls/<uuid>/tool_execute` | Execute LLM tool (called by pipecat-manager) |
+| `GET /v1/aicalls/<uuid>/tools/mcp` | List the AIcall's MCP-derived tools only (never built-ins) for pipecat to advertise to the LLM (`ResolveMcpTools`). Empty for team and Insight AIcalls, or when `mcp_tool_exposure_enabled` is false. Also refreshes `mcp_tool_map` in the AIcall metadata (called by pipecat-manager at session start) |
 | `GET /v1/aicalls/<uuid>/participants(\?|$)` | List participants of an AI call (paginated) |
 | `GET /v1/ais/<uuid>/participants(\?|$)` | List AI calls an AI agent participated in (paginated) |
 | `GET /v1/messages?` | List messages |
