@@ -23,9 +23,17 @@ type normalizer struct {
 	// look-ahead counts against its own budget (see refines).
 	expansions int
 	// refVerdicts memoizes the R7a verdict of a $ref member, by ref
-	// string; a ref being judged maps to false (see
-	// isRefinement).
+	// string (see isRefinement). refStack holds, in judging order, the
+	// refs whose judgement is in progress or waits on one that is, and
+	// refIndex maps each to its judging order; cycleLow is the lowest
+	// order a judgement met again on the stack.
 	refVerdicts map[string]bool
+	refIndex    map[string]int
+	refStack    []string
+	cycleLow    int
+	// refs caches refTarget's lookup per ref string, so a long ref or
+	// def name is not copied again on every expansion.
+	refs map[string]refEntry
 
 	// maxOut is the per-tool output cap; nodes counts emitted subschemas.
 	// aborted is set once either limit is exceeded: the build stops and the
@@ -80,7 +88,15 @@ func Normalize(schema map[string]any, maxOutBytes int) (map[string]any, Report) 
 	if schema == nil {
 		return nil, rep
 	}
-	n := &normalizer{rep: &rep, defs: map[string]map[string]any{}, refVerdicts: map[string]bool{}, maxOut: maxOutBytes}
+	n := &normalizer{
+		rep:         &rep,
+		defs:        map[string]map[string]any{},
+		refVerdicts: map[string]bool{},
+		refIndex:    map[string]int{},
+		cycleLow:    noCycle,
+		refs:        map[string]refEntry{},
+		maxOut:      maxOutBytes,
+	}
 	for _, k := range []string{"$defs", "definitions"} {
 		if m, ok := schema[k].(map[string]any); ok {
 			n.defs[k] = m
@@ -535,23 +551,15 @@ func (n *normalizer) refTarget(ref any, path string, stack []string) (map[string
 	if !ok {
 		return nil, "", fail
 	}
-	var kw, name string
-	for _, k := range []string{"$defs", "definitions"} {
-		if rest, found := strings.CutPrefix(rs, "#/"+k+"/"); found {
-			kw, name = k, rest
-			break
-		}
+	e, seen := n.refs[rs]
+	if !seen {
+		e = n.lookupRef(rs)
+		n.refs[rs] = e
 	}
-	if kw == "" || name == "" || strings.Contains(name, "/") {
+	if e.target == nil {
 		return nil, "", fail
 	}
-	name = strings.ReplaceAll(strings.ReplaceAll(name, "~1", "/"), "~0", "~")
-
-	target, ok := n.defs[kw][name].(map[string]any)
-	if !ok {
-		return nil, "", fail
-	}
-	key := kw + "/" + name
+	target, key := e.target, e.key
 	for _, k := range stack {
 		if k == key {
 			return nil, "", fail
@@ -561,6 +569,35 @@ func (n *normalizer) refTarget(ref any, path string, stack []string) (map[string
 		return nil, "", fail
 	}
 	return target, key, nil
+}
+
+// refEntry is refTarget's lookup of one ref string: its target, nil when
+// the ref is not a local $defs/definitions ref to an object, and key, the
+// target's identity on the expansion stack.
+type refEntry struct {
+	target map[string]any
+	key    string
+}
+
+// lookupRef resolves ref string rs to its target (see refEntry). It runs
+// once per distinct ref string per tool.
+func (n *normalizer) lookupRef(rs string) refEntry {
+	var kw, name string
+	for _, k := range []string{"$defs", "definitions"} {
+		if rest, found := strings.CutPrefix(rs, "#/"+k+"/"); found {
+			kw, name = k, rest
+			break
+		}
+	}
+	if kw == "" || name == "" || strings.Contains(name, "/") {
+		return refEntry{}
+	}
+	name = strings.ReplaceAll(strings.ReplaceAll(name, "~1", "/"), "~0", "~")
+	target, ok := n.defs[kw][name].(map[string]any)
+	if !ok {
+		return refEntry{}
+	}
+	return refEntry{target: target, key: kw + "/" + name}
 }
 
 // mergeUnder returns base overlaid with over's keys except skip; over wins
@@ -704,10 +741,16 @@ func (n *normalizer) hasRefinementMember(members []member, path string, depth in
 
 // isRefinement reports whether raw, once resolved, has no shape of its own.
 // Each visit is charged as work (R12). A $ref member whose other keys
-// cannot change the verdict (none of verdictKeys) is judged once per tool
-// per ref, from its target alone (no depth, stack or budget of
-// the path that reached it), and the verdict is reused; while it is being
-// judged it counts as not a refinement, as a cyclic $ref would.
+// cannot change the verdict (none of verdictKeys) is judged from its target
+// alone (no depth, stack or budget of the path that reached it), so its
+// verdict is the same wherever it is met, and it is judged at most once per
+// tool per ref. A ref is a refinement when it reaches one through its
+// members, and a ref met again while it is still on the stack adds nothing
+// (it counts as not a refinement, as a cyclic $ref would). A false verdict
+// that met a ref judged further out is final only once that ref is: it
+// stays on the stack until then, as in Tarjan's strongly connected
+// components algorithm, so no property's verdict depends on which property
+// was judged first.
 func (n *normalizer) isRefinement(raw any, path string, depth int, stack []string) bool {
 	if n.aborted || depth > maxDepth {
 		return false
@@ -717,20 +760,52 @@ func (n *normalizer) isRefinement(raw any, path string, depth int, stack []strin
 	if !ok {
 		return false
 	}
-	if ref, isStr := mm["$ref"].(string); isStr && !hasAnyKey(mm, verdictKeys) {
-		if res, seen := n.refVerdicts[ref]; seen {
-			return res
-		}
-		n.refVerdicts[ref] = false
-		expansions := n.expansions
-		n.expansions = 0
-		res := n.judgeRefinement(mm, path, 0, nil)
-		n.expansions = expansions
-		n.refVerdicts[ref] = res
+	ref, isStr := mm["$ref"].(string)
+	if !isStr || hasAnyKey(mm, verdictKeys) {
+		return n.judgeRefinement(mm, path, depth, stack)
+	}
+	if res, seen := n.refVerdicts[ref]; seen {
 		return res
 	}
-	return n.judgeRefinement(mm, path, depth, stack)
+	if idx, onStack := n.refIndex[ref]; onStack {
+		n.cycleLow = min(n.cycleLow, idx)
+		return false
+	}
+
+	idx := len(n.refStack)
+	n.refIndex[ref] = idx
+	n.refStack = append(n.refStack, ref)
+	outerLow, expansions := n.cycleLow, n.expansions
+	n.cycleLow, n.expansions = noCycle, 0
+	res := n.judgeRefinement(mm, path, 0, nil)
+	low := n.cycleLow
+	n.cycleLow, n.expansions = min(outerLow, low), expansions
+	// A true verdict is final: every ref waiting above this one reaches it,
+	// so each is a refinement too. A false one is final when nothing
+	// judged from here met a ref further down the stack; otherwise it and
+	// the refs above it wait for that ref, which settles them.
+	if res || low >= idx {
+		n.settleRefs(idx, res)
+	}
+	return res
 }
+
+// settleRefs memoizes res for every ref on the stack judged at or after
+// index from and takes them off the stack.
+func (n *normalizer) settleRefs(from int, res bool) {
+	for len(n.refStack) > 0 {
+		top := n.refStack[len(n.refStack)-1]
+		if n.refIndex[top] < from {
+			return
+		}
+		n.refStack = n.refStack[:len(n.refStack)-1]
+		delete(n.refIndex, top)
+		n.refVerdicts[top] = res
+	}
+}
+
+// noCycle is cycleLow when no judgement met a ref on the stack.
+const noCycle = math.MaxInt
 
 // verdictKeys are the keys next to a $ref that can change its R7a verdict;
 // a member with none of them has its target's verdict.

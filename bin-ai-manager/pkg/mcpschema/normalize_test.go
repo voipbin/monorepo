@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -775,6 +776,87 @@ func Test_Normalize_Rules(t *testing.T) {
 			wantDropPath: "/properties/s",
 		},
 		{
+			name: "a $ref member met again inside an outer judgement is not memoized as not a refinement",
+			in: `{"type":"object","$defs":{"X":{"anyOf":[{"$ref":"#/$defs/B"},{"$ref":"#/$defs/L"}]},"B":{"anyOf":[{"$ref":"#/$defs/X"}]},"L":{"required":["k"]}},` +
+				`"properties":{"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/X"}]},` +
+				`"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/B"}]}},"required":["z"]}`,
+			want: `{"type":"object","properties":{"a":{"type":"object","properties":{"k":{"type":"string"}}},"z":{"type":"object","properties":{"k":{"type":"string"}}}},"required":["z"]}`,
+		},
+		{
+			name: "a $ref member two hops inside an outer judgement is not memoized as not a refinement",
+			in: `{"type":"object","$defs":{"O":{"anyOf":[{"$ref":"#/$defs/P"},{"$ref":"#/$defs/L"}]},"P":{"anyOf":[{"$ref":"#/$defs/Y"}]},"Y":{"anyOf":[{"$ref":"#/$defs/O"}]},"L":{"required":["k"]}},` +
+				`"properties":{"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/O"}]},` +
+				`"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/P"}]}},"required":["z"]}`,
+			want: `{"type":"object","properties":{"a":{"type":"object","properties":{"k":{"type":"string"}}},"z":{"type":"object","properties":{"k":{"type":"string"}}}},"required":["z"]}`,
+		},
+		{
+			name: "a ref judged not a refinement earlier is not made one by a later refinement",
+			in: `{"type":"object","$defs":{"F":{"anyOf":[{"$ref":"#/$defs/F"},{"type":"array"}]},"L":{"required":["k"]}},"properties":{` +
+				`"a":{"type":"string","anyOf":[{"$ref":"#/$defs/F"},{"type":"string"}]},` +
+				`"b":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/L"}]},` +
+				`"c":{"type":"string","anyOf":[{"$ref":"#/$defs/F"}]}},"required":["c"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/c",
+		},
+		{
+			name: "a ref met again inside its own judgement is not taken as decided before it is",
+			in: `{"type":"object","$defs":{"A":{"anyOf":[{"$ref":"#/$defs/C"},{"$ref":"#/$defs/D"},{"$ref":"#/$defs/L"}]},"C":{"anyOf":[{"$ref":"#/$defs/S"}]},"S":{"type":"string"},` +
+				`"D":{"anyOf":[{"$ref":"#/$defs/A"}]},"L":{"required":["k"]}},"properties":{` +
+				`"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/A"}]},` +
+				`"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/D"}]}},"required":["z"]}`,
+			want: `{"type":"object","properties":{"a":{"type":"object","properties":{"k":{"type":"string"}}},"z":{"type":"object","properties":{"k":{"type":"string"}}}},"required":["z"]}`,
+		},
+		{
+			name: "a ref still being judged is not settled by a ref judged inside it",
+			in: `{"type":"object","$defs":{"A":{"anyOf":[{"$ref":"#/$defs/B"},{"$ref":"#/$defs/L"}]},"B":{"type":"string"},"L":{"required":["k"]}},"properties":{` +
+				`"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/A"}]},` +
+				`"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/A"}]}},"required":["z"]}`,
+			want: `{"type":"object","properties":{"a":{"type":"object","properties":{"k":{"type":"string"}}},"z":{"type":"object","properties":{"k":{"type":"string"}}}},"required":["z"]}`,
+		},
+		{
+			name: "a ref that meets no ref on the stack is settled even after a sibling met one",
+			in: `{"type":"object","$defs":{"P":{"anyOf":[{"$ref":"#/$defs/W"},{"$ref":"#/$defs/Q"},{"$ref":"#/$defs/L"}]},"W":{"anyOf":[{"$ref":"#/$defs/P"}]},"Q":{"type":"array"},"L":{"required":["k"]}},"properties":{` +
+				`"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/P"}]},` +
+				`"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/Q"}]}},"required":["z"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/z",
+		},
+		{
+			name: "settling a ref leaves the refs judged before it on the stack",
+			in: `{"type":"object","$defs":{"P":{"anyOf":[{"$ref":"#/$defs/W"},{"$ref":"#/$defs/Q"},{"$ref":"#/$defs/L"}]},"W":{"anyOf":[{"$ref":"#/$defs/P"}]},"Q":{"type":"array"},"L":{"required":["k"]}},"properties":{` +
+				`"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/P"}]},` +
+				`"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/W"}]}},"required":["z"]}`,
+			want: `{"type":"object","properties":{"a":{"type":"object","properties":{"k":{"type":"string"}}},"z":{"type":"object","properties":{"k":{"type":"string"}}}},"required":["z"]}`,
+		},
+		{
+			name: "a $defs and a definitions target of the same name have their own verdicts",
+			in: `{"type":"object","$defs":{"A":{"required":["k"]}},"definitions":{"A":{"type":"array"}},` +
+				`"properties":{"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/A"}]},` +
+				`"b":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/definitions/A"}]}},"required":["b"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/b",
+		},
+		{
+			name: "a memoized $ref member is judged without the expansion stack that reached it",
+			in: `{"type":"object","$defs":{"X":{"required":["k"]},"R":{"$ref":"#/$defs/X","type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/X"}]}},` +
+				`"properties":{"z":{"$ref":"#/$defs/R"}},"required":["z"]}`,
+			want: `{"type":"object","properties":{"z":{"type":"object","properties":{"k":{"type":"string"}},"required":["k"]}},"required":["z"]}`,
+		},
+		{
+			name:         "an empty enum member does not take the parent type",
+			in:           `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"enum":[]}]}},"required":["s"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/s",
+		},
+		{
 			name: "a $ref member with a shape of its own is not judged by its target's verdict",
 			in:   `{"type":"object","$defs":{"F":{"format":"date"}},"properties":{"s":{"type":"string","anyOf":[{"$ref":"#/$defs/F"}]},"t":{"type":"string","anyOf":[{"$ref":"#/$defs/F","type":"string","enum":["a"]}]}}}`,
 			want: `{"type":"object","properties":{"s":{"type":"string"},"t":{"anyOf":[{"type":"string","enum":["a"]}]}}}`,
@@ -1095,8 +1177,9 @@ func Test_Normalize_InheritedEnumScanIsCharged(t *testing.T) {
 func Test_Normalize_LookAheadMemoizesRefVerdicts(t *testing.T) {
 	// A long property name and 250 $ref members to one 1000-member anyOf,
 	// then a refinement. Judged once per $ref, the look-ahead stays cheap
-	// and the refinement removes the combinator; judged per reference it
-	// runs past maxWork and drops the tool.
+	// and the refinement removes the combinator. Judged per reference it
+	// reaches the same verdict, but builds about 16 GB of paths, so the
+	// allocation bound is what this test pins.
 	name := strings.Repeat("x", 58000)
 	ones := strings.TrimSuffix(strings.Repeat("1,", 1000), ",")
 	refs := strings.TrimSuffix(strings.Repeat(`{"$ref":"#/$defs/A"},`, 250), ",")
@@ -1105,11 +1188,13 @@ func Test_Normalize_LookAheadMemoizesRefVerdicts(t *testing.T) {
 	if len(raw) > 64<<10 {
 		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
 	}
-	runNormalizeRow(t, normalizeRow{
+	row := normalizeRow{
 		name: "a $ref member's refinement verdict is judged once per tool",
 		in:   raw,
 		want: `{"type":"object","properties":{"` + name + `":{"type":"string"}}}`,
-	})
+	}
+	runNormalizeRow(t, row)
+	checkAllocBound(t, raw, 16<<20)
 }
 
 func Test_Normalize_MemoizedRefVerdictHasItsOwnBudget(t *testing.T) {
@@ -1156,5 +1241,150 @@ func Test_Normalize_LookAheadChargesEachVisitedMember(t *testing.T) {
 		want:        "null",
 		wantDropped: true,
 		wantReason:  ReasonTooLarge,
+	})
+}
+
+// checkAllocBound fails when normalizing raw allocates more than limit
+// bytes. Normalize is single-goroutine and deterministic, so its
+// allocation is stable across runs; the bounds are several times the
+// measured cost and far below the regressions they guard.
+func checkAllocBound(t *testing.T, raw string, limit uint64) {
+	t.Helper()
+	in := decodeJSON(t, raw)
+	var before, after runtime.MemStats
+	runtime.GC()
+	runtime.ReadMemStats(&before)
+	Normalize(in, defaultMaxOut)
+	runtime.ReadMemStats(&after)
+	if got := after.TotalAlloc - before.TotalAlloc; got > limit {
+		t.Errorf("Wrong match. expect: at most %d bytes allocated, got: %d", limit, got)
+	}
+}
+
+func Test_Normalize_LookAheadBuildsNoPaths(t *testing.T) {
+	// A long property name and 100 allOf-wrapped (not memoized) $refs to a
+	// 1000-member anyOf, then a refinement. The look-ahead visits every
+	// member; building a path per visit would copy the name each time.
+	name := strings.Repeat("x", 58000)
+	ones := strings.TrimSuffix(strings.Repeat("1,", 1000), ",")
+	refs := strings.TrimSuffix(strings.Repeat(`{"allOf":[{"$ref":"#/$defs/A"}]},`, 100), ",")
+	raw := `{"type":"object","$defs":{"A":{"anyOf":[` + ones + `]}},"properties":{"` + name +
+		`":{"type":"string","anyOf":[` + refs + `,{"minLength":1}]}}}`
+	if len(raw) > 64<<10 {
+		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
+	}
+	runNormalizeRow(t, normalizeRow{
+		name: "the look-ahead builds no path strings",
+		in:   raw,
+		want: `{"type":"object","properties":{"` + name + `":{"type":"string"}}}`,
+	})
+	checkAllocBound(t, raw, 64<<20)
+}
+
+func Test_Normalize_RefLookupIsCachedPerRef(t *testing.T) {
+	// A 20000-byte def name reached from 128 allOf-wrapped members of W,
+	// which every property's look-ahead expands. Building the def's stack
+	// key on every expansion copies the name each time.
+	long := strings.Repeat("q", 20000)
+	sm := strings.TrimSuffix(strings.Repeat(`{"allOf":[{"$ref":"#/$defs/S"}]},`, 128), ",")
+	defs := `"` + long + `":{"type":"integer"},"S":{"$ref":"#/$defs/` + long + `"},"W":{"anyOf":[` + sm + `]}`
+	props := []string{}
+	for i := 0; ; i++ {
+		p := fmt.Sprintf(`"%x":{"type":"string","anyOf":[{"allOf":[{"$ref":"#/$defs/W"}]}]}`, i)
+		cand := `{"type":"object","$defs":{` + defs + `},"properties":{` + strings.Join(append(props, p), ",") + `}}`
+		if len(cand) > 64<<10 {
+			break
+		}
+		props = append(props, p)
+	}
+	raw := `{"type":"object","$defs":{` + defs + `},"properties":{` + strings.Join(props, ",") + `}}`
+	if len(props) < 100 {
+		t.Fatalf("shape has only %d properties", len(props))
+	}
+	// The first property's build spends the tool's $ref expansions, so
+	// every later one is an optional property dropped by the cascade (R12);
+	// each is still looked ahead first.
+	runNormalizeRow(t, normalizeRow{
+		name:             "a long def name is not copied per expansion",
+		in:               raw,
+		want:             `{"type":"object","properties":{"0":{"type":"string"}}}`,
+		wantDroppedProps: []string{"/properties/1", "/properties/10", "/properties/100", "/properties/101", "/properties/102", "/properties/103", "/properties/104", "/properties/105"},
+		check: func(t *testing.T, rep Report) {
+			if rep.DroppedPropsN != len(props)-1 {
+				t.Errorf("Wrong match. expect: %d dropped properties, got: %d", len(props)-1, rep.DroppedPropsN)
+			}
+		},
+	})
+	checkAllocBound(t, raw, 256<<20)
+}
+
+func Test_Normalize_VerdictKeysKeepAMemberOutOfTheMemo(t *testing.T) {
+	// F is a refinement. The optional a is judged first with F next to a
+	// key that gives the member a shape (or a verdict) of its own; were
+	// that verdict memoized under F's ref, the required z, whose member is
+	// plain F, would lose the refinement and drop the tool.
+	siblings := map[string]string{
+		"type":       `"type":"integer"`,
+		"properties": `"properties":{"x":{"type":"string"}}`,
+		"items":      `"items":{"type":"string"}`,
+		"enum":       `"enum":[1]`,
+		"const":      `"const":1`,
+		"anyOf":      `"anyOf":[{"type":"integer"}]`,
+		"oneOf":      `"oneOf":[{"type":"integer"}]`,
+		"allOf":      `"allOf":[{"type":"integer"}]`,
+	}
+	for _, k := range verdictKeys {
+		sib, ok := siblings[k]
+		if !ok {
+			t.Fatalf("no row for verdict key %q", k)
+		}
+		t.Run(k, func(t *testing.T) {
+			in := `{"type":"object","$defs":{"F":{"required":["k"]}},"properties":{` +
+				`"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/F",` + sib + `}]},` +
+				`"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/F"}]}},"required":["z"]}`
+			_, rep := Normalize(decodeJSON(t, in), defaultMaxOut)
+			if rep.ToolDropped {
+				t.Errorf("Wrong match. expect: tool kept, got: dropped (%s at %s)", rep.DropReason, rep.DropPath)
+			}
+		})
+	}
+	if len(siblings) != len(verdictKeys) {
+		t.Errorf("Wrong match. expect: %d verdict keys, got: %d", len(siblings), len(verdictKeys))
+	}
+}
+
+func Test_Normalize_MemoizedRefVerdictIgnoresTheCallerDepth(t *testing.T) {
+	// A required object nested 29 levels deep whose only anyOf member is
+	// a $ref to a refinement behind four anyOf levels. Judged from the
+	// member's own depth the refinement is past maxDepth; judged from its
+	// target alone it is found and the tool is kept.
+	inner := `{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/C"}]}`
+	wrap := inner
+	for i := 0; i < 29; i++ {
+		wrap = `{"type":"object","properties":{"n":` + wrap + `},"required":["n"]}`
+	}
+	in := `{"type":"object","$defs":{"C":{"anyOf":[{"anyOf":[{"anyOf":[{"anyOf":[{"required":["k"]}]}]}]}]}},"properties":{"r":` + wrap + `},"required":["r"]}`
+	_, rep := Normalize(decodeJSON(t, in), defaultMaxOut)
+	if rep.ToolDropped {
+		t.Errorf("Wrong match. expect: tool kept, got: dropped (%s at %s)", rep.DropReason, rep.DropPath)
+	}
+}
+
+func Test_Normalize_CyclicRefVerdictsAreJudgedOncePerRef(t *testing.T) {
+	// A 16-level $defs DAG, 2 $ref members per level, whose last level
+	// refers back to the first. A ref met again while it is judged makes
+	// every ref on the cycle wait for the first one; were the waiting
+	// verdicts judged again on each path, the look-ahead would take 2^16
+	// paths and drop the tool before it reached the refinement after them.
+	var defs []string
+	for i := 0; i < 16; i++ {
+		defs = append(defs, fmt.Sprintf(`"D%d":{"anyOf":[{"$ref":"#/$defs/D%d"},{"$ref":"#/$defs/D%d"}]}`, i, i+1, i+1))
+	}
+	defs = append(defs, `"D16":{"anyOf":[{"$ref":"#/$defs/D0"},{"type":"string"}]}`)
+	raw := `{"type":"object","$defs":{` + strings.Join(defs, ",") + `},"properties":{"p":{"type":"string","anyOf":[{"$ref":"#/$defs/D0"},{"minLength":1}]}},"required":["p"]}`
+	runNormalizeRow(t, normalizeRow{
+		name: "cyclic $ref verdicts are judged once per ref",
+		in:   raw,
+		want: `{"type":"object","properties":{"p":{"type":"string"}},"required":["p"]}`,
 	})
 }
