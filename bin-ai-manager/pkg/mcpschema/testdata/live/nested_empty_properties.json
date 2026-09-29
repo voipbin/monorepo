@@ -1,0 +1,9 @@
+{
+  "properties": {
+    "options": {
+      "description": "Options object with explicit empty properties.",
+      "type": "object"
+    }
+  },
+  "type": "object"
+}

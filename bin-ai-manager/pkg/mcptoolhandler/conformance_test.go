@@ -79,7 +79,7 @@ func Test_Conformance_ReferenceServer(t *testing.T) {
 				t.Fatalf("inputSchema missing or malformed: %s (err %v)", found.InputSchema, err)
 			}
 
-			text, err := h.CallTool(context.Background(), serverID, "lookup_order", `{"order_id":"A-1"}`)
+			text, _, err := h.CallTool(context.Background(), serverID, "lookup_order", `{"order_id":"A-1"}`)
 			if err != nil {
 				t.Fatalf("CallTool: %v", err)
 			}

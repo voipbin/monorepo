@@ -173,6 +173,7 @@ func Test_RunListenTurn_Conversation(t *testing.T) {
 				// SREM the resolver, clear the keys, strip the metadata key.
 				m.cache.EXPECT().ListenConversationAIcallIDRemove(ctx, lcConversationID, ltAIcallID).Return(nil)
 				m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).DoAndReturn(
 					func(_ context.Context, _ uuid.UUID, fields map[aicall.Field]any) error {
 						meta, _ := fields[aicall.FieldMetadata].(map[string]any)
@@ -291,8 +292,9 @@ func Test_clearListenState_ConversationKind(t *testing.T) {
 
 	rem := m.cache.EXPECT().ListenConversationAIcallIDRemove(ctx, lcConversationID, ltAIcallID).Return(nil)
 	clear := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	reread := m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 	update := m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
-	gomock.InOrder(rem, clear, update)
+	gomock.InOrder(rem, clear, reread, update)
 	m.cache.EXPECT().ListenAIcallIDRemove(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 	m.req.EXPECT().TranscribeV1TranscribeGet(gomock.Any(), gomock.Any()).Times(0)
 

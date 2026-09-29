@@ -536,8 +536,22 @@ func (h *aicallHandler) clearListenState(ctx context.Context, c *aicall.AIcall) 
 	//    on hangup, which is exactly when an agent is most likely to type a
 	//    follow-up question, and a tm_update bump here would have Send's cooldown
 	//    reject it.
+	//
+	//    The metadata merge is built from a FRESH re-read of c's row, not
+	//    from the `c` this function's caller has in hand -- that snapshot
+	//    can be stale relative to a concurrent writer (e.g. a ResolveMcpTools/
+	//    persistToolMap run landing a fresh MetaKeyMcpToolMap between when
+	//    the caller fetched `c` and when this runs). Same read-modify-write-
+	//    by-key discipline persistToolMap/refreshMcpToolMap already use
+	//    (review round 1 B26 Critical finding).
+	cur, errGet := h.db.AIcallGet(ctx, c.ID)
+	if errGet != nil {
+		log.Warnf("Could not re-read the aicall row before clearing listen state; falling back to the in-hand snapshot. err: %v", errGet)
+		cur = c
+	}
+
 	metadata := map[string]any{}
-	for k, v := range c.Metadata {
+	for k, v := range cur.Metadata {
 		if k == aicall.MetaKeyListenTranscribeID || k == aicall.MetaKeyListenOwnsTranscribe || k == aicall.MetaKeyListenConversationID {
 			continue
 		}

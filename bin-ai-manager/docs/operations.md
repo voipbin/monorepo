@@ -46,6 +46,8 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `aicall_listen_start_lock_release_timeout_seconds` | `AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS` | Bound on the **detached** context the lock's release runs under, so a stuck Redis call during cleanup cannot hang the releasing goroutine. Independent of, and far below, the TTL above. Default `3` | no |
 | `aicall_listen_conversation_max_message_chars` | `AICALL_LISTEN_CONVERSATION_MAX_MESSAGE_CHARS` | Per-field cap (subject, text and the joined media tokens are each capped, so one message contributes at most about three times this many characters) before a conversation line is buffered (suffix ` [truncated]`). Default `2000` | no |
 | `aicall_listen_conversation_flush_jitter_ms` | `AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS` | Upper bound of the random jitter added to the deferred flush delay (`aicall_listen_evaluate_interval_seconds` + jitter). Default `1000` | no |
+| `mcp_tool_call_timeout_seconds` | `MCP_TOOL_CALL_TIMEOUT_SECONDS` | Bounds one whole MCP `tools/list` or `tools/call` (handshake, method, one re-initialisation). Also bounds the whole MCP tool dispatch path. Session-start discovery across all of an AI's servers is separately capped at 2s aggregate (`mcpSessionStartDiscoveryBudget`, a package constant). Default `10` | no |
+| `mcp_tool_exposure_enabled` | `MCP_TOOL_EXPOSURE_ENABLED` | Global rollback switch for advertising MCP tools to the LLM. `false` makes the `GET /v1/aicalls/<uuid>/tools/mcp` RPC return an empty list for every AIcall, exactly as if no AI had MCP tools; built-in tools are unaffected. Default `true` | no |
 
 **Two ordering invariants hold across the listen timing flags, and both are pinned as standing test assertions (`Test_ListenConfigDefaults`), not one-time default checks:**
 
@@ -75,7 +77,9 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `aicall_create_total` | Counter | `reference_type` | AIcalls created |
 | `aicall_end_total` | Counter | `reference_type` | AIcalls ended |
 | `aicall_duration_seconds` | Histogram | `reference_type` | AIcall duration |
-| `aicall_tool_execute_total` | Counter | `tool_name` | Tool executions |
+| `aicall_tool_execute_total` | Counter | `tool_name` | Tool executions. For a built-in tool the label is its name; every MCP tool (`mcp_` prefix) is labeled the constant `mcp`, since the remote tool name is customer-controlled and unbounded |
+| `mcp_tool_advertised_total` | Counter | — | `ResolveMcpTools` resolutions that returned at least one MCP tool to pipecat |
+| `mcp_tool_call_outcome_total` | Counter | `outcome` | MCP tool dispatch outcomes: `success`, `error` (the remote server returned `isError: true`), `failed` (transport failure or a fail-closed gate refused the call) |
 | `aicall_backstop_reply_total` | Counter | — | Backstop/fallback replies |
 | `aicall_idle_expired_total` | Counter | — | Sessions terminated due to idle timeout |
 | `aicall_insight_session_refresh_total` | Counter | `result` | Insight Case panel reopens evaluated for a session refresh, by outcome: `kept` (the denominator: still live, disabled, not an Insight AI, or not an AI assistance), `refreshed` (a new session started), `failed` (the previous session was kept because the prompt could not be resolved or the write failed) |
@@ -140,6 +144,12 @@ Key signals to alert on:
 - `aicall_interrupt_attempted_total` vs `aicall_duration_seconds` — barge-in health
 - `subscribe_event_process_time` p99 — event processing backlog
 - `aicall_insight_session_refresh_total{result}`: Insight Case panel reopens evaluated for a session refresh. `kept` is the denominator; a rising `failed` rate means panels are opening with a stale session (the prompt could not be resolved, or the rows/metadata could not be written), which never breaks the panel but does mean the boundary is not advancing
+
+MCP tool input schemas are rewritten into a provider-neutral subset before they are advertised (package `pkg/mcpschema`, design `docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md` §15). There is no metric for it; watch these log lines from `resolveMcpOnly`:
+- WARN `Dropped an mcp tool whose input schema cannot be made provider-safe. mcp_server_id: ..., tool_name: ..., reason: ..., path: ...`: the tool is not advertised and is not in the session's tool map. Repeated lines for one `mcp_server_id` mean that customer's MCP server exposes schemas VoIPBin cannot advertise (for example a required parameter with no `type`, an array without `items`, or a schema over the 64 KiB output cap or the per-tool resolution work cap, `reason: too_large`). The rest of the session's tools, built-ins included, are unaffected.
+- WARN `Removed optional parameters an mcp tool's input schema cannot express provider-safely. ... dropped_properties: N, first: ...`: the tool is still advertised without those optional parameters.
+- The existing WARN `Skipped mcp tools whose input schema could not be used. ... over_shared_budget: N` also counts tools skipped because the normalized schemas of one resolution exceeded their 256 KiB output budget.
+- DEBUG `Normalized mcp tool input schemas. advertised: ..., dropped_keys: ..., rewrites: ...`: routine key stripping (`x-*`, `title`, `$schema`, ...) and conversions (`oneOf`, `$ref`, list `type`), totalled per resolution.
 
 ### Insight AI session history
 

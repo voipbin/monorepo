@@ -13,6 +13,7 @@ import (
 	context "context"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	message "monorepo/bin-ai-manager/models/message"
+	tool "monorepo/bin-ai-manager/models/tool"
 	call "monorepo/bin-call-manager/models/call"
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	dtmf "monorepo/bin-call-manager/models/dtmf"
@@ -252,6 +253,21 @@ func (m *MockAIcallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) 
 func (mr *MockAIcallHandlerMockRecorder) ProcessTerminate(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminate", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminate), ctx, id)
+}
+
+// ResolveMcpTools mocks base method.
+func (m *MockAIcallHandler) ResolveMcpTools(ctx context.Context, aicallID uuid.UUID) ([]tool.Tool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolveMcpTools", ctx, aicallID)
+	ret0, _ := ret[0].([]tool.Tool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResolveMcpTools indicates an expected call of ResolveMcpTools.
+func (mr *MockAIcallHandlerMockRecorder) ResolveMcpTools(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveMcpTools", reflect.TypeOf((*MockAIcallHandler)(nil).ResolveMcpTools), ctx, aicallID)
 }
 
 // RunListenTurn mocks base method.

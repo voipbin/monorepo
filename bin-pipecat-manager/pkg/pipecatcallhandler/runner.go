@@ -160,6 +160,39 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 					}
 					tools = filtered
 				}
+
+				// Supplement with the AIcall's MCP tools, best-effort
+				// (design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md
+				// §2.2, D13). The RPC returns MCP-derived tools ONLY --
+				// never a repeat of the built-in set above -- so this
+				// simply appends. On failure, fail OPEN to built-ins
+				// only: this is a narrower, later failure than not being
+				// able to resolve the AI at all (the errAI branch above),
+				// and must not regress to that stricter fail-closed
+				// posture.
+				mcpTools, errMcp := h.requestHandler.AIV1AIcallToolList(se.Ctx, aicall.ID)
+				if errMcp != nil {
+					metricsMcpToolListFallbackTotal.Inc()
+					log.WithError(errMcp).Warnf("Could not list mcp tools for pipecat session %s; continuing with built-ins only", pc.ID)
+				} else {
+					existing := make(map[aitool.ToolName]struct{}, len(tools))
+					for _, t := range tools {
+						existing[t.Name] = struct{}{}
+					}
+					for _, t := range mcpTools {
+						if _, dup := existing[t.Name]; dup {
+							// Structurally should never happen: every MCP
+							// tool name is namespaced with the reserved
+							// mcp_ prefix before it reaches this merge
+							// point, and no built-in tool name uses that
+							// prefix. Kept as defense-in-depth against a
+							// future change to the naming convention.
+							log.Warnf("Dropped a duplicate mcp tool name colliding with an existing tool. tool_name: %s", t.Name)
+							continue
+						}
+						tools = append(tools, t)
+					}
+				}
 			}
 		}
 	} else {

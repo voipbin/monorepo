@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "properties": {
+    "owner": {
+      "type": "string",
+      "description": "Repository owner",
+      "x-mcp-header": "owner"
+    },
+    "repo": {
+      "type": "string",
+      "description": "Repository name",
+      "x-mcp-header": "repo"
+    },
+    "issue_number": {
+      "type": "number",
+      "description": "Issue number",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "owner",
+    "repo",
+    "issue_number"
+  ]
+}

@@ -51,6 +51,24 @@ var (
 		},
 	)
 
+	// metricsMcpToolListFallbackTotal counts occurrences of the
+	// AIV1AIcallToolList callback RPC failing inside runnerStartScript
+	// (design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md §2.2,
+	// §9, D13). Unlike metricsToolResolveFallbackTotal above (which fails
+	// CLOSED to an empty tool list on AI-resolution failure), this counter
+	// tracks a narrower, later failure: the AI was resolved and its
+	// built-in tools are already in hand, only the MCP-tool callback
+	// itself failed. Per D13 the session fails OPEN here -- it continues
+	// with the built-in tools it already has rather than losing the whole
+	// tool list. The failure reason is captured in the accompanying
+	// Warnf log line, not as a metric label (cardinality discipline, §9).
+	metricsMcpToolListFallbackTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "pipecat_manager_mcp_tool_list_fallback_total",
+			Help: "Counter of runnerStartScript falling back to built-in tools only after the AIV1AIcallToolList callback RPC failed.",
+		},
+	)
+
 	// metricsPipelineErrorTotal counts every RTVI "error" frame received from the pipecat runner,
 	// by classified category and fatal flag (VOIP-1542). Counted whether or not a customer notice
 	// is published, so operators see the full error rate.
@@ -79,6 +97,7 @@ func init() {
 		metricsIdleWatchdogFired,
 		metricsFlushFinalizeOutcome,
 		metricsToolResolveFallbackTotal,
+		metricsMcpToolListFallbackTotal,
 		metricsPipelineErrorTotal,
 		metricsRTVIErrorResponseTotal,
 	)

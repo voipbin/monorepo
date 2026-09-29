@@ -94,6 +94,7 @@ var (
 	regV1AIcallsIDTerminate    = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
 	regV1AIcallsIDListen       = regexp.MustCompile("/v1/aicalls/" + regUUID + "/listen$")
 	regV1AIcallsIDToolExecute  = regexp.MustCompile("/v1/aicalls/" + regUUID + "/tool_execute$")
+	regV1AIcallsIDToolsMcp     = regexp.MustCompile("/v1/aicalls/" + regUUID + "/tools/mcp$")
 
 	// aiaudits
 	regV1AIAuditsGet = regexp.MustCompile(`/v1/aiaudits\?`)
@@ -386,6 +387,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIcallsIDToolExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AIcallsIDToolExecutePost(ctx, m)
 		requestType = "/v1/aicalls/<aicall-id>/tool_execute"
+
+	// GET /aicalls/<aicall-id>/tools/mcp
+	case regV1AIcallsIDToolsMcp.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIcallsIDToolsMcpGet(ctx, m)
+		requestType = "/v1/aicalls/<aicall-id>/tools/mcp"
 
 	///////////////
 	// aiaudits

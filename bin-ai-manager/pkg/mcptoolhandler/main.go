@@ -52,8 +52,10 @@ type McpToolHandler interface {
 	// CallTool sends an MCP tools/call request for toolName on the server
 	// identified by serverID, with argumentsJSON passed through unchanged as
 	// the JSON-RPC arguments object, and returns the joined text content of
-	// the result.
-	CallTool(ctx context.Context, serverID uuid.UUID, toolName string, argumentsJSON string) (string, error)
+	// the result and whether the remote server reported it as an error
+	// (toolsCallResult.IsError, B24) -- a caller must not treat an isError
+	// result as success just because err is nil.
+	CallTool(ctx context.Context, serverID uuid.UUID, toolName string, argumentsJSON string) (string, bool, error)
 }
 
 type mcpToolHandler struct {

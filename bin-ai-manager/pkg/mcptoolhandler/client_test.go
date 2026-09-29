@@ -215,7 +215,7 @@ func Test_CallTool_Success(t *testing.T) {
 
 	h := &mcpToolHandler{db: mockDB, crypto: crypto, timeout: 2 * time.Second, newClient: testClient}
 
-	result, err := h.CallTool(context.Background(), serverID, "echo", `{"input":"x"}`)
+	result, _, err := h.CallTool(context.Background(), serverID, "echo", `{"input":"x"}`)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -251,7 +251,7 @@ func Test_CallTool_MalformedJSONRPC(t *testing.T) {
 
 	h := newTestHandler(t, mockDB)
 
-	_, err := h.CallTool(context.Background(), serverID, "echo", `{}`)
+	_, _, err := h.CallTool(context.Background(), serverID, "echo", `{}`)
 	if err == nil || !strings.Contains(err.Error(), "could not parse JSON-RPC response") {
 		t.Fatalf("expected a method-stage parse error, got: %v", err)
 	}
@@ -379,7 +379,7 @@ func Test_TransportRefusesDeletedServer(t *testing.T) {
 
 			fake = newFakeMCPServer(t)
 			reqCount = 0
-			_, err := h.CallTool(context.Background(), serverID, "probe_tool", "{}")
+			_, _, err := h.CallTool(context.Background(), serverID, "probe_tool", "{}")
 			assertGate(t, err, tt.wantErr, tt.wantErrText, reqCount, tt.wantRequests)
 		})
 	}
@@ -417,7 +417,7 @@ func Test_TransportRefusesNilServer(t *testing.T) {
 		h := newTestHandler(t, mockDB)
 		mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(nil, nil)
 
-		_, err := h.CallTool(context.Background(), serverID, "probe_tool", "{}")
+		_, _, err := h.CallTool(context.Background(), serverID, "probe_tool", "{}")
 		if err == nil {
 			t.Fatal("expected a nil server to be refused")
 		}

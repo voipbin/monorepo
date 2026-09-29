@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "label": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Optional label; null clears it."
+    }
+  },
+  "type": "object"
+}

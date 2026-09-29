@@ -128,6 +128,11 @@ func TestRTVIFrameTypeConstants(t *testing.T) {
 			expected: "metrics",
 		},
 		{
+			name:     "error",
+			constant: RTVIFrameTypeError,
+			expected: "error",
+		},
+		{
 			name:     "user_llm_text",
 			constant: RTVIFrameTypeUserLLMText,
 			expected: "user-llm-text",

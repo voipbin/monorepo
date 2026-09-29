@@ -37,6 +37,7 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `pipecat_manager_llm_flush_exit_total` | Counter | — | LLM flush operations that exited cleanly |
 | `pipecat_manager_llm_flush_finalize_outcome_total` | Counter | `outcome` | LLM flush finalization outcomes |
 | `pipecat_manager_llm_idle_watchdog_fired_total` | Counter | — | Idle watchdog triggers |
+| `pipecat_manager_mcp_tool_list_fallback_total` | Counter | — | runnerStartScript could not fetch the AIcall's MCP tools from ai-manager (`AIV1AIcallToolList` failed) and started the session with built-in tools only (fail-open for the MCP half; the built-in half is unaffected). A sustained non-zero rate means customers' MCP tools are silently unavailable to the LLM |
 | `pipecat_manager_pipeline_error_total` | Counter | `category`, `fatal` | RTVI `error` frames from the runner, by classified category (authentication, rate_limited, timeout, function_call, internal, unknown). Counted whether or not a customer notice was published (VOIP-1542) |
 | `pipecat_manager_rtvi_error_response_total` | Counter | — | RTVI `error-response` frames: the runner rejected a request pipecat-manager sent (e.g. `send-text`). A platform contract failure; any sustained rate is a bug (VOIP-1542) |
 | `pipecat_manager_tool_resolve_fallback_total` | Counter | — | runnerStartScript failed CLOSED to an empty tool list after an AI lookup failure. Fail-closed by design (docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.4; this reverses the prior fail-open VOIP-1234 §6 v4 decision) since tool-access control must favor least-privilege over availability. A sustained non-zero rate should still be investigated and alerted on, since it means sessions are running with NO tools instead of the AI's configured whitelist |
@@ -45,6 +46,22 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 Circuit-breaker metrics from `bin-common-handler/pkg/requesthandler` are also registered under the `pipecat_manager_*` namespace. See [docs/patterns/circuit-breaker.md](../../docs/patterns/circuit-breaker.md).
 
 **Gotcha:** do not add metric names already registered by `bin-common-handler/pkg/requesthandler/main.go#initPrometheus()` — duplicate names cause `prometheus.MustRegister` to panic at startup.
+
+## Troubleshooting
+
+### Gemini session with fewer tools than configured
+
+Before a Gemini session starts, the runner validates the tool list with the installed pipecat Gemini adapter and google-genai `GenerateContentConfig` (`scripts/pipecat/gemini_tool_filter.py`, called from `run.py create_llm_service`). One tool the client-side validator rejects would otherwise fail every turn of the session, built-ins included. Only the rejected tools are dropped; OpenAI and Grok sessions are not filtered. Runner log lines (loguru, each ending in `pipeline id=<id>`):
+
+- WARN `Dropped tool '<name>' rejected by the Gemini schema validator: <n> error(s), first: <loc>: <msg>`: one line per dropped tool. The schema itself is never logged. A dropped built-in tool is a regression signal.
+- INFO `Gemini tool validation dropped <k> of <n> tools`: summary when anything was dropped.
+- WARN `Gemini tool validation skipped ...`, `... failed for the filtered tool set ...` or `... failed unexpectedly ...`: the validator itself could not run or the filtered set still failed. The filter fails open and keeps every tool, so the session behaves as it would without the filter.
+
+The dropped tool's handler is still registered by name but is inert, since the LLM never sees the tool. Server-side (HTTP 400) provider rejections are not caught by this filter. MCP tool schemas are normalized to a provider-neutral subset by bin-ai-manager before they reach the runner, so a drop here usually means a schema construct that normalization does not cover. No metric; the log lines are the signal.
+
+### WARN `Pipeline error. fatal: ...`
+
+The Go side handles every RTVI `error` message from the runner (pipecat's pipeline `ErrorFrame`, for example a provider request rejected before it is sent, such as a tool schema the provider refuses) in `runnerHandlePipelineError`. It classifies the text, counts it in `pipecat_manager_pipeline_error_total{category, fatal}`, and logs the first frame of each category per session at WARN with `pipecatcall_id` and `category` (repeats at DEBUG). The error text is capped at 2000 bytes; the runner's own ERROR record holds the full message. The text can include fragments of customer tool schemas (internal logs only; the customer-facing `pipeline_error` event carries only the category). To join with bin-ai-manager logs, use `pipecatcall_id`. See docs/domain.md "Pipeline errors" for the notice policy.
 
 ## CLI Tool: pipecat-control
 

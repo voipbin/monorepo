@@ -1,0 +1,17 @@
+{
+  "properties": {
+    "priority": {
+      "description": "Priority level.",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "priority"
+  ],
+  "type": "object"
+}

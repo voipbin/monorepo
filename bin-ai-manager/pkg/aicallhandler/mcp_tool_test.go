@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 	"sync"
@@ -14,6 +15,8 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	logtest "github.com/sirupsen/logrus/hooks/test"
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/models/ai"
@@ -22,6 +25,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/mcpschema"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
 	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
 	"monorepo/bin-ai-manager/pkg/teamhandler"
@@ -44,11 +48,11 @@ func otherCustomerIdentityFor(id uuid.UUID) commonidentity.Identity {
 	return commonidentity.Identity{ID: id, CustomerID: uuid.FromStringOrNil("d0000000-1111-4000-8000-00000000000d")}
 }
 
-// Test_resolveTools covers the fail-closed/best-effort properties resolveTools
+// Test_resolveMcpOnly covers the fail-closed/best-effort properties resolveMcpOnly
 // promises (design §9.1): a non-active server contributes no tools, a
 // ListTools failure on one server does not fail the whole resolution or
 // affect other servers, and the returned tool map is namespaced correctly.
-func Test_resolveTools(t *testing.T) {
+func Test_resolveMcpOnly(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -58,6 +62,9 @@ func Test_resolveTools(t *testing.T) {
 
 		expectToolNames []string
 		expectToolMap   map[string]aicall.McpToolRef
+		// expectParams, when set, pins each named tool's advertised
+		// Parameters (JSON; "null" for none) after normalization.
+		expectParams map[string]string
 	}{
 		{
 			name: "active server contributes namespaced tools",
@@ -193,6 +200,115 @@ func Test_resolveTools(t *testing.T) {
 			expectToolMap:   map[string]aicall.McpToolRef{},
 		},
 		{
+			name: "advertised parameters are the normalized schema, not the raw one",
+			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("a1a1a1a1-1111-4000-8000-000000000011")},
+			},
+			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				serverID := uuid.FromStringOrNil("a1a1a1a1-1111-4000-8000-000000000011")
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tl.EXPECT().ListTools(gomock.Any(), serverID).Return([]mcptoolhandler.McpTool{
+					{Name: "get_issue", InputSchema: json.RawMessage(`{"$schema":"x","type":"object","additionalProperties":false,
+						"properties":{"owner":{"type":"string","x-mcp-header":"owner"},"value":{"type":["string","number"]},
+						"any":{"description":"any JSON value"}},"required":["owner"]}`)},
+					{Name: "no_schema"},
+				}, nil)
+			},
+			expectToolNames: []string{"mcp_a1a1a1a1_get_issue", "mcp_a1a1a1a1_no_schema"},
+			expectToolMap: map[string]aicall.McpToolRef{
+				"mcp_a1a1a1a1_get_issue": {ServerID: uuid.FromStringOrNil("a1a1a1a1-1111-4000-8000-000000000011"), ToolName: "get_issue"},
+				"mcp_a1a1a1a1_no_schema": {ServerID: uuid.FromStringOrNil("a1a1a1a1-1111-4000-8000-000000000011"), ToolName: "no_schema"},
+			},
+			expectParams: map[string]string{
+				"mcp_a1a1a1a1_get_issue": `{"type":"object","properties":{"owner":{"type":"string"},
+					"value":{"anyOf":[{"type":"string"},{"type":"number"}]}},"required":["owner"]}`,
+				"mcp_a1a1a1a1_no_schema": "null",
+			},
+		},
+		{
+			name: "a tool dropped by normalization is neither advertised nor dispatchable, the server's other tools are kept",
+			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("b2b2b2b2-1111-4000-8000-000000000012")},
+			},
+			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				serverID := uuid.FromStringOrNil("b2b2b2b2-1111-4000-8000-000000000012")
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tl.EXPECT().ListTools(gomock.Any(), serverID).Return([]mcptoolhandler.McpTool{
+					{Name: "bad", InputSchema: json.RawMessage(`{"type":"object","properties":{"v":{"description":"any"}},"required":["v"]}`)},
+					{Name: "good", InputSchema: json.RawMessage(`{"type":"object","properties":{"q":{"type":"string"}}}`)},
+				}, nil)
+			},
+			expectToolNames: []string{"mcp_b2b2b2b2_good"},
+			expectToolMap: map[string]aicall.McpToolRef{
+				"mcp_b2b2b2b2_good": {ServerID: uuid.FromStringOrNil("b2b2b2b2-1111-4000-8000-000000000012"), ToolName: "good"},
+			},
+			expectParams: map[string]string{
+				"mcp_b2b2b2b2_good": `{"type":"object","properties":{"q":{"type":"string"}}}`,
+			},
+		},
+		{
+			name: "a no-argument tool with a root {} schema is kept as an empty object",
+			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("c3c3c3c3-1111-4000-8000-000000000013")},
+			},
+			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				serverID := uuid.FromStringOrNil("c3c3c3c3-1111-4000-8000-000000000013")
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tl.EXPECT().ListTools(gomock.Any(), serverID).Return([]mcptoolhandler.McpTool{
+					{Name: "get_me", InputSchema: json.RawMessage(`{}`)},
+				}, nil)
+			},
+			expectToolNames: []string{"mcp_c3c3c3c3_get_me"},
+			expectToolMap: map[string]aicall.McpToolRef{
+				"mcp_c3c3c3c3_get_me": {ServerID: uuid.FromStringOrNil("c3c3c3c3-1111-4000-8000-000000000013"), ToolName: "get_me"},
+			},
+			expectParams: map[string]string{
+				"mcp_c3c3c3c3_get_me": `{"type":"object","properties":{}}`,
+			},
+		},
+		{
+			// Five $ref fan-out tools of about 35 KiB raw each fit the 256
+			// KiB raw schemaBudget together, but each charges about 60 KiB of
+			// output, so only four fit the 256 KiB outBudget. The raw and
+			// charge sizes are asserted in Test_mcpRefFanOutSchema_Sizes.
+			name: "the per-resolution output budget skips tools the raw budget would admit",
+			ai: &ai.AI{
+				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+				McpServerIDs: []uuid.UUID{uuid.FromStringOrNil("d4d4d4d4-1111-4000-8000-000000000014")},
+			},
+			setupMock: func(srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				serverID := uuid.FromStringOrNil("d4d4d4d4-1111-4000-8000-000000000014")
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tools := []mcptoolhandler.McpTool{}
+				for i := 0; i < 5; i++ {
+					tools = append(tools, mcptoolhandler.McpTool{Name: fmt.Sprintf("fan%d", i), InputSchema: mcpRefFanOutSchema()})
+				}
+				tl.EXPECT().ListTools(gomock.Any(), serverID).Return(tools, nil)
+			},
+			expectToolNames: []string{"mcp_d4d4d4d4_fan0", "mcp_d4d4d4d4_fan1", "mcp_d4d4d4d4_fan2", "mcp_d4d4d4d4_fan3"},
+			expectToolMap: map[string]aicall.McpToolRef{
+				"mcp_d4d4d4d4_fan0": {ServerID: uuid.FromStringOrNil("d4d4d4d4-1111-4000-8000-000000000014"), ToolName: "fan0"},
+				"mcp_d4d4d4d4_fan1": {ServerID: uuid.FromStringOrNil("d4d4d4d4-1111-4000-8000-000000000014"), ToolName: "fan1"},
+				"mcp_d4d4d4d4_fan2": {ServerID: uuid.FromStringOrNil("d4d4d4d4-1111-4000-8000-000000000014"), ToolName: "fan2"},
+				"mcp_d4d4d4d4_fan3": {ServerID: uuid.FromStringOrNil("d4d4d4d4-1111-4000-8000-000000000014"), ToolName: "fan3"},
+			},
+		},
+		{
 			name: "no McpServerIDs resolves to empty tool map without touching the handlers",
 			ai: &ai.AI{
 				Identity:     commonidentity.Identity{CustomerID: testCustomerID},
@@ -218,7 +334,7 @@ func Test_resolveTools(t *testing.T) {
 				mcptoolHandler:   mockTool,
 			}
 
-			mergedTools, toolMap, err := h.resolveTools(context.Background(), tt.ai)
+			mergedTools, toolMap, err := h.resolveMcpOnly(context.Background(), tt.ai)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -244,19 +360,156 @@ func Test_resolveTools(t *testing.T) {
 					t.Errorf("tool map key %q: expected %v, got %v", k, v, toolMap[k])
 				}
 			}
+
+			for name, wantJSON := range tt.expectParams {
+				var want map[string]any
+				if err := json.Unmarshal([]byte(wantJSON), &want); err != nil {
+					t.Fatalf("bad expectParams JSON for %s: %v", name, err)
+				}
+				found := false
+				for _, mt := range mergedTools {
+					if string(mt.Name) != name {
+						continue
+					}
+					found = true
+					if !reflect.DeepEqual(jsonRoundTrip(t, mt.Parameters), jsonRoundTrip(t, want)) {
+						got, _ := json.Marshal(mt.Parameters)
+						t.Errorf("Wrong match. %s parameters\nexpect: %s\ngot: %s", name, wantJSON, got)
+					}
+				}
+				if !found {
+					t.Errorf("Wrong match. expect tool %s in the advertised list", name)
+				}
+			}
 		})
 	}
 }
 
-// Test_resolveTools_NilHandlers pins that resolveTools degrades gracefully
+// jsonRoundTrip normalizes v's number and nil types for DeepEqual.
+func jsonRoundTrip(t *testing.T, v any) any {
+	t.Helper()
+	b, err := json.Marshal(v)
+	if err != nil {
+		t.Fatalf("could not marshal: %v", err)
+	}
+	var res any
+	if err := json.Unmarshal(b, &res); err != nil {
+		t.Fatalf("could not unmarshal: %v", err)
+	}
+	return res
+}
+
+// mcpRefFanOutSchema is a tool schema whose output charge is well above its
+// raw size: 8 properties each $ref one string with a 7,400-byte description,
+// padded with a non-allowlisted root key that costs raw bytes but no charge.
+func mcpRefFanOutSchema() json.RawMessage {
+	props := []string{}
+	for i := 0; i < 8; i++ {
+		props = append(props, fmt.Sprintf(`"p%d":{"$ref":"#/$defs/T"}`, i))
+	}
+	return json.RawMessage(`{"type":"object","x-pad":"` + strings.Repeat("p", 27600) +
+		`","$defs":{"T":{"type":"string","description":"` + strings.Repeat("d", 7400) +
+		`"}},"properties":{` + strings.Join(props, ",") + `}}`)
+}
+
+// Test_mcpRefFanOutSchema_Sizes pins the premise of the output budget row in
+// Test_resolveMcpOnly: five of these schemas fit the raw schemaBudget with
+// bytes to spare, each fits the per-tool output cap, and exactly four fit
+// the per-resolution output budget.
+func Test_mcpRefFanOutSchema_Sizes(t *testing.T) {
+	raw := mcpRefFanOutSchema()
+	if 5*len(raw) >= mcpToolSchemaBudgetBytes {
+		t.Errorf("Wrong match. five schemas are %d raw bytes, must stay under the %d schemaBudget", 5*len(raw), mcpToolSchemaBudgetBytes)
+	}
+
+	var params map[string]any
+	if err := json.Unmarshal(raw, &params); err != nil {
+		t.Fatalf("could not decode: %v", err)
+	}
+	_, rep := mcpschema.Normalize(params, mcpMaxToolSchemaBytes)
+	if rep.ToolDropped {
+		t.Fatalf("Wrong match. the schema must fit the per-tool cap, got %+v", rep)
+	}
+	if rep.OutBytes < 2*len(raw)*3/4 {
+		t.Errorf("Wrong match. charge %d must be well above the raw size %d", rep.OutBytes, len(raw))
+	}
+	if 4*rep.OutBytes > mcpToolSchemaBudgetBytes || 5*rep.OutBytes <= mcpToolSchemaBudgetBytes {
+		t.Errorf("Wrong match. charge %d must fit four times, not five, in %d", rep.OutBytes, mcpToolSchemaBudgetBytes)
+	}
+}
+
+// Test_resolveMcpOnly_SchemaNormalizationLogs pins the design section 15.4
+// log lines: one WARN per dropped tool, one WARN per kept tool that lost
+// optional properties, and nothing at WARN for routine key stripping.
+func Test_resolveMcpOnly_SchemaNormalizationLogs(t *testing.T) {
+	hook := logtest.NewGlobal()
+	defer hook.Reset()
+	prevLevel := logrus.GetLevel()
+	logrus.SetLevel(logrus.DebugLevel)
+	defer logrus.SetLevel(prevLevel)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+	serverID := uuid.FromStringOrNil("e5e5e5e5-1111-4000-8000-000000000015")
+	srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+		Identity: commonidentityFor(serverID),
+		Status:   mcpserver.StatusActive,
+	}, nil)
+	tl.EXPECT().ListTools(gomock.Any(), serverID).Return([]mcptoolhandler.McpTool{
+		{Name: "dropped", InputSchema: json.RawMessage(`{"type":"object","properties":{"v":{"type":"array"}},"required":["v"]}`)},
+		{Name: "trimmed", InputSchema: json.RawMessage(`{"type":"object","properties":{"a":{},"b":{},"c":{},"d":{},"k":{"type":"string"}}}`)},
+		{Name: "stripped", InputSchema: json.RawMessage(`{"type":"object","title":"S","properties":{"o":{"type":"string","x-mcp-header":"o"}}}`)},
+	}, nil)
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	if _, _, err := h.resolveMcpOnly(context.Background(), &ai.AI{
+		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+		McpServerIDs: []uuid.UUID{serverID},
+	}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	warns := []string{}
+	debugs := []string{}
+	for _, e := range hook.AllEntries() {
+		if e.Data["func"] != "resolveMcpOnly" {
+			continue
+		}
+		switch e.Level {
+		case logrus.WarnLevel:
+			warns = append(warns, e.Message)
+			if e.Data["mcp_server_id"] != serverID || e.Data["tool_name"] == nil {
+				t.Errorf("Wrong match. WARN must carry mcp_server_id and tool_name fields, got %v", e.Data)
+			}
+		case logrus.DebugLevel:
+			debugs = append(debugs, e.Message)
+		}
+	}
+
+	wantWarns := []string{
+		"Dropped an mcp tool whose input schema cannot be made provider-safe. mcp_server_id: e5e5e5e5-1111-4000-8000-000000000015, tool_name: mcp_e5e5e5e5_dropped, reason: array_without_items, path: /properties/v",
+		`Removed optional parameters an mcp tool's input schema cannot express provider-safely. mcp_server_id: e5e5e5e5-1111-4000-8000-000000000015, tool_name: mcp_e5e5e5e5_trimmed, dropped_properties: 4, first: "/properties/a", "/properties/b", "/properties/c"`,
+	}
+	if !reflect.DeepEqual(warns, wantWarns) {
+		t.Errorf("Wrong match.\nexpect: %q\ngot: %q", wantWarns, warns)
+	}
+	if len(debugs) != 1 || !strings.Contains(debugs[0], "dropped_keys: 2") {
+		t.Errorf("Wrong match. expect one DEBUG totals line with dropped_keys: 2, got %q", debugs)
+	}
+}
+
+// Test_resolveMcpOnly_NilHandlers pins that resolveMcpOnly degrades gracefully
 // (returns only built-ins, never panics) when mcpServerHandler/mcptoolHandler
 // are nil -- the state every test-constructed aicallHandler that doesn't
 // explicitly wire MCP support is in, and the state cmd/ai-control's minimal
 // AIcallHandler construction is in today.
-func Test_resolveTools_NilHandlers(t *testing.T) {
+func Test_resolveMcpOnly_NilHandlers(t *testing.T) {
 	h := &aicallHandler{}
 
-	mergedTools, toolMap, err := h.resolveTools(context.Background(), &ai.AI{
+	mergedTools, toolMap, err := h.resolveMcpOnly(context.Background(), &ai.AI{
 		McpServerIDs: []uuid.UUID{uuid.Must(uuid.NewV4())},
 	})
 	if err != nil {
@@ -333,7 +586,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 					Identity: commonidentityFor(serverID),
 					Status:   mcpserver.StatusActive,
 				}, nil)
-				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("3 tickets found", nil)
+				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("3 tickets found", false, nil)
 			},
 			wantResult:      "success",
 			wantCallToolHit: true,
@@ -351,7 +604,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 					Identity: commonidentityFor(serverID),
 					Status:   mcpserver.StatusActive,
 				}, nil)
-				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("ok", nil)
+				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("ok", false, nil)
 			},
 			wantResult:      "success",
 			wantCallToolHit: true,
@@ -483,11 +736,34 @@ func Test_toolHandleMcpCall(t *testing.T) {
 					Status:   mcpserver.StatusActive,
 				}, nil)
 				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).
-					Return("", errorWithSecret())
+					Return("", false, errorWithSecret())
 			},
 			wantResult:      "failed",
 			wantCallToolHit: true,
 			wantMessage:     "MCP tool call failed",
+		},
+		{
+			// B24: a remote tool that returns isError:true must never be
+			// labeled a success -- CallTool's second return, IsError, was
+			// never read before this. The 200-char cap already used for
+			// transport errors applies here too.
+			name:     "fail closed: isError:true result is never labeled a success (B24)",
+			aicall:   baseAIcall(goValueToolMap),
+			toolName: namespacedName,
+			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				aiH.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{
+					Identity:     commonidentityFor(aiID),
+					McpServerIDs: []uuid.UUID{serverID},
+				}, nil)
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).
+					Return("remote tool reported: order not found", true, nil)
+			},
+			wantResult:      "failed",
+			wantCallToolHit: true,
 		},
 		{
 			name:     "fail closed: resolveAI failure produces a generic failure, not the raw AIHandler error",
@@ -567,7 +843,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 
 // Test_lookupMcpToolRef_decodeMcpToolRef pins the two Metadata shapes
 // lookupMcpToolRef/decodeMcpToolRef must handle: the in-process Go value
-// written by resolveTools' callers, and the map[string]any shape Metadata
+// written by resolveMcpOnly's callers, and the map[string]any shape Metadata
 // arrives in after a JSON round trip (e.g. read back from the DB). Malformed
 // entries of the JSON shape must miss (fail closed), never panic.
 func Test_lookupMcpToolRef_decodeMcpToolRef(t *testing.T) {
@@ -769,7 +1045,7 @@ func Test_toolHandleMcpCall_team(t *testing.T) {
 					Identity: commonidentity.Identity{ID: curOnlyServerID, CustomerID: customerID},
 					Status:   mcpserver.StatusActive,
 				}, nil)
-				tl.EXPECT().CallTool(gomock.Any(), curOnlyServerID, "search_tickets", gomock.Any()).Return("ok", nil)
+				tl.EXPECT().CallTool(gomock.Any(), curOnlyServerID, "search_tickets", gomock.Any()).Return("ok", false, nil)
 			},
 			wantResult: "success",
 		},
@@ -798,7 +1074,7 @@ func Test_toolHandleMcpCall_team(t *testing.T) {
 					Identity: commonidentity.Identity{ID: startOnlyServerID, CustomerID: customerID},
 					Status:   mcpserver.StatusActive,
 				}, nil)
-				tl.EXPECT().CallTool(gomock.Any(), startOnlyServerID, "search_tickets", gomock.Any()).Return("ok", nil)
+				tl.EXPECT().CallTool(gomock.Any(), startOnlyServerID, "search_tickets", gomock.Any()).Return("ok", false, nil)
 			},
 			wantResult: "success",
 		},
@@ -1000,7 +1276,7 @@ func Test_resolveMcpToolMap_Bounds(t *testing.T) {
 // Test_resolveTools_SchemaLimits pins that a tool whose schema is too large
 // is dropped while the server's other tools are kept, and that the total
 // decoded across a resolution is bounded.
-func Test_resolveTools_SchemaLimits(t *testing.T) {
+func Test_resolveMcpOnly_SchemaLimits(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1026,7 +1302,7 @@ func Test_resolveTools_SchemaLimits(t *testing.T) {
 	tl.EXPECT().ListTools(gomock.Any(), serverID).Return(tools, nil)
 
 	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
-	merged, toolMap, err := h.resolveTools(context.Background(), &ai.AI{
+	merged, toolMap, err := h.resolveMcpOnly(context.Background(), &ai.AI{
 		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
 		McpServerIDs: []uuid.UUID{serverID},
 	})
@@ -1059,6 +1335,100 @@ func Test_resolveTools_SchemaLimits(t *testing.T) {
 // Test_discoverMcpTools_SlotsBoundConcurrency pins that at most
 // cap(mcpDiscoverySlots) tools/list requests run at once in the process,
 // however many session starts resolve at the same time.
+// Test_discoverMcpTools_InsightGate pins B10's residual gate: discovery must
+// never even attempt to list a whitelisted server's tools for an Insight AI,
+// closing the last hole after PR B1's write-gate (a pre-B1 or exempted
+// Insight AI could otherwise still trigger live discovery, though not
+// advertisement, via writeInsightSessionMetadata's unconditional
+// resolveMcpToolMap call).
+func Test_discoverMcpTools_InsightGate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	// No EXPECT() calls set on either mock: if discoverMcpTools reaches
+	// mcpServerHandler.Get or mcptoolHandler.ListTools for an Insight AI,
+	// gomock fails this test on the unexpected call.
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	a := &ai.AI{
+		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+		Type:         ai.TypeInsight,
+		McpServerIDs: []uuid.UUID{uuid.Must(uuid.NewV4())},
+	}
+
+	got := h.discoverMcpTools(context.Background(), a, true)
+	if len(got) != 0 {
+		t.Errorf("expected no discovered tools for an insight AI, got: %v", got)
+	}
+}
+
+// Test_resolveMcpOnly_SessionStartBudget is the regression test for review
+// round 1's §2.3a Critical finding.
+//
+// resolveMcpOnly's discoverMcpTools loop had no aggregate timeout of its own:
+// mcpDiscoverySlotWait (2s) only bounds time spent waiting for a free
+// discovery slot, and mcp_tool_call_timeout_seconds bounds one server's
+// transport round-trip in isolation, not the whole loop across up to
+// ai.MaxMcpServerIDs (8) servers. A slow/hanging server that never returns
+// (and is not itself killed by a per-call timeout, simulating a
+// misconfigured or malicious remote that ignores the request but never
+// closes the connection) must not be allowed to block resolveMcpOnly beyond
+// mcpSessionStartDiscoveryBudgetSeconds.
+func Test_resolveMcpOnly_SessionStartBudget(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	oldBudget := mcpSessionStartDiscoveryBudget
+	mcpSessionStartDiscoveryBudget = 50 * time.Millisecond
+	defer func() { mcpSessionStartDiscoveryBudget = oldBudget }()
+
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	serverID := uuid.FromStringOrNil("aaaaaaaa-2222-4000-8000-000000000001")
+	srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+		Identity: commonidentityFor(serverID),
+		Status:   mcpserver.StatusActive,
+	}, nil).AnyTimes()
+
+	// ListTools never returns on its own; it only unblocks when the ctx
+	// passed to it is cancelled. Without a session-start budget wrapping
+	// the loop, this would hang resolveMcpOnly indefinitely (or until
+	// whatever mcp_tool_call_timeout_seconds is, which is not this
+	// function's context to set up).
+	tl.EXPECT().ListTools(gomock.Any(), serverID).DoAndReturn(
+		func(ctx context.Context, _ uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+			<-ctx.Done()
+			return nil, ctx.Err()
+		},
+	).AnyTimes()
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	a := &ai.AI{
+		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+		McpServerIDs: []uuid.UUID{serverID},
+	}
+
+	done := make(chan struct{})
+	start := time.Now()
+	go func() {
+		_, _, _ = h.resolveMcpOnly(context.Background(), a)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		elapsed := time.Since(start)
+		if elapsed > 2*time.Second {
+			t.Errorf("resolveMcpOnly took %v, expected it to return within the session-start discovery budget", elapsed)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("resolveMcpOnly did not return within 2s; the session-start discovery budget is not being enforced")
+	}
+}
+
 func Test_discoverMcpTools_SlotsBoundConcurrency(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

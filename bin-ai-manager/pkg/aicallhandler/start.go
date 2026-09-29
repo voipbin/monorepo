@@ -1181,7 +1181,17 @@ func (h *aicallHandler) startAIcallByMessaging(
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
 	snapshots, autoAudit := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
-	mcpToolMap := h.resolveMcpToolMap(ctx, a)
+	// B11: a team AIcall's per-member tools are resolved elsewhere
+	// (resolveActiveAIForMcp/resolveTeamForPython), never here -- `a` for a
+	// team-typed start is only the START member's AI, so writing its map
+	// under a team-typed AIcall would resolve the wrong member's whitelist.
+	// resolveMcpToolMap/discoverMcpTools have no assistanceType of their own
+	// to gate on (they take *ai.AI, not the AIcall), so the gate belongs at
+	// this call site.
+	mcpToolMap := map[string]aicall.McpToolRef{}
+	if assistanceType != aicall.AssistanceTypeTeam {
+		mcpToolMap = h.resolveMcpToolMap(ctx, a)
+	}
 	metadata := map[string]any{
 		aicall.MetaKeyPromptSnapshots:  snapshots,
 		aicall.MetaKeyAutoAuditEnabled: autoAudit,

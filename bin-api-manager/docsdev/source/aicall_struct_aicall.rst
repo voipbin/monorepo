@@ -65,6 +65,14 @@ AIcall
     at call start. Zero UUID if no history entry exists yet.
   * ``prompt`` (string): Final variable-substituted ``init_prompt`` as sent to the LLM.
   * ``member_id`` (string/UUID): Team member UUID for team calls; zero UUID for single-AI calls.
+
+  When this AI call's AI has one or more whitelisted MCP (Model Context Protocol) servers whose
+  tools were resolved for it, ``metadata`` also carries an ``mcp_tool_status`` key summarizing
+  that resolution: ``{"servers": <int>, "tools": <int>}``, the distinct server count and total
+  tool count. Server IDs, remote tool names, and input schemas are never included here -- see
+  :ref:`MCP Server <mcpserver-struct-mcpserver-status>` for what tool discovery stores and
+  retains. The key is absent entirely when no MCP tools were resolved (Insight AIs, team AI
+  calls, or an AI with no usable whitelisted server).
 * ``tm_end`` (string, ISO 8601): Timestamp when the AI call ended.
 * ``tm_create`` (string, ISO 8601): Timestamp when this AI call was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to this AI call.

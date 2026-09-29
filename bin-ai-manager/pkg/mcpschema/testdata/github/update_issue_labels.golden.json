@@ -1,0 +1,71 @@
+{
+  "schema": {
+    "properties": {
+      "issue_number": {
+        "description": "The issue number to update",
+        "minimum": 1,
+        "type": "number"
+      },
+      "labels": {
+        "description": "Labels to apply to this issue.",
+        "items": {
+          "anyOf": [
+            {
+              "description": "Label name",
+              "type": "string"
+            },
+            {
+              "properties": {
+                "confidence": {
+                  "description": "How confident you are in this choice. Use 'HIGH' for clear signal or explicit user request, 'MEDIUM' for reasonable inference with some ambiguity, 'LOW' for best guess with limited signal.",
+                  "enum": [
+                    "LOW",
+                    "MEDIUM",
+                    "HIGH"
+                  ],
+                  "type": "string"
+                },
+                "is_suggestion": {
+                  "description": "If true, this label is sent to the API as a suggestion (suggest:true) rather than an applied label. Whether the label is applied or recorded as a proposal is determined by the API.",
+                  "type": "boolean"
+                },
+                "name": {
+                  "description": "Label name",
+                  "type": "string"
+                },
+                "rationale": {
+                  "description": "One concise sentence explaining what specifically about the issue led you to choose this label. State the concrete signal (e.g. 'Reports a crash when saving' → bug).",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "type": "array"
+      },
+      "owner": {
+        "description": "Repository owner (username or organization)",
+        "type": "string"
+      },
+      "repo": {
+        "description": "Repository name",
+        "type": "string"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "issue_number",
+      "labels"
+    ],
+    "type": "object"
+  },
+  "report": {
+    "tool_dropped": false,
+    "dropped_props_n": 0
+  }
+}

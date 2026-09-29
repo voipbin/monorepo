@@ -105,6 +105,6 @@ var AllInsightToolNames = []ToolName{
 type Tool struct {
 	Name        ToolName       `json:"name"`
 	Description string         `json:"description"`
-	Parameters  map[string]any `json:"parameters"`
+	Parameters  map[string]any `json:"parameters,omitempty"`
 	RunLLM      bool           `json:"run_llm"`
 }

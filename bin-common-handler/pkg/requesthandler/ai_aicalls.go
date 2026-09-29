@@ -8,6 +8,7 @@ import (
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
+	amtool "monorepo/bin-ai-manager/models/tool"
 	cbrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
 
@@ -94,6 +95,28 @@ func (r *requestHandler) AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) 
 	}
 
 	return &res, nil
+}
+
+// AIV1AIcallToolList asks ai-manager for the given AIcall's MCP-derived
+// tools ONLY (design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md
+// §2.1, B12) -- never VoIPBin's built-in tool set. bin-pipecat-manager's
+// runner.go calls this to supplement its own built-in resolution
+// (toolHandler.GetByNames), so the two lists must never overlap.
+func (r *requestHandler) AIV1AIcallToolList(ctx context.Context, aicallID uuid.UUID) ([]amtool.Tool, error) {
+
+	uri := fmt.Sprintf("/v1/aicalls/%s/tools/mcp", aicallID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/aicalls/<aicall-id>/tools/mcp", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []amtool.Tool
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
 }
 
 // AIV1AIcallGetSkipCache sends a request to ai-manager to get the aicall,
