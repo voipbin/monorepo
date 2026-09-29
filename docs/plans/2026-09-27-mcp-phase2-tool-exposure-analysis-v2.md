@@ -1166,3 +1166,44 @@ customer conversation reaches an OAuth refresh through discovery. They must be
 closed before OAuth MCP servers are offered as a supported path, which makes them
 a gate on PR B2's activation rather than on PR B1.
 
+## A.28 PR B1 code review round 14: five planned items deferred to PR B2
+
+Round 14 of PR B1's code review found that section 6 places B10, B13, B19, B20 and B28 in
+PR B1 and that the branch implements none of them, with a deferral record for only part of
+B13 and D18. An implementation design for all five was drafted and taken through nine
+design-review rounds; it is kept as PR B2 input in
+`2026-09-29-mcp-pr-b2-deferred-items-design-draft.md`. The CEO then decided to **defer all
+five to PR B2**. Each item bounds or gates a path that no customer reaches today: on
+2026-09-28 no production AI had a non-empty `mcp_server_ids` (A.26), and nothing is
+presented to a model until PR B2, so none of them changes any customer's outcome in PR B1,
+while together they would roughly double PR B1's surface. PR B1 keeps what fixes code that
+runs today: the protocol client, the redirect and plain-http refusal, the bounded
+tool-list memory and discovery concurrency, and the OAuth refresh hardening. Section 6's
+PR B1 list, D16 and D18 are to be read with this deferral.
+
+What each deferral leaves, stated so it is not mistaken for closed:
+
+- **B28, whitelist cap and duplicates (D18).** `mcp_server_ids` stays uncapped and may
+  repeat an id, so one AI can still ask discovery to list many servers. PR B1 bounds that
+  only by the per-server timeout, the 128-per-server and 256-per-session tool caps, and the
+  two discovery slots (A.27).
+- **B13, the aggregate budget (D16).** A session start that discovers is still bounded only
+  by the per-server timeout times the number of servers (round 14 measured about 84 seconds
+  for eight servers). Discovery runs inside a start RPC with a 3-second caller timeout for
+  `POST /aicalls`, the service-agent aicall path and the flow `ai_task` action
+  (`requestTimeoutDefault`, `bin-common-handler/pkg/requesthandler/main.go:150`), so a slow
+  server can make those callers time out while ai-manager goes on to create the aicall, and
+  `POST /aicalls` then deletes its activeflow as orphaned
+  (`bin-api-manager/pkg/servicehandler/aicall.go:127-131`). That is also true on main. The
+  draft's analysis of this, and why D16's 6-second figure does not fit the paths that
+  discover, is the starting point for PR B2.
+- **B19, refresh on a rejected OAuth token (A.11).** A vendor-revoked access token still
+  yields a failed listing until the stored expiry triggers a refresh, and a token with no
+  expiry is never refreshed. The draft narrows A.11's trigger to 401, not 403, on the
+  vendor's own host, and bounds forced refreshes durably by row age.
+- **B10, the Insight gate (D7, D19).** Insight AIs can still be given a whitelist, and
+  `writeInsightSessionMetadata` still performs discovery for them, as the public docs say.
+- **B20, single-flight.** Concurrent starts of one AI each list its servers.
+
+Each item remains a gate on PR B2's activation, together with A.27's. The public caveat
+already says MCP tool use is not available, so nothing here is promised to customers.

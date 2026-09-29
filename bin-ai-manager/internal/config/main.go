@@ -81,7 +81,7 @@ type Config struct {
 	// Customer-Configured MCP Tool Integration (docs/plans/
 	// 2026-09-11-mcp-tool-integration-design.md §6, §13).
 	McpSecretEncryptionKeys   string // Comma-separated "<version>:<base64-32-byte-key>" pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows.
-	McpToolCallTimeoutSeconds int    // Bounded HTTP timeout for tools/call.
+	McpToolCallTimeoutSeconds int    // Bounds one whole MCP call (tools/list or tools/call): its handshake, the method, one re-initialisation, and the session close.
 
 	// MCP server OAuth 2.1 support (docs/plans/
 	// 2026-09-12-mcp-server-oauth-support-design.md §6). VoIPBin-owned,
@@ -145,7 +145,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("analysis_max_input_bytes", 262144, "Max prompt+data bytes accepted by the analysis gateway")
 	f.Int("analysis_max_output_tokens", 16384, "Max output tokens for the analysis gateway (runaway guard)")
 	f.String("mcp_secret_encryption_keys", "", "Comma-separated <version>:<base64-32-byte-key> pairs for MCP server secret envelope encryption")
-	f.Int("mcp_tool_call_timeout_seconds", 10, "Bounded HTTP timeout (seconds) for an MCP tools/call request")
+	f.Int("mcp_tool_call_timeout_seconds", 10, "Timeout (seconds) for one whole MCP tools/list or tools/call, including its session handshake and close")
 	f.String("mcp_oauth_github_client_id", "", "GitHub OAuth App client_id for MCP server OAuth (design doc 2026-09-12-mcp-server-oauth-support)")
 	f.String("mcp_oauth_github_client_secret", "", "GitHub OAuth App client_secret for MCP server OAuth")
 	f.String("mcp_oauth_linear_client_id", "", "Linear OAuth application client_id for MCP server OAuth")
