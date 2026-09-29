@@ -254,6 +254,20 @@ func Test_EventPMPipelineError_foreignPipecatcall(t *testing.T) {
 			expectCreate:       false,
 		},
 		{
+			name:               "same category near the window edge is skipped",
+			freshPipecatcallID: testPEOtherPipecallID,
+			expectList:         true,
+			listRes:            []*message.Message{noticeRow(t, pmmessage.ErrorCategoryAuthentication, now.Add(-9*time.Minute))},
+			expectCreate:       false,
+		},
+		{
+			name:               "row without tm_create is ignored",
+			freshPipecatcallID: testPEOtherPipecallID,
+			expectList:         true,
+			listRes:            []*message.Message{{Role: message.RoleNotification, Content: `{"type":"pipeline_error","category":"authentication"}`}},
+			expectCreate:       true,
+		},
+		{
 			name:               "same category outside window creates",
 			freshPipecatcallID: testPEOtherPipecallID,
 			expectList:         true,
@@ -323,7 +337,7 @@ func Test_EventPMPipelineError_foreignPipecatcall(t *testing.T) {
 				if tt.listErr == nil {
 					m.util.EXPECT().TimeNow().Return(&now)
 				}
-				m.db.EXPECT().MessageList(gomock.Any(), uint64(pipelineErrorNoticeScanSize), "", map[message.Field]any{
+				m.db.EXPECT().MessageList(gomock.Any(), uint64(50), "", map[message.Field]any{
 					message.FieldAIcallID: testPEAicallID,
 					message.FieldRole:     message.RoleNotification,
 					message.FieldDeleted:  false,
@@ -344,6 +358,89 @@ func Test_EventPMPipelineError_foreignPipecatcall(t *testing.T) {
 			}
 
 			m.h.EventPMPipelineError(context.Background(), newPipelineErrorEvent(pmmessage.ErrorCategoryAuthentication))
+		})
+	}
+}
+
+func Test_EventPMPipelineError_nilRequestHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newPipelineErrorTestMocks(mc)
+
+	// untyped nil on the interface field: the aicall lookup is skipped entirely (no m.req
+	// expectations are set, so any call to it fails the test).
+	m.h.reqHandler = nil
+	created := m.expectCreate(t)
+
+	m.h.EventPMPipelineError(context.Background(), newPipelineErrorEvent(pmmessage.ErrorCategoryAuthentication))
+
+	if created.ActiveAIID != uuid.Nil {
+		t.Errorf("Wrong active ai id. expect: nil, got: %s", created.ActiveAIID)
+	}
+	if created.PipecatcallID != testPEPipecatcallID {
+		t.Errorf("Wrong pipecatcall id. expect: %s, got: %s", testPEPipecatcallID, created.PipecatcallID)
+	}
+}
+
+func Test_EventPMPipelineError_unrecognizedCategory(t *testing.T) {
+	tests := []struct {
+		name     string
+		category pmmessage.ErrorCategory
+	}{
+		{name: "empty", category: ""},
+		{name: "platform side category", category: pmmessage.ErrorCategoryFunctionCall},
+		{name: "future category", category: "quota_billing"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			m := newPipelineErrorTestMocks(mc)
+
+			m.req.EXPECT().AIV1AIcallGet(gomock.Any(), testPEAicallID).Return(newPipelineErrorAIcall(testPEPipecatcallID), nil)
+			created := m.expectCreate(t)
+
+			m.h.EventPMPipelineError(context.Background(), newPipelineErrorEvent(tt.category))
+
+			expect := `{"type":"pipeline_error","category":"unknown","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"An AI service provider returned an error."}`
+			if created.Content != expect {
+				t.Errorf("Wrong match.\nexpect: %s\ngot:    %s", expect, created.Content)
+			}
+		})
+	}
+}
+
+// An unrecognized category from a foreign pipecatcall must dedup against an existing unknown
+// notice: the dedup key uses the normalised category too (VOIP-1543 D1).
+func Test_EventPMPipelineError_unrecognizedCategoryDedup(t *testing.T) {
+	now := time.Date(2026, 9, 29, 8, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name     string
+		category pmmessage.ErrorCategory
+	}{
+		{name: "empty", category: ""},
+		{name: "platform side category", category: pmmessage.ErrorCategoryFunctionCall},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			m := newPipelineErrorTestMocks(mc)
+
+			m.req.EXPECT().AIV1AIcallGet(gomock.Any(), testPEAicallID).Return(newPipelineErrorAIcall(testPEOtherPipecallID), nil)
+			m.req.EXPECT().AIV1AIcallGetSkipCache(gomock.Any(), testPEAicallID).Return(newPipelineErrorAIcall(testPEOtherPipecallID), nil)
+			m.util.EXPECT().TimeNow().Return(&now)
+			m.db.EXPECT().MessageList(gomock.Any(), uint64(50), "", map[message.Field]any{
+				message.FieldAIcallID: testPEAicallID,
+				message.FieldRole:     message.RoleNotification,
+				message.FieldDeleted:  false,
+			}).Return([]*message.Message{noticeRow(t, pmmessage.ErrorCategoryUnknown, now.Add(-1*time.Minute))}, nil)
+			m.expectNoCreate()
+
+			m.h.EventPMPipelineError(context.Background(), newPipelineErrorEvent(tt.category))
 		})
 	}
 }

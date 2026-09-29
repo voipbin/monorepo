@@ -67,11 +67,14 @@ func (h *messageHandler) EventPMPipelineError(ctx context.Context, evt *pmmessag
 		return
 	}
 
-	text, ok := pipelineErrorNoticeText[evt.Category]
+	category := evt.Category
+	text, ok := pipelineErrorNoticeText[category]
 	if !ok {
 		// function_call / internal are never published by pipecat-manager; anything else unknown
-		// to this version is shown with the generic sentence.
-		text = pipelineErrorNoticeText[pmmessage.ErrorCategoryUnknown]
+		// to this version (including an empty category) is recorded as unknown, so the stored
+		// category always stays within the documented enum.
+		category = pmmessage.ErrorCategoryUnknown
+		text = pipelineErrorNoticeText[category]
 	}
 
 	activeAIID := uuid.Nil
@@ -82,7 +85,7 @@ func (h *messageHandler) EventPMPipelineError(ctx context.Context, evt *pmmessag
 		} else {
 			if h.isForeignPipecatcall(ac, evt.PipecatcallID) {
 				ac = h.confirmForeignPipecatcall(ctx, ac, evt.PipecatcallID)
-				if h.isForeignPipecatcall(ac, evt.PipecatcallID) && h.pipelineErrorNoticeRecent(ctx, ac.ID, evt.Category) {
+				if h.isForeignPipecatcall(ac, evt.PipecatcallID) && h.pipelineErrorNoticeRecent(ctx, ac.ID, category) {
 					log.Debugf("Skipping a repeated pipeline error notice from a foreign pipecatcall within the window.")
 					return
 				}
@@ -93,7 +96,7 @@ func (h *messageHandler) EventPMPipelineError(ctx context.Context, evt *pmmessag
 
 	notice := PipelineErrorNotice{
 		Type:          NotificationTypePipelineError,
-		Category:      evt.Category,
+		Category:      category,
 		Fatal:         evt.Fatal,
 		PipecatcallID: evt.PipecatcallID,
 		Message:       text,
