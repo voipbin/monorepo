@@ -121,7 +121,7 @@ A message with ``role`` ``notification`` records a session event rather than con
 * ``pipecatcall_id`` (UUID): Internal identifier of the AI processing turn that failed. Useful when contacting support.
 * ``message`` (string): A plain-text, human-readable description of the failure class. It does not contain the provider's raw error text.
 
-Each failing turn produces at most one ``pipeline_error`` message per category. For a voice call, the notice is recorded on the AI call only; the caller does not hear it.
+Each failing turn normally produces at most one ``pipeline_error`` message per category; in rare cases (event redelivery) a notice can be duplicated. For a voice call, the notice is recorded on the AI call only; the caller does not hear it.
 
 Example
 -------

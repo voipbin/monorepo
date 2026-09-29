@@ -14,6 +14,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus/testutil"
+	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -231,11 +233,19 @@ func Test_receiveMessageFrameTypeMessage_error_notNotified(t *testing.T) {
 
 			mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
+			category := string(classifyPipelineError(tt.text))
+			before := testutil.ToFloat64(metricsPipelineErrorTotal.WithLabelValues(category, "false"))
+
 			if err := h.receiveMessageFrameTypeMessage(se, errorFrame(tt.text, false)); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			// give any (unexpected) publish goroutine a chance to run before the controller checks
 			time.Sleep(20 * time.Millisecond)
+
+			// a non-notified error is still counted
+			if diff := testutil.ToFloat64(metricsPipelineErrorTotal.WithLabelValues(category, "false")) - before; diff != 1 {
+				t.Errorf("Wrong metric delta. category: %s, expect: 1, got: %v", category, diff)
+			}
 		})
 	}
 }
@@ -292,5 +302,49 @@ func Test_receiveMessageFrameTypeMessage_errorResponse(t *testing.T) {
 	}
 	if diff := testutil.ToFloat64(metricsRTVIErrorResponseTotal) - before; diff != 1 {
 		t.Errorf("Wrong metric delta. expect: 1, got: %v", diff)
+	}
+}
+
+// The first error frame of a category in a session is logged at WARN, repeats at DEBUG, and a new
+// category is WARN again. This applies to non-notified categories too (VOIP-1542 design §3.1): a
+// service that re-pushes the same error every second must not flood WARN.
+func Test_runnerHandlePipelineError_warnOncePerCategory(t *testing.T) {
+	hook := logrustest.NewGlobal()
+	defer hook.Reset()
+
+	origLevel := logrus.GetLevel()
+	logrus.SetLevel(logrus.DebugLevel)
+	defer logrus.SetLevel(origLevel)
+
+	h := pipecatcallHandler{}
+	se := newPipelineErrorTestSession(true) // voice session: unknown/function_call are not published
+
+	frames := []struct {
+		text      string
+		expectLvl logrus.Level
+	}{
+		{"Unknown error occurred: 409 Stream timed out after receiving no more client requests.", logrus.WarnLevel},
+		{"Unknown error occurred: 409 Stream timed out after receiving no more client requests.", logrus.DebugLevel},
+		{"Unknown error occurred: 500 Internal Server Error.", logrus.DebugLevel}, // same category (unknown)
+		{"Error executing function call [send_email]: boom", logrus.WarnLevel},
+		{"Error executing function call [send_email]: boom", logrus.DebugLevel},
+	}
+
+	for i, f := range frames {
+		hook.Reset()
+		h.runnerHandlePipelineError(se, f.text, false)
+
+		var got []*logrus.Entry
+		for _, e := range hook.AllEntries() {
+			if e.Data["func"] == "runnerHandlePipelineError" {
+				got = append(got, e)
+			}
+		}
+		if len(got) != 1 {
+			t.Fatalf("frame %d: expected exactly one log entry, got %d", i, len(got))
+		}
+		if got[0].Level != f.expectLvl {
+			t.Errorf("frame %d: wrong log level. expect: %s, got: %s", i, f.expectLvl, got[0].Level)
+		}
 	}
 }

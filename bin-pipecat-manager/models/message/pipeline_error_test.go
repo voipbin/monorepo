@@ -14,7 +14,7 @@ import (
 // the routing key would degrade to the `-` placeholder.
 var _ eventtopic.SubscriptionIdentifier = (*PipelineErrorEvent)(nil)
 
-func TestPipelineErrorEvent_JSON(t *testing.T) {
+func Test_PipelineErrorEvent_JSON(t *testing.T) {
 	evt := &PipelineErrorEvent{
 		CustomerID:               uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000000"),
 		PipecatcallID:            uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001"),
@@ -44,14 +44,14 @@ func TestPipelineErrorEvent_JSON(t *testing.T) {
 	}
 }
 
-func TestPipelineErrorEvent_EventSubscriptionID(t *testing.T) {
+func Test_PipelineErrorEvent_EventSubscriptionID(t *testing.T) {
 	evt := &PipelineErrorEvent{PipecatcallID: uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001")}
 	if res := evt.EventSubscriptionID(); res != "aaaaaaaa-0000-0000-0000-000000000001" {
 		t.Errorf("Wrong match. expect: pipecatcall id, got: %s", res)
 	}
 }
 
-func TestErrorCategories(t *testing.T) {
+func Test_ErrorCategories(t *testing.T) {
 	tests := map[ErrorCategory]string{
 		ErrorCategoryAuthentication: "authentication",
 		ErrorCategoryRateLimited:    "rate_limited",

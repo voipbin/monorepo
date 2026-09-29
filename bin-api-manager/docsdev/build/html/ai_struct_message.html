@@ -795,7 +795,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">pipecatcall_id</span></code> (UUID): Internal identifier of the AI processing turn that failed. Useful when contacting support.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (string): A plain-text, human-readable description of the failure class. It does not contain the provider’s raw error text.</p></li>
 </ul>
-<p>Each failing turn produces at most one <code class="docutils literal notranslate"><span class="pre">pipeline_error</span></code> message per category. For a voice call, the notice is recorded on the AI call only; the caller does not hear it.</p>
+<p>Each failing turn normally produces at most one <code class="docutils literal notranslate"><span class="pre">pipeline_error</span></code> message per category; in rare cases (event redelivery) a notice can be duplicated. For a voice call, the notice is recorded on the AI call only; the caller does not hear it.</p>
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>

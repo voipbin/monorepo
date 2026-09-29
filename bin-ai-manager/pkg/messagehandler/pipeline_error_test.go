@@ -59,12 +59,12 @@ type pipelineErrorTestMocks struct {
 	h      *messageHandler
 }
 
-func newPipelineErrorTestMocks(ctrl *gomock.Controller) *pipelineErrorTestMocks {
+func newPipelineErrorTestMocks(mc *gomock.Controller) *pipelineErrorTestMocks {
 	m := &pipelineErrorTestMocks{
-		db:     dbhandler.NewMockDBHandler(ctrl),
-		req:    requesthandler.NewMockRequestHandler(ctrl),
-		util:   utilhandler.NewMockUtilHandler(ctrl),
-		notify: notifyhandler.NewMockNotifyHandler(ctrl),
+		db:     dbhandler.NewMockDBHandler(mc),
+		req:    requesthandler.NewMockRequestHandler(mc),
+		util:   utilhandler.NewMockUtilHandler(mc),
+		notify: notifyhandler.NewMockNotifyHandler(mc),
 	}
 	m.h = &messageHandler{
 		db:            m.db,
@@ -139,9 +139,9 @@ func Test_EventPMPipelineError_currentPipecatcall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			m := newPipelineErrorTestMocks(ctrl)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			m := newPipelineErrorTestMocks(mc)
 
 			evt := newPipelineErrorEvent(tt.category)
 			evt.Fatal = tt.fatal
@@ -176,9 +176,9 @@ func Test_EventPMPipelineError_currentPipecatcall(t *testing.T) {
 func Test_EventPMPipelineError_currentPipecatcallNotWindowed(t *testing.T) {
 	// A current-pipecatcall event is never windowed, even when a same-category notice was just
 	// created (the operator retrying after editing the key must see whether it failed again).
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	m := newPipelineErrorTestMocks(ctrl)
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newPipelineErrorTestMocks(mc)
 
 	m.req.EXPECT().AIV1AIcallGet(gomock.Any(), testPEAicallID).Return(newPipelineErrorAIcall(testPEPipecatcallID), nil)
 	m.db.EXPECT().MessageList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
@@ -188,9 +188,9 @@ func Test_EventPMPipelineError_currentPipecatcallNotWindowed(t *testing.T) {
 }
 
 func Test_EventPMPipelineError_nonAIcall(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	m := newPipelineErrorTestMocks(ctrl)
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newPipelineErrorTestMocks(mc)
 
 	evt := newPipelineErrorEvent(pmmessage.ErrorCategoryAuthentication)
 	evt.PipecatcallReferenceType = pmpipecatcall.ReferenceTypeCall
@@ -202,9 +202,9 @@ func Test_EventPMPipelineError_nonAIcall(t *testing.T) {
 }
 
 func Test_EventPMPipelineError_aicallGetFails(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	m := newPipelineErrorTestMocks(ctrl)
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newPipelineErrorTestMocks(mc)
 
 	m.req.EXPECT().AIV1AIcallGet(gomock.Any(), testPEAicallID).Return(nil, errors.New("boom"))
 	m.db.EXPECT().MessageList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
@@ -218,9 +218,9 @@ func Test_EventPMPipelineError_aicallGetFails(t *testing.T) {
 }
 
 func Test_EventPMPipelineError_createFails(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	m := newPipelineErrorTestMocks(ctrl)
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newPipelineErrorTestMocks(mc)
 
 	m.req.EXPECT().AIV1AIcallGet(gomock.Any(), testPEAicallID).Return(newPipelineErrorAIcall(testPEPipecatcallID), nil)
 	m.util.EXPECT().UUIDCreate().Return(testPEMessageID)
@@ -307,9 +307,9 @@ func Test_EventPMPipelineError_foreignPipecatcall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			m := newPipelineErrorTestMocks(ctrl)
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			m := newPipelineErrorTestMocks(mc)
 
 			// cached row says a different pipecatcall is current -> foreign
 			m.req.EXPECT().AIV1AIcallGet(gomock.Any(), testPEAicallID).Return(newPipelineErrorAIcall(testPEOtherPipecallID), nil)

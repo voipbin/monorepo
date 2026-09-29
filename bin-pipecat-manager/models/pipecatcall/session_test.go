@@ -51,7 +51,7 @@ func TestSession_PendingInReplyToMessageID_concurrentAccess(t *testing.T) {
 	<-done
 }
 
-func TestSession_MarkPipelineErrorSeen(t *testing.T) {
+func Test_Session_MarkPipelineErrorSeen(t *testing.T) {
 	s := &Session{} // zero value must not panic (lazy map)
 
 	if !s.MarkPipelineErrorSeen("authentication") {
@@ -65,7 +65,7 @@ func TestSession_MarkPipelineErrorSeen(t *testing.T) {
 	}
 }
 
-func TestSession_MarkPipelineErrorSeen_concurrent(t *testing.T) {
+func Test_Session_MarkPipelineErrorSeen_concurrent(t *testing.T) {
 	s := &Session{}
 	const n = 50
 	results := make(chan bool, n)

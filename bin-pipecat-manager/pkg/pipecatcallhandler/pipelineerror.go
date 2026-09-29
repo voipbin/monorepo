@@ -122,12 +122,12 @@ func containsAny(s string, subs []string) bool {
 	return false
 }
 
-// truncateForLog shortens s to at most max bytes for logging, on a rune boundary.
-func truncateForLog(s string, max int) string {
-	if len(s) <= max {
+// truncateForLog shortens s to at most maxLen bytes for logging, on a rune boundary.
+func truncateForLog(s string, maxLen int) string {
+	if len(s) <= maxLen {
 		return s
 	}
-	cut := max
+	cut := maxLen
 	for cut > 0 && !isRuneStart(s[cut]) {
 		cut--
 	}

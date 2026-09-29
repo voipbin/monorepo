@@ -79,6 +79,8 @@ type Session struct {
 
 	// seenPipelineErrors is the set of pipeline-error categories already observed on this
 	// session. Access only through MarkPipelineErrorSeen. The map is created lazily.
+	// Keys are plain strings (message.ErrorCategory values) because models/message imports
+	// this package; taking message.ErrorCategory here would be an import cycle.
 	muPipelineErrors   sync.Mutex
 	seenPipelineErrors map[string]struct{}
 }

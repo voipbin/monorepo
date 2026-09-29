@@ -61,7 +61,6 @@ The runner's RTVIProcessor turns every pipeline `ErrorFrame` (LLM, STT, TTS, fun
 
 At most one event per (pipecatcall, category). The raw provider text is never put on the event (it can contain platform-internal detail when the platform key is used); it stays in the WARN log. RTVI `error-response` frames (the runner rejected a request pipecat-manager sent, e.g. `send-text`) are WARN-logged and counted in `pipecat_manager_rtvi_error_response_total`, never published.
 
-
 ## Pipecat Pipeline
 
 Python `run.py` constructs the pipeline:
