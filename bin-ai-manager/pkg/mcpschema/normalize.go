@@ -21,6 +21,10 @@ type normalizer struct {
 	defs map[string]map[string]any
 	// expansions counts $ref expansions for the whole tool.
 	expansions int
+	// lookExpansions counts the R7a look-ahead's $ref expansions for the
+	// whole tool. It has its own maxRefExpansions budget, so the look-ahead
+	// neither eats into the build's budget nor fans out without bound.
+	lookExpansions int
 
 	// maxOut is the per-tool output cap; nodes counts emitted subschemas.
 	// aborted is set once either limit is exceeded: the build stops and the
@@ -181,7 +185,7 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 	// {"format": ...} variants) says nothing the kept subset can express.
 	// It is removed, not evaluated, so it cannot make a usable subschema
 	// unusable.
-	if hasMembers && len(typ) > 0 && n.hasRefinementMember(members, path, depth, stack) {
+	if hasMembers && len(typ) > 0 && n.refines(members, path, depth, stack) {
 		n.rep.DroppedKeys++
 		members, hasMembers = nil, false
 	}
@@ -242,13 +246,22 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 	// constraint of its own, and every kept member has that same type (the
 	// documented-enum shape, oneOf of {const, description}), the members
 	// are emitted as the anyOf and the parent type is dropped; otherwise
-	// the anyOf is discarded and only the type is emitted.
+	// the anyOf is discarded and only the type is emitted. A leaf member of
+	// a scalar parent that names no type of its own takes the parent's
+	// type, as JSON Schema applies it, so {const: 1} under an integer is an
+	// integer member rather than an unusable typeless one. A member that
+	// adds nothing but a description (a non-string const is dropped) keeps
+	// the bare type, so values the kept subset cannot carry are not
+	// advertised as empty alternatives.
 	if hasMembers {
+		if scalarTypes[ts] {
+			members = n.inheritType(members, ts)
+		}
 		am, f := n.anyOf(members, path, depth, stack)
 		if f != nil {
 			return nil, f
 		}
-		if scalarTypes[ts] && !hasScalarConstraint(v) && allMembersOfType(am, ts) {
+		if scalarTypes[ts] && !hasScalarConstraint(v) && allMembersOfType(am, ts) && allMembersConstrained(am) {
 			delete(out, "type")
 			out["anyOf"] = am
 			return out, nil
@@ -634,13 +647,28 @@ func (n *normalizer) countDropped(v map[string]any) {
 	}
 }
 
-// hasRefinementMember reports whether any anyOf/oneOf member only adds
-// constraints to its parent (R7a). A member is judged after its own $ref and
-// single-member allOf are resolved, so a constraint-only member behind a
-// $ref or an allOf wrapper counts too; a member that is itself only a
-// combinator is a refinement when any of its own members is. A member that
-// cannot be resolved is not a refinement: it is left to the normal anyOf
-// evaluation, which removes it.
+// refines reports whether any anyOf/oneOf member only adds constraints to
+// its parent (R7a). It is a look-ahead: it leaves the report and the build's
+// $ref expansion count as they were, counts its own $ref expansions against
+// a separate per-tool budget of maxRefExpansions, and is charged as work
+// (R12). Once that budget is spent, a member behind a further $ref is not a
+// refinement and is left to the normal anyOf evaluation.
+func (n *normalizer) refines(members []member, path string, depth int, stack []string) bool {
+	rewrites, dropped, expansions := n.rep.Rewrites, n.rep.DroppedKeys, n.expansions
+	n.expansions = n.lookExpansions
+	res := n.hasRefinementMember(members, path, depth, stack)
+	n.lookExpansions = n.expansions
+	n.rep.Rewrites, n.rep.DroppedKeys, n.expansions = rewrites, dropped, expansions
+	return res
+}
+
+// hasRefinementMember reports whether any member is a refinement. A member
+// is judged after its own $ref and single-member allOf are resolved, so a
+// constraint-only member behind a $ref or an allOf wrapper counts too; a
+// member that is itself only a combinator is a refinement when any of its
+// own members is. A member that cannot be resolved is not a refinement: it
+// is left to the normal anyOf evaluation, which removes it. Call it through
+// refines.
 func (n *normalizer) hasRefinementMember(members []member, path string, depth int, stack []string) bool {
 	for _, m := range members {
 		if n.isRefinement(m.raw, path+m.path, depth+1, stack) {
@@ -655,15 +683,12 @@ func (n *normalizer) isRefinement(raw any, path string, depth int, stack []strin
 	if n.aborted || depth > maxDepth {
 		return false
 	}
+	n.work(1)
 	mm, ok := raw.(map[string]any)
 	if !ok {
 		return false
 	}
-	// The look-ahead resolve must not change the report or eat into the
-	// $ref expansion limit; its work is still charged (R12).
-	rewrites, expansions := n.rep.Rewrites, n.expansions
 	v, stack, f := n.resolve(mm, path, stack)
-	n.rep.Rewrites, n.expansions = rewrites, expansions
 	if f != nil {
 		return false
 	}
@@ -697,6 +722,76 @@ func hasScalarConstraint(v map[string]any) bool {
 		}
 	}
 	return false
+}
+
+// inheritKeys are the keys that stop a member from taking its scalar
+// parent's type: it has a type or shape of its own, or its type comes from
+// a $ref, an allOf or its own members.
+var inheritKeys = []string{"type", "properties", "items", "$ref", "allOf", "anyOf", "oneOf"}
+
+// inheritType returns members with each leaf member that has none of
+// inheritKeys, and whose const (if any) is a value of type t, copied with
+// type t added. Each copy is a rewrite and charged as work (R12). A member
+// whose const is not of type t cannot match the parent and is left as it
+// is, so it stays unusable.
+func (n *normalizer) inheritType(members []member, t string) []member {
+	res := make([]member, 0, len(members))
+	for _, m := range members {
+		mm, ok := m.raw.(map[string]any)
+		if ok && !hasAnyKey(mm, inheritKeys) && constOfType(mm, t) {
+			c := make(map[string]any, len(mm)+1)
+			for k, x := range mm {
+				c[k] = x
+			}
+			c["type"] = t
+			n.work(len(c))
+			n.rep.Rewrites++
+			m = member{raw: c, path: m.path}
+		}
+		res = append(res, m)
+	}
+	return res
+}
+
+// hasAnyKey reports whether m has any of keys.
+func hasAnyKey(m map[string]any, keys []string) bool {
+	for _, k := range keys {
+		if _, ok := m[k]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+// constOfType reports whether m has no const, or a const that is a JSON
+// value of scalar type t.
+func constOfType(m map[string]any, t string) bool {
+	c, present := m["const"]
+	if !present {
+		return true
+	}
+	switch x := c.(type) {
+	case string:
+		return t == typeString
+	case bool:
+		return t == typeBoolean
+	case float64:
+		return t == typeNumber || (t == typeInteger && x == math.Trunc(x))
+	}
+	return false
+}
+
+// allMembersConstrained reports whether every normalized member carries a
+// value constraint of its own (enum, format, minimum or maximum), so that
+// emitting the members says more than the bare type.
+func allMembersConstrained(members []any) bool {
+	for _, m := range members {
+		mm, ok := m.(map[string]any)
+		if !ok || !hasAnyKey(mm, []string{"enum", "format", "minimum", "maximum"}) {
+			return false
+		}
+	}
+	return true
 }
 
 // allMembersOfType reports whether every normalized member has type t.

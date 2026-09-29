@@ -609,6 +609,21 @@ func Test_Normalize_Rules(t *testing.T) {
 			want: `{"type":"object","properties":{"s":{"type":"string"}},"required":["s"]}`,
 		},
 		{
+			name: "the look-ahead into nested combinators leaves the report unchanged",
+			in:   `{"type":"object","properties":{"s":{"type":"string","anyOf":[{"oneOf":{"x":1},"anyOf":[{"oneOf":[{"minLength":1}]}]}]}},"required":["s"]}`,
+			want: `{"type":"object","properties":{"s":{"type":"string"}},"required":["s"]}`,
+			check: func(t *testing.T, rep Report) {
+				if rep.Rewrites != 0 || rep.DroppedKeys != 1 {
+					t.Errorf("Wrong match. expect: 0 rewrites, 1 dropped key, got: %d, %d", rep.Rewrites, rep.DroppedKeys)
+				}
+			},
+		},
+		{
+			name: "the look-ahead over a $ref DAG has its own expansion budget and the tool is kept",
+			in:   refinementDAG(t, 7, 6),
+			want: `{"type":"object","properties":{"p":{"type":"string"},"q":{"type":"string"}},"required":["q"]}`,
+		},
+		{
 			name: "a member behind an unresolvable $ref is not a refinement and is removed by the evaluation",
 			in:   `{"type":"object","properties":{"s":{"type":"string","anyOf":[{"$ref":"#/$defs/missing"},{"type":"string","enum":["x"]}]}}}`,
 			want: `{"type":"object","properties":{"s":{"anyOf":[{"type":"string","enum":["x"]}]}}}`,
@@ -631,6 +646,27 @@ func Test_Normalize_Rules(t *testing.T) {
 			name: "an integer with same-typed bounded members keeps the members",
 			in:   `{"type":"object","properties":{"n":{"type":"integer","anyOf":[{"type":"integer","minimum":1},{"type":"integer","maximum":-1}]}}}`,
 			want: `{"type":"object","properties":{"n":{"anyOf":[{"type":"integer","minimum":1},{"type":"integer","maximum":-1}]}}}`,
+		},
+		{
+			name: "an integer with a oneOf of documented consts keeps the bare type and the tool",
+			in: `{"type":"object","properties":{"n":{"type":"integer","description":"level","oneOf":[
+				{"const":1,"description":"low"},{"const":2,"description":"high"}]}},"required":["n"]}`,
+			want: `{"type":"object","properties":{"n":{"type":"integer","description":"level"}},"required":["n"]}`,
+		},
+		{
+			name: "a boolean with a oneOf of documented consts keeps the bare type and the tool",
+			in:   `{"type":"object","properties":{"b":{"type":"boolean","oneOf":[{"const":true,"description":"on"},{"const":false,"description":"off"}]}},"required":["b"]}`,
+			want: `{"type":"object","properties":{"b":{"type":"boolean"}},"required":["b"]}`,
+		},
+		{
+			name: "typed members that add no value constraint keep the bare type",
+			in:   `{"type":"object","properties":{"n":{"type":"integer","oneOf":[{"type":"integer","const":1},{"type":"integer","const":2}]}}}`,
+			want: `{"type":"object","properties":{"n":{"type":"integer"}}}`,
+		},
+		{
+			name: "a string enum member without a type takes the parent type",
+			in:   `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"const":"a"},{"enum":["b","c"]}]}}}`,
+			want: `{"type":"object","properties":{"s":{"anyOf":[{"type":"string","enum":["a"]},{"type":"string","enum":["b","c"]}]}}}`,
 		},
 		{
 			name: "a shaped anyOf discarded next to a list type is counted as a dropped key",

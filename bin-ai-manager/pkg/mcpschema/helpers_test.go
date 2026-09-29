@@ -180,6 +180,28 @@ func listFanOut(t *testing.T, key string, n, refs int) string {
 	return raw
 }
 
+// refinementDAG builds levels $defs L0..L{levels-1}, each an anyOf of width
+// $refs to the next, ending in {type: string}, and a string property p whose
+// anyOf is one $ref to L0, plus a required string q. Walked naively, the
+// R7a look-ahead from p visits width^levels members.
+func refinementDAG(t *testing.T, levels, width int) string {
+	defs := make([]string, 0, levels+1)
+	for k := 0; k < levels; k++ {
+		ms := make([]string, width)
+		for i := range ms {
+			ms[i] = fmt.Sprintf(`{"$ref":"#/$defs/L%d"}`, k+1)
+		}
+		defs = append(defs, fmt.Sprintf(`"L%d":{"anyOf":[%s]}`, k, strings.Join(ms, ",")))
+	}
+	defs = append(defs, fmt.Sprintf(`"L%d":{"type":"string"}`, levels))
+	raw := `{"type":"object","$defs":{` + strings.Join(defs, ",") +
+		`},"properties":{"p":{"type":"string","anyOf":[{"$ref":"#/$defs/L0"}]},"q":{"type":"string"}},"required":["q"]}`
+	if len(raw) > 64<<10 {
+		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
+	}
+	return raw
+}
+
 // mustRaw marshals v compactly and asserts it fits the 64 KiB raw input
 // limit, so the shape is one decodeToolSchema would actually admit.
 func mustRaw(t *testing.T, v any) string {
