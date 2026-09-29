@@ -700,7 +700,7 @@
 <td><p>A tool/function call result</p></td>
 </tr>
 <tr class="row-odd"><td><p>notification</p></td>
-<td><p>A system notification message</p></td>
+<td><p>A system notification message. <code class="docutils literal notranslate"><span class="pre">content</span></code> is a JSON object with a <code class="docutils literal notranslate"><span class="pre">type</span></code> field (see <a class="reference internal" href="#ai-struct-message-notification"><span class="std std-ref">Notification content</span></a>)</p></td>
 </tr>
 </tbody>
 </table>
@@ -750,6 +750,52 @@
 </tbody>
 </table>
 </div>
+</section>
+<section id="notification-content">
+<span id="ai-struct-message-notification"></span><h2>Notification content<a class="headerlink" href="#notification-content" title="Link to this heading">¶</a></h2>
+<p>A message with <code class="docutils literal notranslate"><span class="pre">role</span></code> <code class="docutils literal notranslate"><span class="pre">notification</span></code> records a session event rather than conversation text. Its <code class="docutils literal notranslate"><span class="pre">content</span></code> is a JSON object whose <code class="docutils literal notranslate"><span class="pre">type</span></code> field tells what happened. Notification messages are never sent to the AI model as conversation context. New <code class="docutils literal notranslate"><span class="pre">type</span></code> values may be added; ignore types you do not recognize.</p>
+<p><code class="docutils literal notranslate"><span class="pre">member_switched</span></code>: an AI team handed the conversation to another member.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pipeline_error</span></code>: an AI service provider (language model, speech-to-text or text-to-speech) returned an error while the AI was handling the session, so the AI may not have answered.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;pipeline_error&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="s2">&quot;authentication&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;fatal&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;pipecatcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;9c5c6e64-6289-4ac9-ad88-b20796a6bc96&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;An AI service provider rejected the credentials or denied access. If this AI uses a custom engine key, verify that the key is valid and permitted for the selected model.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">category</span></code> (enum string): The failure class.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Category</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>authentication</p></td>
+<td><p>The provider rejected the credentials or denied access. If the AI has a custom <code class="docutils literal notranslate"><span class="pre">engine_key</span></code>, check that it is valid and allowed to use the selected model.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rate_limited</p></td>
+<td><p>The provider rejected the request because of a rate limit or quota.</p></td>
+</tr>
+<tr class="row-even"><td><p>timeout</p></td>
+<td><p>The language model did not respond in time.</p></td>
+</tr>
+<tr class="row-odd"><td><p>unknown</p></td>
+<td><p>Any other provider error. For voice calls, only errors that stop the AI session are reported with this category.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fatal</span></code> (boolean): <code class="docutils literal notranslate"><span class="pre">true</span></code> if the error stopped the AI session.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pipecatcall_id</span></code> (UUID): Internal identifier of the AI processing turn that failed. Useful when contacting support.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (string): A plain-text, human-readable description of the failure class. It does not contain the provider’s raw error text.</p></li>
+</ul>
+<p>Each failing turn normally produces at most one <code class="docutils literal notranslate"><span class="pre">pipeline_error</span></code> message per category; in rare cases (event redelivery) a notice can be duplicated. For a voice call, the notice is recorded on the AI call only; the caller does not hear it.</p>
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
@@ -834,6 +880,7 @@
 <li><a class="reference internal" href="#role">Role</a></li>
 <li><a class="reference internal" href="#direction">Direction</a></li>
 <li><a class="reference internal" href="#origin">Origin</a></li>
+<li><a class="reference internal" href="#notification-content">Notification content</a></li>
 <li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>

@@ -71,6 +71,35 @@ type Session struct {
 
 	// audio quality monitoring
 	DroppedFrames atomic.Int64 `json:"-"`
+
+	// HasSTT reports whether this session runs a speech-to-text leg (voice pipecatcalls only).
+	// Text/messaging sessions have no STT, so every error frame they receive is LLM- or
+	// function-call-origin. Used by the pipeline-error notice policy (VOIP-1542).
+	HasSTT bool `json:"-"`
+
+	// seenPipelineErrors is the set of pipeline-error categories already observed on this
+	// session. Access only through MarkPipelineErrorSeen. The map is created lazily.
+	// Keys are plain strings (message.ErrorCategory values) because models/message imports
+	// this package; taking message.ErrorCategory here would be an import cycle.
+	muPipelineErrors   sync.Mutex
+	seenPipelineErrors map[string]struct{}
+}
+
+// MarkPipelineErrorSeen records the given pipeline-error category for this session and reports
+// whether it was the first occurrence. It drives both the WARN-once log and the customer-notice
+// gate for RTVI error frames (VOIP-1542). Safe for concurrent use and on a zero-value Session.
+func (s *Session) MarkPipelineErrorSeen(category string) bool {
+	s.muPipelineErrors.Lock()
+	defer s.muPipelineErrors.Unlock()
+
+	if s.seenPipelineErrors == nil {
+		s.seenPipelineErrors = map[string]struct{}{}
+	}
+	if _, ok := s.seenPipelineErrors[category]; ok {
+		return false
+	}
+	s.seenPipelineErrors[category] = struct{}{}
+	return true
 }
 
 // SetPendingInReplyToMessageID records the message ID that the next LLM

@@ -86,3 +86,21 @@ func (h *subscribeHandler) processEventPMTeamMemberSwitched(ctx context.Context,
 
 	return nil
 }
+
+func (h *subscribeHandler) processEventPMPipelineError(ctx context.Context, m *sock.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventPMPipelineError",
+		"event": m,
+	})
+	log.Debugf("Received the pipecat-manager's pipeline_error event.")
+
+	var evt pmmessage.PipelineErrorEvent
+	if err := json.Unmarshal([]byte(m.Data), &evt); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+
+	h.messageHandler.EventPMPipelineError(ctx, &evt)
+
+	return nil
+}

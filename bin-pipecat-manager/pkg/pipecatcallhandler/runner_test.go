@@ -3,10 +3,8 @@ package pipecatcallhandler
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"testing"
-	"unicode/utf8"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -112,135 +110,6 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 				t.Errorf("unexpected error: %v", err)
 			}
 			wg.Wait()
-		})
-	}
-}
-
-func Test_receiveMessageFrameTypeMessage_Error(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		m []byte
-	}{
-		{
-			name: "fatal error",
-			m:    []byte(`{"label":"rtvi-ai","type":"error","data":{"error":"1 validation error for GenerateContentConfig","fatal":true}}`),
-		},
-		{
-			name: "non-fatal error",
-			m:    []byte(`{"label":"rtvi-ai","type":"error","data":{"error":"tool call failed","fatal":false}}`),
-		},
-		{
-			name: "oversize error text",
-			m:    []byte(`{"label":"rtvi-ai","type":"error","data":{"error":"` + strings.Repeat("x", 40*1024) + `","fatal":true}}`),
-		},
-		{
-			name: "malformed data falls back",
-			m:    []byte(`{"label":"rtvi-ai","type":"error","data":{"error":123,"fatal":"yes"}}`),
-		},
-		{
-			name: "missing data",
-			m:    []byte(`{"label":"rtvi-ai","type":"error"}`),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			// No expectations: an error frame must neither publish an event
-			// nor create an id. gomock fails the test on any call.
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			h := pipecatcallHandler{
-				notifyHandler: mockNotify,
-				utilHandler:   mockUtil,
-			}
-
-			se := &pipecatcall.Session{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("0c4f2a8e-9bd0-11f1-9c1a-2f6a7c8d9e01"),
-				},
-				PipecatcallReferenceType: pipecatcall.ReferenceTypeAICall,
-				PipecatcallReferenceID:   uuid.FromStringOrNil("0c7e1b52-9bd0-11f1-8a3e-7b1c2d3e4f50"),
-				Ctx:                      context.Background(),
-			}
-
-			if err := h.receiveMessageFrameTypeMessage(se, tt.m); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-		})
-	}
-}
-
-func Test_capText(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		s   string
-		max int
-
-		expectRes string
-	}{
-		{
-			name:      "shorter than max",
-			s:         "abc",
-			max:       10,
-			expectRes: "abc",
-		},
-		{
-			name:      "exactly max",
-			s:         "abcde",
-			max:       5,
-			expectRes: "abcde",
-		},
-		{
-			name:      "ascii truncated",
-			s:         "abcdefgh",
-			max:       5,
-			expectRes: "abcde",
-		},
-		{
-			name:      "cut inside a multi-byte rune backs off to the rune start",
-			s:         "ab\u00e9cd", // e-acute is 2 bytes at offsets 2..3
-			max:       3,
-			expectRes: "ab",
-		},
-		{
-			name:      "cut inside a 3-byte rune",
-			s:         "a\u4e16\u754c", // each CJK rune is 3 bytes
-			max:       5,
-			expectRes: "a\u4e16",
-		},
-		{
-			name:      "zero max",
-			s:         "abc",
-			max:       0,
-			expectRes: "",
-		},
-		{
-			name:      "empty",
-			s:         "",
-			max:       5,
-			expectRes: "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			res := capText(tt.s, tt.max)
-			if res != tt.expectRes {
-				t.Errorf("Wrong match. expect: %q, got: %q", tt.expectRes, res)
-			}
-			if len(res) > tt.max {
-				t.Errorf("Wrong match. expect: len <= %d, got: %d", tt.max, len(res))
-			}
-			if !utf8.ValidString(res) {
-				t.Errorf("Wrong match. expect: valid utf-8, got: %q", res)
-			}
 		})
 	}
 }

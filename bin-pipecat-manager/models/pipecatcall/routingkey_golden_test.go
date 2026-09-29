@@ -117,6 +117,13 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		FromMember:               message.MemberInfo{ID: uuid.Must(uuid.NewV4()), Name: "Reception"},
 		ToMember:                 message.MemberInfo{ID: uuid.Must(uuid.NewV4()), Name: "Sales"},
 	}
+	pipelineErrorData := &message.PipelineErrorEvent{
+		CustomerID:               uuid.Must(uuid.NewV4()),
+		PipecatcallID:            pipecatcallID,
+		PipecatcallReferenceType: pipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+		Category:                 message.ErrorCategoryAuthentication,
+	}
 
 	tests := []struct {
 		name      string
@@ -193,6 +200,15 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			memberSwitchedData,
 			"pipecat-manager.team.7b21d4a6-0000-4000-8000-000000000001.member_switched",
 		},
+
+		// pipeline resource -- `pipeline_error` splits into a FOURTH namespace (`pipeline`), again
+		// addressed by the pipecatcall-id through the payload's override (VOIP-1542).
+		{
+			"pipeline_error",
+			message.EventTypePipelineError,
+			pipelineErrorData,
+			"pipecat-manager.pipeline.7b21d4a6-0000-4000-8000-000000000001.error",
+		},
 	}
 
 	for _, tt := range tests {
@@ -208,10 +224,10 @@ func TestGoldenRoutingKeys(t *testing.T) {
 }
 
 // TestGoldenRoutingKeysShareOneAddress pins the property the table above exists to protect: every
-// event of one AI voice session resolves to the same subscription address across all three
+// event of one AI voice session resolves to the same subscription address across all four
 // resource namespaces, so a consumer following that session binds
-// `pipecat-manager.pipecatcall.<id>.#`, `pipecat-manager.message.<id>.#` and
-// `pipecat-manager.team.<id>.#` and receives everything (design §4 address-convergence note).
+// `pipecat-manager.pipecatcall.<id>.#`, `pipecat-manager.message.<id>.#`,
+// `pipecat-manager.team.<id>.#` and `pipecat-manager.pipeline.<id>.#` and receives everything (design §4 address-convergence note).
 func TestGoldenRoutingKeysShareOneAddress(t *testing.T) {
 	expect := pipecatcallID.String()
 
@@ -222,6 +238,7 @@ func TestGoldenRoutingKeysShareOneAddress(t *testing.T) {
 		{"pipecatcall", &pipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: pipecatcallID}}},
 		{"message", &message.Message{Identity: commonidentity.Identity{ID: uuid.Must(uuid.NewV4())}, PipecatcallID: pipecatcallID}},
 		{"member_switched", &message.MemberSwitchedEvent{PipecatcallID: pipecatcallID}},
+		{"pipeline_error", &message.PipelineErrorEvent{PipecatcallID: pipecatcallID}},
 	}
 
 	for _, tt := range tests {

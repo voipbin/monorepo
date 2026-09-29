@@ -66,6 +66,7 @@ var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmpipecatcall.EventTypeInitialized),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmpipecatcall.EventTypePipecatcallTerminated),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmmessage.EventTypeTeamMemberSwitched),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmmessage.EventTypePipelineError),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameConferenceManager), cfconference.EventTypeConferenceDeleted),
 
 	// Insight AI realtime call listening (docs/plans/
@@ -232,6 +233,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == string(pmmessage.EventTypeTeamMemberSwitched):
 		err = h.processEventPMTeamMemberSwitched(ctx, m)
+
+	case m.Publisher == string(commonoutline.ServiceNamePipecatManager) && m.Type == pmmessage.EventTypePipelineError:
+		err = h.processEventPMPipelineError(ctx, m)
 
 	// transcribe-manager
 	case m.Publisher == publisherTranscribeManager && m.Type == tmtranscript.EventTypeTranscriptCreated:

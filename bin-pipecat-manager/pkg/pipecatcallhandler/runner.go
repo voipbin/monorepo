@@ -12,9 +12,9 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
-	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -705,23 +705,22 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		timer.Stop()
 
 	case pipecatframe.RTVIFrameTypeError:
-		// The runner reports pipeline errors (for example a provider request
-		// rejected before it is sent) as an RTVI error message. Surface it at
-		// WARN with the reference fields so it can be joined with ai-manager
-		// logs. The text is capped: the runner's own ERROR record keeps the
-		// full message.
-		logError := log.WithFields(logrus.Fields{
-			"pipecatcall_reference_type": se.PipecatcallReferenceType,
-			"pipecatcall_reference_id":   se.PipecatcallReferenceID,
-		})
-
 		msg := pipecatframe.RTVIError{}
 		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
-			logError.Warnf("Pipecat runner reported an error that could not be parsed. type: %s", frame.Type)
-			break
+			return errors.Wrapf(errUnmarshal, "could not unmarshal error message")
 		}
+		h.runnerHandlePipelineError(se, msg.Data.Error, msg.Data.Fatal)
 
-		logError.WithField("fatal", msg.Data.Fatal).Warnf("Pipecat runner reported an error. error: %s", capText(msg.Data.Error, maxRunnerErrorLogBytes))
+	case pipecatframe.RTVIFrameTypeErrorResponse:
+		// The runner rejected a client request pipecat-manager sent (e.g. send-text). This is a
+		// contract failure between our own components, not a provider failure, so it is logged
+		// and counted but never surfaced to the customer (VOIP-1542 design §1.3).
+		msg := pipecatframe.RTVIErrorResponse{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			return errors.Wrapf(errUnmarshal, "could not unmarshal error-response message")
+		}
+		metricsRTVIErrorResponseTotal.Inc()
+		log.Warnf("The pipecat runner rejected a request. request_id: %s, error: %s", msg.ID, truncateForLog(msg.Data.Error, pipelineErrorLogMaxLen))
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
@@ -730,22 +729,42 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 	return nil
 }
 
-// maxRunnerErrorLogBytes bounds the runner error text logged by
-// receiveMessageFrameTypeMessage. It keeps the first several errors of a large
-// validation failure, enough to identify the construct.
-const maxRunnerErrorLogBytes = 2048
+// runnerHandlePipelineError handles an RTVI "error" frame (any pipeline ErrorFrame surfaced by the
+// runner's RTVIProcessor). Every frame is counted. The first frame of each category per session is
+// logged at WARN (later ones at DEBUG, since some services re-push every second), and, if the
+// notice policy allows it, published as a pipeline_error event so ai-manager can record it on the
+// owning aicall. VOIP-1542.
+func (h *pipecatcallHandler) runnerHandlePipelineError(se *pipecatcall.Session, rawError string, fatal bool) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "runnerHandlePipelineError",
+		"pipecatcall_id": se.ID,
+	})
 
-// capText returns s cut to at most max bytes on a rune boundary, so a
-// multi-byte character is never split into invalid UTF-8.
-func capText(s string, max int) string {
-	if len(s) <= max {
-		return s
+	category := classifyPipelineError(rawError)
+	metricsPipelineErrorTotal.WithLabelValues(string(category), strconv.FormatBool(fatal)).Inc()
+
+	firstSeen := se.MarkPipelineErrorSeen(string(category))
+	logText := truncateForLog(rawError, pipelineErrorLogMaxLen)
+	if firstSeen {
+		log.WithField("category", category).Warnf("Pipeline error. fatal: %v, error: %s", fatal, logText)
+	} else {
+		log.WithField("category", category).Debugf("Pipeline error (repeat). fatal: %v, error: %s", fatal, logText)
 	}
-	cut := max
-	for cut > 0 && !utf8.RuneStart(s[cut]) {
-		cut--
+
+	if !firstSeen || !shouldNotifyPipelineError(category, fatal, se.HasSTT) {
+		return
 	}
-	return s[:cut]
+
+	evt := &message.PipelineErrorEvent{
+		CustomerID:               se.CustomerID,
+		PipecatcallID:            se.ID,
+		PipecatcallReferenceType: se.PipecatcallReferenceType,
+		PipecatcallReferenceID:   se.PipecatcallReferenceID,
+		ActiveflowID:             se.ActiveflowID,
+		Category:                 category,
+		Fatal:                    fatal,
+	}
+	go h.notifyHandler.PublishEvent(se.Ctx, message.EventTypePipelineError, evt)
 }
 
 func (h *pipecatcallHandler) runnerHandleTextFrame(se *pipecatcall.Session, text string) {

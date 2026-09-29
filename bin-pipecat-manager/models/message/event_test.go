@@ -33,6 +33,11 @@ func TestEventTypes(t *testing.T) {
 			constant: EventTypeTeamMemberSwitched,
 			want:     "team_member_switched",
 		},
+		{
+			name:     "pipeline error",
+			constant: EventTypePipelineError,
+			want:     "pipeline_error",
+		},
 	}
 
 	for _, tt := range tests {

@@ -28,15 +28,16 @@ func Test_topicPatterns_golden(t *testing.T) {
 		"pipecat-manager.pipecatcall.*.initialized",
 		"pipecat-manager.pipecatcall.*.terminated",
 		"pipecat-manager.team.*.member_switched",
+		"pipecat-manager.pipeline.*.error",
 		"conference-manager.conference.*.deleted",
 		"transcribe-manager.transcript.*.created",
 		"conversation-manager.conversation.*.message_created",
 	}
 
-	// design §5 + VOIP-1422 + NOJIRA Insight AI realtime listen + VOIP-1470:
-	// ai-manager binds exactly 13 patterns.
-	if len(topicPatterns) != 13 {
-		t.Fatalf("topicPatterns count mismatch. expected: 13, got: %d (%v)", len(topicPatterns), topicPatterns)
+	// design §5 + VOIP-1422 + NOJIRA Insight AI realtime listen + VOIP-1470 + VOIP-1542:
+	// ai-manager binds exactly 14 patterns.
+	if len(topicPatterns) != 14 {
+		t.Fatalf("topicPatterns count mismatch. expected: 14, got: %d (%v)", len(topicPatterns), topicPatterns)
 	}
 	if len(topicPatterns) != len(expected) {
 		t.Fatalf("topicPatterns count mismatch. expected: %d, got: %d (%v)", len(expected), len(topicPatterns), topicPatterns)

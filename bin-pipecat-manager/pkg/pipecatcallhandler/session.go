@@ -46,6 +46,8 @@ func (h *pipecatcallHandler) SessionCreate(
 		ConnAstReady:        connAstReady,
 
 		LLMKey: llmKey,
+
+		HasSTT: pc.STTType != pipecatcall.STTTypeNone,
 	}
 
 	h.muPipecatcallSession.Lock()

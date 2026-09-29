@@ -22,7 +22,8 @@ const (
 	RTVIFrameTypeBotStartedSpeaking  = "bot-started-speaking"
 	RTVIFrameTypeBotStoppedSpeaking  = "bot-stopped-speaking"
 	RTVIFrameTypeMetrics             = "metrics"
-	RTVIFrameTypeError               = "error"
+	RTVIFrameTypeError               = "error"          // RTVIProcessor: any pipeline ErrorFrame (VOIP-1542)
+	RTVIFrameTypeErrorResponse       = "error-response" // RTVIProcessor: reply to a rejected client request (e.g. send-text)
 
 	// pipecat-manager -> pipecat request frame types
 	RTVIFrameTypeUserLLMText = "user-llm-text"
