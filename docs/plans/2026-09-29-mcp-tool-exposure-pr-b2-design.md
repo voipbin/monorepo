@@ -717,3 +717,746 @@ same change, so no window opens between "advertisement exists" and "the known
 bugs around it are fixed." Everything deferred (§1's second table) is real
 work but does not create an incorrect behavior that this PR's own change makes
 newly reachable.
+
+## 15. Addendum: provider-safe MCP tool schemas (post-deploy finding)
+
+Status: design addendum, revised after design review round 1. Source analysis:
+`2026-09-29-mcp-tool-schema-provider-compat-analysis.md` (revision 6, review loop
+closed; "the analysis" below, section numbers prefixed "an."). CEO decision: A (Go
+allowlist normalization in ai-manager) plus E (per-tool Gemini validation in the
+Python runner) plus the Go-side RTVI `error` frame log raised to WARN, all in this PR.
+B (pipecat upgrade) is a separate later track and out of scope here. Code references
+are to the branch head at `4e5015cc9`.
+
+### 15.1 Problem, in one paragraph
+
+`resolveMcpOnly` (`bin-ai-manager/pkg/aicallhandler/mcp_tool.go:101`) passes each MCP
+tool's raw `inputSchema`, checked only for size and JSON-object shape by
+`decodeToolSchema` (`mcp_tool.go:508`), straight into `tool.Tool.Parameters`
+(`mcp_tool.go:120`). On the Gemini path the pinned runner (pipecat 1.4.0, google-genai
+1.75.0) validates the whole `GenerateContentConfig` at once, so one tool carrying an
+`x-mcp-header` key or a list-valued `type` fails every turn of the session before
+any network request, built-ins included (an.2, an.3). The D13 property "MCP half is
+best-effort, built-ins always survive" (§2.1) held at the RPC layer only. This
+section extends D13 to the provider layer.
+
+### 15.2 A: where normalization runs (bin-ai-manager)
+
+**Call site.** Exactly one: inside `resolveMcpOnly`'s loop, immediately after
+`decodeToolSchema` returns `schemaOK` (`mcp_tool.go:101-114`) and before the
+`seenNames`/`tool.Tool` append (`mcp_tool.go:116-123`). This is the only place the
+full raw schema, including top-level `$defs`/`definitions`, is in memory: pipecat's
+`run.py _openai_tools_to_standard` (`bin-pipecat-manager/scripts/pipecat/run.py:414-451`)
+later keeps only `properties` and `required`, so `$ref` targets are lost past this
+point (an.3, an.5 option C).
+
+```go
+params, why := decodeToolSchema(d.inputSchema, &schemaBudget)
+if why != schemaOK { /* unchanged skip accounting */ }
+
+norm, rep := mcpschema.Normalize(params, mcpMaxToolSchemaBytes)   // NEW
+logSchemaReport(log, d, rep)                    // NEW, 15.4
+if rep.ToolDropped {
+    continue                                    // tool NOT advertised, NOT in toolMap
+}
+// outBudget := mcpToolSchemaBudgetBytes is declared next to schemaBudget (NEW, R12)
+if rep.OutBytes > outBudget {                   // NEW
+    /* same skip accounting as schemaOverBudget: s.overBudget++ */
+    continue
+}
+outBudget -= rep.OutBytes                       // NEW; schemaBudget is untouched
+// ... unchanged: seenNames, append tool.Tool{Parameters: norm}, toolMap[d.name] = d.ref
+```
+
+A dropped tool is skipped before `toolMap[d.name] = d.ref`, so it is neither advertised
+nor dispatchable, consistent with D15 (the map is built from exactly the advertised
+list, §2.3). A tool whose output charge does not fit what is left of `outBudget`
+is counted as `overBudget` and reported by the existing per-server line
+(`Skipped mcp tools whose input schema could not be used. ... over_shared_budget`,
+`mcp_tool.go:126-128`); no new log line for it. The budget accounting is in R12. A nil
+`params` (absent or `null` schema, `decodeToolSchema` returns
+`nil, schemaOK`, `mcp_tool.go:510-511`) is passed through unchanged as nil: the
+`omitempty` tag (`models/tool/main.go:108`) already keeps it off the wire, and a
+missing `parameters` is the no-argument shape Gemini accepts (an.5 notes top-level
+`properties: {}` from `stop_flow`/`stop_service` in the control request).
+
+**Paths that do not need it.**
+- `resolveMcpToolMap` (`mcp_tool.go:45`) calls `discoverMcpTools(ctx, a, false)`,
+  so no schema is ever read (`mcp_tool.go:458-461`); its callers
+  (`start.go:1193`, `insight_session.go:225`, `refreshMcpToolMap` at `mcp_tool.go:766`)
+  store names only and advertise nothing.
+- The persisted `mcp_tool_map` (`persistToolMap`, `mcp_tool.go:207`) stores
+  `McpToolRef{ServerID, ToolName}` only; no schema is cached anywhere, so there is no
+  second cached path to normalize.
+- Dispatch (`toolHandleMcpCall`, `CallTool` at `mcp_tool.go:599`) forwards
+  `tc.Function.Arguments` verbatim. **Call arguments are never rewritten.** The MCP
+  server's own validation plus B24 (`isError`) handles any constraint the
+  normalized schema no longer carries.
+
+One known gap, pre-existing at HEAD and widened by A: the name-only paths store the
+name of every discovered tool, including tools `decodeToolSchema` would skip today
+(too large or malformed), so an `mcp_tool_map` entry can name a tool that is not
+advertised, and an LLM that invents that exact namespaced name could dispatch it. A
+adds its dropped tools to that set. Two variants:
+- (a) A tool that A keeps but E drops (15.5) stays in `toolMap` by design (A cannot
+  see E's verdict), and Python still registers its handler by name (`tools.py:101`).
+- (b) `ResolveMcpTools` normally replaces the name-only map with the advertised list
+  when pipecat resolves tools, but `persistToolMap` failure is only logged and not
+  fatal (`mcp_tool.go:188-193`); then the name-only map written at session start
+  (`start.go:1193`) stays for that session.
+
+In every variant the tool is never advertised (the LLM is never shown it) and the
+server still validates the arguments. Accepted; see R-4 in 15.10.
+
+**Package.** New pure package `bin-ai-manager/pkg/mcpschema` (files `main.go`,
+`normalize.go`, `normalize_test.go`, `testdata/`). Reasons:
+- It is a pure function over `map[string]any` with no handler, DB, or config
+  dependency, the same shape as the existing pure helper package
+  `bin-ai-manager/pkg/actioncatalog` (no handler struct, table tests in
+  `main_test.go`). `docs/conventions/package-structure.md` §1.1 lists `<domain>handler`
+  packages for stateful logic; it has no rule forbidding a helper package and
+  `actioncatalog` is the in-service precedent.
+- `aicallhandler` is already large (`mcp_tool.go` alone is 782 lines) and its tests
+  need the full gomock handler setup; a separate package keeps the normalizer's tests
+  fast, table-driven, and free of mocks.
+- No import cycle: `mcpschema` imports only the standard library; `aicallhandler`
+  imports it.
+
+API (exported, the only surface):
+
+```go
+package mcpschema
+
+// Report describes what Normalize changed. Paths are JSON-pointer-like
+// ("/properties/owner/x-mcp-header"). It never contains schema values.
+type Report struct {
+    ToolDropped     bool
+    DropReason      string   // one of the Reason* constants, "" when kept
+    DropPath        string   // where the fatal unusable subschema was found
+    DroppedProps    []string // first maxReportedPaths (8) paths of optional properties removed (cascade)
+    DroppedPropsN   int      // total count of optional properties removed (may exceed len(DroppedProps))
+    DroppedKeys     int      // count of non-allowlisted keys removed
+    Rewrites        int      // oneOf, const, allOf, $ref, list type, type inference
+    OutBytes        int      // output charge (R12); 0 for a nil schema
+}
+
+// Normalize returns a provider-neutral copy of schema (the decoded top-level
+// inputSchema object). It never mutates its input. A nil schema returns (nil,
+// Report{}). maxOutBytes is the per-tool output cap (R12); the caller passes
+// mcpMaxToolSchemaBytes, so mcpschema needs no import from aicallhandler.
+func Normalize(schema map[string]any, maxOutBytes int) (map[string]any, Report)
+```
+
+The input is not mutated (build a new map at every level) so that a future caller
+holding the raw map (for example a log dump) is not surprised, and so tests can
+compare input and output.
+
+### 15.3 A: the ruleset (implementable spec)
+
+Terms. A *subschema* is any JSON value in a schema position: the root, each value of
+`properties`, `items`, each member of `anyOf`/`oneOf`/`allOf`, each `$defs` target.
+Processing is recursive, bottom-up for the cascade, with a depth counter starting at
+0 at the root. Output is built fresh; any key not listed in R1 never appears in it.
+
+**R0. Root.** The root must be a JSON object (guaranteed by `decodeToolSchema`). After
+normalization the root must have `type: "object"`. At the root, an absent `type` is
+always treated as `object` (before R6, which would otherwise find a bare `{}` or
+`{"description": ...}` typeless and drop no-argument tools that work today because
+`_openai_tools_to_standard` defaults `properties` to `{}`); any other root type drops
+the tool with `ReasonRootNotObject` (this includes a root list type such as
+`["object","null"]`; exotic, and accepted as a drop). At the root, R5 (`$ref` and
+single-member `allOf` merge) runs before the absent-type default. A root-level `anyOf`/`oneOf` is dropped
+(counted in `DroppedKeys`), because the runner keeps only `properties` and
+`required` of the root anyway (`run.py` `_openai_tools_to_standard`). The root always emits
+`properties` (possibly `{}`) and `required` only when non-empty. The top-level empty
+`properties: {}` is kept (proven by `stop_flow`/`stop_service` in the 08:02 control,
+an.5). Root-level `$defs`, `definitions`, `$schema`, `$id`, `title`,
+`additionalProperties` are consumed or dropped like any other key.
+
+**R1. Keep list.** Only these keys are emitted: `type`, `description`, `properties`,
+`required`, `items`, `enum`, `anyOf`, `format`, `minimum`, `maximum`, `minItems`,
+`maxItems`. Everything else is dropped and counted in `Report.DroppedKeys`, including
+`x-*`, `$schema`, `$id`, `$comment`, `examples`, `title`, `default`,
+`additionalProperties`, `patternProperties`, `exclusiveMinimum`, `exclusiveMaximum`,
+`multipleOf`, `pattern`, `minLength`, `maxLength`, `nullable`, `readOnly`,
+`writeOnly`, `deprecated`, `not`, `if`/`then`/`else`, `dependentRequired`,
+`prefixItems`, `contains`, `uniqueItems`. `oneOf`, `allOf`, `const`, `$ref` are
+consumed by the conversions below and never emitted.
+
+**R2. Value shapes.** A kept key with a wrong value shape is dropped (the key only,
+not the subschema), except where R7 says the subschema becomes unusable:
+- `type`: a string in {`string`, `number`, `integer`, `boolean`, `object`, `array`,
+  `null`}, or a list handled by R4. Any other string or value makes the subschema
+  unusable (`ReasonBadType`).
+- `description`: string, else dropped. Not truncated here (description caps are B7,
+  deferred, §1).
+- `properties`: object whose values are subschemas; a non-object `properties` is
+  treated as absent.
+- `required`: list of strings; non-strings removed; then pruned by R8.
+- `items`: must be a single object subschema. Tuple `items: [...]` and boolean
+  `items` make the array unusable.
+- Boolean subschemas (`true`/`false`) anywhere are unusable.
+- `minimum`/`maximum`: JSON numbers (Go `float64` after decode) kept only on
+  `number`/`integer`; `minItems`/`maxItems`: non-negative integral numbers kept only
+  on `array`. Anything else dropped.
+
+**R3. Server-side-conservative rules** (the genai client accepts these, the Gemini
+server is reported to reject them, an.5A sources):
+- `format` kept only for these (type, format) pairs: string: `date-time`, `enum`;
+  integer: `int32`, `int64`; number: `float`, `double`. Otherwise dropped (for
+  example `uri`, `email`, `uuid`, `date`). `format: enum` is kept only if an `enum`
+  is also emitted on the same subschema.
+- `enum` kept only when the emitted `type` is `string` and every member is a
+  string, and the list is non-empty. Otherwise dropped (the subschema stays usable
+  with its type). Duplicate members are kept as is (not deduplicated; order
+  preserved).
+
+**R4. List `type`.** `type: [t1, t2, ...]` becomes `anyOf: [{type: t1, ...}, ...]`,
+one member per listed type, each member carrying the type-appropriate sibling
+constraints of the original (`enum`, `format`, `items`, `properties`, `required`,
+bounds), filtered by R2/R3 for that member's type. `description` moves to the
+parent, not the members. A `"null"` entry becomes a bare `{type: "null"}` member
+(R9). A single-element list is treated as the plain string. An empty list is
+unusable. This is the incident shape
+`issue_fields.items.properties.value.type = ["string","number","boolean"]` (an.2).
+
+**R5. Conversions.**
+- `oneOf` becomes `anyOf` (same members). If both are present, the members are
+  concatenated (`anyOf` first).
+- `const`: a string becomes `enum: [c]` with `type: string` (if a `type` other than
+  string is present, the `const` is dropped instead). A non-string `const` is dropped.
+- `allOf` with exactly one member: the member is merged into the parent, parent keys
+  winning on conflict, then the result is normalized (this is the Pydantic
+  `allOf: [{$ref}]` wrapper). `allOf` with 0 members is ignored. `allOf` with 2 or
+  more members is unusable (`ReasonAllOf`).
+- `$ref`: only local refs `#/$defs/<name>` and `#/definitions/<name>` (root-level
+  maps, JSON pointer `~0`/`~1` unescaped). The target is merged under the referencing
+  subschema's siblings (siblings win), then normalized. Any other ref form
+  (remote, `#`, nested pointer), a missing target, or a cycle is unusable
+  (`ReasonRef`).
+  - Cycle detection: a per-path stack of ref names being expanded; re-entering a name
+    already on the stack is a cycle.
+  - Bounds: at most **8** nested `$ref` expansions on any one path
+    (`maxRefDepth = 8`) and at most **256** `$ref` expansions per tool in total
+    (`maxRefExpansions = 256`, stops exponential fan-out from a DAG of shared defs).
+    Exceeding either is unusable at that subschema. These bound the work, not the
+    output size: 256 expansions of one large `$defs` target still multiply the
+    output (measured below in R12); the output cap in R12 is what bounds that.
+
+**R6. Missing `type` inference** (after R5 has run on the subschema):
+- `properties` present: `object`;
+- else `items` present: `array`;
+- else a non-empty `enum` of all strings: `string` (repairs the Zod `{enum: [...]}`
+  shape);
+- else `anyOf` present: no `type` emitted, the subschema is its `anyOf`;
+- else unusable (`ReasonTypeless`, "any JSON value", for example GitHub MCP's
+  `projects_write.updated_field.*.value`).
+
+**R7. Unusable-subschema cascade (local semantics, an.5A).** A subschema is
+*unusable* when R2, R4, R5 or R6 say so, when it is an `array` whose `items` is
+absent or unusable, or when it is an `anyOf` left with no usable member. Handling:
+- an unusable `anyOf` member is removed from its `anyOf`; an `anyOf` reduced to
+  exactly one member is kept as a one-member `anyOf` (not flattened; flattening is a
+  possible later refinement, not needed for acceptance);
+- an unusable `items` makes its array unusable;
+- an unusable property of an object: if the object's `required` does not list it,
+  the property is removed, `Report.DroppedPropsN` is incremented, and its path is
+  added to `Report.DroppedProps` only while fewer than `maxReportedPaths` (8) paths
+  are held (bounded memory; 15.4 logs at most 3); if it is
+  required, the enclosing object becomes unusable;
+- the tool is dropped (`Report.ToolDropped`) only when the root becomes unusable.
+  Required-ness therefore propagates only up an unbroken `required` chain.
+- An `anyOf` member that is `{type: "null"}` is usable but does not count as the
+  "usable member" that keeps the `anyOf` alive: an `anyOf` whose only surviving
+  member is `{type: null}` is unusable. (Decision taken here; the analysis does not
+  settle it. Reason: a property that can only be null carries no argument, and a
+  null-only `anyOf` is not in the probe-verified set.)
+
+**R8. `required` pruning.** After properties are processed, `required` keeps only
+names present in the emitted `properties`, deduplicated, original order. Emitted
+only when non-empty.
+
+**R9. Nullability.** Expressed only as an `anyOf` member `{type: "null"}`
+(probe-verified on genai 1.75 and 2.25, an.5A). `nullable: true` (OpenAPI) is
+dropped by R1, never produced.
+
+**R10. Objects.**
+- Root: always `properties` emitted (R0).
+- Nested `object` with absent or empty `properties`, or whose properties all
+  cascaded away: normalized to exactly `{type: "object", description?}` with no
+  `properties` key and no `required` key. This is the free-form shape already sent by
+  built-ins (`set_variables.variables`, `create_call.actions[].option`) and proven on
+  gemini-2.5-flash in the 08:02 control (an.5A). Explicit nested `properties: {}` is
+  stripped to this shape.
+- A nested `object` without usable `properties` that also carries `anyOf`/`oneOf`
+  (GitHub MCP: `projects_write` `/properties/updated_field`,
+  `projects_write` `/properties/items/items`,
+  `custom_properties_write` `/properties/properties/items`): the `anyOf` is evaluated first
+  under R7 (after R5 conversion). If it has no usable member, the object is unusable
+  (cascade). Otherwise the `anyOf` is discarded and the result is the free-form shape
+  above. Order matters: stripping first would silently keep `updated_field`.
+  Expected results are pinned in 15.7 item 4.
+- A nested object that was made unusable by a required unusable property (R7) is
+  unusable, not turned into a free-form object. (A free-form object would let the
+  LLM omit the required field silently; failing the enclosing branch is the local
+  semantics the analysis chose.)
+
+**R11. Arrays.** `items` required (R7). An array without `items` is not re-typed
+(for example as a JSON string), because arguments go raw to the MCP server (an.5A).
+
+**R12. Limits.** Inputs are already bounded by `decodeToolSchema`
+(`mcpMaxToolSchemaBytes = 64 KiB` per tool, `mcpToolSchemaBudgetBytes = 256 KiB` per
+resolution, raw bytes, `mcp_tool.go:492-495`, charged at `mcp_tool.go:524`). Input
+bounds alone do not bound the output: `$ref` inlining copies a target once per
+reference. Measured (`~/.hermes/cache/scratch/pc/rr1_s15_ref_amplification.py`): a
+64,429-byte input (one `$defs` string with a 56,000-byte description, 256 properties
+each `$ref` to it) stays within every node and ref limit below and normalizes to
+14.3 MB (x223); four such tools fit the raw budget, about 55 MiB in one RPC reply,
+against a 40M memory limit (`bin-ai-manager/k8s/deployment.yml:81`). So:
+- `maxDepth = 32` subschema nesting levels. One level is one step into `properties`
+  values, `items`, or an `anyOf`/`oneOf` member. A `$ref` expansion does not add a
+  level by itself: the target's content sits at the referencing subschema's depth,
+  and nesting inside the target counts normally (ref-to-ref chains are bounded by
+  `maxRefDepth`). Deeper subschemas are unusable. For scale: the deepest GitHub MCP
+  tool normalizes to depth 4 (`issue_write`), the largest has 35 subschemas
+  (`projects_write`), measured on `rv6_normalized.json`.
+- `maxNodes = 4096` emitted subschemas per tool. Exceeding it drops the tool
+  (`ReasonTooLarge`). With the production cap (`maxOutBytes` = 64 KiB) it cannot
+  trip, because every emitted node is also a 32-byte visit and the output cap stops
+  the build at 2,049 visits or fewer; it is a backstop for callers passing a larger
+  `maxOutBytes` (tests do so to exercise it).
+- **Output charge.** While building, `Normalize` keeps a running charge, reported
+  as `Report.OutBytes`:
+  - 32 bytes per VISITED subschema, usable or not, emitted or later dropped
+    (braces, key names, separators). Charging visits, not only emissions, is what
+    makes the charge bound work and transient memory: without it, content the
+    cascade drops is free, and a crafted 65,532-byte schema (one `$def` with 5,411
+    typeless optional properties, referenced 256 times) stays under every other
+    limit while producing 1,385,216 dropped paths (~64 MiB, probe
+    `rr2_s15_droppedprops_amplification.py`). With the visit charge it trips the
+    output cap after about 2,000 visits;
+  - for each emitted string (property name, `type`, `description`, `format`,
+    `enum` member, `required` member): its UTF-8 byte length plus 3;
+  - 24 bytes per emitted number (`minimum`, `maximum`, `minItems`, `maxItems`).
+  A subschema's own content is charged when it is emitted, before the cascade can
+  remove it; a later removal does not refund (conservative). Together with the visit
+  charge above, the running charge bounds both work and retained memory per tool.
+  The charge is an estimate, not the marshalled size. On the 125 GitHub MCP tools
+  (normalized by the oracle, emission-only charge) it is 108,903 bytes against
+  102,364 bytes of compact JSON (ratio 0.94; per tool, JSON is at most 1.15x the
+  charge; probe `~/.hermes/cache/scratch/pc/rr1_s15_output_charge.py`); the visit
+  charge adds 32 bytes per dropped subschema, negligible for real schemas. JSON
+  escaping is not counted: Go's `json.Marshal` escapes `<`, `>`, `&` and control
+  characters as 6-byte `\uXXXX`, so a pathological schema can marshal to up to about
+  6x the charge (about 384 KiB per tool, about 1.5 MiB per resolution). That is
+  acceptable for memory (well under the 40M pod limit) and is stated here so no one
+  reads the charge as an exact reply-size bound.
+- **Per-tool output cap.** When the charge exceeds `maxOutBytes` (the caller passes
+  `mcpMaxToolSchemaBytes`, 64 KiB, the same cap the raw input has), `Normalize`
+  stops building and drops the tool (`ReasonTooLarge`, WARN per 15.4). The amplified
+  shape above is dropped after about 64 KiB of work instead of 14.3 MB.
+- **Per-resolution output budget.** `resolveMcpOnly` keeps a second budget,
+  `outBudget := mcpToolSchemaBudgetBytes` (256 KiB), next to `schemaBudget`, and
+  charges each kept tool's `Report.OutBytes` to it (15.2 code block). A tool that
+  does not fit is skipped and counted as `overBudget` in the existing per-server log line. Decision: two pools,
+  not one. `schemaBudget` stays exactly as today (raw bytes, charged inside
+  `decodeToolSchema`, its tests unchanged); it bounds decode memory, which is
+  transient. `outBudget` bounds what is retained and marshalled into the RPC reply.
+  One shared pool charged with raw plus normalized would count most schemas twice
+  (the GitHub MCP set alone is 105,983 raw plus 108,903 charged, 82% of 256 KiB)
+  and would drop tools from a second normal-sized server that fits today. Worst case per resolution is
+  therefore 256 KiB raw decoded plus 256 KiB (charged) retained, the same order as
+  today's raw-only bound.
+- Output can be somewhat larger than input without any `$ref` (R4 copies sibling
+  constraints into each `anyOf` member, R0 adds an empty `properties`): 8 of the 125
+  GitHub MCP tools grow slightly under the oracle, for example `issue_write` and
+  `get_me`. The caps above are far from that.
+
+**Resource-limit overflow drops the whole tool** (`maxNodes`, output cap), unlike
+the shape rules, which cascade (R7). Decision: a resource limit says nothing about
+which part of the schema is at fault, so there is no local subschema to remove, and
+a partial build cut at an arbitrary point would advertise a schema that depends on
+traversal order. `maxDepth`, `maxRefDepth`, `maxRefExpansions` stay local (unusable
+at that subschema, then R7), because each of them names a specific subschema.
+
+**R13. Determinism.** Output maps have no ordering (JSON object order is irrelevant
+to every provider). Everything with semantic order is preserved: `required`, `enum`,
+`anyOf` member order. Property iteration inside the normalizer sorts keys, so the
+capped `DroppedProps` (the first 8 in traversal order), `DroppedPropsN`, and the
+first-failure `DropPath` are deterministic across runs without a post-sort.
+Tests compare with `reflect.DeepEqual` on decoded maps, or on `json.Marshal` output
+(Go sorts map keys on marshal), never on raw string concatenation.
+
+### 15.4 A: observability
+
+**Logs** (in `resolveMcpOnly`, same `log` entry with `func`, `ai_id`; fields added
+per line: `mcp_server_id`, `tool_name` (the namespaced name, capped via
+`capErrText(..., 80)` like `sampleToolNames`)):
+- Tool dropped: `Warnf("Dropped an mcp tool whose input schema cannot be made provider-safe. mcp_server_id: %s, tool_name: %s, reason: %s, path: %s", ...)`.
+  WARN, one line per dropped tool. `reason` is the fixed `Reason*` constant, `path`
+  capped at 200 bytes. This includes `ReasonTooLarge` (node cap or per-tool output
+  cap, R12; `path` is empty for it). A tool skipped for the per-resolution
+  `outBudget` is not a normalization drop; it is counted in the existing
+  `over_shared_budget` line (15.2).
+- Optional properties dropped: one WARN line per KEPT tool (not per property), listing
+  `dropped_properties` count (`Report.DroppedPropsN`) and at most the first 3 paths (reuse the
+  `sampleToolNames` style: quoted, each capped at 80). A dropped tool (any reason,
+  including `ReasonTooLarge`) emits only the tool-dropped line above, never this one,
+  since the partial `DroppedProps` of an aborted build would mislead.
+- Key stripping and rewrites (`x-*`, `title`, `oneOf` conversions, and so on):
+  not logged per tool. They are routine on generated schemas (Pydantic `title`,
+  `$defs`, `oneOf`; `x-mcp-header` on the owner/repo properties of 37 of the
+  incident server's tools, an.2),
+  so logging them at WARN is noise. One DEBUG line per resolution with the totals.
+WARN matches `docs/conventions/logging.md` ("Warn: safe-default fallbacks"): the
+session continues with fewer tools.
+
+**No new metric.** Observability for A is the WARN lines above only. A counter can be
+added later if the logs show real volume.
+
+### 15.5 E: per-tool Gemini validation (bin-pipecat-manager Python runner)
+
+**Hook.** `run.py create_llm_service`, `gemini` branch
+(`bin-pipecat-manager/scripts/pipecat/run.py:495-512`), immediately after
+`standard_tools = _openai_tools_to_standard(tools)` (`run.py:503`) and before
+`ToolsSchema(...)`/`LLMContext(...)` (`run.py:504-509`). OpenAI and Grok branches
+(`run.py:465-493`) are untouched.
+
+```python
+standard_tools = _openai_tools_to_standard(tools)
+standard_tools = drop_gemini_invalid_tools(standard_tools, pipeline_id)   # NEW, gemini_tool_filter.py (15.7)
+```
+
+**Behavior of `drop_gemini_invalid_tools(schemas: list[FunctionSchema], pipeline_id: str = "") -> list[FunctionSchema]`**
+(standalone module `scripts/pipecat/gemini_tool_filter.py`, 15.7). Every log line E
+emits includes `pipeline id={pipeline_id}` in the text, following the runner's
+existing convention (`run.py:146`, `:169`), because loguru has no bound context and
+one runner process serves many sessions; `create_llm_service` gains an optional
+`pipeline_id` argument fed by its caller, which already has `id`. An empty
+`schemas` list returns immediately (no imports, no validation).
+1. Import `GeminiLLMAdapter` (`pipecat.adapters.services.gemini_adapter`) and
+   `GenerateContentConfig` (`google.genai.types`) inside the function, and only for
+   a factory argument that is None (an injected `adapter_factory`/`config_factory`
+   skips its real import, so the mocked control-flow tests do not fall into the
+   fail-open path; `conftest.py:54` mocks `pipecat.adapters` as a plain MagicMock,
+   under which the real adapter import always fails). If a real import
+   itself fails, log WARN once per call (once per session, since the filter runs
+   once at pipeline build) and return `schemas` unchanged (fail open). These
+   and `ToolsSchema` are imported inside the function so the module imports without
+   pipecat (15.7).
+2. Fast path: build `GeminiLLMAdapter().to_provider_tools_format(ToolsSchema(standard_tools=schemas))`
+   and `GenerateContentConfig(tools=...)` for the whole list. If it validates, return
+   `schemas` unchanged (one validation per session in the normal case).
+3. Otherwise, validate each `FunctionSchema` alone the same way. Keep those that
+   pass. For each that raises `pydantic.ValidationError`, drop it and log
+   `logger.warning(f"Dropped tool '{fs.name}' rejected by the Gemini schema validator: {n} error(s), first: {loc}: {msg}")`,
+   with `loc`/`msg` from `e.errors()[0]`, the whole message capped at 300 chars.
+   Never log the schema itself.
+4. After filtering, validate the kept set once more. If it still fails (an
+   interaction between tools, not seen so far), log WARN and return the original
+   `schemas` unchanged (fail open to current behavior; the session behaves exactly as
+   it would without E).
+5. Any exception other than `pydantic.ValidationError` from the validator (adapter
+   API change, unexpected type) at any step: log WARN with the exception type and
+   return `schemas` unchanged. **A failure of the validator itself never removes
+   tools.**
+6. Log one INFO line when anything was dropped: `"Gemini tool validation dropped
+   {k} of {n} tools"`.
+
+It applies to all tools, built-ins included. Built-ins are expected to pass (they are
+in the 08:02 control request); a dropped built-in is a regression signal and gets
+the same WARN. The adapter is instantiated per call (it is stateless in 1.4.0,
+`gemini_adapter.py:84`), and using the installed adapter makes E track whatever
+conversion the installed pipecat does, including after track B upgrades it (an.5E).
+
+**Dropped tool, still registered.** `tool_register` (`tools.py:101`) registers
+handlers by name from the Go-provided tool list, independent of the advertised
+schema. A handler for a tool the LLM was never shown is inert. No change there.
+
+**Limit (stated).** E catches only client-side pydantic rejection. A server-side 400
+(for example the `format`/`enum` cases R3 guards against) still fails the whole
+request and E cannot see it. A's conservative rules and the live call (15.8) are
+what cover that residual (an.5E, an.6). E also does nothing for OpenAI/Grok.
+
+### 15.6 RTVI `error` frame at WARN (bin-pipecat-manager Go)
+
+`receiveMessageFrameTypeMessage` (`bin-pipecat-manager/pkg/pipecatcallhandler/runner.go:582`)
+logs every unknown RTVI type at DEBUG in its `default:` branch (`runner.go:706-707`),
+including pipecat's `error` message (`{label: "rtvi-ai", type: "error", data: {error:
+str, fatal: bool}}`, pipecat 1.4.0 `processors/frameworks/rtvi/models.py:141-158`).
+
+Change: add an explicit case before `default:`.
+- New constant `RTVIFrameTypeError = "error"` in
+  `bin-pipecat-manager/models/pipecatframe/helper.go` next to the other RTVI types
+  (`helper.go:13-28`), plus a row in `helper_test.go`'s constants table and in the
+  constants table of `rtvi_test.go` (~line 38).
+- No new struct: unmarshal into the existing `pipecatframe.RTVIError`
+  (`rtvi.go:166-177`, `Data RTVIErrorData{Error, Fatal}`, already tested in
+  `rtvi_test.go`).
+- Case body: unmarshal; on unmarshal failure fall back to logging `frame.Type` only.
+  Log `log.WithFields(logrus.Fields{"pipecatcall_reference_type": se.PipecatcallReferenceType,
+  "pipecatcall_reference_id": se.PipecatcallReferenceID, "fatal": msg.Data.Fatal}).Warnf("Pipecat runner reported an error. error: %s", capText(msg.Data.Error, 2048))`.
+  `log` already carries `func` and `pipecatcall_id` (`runner.go:583-586`); the
+  reference fields (`models/pipecatcall/session.go:16-17`) give the aicall id for a
+  Loki join with ai-manager.
+- Truncation: 2048 bytes, rune-boundary safe (a local helper equivalent to
+  ai-manager's `capErrText`, `mcp_tool.go:729`; pipecat-manager has no such helper
+  today, so add a small unexported one). The incident message was ~40 KB with 76
+  errors; 2 KB keeps the first several errors, which is enough to identify the
+  construct, while the full text stays in the runner's own ERROR record.
+- Data in the logged text. The error string can carry customer data: pydantic's
+  message includes `input_value=...` fragments of the rejected tool declaration
+  (customer MCP schema text), and any other pipeline `ErrorFrame` text passes through
+  the same field. This is acceptable at WARN in internal logs because the same data
+  is already logged today: the runner's own ERROR record holds the full ~40 KB
+  message (an.2), the current `default:` branch logs the whole frame, error text
+  included, at DEBUG (`runner.go:706-707`), and ai-manager logs customer MCP server
+  error text at WARN (`mcp_tool.go:437`, capped at 1024). The 2 KB cap keeps this
+  line smaller than the existing ERROR record. Not logged anywhere customer-visible.
+- No metric in this PR (an.6 marks it optional). The runner-side E WARN plus this
+  WARN are sufficient for diagnosis; a counter can follow if alerting needs it.
+- Not surfaced to the customer or to ai-manager. That is a separate product
+  question (15.10).
+
+### 15.7 Test plan (written at implementation, TDD, tests first)
+
+**Go, `pkg/mcpschema` (new, CI-run via `bin-ai-manager-test`).**
+1. Table test `Test_Normalize_Rules`, one or more rows per rule, each row
+   `{name, in (JSON string), want (JSON string or nil), wantReport fields}`:
+   keep list and `x-*`/`title`/`default`/`$schema`/`additionalProperties` removal;
+   value-shape failures (bad `type` string, boolean subschema, tuple `items`,
+   non-string `required` members, non-numeric bounds, non-string description);
+   `format` allow pairs and a dropped `uri`/`email`; `format: enum` with and without
+   `enum`; string enum kept, integer enum dropped, mixed enum dropped; list `type`
+   including `["string","null"]`; `oneOf`, `oneOf`+`anyOf`; string and non-string
+   `const`; single-member `allOf` (with `$ref` inside), multi-member `allOf` optional
+   and required; `$ref` to `$defs` and `definitions`, missing ref, remote ref, direct
+   cycle, indirect cycle, depth 9 chain, fan-out over 256; type inference for
+   properties/items/string enum/anyOf and typeless unusable; nested free-form object,
+   nested `properties: {}`, object whose props all cascade away; top-level
+   `properties: {}` kept; array without items (optional removed, required drops the
+   tool); cascade: unusable required inside optional nested object (object removed,
+   tool kept), unusable required chain to root (tool dropped), `anyOf` with one bad
+   member, `anyOf` with only `{type: null}` left; `required` pruning and dedupe; depth
+   33 (and a `$ref` chain that does not add depth, R12); node cap drops the whole
+   tool (this row passes an explicit `maxOutBytes` large enough that the output cap
+   does not trip first); empty `type` list; nil input.
+   Output-cap rows (R12): the amplification shape from
+   `rr1_s15_ref_amplification.py` built in the test (one `$defs` string with a
+   56,000-byte description, 256 properties each `$ref` to it; raw under 64 KiB, within
+   `maxNodes` and `maxRefExpansions`) returns `ToolDropped` with `ReasonTooLarge`
+   and a nil schema; a schema whose charge is just under the cap is kept and its
+   `OutBytes` equals the hand-computed charge; a small plain schema's `OutBytes`
+   matches a hand-computed value (pins the charge formula). Dropped-subtree row
+   (visit charge): the shape from `rr2_s15_droppedprops_amplification.py` built in
+   the test (one `$def` with thousands of typeless optional properties, referenced
+   256 times; raw under 64 KiB, within `maxNodes` and `maxRefExpansions`) returns
+   `ToolDropped` with `ReasonTooLarge`, and `len(Report.DroppedProps) <= 8` on every
+   path. A row with 20 dropped optional properties on a kept tool asserts
+   `DroppedPropsN == 20` and `len(DroppedProps) == 8`.
+2. `Test_Normalize_DoesNotMutateInput`: deep-copy input, normalize, compare.
+3. `Test_Normalize_Deterministic`: run 50 times on a fixture with many optional
+   unusable properties; `Report.DroppedProps`, `DroppedPropsN` and `DropPath` identical every run.
+4. Fixture test `Test_Normalize_GitHubMCPFixtures`: `testdata/github/*.json` holds
+   a small copied subset of GitHub MCP `pkg/github/__toolsnaps__` snapshots (MIT,
+   commit `85598ba`; keep the upstream LICENSE notice in `testdata/github/README.md`):
+   `issue_write` (list `type` inside `issue_fields.items.properties.value`, nullable
+   `anyOf` in `type`), `projects_write` (typeless `value` in every `oneOf` member,
+   expected single dropped property `/properties/updated_field`), `update_issue_labels`
+   (`oneOf` in `items`), `custom_properties_write` (`oneOf` of objects), and
+   `get_file_contents` (plain). Plus one synthetic `incident_x_mcp_header.json`
+   reproducing the prod-only shape (`owner`/`repo` with `x-mcp-header`), since the
+   local snapshots carry none (an.5A). Golden outputs in `testdata/github/*.golden.json`,
+   compared as decoded maps. Pinned expectations: `update_issue_labels`
+   `/properties/labels/items` is NOT an object-with-`anyOf` (it has only `oneOf`, no
+   `type`, no `properties`), so R10 does not apply: R5 converts `oneOf` to `anyOf`, R6
+   emits no `type`, and the result is `{anyOf: [{type: string, description}, {type:
+   object, properties: {...}, required: [name]}]}` (both variants kept). For the
+   object-with-`anyOf` shape (R10): `projects_write` `/properties/items/items` becomes
+   `{type: object}`; `custom_properties_write` `/properties/properties/items` becomes
+   `{type: object}`; `projects_write` `/properties/updated_field` is removed (its
+   `anyOf` has no usable member), and the tool is kept. (Paths per the snapshots;
+   confirm exact JSON pointers when copying the fixtures, and treat a mismatch as a
+   spec question, not a golden update.)
+   **Goldens are generated from the Go implementation** (a one-off `go test` helper
+   run at implementation time, then reviewed by hand against this spec and
+   checked in). The Python oracle `rv6_local_cascade.py` / `rv6_normalized.json`
+   (`~/.hermes/cache/scratch/pc/`) is not the source of the goldens, because its
+   output shape differs from this spec in known ways (probe
+   `rr1_s15_oracle_vs_spec.py`):
+   - it copies `description` into each `anyOf` member produced from a list `type` or
+     `oneOf` (R4 moves it to the parent only): 3 members in `issue_write`. The
+     `update_issue_assignees`/`update_issue_labels` member descriptions ("GitHub
+     username", "Label name") are the members' own in the raw schema and are kept;
+   - it emits `required: []` on nested objects (R8 omits an empty `required`): 2
+     objects in `actions_list`;
+   - its depth limit is 20 and it drops the tool from any depth (this spec: 32,
+     local cascade, R7/R12).
+   The oracle is used once, at implementation time, only to cross-check outcomes:
+   the same tools dropped (0) and the same properties dropped (1,
+   `projects_write.updated_field`), and that google-genai accepts the Go output
+   (the real-library run below). The test never reads scratch paths.
+5. Synthetic fixtures from an.7 as their own golden cases: nested free-form object
+   (normalized `{type: object}`), explicit nested `properties: {}`, nullable
+   `anyOf` with `{type: null}` (Pydantic `Optional`), typeless string enum. These are
+   also the payloads for the live call (15.8), checked in as
+   `testdata/live/*.json` (normalized output; the test asserts they equal the
+   current `Normalize` result, so they cannot drift).
+
+**Go, `pkg/aicallhandler`.** Extend `Test_resolveMcpOnly` (`mcp_tool_test.go:51`)
+with a new `expectParams` field on the table (the table today has only
+`expectToolNames` and `expectToolMap`), and rows: a tool whose schema normalizes (asserts `Parameters` equals the normalized map, not
+the raw one); a tool dropped by normalization (asserts absent from both the returned
+slice and `toolMap`, and the server's other tools kept); `outBudget`: tools whose
+charge is well above their raw size (a `$ref` fan-out of about 35 KiB raw that
+charges about 60 KiB (under the 64 KiB per-tool cap); five of them are about 175 KiB
+raw, under the 256 KiB `schemaBudget`, while four charge about 240 KiB and the fifth
+would reach about 300 KiB, over the 256 KiB charge budget. The `$ref` variant is the
+one to use: a short-property variant (about 22 raw bytes and 45 charged per unique
+property) would need each tool kept under about 31 KiB raw so it does not trip the
+per-tool cap first); assert only four kept, `toolMap` and the
+returned slice the same size, and that `schemaBudget` still has bytes left (proving
+`outBudget`, not `schemaBudget`, fired; mirrors `Test_resolveMcpOnly_SchemaLimits`,
+`mcp_tool_test.go:1026`); and a no-argument tool with root `{}` kept as
+`{type: object, properties: {}}` (R0); and `schemaBudget` accounting unchanged
+(`Test_decodeToolSchema` rows at `mcp_tool_test.go:929-935` stay as they are).
+
+**Go, `bin-pipecat-manager`.** Table rows for `receiveMessageFrameTypeMessage` with an
+`error` frame (fatal true/false, oversize error text truncated, malformed data
+falls back), asserting no error returned. No test in `pkg/pipecatcallhandler` uses a
+logrus test hook today, so the rows assert behavior (no error, no panic, truncation
+via the helper's own unit test), not the log level. `helper_test.go` and `rtvi_test.go` get the new constant row.
+
+**Python, E.** Current layout: tests are flat files next to `run.py`
+(`scripts/pipecat/test_run.py` and siblings), and `scripts/pipecat/conftest.py`
+installs `MagicMock` modules over the pipecat tree, including `pipecat.adapters` and
+`FunctionSchema`/`ToolsSchema` (`conftest.py:28-60`), into `sys.modules` for every
+test collected in that directory (`conftest.py:100-102`). Under it a real-library
+import of `pipecat.adapters.services.gemini_adapter` fails with
+`'pipecat.adapters' is not a package` (probe `rr1_s15_conftest_shadow.py`), so a
+real-library test placed there would neither skip cleanly nor test real pipecat.
+CI does not run pytest at all: `.circleci/config_work.yml` has no pytest step (the
+pipecat job, `go-test-pipecat-manager`, runs Go only). So:
+- Put the filter in its own small module `scripts/pipecat/gemini_tool_filter.py`
+  (about 40 lines) with `drop_gemini_invalid_tools(schemas, pipeline_id="", adapter_factory=None,
+  config_factory=None)`. It imports only `loguru` at module level; pipecat,
+  google-genai and pydantic are imported inside the function (15.5 step 1), so
+  importing the module needs neither real `run.py` nor pipecat. `run.py` imports it
+  (`from gemini_tool_filter import drop_gemini_invalid_tools`, next to the existing
+  local import `from message_filters import ...` at `run.py:44`), and the Dockerfile
+  already copies the whole directory (`bin-pipecat-manager/Dockerfile:20`). The two
+  factory parameters default to the real `GeminiLLMAdapter` and
+  `GenerateContentConfig` (with `ToolsSchema`, also imported inside the function).
+- Control-flow unit tests in `scripts/pipecat/test_gemini_tool_filter.py` (runs under
+  the existing mocked `conftest.py`) with injected fake adapter and config factories:
+  fast path, per-tool drop, fail open on a non-pydantic exception, fail open on
+  import error, fail open when the filtered set still fails. The fake raises a real
+  `pydantic.ValidationError` if pydantic is importable, otherwise the test module
+  skips (pydantic is not mocked by conftest).
+- Real-library test in a directory outside `scripts/pipecat/`, so that conftest is
+  never collected:
+  `bin-pipecat-manager/scripts/pipecat_realtest/test_gemini_tool_filter_real.py`
+  (a subdirectory of `scripts/pipecat/` would not do: pytest also loads
+  parent-directory conftests, checked with a two-file probe,
+  `~/.hermes/cache/scratch/pc/rr1_conftest_probe/`). It is not shipped (the
+  Dockerfile copies only `scripts/pipecat`, `bin-pipecat-manager/Dockerfile:20`). It
+  adds `scripts/pipecat` to `sys.path` and imports `gemini_tool_filter` only (never
+  `run.py`). It starts with
+  `pytest.importorskip("pipecat.adapters.services.gemini_adapter")` (the adapter
+  module, not `google.genai`: the adapter is what E calls, and it pulls in genai).
+  It reproduces `rv2_probe_e_hook.py`: a good tool plus an `x-mcp-header` tool fail
+  as a set, the filter keeps only the good one, the filtered set validates; plus one
+  case feeding the Go goldens of 15.7 item 4 through the adapter and
+  `GenerateContentConfig` (all accepted). Command:
+  `pytest --noconftest bin-pipecat-manager/scripts/pipecat_realtest` (`--noconftest`
+  as a second guard). Run manually during implementation in a venv with the pinned
+  versions (pipecat-ai 1.4.0 and google-genai 1.75.0 per
+  `scripts/pipecat/uv.lock`, the prod set per an.4) plus pytest (install it into that
+  venv first; the scratch venv has none); record the command and result
+  in the PR body. The mocked control-flow test for "fail open on import error" must
+  use `monkeypatch.setitem(sys.modules, "pipecat.adapters.services.gemini_adapter",
+  None)` as a deterministic guard (conftest mocks `pipecat.adapters*` but not that
+  submodule, so without the guard the outcome would depend on the environment).
+- State plainly in the PR body that CI does not run pytest, so the Python change is
+  not CI-tested and the real-library result is a manual record. Adding a pytest CI
+  job is out of scope (it belongs with track B, whose upgrade needs it).
+
+### 15.8 Pre-merge live verification
+
+Who: the CEO triggers it (paid provider calls; per the no-cost-test rule these are
+not automated). Claude prepares the payloads and the exact commands, and records the
+results in the PR body.
+
+Checklist:
+- [ ] Gemini (`gemini-2.5-flash`, the incident model) one request whose tool list is
+  the normalized real fixture set (15.7 item 4, including the list-`type` case) plus
+  the four synthetic tools (nested free-form `{type: object}`, nested
+  `properties: {}` as normalized, nullable `anyOf` with `{type: null}`, typeless
+  string enum) plus the current built-ins, through the pinned runner path (pipecat
+  1.4.0 adapter). Pass: HTTP 200 with a normal completion. If the nested
+  `properties: {}` probe is sent both raw and stripped, record which one the server
+  accepts (an.7 asks this); the rule R10 stays "strip" unless raw is also accepted.
+- [ ] Repeat the prod scenario end to end: the AI `6e391666` setup (or an equivalent
+  test AI with the GitHub-style MCP server) on the deployed branch, one messaging
+  turn, assistant reply received, runner log shows no `GenerateContentConfig`
+  validation error.
+- [ ] OpenAI (`openai.gpt-4o-mini` or the model in use): one call with the same
+  normalized tool set. Pass: 200.
+- [ ] Grok: one call with the same set. Pass: 200.
+- [ ] Negative check for E: temporarily feed one raw (unnormalized) `x-mcp-header`
+  tool to the runner locally (no paid call needed, validation is client-side):
+  built-ins survive, WARN logged. In the same local run, bypass E once (call the
+  runner without the filter) to confirm the new pipecat-manager WARN
+  `Pipecat runner reported an error` appears with `pipecatcall_reference_id` (15.6).
+
+Rollback: `MCP_TOOL_EXPOSURE_ENABLED=false` on ai-manager (§8, B27) makes
+`ResolveMcpTools` return nothing, so no MCP schema reaches any provider. The variable
+is not in `bin-ai-manager/k8s/` today, so flipping it means adding it to the
+Deployment env (or `kubectl set env deployment/<ai-manager> MCP_TOOL_EXPOSURE_ENABLED=false`
+for an immediate change, followed by the manifest change). Per-AI
+mitigation: clear `mcp_server_ids` on the affected AI. Neither A nor E changes the
+built-in path, so rollback of this addendum alone is a code revert.
+
+### 15.9 Docs to update at implementation
+
+- `bin-ai-manager/docs/operations.md`: no metrics table change (no new metric,
+  15.4; the `mcp_tool_advertised_total` row stays as is). Add a note under the
+  `## Alerting Guidance` heading: repeated `Dropped an mcp tool whose input schema
+  cannot be made provider-safe` WARN lines for one `mcp_server_id` mean that customer's MCP server
+  exposes schemas VoIPBin cannot advertise.
+- `bin-ai-manager/docs/domain.md`: extend the "MCP tools" paragraph (line 154) with
+  one sentence: input schemas are normalized to a provider-neutral subset before
+  advertisement; a tool whose schema cannot be normalized is not advertised; call
+  arguments are forwarded unchanged.
+- `bin-pipecat-manager/docs/operations.md`: note the Gemini per-tool validation
+  filter and the WARN `Pipecat runner reported an error` log line (troubleshooting
+  entry, no new metric).
+- Customer-facing RST (behavior change: tools can be silently omitted from what the
+  AI sees): `bin-api-manager/docsdev/source/ai_struct_mcpserver.rst`. The file has
+  two "Tool use scope" notes that disagree today: the first (lines 29-35) omits
+  realtime voice, the second (lines 97-99, under Status) excludes realtime voice
+  sessions. At implementation they are merged into one note at the first location,
+  keeping the second's scope text (realtime voice, `type=insight`, and team AI
+  calls excluded), and the Status copy is replaced by a `:ref:` to it. The schema
+  text goes into that merged note. Add: VoIPBin advertises each tool's input schema
+  in a provider-neutral subset (listed keywords), unsupported keywords are removed, an optional parameter whose
+  schema cannot be expressed is omitted, a tool whose required parameters cannot be
+  expressed is not offered to the AI, and the arguments the AI sends are forwarded to
+  the server unchanged, so the server's own validation still applies. Include a
+  short "schema tips" list (give every property a `type`; arrays need `items`; avoid
+  multi-member `allOf`; prefer string enums). Rebuild HTML per
+  `bin-api-manager/CLAUDE.md` (`python3 -m sphinx -M html source build`,
+  `git add -f docsdev/build/`).
+
+### 15.10 Risks and open questions
+
+| # | Item | Status / recommendation |
+|---|---|---|
+| R-1 | Server-side rejection of shapes the client accepts (format, enum, free-form object on non-2.5-flash Gemini models: 2.5-pro, 2.0-flash, pro-latest, `models/ai/main.go:156-159`) | Residual. Covered only by R3 conservatism and the 15.8 live call on 2.5-flash. Other models unverified (no traffic in 7 days, an.5A). Accept; note in PR body |
+| R-2 | OpenAI/Grok acceptance of the normalized subset unverified offline | 15.8 live calls are mandatory before merge |
+| R-3 | Constraint loss (`pattern`, `minLength`, `additionalProperties: false`, `format: uri`) lets the LLM send values the server rejects | By design; server validation plus B24 `isError` returns the failure to the LLM. Documented to customers (15.9) |
+| R-4 | Pre-existing at HEAD, widened by A: name-only paths store every discovered tool's name, including tools `decodeToolSchema` skips, so `mcp_tool_map` can name an unadvertised tool that is dispatched if the LLM invents the exact name. A adds its dropped tools. Variants: (a) a tool E drops stays in `toolMap` and its Python handler is registered; (b) when `persistToolMap` fails (`mcp_tool.go:188-193`, logged, not fatal) the name-only map from session start stays for that session (15.2) | Accept: never advertised, normally replaced by the advertised list on `ResolveMcpTools`, server validates. Fixing it would mean decoding and normalizing on name-only paths, which never decode schemas by design (memory, `mcp_tool.go:356-360`) |
+| R-5 | E is not CI-tested (no pytest job; conftest mocks pipecat) | Mitigated by a small standalone injectable module, mocked control-flow tests, one manual real-library test outside the mocked conftest's directory, recorded in the PR. CI pytest belongs to track B |
+| R-6 | Customer invisibility: the customer still gets no signal when a tool is dropped or a turn fails | Out of scope. O7 (square-admin surfacing) is the natural home; the WARN logs exist for support |
+| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; RTVI error text cap 2048 | For design review |
+| Q-2 | Should E also run for the team flow path (`team_flow.py`)? | No: team AIcalls never receive MCP tools (§2.4, an.7), and team built-ins already pass. Revisit with track B |
