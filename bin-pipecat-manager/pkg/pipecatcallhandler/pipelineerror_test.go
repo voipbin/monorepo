@@ -68,8 +68,9 @@ func Test_classifyPipelineError(t *testing.T) {
 
 		// isolating cases (VOIP-1543): each string matches ONLY the named matcher, so removing that
 		// matcher flips it to unknown. Together with the realistic cases above (which already isolate
-		// api_key_invalid, resource_exhausted, http 401, the auth status/code regex and the 4 timeout
-		// literals), every matcher in pipelineerror.go has one. A new matcher needs a new row here.
+		// resource_exhausted, http 401, the auth status/code regex and the 4 timeout literals), every
+		// matcher in pipelineerror.go has one. A new matcher needs a new row here.
+		{"isolate tier1 api_key_invalid", "reason: API_KEY_INVALID", message.ErrorCategoryAuthentication},
 		{"isolate tier1 invalid_api_key", "{'code': 'invalid_api_key'}", message.ErrorCategoryAuthentication},
 		{"isolate tier1 permission_denied", "status PERMISSION_DENIED", message.ErrorCategoryAuthentication},
 		{"isolate tier1 unauthenticated", "UNAUTHENTICATED: request had no credentials", message.ErrorCategoryAuthentication},
