@@ -275,6 +275,113 @@ func Test_Update_OAuthAuthTypeTransition(t *testing.T) {
 	}
 }
 
+// Test_Update_OAuthURLIsImmutable pins the companion gate to
+// Test_Update_OAuthAuthTypeTransition: an OAuth-connected server's url is the
+// vendor's own fixed MCP endpoint, written only by completing the OAuth
+// flow, and must not be changeable by a direct PUT while auth_type stays
+// oauth -- otherwise a customer (or anyone with console access) could
+// silently repoint the stored vendor access/refresh tokens at an arbitrary
+// server. Mirrors the auth_type gate's re-submit exemption: rejecting an
+// UNCHANGED url would 400 every rename/status toggle of a connected server,
+// since square-admin resends every field on every save.
+func Test_Update_OAuthURLIsImmutable(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	const storedURL = "https://api.githubcopilot.com/mcp/"
+
+	tests := []struct {
+		name string
+
+		storedAuthType mcpserver.AuthType
+		requestName    *string
+		requestURL     *string
+
+		wantRefused bool
+	}{
+		{
+			name:           "changing the url on an oauth-connected server is refused",
+			storedAuthType: mcpserver.AuthTypeOAuth,
+			requestURL:     strPtr("https://attacker.example.com/mcp"),
+			wantRefused:    true,
+		},
+		{
+			// The regression guard: square-admin's detail page resends the
+			// current url on every save, so re-submitting the SAME value
+			// must not be treated as a change.
+			name:           "re-submitting the same url on an oauth-connected server stays editable",
+			storedAuthType: mcpserver.AuthTypeOAuth,
+			requestURL:     strPtr(storedURL),
+			wantRefused:    false,
+		},
+		{
+			// Omitting url entirely (a rename/status-only PUT) must not
+			// trip the gate at all. Paired with a name change so the
+			// update is not the separate len(fields)==0 no-op path.
+			name:           "omitting url on an oauth-connected server stays editable",
+			storedAuthType: mcpserver.AuthTypeOAuth,
+			requestName:    strPtr("renamed"),
+			requestURL:     nil,
+			wantRefused:    false,
+		},
+		{
+			// Negative control: the same url change on a non-oauth server
+			// has no vendor tokens to protect and must be allowed, so the
+			// gate must key off the stored auth_type, not fire
+			// unconditionally on any url change.
+			name:           "changing the url on a bearer-auth server is unaffected",
+			storedAuthType: mcpserver.AuthTypeBearer,
+			requestURL:     strPtr("https://mcp.example.com/v2"),
+			wantRefused:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := newTestHandlerWithCrypto(t, mockDB, mockNotify)
+
+			stored := &mcpserver.McpServer{
+				Identity: identityFor(id, customerID),
+				Status:   mcpserver.StatusActive,
+				AuthType: tt.storedAuthType,
+				URL:      storedURL,
+			}
+
+			if tt.wantRefused {
+				// Only the existence gate's read happens; the refusal
+				// precedes the write.
+				mockDB.EXPECT().McpServerGet(gomock.Any(), id).Return(stored, nil)
+			} else {
+				mockDB.EXPECT().McpServerGet(gomock.Any(), id).Return(stored, nil).Times(2)
+				mockDB.EXPECT().McpServerUpdate(gomock.Any(), id, gomock.Any()).Return(nil)
+				mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), customerID, mcpserver.EventTypeUpdated, gomock.Any())
+			}
+
+			res, err := h.Update(context.Background(), id,
+				tt.requestName, nil, tt.requestURL, nil, nil, nil, nil)
+
+			if !tt.wantRefused {
+				if err != nil {
+					t.Fatalf("expected the update to be allowed, got: %v", err)
+				}
+				if res == nil {
+					t.Fatal("expected the updated server to be returned")
+				}
+				return
+			}
+
+			if err == nil {
+				t.Fatalf("expected the url change to be refused")
+			}
+			assertInvalidArgument(t, err, "MCP_SERVER_OAUTH_URL_IMMUTABLE")
+		})
+	}
+}
+
 // Test_Create_OAuthAuthTypeIsNotDirectlySettable is the create half of D17:
 // gating only Update would leave the same violating row reachable by POST.
 func Test_Create_OAuthAuthTypeIsNotDirectlySettable(t *testing.T) {

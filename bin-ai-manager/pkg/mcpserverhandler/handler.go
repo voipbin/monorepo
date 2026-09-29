@@ -224,6 +224,25 @@ func (h *mcpServerHandler) Update(
 		)
 	}
 
+	// An OAuth-connected server's URL is the vendor's own fixed MCP
+	// endpoint (e.g. GitHub's), not something the customer chose --
+	// completing the OAuth flow is what wrote it. Letting it be edited
+	// would send the stored vendor access/refresh tokens to whatever URL
+	// the customer (or an attacker with console access) puts here next,
+	// which is a credential-exfiltration path, not a configuration
+	// mistake. Reject only an actual CHANGE, not a re-submit of the
+	// current value: square-admin re-submits every field on every save,
+	// so rejecting an unchanged url would 400 every rename or
+	// enable/disable of a connected server, the same permanent-freeze
+	// shape auth_type's re-submit exemption above already avoids.
+	if url != nil && *url != live.URL && live.AuthType == mcpserver.AuthTypeOAuth {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAIManager,
+			"MCP_SERVER_OAUTH_URL_IMMUTABLE",
+			"url cannot be changed while auth_type is oauth; disconnect (move auth_type out of oauth) first",
+		)
+	}
+
 	fields := map[mcpserver.Field]any{}
 	if name != nil {
 		fields[mcpserver.FieldName] = *name
