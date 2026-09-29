@@ -19,12 +19,9 @@ type normalizer struct {
 
 	// defs holds the root's $defs and definitions maps, by keyword.
 	defs map[string]map[string]any
-	// expansions counts $ref expansions for the whole tool.
+	// expansions counts $ref expansions for the whole tool. The R7a
+	// look-ahead counts against its own budget (see refines).
 	expansions int
-	// lookExpansions counts the R7a look-ahead's $ref expansions for the
-	// whole tool. It has its own maxRefExpansions budget, so the look-ahead
-	// neither eats into the build's budget nor fans out without bound.
-	lookExpansions int
 
 	// maxOut is the per-tool output cap; nodes counts emitted subschemas.
 	// aborted is set once either limit is exceeded: the build stops and the
@@ -149,8 +146,17 @@ func (n *normalizer) node(raw any, path string, depth int, stack []string) (map[
 	if n.aborted {
 		return nil, errTooLarge
 	}
+	return n.nodeAs(raw, path, depth, stack, nil)
+}
+
+// nodeAs is node for an anyOf/oneOf member of a scalar parent: inherit
+// lists the parent's non-null scalar types a typeless member may take.
+func (n *normalizer) nodeAs(raw any, path string, depth int, stack []string, inherit []string) (map[string]any, *failure) {
+	if n.aborted {
+		return nil, errTooLarge
+	}
 	n.charge(visitBytes)
-	out, f := n.build(raw, path, depth, stack)
+	out, f := n.build(raw, path, depth, stack, inherit)
 	if f != nil {
 		return nil, f
 	}
@@ -158,8 +164,9 @@ func (n *normalizer) node(raw any, path string, depth int, stack []string) (map[
 	return out, nil
 }
 
-// build does node's work for one visited subschema.
-func (n *normalizer) build(raw any, path string, depth int, stack []string) (map[string]any, *failure) {
+// build does node's work for one visited subschema. inherit is nil except
+// for an anyOf/oneOf member of a scalar parent (see inheritedType).
+func (n *normalizer) build(raw any, path string, depth int, stack []string, inherit []string) (map[string]any, *failure) {
 	if depth > maxDepth {
 		return nil, &failure{reason: ReasonTooDeep, path: path}
 	}
@@ -175,9 +182,15 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 	n.countDropped(v)
 
 	members, hasMembers := n.anyOfMembers(v)
-	typ, isList, f := n.typeOf(v, path, hasMembers)
-	if f != nil {
-		return nil, f
+	var typ []string
+	var isList bool
+	if t, ok := n.inheritedType(v, inherit); ok {
+		typ = []string{t}
+	} else {
+		typ, isList, f = n.typeOf(v, path, hasMembers)
+		if f != nil {
+			return nil, f
+		}
 	}
 
 	// R7a: next to a type, an anyOf/oneOf whose members only add
@@ -195,7 +208,7 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 	if isList {
 		n.rep.Rewrites++
 		if hasMembers {
-			if _, f := n.anyOf(members, path, depth, stack); f != nil {
+			if _, f := n.anyOf(members, path, depth, stack, scalarsOf(typ)); f != nil {
 				return nil, f
 			}
 			n.rep.DroppedKeys++
@@ -214,7 +227,7 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 			}
 			listMembers = append(listMembers, member{raw: m, path: "/anyOf/" + strconv.Itoa(i)})
 		}
-		am, f := n.anyOf(listMembers, path, depth, stack)
+		am, f := n.anyOf(listMembers, path, depth, stack, nil)
 		if f != nil {
 			return nil, f
 		}
@@ -225,9 +238,11 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 	out := map[string]any{}
 	n.setDescription(out, v)
 
-	// No type: the subschema is its anyOf (R6).
+	// No type: the subschema is its anyOf (R6). A member of a scalar parent
+	// that is only a combinator passes the parent's types on to its own
+	// members, as JSON Schema applies them there too.
 	if len(typ) == 0 {
-		am, f := n.anyOf(members, path, depth, stack)
+		am, f := n.anyOf(members, path, depth, stack, inherit)
 		if f != nil {
 			return nil, f
 		}
@@ -249,15 +264,13 @@ func (n *normalizer) build(raw any, path string, depth int, stack []string) (map
 	// the anyOf is discarded and only the type is emitted. A leaf member of
 	// a scalar parent that names no type of its own takes the parent's
 	// type, as JSON Schema applies it, so {const: 1} under an integer is an
-	// integer member rather than an unusable typeless one. A member that
+	// integer member rather than an unusable typeless one; this is judged
+	// after the member's own $ref and allOf are resolved. A member that
 	// adds nothing but a description (a non-string const is dropped) keeps
 	// the bare type, so values the kept subset cannot carry are not
 	// advertised as empty alternatives.
 	if hasMembers {
-		if scalarTypes[ts] {
-			members = n.inheritType(members, ts)
-		}
-		am, f := n.anyOf(members, path, depth, stack)
+		am, f := n.anyOf(members, path, depth, stack, scalarsOf(typ))
 		if f != nil {
 			return nil, f
 		}
@@ -365,11 +378,12 @@ func (n *normalizer) anyOfMembers(v map[string]any) ([]member, bool) {
 
 // anyOf normalizes members one level deeper, removing unusable ones (R7).
 // It fails when no member is left, or only {type: null} members are.
-func (n *normalizer) anyOf(members []member, path string, depth int, stack []string) ([]any, *failure) {
+// inherit is passed to each member (see inheritedType).
+func (n *normalizer) anyOf(members []member, path string, depth int, stack []string, inherit []string) ([]any, *failure) {
 	out := make([]any, 0, len(members))
 	nonNull := 0
 	for _, m := range members {
-		nm, f := n.node(m.raw, path+m.path, depth+1, stack)
+		nm, f := n.nodeAs(m.raw, path+m.path, depth+1, stack, inherit)
 		if n.aborted {
 			return nil, errTooLarge
 		}
@@ -649,15 +663,15 @@ func (n *normalizer) countDropped(v map[string]any) {
 
 // refines reports whether any anyOf/oneOf member only adds constraints to
 // its parent (R7a). It is a look-ahead: it leaves the report and the build's
-// $ref expansion count as they were, counts its own $ref expansions against
-// a separate per-tool budget of maxRefExpansions, and is charged as work
-// (R12). Once that budget is spent, a member behind a further $ref is not a
-// refinement and is left to the normal anyOf evaluation.
+// $ref expansion count as they were, and is charged as work (R12). Each call
+// has its own budget of maxRefExpansions $ref expansions, so the verdict for
+// one subschema never depends on what other subschemas spent; maxWork bounds
+// the total. Once the budget is spent, a member behind a further $ref is not
+// a refinement and is left to the normal anyOf evaluation.
 func (n *normalizer) refines(members []member, path string, depth int, stack []string) bool {
 	rewrites, dropped, expansions := n.rep.Rewrites, n.rep.DroppedKeys, n.expansions
-	n.expansions = n.lookExpansions
+	n.expansions = 0
 	res := n.hasRefinementMember(members, path, depth, stack)
-	n.lookExpansions = n.expansions
 	n.rep.Rewrites, n.rep.DroppedKeys, n.expansions = rewrites, dropped, expansions
 	return res
 }
@@ -683,7 +697,6 @@ func (n *normalizer) isRefinement(raw any, path string, depth int, stack []strin
 	if n.aborted || depth > maxDepth {
 		return false
 	}
-	n.work(1)
 	mm, ok := raw.(map[string]any)
 	if !ok {
 		return false
@@ -724,39 +737,67 @@ func hasScalarConstraint(v map[string]any) bool {
 	return false
 }
 
-// inheritKeys are the keys that stop a member from taking its scalar
-// parent's type: it has a type or shape of its own, or its type comes from
-// a $ref, an allOf or its own members.
-var inheritKeys = []string{"type", "properties", "items", "$ref", "allOf", "anyOf", "oneOf"}
-
-// inheritType returns members with each leaf member that has none of
-// inheritKeys, and whose const (if any) is a value of type t, copied with
-// type t added. Each copy is a rewrite and charged as work (R12). A member
-// whose const is not of type t cannot match the parent and is left as it
-// is, so it stays unusable.
-func (n *normalizer) inheritType(members []member, t string) []member {
-	res := make([]member, 0, len(members))
-	for _, m := range members {
-		mm, ok := m.raw.(map[string]any)
-		if ok && !hasAnyKey(mm, inheritKeys) && constOfType(mm, t) {
-			c := make(map[string]any, len(mm)+1)
-			for k, x := range mm {
-				c[k] = x
-			}
-			c["type"] = t
-			n.work(len(c))
-			n.rep.Rewrites++
-			m = member{raw: c, path: m.path}
+// scalarsOf returns the non-null scalar types of a type list, the types an
+// anyOf/oneOf member of that subschema may inherit. It is nil when there
+// are none.
+func scalarsOf(typ []string) []string {
+	var res []string
+	for _, t := range typ {
+		if scalarTypes[t] {
+			res = append(res, t)
 		}
-		res = append(res, m)
 	}
 	return res
+}
+
+// ownTypeKeys are the keys that give a resolved member a type of its own,
+// so it does not take its parent's. A member with anyOf/oneOf passes the
+// parent's types on to its own members instead (see build).
+var ownTypeKeys = []string{"type", "properties", "items", "anyOf", "oneOf"}
+
+// inheritedType returns the first of inherit that a resolved leaf member v
+// takes (R10a): v has none of ownTypeKeys, a const (if any) that is a value
+// of the type, and an enum (if any) with at least one value of the type. A
+// member that fits none of inherit keeps its own type inference, so a
+// member that cannot match its parent stays unusable. Each inheritance is
+// a rewrite.
+func (n *normalizer) inheritedType(v map[string]any, inherit []string) (string, bool) {
+	if len(inherit) == 0 || hasAnyKey(v, ownTypeKeys) {
+		return "", false
+	}
+	for _, t := range inherit {
+		if constOfType(v, t) && n.enumHasType(v, t) {
+			n.rep.Rewrites++
+			return t, true
+		}
+	}
+	return "", false
 }
 
 // hasAnyKey reports whether m has any of keys.
 func hasAnyKey(m map[string]any, keys []string) bool {
 	for _, k := range keys {
 		if _, ok := m[k]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+// enumHasType reports whether v has no enum, or an enum list with at least
+// one value of scalar type t. The scan is charged as work (R12).
+func (n *normalizer) enumHasType(v map[string]any, t string) bool {
+	raw, present := v["enum"]
+	if !present {
+		return true
+	}
+	l, ok := raw.([]any)
+	if !ok {
+		return false
+	}
+	n.work(len(l))
+	for _, x := range l {
+		if valueOfType(x, t) {
 			return true
 		}
 	}
@@ -770,6 +811,11 @@ func constOfType(m map[string]any, t string) bool {
 	if !present {
 		return true
 	}
+	return valueOfType(c, t)
+}
+
+// valueOfType reports whether the decoded JSON value c is of scalar type t.
+func valueOfType(c any, t string) bool {
 	switch x := c.(type) {
 	case string:
 		return t == typeString

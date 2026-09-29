@@ -3,6 +3,7 @@ package mcpschema
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -624,6 +625,16 @@ func Test_Normalize_Rules(t *testing.T) {
 			want: `{"type":"object","properties":{"p":{"type":"string"},"q":{"type":"string"}},"required":["q"]}`,
 		},
 		{
+			name: "the look-ahead budget is per subschema: an optional DAG property does not turn a later required refinement into a drop",
+			in: `{"type":"object","$defs":{"L0":{"anyOf":[{"$ref":"#/$defs/L1"},{"$ref":"#/$defs/L1"},{"$ref":"#/$defs/L1"},{"$ref":"#/$defs/L1"},{"$ref":"#/$defs/L1"},{"$ref":"#/$defs/L1"}]},
+				"L1":{"anyOf":[{"$ref":"#/$defs/L2"},{"$ref":"#/$defs/L2"},{"$ref":"#/$defs/L2"},{"$ref":"#/$defs/L2"},{"$ref":"#/$defs/L2"},{"$ref":"#/$defs/L2"}]},
+				"L2":{"anyOf":[{"$ref":"#/$defs/L3"},{"$ref":"#/$defs/L3"},{"$ref":"#/$defs/L3"},{"$ref":"#/$defs/L3"},{"$ref":"#/$defs/L3"},{"$ref":"#/$defs/L3"}]},
+				"L3":{"anyOf":[{"$ref":"#/$defs/L4"},{"$ref":"#/$defs/L4"},{"$ref":"#/$defs/L4"},{"$ref":"#/$defs/L4"},{"$ref":"#/$defs/L4"},{"$ref":"#/$defs/L4"}]},
+				"L4":{"type":"string"},"F":{"required":["k"]}},
+				"properties":{"a":{"type":"string","anyOf":[{"$ref":"#/$defs/L0"},{"minLength":1}]},"b":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/F"}]}},"required":["b"]}`,
+			want: `{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"object","properties":{"k":{"type":"string"}}}},"required":["b"]}`,
+		},
+		{
 			name: "a member behind an unresolvable $ref is not a refinement and is removed by the evaluation",
 			in:   `{"type":"object","properties":{"s":{"type":"string","anyOf":[{"$ref":"#/$defs/missing"},{"type":"string","enum":["x"]}]}}}`,
 			want: `{"type":"object","properties":{"s":{"anyOf":[{"type":"string","enum":["x"]}]}}}`,
@@ -667,6 +678,61 @@ func Test_Normalize_Rules(t *testing.T) {
 			name: "a string enum member without a type takes the parent type",
 			in:   `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"const":"a"},{"enum":["b","c"]}]}}}`,
 			want: `{"type":"object","properties":{"s":{"anyOf":[{"type":"string","enum":["a"]},{"type":"string","enum":["b","c"]}]}}}`,
+		},
+		{
+			name: "integer documented consts behind $refs take the parent type",
+			in:   `{"type":"object","$defs":{"One":{"const":1,"description":"low"},"Two":{"const":2,"description":"high"}},"properties":{"n":{"type":"integer","oneOf":[{"$ref":"#/$defs/One"},{"$ref":"#/$defs/Two"}]}},"required":["n"]}`,
+			want: `{"type":"object","properties":{"n":{"type":"integer"}},"required":["n"]}`,
+			check: func(t *testing.T, rep Report) {
+				// oneOf, two $refs, two inherited types.
+				if rep.Rewrites != 5 {
+					t.Errorf("Wrong match. expect: 5 rewrites, got: %d", rep.Rewrites)
+				}
+			},
+		},
+		{
+			name: "nullable integer documented consts take the non-null list type",
+			in:   `{"type":"object","properties":{"n":{"type":["integer","null"],"oneOf":[{"const":1,"description":"low"},{"const":2,"description":"high"}]}},"required":["n"]}`,
+			want: `{"type":"object","properties":{"n":{"anyOf":[{"type":"integer"},{"type":"null"}]}},"required":["n"]}`,
+		},
+		{
+			name: "a number documented const keeps the bare type and the tool",
+			in:   `{"type":"object","properties":{"x":{"type":"number","oneOf":[{"const":1.5},{"const":2}]}},"required":["x"]}`,
+			want: `{"type":"object","properties":{"x":{"type":"number"}},"required":["x"]}`,
+		},
+		{
+			name:         "a member whose const is not of the parent type does not take it and stays unusable",
+			in:           `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"const":true}]}},"required":["s"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/s",
+		},
+		{
+			name: "a member whose enum has no value of the parent type does not take it",
+			in:   `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"enum":[1,2]},{"const":"a"}]}}}`,
+			want: `{"type":"object","properties":{"s":{"anyOf":[{"type":"string","enum":["a"]}]}}}`,
+		},
+		{
+			name: "a typed member of another scalar type keeps its own type",
+			in:   `{"type":"object","properties":{"x":{"type":"number","oneOf":[{"type":"integer","minimum":1},{"type":"integer","maximum":-1}]}}}`,
+			want: `{"type":"object","properties":{"x":{"type":"number"}}}`,
+		},
+		{
+			name: "a member that is only a combinator passes the parent type to its own members",
+			in:   `{"type":"object","properties":{"n":{"type":"integer","oneOf":[{"anyOf":[{"const":1},{"const":2}]}]}},"required":["n"]}`,
+			want: `{"type":"object","properties":{"n":{"type":"integer"}},"required":["n"]}`,
+			check: func(t *testing.T, rep Report) {
+				// oneOf, and one inherited type per const member.
+				if rep.Rewrites != 3 {
+					t.Errorf("Wrong match. expect: 3 rewrites, got: %d", rep.Rewrites)
+				}
+			},
+		},
+		{
+			name: "a format member counts as a constrained member",
+			in:   `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"const":"a"},{"type":"string","format":"date-time"}]}}}`,
+			want: `{"type":"object","properties":{"s":{"anyOf":[{"type":"string","enum":["a"]},{"type":"string","format":"date-time"}]}}}`,
 		},
 		{
 			name: "a shaped anyOf discarded next to a list type is counted as a dropped key",
@@ -940,4 +1006,38 @@ func Test_Normalize_Rules(t *testing.T) {
 			runNormalizeRow(t, tt)
 		})
 	}
+}
+
+func Test_Normalize_LookAheadBudgetIndependentOfBuild(t *testing.T) {
+	raw, want := refinementAfterBuildRefs(t, 252, 6)
+	runNormalizeRow(t, normalizeRow{
+		name: "the look-ahead budget does not start from the build's expansion count",
+		in:   raw,
+		want: want,
+		check: func(t *testing.T, rep Report) {
+			// The build's 252 expansions stay counted; the look-ahead's do not.
+			if rep.Rewrites != 252 {
+				t.Errorf("Wrong match. expect: 252 rewrites, got: %d", rep.Rewrites)
+			}
+		},
+	})
+}
+
+func Test_Normalize_InheritedEnumScanIsCharged(t *testing.T) {
+	// Each member resolves to an enum whose only integer value is last, so
+	// inheriting the parent type scans the whole list; nothing else charges
+	// it. 30 such scans exceed maxWork.
+	vals := strings.TrimSuffix(strings.Repeat(`"a",`, 9000), ",")
+	refs := strings.TrimSuffix(strings.Repeat(`{"$ref":"#/$defs/E"},`, 30), ",")
+	raw := `{"type":"object","$defs":{"E":{"enum":[` + vals + `,1]}},"properties":{"n":{"type":"integer","oneOf":[` + refs + `]}}}`
+	if len(raw) > 64<<10 {
+		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
+	}
+	runNormalizeRow(t, normalizeRow{
+		name:        "the enum scan of an inherited type is charged as work",
+		in:          raw,
+		want:        "null",
+		wantDropped: true,
+		wantReason:  ReasonTooLarge,
+	})
 }

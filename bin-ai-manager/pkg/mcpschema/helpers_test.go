@@ -202,6 +202,33 @@ func refinementDAG(t *testing.T, levels, width int) string {
 	return raw
 }
 
+// refinementAfterBuildRefs builds a tool whose first n properties are each
+// one $ref to a string, so the build spends n $ref expansions before the
+// required object property z, whose only anyOf member is a refinement
+// ({required: [k]}) behind a chain of hops $refs. It returns the raw schema
+// and the expected normalized output.
+func refinementAfterBuildRefs(t *testing.T, n, hops int) (string, string) {
+	props := make([]string, 0, n+1)
+	want := make([]string, 0, n+1)
+	for i := 0; i < n; i++ {
+		props = append(props, fmt.Sprintf(`"p%03d":{"$ref":"#/$defs/S"}`, i))
+		want = append(want, fmt.Sprintf(`"p%03d":{"type":"string"}`, i))
+	}
+	props = append(props, `"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/C0"}]}`)
+	want = append(want, `"z":{"type":"object","properties":{"k":{"type":"string"}}}`)
+	defs := []string{`"S":{"type":"string"}`}
+	for k := 0; k < hops-1; k++ {
+		defs = append(defs, fmt.Sprintf(`"C%d":{"$ref":"#/$defs/C%d"}`, k, k+1))
+	}
+	defs = append(defs, fmt.Sprintf(`"C%d":{"required":["k"]}`, hops-1))
+	raw := `{"type":"object","$defs":{` + strings.Join(defs, ",") + `},"properties":{` +
+		strings.Join(props, ",") + `},"required":["z"]}`
+	if len(raw) > 64<<10 {
+		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
+	}
+	return raw, `{"type":"object","properties":{` + strings.Join(want, ",") + `},"required":["z"]}`
+}
+
 // mustRaw marshals v compactly and asserts it fits the 64 KiB raw input
 // limit, so the shape is one decodeToolSchema would actually admit.
 func mustRaw(t *testing.T, v any) string {
