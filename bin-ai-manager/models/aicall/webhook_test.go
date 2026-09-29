@@ -2,6 +2,7 @@ package aicall
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -201,4 +202,94 @@ func TestConvertWebhookMessage_includesMetadata(t *testing.T) {
 
 func ptrTime(t time.Time) *time.Time {
 	return &t
+}
+
+// TestConvertWebhookMessage_McpToolMapNeverLeaks pins B22: a non-empty
+// mcp_tool_map metadata entry must never appear in ConvertWebhookMessage's
+// output -- it carries the customer's own MCP server UUIDs and remote tool
+// names, which must not leak onto the messaging webhook payload.
+func TestConvertWebhookMessage_McpToolMapNeverLeaks(t *testing.T) {
+	serverID := uuid.Must(uuid.NewV4())
+	h := &AIcall{
+		Metadata: map[string]any{
+			MetaKeyMcpToolMap: map[string]McpToolRef{
+				"mcp_aaaaaaaa_search_tickets": {ServerID: serverID, ToolName: "search_tickets"},
+			},
+		},
+	}
+
+	msg := h.ConvertWebhookMessage()
+
+	if _, ok := msg.Metadata[MetaKeyMcpToolMap]; ok {
+		t.Errorf("expected %q to be removed from the webhook projection, got: %v", MetaKeyMcpToolMap, msg.Metadata)
+	}
+	data, err := json.Marshal(msg)
+	if err != nil {
+		t.Fatalf("unexpected error marshaling: %v", err)
+	}
+	if strings.Contains(string(data), serverID.String()) {
+		t.Errorf("the mcp server UUID leaked into the webhook payload: %s", data)
+	}
+	if strings.Contains(string(data), "search_tickets") {
+		t.Errorf("the mcp remote tool name leaked into the webhook payload: %s", data)
+	}
+}
+
+// TestConvertWebhookMessage_McpToolStatusSummary pins B22's replacement: a
+// non-empty mcp_tool_map projects to mcp_tool_status={servers, tools} --
+// counts only, no server UUIDs, no tool names, no schemas.
+func TestConvertWebhookMessage_McpToolStatusSummary(t *testing.T) {
+	serverA := uuid.Must(uuid.NewV4())
+	serverB := uuid.Must(uuid.NewV4())
+	h := &AIcall{
+		Metadata: map[string]any{
+			MetaKeyMcpToolMap: map[string]McpToolRef{
+				"mcp_aaaaaaaa_search_tickets": {ServerID: serverA, ToolName: "search_tickets"},
+				"mcp_aaaaaaaa_create_ticket":  {ServerID: serverA, ToolName: "create_ticket"},
+				"mcp_bbbbbbbb_lookup_order":   {ServerID: serverB, ToolName: "lookup_order"},
+			},
+		},
+	}
+
+	msg := h.ConvertWebhookMessage()
+
+	raw, ok := msg.Metadata[MetaKeyMcpToolStatus]
+	if !ok {
+		t.Fatalf("expected %q key in Metadata, got: %v", MetaKeyMcpToolStatus, msg.Metadata)
+	}
+	status, ok := raw.(McpToolStatus)
+	if !ok {
+		t.Fatalf("expected %q to be an McpToolStatus, got: %T", MetaKeyMcpToolStatus, raw)
+	}
+	if status.Servers != 2 {
+		t.Errorf("expected Servers=2 (deduped by server id), got: %d", status.Servers)
+	}
+	if status.Tools != 3 {
+		t.Errorf("expected Tools=3, got: %d", status.Tools)
+	}
+}
+
+// TestConvertWebhookMessage_McpToolStatusAbsentWhenEmpty pins that an empty
+// or absent mcp_tool_map produces no mcp_tool_status key at all -- matching
+// existing PR B1 framing that the blast radius is nil until a non-empty map
+// exists in production traffic.
+func TestConvertWebhookMessage_McpToolStatusAbsentWhenEmpty(t *testing.T) {
+	tests := []struct {
+		name     string
+		metadata map[string]any
+	}{
+		{name: "no metadata at all", metadata: nil},
+		{name: "mcp_tool_map key absent", metadata: map[string]any{MetaKeyPromptSnapshots: []PromptSnapshot{}}},
+		{name: "mcp_tool_map present but empty", metadata: map[string]any{MetaKeyMcpToolMap: map[string]McpToolRef{}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &AIcall{Metadata: tt.metadata}
+			msg := h.ConvertWebhookMessage()
+			if _, ok := msg.Metadata[MetaKeyMcpToolStatus]; ok {
+				t.Errorf("expected no %q key, got: %v", MetaKeyMcpToolStatus, msg.Metadata)
+			}
+		})
+	}
 }

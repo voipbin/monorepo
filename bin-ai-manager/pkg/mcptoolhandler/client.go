@@ -330,20 +330,20 @@ func skipValue(dec *json.Decoder) error {
 // identified by serverID, with argumentsJSON passed through unchanged as the
 // JSON-RPC arguments object, and returns the joined text content of the
 // result.
-func (h *mcpToolHandler) CallTool(ctx context.Context, serverID uuid.UUID, toolName string, argumentsJSON string) (string, error) {
+func (h *mcpToolHandler) CallTool(ctx context.Context, serverID uuid.UUID, toolName string, argumentsJSON string) (string, bool, error) {
 	m, err := h.db.McpServerGet(ctx, serverID)
 	if err != nil {
-		return "", fmt.Errorf("mcptoolhandler.CallTool: could not get mcp server: %w", err)
+		return "", false, fmt.Errorf("mcptoolhandler.CallTool: could not get mcp server: %w", err)
 	}
 	if err := refuseDeleted("CallTool", m); err != nil {
-		return "", err
+		return "", false, err
 	}
 
 	var args any
 	if strings.TrimSpace(argumentsJSON) == "" {
 		args = map[string]any{}
 	} else if err := json.Unmarshal([]byte(argumentsJSON), &args); err != nil {
-		return "", fmt.Errorf("mcptoolhandler.CallTool: could not parse arguments JSON: %w", err)
+		return "", false, fmt.Errorf("mcptoolhandler.CallTool: could not parse arguments JSON: %w", err)
 	}
 
 	params := toolsCallParams{
@@ -353,12 +353,12 @@ func (h *mcpToolHandler) CallTool(ctx context.Context, serverID uuid.UUID, toolN
 
 	result, err := h.doJSONRPCRequest(ctx, m, "tools/call", params)
 	if err != nil {
-		return "", fmt.Errorf("mcptoolhandler.CallTool: %w", err)
+		return "", false, fmt.Errorf("mcptoolhandler.CallTool: %w", err)
 	}
 
 	var callResult toolsCallResult
 	if err := json.Unmarshal(result, &callResult); err != nil {
-		return "", fmt.Errorf("mcptoolhandler.CallTool: could not parse tools/call result: %w", err)
+		return "", false, fmt.Errorf("mcptoolhandler.CallTool: could not parse tools/call result: %w", err)
 	}
 
 	texts := make([]string, 0, len(callResult.Content))
@@ -368,5 +368,5 @@ func (h *mcpToolHandler) CallTool(ctx context.Context, serverID uuid.UUID, toolN
 		}
 	}
 
-	return strings.Join(texts, "\n"), nil
+	return strings.Join(texts, "\n"), callResult.IsError, nil
 }

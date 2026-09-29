@@ -83,6 +83,16 @@ type Config struct {
 	McpSecretEncryptionKeys   string // Comma-separated "<version>:<base64-32-byte-key>" pairs; the highest version is used for new writes, all listed versions remain available for decrypting existing rows.
 	McpToolCallTimeoutSeconds int    // Bounds one whole MCP call (tools/list or tools/call): its handshake, the method and one re-initialisation; the session close may run up to 250 ms past it.
 
+	// McpToolExposureEnabled is the global rollback switch for PR B2 (design
+	// docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md §8, B27).
+	// Checked exactly once, as the first line of aicallHandler.ResolveMcpTools,
+	// before any DB read, AI resolution or discovery. Nowhere else in the
+	// codebase checks it: disabling the feature must look exactly like "this
+	// AI has no MCP tools" to every caller (nil, nil), not an error. Default
+	// true post-merge; present so the feature CAN be flipped off without a
+	// deploy of new code if something goes wrong in production.
+	McpToolExposureEnabled bool
+
 	// MCP server OAuth 2.1 support (docs/plans/
 	// 2026-09-12-mcp-server-oauth-support-design.md §6). VoIPBin-owned,
 	// vendor-fixed OAuth app credentials -- NOT per-customer, NOT in the
@@ -146,6 +156,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("analysis_max_output_tokens", 16384, "Max output tokens for the analysis gateway (runaway guard)")
 	f.String("mcp_secret_encryption_keys", "", "Comma-separated <version>:<base64-32-byte-key> pairs for MCP server secret envelope encryption")
 	f.Int("mcp_tool_call_timeout_seconds", 10, "Timeout (seconds) for one whole MCP tools/list or tools/call, including its session handshake; the session close may run up to 250 ms past it")
+	f.Bool("mcp_tool_exposure_enabled", true, "Global rollback switch for MCP tool advertisement/dispatch to the LLM (PR B2, design B27); false makes ResolveMcpTools behave as if no AI has MCP tools")
 	f.String("mcp_oauth_github_client_id", "", "GitHub OAuth App client_id for MCP server OAuth (design doc 2026-09-12-mcp-server-oauth-support)")
 	f.String("mcp_oauth_github_client_secret", "", "GitHub OAuth App client_secret for MCP server OAuth")
 	f.String("mcp_oauth_linear_client_id", "", "Linear OAuth application client_id for MCP server OAuth")
@@ -195,6 +206,7 @@ func bindConfig(cmd *cobra.Command) error {
 
 		"mcp_secret_encryption_keys":     "MCP_SECRET_ENCRYPTION_KEYS",
 		"mcp_tool_call_timeout_seconds":  "MCP_TOOL_CALL_TIMEOUT_SECONDS",
+		"mcp_tool_exposure_enabled":      "MCP_TOOL_EXPOSURE_ENABLED",
 		"mcp_oauth_github_client_id":     "MCP_OAUTH_GITHUB_CLIENT_ID",
 		"mcp_oauth_github_client_secret": "MCP_OAUTH_GITHUB_CLIENT_SECRET",
 		"mcp_oauth_linear_client_id":     "MCP_OAUTH_LINEAR_CLIENT_ID",
@@ -271,6 +283,7 @@ func LoadGlobalConfig() {
 
 			McpSecretEncryptionKeys:   viper.GetString("mcp_secret_encryption_keys"),
 			McpToolCallTimeoutSeconds: viper.GetInt("mcp_tool_call_timeout_seconds"),
+			McpToolExposureEnabled:    viper.GetBool("mcp_tool_exposure_enabled"),
 
 			McpOAuthGithubClientID:     viper.GetString("mcp_oauth_github_client_id"),
 			McpOAuthGithubClientSecret: viper.GetString("mcp_oauth_github_client_secret"),

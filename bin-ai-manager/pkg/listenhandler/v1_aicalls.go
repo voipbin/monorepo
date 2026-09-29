@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -322,6 +323,53 @@ func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m
 	if err != nil {
 		log.Errorf("Could not execute tool. err: %v", err)
 		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1AIcallsIDToolsMcpGet handles GET /v1/aicalls/<aicall-id>/tools/mcp
+// (B12): returns the AIcall's MCP-derived tools ONLY, backing the
+// AIV1AIcallToolList RPC. Response is the domain []tool.Tool slice marshaled
+// directly -- no new response.* DTO (design §2.1's "style A", matching
+// AIV1ToolList's existing response shape).
+func (h *listenHandler) processV1AIcallsIDToolsMcpGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1AIcallsIDToolsMcpGet",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	tmp, err := h.aicallHandler.ResolveMcpTools(ctx, id)
+	if err != nil {
+		log.Errorf("Could not resolve mcp tools. err: %v", err)
+		return errorResponse(err), nil
+	}
+	if tmp == nil {
+		// A nil slice marshals to "null", which parseResponse's
+		// json.Unmarshal on the client side would otherwise decode into a
+		// nil slice too -- semantically identical to []tool.Tool{} for every
+		// caller here, but sent as an explicit empty array for a stable wire
+		// shape (never "null" on this endpoint).
+		tmp = []tool.Tool{}
 	}
 
 	data, err := json.Marshal(tmp)

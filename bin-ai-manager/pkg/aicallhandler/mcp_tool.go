@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/mcpserver"
@@ -33,7 +34,7 @@ const mcpToolNamePrefix = "mcp_"
 // Go's structural typing lets toolhandler.ToolHandler (constructed once in
 // cmd/ai-manager) satisfy this narrower interface with no import needed here.
 type toolNameResolver interface {
-	GetByNames(names []tool.ToolName) []tool.Tool
+	GetByNames(aiType ai.Type, names []tool.ToolName) []tool.Tool
 }
 
 // resolveMcpToolMap discovers the tools of the AI a's whitelisted MCP servers
@@ -49,37 +50,42 @@ func (h *aicallHandler) resolveMcpToolMap(ctx context.Context, a *ai.AI) map[str
 	return toolMap
 }
 
-// resolveTools builds the merged LLM tool list (VoIPBin built-ins + the
-// customer's whitelisted McpServer tools) for the AI a, and the same tool map
-// resolveMcpToolMap returns. Unlike resolveMcpToolMap it decodes each input
-// schema, within the limits in decodeToolSchema.
+// resolveMcpOnly discovers, decodes and caps the AI a's whitelisted MCP
+// servers' tools ONLY -- never VoIPBin's built-in tool set. It is the
+// single "resolve this AI's MCP tools" primitive the rest of this package
+// (ResolveMcpTools below) and pipecat's own built-in resolver
+// (bin-pipecat-manager's toolHandler.GetByNames) compose around; the two
+// must never overlap; see ResolveMcpTools's own doc comment for why a
+// merged view does not exist in this package (design
+// docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md §2.3).
 //
-// No session-start path calls this yet: they need only the map, and decoding
-// schemas nobody reads would cost memory on every session start. It is the
-// entry point for advertising MCP tools to a model (PR B2), which must also
-// enforce description limits before it does.
-//
-// Built-ins are resolved via the existing toolhandler.ToolHandler.GetByNames
-// (unchanged, not duplicated here).
-func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool, map[string]aicall.McpToolRef, error) {
+// It decodes each input schema, within the limits in decodeToolSchema,
+// unlike resolveMcpToolMap (which keeps only names for the map-only
+// session-start paths that do not advertise anything).
+func (h *aicallHandler) resolveMcpOnly(ctx context.Context, a *ai.AI) ([]tool.Tool, map[string]aicall.McpToolRef, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "resolveTools",
+		"func":  "resolveMcpOnly",
 		"ai_id": a.ID,
 	})
 
-	builtins := []tool.Tool{}
-	if h.toolNameResolver != nil {
-		builtins = h.toolNameResolver.GetByNames(a.ToolNames)
-	}
-
-	merged := make([]tool.Tool, 0, len(builtins))
-	merged = append(merged, builtins...)
-
+	mcpTools := make([]tool.Tool, 0)
 	toolMap := map[string]aicall.McpToolRef{}
 	schemaBudget := mcpToolSchemaBudgetBytes
 	skipped := map[uuid.UUID]*schemaSkips{}
 
+	// B5 residual: two servers whose 8-hex namespace prefix genuinely
+	// collide (or a mis-cased duplicate) could otherwise resolve the same
+	// namespaced name twice. The second occurrence is dropped and logged;
+	// the tool map is never last-write-wins for a name already claimed by
+	// an earlier discoverMcpTools entry.
+	seenNames := map[string]struct{}{}
+
 	for _, d := range h.discoverMcpTools(ctx, a, true) {
+		if _, dup := seenNames[d.name]; dup {
+			log.Warnf("Dropped a duplicate resolved mcp tool name; keeping the first occurrence. tool_name: %s, mcp_server_id: %s", d.name, d.ref.ServerID)
+			continue
+		}
+
 		params, why := decodeToolSchema(d.inputSchema, &schemaBudget)
 		if why != schemaOK {
 			s := skipped[d.ref.ServerID]
@@ -95,7 +101,8 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 			continue
 		}
 
-		merged = append(merged, tool.Tool{
+		seenNames[d.name] = struct{}{}
+		mcpTools = append(mcpTools, tool.Tool{
 			Name:        tool.ToolName(d.name),
 			Description: d.description,
 			Parameters:  params,
@@ -108,7 +115,98 @@ func (h *aicallHandler) resolveTools(ctx context.Context, a *ai.AI) ([]tool.Tool
 		log.Warnf("Skipped mcp tools whose input schema could not be used. mcp_server_id: %s, too_large_or_malformed: %d, over_shared_budget: %d", serverID, s.invalid, s.overBudget)
 	}
 
-	return merged, toolMap, nil
+	return mcpTools, toolMap, nil
+}
+
+// ResolveMcpTools returns ONLY the AIcall aicallID's MCP-derived tools
+// (already namespaced, schema-decoded, capped) -- never VoIPBin's built-in
+// tool set. It is the AIcallHandler-exported method backing the
+// AIV1AIcallToolList RPC (design §2.1/§2.3); pipecat's own runner.go keeps
+// resolving built-ins itself via its own toolHandler.GetByNames, unchanged --
+// this method supplements that list, so it must not repeat it. A merged
+// (built-ins+MCP) resolver does not exist in this package: the design's
+// round-1 review found that shape doubles every built-in tool once both
+// halves are appended by two different callers.
+//
+// As a side effect, on a non-empty, non-error resolution it refreshes
+// MetaKeyMcpToolMap via persistToolMap from exactly the tools this call
+// returns (D15: the map the dispatch path reads must be built from this
+// capped, filtered list, not a wider pre-cap one) -- a persist failure is
+// logged and non-fatal; the resolved tools are still returned.
+func (h *aicallHandler) ResolveMcpTools(ctx context.Context, aicallID uuid.UUID) ([]tool.Tool, error) {
+	// B27, checked first, before any DB/RPC work. Disabling the feature
+	// must look exactly like "this AI has no MCP tools" to every caller,
+	// not an error.
+	if !config.Get().McpToolExposureEnabled {
+		return nil, nil
+	}
+
+	c, err := h.Get(ctx, aicallID)
+	if err != nil {
+		return nil, err
+	}
+
+	// B11: a team AIcall's per-member tools come from the team resolution
+	// path (resolvedTeam in bin-pipecat-manager's runner.go), never from
+	// here. No AI is even resolved for a team AIcall.
+	if c.AssistanceType == aicall.AssistanceTypeTeam {
+		return nil, nil
+	}
+
+	a, err := h.aiHandler.Get(ctx, c.AssistanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	// B10: Insight AIs never get MCP tools. discoverMcpTools also gates on
+	// this internally (defense-in-depth, §2.4), so this branch is
+	// redundant belt-and-suspenders, not the only enforcement.
+	if a.Type == ai.TypeInsight {
+		return nil, nil
+	}
+
+	mcpTools, toolMap, err := h.resolveMcpOnly(ctx, a)
+	if err != nil {
+		return nil, err
+	}
+	if len(mcpTools) > 0 {
+		promMcpToolAdvertisedTotal.Inc()
+	}
+
+	if errPersist := h.persistToolMap(ctx, c, toolMap); errPersist != nil {
+		logrus.WithFields(logrus.Fields{
+			"func":      "ResolveMcpTools",
+			"aicall_id": c.ID,
+		}).WithError(errPersist).Warnf("could not persist refreshed mcp tool map for aicall %s", c.ID)
+	}
+
+	return mcpTools, nil
+}
+
+// persistToolMap writes toolMap into c's MetaKeyMcpToolMap, re-reading c's
+// row immediately before merging so a concurrent writer (another
+// ResolveMcpTools run for the same AIcall from a Python-side reconnect, or
+// refreshMcpToolMap/writeInsightSessionMetadata on another path) is merged
+// rather than clobbered -- the same read-modify-write-by-key discipline
+// refreshMcpToolMap already uses, parameterized to take the tool map
+// directly rather than re-resolving it (ResolveMcpTools already has toolMap
+// in hand from resolveMcpOnly and must not call discoverMcpTools again just
+// to get the same result).
+func (h *aicallHandler) persistToolMap(ctx context.Context, c *aicall.AIcall, toolMap map[string]aicall.McpToolRef) error {
+	cur, err := h.db.AIcallGet(ctx, c.ID)
+	if err != nil {
+		return err
+	}
+
+	metadata := map[string]any{}
+	for k, v := range cur.Metadata {
+		metadata[k] = v
+	}
+	metadata[aicall.MetaKeyMcpToolMap] = toolMap
+
+	return h.db.AIcallUpdateNoTouchTMUpdate(ctx, c.ID, map[aicall.Field]any{
+		aicall.FieldMetadata: metadata,
+	})
 }
 
 // discoveredMcpTool is one tool taken from a whitelisted server, already
@@ -264,6 +362,18 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 		return res
 	}
 
+	// B10 residual: Insight AIs never get MCP tools, discovery included, not
+	// only advertisement. PR B1 gated the SAVE path (a whitelist cannot be
+	// written onto an Insight AI going forward) but writeInsightSessionMetadata
+	// still called resolveMcpToolMap unconditionally, discovering (though not
+	// yet advertising, since nothing consumed the result) tools for any
+	// Insight AI holding a pre-B1 or exempted-identical whitelist. This is
+	// the single point every caller of discoverMcpTools passes through, so
+	// gating here closes that hole for all of them at once.
+	if a.Type == ai.TypeInsight {
+		return res
+	}
+
 	waitLeft := mcpDiscoverySlotWait
 
 	for i, serverID := range a.McpServerIDs {
@@ -413,6 +523,7 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 	if !ok {
 		log.Debugf("could not resolve mcp tool name from aicall metadata.")
 		fillFailed(res, errMcpToolCallFailed("unknown mcp tool call"))
+		promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeFailed).Inc()
 		return res
 	}
 
@@ -429,12 +540,14 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 		// per-call recoverable refusal, and the neighbouring gates below warn too.
 		log.Warnf("Could not resolve the ai for the mcp tool call. refusing.")
 		fillFailed(res, errMcpToolCallFailed("could not retrieve AI configuration"))
+		promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeFailed).Inc()
 		return res
 	}
 
 	if !mcpServerIDIsWhitelisted(tmpAI.McpServerIDs, ref.ServerID) {
 		log.Warnf("Mcp server is no longer whitelisted for this ai, refusing the call. mcp_server_id: %s", ref.ServerID)
 		fillFailed(res, errMcpToolCallFailed("mcp tool is no longer available"))
+		promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeFailed).Inc()
 		return res
 	}
 
@@ -442,22 +555,37 @@ func (h *aicallHandler) toolHandleMcpCall(ctx context.Context, c *aicall.AIcall,
 	if err != nil {
 		log.Errorf("Could not get mcp server. mcp_server_id: %s, err: %v", ref.ServerID, err)
 		fillFailed(res, errMcpToolCallFailed("mcp tool is no longer available"))
+		promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeFailed).Inc()
 		return res
 	}
 	if ok, why := mcpServerIsUsable(server, tmpAI); !ok {
 		log.Warnf("Mcp server is not usable, refusing the call. mcp_server_id: %s, reason: %s", ref.ServerID, why)
 		fillFailed(res, errMcpToolCallFailed("mcp tool is no longer available"))
+		promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeFailed).Inc()
 		return res
 	}
 
-	msg, err := h.mcptoolHandler.CallTool(ctx, ref.ServerID, ref.ToolName, tc.Function.Arguments)
+	msg, isError, err := h.mcptoolHandler.CallTool(ctx, ref.ServerID, ref.ToolName, tc.Function.Arguments)
 	if err != nil {
 		log.Errorf("Mcp tool call failed. mcp_server_id: %s, tool_name: %s, err: %v", ref.ServerID, ref.ToolName, capErrText(err.Error(), 200))
 		fillFailed(res, errMcpToolCallFailed("MCP tool call failed"))
+		promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeFailed).Inc()
+		return res
+	}
+	if isError {
+		// B24: the remote server itself reported this tools/call as an
+		// error (toolsCallResult.IsError) -- err is nil because the JSON-RPC
+		// round trip succeeded, but the tool's own outcome did not. Treating
+		// this as success would let a hostile or broken server's error text
+		// read as a completed action to the LLM.
+		log.Warnf("Mcp tool call reported an error result. mcp_server_id: %s, tool_name: %s", ref.ServerID, ref.ToolName)
+		fillFailed(res, errMcpToolCallFailed(capErrText(msg, 200)))
+		promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeError).Inc()
 		return res
 	}
 
 	fillSuccess(res, "mcp_tool", ref.ServerID.String(), msg)
+	promMcpToolCallOutcomeTotal.WithLabelValues(mcpToolCallOutcomeSuccess).Inc()
 	return res
 }
 

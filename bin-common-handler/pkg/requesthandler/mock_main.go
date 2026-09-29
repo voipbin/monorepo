@@ -599,6 +599,21 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallToolExecute(ctx, aicallID, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallToolExecute", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallToolExecute), ctx, aicallID, toolID, toolType, function, pipecatcallID)
 }
 
+// AIV1AIcallToolList mocks base method.
+func (m *MockRequestHandler) AIV1AIcallToolList(ctx context.Context, aicallID uuid.UUID) ([]tool.Tool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIcallToolList", ctx, aicallID)
+	ret0, _ := ret[0].([]tool.Tool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIcallToolList indicates an expected call of AIV1AIcallToolList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallToolList(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallToolList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallToolList), ctx, aicallID)
+}
+
 // AIV1McpOAuthCallback mocks base method.
 func (m *MockRequestHandler) AIV1McpOAuthCallback(ctx context.Context, state string) (bool, error) {
 	m.ctrl.T.Helper()

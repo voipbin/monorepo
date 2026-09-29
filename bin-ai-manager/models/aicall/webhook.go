@@ -75,13 +75,125 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 
 		STTLanguage: h.STTLanguage,
 
-		Metadata: h.Metadata,
+		Metadata: mcpProjectedMetadata(h.Metadata),
 
 		TMEnd:    h.TMEnd,
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
 		TMDelete: h.TMDelete,
 	}
+}
+
+// McpToolStatus is the documented, non-identifying summary
+// ConvertWebhookMessage substitutes for a non-empty MetaKeyMcpToolMap (B22,
+// design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md §7). No
+// server UUIDs, no tool names, no schemas -- counts only.
+type McpToolStatus struct {
+	Servers int `json:"servers"`
+	Tools   int `json:"tools"`
+}
+
+// MetaKeyMcpToolStatus is the webhook-projection-only Metadata key
+// ConvertWebhookMessage writes in place of MetaKeyMcpToolMap (B22). It is
+// never written to the stored AIcall row itself -- only to the WebhookMessage
+// this function returns.
+const MetaKeyMcpToolStatus = "mcp_tool_status"
+
+// mcpProjectedMetadata copies raw (the stored AIcall's Metadata) with
+// MetaKeyMcpToolMap removed and, when it was non-empty, replaced with a
+// derived MetaKeyMcpToolStatus summary (B22). This is a breaking payload
+// change relative to the field the pre-B12 caveat commit
+// (NOJIRA-Caveat-mcp-tool-use-not-yet-available) already stated as
+// present-but-always-empty: PR B2 is what first makes a non-empty map
+// possible in production traffic, so this ships in the same PR that turns
+// advertisement on -- no window opens where the raw map could leak.
+func mcpProjectedMetadata(raw map[string]any) map[string]any {
+	if raw == nil {
+		return nil
+	}
+
+	out := make(map[string]any, len(raw))
+	for k, v := range raw {
+		if k == MetaKeyMcpToolMap {
+			continue
+		}
+		out[k] = v
+	}
+
+	if status, ok := mcpToolStatusFromRaw(raw[MetaKeyMcpToolMap]); ok {
+		out[MetaKeyMcpToolStatus] = status
+	}
+
+	return out
+}
+
+// mcpToolStatusFromRaw summarizes v (the raw MetaKeyMcpToolMap value, in
+// either the in-process map[string]McpToolRef shape or the map[string]any
+// shape Metadata carries after a JSON round trip) into an McpToolStatus.
+// ok is false, and no summary is produced, for an absent, malformed, or
+// empty map -- matching the "blast radius nil" framing: no entry means no
+// mcp_tool_status key at all, not an empty one.
+func mcpToolStatusFromRaw(v any) (McpToolStatus, bool) {
+	servers := map[uuid.UUID]struct{}{}
+	tools := 0
+
+	switch tm := v.(type) {
+	case map[string]McpToolRef:
+		for _, ref := range tm {
+			servers[ref.ServerID] = struct{}{}
+			tools++
+		}
+
+	case map[string]any:
+		for _, entry := range tm {
+			ref, ok := decodeMcpToolRefForStatus(entry)
+			if !ok {
+				continue
+			}
+			servers[ref.ServerID] = struct{}{}
+			tools++
+		}
+
+	default:
+		return McpToolStatus{}, false
+	}
+
+	if tools == 0 {
+		return McpToolStatus{}, false
+	}
+
+	return McpToolStatus{Servers: len(servers), Tools: tools}, true
+}
+
+// decodeMcpToolRefForStatus decodes one MetaKeyMcpToolMap entry after a JSON
+// round trip (server_id/tool_name keys, McpToolRef's json tags), for
+// counting purposes only. Malformed entries are skipped, not counted --
+// matching this whole path's fail-closed posture elsewhere.
+func decodeMcpToolRefForStatus(v any) (McpToolRef, bool) {
+	if ref, ok := v.(McpToolRef); ok {
+		return ref, true
+	}
+
+	m, ok := v.(map[string]any)
+	if !ok {
+		return McpToolRef{}, false
+	}
+
+	serverIDRaw, ok := m["server_id"].(string)
+	if !ok {
+		return McpToolRef{}, false
+	}
+	serverID, err := uuid.FromString(serverIDRaw)
+	if err != nil {
+		return McpToolRef{}, false
+	}
+
+	toolName, ok := m["tool_name"].(string)
+	if !ok {
+		return McpToolRef{}, false
+	}
+
+	return McpToolRef{ServerID: serverID, ToolName: toolName}, true
 }
 
 // CreateWebhookEvent generate WebhookEvent

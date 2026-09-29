@@ -9,6 +9,7 @@ import (
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
+	amtool "monorepo/bin-ai-manager/models/tool"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -583,6 +584,92 @@ func Test_AIV1AIcallGetSkipCache(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_AIV1AIcallToolList mirrors Test_AIV1AIcallGet's shape (B12): the RPC
+// is a GET to /v1/aicalls/<aicall-id>/tools/mcp on the AI queue, carrying no
+// body (ContentTypeNone), and its response is a domain []amtool.Tool slice
+// marshaled directly -- no new response.* DTO (design §2.1's "style A").
+func Test_AIV1AIcallToolList(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicallID uuid.UUID
+
+		expectQueue   string
+		expectRequest *sock.Request
+
+		response  *sock.Response
+		expectRes []amtool.Tool
+	}{
+		{
+			name: "normal - returns mcp tools",
+
+			aicallID: uuid.FromStringOrNil("d3937170-ee3b-40d0-8b81-4261e5bb5ba4"),
+
+			expectQueue: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:    "/v1/aicalls/d3937170-ee3b-40d0-8b81-4261e5bb5ba4/tools/mcp",
+				Method: sock.RequestMethodGet,
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`[{"name":"mcp_aaaaaaaa_search_tickets","description":"search","parameters":{"type":"object"},"run_llm":true}]`),
+			},
+			expectRes: []amtool.Tool{
+				{
+					Name:        "mcp_aaaaaaaa_search_tickets",
+					Description: "search",
+					Parameters:  map[string]any{"type": "object"},
+					RunLLM:      true,
+				},
+			},
+		},
+		{
+			name: "normal - empty result",
+
+			aicallID: uuid.FromStringOrNil("e3937170-ee3b-40d0-8b81-4261e5bb5ba4"),
+
+			expectQueue: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:    "/v1/aicalls/e3937170-ee3b-40d0-8b81-4261e5bb5ba4/tools/mcp",
+				Method: sock.RequestMethodGet,
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`[]`),
+			},
+			expectRes: []amtool.Tool{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AIV1AIcallToolList(ctx, tt.aicallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})

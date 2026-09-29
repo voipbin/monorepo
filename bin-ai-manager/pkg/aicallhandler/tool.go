@@ -6,7 +6,9 @@ import (
 	stderrors "errors"
 	"fmt"
 	"strings"
+	"time"
 
+	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
@@ -20,6 +22,29 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+)
+
+// labelForToolExecuteMetric returns the Prometheus label value for
+// promAIcallToolExecuteTotal (B17/B18): a bounded "mcp" for any mcp_-prefixed
+// tool name, never the raw name itself. A built-in tool's name is one of a
+// fixed ~20-member enum, bounded and safe to use directly; an mcp tool's
+// resolved name is mcp_<8hex>_<remote_tool_name>, where <remote_tool_name>
+// is chosen by the customer's own MCP server and therefore unbounded --
+// using it as a label value would let a customer's tool naming grow
+// Prometheus's cardinality without limit. The concrete name is still
+// available in the log line, which is the cardinality-safe surface for it.
+func labelForToolExecuteMetric(name message.FunctionCallName) string {
+	if strings.HasPrefix(string(name), mcpToolNamePrefix) {
+		return "mcp"
+	}
+	return string(name)
+}
+
+// mcp tool call outcome labels for promMcpToolCallOutcomeTotal (B17/B18).
+const (
+	mcpToolCallOutcomeSuccess = "success"
+	mcpToolCallOutcomeError   = "error"  // B24: isError:true, the remote server itself reported failure
+	mcpToolCallOutcomeFailed  = "failed" // transport/dispatch failure, or a fail-closed gate refusing the call
 )
 
 func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error) {
@@ -120,7 +145,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameEmitInfoCard:           h.toolHandleEmitInfoCard,
 	}
 
-	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
+	promAIcallToolExecuteTotal.WithLabelValues(labelForToolExecuteMetric(tool.Function.Name)).Inc()
 
 	var tmpMessageContent *messageContent
 	// Tagged switch on the tool name (staticcheck QF1002); the shape is
@@ -139,7 +164,20 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		fn, exists := mapFunctions[tool.Function.Name]
 		if !exists {
 			if strings.HasPrefix(string(tool.Function.Name), mcpToolNamePrefix) {
-				tmpMessageContent = h.toolHandleMcpCall(ctx, c, tool)
+				// B25: listenhandler's RPC consumer loop runs this whole
+				// ToolHandle call under context.Background() (no deadline of
+				// its own) -- CallTool's internal timeout
+				// (mcp_tool_call_timeout_seconds) already bounds the
+				// TRANSPORT round-trip to the remote MCP server, but NOT
+				// whatever toolHandleMcpCall does with the result afterward
+				// (response parsing, fillSuccess/fillFailed, the DB/cache
+				// writes those trigger). Wrap the whole call so a hangup
+				// mid-dispatch cannot leave a side-effecting remote call's
+				// post-processing running unbounded; additive to, not
+				// redundant with, CallTool's own internal bound.
+				mcpCtx, mcpCancel := context.WithTimeout(ctx, time.Duration(config.Get().McpToolCallTimeoutSeconds)*time.Second)
+				tmpMessageContent = h.toolHandleMcpCall(mcpCtx, c, tool)
+				mcpCancel()
 			} else {
 				log.Debugf("unknown tool call: %s", tool.Function.Name)
 				// Record a failure result message before returning. Without this the

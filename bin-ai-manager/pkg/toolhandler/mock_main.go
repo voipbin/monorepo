@@ -10,6 +10,7 @@
 package toolhandler
 
 import (
+	ai "monorepo/bin-ai-manager/models/ai"
 	tool "monorepo/bin-ai-manager/models/tool"
 	reflect "reflect"
 
@@ -55,15 +56,15 @@ func (mr *MockToolHandlerMockRecorder) GetAll() *gomock.Call {
 }
 
 // GetByNames mocks base method.
-func (m *MockToolHandler) GetByNames(names []tool.ToolName) []tool.Tool {
+func (m *MockToolHandler) GetByNames(aiType ai.Type, names []tool.ToolName) []tool.Tool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByNames", names)
+	ret := m.ctrl.Call(m, "GetByNames", aiType, names)
 	ret0, _ := ret[0].([]tool.Tool)
 	return ret0
 }
 
 // GetByNames indicates an expected call of GetByNames.
-func (mr *MockToolHandlerMockRecorder) GetByNames(names any) *gomock.Call {
+func (mr *MockToolHandlerMockRecorder) GetByNames(aiType, names any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByNames", reflect.TypeOf((*MockToolHandler)(nil).GetByNames), names)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByNames", reflect.TypeOf((*MockToolHandler)(nil).GetByNames), aiType, names)
 }

@@ -24,6 +24,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
@@ -49,6 +50,12 @@ type AIcallHandler interface {
 	RunListenTurn(ctx context.Context, aicallID uuid.UUID)
 
 	ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error)
+
+	// ResolveMcpTools returns ONLY the given AIcall's MCP-derived tools
+	// (design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md §2.3,
+	// B12) -- never VoIPBin's built-in tool set. Backs the AIV1AIcallToolList
+	// RPC.
+	ResolveMcpTools(ctx context.Context, aicallID uuid.UUID) ([]tool.Tool, error)
 
 	Start(
 		ctx context.Context,
@@ -218,9 +225,32 @@ var (
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
 			Name:      "aicall_tool_execute_total",
-			Help:      "Total number of tool executions by tool name.",
+			Help:      "Total number of tool executions by tool name. MCP tools are labeled \"mcp\" (a bounded, fixed value), never by the customer-controlled remote tool name (B17/B18) -- see labelForToolExecuteMetric.",
 		},
 		[]string{"tool_name"},
+	)
+	// promMcpToolAdvertisedTotal counts every ResolveMcpTools resolution
+	// that returns a non-empty slice (B17/B18), so an operator can see this
+	// feature is in use without a customer support email.
+	promMcpToolAdvertisedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "mcp_tool_advertised_total",
+			Help:      "Total number of ResolveMcpTools resolutions that returned at least one mcp tool.",
+		},
+	)
+	// promMcpToolCallOutcomeTotal counts every MCP tool dispatch outcome
+	// (B17/B18): "success", "error" (B24's isError:true case -- the remote
+	// server itself reported failure), or "failed" (a transport/dispatch
+	// failure, e.g. CallTool returning a non-nil err, or a fail-closed gate
+	// refusing the call before CallTool is even reached).
+	promMcpToolCallOutcomeTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "mcp_tool_call_outcome_total",
+			Help:      "Total number of mcp tool call outcomes by outcome (success, error, failed).",
+		},
+		[]string{"outcome"},
 	)
 )
 
@@ -230,6 +260,8 @@ func init() {
 		promAIcallEndTotal,
 		promAIcallDurationSeconds,
 		promAIcallToolExecuteTotal,
+		promMcpToolAdvertisedTotal,
+		promMcpToolCallOutcomeTotal,
 	)
 }
 

@@ -29,7 +29,7 @@ post:
   summary: Register a new MCP server.
   description: >
     Registers a remote Streamable-HTTP MCP server owned by the authenticated customer.
-    Opt an AI in via the AI's `mcp_server_ids` field. **Tool use is not yet available:** a whitelisted server's tools are not yet exposed to that AI's sessions. See that field for what does happen today.
+    Opt an AI in via the AI's `mcp_server_ids` field. **Tool use scope:** a whitelisted server's tools are exposed to that AI's Normal-type, single-AI sessions only. See that field for what discovery and dispatch do.
   tags:
     - AI
   requestBody:

@@ -44,11 +44,11 @@ func otherCustomerIdentityFor(id uuid.UUID) commonidentity.Identity {
 	return commonidentity.Identity{ID: id, CustomerID: uuid.FromStringOrNil("d0000000-1111-4000-8000-00000000000d")}
 }
 
-// Test_resolveTools covers the fail-closed/best-effort properties resolveTools
+// Test_resolveMcpOnly covers the fail-closed/best-effort properties resolveMcpOnly
 // promises (design §9.1): a non-active server contributes no tools, a
 // ListTools failure on one server does not fail the whole resolution or
 // affect other servers, and the returned tool map is namespaced correctly.
-func Test_resolveTools(t *testing.T) {
+func Test_resolveMcpOnly(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -218,7 +218,7 @@ func Test_resolveTools(t *testing.T) {
 				mcptoolHandler:   mockTool,
 			}
 
-			mergedTools, toolMap, err := h.resolveTools(context.Background(), tt.ai)
+			mergedTools, toolMap, err := h.resolveMcpOnly(context.Background(), tt.ai)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -248,15 +248,15 @@ func Test_resolveTools(t *testing.T) {
 	}
 }
 
-// Test_resolveTools_NilHandlers pins that resolveTools degrades gracefully
+// Test_resolveMcpOnly_NilHandlers pins that resolveMcpOnly degrades gracefully
 // (returns only built-ins, never panics) when mcpServerHandler/mcptoolHandler
 // are nil -- the state every test-constructed aicallHandler that doesn't
 // explicitly wire MCP support is in, and the state cmd/ai-control's minimal
 // AIcallHandler construction is in today.
-func Test_resolveTools_NilHandlers(t *testing.T) {
+func Test_resolveMcpOnly_NilHandlers(t *testing.T) {
 	h := &aicallHandler{}
 
-	mergedTools, toolMap, err := h.resolveTools(context.Background(), &ai.AI{
+	mergedTools, toolMap, err := h.resolveMcpOnly(context.Background(), &ai.AI{
 		McpServerIDs: []uuid.UUID{uuid.Must(uuid.NewV4())},
 	})
 	if err != nil {
@@ -333,7 +333,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 					Identity: commonidentityFor(serverID),
 					Status:   mcpserver.StatusActive,
 				}, nil)
-				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("3 tickets found", nil)
+				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("3 tickets found", false, nil)
 			},
 			wantResult:      "success",
 			wantCallToolHit: true,
@@ -351,7 +351,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 					Identity: commonidentityFor(serverID),
 					Status:   mcpserver.StatusActive,
 				}, nil)
-				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("ok", nil)
+				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).Return("ok", false, nil)
 			},
 			wantResult:      "success",
 			wantCallToolHit: true,
@@ -483,11 +483,34 @@ func Test_toolHandleMcpCall(t *testing.T) {
 					Status:   mcpserver.StatusActive,
 				}, nil)
 				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).
-					Return("", errorWithSecret())
+					Return("", false, errorWithSecret())
 			},
 			wantResult:      "failed",
 			wantCallToolHit: true,
 			wantMessage:     "MCP tool call failed",
+		},
+		{
+			// B24: a remote tool that returns isError:true must never be
+			// labeled a success -- CallTool's second return, IsError, was
+			// never read before this. The 200-char cap already used for
+			// transport errors applies here too.
+			name:     "fail closed: isError:true result is never labeled a success (B24)",
+			aicall:   baseAIcall(goValueToolMap),
+			toolName: namespacedName,
+			setupMock: func(aiH *aihandler.MockAIHandler, srv *mcpserverhandler.MockMcpServerHandler, tl *mcptoolhandler.MockMcpToolHandler) {
+				aiH.EXPECT().Get(gomock.Any(), aiID).Return(&ai.AI{
+					Identity:     commonidentityFor(aiID),
+					McpServerIDs: []uuid.UUID{serverID},
+				}, nil)
+				srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+					Identity: commonidentityFor(serverID),
+					Status:   mcpserver.StatusActive,
+				}, nil)
+				tl.EXPECT().CallTool(gomock.Any(), serverID, "search_tickets", gomock.Any()).
+					Return("remote tool reported: order not found", true, nil)
+			},
+			wantResult:      "failed",
+			wantCallToolHit: true,
 		},
 		{
 			name:     "fail closed: resolveAI failure produces a generic failure, not the raw AIHandler error",
@@ -567,7 +590,7 @@ func Test_toolHandleMcpCall(t *testing.T) {
 
 // Test_lookupMcpToolRef_decodeMcpToolRef pins the two Metadata shapes
 // lookupMcpToolRef/decodeMcpToolRef must handle: the in-process Go value
-// written by resolveTools' callers, and the map[string]any shape Metadata
+// written by resolveMcpOnly's callers, and the map[string]any shape Metadata
 // arrives in after a JSON round trip (e.g. read back from the DB). Malformed
 // entries of the JSON shape must miss (fail closed), never panic.
 func Test_lookupMcpToolRef_decodeMcpToolRef(t *testing.T) {
@@ -769,7 +792,7 @@ func Test_toolHandleMcpCall_team(t *testing.T) {
 					Identity: commonidentity.Identity{ID: curOnlyServerID, CustomerID: customerID},
 					Status:   mcpserver.StatusActive,
 				}, nil)
-				tl.EXPECT().CallTool(gomock.Any(), curOnlyServerID, "search_tickets", gomock.Any()).Return("ok", nil)
+				tl.EXPECT().CallTool(gomock.Any(), curOnlyServerID, "search_tickets", gomock.Any()).Return("ok", false, nil)
 			},
 			wantResult: "success",
 		},
@@ -798,7 +821,7 @@ func Test_toolHandleMcpCall_team(t *testing.T) {
 					Identity: commonidentity.Identity{ID: startOnlyServerID, CustomerID: customerID},
 					Status:   mcpserver.StatusActive,
 				}, nil)
-				tl.EXPECT().CallTool(gomock.Any(), startOnlyServerID, "search_tickets", gomock.Any()).Return("ok", nil)
+				tl.EXPECT().CallTool(gomock.Any(), startOnlyServerID, "search_tickets", gomock.Any()).Return("ok", false, nil)
 			},
 			wantResult: "success",
 		},
@@ -1000,7 +1023,7 @@ func Test_resolveMcpToolMap_Bounds(t *testing.T) {
 // Test_resolveTools_SchemaLimits pins that a tool whose schema is too large
 // is dropped while the server's other tools are kept, and that the total
 // decoded across a resolution is bounded.
-func Test_resolveTools_SchemaLimits(t *testing.T) {
+func Test_resolveMcpOnly_SchemaLimits(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1026,7 +1049,7 @@ func Test_resolveTools_SchemaLimits(t *testing.T) {
 	tl.EXPECT().ListTools(gomock.Any(), serverID).Return(tools, nil)
 
 	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
-	merged, toolMap, err := h.resolveTools(context.Background(), &ai.AI{
+	merged, toolMap, err := h.resolveMcpOnly(context.Background(), &ai.AI{
 		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
 		McpServerIDs: []uuid.UUID{serverID},
 	})
@@ -1059,6 +1082,35 @@ func Test_resolveTools_SchemaLimits(t *testing.T) {
 // Test_discoverMcpTools_SlotsBoundConcurrency pins that at most
 // cap(mcpDiscoverySlots) tools/list requests run at once in the process,
 // however many session starts resolve at the same time.
+// Test_discoverMcpTools_InsightGate pins B10's residual gate: discovery must
+// never even attempt to list a whitelisted server's tools for an Insight AI,
+// closing the last hole after PR B1's write-gate (a pre-B1 or exempted
+// Insight AI could otherwise still trigger live discovery, though not
+// advertisement, via writeInsightSessionMetadata's unconditional
+// resolveMcpToolMap call).
+func Test_discoverMcpTools_InsightGate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	// No EXPECT() calls set on either mock: if discoverMcpTools reaches
+	// mcpServerHandler.Get or mcptoolHandler.ListTools for an Insight AI,
+	// gomock fails this test on the unexpected call.
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	a := &ai.AI{
+		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+		Type:         ai.TypeInsight,
+		McpServerIDs: []uuid.UUID{uuid.Must(uuid.NewV4())},
+	}
+
+	got := h.discoverMcpTools(context.Background(), a, true)
+	if len(got) != 0 {
+		t.Errorf("expected no discovered tools for an insight AI, got: %v", got)
+	}
+}
+
 func Test_discoverMcpTools_SlotsBoundConcurrency(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

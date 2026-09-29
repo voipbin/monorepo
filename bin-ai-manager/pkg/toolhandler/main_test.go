@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
 )
 
@@ -48,49 +49,81 @@ func TestToolHandler_GetAll(t *testing.T) {
 func TestToolHandler_GetByNames(t *testing.T) {
 	tests := []struct {
 		name      string
+		aiType    ai.Type
 		names     []tool.ToolName
 		wantCount int
 		wantNames []tool.ToolName
 	}{
 		{
 			name:      "empty names returns nil",
+			aiType:    ai.TypeNormal,
 			names:     []tool.ToolName{},
 			wantCount: 0,
 			wantNames: nil,
 		},
 		{
 			name:      "nil names returns nil",
+			aiType:    ai.TypeNormal,
 			names:     nil,
 			wantCount: 0,
 			wantNames: nil,
 		},
 		{
-			name:      "all returns all tools",
+			name:      "all returns all normal tools",
+			aiType:    ai.TypeNormal,
 			names:     []tool.ToolName{tool.ToolNameAll},
-			wantCount: len(toolDefinitions),
+			wantCount: len(tool.AllToolNames),
 			wantNames: nil, // Don't check specific names, just count
 		},
 		{
 			name:      "single tool name",
+			aiType:    ai.TypeNormal,
 			names:     []tool.ToolName{tool.ToolNameConnectCall},
 			wantCount: 1,
 			wantNames: []tool.ToolName{tool.ToolNameConnectCall},
 		},
 		{
 			name:      "multiple tool names",
+			aiType:    ai.TypeNormal,
 			names:     []tool.ToolName{tool.ToolNameConnectCall, tool.ToolNameSendEmail, tool.ToolNameSendMessage},
 			wantCount: 3,
 			wantNames: []tool.ToolName{tool.ToolNameConnectCall, tool.ToolNameSendEmail, tool.ToolNameSendMessage},
 		},
 		{
 			name:      "all with other names returns all",
+			aiType:    ai.TypeNormal,
 			names:     []tool.ToolName{tool.ToolNameConnectCall, tool.ToolNameAll},
-			wantCount: len(toolDefinitions),
+			wantCount: len(tool.AllToolNames),
 			wantNames: nil, // Don't check specific names, just count
 		},
 		{
 			name:      "non-existent tool name returns empty",
+			aiType:    ai.TypeNormal,
 			names:     []tool.ToolName{"non_existent_tool"},
+			wantCount: 0,
+			wantNames: nil,
+		},
+		{
+			// B4: an Insight AI storing tool_names:["all"] must never resolve
+			// Normal-only built-ins (e.g. connect_call) -- AllowedToolNames(aiType)
+			// is re-applied regardless of what names claims.
+			name:      "insight ai with all does not leak normal-only tools",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameAll},
+			wantCount: -1, // checked via wantNames below, not an exact count
+			wantNames: nil,
+		},
+		{
+			name:      "insight ai explicit normal-only tool name is denied",
+			aiType:    ai.TypeInsight,
+			names:     []tool.ToolName{tool.ToolNameConnectCall},
+			wantCount: 0,
+			wantNames: nil,
+		},
+		{
+			name:      "unknown ai type denies all",
+			aiType:    ai.Type("unknown"),
+			names:     []tool.ToolName{tool.ToolNameAll},
 			wantCount: 0,
 			wantNames: nil,
 		},
@@ -99,9 +132,18 @@ func TestToolHandler_GetByNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewToolHandler()
-			got := h.GetByNames(tt.names)
+			got := h.GetByNames(tt.aiType, tt.names)
 
-			if len(got) != tt.wantCount {
+			if tt.name == "insight ai with all does not leak normal-only tools" {
+				for _, gt := range got {
+					if gt.Name == tool.ToolNameConnectCall {
+						t.Errorf("GetByNames() leaked normal-only tool %s to an insight AI", gt.Name)
+					}
+				}
+				return
+			}
+
+			if tt.wantCount >= 0 && len(got) != tt.wantCount {
 				t.Errorf("GetByNames() returned %d tools, want %d", len(got), tt.wantCount)
 				return
 			}

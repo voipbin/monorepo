@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/participant"
+	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
@@ -498,6 +499,76 @@ func Test_processV1AIcallsIDParticipantsGet(t *testing.T) {
 			}
 			if res.StatusCode != tt.expectRes.StatusCode {
 				t.Fatalf("expected status %d, got %d", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+// Test_processV1AIcallsIDToolsMcpGet pins B12's listenhandler route: GET
+// /v1/aicalls/<aicall-id>/tools/mcp calls aicallHandler.ResolveMcpTools and
+// marshals its result directly (no response.* DTO).
+func Test_processV1AIcallsIDToolsMcpGet(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		expectedID    uuid.UUID
+		responseTools []tool.Tool
+		responseErr   error
+
+		expectStatus int
+		expectData   []byte
+	}{
+		{
+			name: "normal - returns resolved mcp tools",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tools/mcp",
+				Method: sock.RequestMethodGet,
+			},
+			expectedID: uuid.FromStringOrNil("a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b"),
+			responseTools: []tool.Tool{
+				{Name: "mcp_aaaaaaaa_search_tickets", Description: "search", RunLLM: true},
+			},
+			expectStatus: 200,
+			expectData:   []byte(`[{"name":"mcp_aaaaaaaa_search_tickets","description":"search","run_llm":true}]`),
+		},
+		{
+			name: "nil result marshals to an explicit empty array, never null",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tools/mcp",
+				Method: sock.RequestMethodGet,
+			},
+			expectedID:    uuid.FromStringOrNil("a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b"),
+			responseTools: nil,
+			expectStatus:  200,
+			expectData:    []byte(`[]`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				aicallHandler: mockAIcall,
+			}
+
+			mockAIcall.EXPECT().ResolveMcpTools(gomock.Any(), tt.expectedID).Return(tt.responseTools, tt.responseErr)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Fatalf("expected no error, got: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Fatalf("expected status %d, got %d", tt.expectStatus, res.StatusCode)
+			}
+			if string(res.Data) != string(tt.expectData) {
+				t.Errorf("expected data %s, got %s", tt.expectData, res.Data)
 			}
 		})
 	}

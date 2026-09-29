@@ -305,6 +305,13 @@ type RequestHandler interface {
 		pipecatcallID uuid.UUID,
 	) (map[string]any, error)
 
+	// AIV1AIcallToolList returns the given AIcall's MCP-derived tools ONLY
+	// (design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md §2.1,
+	// B12) -- never VoIPBin's built-in tool set. bin-pipecat-manager's
+	// runner.go calls this to supplement its own built-in resolution
+	// (toolHandler.GetByNames); it must not repeat it.
+	AIV1AIcallToolList(ctx context.Context, aicallID uuid.UUID) ([]amtool.Tool, error)
+
 	// ai-manager message
 	AIV1MessageGetsByAIcallID(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64, filters map[ammessage.Field]any) ([]ammessage.Message, error)
 	AIV1MessageSend(

@@ -2688,6 +2688,90 @@ func Test_startAIcallByRealtime(t *testing.T) {
 	}
 }
 
+// Test_startAIcallByMessaging_TeamNeverResolvesMcp pins B11: for a
+// team-typed AIcall, startAIcallByMessaging must not call resolveMcpToolMap
+// (and therefore never reach discoverMcpTools/mcpServerHandler/
+// mcptoolHandler) -- `a` here is only the team's START member's AI, so
+// resolving its whitelist would write the wrong member's tool map onto a
+// team AIcall, whose per-member tools come from a different resolution path
+// entirely (resolveActiveAIForMcp / resolveTeamForPython). Wires real
+// mcpServerHandler/mcptoolHandler mocks with NO EXPECT() calls set, so
+// gomock fails this test if discovery is reached.
+func Test_startAIcallByMessaging_TeamNeverResolvesMcp(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	mockSrv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	mockTool := mcptoolhandler.NewMockMcpToolHandler(mc)
+	mockTeam := teamhandler.NewMockTeamHandler(mc)
+
+	h := &aicallHandler{
+		utilHandler:      mockUtil,
+		reqHandler:       mockReq,
+		notifyHandler:    mockNotify,
+		db:               mockDB,
+		aiHandler:        mockAI,
+		messageHandler:   mockMessage,
+		mcpServerHandler: mockSrv,
+		mcptoolHandler:   mockTool,
+		teamHandler:      mockTeam,
+	}
+	ctx := context.Background()
+
+	teamAI := &ai.AI{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("a10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+			CustomerID: uuid.FromStringOrNil("a9be93b6-b659-11f0-b961-b32ce4769d7c"),
+		},
+		EngineModel:  ai.EngineModelOpenaiGPT5,
+		McpServerIDs: []uuid.UUID{uuid.Must(uuid.NewV4())}, // would trigger discovery if the gate is missing
+	}
+	activeflowID := uuid.FromStringOrNil("a34140c8-b659-11f0-be3a-5fc8a6759b80")
+	pipecatcallID := uuid.FromStringOrNil("a3af613e-b659-11f0-9a72-e3e004fae386")
+	aicallID := pipecatcallID
+
+	mockUtil.EXPECT().UUIDCreate().Return(pipecatcallID)
+	mockTeam.EXPECT().Get(gomock.Any(), teamAI.ID).Return(nil, errors.New("boom"))
+
+	expectAIcall := &aicall.AIcall{
+		Identity: commonidentity.Identity{
+			ID:         aicallID,
+			CustomerID: teamAI.CustomerID,
+		},
+		AssistanceType: aicall.AssistanceTypeTeam,
+		AssistanceID:   teamAI.ID,
+		AIEngineModel:  ai.EngineModelOpenaiGPT5,
+		ActiveflowID:   activeflowID,
+		ReferenceType:  aicall.ReferenceTypeConversation,
+		PipecatcallID:  pipecatcallID,
+		Status:         aicall.StatusInitiating,
+		Metadata: map[string]any{
+			aicall.MetaKeyPromptSnapshots:  []aicall.PromptSnapshot{},
+			aicall.MetaKeyAutoAuditEnabled: false,
+			// B11: empty, never resolved for a team-typed AIcall.
+			aicall.MetaKeyMcpToolMap: map[string]aicall.McpToolRef{},
+		},
+	}
+
+	mockUtil.EXPECT().UUIDCreate().Return(aicallID)
+	mockDB.EXPECT().AIcallCreate(ctx, expectAIcall).Return(nil)
+	mockDB.EXPECT().AIcallGet(ctx, aicallID).Return(expectAIcall, nil)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, expectAIcall.CustomerID, aicall.EventTypeStatusInitializing, expectAIcall)
+	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(nil)
+	mockMessage.EXPECT().Create(ctx, uuid.Nil, expectAIcall.CustomerID, expectAIcall.ID, expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, defaultCommonAIcallSystemPrompt, nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+	_, err := h.startAIcallByMessaging(ctx, uuid.Nil, teamAI, aicall.AssistanceTypeTeam, teamAI.ID, activeflowID, aicall.ReferenceTypeConversation, uuid.Nil, false, nil, uuid.Nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func Test_startAIcallByMessaging(t *testing.T) {
 	tests := []struct {
 		name string

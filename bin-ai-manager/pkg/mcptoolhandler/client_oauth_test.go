@@ -49,7 +49,7 @@ func Test_CallTool_OAuth_Success(t *testing.T) {
 	}
 	h := &mcpToolHandler{db: mockDB, crypto: crypto, timeout: 2 * time.Second, oauthHandler: mockOAuth, newClient: testClient}
 
-	result, err := h.CallTool(context.Background(), serverID, "echo", `{}`)
+	result, _, err := h.CallTool(context.Background(), serverID, "echo", `{}`)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -90,7 +90,7 @@ func Test_CallTool_OAuth_RefreshFailurePropagates(t *testing.T) {
 	}
 	h := &mcpToolHandler{db: mockDB, crypto: crypto, timeout: 2 * time.Second, oauthHandler: mockOAuth, newClient: testClient}
 
-	_, err = h.CallTool(context.Background(), serverID, "echo", `{}`)
+	_, _, err = h.CallTool(context.Background(), serverID, "echo", `{}`)
 	if err == nil {
 		t.Fatalf("expected error when oauth token cannot be resolved")
 	}
@@ -116,7 +116,7 @@ func Test_CallTool_OAuth_NoHandlerConfigured(t *testing.T) {
 
 	h := newTestHandler(t, mockDB) // oauthHandler left nil
 
-	_, err := h.CallTool(context.Background(), serverID, "echo", `{}`)
+	_, _, err := h.CallTool(context.Background(), serverID, "echo", `{}`)
 	if err == nil {
 		t.Fatalf("expected error when oauthHandler is nil")
 	}

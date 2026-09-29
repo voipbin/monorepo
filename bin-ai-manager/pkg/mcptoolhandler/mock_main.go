@@ -42,12 +42,13 @@ func (m *MockMcpToolHandler) EXPECT() *MockMcpToolHandlerMockRecorder {
 }
 
 // CallTool mocks base method.
-func (m *MockMcpToolHandler) CallTool(ctx context.Context, serverID uuid.UUID, toolName, argumentsJSON string) (string, error) {
+func (m *MockMcpToolHandler) CallTool(ctx context.Context, serverID uuid.UUID, toolName, argumentsJSON string) (string, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallTool", ctx, serverID, toolName, argumentsJSON)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // CallTool indicates an expected call of CallTool.
