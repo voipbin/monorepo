@@ -220,3 +220,73 @@ def test_deepgram_handshake_status_policy(status, expect_retry):
     else:
         assert len(hs) == 1, hs
     assert s._is_usable is True
+
+
+def test_broadcast_service_metadata_upstream_shape():
+    """2.5: the routers call broadcast_service_metadata() because 1.12 emits the
+    metadata from AIService.push_frame, which their per-instance routing_push
+    bypasses. A rename upstream would make the router's hasattr guard a silent
+    no-op, so pin both halves here."""
+    from pipecat.services.ai_service import AIService
+
+    assert hasattr(AIService, "broadcast_service_metadata")
+    assert "broadcast_service_metadata" in inspect.getsource(AIService.push_frame)
+
+
+def test_team_routers_real_pipeline_start_and_metadata():
+    """2.5: through real routers, StartFrame reaches downstream exactly once and
+    every STT member's STTMetadataFrame arrives (0 without the router fix)."""
+    import pipecat.frames.frames as F
+    from pipecat.frames.frames import EndFrame, StartFrame
+    from pipecat.pipeline.pipeline import Pipeline
+    from pipecat.pipeline.runner import PipelineRunner
+    from pipecat.pipeline.task import PipelineParams, PipelineTask
+    from pipecat.processors.frame_processor import FrameProcessor
+    from pipecat.services.openai.llm import OpenAILLMService
+    from pipecat.services.stt_service import STTService
+
+    class DummySTT(STTService):
+        def __init__(self, t):
+            super().__init__(ttfs_p99_latency=t)
+
+        async def run_stt(self, audio):
+            yield None
+
+    class Tap(FrameProcessor):
+        def __init__(self):
+            super().__init__()
+            self.starts = 0
+            self.stt_meta = []
+
+        async def process_frame(self, frame, direction):
+            await super().process_frame(frame, direction)
+            if isinstance(frame, StartFrame):
+                self.starts += 1
+            if isinstance(frame, F.STTMetadataFrame):
+                self.stt_meta.append(frame.ttfs_p99_latency)
+            await self.push_frame(frame, direction)
+
+    async def go():
+        stt = routing_stt.RoutingSTTService({"A": DummySTT(0.35), "B": DummySTT(1.57)})
+        stt.set_active_member("A")
+        llm = routing_llm.RoutingLLMService({
+            "A": OpenAILLMService(api_key="x", model="gpt-4o"),
+            "B": OpenAILLMService(api_key="x", model="gpt-4o-mini"),
+        })
+        llm.set_active_member("A")
+        tap = Tap()
+        task = PipelineTask(Pipeline([stt, llm, tap]), params=PipelineParams(audio_out_sample_rate=16000))
+
+        async def stop():
+            await asyncio.sleep(0.5)
+            await task.queue_frame(EndFrame())
+
+        asyncio.get_running_loop().create_task(stop())
+        await PipelineRunner(handle_sigint=False).run(task)
+        return tap
+
+    from loguru import logger
+    logger.remove()
+    tap = asyncio.run(go())
+    assert tap.starts == 1
+    assert sorted(tap.stt_meta) == [0.35, 1.57]
