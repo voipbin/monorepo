@@ -277,3 +277,7 @@ As §1.6. Additionally: the new pair and isolating tables add ~50 table rows to 
 
 - §2.5 step 3 mutation sweep on the implementation: 73 mutations (24 matcher removals, 29 pair inversions, 2 C5/C6 composite splits, every F-row mutation incl. F13 at 20 and 3000, both D1 use sites plus normalisation removal): **73 KILLED, 0 survived, 0 hangs** (F1: the former hang now fails `Test_receiveMessageFrameTypeMessage_error_publishesOnce` at 5.00s).
 - Full CLAUDE.md workflow in both services: tidy/vendor/generate clean, `go test ./...` no failures, `golangci-lint` 0 issues; `go test -race -count=2` on both touched packages ok.
+
+## PR review log
+
+- Round 1 (head `e52dbcf79`): **APPROVED**, 0 CRITICAL/MAJOR/MINOR. Reviewer re-ran 20 mutations independently (all killed, none by hang), confirmed diff matches §2 exactly, traced the D1 change to its consumers (admin UI, `aimessage_created` webhook, dedup reads) with no behaviour change for any current producer, and confirmed CI readiness. NIT 1 (each `logrustest.NewGlobal()` leaves a hook on the global logger for the rest of the package run) declined: no correctness effect since each test filters its own hook, and it matches the pre-existing pattern in `Test_runnerHandlePipelineError_warnOncePerCategory`; changing hook lifecycle for the whole file is out of this ticket's scope. NIT 2 applied: diagnosis comment on `Test_receiveMessageFrameTypeMessage_error_fatalVoiceUnknownNotified` explaining that F11/F12 regressions surface as a 5s publish timeout.

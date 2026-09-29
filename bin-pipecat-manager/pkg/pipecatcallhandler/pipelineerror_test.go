@@ -449,6 +449,11 @@ func Test_classifyPipelineError_checkOrder(t *testing.T) {
 // A fatal unknown error on a voice session must be published with Fatal=true and counted under the
 // fatal="true" label: the fatal flag is what lets a voice session surface an unknown error at all
 // (VOIP-1543, F11/F12/F14).
+//
+// Diagnosis note: if the fatal flag is lost on the way to the policy or the payload, a voice
+// unknown error is either not published at all or published with a mismatching event; in both
+// cases this test fails with "timed out waiting for the expected PublishEvent call" after 5s
+// (gomock logs the argument mismatch just above it), not with an assertion on Fatal itself.
 func Test_receiveMessageFrameTypeMessage_error_fatalVoiceUnknownNotified(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
