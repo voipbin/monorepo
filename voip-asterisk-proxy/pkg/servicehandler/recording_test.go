@@ -173,6 +173,9 @@ func Test_RecordingFileMove_commitRejected(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
+			if !strings.Contains(err.Error(), "failed to upload the file to the bucket") {
+				t.Errorf("expected an upload (commit) error, got: %v", err)
+			}
 			if f.hits != 1 {
 				t.Errorf("expected 1 upload request, got: %d", f.hits)
 			}
@@ -194,6 +197,9 @@ func Test_RecordingFileMove_copyFailure(t *testing.T) {
 	err := h.RecordingFileMove(context.Background(), []string{"d.wav"})
 	if err == nil {
 		t.Fatalf("expected an error, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed to copy data") {
+		t.Errorf("expected a copy error, got: %v", err)
 	}
 	if f.hits != 0 {
 		t.Errorf("expected no upload request (no partial object), got: %d", f.hits)
@@ -235,6 +241,9 @@ func Test_RecordingFileMove_deleteFailureAfterCommit(t *testing.T) {
 	// Uses the global logrus hook: this test must not run in parallel.
 	hook := test.NewGlobal()
 	hook.Reset()
+	t.Cleanup(func() {
+		logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+	})
 
 	f := &fakeGCS{}
 	h, dir := newRecordingTestHandler(t, f)

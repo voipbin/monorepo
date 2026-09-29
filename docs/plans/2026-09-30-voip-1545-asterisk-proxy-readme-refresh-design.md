@@ -126,7 +126,7 @@ Test naming follows the repo pattern `Test_RecordingFileMove_<case>`, one test p
 | `--google_application_credentials_json` | `GOOGLE_APPLICATION_CREDENTIALS_JSON` | `` | GCP service-account key JSON content (not a file path) for GCS uploads. Empty means Application Default Credentials |
 ```
 
-### 5.4 README "Recording upload" section (replaces the current section in place: from the `# Recording upload` heading through the line before `# RabbitMQ RPC`, currently README lines 60-87; the blank line 88 before `# RabbitMQ RPC` is kept)
+### 5.4 README "Recording upload" section (on this branch it replaces the Revision 1 section, README lines 60-87, keeping the blank line before `# RabbitMQ RPC`; relative to main, which has no such section, it is a new section inserted before `# RabbitMQ RPC`)
 
 ```
 # Recording upload
@@ -224,6 +224,7 @@ R1-B1 delete-failure confirmation via storage file record; object moved to bin/<
 R2-1 call-manager log chain corrected (bodiless 500 -> ErrInternal "Internal Server Error"; cause only in proxy log; verified listenhandler simpleResponse and requesthandler common.go) -> §5.7. R2-2 before/after behavior corrected (pre-fix failure at StorageV1FileCreate, same customer outcome, recoverability is the gain, baseline log change) -> §8. Non-blocking: gate hit list, `origin/main...HEAD`, registration follow-up note -> §6, §5.7.
 R3 APPROVED. Non-blocking applied: README blank line 88 kept (§5.4), test naming/single file (§5.2), all 4 mutations recorded (§6). The long §5.7 symptom cell is kept as is (one table row per failure mode is the file's convention).
 R4 APPROVED (mutation (1) confirmed). Non-blocking applied: R2/R3 summaries moved out of the history section; §5.7 wording narrowed to "cause".
+PR round 1: A, B, C APPROVED. Non-blocking applied: error-message assertions in commitRejected/copyFailure, logrus hook cleanup, §5.4 heading clarified (main has no such section).
 
 ## Revision 1 history
 
