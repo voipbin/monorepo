@@ -721,7 +721,7 @@ newly reachable.
 ## 15. Addendum: provider-safe MCP tool schemas (post-deploy finding)
 
 Status: design addendum, revised after design review round 1 and amended after code
-review rounds 1 to 4 of `0aa260c84` (R4 dedupe, R7a, R10a, `maxWork` in R12). Source analysis:
+review rounds 1 to 5 of `0aa260c84` (R4 dedupe, R7a, R10a, `maxWork` in R12). Source analysis:
 `2026-09-29-mcp-tool-schema-provider-compat-analysis.md` (revision 6, review loop
 closed; "the analysis" below, section numbers prefixed "an."). CEO decision: A (Go
 allowlist normalization in ai-manager) plus E (per-tool Gemini validation in the
@@ -988,7 +988,15 @@ member behind a further `$ref` is not a refinement. The budget is per subschema,
 per tool (amended after code review round 4), so the verdict for one property never
 depends on how much another property's look-ahead spent (a per-tool budget let an
 optional property early in sort order turn a later required property's refinement
-into a dropped tool); `maxWork` bounds the total. Without the separate budget a
+into a dropped tool). Amended after code review round 5: a `$ref` member with none of
+`type`, `properties`, `items`, `enum`, `const`, `anyOf`, `oneOf`, `allOf` next to it is
+judged once per tool per ref string, from its target alone with a fresh budget, and
+the verdict is reused (a ref being judged counts as not a refinement, as a cycle
+would); every visited member is charged to `maxWork`, and the look-ahead builds no
+path strings, since it discards failure paths. Without the memo a per-subschema
+budget multiplied the look-ahead by the number of properties (about 100 ms and 90 MB
+dropping a kept tool) and, with a long property name, path building cost 1.8 s and
+16 GB on a kept 64 KiB tool. Without the separate budget a
 1.2 KB `$defs` DAG (7 levels, 6 `$ref` members each) behind one `anyOf` member cost
 about 85 ms and 97 MB and dropped a tool the round-2 code kept
 (for example `anyOf: [{required: [a]}, {required: [b]}]` "at least one of", or
@@ -1043,7 +1051,9 @@ dropped by R1, never produced.
   (JSON Schema applies the parent type to it), so
   `{type: integer, oneOf: [{const: 1, description}, ...]}`, the same members behind
   `$ref`s, and `{type: [integer, null], oneOf: [{const: 1}, ...]}` are usable instead
-  of unusable; and the members replace the type only when every kept member carries its
+  of unusable. A member that is only an `anyOf`/`oneOf` passes the same parent types
+  on to its own members, and an `enum` that is not a list is ignored here as it is
+  everywhere else (round 5); and the members replace the type only when every kept member carries its
   own `enum`, `format`, `minimum` or `maximum`. A non-string `const` is dropped (R5),
   so integer, number and boolean documented consts keep the bare type rather than
   emitting value-less duplicate members. Reason: `{type, anyOf}` siblings are accepted by the genai
@@ -1527,5 +1537,5 @@ built-in path, so rollback of this addendum alone is a code revert.
 | R-4 | Pre-existing at HEAD, widened by A: name-only paths store every discovered tool's name, including tools `decodeToolSchema` skips, so `mcp_tool_map` can name an unadvertised tool that is dispatched if the LLM invents the exact name. A adds its dropped tools. Variants: (a) a tool E drops stays in `toolMap` and its Python handler is registered; (b) when `persistToolMap` fails (`mcp_tool.go:188-193`, logged, not fatal) the name-only map from session start stays for that session (15.2) | Accept: never advertised, normally replaced by the advertised list on `ResolveMcpTools`, server validates. Fixing it would mean decoding and normalizing on name-only paths, which never decode schemas by design (memory, `mcp_tool.go:356-360`) |
 | R-5 | E is not CI-tested (no pytest job; conftest mocks pipecat) | Mitigated by a small standalone injectable module, mocked control-flow tests, one manual real-library test outside the mocked conftest's directory, recorded in the PR. CI pytest belongs to track B |
 | R-6 | Customer invisibility: the customer still gets no signal when a tool is dropped or a turn fails | Out of scope. O7 (square-admin surfacing) is the natural home; the WARN logs exist for support |
-| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, `maxWork=262144` (round-1 code review), R7a constraint-only combinator removal and R10a no `type`+`anyOf` siblings (round-1 code review) with the same-typed scalar documented-enum exception and R7a judged on resolved members (round-2 code review), scalar type inheritance for typeless members and the look-ahead's own `$ref` budget (round-3 code review), inheritance judged on resolved members, for list types and gated on enum values, and the look-ahead budget per subschema (round-4 code review), duplicate list-type collapse, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, `maxWork`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; RTVI error text cap 2048 | For design review |
+| Q-1 | Decisions made in this addendum, not in the analysis: `mcpschema` package placement; limits `maxDepth=32`, `maxRefDepth=8`, `maxRefExpansions=256`, `maxNodes=4096`; output charge formula, per-tool output cap 64 KiB, `maxWork=262144` (round-1 code review), R7a constraint-only combinator removal and R10a no `type`+`anyOf` siblings (round-1 code review) with the same-typed scalar documented-enum exception and R7a judged on resolved members (round-2 code review), scalar type inheritance for typeless members and the look-ahead's own `$ref` budget (round-3 code review), inheritance judged on resolved members, for list types, through combinator-only members and gated on enum values, and the look-ahead budget per subschema (round-4 code review), the look-ahead's per-`$ref` verdict memo, per-member work charge and no path building (round-5 code review), duplicate list-type collapse, separate per-resolution `outBudget` of 256 KiB (R12); a `$ref` expansion adds no depth level (R12); bad `type` string, boolean subschemas, and tuple `items` are unusable and cascade (R2, R7); an empty `type` list is unusable (R4); resource-limit overflow (`maxNodes`, `maxWork`, output cap) drops the whole tool instead of cascading, while depth and ref limits cascade (R12); null-only `anyOf` unusable (R7); one-member `anyOf` not flattened; required-unusable nested object stays unusable rather than free-form (R10); `const` with a non-string `type` dropped; no new metric (15.4); E in a standalone module, fast path, fail-open-when-filtered-set-still-fails; RTVI error text cap 2048 | For design review |
 | Q-2 | Should E also run for the team flow path (`team_flow.py`)? | No: team AIcalls never receive MCP tools (§2.4, an.7), and team built-ins already pass. Revisit with track B |

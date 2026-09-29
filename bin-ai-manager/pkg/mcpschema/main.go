@@ -68,7 +68,8 @@ const (
 	maxDepth = 32
 	// maxRefDepth bounds nested $ref expansions on any one path.
 	maxRefDepth = 8
-	// maxRefExpansions bounds $ref expansions per tool.
+	// maxRefExpansions bounds the build's $ref expansions per tool, and
+	// the R7a look-ahead's per subschema and per memoized $ref (refines).
 	maxRefExpansions = 256
 	// maxNodes bounds emitted subschemas per tool.
 	maxNodes = 4096

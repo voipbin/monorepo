@@ -22,6 +22,10 @@ type normalizer struct {
 	// expansions counts $ref expansions for the whole tool. The R7a
 	// look-ahead counts against its own budget (see refines).
 	expansions int
+	// refVerdicts memoizes the R7a verdict of a $ref member, by ref
+	// string; a ref being judged maps to false (see
+	// isRefinement).
+	refVerdicts map[string]bool
 
 	// maxOut is the per-tool output cap; nodes counts emitted subschemas.
 	// aborted is set once either limit is exceeded: the build stops and the
@@ -76,7 +80,7 @@ func Normalize(schema map[string]any, maxOutBytes int) (map[string]any, Report) 
 	if schema == nil {
 		return nil, rep
 	}
-	n := &normalizer{rep: &rep, defs: map[string]map[string]any{}, maxOut: maxOutBytes}
+	n := &normalizer{rep: &rep, defs: map[string]map[string]any{}, refVerdicts: map[string]bool{}, maxOut: maxOutBytes}
 	for _, k := range []string{"$defs", "definitions"} {
 		if m, ok := schema[k].(map[string]any); ok {
 			n.defs[k] = m
@@ -149,8 +153,10 @@ func (n *normalizer) node(raw any, path string, depth int, stack []string) (map[
 	return n.nodeAs(raw, path, depth, stack, nil)
 }
 
-// nodeAs is node for an anyOf/oneOf member of a scalar parent: inherit
-// lists the parent's non-null scalar types a typeless member may take.
+// nodeAs is node with the scalar types a typeless member may take (see
+// inheritedType). inherit is non-nil only for an anyOf/oneOf member of a
+// parent whose type includes a scalar, and for the members of such a member
+// that is only a combinator.
 func (n *normalizer) nodeAs(raw any, path string, depth int, stack []string, inherit []string) (map[string]any, *failure) {
 	if n.aborted {
 		return nil, errTooLarge
@@ -665,9 +671,12 @@ func (n *normalizer) countDropped(v map[string]any) {
 // its parent (R7a). It is a look-ahead: it leaves the report and the build's
 // $ref expansion count as they were, and is charged as work (R12). Each call
 // has its own budget of maxRefExpansions $ref expansions, so the verdict for
-// one subschema never depends on what other subschemas spent; maxWork bounds
-// the total. Once the budget is spent, a member behind a further $ref is not
-// a refinement and is left to the normal anyOf evaluation.
+// one subschema never depends on what other subschemas spent. A $ref member
+// is judged once per tool per ref and memoized (see isRefinement), so
+// the total look-ahead is linear in the input rather than in the number of
+// subschemas times the budget; maxWork bounds it. Once a budget is spent, a
+// member behind a further $ref is not a refinement and is left to the normal
+// anyOf evaluation.
 func (n *normalizer) refines(members []member, path string, depth int, stack []string) bool {
 	rewrites, dropped, expansions := n.rep.Rewrites, n.rep.DroppedKeys, n.expansions
 	n.expansions = 0
@@ -682,10 +691,11 @@ func (n *normalizer) refines(members []member, path string, depth int, stack []s
 // member that is itself only a combinator is a refinement when any of its
 // own members is. A member that cannot be resolved is not a refinement: it
 // is left to the normal anyOf evaluation, which removes it. Call it through
-// refines.
+// refines. path is the parent's: the look-ahead discards failure paths, so
+// it builds none.
 func (n *normalizer) hasRefinementMember(members []member, path string, depth int, stack []string) bool {
 	for _, m := range members {
-		if n.isRefinement(m.raw, path+m.path, depth+1, stack) {
+		if n.isRefinement(m.raw, path, depth+1, stack) {
 			return true
 		}
 	}
@@ -693,14 +703,41 @@ func (n *normalizer) hasRefinementMember(members []member, path string, depth in
 }
 
 // isRefinement reports whether raw, once resolved, has no shape of its own.
+// Each visit is charged as work (R12). A $ref member whose other keys
+// cannot change the verdict (none of verdictKeys) is judged once per tool
+// per ref, from its target alone (no depth, stack or budget of
+// the path that reached it), and the verdict is reused; while it is being
+// judged it counts as not a refinement, as a cyclic $ref would.
 func (n *normalizer) isRefinement(raw any, path string, depth int, stack []string) bool {
 	if n.aborted || depth > maxDepth {
 		return false
 	}
+	n.work(1)
 	mm, ok := raw.(map[string]any)
 	if !ok {
 		return false
 	}
+	if ref, isStr := mm["$ref"].(string); isStr && !hasAnyKey(mm, verdictKeys) {
+		if res, seen := n.refVerdicts[ref]; seen {
+			return res
+		}
+		n.refVerdicts[ref] = false
+		expansions := n.expansions
+		n.expansions = 0
+		res := n.judgeRefinement(mm, path, 0, nil)
+		n.expansions = expansions
+		n.refVerdicts[ref] = res
+		return res
+	}
+	return n.judgeRefinement(mm, path, depth, stack)
+}
+
+// verdictKeys are the keys next to a $ref that can change its R7a verdict;
+// a member with none of them has its target's verdict.
+var verdictKeys = []string{"type", "properties", "items", "enum", "const", "anyOf", "oneOf", "allOf"}
+
+// judgeRefinement is isRefinement's check of one resolved member.
+func (n *normalizer) judgeRefinement(mm map[string]any, path string, depth int, stack []string) bool {
 	v, stack, f := n.resolve(mm, path, stack)
 	if f != nil {
 		return false
@@ -784,16 +821,13 @@ func hasAnyKey(m map[string]any, keys []string) bool {
 	return false
 }
 
-// enumHasType reports whether v has no enum, or an enum list with at least
-// one value of scalar type t. The scan is charged as work (R12).
+// enumHasType reports whether v has no usable enum, or an enum list with at
+// least one value of scalar type t. An enum that is not a list is ignored,
+// as it is everywhere else (R1). The scan is charged as work (R12).
 func (n *normalizer) enumHasType(v map[string]any, t string) bool {
-	raw, present := v["enum"]
-	if !present {
-		return true
-	}
-	l, ok := raw.([]any)
+	l, ok := v["enum"].([]any)
 	if !ok {
-		return false
+		return true
 	}
 	n.work(len(l))
 	for _, x := range l {

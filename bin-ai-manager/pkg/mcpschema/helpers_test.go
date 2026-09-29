@@ -205,7 +205,7 @@ func refinementDAG(t *testing.T, levels, width int) string {
 // refinementAfterBuildRefs builds a tool whose first n properties are each
 // one $ref to a string, so the build spends n $ref expansions before the
 // required object property z, whose only anyOf member is a refinement
-// ({required: [k]}) behind a chain of hops $refs. It returns the raw schema
+// ({required: [k]}) behind an allOf wrapper and a chain of hops $refs. It returns the raw schema
 // and the expected normalized output.
 func refinementAfterBuildRefs(t *testing.T, n, hops int) (string, string) {
 	props := make([]string, 0, n+1)
@@ -214,7 +214,9 @@ func refinementAfterBuildRefs(t *testing.T, n, hops int) (string, string) {
 		props = append(props, fmt.Sprintf(`"p%03d":{"$ref":"#/$defs/S"}`, i))
 		want = append(want, fmt.Sprintf(`"p%03d":{"type":"string"}`, i))
 	}
-	props = append(props, `"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/C0"}]}`)
+	// The allOf wrapper keeps the member out of the per-$ref memo, so the
+	// chain is judged within the look-ahead's own budget.
+	props = append(props, `"z":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"allOf":[{"$ref":"#/$defs/C0"}]}]}`)
 	want = append(want, `"z":{"type":"object","properties":{"k":{"type":"string"}}}`)
 	defs := []string{`"S":{"type":"string"}`}
 	for k := 0; k < hops-1; k++ {

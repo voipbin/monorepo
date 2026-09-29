@@ -2,6 +2,7 @@ package mcpschema
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -730,6 +731,55 @@ func Test_Normalize_Rules(t *testing.T) {
 			},
 		},
 		{
+			name:         "a member with properties has a type of its own and does not take the parent type",
+			in:           `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"properties":{"x":{"$ref":"#/$defs/missing"}},"required":["x"]}]}},"required":["s"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/s",
+		},
+		{
+			name:         "a member with items has a type of its own and does not take the parent type",
+			in:           `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"items":true}]}},"required":["s"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/s",
+		},
+		{
+			name: "an integer enum member takes the integer parent type",
+			in:   `{"type":"object","properties":{"n":{"type":"integer","oneOf":[{"enum":[1,2]}]}},"required":["n"]}`,
+			want: `{"type":"object","properties":{"n":{"type":"integer"}},"required":["n"]}`,
+		},
+		{
+			name: "a member takes a later scalar of a list type when the first does not fit",
+			in:   `{"type":"object","properties":{"v":{"type":["string","integer"],"oneOf":[{"const":1}]}},"required":["v"]}`,
+			want: `{"type":"object","properties":{"v":{"anyOf":[{"type":"string"},{"type":"integer"}]}},"required":["v"]}`,
+		},
+		{
+			name: "an enum that is not a list is ignored when inheriting the parent type",
+			in:   `{"type":"object","properties":{"p":{"type":"string","oneOf":[{"enum":"a"},{"const":"b"}]}},"required":["p"]}`,
+			want: `{"type":"object","properties":{"p":{"type":"string"}},"required":["p"]}`,
+		},
+		{
+			name: "a memoized refinement verdict is reused for a second property",
+			in:   `{"type":"object","$defs":{"F":{"required":["k"]}},"properties":{"a":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/F"}]},"b":{"type":"object","properties":{"k":{"type":"string"}},"anyOf":[{"$ref":"#/$defs/F"}]}},"required":["a","b"]}`,
+			want: `{"type":"object","properties":{"a":{"type":"object","properties":{"k":{"type":"string"}}},"b":{"type":"object","properties":{"k":{"type":"string"}}}},"required":["a","b"]}`,
+		},
+		{
+			name:         "a self-referencing $ref member is not a refinement",
+			in:           `{"type":"object","$defs":{"A":{"anyOf":[{"$ref":"#/$defs/A"}]}},"properties":{"s":{"type":"string","anyOf":[{"$ref":"#/$defs/A"}]}},"required":["s"]}`,
+			want:         "null",
+			wantDropped:  true,
+			wantReason:   ReasonAnyOf,
+			wantDropPath: "/properties/s",
+		},
+		{
+			name: "a $ref member with a shape of its own is not judged by its target's verdict",
+			in:   `{"type":"object","$defs":{"F":{"format":"date"}},"properties":{"s":{"type":"string","anyOf":[{"$ref":"#/$defs/F"}]},"t":{"type":"string","anyOf":[{"$ref":"#/$defs/F","type":"string","enum":["a"]}]}}}`,
+			want: `{"type":"object","properties":{"s":{"type":"string"},"t":{"anyOf":[{"type":"string","enum":["a"]}]}}}`,
+		},
+		{
 			name: "a format member counts as a constrained member",
 			in:   `{"type":"object","properties":{"s":{"type":"string","oneOf":[{"const":"a"},{"type":"string","format":"date-time"}]}}}`,
 			want: `{"type":"object","properties":{"s":{"anyOf":[{"type":"string","enum":["a"]},{"type":"string","format":"date-time"}]}}}`,
@@ -1035,6 +1085,73 @@ func Test_Normalize_InheritedEnumScanIsCharged(t *testing.T) {
 	}
 	runNormalizeRow(t, normalizeRow{
 		name:        "the enum scan of an inherited type is charged as work",
+		in:          raw,
+		want:        "null",
+		wantDropped: true,
+		wantReason:  ReasonTooLarge,
+	})
+}
+
+func Test_Normalize_LookAheadMemoizesRefVerdicts(t *testing.T) {
+	// A long property name and 250 $ref members to one 1000-member anyOf,
+	// then a refinement. Judged once per $ref, the look-ahead stays cheap
+	// and the refinement removes the combinator; judged per reference it
+	// runs past maxWork and drops the tool.
+	name := strings.Repeat("x", 58000)
+	ones := strings.TrimSuffix(strings.Repeat("1,", 1000), ",")
+	refs := strings.TrimSuffix(strings.Repeat(`{"$ref":"#/$defs/A"},`, 250), ",")
+	raw := `{"type":"object","$defs":{"A":{"anyOf":[` + ones + `]}},"properties":{"` + name +
+		`":{"type":"string","anyOf":[` + refs + `,{"minLength":1}]}}}`
+	if len(raw) > 64<<10 {
+		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
+	}
+	runNormalizeRow(t, normalizeRow{
+		name: "a $ref member's refinement verdict is judged once per tool",
+		in:   raw,
+		want: `{"type":"object","properties":{"` + name + `":{"type":"string"}}}`,
+	})
+}
+
+func Test_Normalize_MemoizedRefVerdictHasItsOwnBudget(t *testing.T) {
+	// 255 allOf-wrapped $ref members (not memoized) spend the look-ahead's
+	// budget before a plain $ref member whose refinement is 6 hops away. The
+	// memoized judgement starts from a fresh budget, so it still finds the
+	// refinement and the required property is kept.
+	members := make([]string, 0, 256)
+	for i := 0; i < 255; i++ {
+		members = append(members, `{"allOf":[{"$ref":"#/$defs/S"}]}`)
+	}
+	members = append(members, `{"$ref":"#/$defs/C0"}`)
+	// S is unusable (an array without items), so without the refinement
+	// the anyOf has no usable member and the required z drops the tool.
+	defs := []string{`"S":{"type":"array"}`}
+	for k := 0; k < 5; k++ {
+		defs = append(defs, fmt.Sprintf(`"C%d":{"$ref":"#/$defs/C%d"}`, k, k+1))
+	}
+	defs = append(defs, `"C5":{"required":["k"]}`)
+	raw := `{"type":"object","$defs":{` + strings.Join(defs, ",") + `},"properties":{"z":{"type":"object",` +
+		`"properties":{"k":{"type":"string"}},"anyOf":[` + strings.Join(members, ",") + `]}},"required":["z"]}`
+	runNormalizeRow(t, normalizeRow{
+		name: "a memoized $ref member is judged with a fresh budget",
+		in:   raw,
+		want: `{"type":"object","properties":{"z":{"type":"object","properties":{"k":{"type":"string"}}}},"required":["z"]}`,
+	})
+}
+
+func Test_Normalize_LookAheadChargesEachVisitedMember(t *testing.T) {
+	// 240 allOf-wrapped (not memoized) $refs to a 1000-member anyOf of
+	// non-objects, then a refinement. Listing A's members is charged 1000
+	// per visit; visiting each of them is charged 1000 more, which takes
+	// the look-ahead past maxWork.
+	ones := strings.TrimSuffix(strings.Repeat("1,", 1000), ",")
+	refs := strings.TrimSuffix(strings.Repeat(`{"allOf":[{"$ref":"#/$defs/A"}]},`, 240), ",")
+	raw := `{"type":"object","$defs":{"A":{"anyOf":[` + ones + `]}},"properties":{"s":{"type":"string","anyOf":[` +
+		refs + `,{"minLength":1}]}}}`
+	if len(raw) > 64<<10 {
+		t.Fatalf("shape is %d raw bytes, over the 64 KiB input limit", len(raw))
+	}
+	runNormalizeRow(t, normalizeRow{
+		name:        "each member the look-ahead visits is charged as work",
 		in:          raw,
 		want:        "null",
 		wantDropped: true,
