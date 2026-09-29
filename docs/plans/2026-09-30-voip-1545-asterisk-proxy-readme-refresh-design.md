@@ -2,7 +2,7 @@
 
 Date: 2026-09-30. Tickets: VOIP-1545 (proxy rebuild ahead of Asterisk 23.5.0), VOIP-1546 (Bug).
 Branch / PR: `VOIP-1545-Refresh-asterisk-proxy-readme` / monorepo #1353 (branch name kept: renaming the head branch of an open PR closes it per GitHub docs).
-Status: Revision 2, in design review.
+Status: Revision 2. Design review finished (rounds 3 and 4 approved); implemented in this PR.
 
 ## 1. Problem
 
@@ -225,6 +225,7 @@ R2-1 call-manager log chain corrected (bodiless 500 -> ErrInternal "Internal Ser
 R3 APPROVED. Non-blocking applied: README blank line 88 kept (§5.4), test naming/single file (§5.2), all 4 mutations recorded (§6). The long §5.7 symptom cell is kept as is (one table row per failure mode is the file's convention).
 R4 APPROVED (mutation (1) confirmed). Non-blocking applied: R2/R3 summaries moved out of the history section; §5.7 wording narrowed to "cause".
 PR round 1: A, B, C APPROVED. Non-blocking applied: error-message assertions in commitRejected/copyFailure, logrus hook cleanup, §5.4 heading clarified (main has no such section).
+PR round 2: APPROVED. Non-blocking applied: status header updated.
 
 ## Revision 1 history
 
