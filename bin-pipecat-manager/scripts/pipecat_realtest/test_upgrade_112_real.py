@@ -40,7 +40,13 @@ def test_all_modules_import_and_flows_repoint():
     assert "pipecat_flows" not in sys.modules
 
 
-def test_settings_pins():
+def test_settings_pins(monkeypatch):
+    # Google TTS resolves ADC in its constructor; use anonymous credentials so
+    # the guard also runs where no ADC is configured (containers, CI hosts).
+    from google.auth.credentials import AnonymousCredentials
+    import pipecat.services.google.tts as gtts
+
+    monkeypatch.setattr(gtts, "default", lambda *a, **k: (AnonymousCredentials(), "test-project"))
     dg = run.create_stt_service("deepgram", language="en")
     ca = run.create_tts_service("cartesia", voice_id="v")
     el = run.create_tts_service("elevenlabs", voice_id="v")
@@ -257,6 +263,7 @@ def test_team_routers_real_pipeline_start_and_metadata():
             super().__init__()
             self.starts = 0
             self.stt_meta = []
+            self.llm_meta = 0
 
         async def process_frame(self, frame, direction):
             await super().process_frame(frame, direction)
@@ -264,6 +271,8 @@ def test_team_routers_real_pipeline_start_and_metadata():
                 self.starts += 1
             if isinstance(frame, F.STTMetadataFrame):
                 self.stt_meta.append(frame.ttfs_p99_latency)
+            if type(frame).__name__ == "LLMServiceMetadataFrame":
+                self.llm_meta += 1
             await self.push_frame(frame, direction)
 
     async def go():
@@ -274,8 +283,9 @@ def test_team_routers_real_pipeline_start_and_metadata():
             "B": OpenAILLMService(api_key="x", model="gpt-4o-mini"),
         })
         llm.set_active_member("A")
+        mid = Tap()
         tap = Tap()
-        task = PipelineTask(Pipeline([stt, llm, tap]), params=PipelineParams(audio_out_sample_rate=16000))
+        task = PipelineTask(Pipeline([stt, mid, llm, tap]), params=PipelineParams(audio_out_sample_rate=16000))
 
         async def stop():
             await asyncio.sleep(0.5)
@@ -283,10 +293,13 @@ def test_team_routers_real_pipeline_start_and_metadata():
 
         asyncio.get_running_loop().create_task(stop())
         await PipelineRunner(handle_sigint=False).run(task)
-        return tap
+        return mid, tap
 
     from loguru import logger
     logger.remove()
-    tap = asyncio.run(go())
-    assert tap.starts == 1
+    mid, tap = asyncio.run(go())
+    assert mid.starts == 1  # after the STT router
+    assert sorted(mid.stt_meta) == [0.35, 1.57]
+    assert tap.starts == 1  # after the LLM router
     assert sorted(tap.stt_meta) == [0.35, 1.57]
+    assert tap.llm_meta == 2

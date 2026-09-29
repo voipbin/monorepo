@@ -33,7 +33,8 @@ COPY --from=build /app/scripts/pipecat/requirements.txt /tmp/requirements.txt
 # so install the CPU-only torch/torchaudio wheels FIRST (pinned for a reproducible
 # build). This satisfies the torch requirement before the requirements.txt install
 # (pip then skips the default CUDA wheel), cutting the image's site-packages from
-# ~5.5GB to ~1.7GB. Bump these in lockstep with the pipecat-ai version.
+# ~5.5GB to ~1.7GB. Bump these in lockstep with the pipecat-ai version (pipecat-ai is
+# minor-capped in requirements.txt; run scripts/pipecat_realtest before bumping it).
 RUN pip install --no-cache-dir torch==2.12.1 torchaudio==2.11.0 --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
