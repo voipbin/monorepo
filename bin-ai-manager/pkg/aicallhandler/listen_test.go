@@ -538,6 +538,7 @@ func Test_RunListenTurn(t *testing.T) {
 					m.cache.EXPECT().ListenAIcallIDRemove(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 				}
 				m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
 			} else {
 				m.cache.EXPECT().ListenStateClear(gomock.Any(), gomock.Any()).Times(0)
@@ -930,6 +931,7 @@ func Test_stopListening_NeverTerminatesTheAIcall(t *testing.T) {
 	stop := m.req.EXPECT().TranscribeV1TranscribeStop(ctx, hostID, transcribeID).Return(nil, nil)
 	rem := m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
 	clear := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	reread := m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 
 	var wroteFields map[aicall.Field]any
 	update := m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).
@@ -937,7 +939,7 @@ func Test_stopListening_NeverTerminatesTheAIcall(t *testing.T) {
 			wroteFields = fields
 			return nil
 		})
-	gomock.InOrder(get, stop, rem, clear, update)
+	gomock.InOrder(get, stop, rem, clear, reread, update)
 
 	m.h.stopListening(ctx, c)
 
@@ -983,6 +985,7 @@ func Test_stopListening_NonOwnerNeverStopsTheTranscribe(t *testing.T) {
 	// But this AIcall's OWN membership and state still go away.
 	m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
 	m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
 
 	m.h.stopListening(ctx, c)
@@ -1009,10 +1012,79 @@ func Test_clearListenState_StepOrder(t *testing.T) {
 
 	rem := m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
 	clear := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	reread := m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 	update := m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
-	gomock.InOrder(rem, clear, update)
+	gomock.InOrder(rem, clear, reread, update)
 
 	m.h.clearListenState(ctx, c)
+}
+
+// Test_clearListenState_PreservesConcurrentMcpToolMap is the regression test
+// for review round 1's B26 Critical finding.
+//
+// clearListenState's caller can be holding a stale in-memory `c` -- fetched
+// before a concurrent ResolveMcpTools/persistToolMap run wrote a fresh
+// MetaKeyMcpToolMap onto the DB row. If clearListenState builds its metadata
+// write from that stale `c.Metadata` instead of re-reading the row first, the
+// fresh mcp_tool_map is clobbered back to whatever (or nothing) the stale
+// snapshot had. This pins that clearListenState re-reads via h.db.AIcallGet
+// immediately before merging, the same discipline persistToolMap/
+// refreshMcpToolMap already use, so the concurrent writer's key survives.
+func Test_clearListenState_PreservesConcurrentMcpToolMap(t *testing.T) {
+	transcribeID := uuid.FromStringOrNil("bbbb0000-0000-4000-8000-000000000004")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	// The caller's in-hand snapshot, fetched BEFORE the concurrent
+	// ResolveMcpTools run below wrote a fresh mcp_tool_map. It has none.
+	staleC := listeningAIcall()
+	staleC.Metadata = map[string]any{
+		aicall.MetaKeyListenTranscribeID: transcribeID.String(),
+	}
+
+	// The DB row as it actually is NOW: a concurrent writer already
+	// persisted MetaKeyMcpToolMap after staleC was fetched.
+	freshToolMap := map[string]aicall.McpToolRef{
+		"mcp_aaaaaaaa_search_tickets": {
+			ServerID: uuid.FromStringOrNil("aaaaaaaa-1111-4000-8000-000000000001"),
+			ToolName: "search_tickets",
+		},
+	}
+	freshRow := &aicall.AIcall{
+		Identity: staleC.Identity,
+		Metadata: map[string]any{
+			aicall.MetaKeyListenTranscribeID: transcribeID.String(),
+			aicall.MetaKeyMcpToolMap:         freshToolMap,
+		},
+	}
+
+	m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
+	m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+
+	// clearListenState MUST re-read the row before merging.
+	m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(freshRow, nil)
+
+	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID, fields map[aicall.Field]any) error {
+			metadata, ok := fields[aicall.FieldMetadata].(map[string]any)
+			if !ok {
+				t.Fatalf("expected a metadata field in the update, got: %v", fields)
+			}
+			if _, ok := metadata[aicall.MetaKeyMcpToolMap]; !ok {
+				t.Errorf("clearListenState clobbered the concurrently-written mcp_tool_map; metadata: %v", metadata)
+			}
+			if _, ok := metadata[aicall.MetaKeyListenTranscribeID]; ok {
+				t.Errorf("clearListenState must still remove its own listen keys; metadata: %v", metadata)
+			}
+			return nil
+		},
+	)
+
+	m.h.clearListenState(ctx, staleC)
 }
 
 // Test_stopListenByCallID_ClearsEveryMatch pins the plural lookup.
@@ -1046,6 +1118,10 @@ func Test_stopListenByCallID_ClearsEveryMatch(t *testing.T) {
 	for _, id := range []uuid.UUID{aicallA, aicallB} {
 		m.cache.EXPECT().ListenPendingPopAll(ctx, id).Return(nil, nil)
 		m.cache.EXPECT().ListenStateClear(ctx, id).Return(nil)
+	}
+	m.db.EXPECT().AIcallGet(ctx, aicallA).Return(rows[0], nil)
+	m.db.EXPECT().AIcallGet(ctx, aicallB).Return(rows[1], nil)
+	for _, id := range []uuid.UUID{aicallA, aicallB} {
 		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, id, gomock.Any()).Return(nil)
 	}
 
@@ -1097,6 +1173,7 @@ func Test_stopListenByCallID_FinalFlush(t *testing.T) {
 	// only removes this AIcall's resolver membership.
 	m.cache.EXPECT().ListenAIcallIDRemove(ctx, listenTranscribeIDFromMetadata(row), ltAIcallID).Return(nil)
 	m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(row, nil)
 	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
 
 	delta := metricDelta(t, "call", "ran", func() {
@@ -1197,6 +1274,7 @@ func Test_stopListenByCallID_Paginates(t *testing.T) {
 	for _, row := range append(append([]*aicall.AIcall{}, firstPage...), overflow) {
 		m.cache.EXPECT().ListenPendingPopAll(ctx, row.ID).Return(nil, nil)
 		m.cache.EXPECT().ListenStateClear(ctx, row.ID).Return(nil)
+		m.db.EXPECT().AIcallGet(ctx, row.ID).Return(row, nil)
 		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, row.ID, gomock.Any()).Return(nil)
 	}
 
@@ -1230,6 +1308,10 @@ func Test_stopListenByCallID_PageBudget(t *testing.T) {
 
 	m.cache.EXPECT().ListenPendingPopAll(ctx, gomock.Any()).Return(nil, nil).AnyTimes()
 	m.cache.EXPECT().ListenStateClear(ctx, gomock.Any()).Return(nil).AnyTimes()
+	m.db.EXPECT().AIcallGet(ctx, gomock.Any()).
+		DoAndReturn(func(_ context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+			return &aicall.AIcall{Identity: commonidentity.Identity{ID: id}, ReferenceType: aicall.ReferenceTypeContactCase}, nil
+		}).AnyTimes()
 	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 	// The assertion that matters: it returns. Times(listenStopMaxPages) above

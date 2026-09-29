@@ -1111,6 +1111,71 @@ func Test_discoverMcpTools_InsightGate(t *testing.T) {
 	}
 }
 
+// Test_resolveMcpOnly_SessionStartBudget is the regression test for review
+// round 1's §2.3a Critical finding.
+//
+// resolveMcpOnly's discoverMcpTools loop had no aggregate timeout of its own:
+// mcpDiscoverySlotWait (2s) only bounds time spent waiting for a free
+// discovery slot, and mcp_tool_call_timeout_seconds bounds one server's
+// transport round-trip in isolation, not the whole loop across up to
+// ai.MaxMcpServerIDs (8) servers. A slow/hanging server that never returns
+// (and is not itself killed by a per-call timeout, simulating a
+// misconfigured or malicious remote that ignores the request but never
+// closes the connection) must not be allowed to block resolveMcpOnly beyond
+// mcpSessionStartDiscoveryBudgetSeconds.
+func Test_resolveMcpOnly_SessionStartBudget(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	oldBudget := mcpSessionStartDiscoveryBudget
+	mcpSessionStartDiscoveryBudget = 50 * time.Millisecond
+	defer func() { mcpSessionStartDiscoveryBudget = oldBudget }()
+
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	serverID := uuid.FromStringOrNil("aaaaaaaa-2222-4000-8000-000000000001")
+	srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+		Identity: commonidentityFor(serverID),
+		Status:   mcpserver.StatusActive,
+	}, nil).AnyTimes()
+
+	// ListTools never returns on its own; it only unblocks when the ctx
+	// passed to it is cancelled. Without a session-start budget wrapping
+	// the loop, this would hang resolveMcpOnly indefinitely (or until
+	// whatever mcp_tool_call_timeout_seconds is, which is not this
+	// function's context to set up).
+	tl.EXPECT().ListTools(gomock.Any(), serverID).DoAndReturn(
+		func(ctx context.Context, _ uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+			<-ctx.Done()
+			return nil, ctx.Err()
+		},
+	).AnyTimes()
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	a := &ai.AI{
+		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+		McpServerIDs: []uuid.UUID{serverID},
+	}
+
+	done := make(chan struct{})
+	start := time.Now()
+	go func() {
+		_, _, _ = h.resolveMcpOnly(context.Background(), a)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		elapsed := time.Since(start)
+		if elapsed > 2*time.Second {
+			t.Errorf("resolveMcpOnly took %v, expected it to return within the session-start discovery budget", elapsed)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("resolveMcpOnly did not return within 2s; the session-start discovery budget is not being enforced")
+	}
+}
+
 func Test_discoverMcpTools_SlotsBoundConcurrency(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

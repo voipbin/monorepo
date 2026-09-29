@@ -68,6 +68,18 @@ func (h *aicallHandler) resolveMcpOnly(ctx context.Context, a *ai.AI) ([]tool.To
 		"ai_id": a.ID,
 	})
 
+	// §2.3a: bound the WHOLE discovery loop below by a tighter aggregate
+	// budget than the per-server mcp_tool_call_timeout_seconds (default
+	// 10s) already gives each tools/list call in isolation. Without this,
+	// up to ai.MaxMcpServerIDs (8) whitelisted servers each taking up to
+	// mcp_tool_call_timeout_seconds to fail could add tens of seconds to
+	// this synchronous, pre-first-audio call-setup path. This context is
+	// local to resolveMcpOnly; mcp_tool_call_timeout_seconds itself is
+	// untouched and keeps bounding the separate dispatch/CallTool path
+	// (§5) unmodified.
+	discoverCtx, cancel := context.WithTimeout(ctx, mcpSessionStartDiscoveryBudget)
+	defer cancel()
+
 	mcpTools := make([]tool.Tool, 0)
 	toolMap := map[string]aicall.McpToolRef{}
 	schemaBudget := mcpToolSchemaBudgetBytes
@@ -80,7 +92,7 @@ func (h *aicallHandler) resolveMcpOnly(ctx context.Context, a *ai.AI) ([]tool.To
 	// an earlier discoverMcpTools entry.
 	seenNames := map[string]struct{}{}
 
-	for _, d := range h.discoverMcpTools(ctx, a, true) {
+	for _, d := range h.discoverMcpTools(discoverCtx, a, true) {
 		if _, dup := seenNames[d.name]; dup {
 			log.Warnf("Dropped a duplicate resolved mcp tool name; keeping the first occurrence. tool_name: %s, mcp_server_id: %s", d.name, d.ref.ServerID)
 			continue
@@ -247,6 +259,25 @@ var mcpDiscoverySlots = make(chan struct{}, 2)
 
 // mcpDiscoverySlotWait is a variable only so tests can shorten it.
 var mcpDiscoverySlotWait = 2 * time.Second
+
+// mcpSessionStartDiscoveryBudget bounds the ENTIRE discoverMcpTools loop
+// inside resolveMcpOnly (design §2.3a), separately from
+// mcp_tool_call_timeout_seconds, which only bounds one server's tools/list
+// round-trip in isolation and stays unchanged for the dispatch/CallTool
+// path (§5). Without this, up to ai.MaxMcpServerIDs (8) whitelisted
+// servers each hitting the per-server timeout could add tens of seconds to
+// resolveMcpOnly's caller -- a synchronous, pre-first-audio call-setup
+// path. A package var, matching mcpDiscoverySlotWait's existing style
+// (not a config.Get() flag): both bound the same session-start discovery
+// hot path, are read nowhere else, and the design doc calls this a
+// "constant... comparable to mcpDiscoverySlotWait." A config flag would
+// need its own 4-edit struct/parse/env/default plumbing for a value that,
+// unlike mcp_tool_exposure_enabled (an operator kill switch), is not meant
+// to be tuned in production -- it is a hardcoded safety bound, and tests
+// already need to shorten it exactly the way they shorten
+// mcpDiscoverySlotWait, which is the only real "configurability"
+// requirement this budget has.
+var mcpSessionStartDiscoveryBudget = 2 * time.Second
 
 // listToolsWithSlot lists serverID's tools while holding one of
 // mcpDiscoverySlots, charging only the time spent blocked on a slot to

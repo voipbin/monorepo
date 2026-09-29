@@ -5234,6 +5234,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				// (design 2026-09-05 §5.7). stopListening -> clearListenState.
 				m.cache.EXPECT().ListenConversationAIcallIDRemove(ctx, lcConversationID, existingIdleID).Return(nil)
 				m.cache.EXPECT().ListenStateClear(ctx, existingIdleID).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, existingIdleID).Return(terminatedAIcall, nil)
 				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, existingIdleID, gomock.Any()).Return(nil)
 
 				// attempt 1: create succeeds (and starts pipecatcall per Task 1)
