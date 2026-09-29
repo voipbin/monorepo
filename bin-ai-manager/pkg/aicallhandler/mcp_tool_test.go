@@ -2,10 +2,14 @@ package aicallhandler
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -849,5 +853,414 @@ func Test_toolHandleMcpCall_team(t *testing.T) {
 				t.Errorf("Wrong match. expect: %s, got: %s (message: %s)", tt.wantResult, got.Result, got.Message)
 			}
 		})
+	}
+}
+
+// Test_capErrText_RuneSafe pins that the log-line cap never splits a
+// multi-byte character. The previous byte slice turned a remote server's
+// Korean or emoji error text into invalid UTF-8 at the cut point.
+func Test_capErrText_RuneSafe(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		max  int
+		want string
+	}{
+		{name: "shorter than the cap is untouched", in: "short", max: 200, want: "short"},
+		{name: "ascii is cut at the cap", in: "abcdef", max: 3, want: "abc"},
+		{name: "cut inside a three-byte rune backs off to its start", in: "ab가나", max: 4, want: "ab"},
+		{name: "cut exactly on a rune boundary keeps the rune", in: "ab가나", max: 5, want: "ab가"},
+		{name: "cut inside a four-byte rune", in: "x\U0001F600y", max: 3, want: "x"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := capErrText(tt.in, tt.max)
+			if got != tt.want {
+				t.Errorf("capErrText(%q, %d) = %q, want %q", tt.in, tt.max, got, tt.want)
+			}
+			if !utf8.ValidString(got) {
+				t.Errorf("result is not valid UTF-8: %q", got)
+			}
+			if len(got) > tt.max {
+				t.Errorf("result is %d bytes, over the %d cap", len(got), tt.max)
+			}
+		})
+	}
+}
+
+// Test_decodeToolSchema pins the per-tool and per-resolution limits on
+// decoding remote input schemas, that a rejected schema costs nothing, and
+// that running out of the shared budget is told apart from a bad schema.
+func Test_decodeToolSchema(t *testing.T) {
+	big := json.RawMessage(`{"type":"object","description":"` + strings.Repeat("x", mcpMaxToolSchemaBytes) + `"}`)
+
+	tests := []struct {
+		name       string
+		raw        json.RawMessage
+		budget     int
+		want       schemaVerdict
+		wantParams bool
+		wantBudget int
+	}{
+		{name: "absent schema", raw: nil, budget: 100, want: schemaOK, wantBudget: 100},
+		{name: "null schema", raw: json.RawMessage(` null `), budget: 100, want: schemaOK, wantBudget: 100},
+		{name: "small object", raw: json.RawMessage(`{"type":"object"}`), budget: 100, want: schemaOK, wantParams: true, wantBudget: 100 - len(`{"type":"object"}`)},
+		{name: "over the per-tool limit", raw: big, budget: mcpToolSchemaBudgetBytes, want: schemaInvalid, wantBudget: mcpToolSchemaBudgetBytes},
+		{name: "over what is left of the budget", raw: json.RawMessage(`{"type":"object"}`), budget: 5, want: schemaOverBudget, wantBudget: 5},
+		{name: "not an object", raw: json.RawMessage(`[1,2]`), budget: 100, want: schemaInvalid, wantBudget: 100},
+		{name: "malformed", raw: json.RawMessage(`{"type":`), budget: 100, want: schemaInvalid, wantBudget: 100},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			budget := tt.budget
+			params, got := decodeToolSchema(tt.raw, &budget)
+			if got != tt.want || (params != nil) != tt.wantParams || budget != tt.wantBudget {
+				t.Fatalf("got verdict=%v params=%v budget=%d; want verdict=%v params=%v budget=%d", got, params != nil, budget, tt.want, tt.wantParams, tt.wantBudget)
+			}
+		})
+	}
+}
+
+// Test_validMcpToolName pins which remote tool names are kept.
+func Test_validMcpToolName(t *testing.T) {
+	tests := map[string]bool{
+		"search_tickets":                         true,
+		"a-b_C9":                                 true,
+		strings.Repeat("a", mcpMaxToolNameLen):   true,
+		strings.Repeat("a", mcpMaxToolNameLen+1): false,
+		"":                                       false,
+		"has space":                              false,
+		"dot.name":                               false,
+		"<script>":                               false,
+		"caf\u00e9":                              false,
+	}
+	for name, want := range tests {
+		if got := validMcpToolName(name); got != want {
+			t.Errorf("validMcpToolName(%q) = %v, want %v", name, got, want)
+		}
+	}
+	if mcpMaxToolNameLen+len("mcp_12345678_") != 64 {
+		t.Fatalf("a namespaced name at the limit must be exactly 64 bytes, got %d", mcpMaxToolNameLen+len("mcp_12345678_"))
+	}
+}
+
+// Test_resolveMcpToolMap_Bounds pins that the stored tool map is bounded in
+// entries and bytes however many servers and tools are listed, drops invalid
+// names while keeping the server's other tools, and never decodes schemas.
+func Test_resolveMcpToolMap_Bounds(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	// A schema that is not JSON at all: decoding it would fail, so if the
+	// map path ever decoded schemas, these tools would go missing.
+	undecodable := json.RawMessage(`{`)
+
+	ids := []uuid.UUID{}
+	for i := 0; i < 5; i++ {
+		id := uuid.Must(uuid.NewV4())
+		ids = append(ids, id)
+		srv.EXPECT().Get(gomock.Any(), id).Return(&mcpserver.McpServer{Identity: commonidentityFor(id), Status: mcpserver.StatusActive}, nil).AnyTimes()
+
+		tools := []mcptoolhandler.McpTool{{Name: "bad name"}, {Name: "<x>"}, {Name: strings.Repeat("n", mcpMaxToolNameLen+1)}}
+		// 100 per server does not divide the cap, so the cap must cut a
+		// server's list partway, not only stop at a server boundary.
+		for j := 0; j < 100; j++ {
+			tools = append(tools, mcptoolhandler.McpTool{Name: fmt.Sprintf("%s%03d", strings.Repeat("n", mcpMaxToolNameLen-3), j), InputSchema: undecodable})
+		}
+		tl.EXPECT().ListTools(gomock.Any(), id).Return(tools, nil).AnyTimes()
+	}
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	toolMap := h.resolveMcpToolMap(context.Background(), &ai.AI{
+		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+		McpServerIDs: ids,
+	})
+
+	if len(toolMap) != mcpMaxToolsPerResolution {
+		t.Fatalf("tool map has %d entries, want the per-resolution cap %d", len(toolMap), mcpMaxToolsPerResolution)
+	}
+	for name := range toolMap {
+		if len(name) > 64 || strings.ContainsAny(name, " <>") {
+			t.Fatalf("invalid name stored: %q", name)
+		}
+	}
+	encoded, err := json.Marshal(toolMap)
+	if err != nil {
+		t.Fatalf("could not encode: %v", err)
+	}
+	if len(encoded) > 64<<10 {
+		t.Fatalf("stored tool map is %d bytes; it must stay a few tens of KiB", len(encoded))
+	}
+}
+
+// Test_resolveTools_SchemaLimits pins that a tool whose schema is too large
+// is dropped while the server's other tools are kept, and that the total
+// decoded across a resolution is bounded.
+func Test_resolveTools_SchemaLimits(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	serverID := uuid.FromStringOrNil("eeeeeeee-1111-4000-8000-000000000005")
+	srv.EXPECT().Get(gomock.Any(), serverID).Return(&mcpserver.McpServer{
+		Identity: commonidentityFor(serverID),
+		Status:   mcpserver.StatusActive,
+	}, nil)
+
+	// Each schema is just under the per-tool limit, so the budget admits
+	// only a few of them; one more is far over the per-tool limit.
+	nearLimit := json.RawMessage(`{"type":"object","description":"` + strings.Repeat("x", mcpMaxToolSchemaBytes-64) + `"}`)
+	tools := []mcptoolhandler.McpTool{
+		{Name: "huge", InputSchema: json.RawMessage(`{"d":"` + strings.Repeat("x", 2*mcpMaxToolSchemaBytes) + `"}`)},
+		{Name: "plain"},
+	}
+	for i := 0; i < 8; i++ {
+		tools = append(tools, mcptoolhandler.McpTool{Name: fmt.Sprintf("big%d", i), InputSchema: nearLimit})
+	}
+	tl.EXPECT().ListTools(gomock.Any(), serverID).Return(tools, nil)
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	merged, toolMap, err := h.resolveTools(context.Background(), &ai.AI{
+		Identity:     commonidentity.Identity{CustomerID: testCustomerID},
+		McpServerIDs: []uuid.UUID{serverID},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if _, ok := toolMap["mcp_eeeeeeee_huge"]; ok {
+		t.Error("a schema over the per-tool limit must be dropped")
+	}
+	if _, ok := toolMap["mcp_eeeeeeee_plain"]; !ok {
+		t.Error("a tool with no schema must be kept")
+	}
+
+	decoded := 0
+	for _, tl := range merged {
+		if strings.HasPrefix(string(tl.Name), "mcp_eeeeeeee_big") {
+			decoded++
+		}
+	}
+	wantDecoded := mcpToolSchemaBudgetBytes / len(nearLimit)
+	if decoded != wantDecoded {
+		t.Fatalf("decoded %d near-limit schemas, want %d within the %d byte budget", decoded, wantDecoded, mcpToolSchemaBudgetBytes)
+	}
+	if len(toolMap) != len(merged) {
+		t.Fatalf("tool map (%d) and merged list (%d) must describe the same tools", len(toolMap), len(merged))
+	}
+}
+
+// Test_discoverMcpTools_SlotsBoundConcurrency pins that at most
+// cap(mcpDiscoverySlots) tools/list requests run at once in the process,
+// however many session starts resolve at the same time.
+func Test_discoverMcpTools_SlotsBoundConcurrency(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	var mu sync.Mutex
+	inFlight, maxInFlight := 0, 0
+	ids := []uuid.UUID{}
+	for i := 0; i < 3; i++ {
+		id := uuid.Must(uuid.NewV4())
+		ids = append(ids, id)
+		srv.EXPECT().Get(gomock.Any(), id).Return(&mcpserver.McpServer{Identity: commonidentityFor(id), Status: mcpserver.StatusActive}, nil).AnyTimes()
+		tl.EXPECT().ListTools(gomock.Any(), id).DoAndReturn(func(context.Context, uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+			mu.Lock()
+			inFlight++
+			if inFlight > maxInFlight {
+				maxInFlight = inFlight
+			}
+			mu.Unlock()
+			time.Sleep(20 * time.Millisecond)
+			mu.Lock()
+			inFlight--
+			mu.Unlock()
+			return []mcptoolhandler.McpTool{{Name: "t"}}, nil
+		}).AnyTimes()
+	}
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	a := &ai.AI{Identity: commonidentity.Identity{CustomerID: testCustomerID}, McpServerIDs: ids}
+
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if got := len(h.resolveMcpToolMap(context.Background(), a)); got != 3 {
+				t.Errorf("resolution got %d tools, want 3", got)
+			}
+		}()
+	}
+	wg.Wait()
+
+	// The bound is a memory decision measured against the 40M container
+	// limit, so it is pinned by value, not only against the channel.
+	const wantSlots = 2
+	if cap(mcpDiscoverySlots) != wantSlots {
+		t.Fatalf("mcpDiscoverySlots has %d slots, want %d; re-measure peak memory before changing it", cap(mcpDiscoverySlots), wantSlots)
+	}
+	if maxInFlight > wantSlots {
+		t.Fatalf("%d tools/list requests ran at once; the process-wide bound is %d", maxInFlight, wantSlots)
+	}
+}
+
+// Test_discoverMcpTools_SlotWaitIsBounded pins that a resolution does not
+// wait indefinitely for a slot held by someone else's slow servers: it skips
+// the server once its total wait is spent.
+func Test_discoverMcpTools_SlotWaitIsBounded(t *testing.T) {
+	defer shortenSlotWait(t, 300*time.Millisecond)()
+
+	// Occupy every slot, as another customer's slow listings would.
+	for i := 0; i < cap(mcpDiscoverySlots); i++ {
+		mcpDiscoverySlots <- struct{}{}
+	}
+	defer func() {
+		for i := 0; i < cap(mcpDiscoverySlots); i++ {
+			<-mcpDiscoverySlots
+		}
+	}()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	ids := []uuid.UUID{uuid.Must(uuid.NewV4()), uuid.Must(uuid.NewV4())}
+	for _, id := range ids {
+		srv.EXPECT().Get(gomock.Any(), id).Return(&mcpserver.McpServer{Identity: commonidentityFor(id), Status: mcpserver.StatusActive}, nil)
+	}
+	// No ListTools expectation: no server may be listed without a slot.
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	start := time.Now()
+	// Run aside: an unbounded wait would never return, and must fail here
+	// rather than hang the test binary.
+	resolved := make(chan map[string]aicall.McpToolRef, 1)
+	go func() {
+		resolved <- h.resolveMcpToolMap(context.Background(), &ai.AI{Identity: commonidentity.Identity{CustomerID: testCustomerID}, McpServerIDs: ids})
+	}()
+	var toolMap map[string]aicall.McpToolRef
+	select {
+	case toolMap = <-resolved:
+	case <-time.After(mcpDiscoverySlotWait + time.Second):
+		t.Fatal("the resolution waited for a slot past its bound")
+	}
+	elapsed := time.Since(start)
+
+	if len(toolMap) != 0 {
+		t.Fatalf("got %d tools with no slot free", len(toolMap))
+	}
+	// Two servers share one total wait, not one wait each.
+	if elapsed < mcpDiscoverySlotWait || elapsed > mcpDiscoverySlotWait+500*time.Millisecond {
+		t.Fatalf("resolution took %v; its total slot wait is %v", elapsed, mcpDiscoverySlotWait)
+	}
+}
+
+// shortenSlotWait sets mcpDiscoverySlotWait for one test and returns the
+// function that restores it.
+func shortenSlotWait(t *testing.T, d time.Duration) func() {
+	t.Helper()
+	prev := mcpDiscoverySlotWait
+	mcpDiscoverySlotWait = d
+	return func() { mcpDiscoverySlotWait = prev }
+}
+
+// Test_discoverMcpTools_ListingTimeIsNotWaitTime pins that time spent
+// listing a customer's own servers is not charged to the slot wait. With no
+// other load, a first server slower than the whole wait must not cause the
+// servers after it to be skipped.
+func Test_discoverMcpTools_ListingTimeIsNotWaitTime(t *testing.T) {
+	defer shortenSlotWait(t, 100*time.Millisecond)()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	srv := mcpserverhandler.NewMockMcpServerHandler(mc)
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+
+	ids := []uuid.UUID{}
+	for i := 0; i < 4; i++ {
+		id := uuid.Must(uuid.NewV4())
+		ids = append(ids, id)
+		srv.EXPECT().Get(gomock.Any(), id).Return(&mcpserver.McpServer{Identity: commonidentityFor(id), Status: mcpserver.StatusActive}, nil)
+		delay := time.Duration(0)
+		if i == 0 {
+			delay = 250 * time.Millisecond
+		}
+		tl.EXPECT().ListTools(gomock.Any(), id).DoAndReturn(func(context.Context, uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+			time.Sleep(delay)
+			return []mcptoolhandler.McpTool{{Name: "t"}}, nil
+		})
+	}
+
+	h := &aicallHandler{mcpServerHandler: srv, mcptoolHandler: tl}
+	// Several runs: the defect this pins dropped servers at random.
+	for run := 0; run < 5; run++ {
+		if run > 0 {
+			for _, id := range ids {
+				srv.EXPECT().Get(gomock.Any(), id).Return(&mcpserver.McpServer{Identity: commonidentityFor(id), Status: mcpserver.StatusActive}, nil)
+			}
+			for i, id := range ids {
+				delay := time.Duration(0)
+				if i == 0 {
+					delay = 250 * time.Millisecond
+				}
+				tl.EXPECT().ListTools(gomock.Any(), id).DoAndReturn(func(context.Context, uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+					time.Sleep(delay)
+					return []mcptoolhandler.McpTool{{Name: "t"}}, nil
+				})
+			}
+		}
+		toolMap := h.resolveMcpToolMap(context.Background(), &ai.AI{Identity: commonidentity.Identity{CustomerID: testCustomerID}, McpServerIDs: ids})
+		if len(toolMap) != len(ids) {
+			t.Fatalf("run %d: got %d servers' tools, want all %d; listing time must not count as waiting", run, len(toolMap), len(ids))
+		}
+	}
+}
+
+// Test_listToolsWithSlot_ReleasesOnPanic pins that a panic out of ListTools
+// does not keep a slot, so one failure cannot starve every later discovery
+// in the process.
+func Test_listToolsWithSlot_ReleasesOnPanic(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	tl := mcptoolhandler.NewMockMcpToolHandler(mc)
+	id := uuid.Must(uuid.NewV4())
+	tl.EXPECT().ListTools(gomock.Any(), id).DoAndReturn(func(context.Context, uuid.UUID) ([]mcptoolhandler.McpTool, error) {
+		panic("boom")
+	})
+
+	h := &aicallHandler{mcptoolHandler: tl}
+	func() {
+		defer func() { _ = recover() }()
+		wait := time.Second
+		_, _, _ = h.listToolsWithSlot(context.Background(), id, &wait)
+	}()
+
+	if held := len(mcpDiscoverySlots); held != 0 {
+		t.Fatalf("%d slot(s) still held after a panic", held)
+	}
+}
+
+// Test_sampleToolNames pins that dropped names are logged boundedly.
+func Test_sampleToolNames(t *testing.T) {
+	got := sampleToolNames([]string{"a.b", "c/d", strings.Repeat("x", 500), "fourth"})
+	if strings.Contains(got, "fourth") {
+		t.Errorf("more than three names logged: %s", got)
+	}
+	if !strings.Contains(got, `"a.b"`) || !strings.Contains(got, `"c/d"`) {
+		t.Errorf("names missing: %s", got)
+	}
+	if len(got) > 3*(80+8) {
+		t.Errorf("log text not bounded: %d bytes", len(got))
 	}
 }

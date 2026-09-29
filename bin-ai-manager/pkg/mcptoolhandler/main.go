@@ -8,6 +8,7 @@ package mcptoolhandler
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -19,12 +20,25 @@ import (
 )
 
 // McpTool is one tool definition returned by a remote MCP server's
-// tools/list call.
+// tools/list call. The wire field is inputSchema (camelCase, per the MCP
+// specification and the reference server); the snake_case tag this struct
+// used to carry silently dropped every tool's schema.
+//
+// InputSchema is kept as the raw JSON the server sent. Decoding it into a
+// generic map costs about thirty times its size in memory, so a single
+// hostile tools/list within the 1 MiB body cap could otherwise take a pod
+// near its memory limit. The consumer decodes a schema only after checking
+// its size.
 type McpTool struct {
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	InputSchema map[string]any `json:"input_schema,omitempty"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	InputSchema json.RawMessage `json:"inputSchema,omitempty"`
 }
+
+// MaxToolsPerServer is the most tools taken from one server's tools/list.
+// Tools past it are dropped. It bounds what one server can add to a
+// session's tool list and to the tool map stored on the aicall.
+const MaxToolsPerServer = 128
 
 // McpToolHandler discovers and calls tools exposed by a customer's remote
 // MCP server. Every outbound call goes through the SSRF-guarded HTTP client
@@ -67,8 +81,9 @@ type mcpToolHandler struct {
 
 // NewMcpToolHandler creates a new McpToolHandler. cryptoKeys is the raw
 // MCP_SECRET_ENCRYPTION_KEYS config value; timeoutSeconds is
-// mcp_tool_call_timeout_seconds (design §13), applied to every outbound
-// tools/list and tools/call request. oauthHandler resolves valid access
+// mcp_tool_call_timeout_seconds (design §13), which bounds each whole
+// tools/list or tools/call, handshake included, not each request within it;
+// the session close may run up to sessionCloseFloor past it. oauthHandler resolves valid access
 // tokens for AuthTypeOAuth servers (design §8); pass nil only in tests
 // that don't exercise OAuth servers.
 func NewMcpToolHandler(db dbhandler.DBHandler, cryptoKeys string, timeoutSeconds int, oauthHandler mcpoauthhandler.McpOAuthHandler) (McpToolHandler, error) {

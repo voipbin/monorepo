@@ -222,14 +222,7 @@ func (h *aicallHandler) writeInsightSessionMetadata(ctx context.Context, existin
 		},
 	}
 
-	_, mcpToolMap, errTools := h.resolveTools(ctx, a)
-	if errTools != nil {
-		logrus.WithFields(logrus.Fields{
-			"func":      "writeInsightSessionMetadata",
-			"aicall_id": existing.ID,
-		}).Warnf("Could not resolve mcp tools, continuing with built-in tools only. err: %v", errTools)
-	}
-	metadata[aicall.MetaKeyMcpToolMap] = mcpToolMap
+	metadata[aicall.MetaKeyMcpToolMap] = h.resolveMcpToolMap(ctx, a)
 
 	if errUpdate := h.db.AIcallUpdateNoTouchTMUpdate(ctx, existing.ID, map[aicall.Field]any{
 		aicall.FieldMetadata: metadata,

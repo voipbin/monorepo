@@ -1181,10 +1181,7 @@ func (h *aicallHandler) startAIcallByMessaging(
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
 	snapshots, autoAudit := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
-	_, mcpToolMap, errTools := h.resolveTools(ctx, a)
-	if errTools != nil {
-		log.Warnf("Could not resolve mcp tools, continuing with built-in tools only. err: %v", errTools)
-	}
+	mcpToolMap := h.resolveMcpToolMap(ctx, a)
 	metadata := map[string]any{
 		aicall.MetaKeyPromptSnapshots:  snapshots,
 		aicall.MetaKeyAutoAuditEnabled: autoAudit,

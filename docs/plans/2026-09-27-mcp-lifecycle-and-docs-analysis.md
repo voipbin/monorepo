@@ -51,7 +51,8 @@ draft had wrongly deferred to 대표님 as unjudgeable instead of simply checkin
 v10, v12 and v15 each made that claim and each was refuted within one round; a round must
 return clean on both tracks before the design doc starts.
 Scope: **PR A and PR C only.** Phase 2 LLM tool exposure (formerly PR B) is split
-out to `2026-09-27-mcp-phase2-tool-exposure-analysis.md` and is NOT in scope here.
+out to `2026-09-27-mcp-phase2-tool-exposure-analysis-v2.md` and is NOT in scope
+here.
 
 Supersedes (all retained for the failure-mode record):
 - `…-mcp-server-customer-gap-analysis-v1-superseded.md` (§2.4 factually wrong)

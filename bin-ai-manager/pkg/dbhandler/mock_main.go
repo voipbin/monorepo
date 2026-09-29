@@ -667,6 +667,20 @@ func (mr *MockDBHandlerMockRecorder) McpServerUpdate(ctx, id, fields any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerUpdate", reflect.TypeOf((*MockDBHandler)(nil).McpServerUpdate), ctx, id, fields)
 }
 
+// McpServerUpdateOAuthTokensIfCurrent mocks base method.
+func (m *MockDBHandler) McpServerUpdateOAuthTokensIfCurrent(ctx context.Context, id uuid.UUID, spentRefreshTokenCiphertext []byte, fields map[mcpserver.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "McpServerUpdateOAuthTokensIfCurrent", ctx, id, spentRefreshTokenCiphertext, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// McpServerUpdateOAuthTokensIfCurrent indicates an expected call of McpServerUpdateOAuthTokensIfCurrent.
+func (mr *MockDBHandlerMockRecorder) McpServerUpdateOAuthTokensIfCurrent(ctx, id, spentRefreshTokenCiphertext, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "McpServerUpdateOAuthTokensIfCurrent", reflect.TypeOf((*MockDBHandler)(nil).McpServerUpdateOAuthTokensIfCurrent), ctx, id, spentRefreshTokenCiphertext, fields)
+}
+
 // MessageAssistantReplyExists mocks base method.
 func (m *MockDBHandler) MessageAssistantReplyExists(ctx context.Context, pipecatcallID uuid.UUID) (bool, error) {
 	m.ctrl.T.Helper()

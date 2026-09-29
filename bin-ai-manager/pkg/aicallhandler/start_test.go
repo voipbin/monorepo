@@ -1218,11 +1218,11 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					McpServerIDs: []uuid.UUID{curServerID},
 				}, nil).Times(2)
 
-				// refreshMcpToolMap -> resolveTools, driven by whichever AI the
+				// refreshMcpToolMap -> resolveMcpToolMap, driven by whichever AI the
 				// reuse branch chose. Only the CURRENT member's server is set
 				// up, so a start-member refresh is rejected by gomock as an
 				// unexpected fetch of the start member's server. That aborts the
-				// test goroutine inside resolveTools, so the callback below never
+				// test goroutine inside discoverMcpTools, so the callback below never
 				// runs on that mutation -- it is the assertion that catches a
 				// refresh which reaches the persist step with the wrong contents
 				// (an empty map, or a map missing the current member's server).

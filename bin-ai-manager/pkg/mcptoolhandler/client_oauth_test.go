@@ -2,7 +2,6 @@ package mcptoolhandler
 
 import (
 	"context"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -29,12 +28,9 @@ func Test_CallTool_OAuth_Success(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockOAuth := mcpoauthhandler.NewMockMcpOAuthHandler(mc)
 
-	var gotAuth string
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotAuth = r.Header.Get("Authorization")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":{"content":[{"type":"text","text":"ok"}]}}`))
-	}))
+	fake := newFakeMCPServer(t)
+	fake.callResult = `{"content":[{"type":"text","text":"ok"}]}`
+	srv := httptest.NewServer(fake)
 	defer srv.Close()
 
 	serverID := uuid.Must(uuid.NewV4())
@@ -60,8 +56,10 @@ func Test_CallTool_OAuth_Success(t *testing.T) {
 	if result != "ok" {
 		t.Fatalf("unexpected result: %q", result)
 	}
-	if gotAuth != "Bearer gho_livetoken" {
-		t.Fatalf("unexpected auth header: %q", gotAuth)
+	for _, r := range fake.recorded() {
+		if r.Authorization != "Bearer gho_livetoken" {
+			t.Fatalf("request %q carried auth header %q", r.Method, r.Authorization)
+		}
 	}
 }
 
@@ -127,3 +125,52 @@ func Test_CallTool_OAuth_NoHandlerConfigured(t *testing.T) {
 type assertErr string
 
 func (e assertErr) Error() string { return string(e) }
+
+// Test_ListTools_OAuth_ResolvedOncePerCall pins that a session re-opened
+// after a 404 reuses the credential resolved for the call. Resolving an
+// OAuth token can spend the stored refresh token, and the row held in memory
+// is not updated afterwards, so resolving again would present the spent
+// refresh token; a vendor that detects reuse then revokes the grant.
+func Test_ListTools_OAuth_ResolvedOncePerCall(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockOAuth := mcpoauthhandler.NewMockMcpOAuthHandler(mc)
+
+	fake := newFakeMCPServer(t)
+	fake.expireSessionsOnce = true
+	srv := httptest.NewServer(fake)
+	defer srv.Close()
+
+	serverID := uuid.Must(uuid.NewV4())
+	m := &mcpserver.McpServer{
+		URL:         srv.URL,
+		Status:      mcpserver.StatusActive,
+		AuthType:    mcpserver.AuthTypeOAuth,
+		OAuthVendor: "linear",
+	}
+	mockDB.EXPECT().McpServerGet(gomock.Any(), serverID).Return(m, nil)
+	mockOAuth.EXPECT().GetValidAccessToken(gomock.Any(), m).Return("lin_token", nil).Times(1)
+
+	crypto, err := mcpserverhandler.NewSecretCrypto("")
+	if err != nil {
+		t.Fatalf("could not create secret crypto: %v", err)
+	}
+	h := &mcpToolHandler{db: mockDB, crypto: crypto, timeout: 2 * time.Second, oauthHandler: mockOAuth, newClient: testClient}
+
+	if _, err := h.ListTools(context.Background(), serverID); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	fake.mu.Lock()
+	sessions := fake.sessions
+	fake.mu.Unlock()
+	if sessions != 2 {
+		t.Fatalf("expected the 404 to open a second session, got %d sessions", sessions)
+	}
+	for _, r := range fake.recorded() {
+		if r.Authorization != "Bearer lin_token" {
+			t.Fatalf("%s %q carried auth header %q", r.HTTPMethod, r.Method, r.Authorization)
+		}
+	}
+}

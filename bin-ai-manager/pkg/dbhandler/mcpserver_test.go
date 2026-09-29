@@ -1,9 +1,12 @@
 package dbhandler
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"testing"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-ai-manager/models/mcpserver"
@@ -133,5 +136,135 @@ func Test_McpServerUpdate_ClearSecret_RoundTrip(t *testing.T) {
 	}
 	if len(after.SecretCiphertext) != 0 {
 		t.Errorf("expected an empty SecretCiphertext after clearing, got %v", after.SecretCiphertext)
+	}
+}
+
+// Test_McpServerUpdateOAuthTokensIfCurrent pins, through the real SQL layer,
+// that a refresh result is stored only while the row still holds the refresh
+// token that refresh spent and is still an OAuth row. A row that was
+// reconnected, rotated by another refresh, downgraded or deleted is left as
+// it is and ErrNotFound is returned.
+func Test_McpServerUpdateOAuthTokensIfCurrent(t *testing.T) {
+	spent := []byte{0x51, 0x52, 0x53}
+	newer := []byte{0x61, 0x62, 0x63}
+	stored := []byte{0x71, 0x72, 0x73}
+
+	tests := []struct {
+		name    string
+		mutate  func(t *testing.T, h *handler, id uuid.UUID)
+		wantErr error
+		want    []byte
+		// deleted rows are not readable through McpServerGet.
+		deleted bool
+	}{
+		{name: "row unchanged: stored", want: stored},
+		{
+			name: "reconnected to a new refresh token: untouched",
+			mutate: func(t *testing.T, h *handler, id uuid.UUID) {
+				mustUpdate(t, h, id, map[mcpserver.Field]any{mcpserver.FieldRefreshTokenCiphertext: newer})
+			},
+			wantErr: ErrNotFound,
+			want:    newer,
+		},
+		{
+			name: "downgraded out of oauth: untouched",
+			mutate: func(t *testing.T, h *handler, id uuid.UUID) {
+				mustUpdate(t, h, id, map[mcpserver.Field]any{
+					mcpserver.FieldAuthType:               mcpserver.AuthTypeBearer,
+					mcpserver.FieldRefreshTokenCiphertext: []byte(nil),
+				})
+			},
+			wantErr: ErrNotFound,
+			want:    nil,
+		},
+		{
+			// The downgrade path does not have to clear the refresh token
+			// for the auth type predicate to hold on its own.
+			name: "auth type changed with the refresh token still present: untouched",
+			mutate: func(t *testing.T, h *handler, id uuid.UUID) {
+				mustUpdate(t, h, id, map[mcpserver.Field]any{mcpserver.FieldAuthType: mcpserver.AuthTypeBearer})
+			},
+			wantErr: ErrNotFound,
+			want:    spent,
+		},
+		{
+			// McpServerDelete also clears the refresh token, which the
+			// refresh token predicate would catch on its own. Setting only
+			// tm_delete isolates the deleted-row guard.
+			name: "soft-deleted with the refresh token still present: untouched",
+			mutate: func(t *testing.T, h *handler, id uuid.UUID) {
+				q, args, err := sq.Update(mcpserverTable).Set("tm_delete", h.utilHandler.TimeNow()).Where(sq.Eq{"id": id.Bytes()}).ToSql()
+				if err != nil {
+					t.Fatalf("could not build query: %v", err)
+				}
+				if _, err := h.db.ExecContext(context.Background(), q, args...); err != nil {
+					t.Fatalf("could not soft-delete: %v", err)
+				}
+			},
+			wantErr: ErrNotFound,
+			deleted: true,
+		},
+		{
+			name: "deleted: untouched",
+			mutate: func(t *testing.T, h *handler, id uuid.UUID) {
+				if err := h.McpServerDelete(context.Background(), id); err != nil {
+					t.Fatalf("McpServerDelete failed: %v", err)
+				}
+			},
+			wantErr: ErrNotFound,
+			deleted: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hi := NewHandler(dbTest, nil)
+			h := hi.(*handler)
+
+			id := uuid.Must(uuid.NewV4())
+			if err := h.McpServerCreate(context.Background(), &mcpserver.McpServer{
+				Identity:               commonidentity.Identity{ID: id, CustomerID: uuid.Must(uuid.NewV4())},
+				Name:                   "oauth-server",
+				URL:                    "https://mcp.example.com/",
+				Status:                 mcpserver.StatusActive,
+				AuthType:               mcpserver.AuthTypeOAuth,
+				OAuthVendor:            "linear",
+				AccessTokenCiphertext:  []byte{0x01},
+				AccessTokenNonce:       []byte{0x02},
+				RefreshTokenCiphertext: spent,
+				RefreshTokenNonce:      []byte{0x03},
+				KeyVersion:             1,
+			}); err != nil {
+				t.Fatalf("McpServerCreate failed: %v", err)
+			}
+			if tt.mutate != nil {
+				tt.mutate(t, h, id)
+			}
+
+			err := h.McpServerUpdateOAuthTokensIfCurrent(context.Background(), id, spent, map[mcpserver.Field]any{
+				mcpserver.FieldRefreshTokenCiphertext: stored,
+			})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("err = %v, want %v", err, tt.wantErr)
+			}
+			if tt.deleted {
+				return
+			}
+
+			got, errGet := h.McpServerGet(context.Background(), id)
+			if errGet != nil {
+				t.Fatalf("McpServerGet failed: %v", errGet)
+			}
+			if !bytes.Equal(got.RefreshTokenCiphertext, tt.want) {
+				t.Fatalf("refresh token ciphertext = %x, want %x", got.RefreshTokenCiphertext, tt.want)
+			}
+		})
+	}
+}
+
+func mustUpdate(t *testing.T, h *handler, id uuid.UUID, fields map[mcpserver.Field]any) {
+	t.Helper()
+	if err := h.McpServerUpdate(context.Background(), id, fields); err != nil {
+		t.Fatalf("McpServerUpdate failed: %v", err)
 	}
 }
