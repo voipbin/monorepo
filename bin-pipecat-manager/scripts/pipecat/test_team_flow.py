@@ -323,6 +323,22 @@ async def test_transition_handler_with_no_tts_stt_routers():
     )
 
 class TestEscapeFlowPlaceholders:
+    def test_build_team_flow_escapes_injected_history(self):
+        """build_team_flow must run the history through the escaper (design 2.5)."""
+        member = _make_member("m1", init_prompt="You are helpful.")
+        team = _make_team([member], "m1")
+        llm_messages = [{"role": "user", "content": "my name is {{ name }}"}]
+
+        _, start_node = build_team_flow(
+            team, "pc-1", MagicMock(), None, None,
+            llm_messages=llm_messages,
+        )
+
+        assert start_node["task_messages"] == [
+            {"role": "user", "content": "my name is \\{{ name }}"}
+        ]
+        assert llm_messages == [{"role": "user", "content": "my name is {{ name }}"}]
+
     def test_escapes_and_does_not_mutate(self):
         from team_flow import _escape_flow_placeholders
         msgs = [

@@ -56,25 +56,45 @@ def _good():
 
 def _x_mcp_header():
     return FunctionSchema(
-        name="mcp_x_bad",
+        name="mcp_x_header",
         description="d",
         properties={"repo": {"type": "string", "x-mcp-header": "repo"}},
         required=[],
     )
 
 
-def test_x_mcp_header_tool_fails_the_whole_set():
+def _bad():
+    # A key Gemini's schema model rejects and pipecat does not adapt away.
+    return FunctionSchema(
+        name="mcp_x_bad",
+        description="d",
+        properties={"repo": {"type": "string", "format": 123}},
+        required=[],
+    )
+
+
+def test_invalid_tool_fails_the_whole_set():
     assert _validates([_good()])
-    assert not _validates([_good(), _x_mcp_header()])
+    assert not _validates([_good(), _bad()])
 
 
 def test_filter_keeps_only_the_good_tool_and_the_result_validates():
-    good, bad = _good(), _x_mcp_header()
+    good, bad = _good(), _bad()
 
     kept = drop_gemini_invalid_tools([good, bad], "realtest")
 
     assert [fs.name for fs in kept] == ["connect_call"]
     assert _validates(kept)
+
+
+def test_x_mcp_header_is_adapted_by_pipecat_and_the_tool_is_kept():
+    # pipecat >= 1.12 drops x- vendor keys itself (gemini_adapter), so an MCP
+    # tool carrying x-mcp-header now validates and stays in the Gemini set.
+    # Before 1.12 the whole tool was rejected and removed by the filter.
+    good, hdr = _good(), _x_mcp_header()
+
+    assert _validates([good, hdr])
+    assert drop_gemini_invalid_tools([good, hdr], "realtest") == [good, hdr]
 
 
 def test_filter_returns_valid_set_unchanged():

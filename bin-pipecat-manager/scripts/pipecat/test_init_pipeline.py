@@ -70,6 +70,8 @@ async def _run_team_init(resolved_team, pipeline_id="test-gate", **kwargs):
 
     with patch("run.create_llm_service", return_value=(mock_llm, MagicMock())) as mock_create_llm, \
          patch("run.RoutingLLMService", return_value=mock_routing), \
+         patch("run._make_aggregator", return_value=MagicMock()) as mock_make_aggregator, \
+         patch("run.LLMContext") as mock_llm_context, \
          patch("run.create_tts_service") as mock_create_tts, \
          patch("run.create_stt_service") as mock_create_stt, \
          patch("run.RoutingTTSService") as mock_routing_tts, \
@@ -98,6 +100,9 @@ async def _run_team_init(resolved_team, pipeline_id="test-gate", **kwargs):
         RoutingTTSService=mock_routing_tts,
         RoutingSTTService=mock_routing_stt,
         create_websocket_transport=mock_create_transport,
+        make_aggregator=mock_make_aggregator,
+        LLMContext=mock_llm_context,
+        llm=mock_llm,
     )
     return ctx, mocks
 
@@ -749,3 +754,24 @@ async def test_team_member_llms_have_no_async_tools():
     ctx, mocks = await _run_team_init(team)
     llm = mocks.create_llm_service.return_value[0]
     assert llm._has_async_tools() is False
+
+
+@pytest.mark.asyncio
+async def test_init_team_pipeline_builds_aggregator_through_helper():
+    """Design 2.3: the team context aggregator goes through _make_aggregator
+    (empty_user_turn=None), like the single-AI paths."""
+    team = {"start_member_id": "member-1", "members": _two_google_members()}
+
+    _, mocks = await _run_team_init(team)
+
+    mocks.make_aggregator.assert_called_once_with(mocks.LLMContext.return_value)
+
+
+@pytest.mark.asyncio
+async def test_init_team_pipeline_disables_async_tool_instruction_on_members():
+    """Design 2.5: member LLMs must not compose the ASYNC TOOLS instruction."""
+    team = {"start_member_id": "member-1", "members": _two_google_members()}
+
+    _, mocks = await _run_team_init(team)
+
+    assert mocks.llm._has_async_tools() is False

@@ -60,7 +60,6 @@ from team_flow import build_team_flow
 from pipecat.flows import FlowManager
 
 
-
 def _make_aggregator(ctx):
     """Build every LLMContextAggregatorPair the same way (design 2.3).
 
@@ -79,7 +78,7 @@ def _keep_usable(svc):
 
     async def set_usable(is_usable):
         if not is_usable:
-            logger.warning(f"{svc}: ignoring set_usable(False); will retry on the next turn")
+            logger.warning(f"{svc}: ignoring set_usable(False) to keep the service usable (design 2.5c)")
             return
         await original(is_usable)
 

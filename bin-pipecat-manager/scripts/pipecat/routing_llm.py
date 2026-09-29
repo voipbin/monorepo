@@ -71,9 +71,19 @@ class RoutingLLMService(FrameProcessor):
     # Fan-out helpers. Signature matches pipecat 1.12 LLMService.register_function
     # (name, handler, *, cancel_on_interruption=None, timeout_secs=None,
     # cancellable_by_llm=None). Built-in pipecat.flows no longer calls this: each
-    # member LLM auto-registers advertised handlers on its own LLMContextFrame. `**kwargs` is kept only to reject unknown args loudly (e.g. a
+    # member LLM auto-registers advertised handlers on its own LLMContextFrame.
+    # `**kwargs` is kept only to reject unknown args loudly (e.g. a
     # re-introduced start_callback) rather than silently swallow them.
-    def register_function(self, name=None, handler=None, *, cancel_on_interruption=None, timeout_secs=None, cancellable_by_llm=None, **kwargs):
+    def register_function(
+        self,
+        name=None,
+        handler=None,
+        *,
+        cancel_on_interruption=None,
+        timeout_secs=None,
+        cancellable_by_llm=None,
+        **kwargs,
+    ):
         if kwargs:
             raise TypeError(
                 f"RoutingLLMService.register_function got unexpected kwargs: {list(kwargs)}"
