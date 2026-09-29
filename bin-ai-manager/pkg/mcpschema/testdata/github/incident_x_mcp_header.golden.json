@@ -1,0 +1,29 @@
+{
+  "schema": {
+    "properties": {
+      "issue_number": {
+        "description": "Issue number",
+        "minimum": 1,
+        "type": "number"
+      },
+      "owner": {
+        "description": "Repository owner",
+        "type": "string"
+      },
+      "repo": {
+        "description": "Repository name",
+        "type": "string"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "issue_number"
+    ],
+    "type": "object"
+  },
+  "report": {
+    "tool_dropped": false,
+    "dropped_props_n": 0
+  }
+}

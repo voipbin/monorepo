@@ -76,6 +76,8 @@ Audio mode is selected by the request-level `stt_type`/`tts_type` that bin-ai-ma
 
 Tool list at session start (single-AI AIcall sessions): Go resolves the AI's built-in tools itself (`toolHandler.GetByNames`, AI-type whitelist enforced), then calls `bin-ai-manager` `GET /v1/aicalls/<uuid>/tools/mcp` (`AIV1AIcallToolList`) for the AI's MCP tools and appends them, dropping any name that collides with an existing tool. If that call fails, the session starts with built-ins only and `pipecat_manager_mcp_tool_list_fallback_total` is incremented. Team sessions take per-member tools from the team resolution and never call it.
 
+For Gemini sessions the runner then drops any tool the installed Gemini client-side schema validator rejects, so one bad tool cannot fail every turn; the rest of the list is advertised unchanged (see operations.md, Troubleshooting).
+
 When the LLM emits a function call:
 1. Python sends HTTP request to Go `httpHandler.RunnerToolHandle`
 2. Go sends RPC request to `bin-ai-manager` (`POST /v1/aicalls/<uuid>/tool_execute`)

@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-ai-manager/models/mcpserver"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/tool"
+	"monorepo/bin-ai-manager/pkg/mcpschema"
 	"monorepo/bin-ai-manager/pkg/mcptoolhandler"
 )
 
@@ -61,7 +62,11 @@ func (h *aicallHandler) resolveMcpToolMap(ctx context.Context, a *ai.AI) map[str
 //
 // It decodes each input schema, within the limits in decodeToolSchema,
 // unlike resolveMcpToolMap (which keeps only names for the map-only
-// session-start paths that do not advertise anything).
+// session-start paths that do not advertise anything), then rewrites it
+// into a provider-neutral subset with mcpschema.Normalize. A tool whose
+// schema cannot be made provider-safe is neither advertised nor put in the
+// tool map; the normalized schemas share a per-resolution output budget
+// (design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md §15.2).
 func (h *aicallHandler) resolveMcpOnly(ctx context.Context, a *ai.AI) ([]tool.Tool, map[string]aicall.McpToolRef, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "resolveMcpOnly",
@@ -83,7 +88,12 @@ func (h *aicallHandler) resolveMcpOnly(ctx context.Context, a *ai.AI) ([]tool.To
 	mcpTools := make([]tool.Tool, 0)
 	toolMap := map[string]aicall.McpToolRef{}
 	schemaBudget := mcpToolSchemaBudgetBytes
+	// outBudget bounds the normalized schemas kept and marshalled into the
+	// reply, charged with mcpschema's output estimate. It is separate from
+	// schemaBudget, which bounds the transient raw decode (§15.3 R12).
+	outBudget := mcpToolSchemaBudgetBytes
 	skipped := map[uuid.UUID]*schemaSkips{}
+	var droppedKeys, rewrites int
 
 	// B5 residual: two servers whose 8-hex namespace prefix genuinely
 	// collide (or a mis-cased duplicate) could otherwise resolve the same
@@ -100,24 +110,28 @@ func (h *aicallHandler) resolveMcpOnly(ctx context.Context, a *ai.AI) ([]tool.To
 
 		params, why := decodeToolSchema(d.inputSchema, &schemaBudget)
 		if why != schemaOK {
-			s := skipped[d.ref.ServerID]
-			if s == nil {
-				s = &schemaSkips{}
-				skipped[d.ref.ServerID] = s
-			}
-			if why == schemaOverBudget {
-				s.overBudget++
-			} else {
-				s.invalid++
-			}
+			skipsFor(skipped, d.ref.ServerID).count(why)
 			continue
 		}
+
+		norm, rep := mcpschema.Normalize(params, mcpMaxToolSchemaBytes)
+		droppedKeys += rep.DroppedKeys
+		rewrites += rep.Rewrites
+		logSchemaReport(log, d, rep)
+		if rep.ToolDropped {
+			continue
+		}
+		if rep.OutBytes > outBudget {
+			skipsFor(skipped, d.ref.ServerID).count(schemaOverBudget)
+			continue
+		}
+		outBudget -= rep.OutBytes
 
 		seenNames[d.name] = struct{}{}
 		mcpTools = append(mcpTools, tool.Tool{
 			Name:        tool.ToolName(d.name),
 			Description: d.description,
-			Parameters:  params,
+			Parameters:  norm,
 			RunLLM:      true,
 		})
 		toolMap[d.name] = d.ref
@@ -126,6 +140,7 @@ func (h *aicallHandler) resolveMcpOnly(ctx context.Context, a *ai.AI) ([]tool.To
 	for serverID, s := range skipped {
 		log.Warnf("Skipped mcp tools whose input schema could not be used. mcp_server_id: %s, too_large_or_malformed: %d, over_shared_budget: %d", serverID, s.invalid, s.overBudget)
 	}
+	log.Debugf("Normalized mcp tool input schemas. advertised: %d, dropped_keys: %d, rewrites: %d", len(mcpTools), droppedKeys, rewrites)
 
 	return mcpTools, toolMap, nil
 }
@@ -469,10 +484,50 @@ func (h *aicallHandler) discoverMcpTools(ctx context.Context, a *ai.AI, keepCont
 	return res
 }
 
-// schemaSkips counts one server's tools dropped by decodeToolSchema.
+// schemaSkips counts one server's tools dropped by decodeToolSchema or by
+// the per-resolution output budget.
 type schemaSkips struct {
 	invalid    int
 	overBudget int
+}
+
+// count records one skipped tool under why.
+func (s *schemaSkips) count(why schemaVerdict) {
+	if why == schemaOverBudget {
+		s.overBudget++
+	} else {
+		s.invalid++
+	}
+}
+
+// skipsFor returns serverID's counters in skipped, creating them.
+func skipsFor(skipped map[uuid.UUID]*schemaSkips, serverID uuid.UUID) *schemaSkips {
+	s := skipped[serverID]
+	if s == nil {
+		s = &schemaSkips{}
+		skipped[serverID] = s
+	}
+	return s
+}
+
+// logSchemaReport logs what mcpschema.Normalize did to one tool's schema
+// (design §15.4): a WARN for a dropped tool, or a WARN for a kept tool that
+// lost optional properties. Key stripping and rewrites are routine on
+// generated schemas and are only totalled at DEBUG by the caller. Report
+// paths never contain schema values; each is capped before logging.
+func logSchemaReport(log *logrus.Entry, d discoveredMcpTool, rep mcpschema.Report) {
+	toolName := capErrText(d.name, 80)
+	l := log.WithFields(logrus.Fields{
+		"mcp_server_id": d.ref.ServerID,
+		"tool_name":     toolName,
+	})
+	if rep.ToolDropped {
+		l.Warnf("Dropped an mcp tool whose input schema cannot be made provider-safe. mcp_server_id: %s, tool_name: %s, reason: %s, path: %s", d.ref.ServerID, toolName, rep.DropReason, capErrText(rep.DropPath, 200))
+		return
+	}
+	if rep.DroppedPropsN > 0 {
+		l.Warnf("Removed optional parameters an mcp tool's input schema cannot express provider-safely. mcp_server_id: %s, tool_name: %s, dropped_properties: %d, first: %s", d.ref.ServerID, toolName, rep.DroppedPropsN, sampleToolNames(rep.DroppedProps))
+	}
 }
 
 // schemaVerdict is why decodeToolSchema did or did not decode a schema.

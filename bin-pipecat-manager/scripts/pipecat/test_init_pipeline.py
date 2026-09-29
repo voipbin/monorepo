@@ -695,3 +695,43 @@ async def test_init_pipeline_forwards_request_types_to_team_branch():
         mock_team_text.assert_awaited_once()
         assert mock_team_text.call_args.kwargs["stt_type"] is None
         assert mock_team_text.call_args.kwargs["tts_type"] is None
+
+
+class _StopAfterLLM(Exception):
+    """Raised by the patched create_llm_service to end init right after the call."""
+
+
+@pytest.mark.asyncio
+async def test_init_single_ai_pipeline_passes_pipeline_id_to_create_llm_service():
+    """The pipeline id reaches create_llm_service so the Gemini filter can log it (design 15.5)."""
+    with patch("run.create_llm_service", side_effect=_StopAfterLLM()) as mock_create_llm, \
+         patch("run.convert_to_openai_format", return_value=["openai-tool"]), \
+         patch("run.get_tool_names", return_value=["t"]):
+        with pytest.raises(_StopAfterLLM):
+            await init_single_ai_pipeline(
+                id="pl-single",
+                llm_type="gemini.gemini-2.5-flash",
+                llm_key="fake-key",
+                tools_data=[{"name": "t"}],
+            )
+
+    mock_create_llm.assert_called_once()
+    assert mock_create_llm.call_args.args[3] == ["openai-tool"]
+    assert mock_create_llm.call_args.kwargs["pipeline_id"] == "pl-single"
+
+
+@pytest.mark.asyncio
+async def test_init_team_pipeline_passes_pipeline_id_to_create_llm_service():
+    """Team members pass no tools, but still pass the pipeline id for consistent logs."""
+    resolved_team = {
+        "id": "team-pid",
+        "start_member_id": "member-1",
+        "members": _two_google_members(),
+    }
+
+    _, mocks = await _run_team_init(resolved_team, pipeline_id="pl-team")
+
+    assert mocks.create_llm_service.call_count == 2
+    for c in mocks.create_llm_service.call_args_list:
+        assert c.args[3] == []
+        assert c.kwargs["pipeline_id"] == "pl-team"

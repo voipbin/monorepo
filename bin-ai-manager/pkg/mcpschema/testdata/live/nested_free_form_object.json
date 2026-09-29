@@ -1,0 +1,12 @@
+{
+  "properties": {
+    "variables": {
+      "description": "Free-form key/value variables.",
+      "type": "object"
+    }
+  },
+  "required": [
+    "variables"
+  ],
+  "type": "object"
+}

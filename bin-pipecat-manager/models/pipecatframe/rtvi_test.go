@@ -36,6 +36,7 @@ func TestRTVIFrameTypes(t *testing.T) {
 		{"bot-started-speaking", RTVIFrameTypeBotStartedSpeaking, "bot-started-speaking"},
 		{"bot-stopped-speaking", RTVIFrameTypeBotStoppedSpeaking, "bot-stopped-speaking"},
 		{"metrics", RTVIFrameTypeMetrics, "metrics"},
+		{"error", RTVIFrameTypeError, "error"},
 		{"user-llm-text", RTVIFrameTypeUserLLMText, "user-llm-text"},
 		{"send-text", RTVIFrameTypeSendText, "send-text"},
 	}

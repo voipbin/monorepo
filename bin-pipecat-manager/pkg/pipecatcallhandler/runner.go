@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -703,11 +704,48 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		}
 		timer.Stop()
 
+	case pipecatframe.RTVIFrameTypeError:
+		// The runner reports pipeline errors (for example a provider request
+		// rejected before it is sent) as an RTVI error message. Surface it at
+		// WARN with the reference fields so it can be joined with ai-manager
+		// logs. The text is capped: the runner's own ERROR record keeps the
+		// full message.
+		logError := log.WithFields(logrus.Fields{
+			"pipecatcall_reference_type": se.PipecatcallReferenceType,
+			"pipecatcall_reference_id":   se.PipecatcallReferenceID,
+		})
+
+		msg := pipecatframe.RTVIError{}
+		if errUnmarshal := json.Unmarshal(m, &msg); errUnmarshal != nil {
+			logError.Warnf("Pipecat runner reported an error that could not be parsed. type: %s", frame.Type)
+			break
+		}
+
+		logError.WithField("fatal", msg.Data.Fatal).Warnf("Pipecat runner reported an error. error: %s", capText(msg.Data.Error, maxRunnerErrorLogBytes))
+
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
 	}
 
 	return nil
+}
+
+// maxRunnerErrorLogBytes bounds the runner error text logged by
+// receiveMessageFrameTypeMessage. It keeps the first several errors of a large
+// validation failure, enough to identify the construct.
+const maxRunnerErrorLogBytes = 2048
+
+// capText returns s cut to at most max bytes on a rune boundary, so a
+// multi-byte character is never split into invalid UTF-8.
+func capText(s string, max int) string {
+	if len(s) <= max {
+		return s
+	}
+	cut := max
+	for cut > 0 && !utf8.RuneStart(s[cut]) {
+		cut--
+	}
+	return s[:cut]
 }
 
 func (h *pipecatcallHandler) runnerHandleTextFrame(se *pipecatcall.Session, text string) {

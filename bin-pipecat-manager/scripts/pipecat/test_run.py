@@ -325,6 +325,73 @@ class TestCreateLLMService:
 
         assert mock_context.call_args[1]["tools"] == "NOT_GIVEN_SENTINEL"
 
+    @patch("run.drop_gemini_invalid_tools")
+    @patch("run.ToolsSchema")
+    @patch("run._openai_tools_to_standard")
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.GoogleLLMService")
+    def test_gemini_filters_tools_before_tools_schema(self, mock_service, mock_context, mock_pair, mock_to_std, mock_tools_schema, mock_filter):
+        """Gemini tools go through drop_gemini_invalid_tools with the pipeline id (design 15.5)."""
+        from run import create_llm_service
+
+        mock_service.return_value = MagicMock()
+        converted = [MagicMock(), MagicMock()]
+        filtered = [converted[0]]
+        mock_to_std.return_value = converted
+        mock_filter.return_value = filtered
+
+        tools = [{"type": "function", "function": {"name": "connect_call", "parameters": {}}}]
+
+        create_llm_service(
+            type="gemini.gemini-2.5-flash",
+            key="k",
+            messages=[],
+            tools=tools,
+            pipeline_id="pl-123",
+        )
+
+        mock_to_std.assert_called_once_with(tools)
+        mock_filter.assert_called_once_with(converted, "pl-123")
+        mock_tools_schema.assert_called_once_with(standard_tools=filtered)
+        assert mock_context.call_args[1]["tools"] is mock_tools_schema.return_value
+
+    @patch("run.NOT_GIVEN", "NOT_GIVEN_SENTINEL")
+    @patch("run.drop_gemini_invalid_tools")
+    @patch("run._openai_tools_to_standard")
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.GoogleLLMService")
+    def test_gemini_all_tools_dropped_uses_not_given(self, mock_service, mock_context, mock_pair, mock_to_std, mock_filter):
+        """If the filter keeps nothing, LLMContext gets NOT_GIVEN like the no-tools case."""
+        from run import create_llm_service
+
+        mock_service.return_value = MagicMock()
+        mock_to_std.return_value = [MagicMock()]
+        mock_filter.return_value = []
+
+        create_llm_service(type="gemini.gemini-2.5-flash", key="k", messages=[], tools=[{}])
+
+        mock_filter.assert_called_once_with(mock_to_std.return_value, "")
+        assert mock_context.call_args[1]["tools"] == "NOT_GIVEN_SENTINEL"
+
+    @pytest.mark.parametrize("llm_type", ["openai.gpt-4o", "grok.grok-3"])
+    @patch("run.drop_gemini_invalid_tools")
+    @patch("run._openai_tools_to_standard")
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenAILLMService")
+    def test_non_gemini_does_not_filter_tools(self, mock_service, mock_context, mock_pair, mock_to_std, mock_filter, llm_type):
+        """OpenAI and Grok branches are untouched by the Gemini filter."""
+        from run import create_llm_service
+
+        mock_service.return_value = MagicMock()
+        mock_to_std.return_value = [MagicMock()]
+
+        create_llm_service(type=llm_type, key="k", messages=[], tools=[{}], pipeline_id="pl-1")
+
+        mock_filter.assert_not_called()
+
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
     @patch("run.OpenAILLMService")

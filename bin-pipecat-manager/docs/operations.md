@@ -45,6 +45,22 @@ Circuit-breaker metrics from `bin-common-handler/pkg/requesthandler` are also re
 
 **Gotcha:** do not add metric names already registered by `bin-common-handler/pkg/requesthandler/main.go#initPrometheus()` — duplicate names cause `prometheus.MustRegister` to panic at startup.
 
+## Troubleshooting
+
+### Gemini session with fewer tools than configured
+
+Before a Gemini session starts, the runner validates the tool list with the installed pipecat Gemini adapter and google-genai `GenerateContentConfig` (`scripts/pipecat/gemini_tool_filter.py`, called from `run.py create_llm_service`). One tool the client-side validator rejects would otherwise fail every turn of the session, built-ins included. Only the rejected tools are dropped; OpenAI and Grok sessions are not filtered. Runner log lines (loguru, each ending in `pipeline id=<id>`):
+
+- WARN `Dropped tool '<name>' rejected by the Gemini schema validator: <n> error(s), first: <loc>: <msg>`: one line per dropped tool. The schema itself is never logged. A dropped built-in tool is a regression signal.
+- INFO `Gemini tool validation dropped <k> of <n> tools`: summary when anything was dropped.
+- WARN `Gemini tool validation skipped ...`, `... failed for the filtered tool set ...` or `... failed unexpectedly ...`: the validator itself could not run or the filtered set still failed. The filter fails open and keeps every tool, so the session behaves as it would without the filter.
+
+The dropped tool's handler is still registered by name but is inert, since the LLM never sees the tool. Server-side (HTTP 400) provider rejections are not caught by this filter. MCP tool schemas are normalized to a provider-neutral subset by bin-ai-manager before they reach the runner, so a drop here usually means a schema construct that normalization does not cover. No metric; the log lines are the signal.
+
+### WARN `Pipecat runner reported an error`
+
+The Go side logs every RTVI `error` message from the runner (pipecat's pipeline `ErrorFrame`, for example a provider request rejected before it is sent) at WARN with `pipecatcall_id`, `pipecatcall_reference_type`, `pipecatcall_reference_id` (the aicall id, for a Loki join with bin-ai-manager) and `fatal`. The error text is capped at 2048 bytes; the runner's own ERROR record holds the full message. The text can include fragments of customer tool schemas (internal logs only). A malformed error message is logged as `Pipecat runner reported an error that could not be parsed`. No metric.
+
 ## CLI Tool: pipecat-control
 
 `cmd/pipecat-control` — direct DB/cache management. All output is JSON on stdout.

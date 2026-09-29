@@ -26,13 +26,20 @@ MCP Server
         "tm_delete": "<string>"
     }
 
+.. _mcpserver-struct-mcpserver-tool-use-scope:
+
 .. note:: **Tool use scope (Normal-type AIs, single-AI sessions)**
 
-   A whitelisted server's tools are presented to a Normal-type AI's single-AI session (design
-   docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md). They are never presented to a
-   ``type=insight`` AI or to a team-typed AI call -- see :ref:`Status <mcpserver-struct-mcpserver-status>`
-   for the discovery/advertisement boundary and existing caps (``mcpMaxToolsPerResolution=256``,
-   per-tool description length).
+   A whitelisted server's tools are presented to the AI's Normal-type, single-AI sessions -- realtime voice call sessions, ``type=insight`` AIs, and team-typed AI calls do not receive them (design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md). Sessions that do discover and advertise include chat, ``ai_task`` flow actions and API-created single-AI sessions, so expect ``tools/list`` (and, when the model calls a tool, ``tools/call``) requests authenticated per this server's ``auth_type`` in its logs. Of what is discovered, the tool **names** are stored on the AI session record that resolved them, so they outlive the request; the input schemas and descriptions are held only for the lifetime of that resolution and are not stored. Stored names live as long as that session record does: deleting the MCP server, or the AI, does not remove names already written to past session records, and session deletion is a soft delete that retains the record. Ask support@voipbin.net if you need names purged from historical sessions. The source ranges these connections originate from are available on request from support@voipbin.net. A remote tool call result the server itself marks as an error is surfaced to the model as a failure, never mislabeled a success. Up to 256 tools are taken per session resolution across an AI's whitelisted servers, each name namespaced ``mcp_<first 8 hex chars of the server id>_<tool name>``; a server is skipped silently, rather than failing the session, when its ``status`` is not ``active``, when it has been deleted, or when it is no longer owned by this customer.
+
+   **Tool input schemas.** VoIPBin advertises each tool's input schema to the AI model in a provider-neutral subset of JSON Schema: ``type``, ``description``, ``properties``, ``required``, ``items``, ``enum``, ``anyOf``, ``format``, ``minimum``, ``maximum``, ``minItems`` and ``maxItems``. ``oneOf``, ``const``, a single-member ``allOf``, local ``$ref`` (``#/$defs/...`` and ``#/definitions/...``) and a list-valued ``type`` are rewritten into that subset; every other keyword (for example ``x-*`` extensions, ``title``, ``default``, ``pattern``, ``additionalProperties``) is removed, and ``format`` and ``enum`` are kept only where every supported model accepts them. An optional parameter whose schema cannot be expressed this way is omitted from what the AI sees. A tool whose required parameters cannot be expressed is not offered to the AI at all; the server's other tools are still offered. The arguments the AI sends are forwarded to your server unchanged, so your server's own validation still applies and should report a failed call when a constraint the AI could not see is not met.
+
+   Schema tips, so every tool and parameter reaches the AI:
+
+   * Give every property a ``type`` (a property that accepts "any JSON value" cannot be expressed).
+   * Give every ``array`` an ``items`` schema.
+   * Avoid ``allOf`` with more than one member.
+   * Prefer string enums (``{"type": "string", "enum": [...]}``); enums on other types are removed.
 
 * ``id`` (UUID): The MCP server registration's unique identifier. Returned when creating an MCP server via ``POST /mcpservers`` or when listing via ``GET /mcpservers``. Referenced from an AI's :ref:`mcp_server_ids <ai-struct-ai-tool_names>` list.
 * ``customer_id`` (UUID): The customer that owns this MCP server registration. Obtained from the ``id`` field of ``GET /customers``.
@@ -94,9 +101,9 @@ Status
 ------
 The ``status`` field controls whether the MCP server's tools are made available to AIs that reference it.
 
-.. note:: **Tool use scope (Normal-type AIs, single-AI sessions)**
+.. note:: **Tool use scope**
 
-   A whitelisted server's tools are presented to the AI's Normal-type, single-AI sessions -- realtime voice call sessions, ``type=insight`` AIs, and team-typed AI calls do not receive them (design docs/plans/2026-09-29-mcp-tool-exposure-pr-b2-design.md). Sessions that do discover and advertise include chat, ``ai_task`` flow actions and API-created single-AI sessions, so expect ``tools/list`` (and, when the model calls a tool, ``tools/call``) requests authenticated per this server's ``auth_type`` in its logs. Of what is discovered, the tool **names** are stored on the AI session record that resolved them, so they outlive the request; the input schemas and descriptions are held only for the lifetime of that resolution and are not stored. Stored names live as long as that session record does: deleting the MCP server, or the AI, does not remove names already written to past session records, and session deletion is a soft delete that retains the record. Ask support@voipbin.net if you need names purged from historical sessions. The source ranges these connections originate from are available on request from support@voipbin.net. A remote tool call result the server itself marks as an error is surfaced to the model as a failure, never mislabeled a success. Up to 256 tools are taken per session resolution across an AI's whitelisted servers, each name namespaced ``mcp_<first 8 hex chars of the server id>_<tool name>``; a server is skipped silently, rather than failing the session, when its ``status`` is not ``active``, when it has been deleted, or when it is no longer owned by this customer.
+   Which sessions receive a whitelisted server's tools, and how their input schemas are advertised, is described in :ref:`Tool use scope <mcpserver-struct-mcpserver-tool-use-scope>`.
 
    **Setting the status to disabled stops VoIPBin connecting to this server, and stops its tools being offered to or called from any referencing AI, immediately.**
 

@@ -42,6 +42,7 @@ from pipecat.transports.websocket.client import (
 )
 
 from message_filters import filter_valid_messages
+from gemini_tool_filter import drop_gemini_invalid_tools
 from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names, register_missing_tool_logging
 from task import task_manager
 from routing_llm import RoutingLLMService
@@ -186,7 +187,7 @@ async def init_single_ai_pipeline(
 
     async def init_llm():
         start = time.monotonic()
-        llm_service, aggregator = create_llm_service(llm_type, llm_key, llm_messages, openai_tools)
+        llm_service, aggregator = create_llm_service(llm_type, llm_key, llm_messages, openai_tools, pipeline_id=id)
         logger.info(f"[INIT][llm] done in {time.monotonic() - start:.3f} sec. pipeline id={id}")
         return {
             "llm_service": llm_service,
@@ -451,7 +452,7 @@ def _openai_tools_to_standard(openai_tools: list[dict]) -> list[FunctionSchema]:
     return schemas
 
 
-def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], **options):
+def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], pipeline_id: str = "", **options):
     valid_messages = filter_valid_messages(messages)
 
     if "." in type:
@@ -501,6 +502,9 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         # OpenAILLMContext passes tools as-is to GenerateContentConfig,
         # which rejects the OpenAI {"type":"function","function":{...}} format.
         standard_tools = _openai_tools_to_standard(tools)
+        # Drop only the tools the installed Gemini schema validator rejects,
+        # so one bad tool cannot fail every turn of the session (design 15.5).
+        standard_tools = drop_gemini_invalid_tools(standard_tools, pipeline_id)
         if standard_tools:
             tools_schema = ToolsSchema(standard_tools=standard_tools)
             logger.debug(f"Converted {len(standard_tools)} tools to FunctionSchema for Gemini")
@@ -612,7 +616,7 @@ async def init_team_pipeline(
         ai = member["ai"]
         start = time.monotonic()
 
-        llm_svc, _ = create_llm_service(ai["engine_model"], ai["engine_key"], [], [])
+        llm_svc, _ = create_llm_service(ai["engine_model"], ai["engine_key"], [], [], pipeline_id=id)
         llm_services[mid] = llm_svc
 
         if tts_type and ai.get("tts_type"):
