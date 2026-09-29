@@ -186,7 +186,7 @@ def test_deepgram_immediate_reconnect_after_stable_drop():
 
 async def _dg_reject(port, status, dur):
     import websockets
-    from pipecat.frames.frames import EndFrame, StartFrame
+    from pipecat.frames.frames import EndFrame
     from pipecat.pipeline.pipeline import Pipeline
     from pipecat.pipeline.task import PipelineTask, PipelineParams
     from pipecat.pipeline.runner import PipelineRunner

@@ -889,12 +889,12 @@ async def init_team_pipeline(
             context_aggregator=context_aggregator,
         )
         # CAUTION: relies on FlowManager storing the LLM as _llm. Verified with
-        # pipecat 1.12.0 built-in flows. The guard fails loudly if a future flows version
-        # renames the attribute, instead of silently leaving non-start members
-        # without tool registrations.
+        # pipecat 1.12.0 built-in flows. The guard fails loudly if a future flows
+        # version renames the attribute, so the private-API drift is noticed on
+        # the next bump instead of the swap silently becoming a no-op.
         if not hasattr(flow_manager, "_llm"):
             raise RuntimeError(
-                "FlowManager no longer exposes _llm; team tool-routing fan-out broken. "
+                "FlowManager no longer exposes _llm; team LLM reference swap broken. "
                 "Re-verify pipecat.flows internals after the upgrade."
             )
         flow_manager._llm = routing_llm

@@ -281,10 +281,10 @@ async def test_init_team_pipeline_active_service_none_guard():
 async def test_init_team_pipeline_flowmanager_missing_llm_attr_guard():
     """FlowManager without a _llm attribute raises RuntimeError.
 
-    The runner swaps flow_manager._llm = routing_llm so register_function fans
-    out to all team members. If a future pipecat.flows renames that private
-    attribute, the swap would silently no-op (non-start members get no tool
-    registrations). The hasattr guard must fail loudly instead.
+    The runner swaps flow_manager._llm = routing_llm (built-in pipecat.flows
+    only reads it in generate_summary; member tools are auto-registered per
+    LLM). If a future pipecat.flows renames that private attribute, the swap
+    would silently no-op; the hasattr guard must fail loudly instead.
     """
     mock_llm = MagicMock()
 
