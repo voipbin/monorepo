@@ -60,6 +60,14 @@ func TestNewMetrics_registered(t *testing.T) {
 			name:   "llm flush finalize outcome counter",
 			metric: "pipecat_manager_llm_flush_finalize_outcome_total",
 		},
+		{
+			name:   "pipeline error counter",
+			metric: "pipecat_manager_pipeline_error_total",
+		},
+		{
+			name:   "rtvi error-response counter",
+			metric: "pipecat_manager_rtvi_error_response_total",
+		},
 	}
 
 	for _, tt := range tests {

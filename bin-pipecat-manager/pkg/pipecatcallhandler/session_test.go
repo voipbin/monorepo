@@ -27,7 +27,8 @@ func TestSessionCreate(t *testing.T) {
 
 		existingSession *pipecatcall.Session
 
-		expectErr bool
+		expectErr    bool
+		expectHasSTT bool
 	}{
 		{
 			name: "success",
@@ -47,6 +48,23 @@ func TestSessionCreate(t *testing.T) {
 			existingSession: nil,
 
 			expectErr: false,
+		},
+		{
+			name: "voice session with stt",
+
+			pc: &pipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("7a1f2c3e-9d4b-11f1-8a2e-4f5a6b7c8d9e"),
+					CustomerID: uuid.FromStringOrNil("5adbec2c-b48c-11f0-a0cb-e752c616594a"),
+				},
+				ReferenceType: pipecatcall.ReferenceTypeCall,
+				STTType:       pipecatcall.STTTypeDeepgram,
+			},
+			asteriskStreamingID: uuid.FromStringOrNil("5b374a54-b48c-11f0-8c36-477d3f6baf0d"),
+			llmKey:              "test-llm-key",
+
+			expectErr:    false,
+			expectHasSTT: true,
 		},
 		{
 			name: "session already exists",
@@ -106,6 +124,10 @@ func TestSessionCreate(t *testing.T) {
 
 			if result.CustomerID != tt.pc.CustomerID {
 				t.Errorf("SessionCreate() CustomerID = %v, want %v", result.CustomerID, tt.pc.CustomerID)
+			}
+
+			if result.HasSTT != tt.expectHasSTT {
+				t.Errorf("SessionCreate() HasSTT = %v, want %v", result.HasSTT, tt.expectHasSTT)
 			}
 
 			if result.LLMKey != tt.llmKey {

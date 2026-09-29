@@ -86,7 +86,7 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 
 ## Event Subscriptions
 
-SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.ai-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 13 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). Since VOIP-1407 this topic-pattern binding is the **sole intake mechanism**:
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.ai-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 14 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). Since VOIP-1407 this topic-pattern binding is the **sole intake mechanism**:
 
 | Pattern | Purpose |
 |---------|---------|
@@ -96,6 +96,7 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 | `pipecat-manager.message.*.user_transcription` / `.bot_llm` / `.bot_llm_intermediate` | Realtime conversation messages |
 | `pipecat-manager.pipecatcall.*.initialized` / `.terminated` | Pipecat session lifecycle |
 | `pipecat-manager.team.*.member_switched` | AI team member switch |
+| `pipecat-manager.pipeline.*.error` | Pipeline error reported by the pipecat runner (VOIP-1542). Recorded as a `role=notification` message with `content.type=pipeline_error` on the owning aicall (`messagehandler.EventPMPipelineError`); excluded from the conversing AI's prompt context. Events from a foreign pipecatcall (Insight listen turns) are deduplicated per aicall and category within 10 minutes |
 | `conference-manager.conference.*.deleted` | Conference terminated — finalizes a conference-type AI summary |
 | `transcribe-manager.transcript.*.created` | Insight AI realtime listen intake. Deliberately the cheapest handler in this service: it fires for **every** final STT result on the platform (flow-driven, summary-driven, customer-started), not only for calls being listened to, so it does one Redis `SMEMBERS` and nothing else — no DB query, no RPC, no LLM. An empty resolver set means "not a session we started" and is the overwhelmingly common outcome |
 | `conversation-manager.conversation.*.message_created` | Insight AI conversation listen intake (VOIP-1470) — `aicallHandler.EventCVMessageCreated`. Fires for **every** conversation message platform-wide (all channels, both directions); the per-event floor is one unmarshal + one Redis `SMEMBERS` on `ai:listen:conversation:<conversation_id>`, and >99% end there as `dropped_unknown` |

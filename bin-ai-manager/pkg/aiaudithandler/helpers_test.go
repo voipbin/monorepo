@@ -125,3 +125,19 @@ func TestAIAuditStatusConstants(t *testing.T) {
 	_ = aiaudit.StatusCompleted
 	_ = aiaudit.StatusFailed
 }
+
+// A pipeline_error notification row (VOIP-1542) is intentionally visible to the audit evaluator,
+// so it can tell that the AI did not answer because the provider failed.
+func TestBuildTranscript_includesPipelineErrorNotice(t *testing.T) {
+	notice := `{"type":"pipeline_error","category":"authentication","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"An AI service provider rejected the credentials or denied access."}`
+	msgs := []*message.Message{
+		{Role: message.RoleUser, Content: "hello"},
+		{Role: message.RoleNotification, Content: notice},
+	}
+
+	res := buildTranscript(msgs, nil)
+	expect := "[user]: hello\n[notification]: " + notice + "\n"
+	if res != expect {
+		t.Errorf("Wrong match.\nexpect: %s\ngot:    %s", expect, res)
+	}
+}

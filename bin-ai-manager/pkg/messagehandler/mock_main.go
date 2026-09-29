@@ -126,6 +126,18 @@ func (mr *MockMessageHandlerMockRecorder) EventPMPipecatcallTerminated(ctx, evt 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipecatcallTerminated", reflect.TypeOf((*MockMessageHandler)(nil).EventPMPipecatcallTerminated), ctx, evt)
 }
 
+// EventPMPipelineError mocks base method.
+func (m *MockMessageHandler) EventPMPipelineError(ctx context.Context, evt *message0.PipelineErrorEvent) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventPMPipelineError", ctx, evt)
+}
+
+// EventPMPipelineError indicates an expected call of EventPMPipelineError.
+func (mr *MockMessageHandlerMockRecorder) EventPMPipelineError(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipelineError", reflect.TypeOf((*MockMessageHandler)(nil).EventPMPipelineError), ctx, evt)
+}
+
 // EventPMTeamMemberSwitched mocks base method.
 func (m *MockMessageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *message0.MemberSwitchedEvent) {
 	m.ctrl.T.Helper()

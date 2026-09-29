@@ -9,4 +9,8 @@ const (
 	EventTypeUserLLM            string = "message_user_llm"
 
 	EventTypeTeamMemberSwitched string = "team_member_switched"
+
+	// EventTypePipelineError is published when the pipecat runner reports a pipeline error that
+	// should be surfaced on the owning aicall (VOIP-1542). Payload: *PipelineErrorEvent.
+	EventTypePipelineError string = "pipeline_error"
 )

@@ -50,6 +50,27 @@ var (
 			Help: "Counter of runnerStartScript failing closed to an empty tool list after an AI lookup failure.",
 		},
 	)
+
+	// metricsPipelineErrorTotal counts every RTVI "error" frame received from the pipecat runner,
+	// by classified category and fatal flag (VOIP-1542). Counted whether or not a customer notice
+	// is published, so operators see the full error rate.
+	metricsPipelineErrorTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "pipecat_manager_pipeline_error_total",
+			Help: "Counter of RTVI error frames received from the pipecat runner, by category and fatal flag.",
+		},
+		[]string{"category", "fatal"},
+	)
+
+	// metricsRTVIErrorResponseTotal counts RTVI "error-response" frames: the runner rejected a
+	// client request pipecat-manager sent (e.g. send-text). A platform contract failure, kept
+	// separate from provider errors so it does not pollute pipeline-error alerting (VOIP-1542).
+	metricsRTVIErrorResponseTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "pipecat_manager_rtvi_error_response_total",
+			Help: "Counter of RTVI error-response frames (runner rejected a request from pipecat-manager).",
+		},
+	)
 )
 
 func init() {
@@ -58,5 +79,7 @@ func init() {
 		metricsIdleWatchdogFired,
 		metricsFlushFinalizeOutcome,
 		metricsToolResolveFallbackTotal,
+		metricsPipelineErrorTotal,
+		metricsRTVIErrorResponseTotal,
 	)
 }

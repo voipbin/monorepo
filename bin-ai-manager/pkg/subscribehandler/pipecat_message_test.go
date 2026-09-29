@@ -261,3 +261,59 @@ func TestProcessEventPMTeamMemberSwitched(t *testing.T) {
 		})
 	}
 }
+
+func TestProcessEventPMPipelineError(t *testing.T) {
+	tests := []struct {
+		name      string
+		event     *sock.Event
+		expect    *pmmessage.PipelineErrorEvent
+		wantError bool
+	}{
+		{
+			name: "normal",
+			event: &sock.Event{
+				Publisher: "pipecat-manager",
+				Type:      pmmessage.EventTypePipelineError,
+				Data:      json.RawMessage(`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","pipecatcall_reference_type":"ai_call","pipecatcall_reference_id":"443bfb46-fa3a-4dd5-912d-5482d31fed22","category":"authentication","fatal":false}`),
+			},
+			expect: &pmmessage.PipelineErrorEvent{
+				CustomerID:               uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				PipecatcallID:            uuid.FromStringOrNil("9c5c6e64-6289-4ac9-ad88-b20796a6bc96"),
+				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+				PipecatcallReferenceID:   uuid.FromStringOrNil("443bfb46-fa3a-4dd5-912d-5482d31fed22"),
+				Category:                 pmmessage.ErrorCategoryAuthentication,
+			},
+			wantError: false,
+		},
+		{
+			name: "invalid json",
+			event: &sock.Event{
+				Publisher: "pipecat-manager",
+				Type:      pmmessage.EventTypePipelineError,
+				Data:      json.RawMessage([]byte("invalid json")),
+			},
+			wantError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockMessageHandler := messagehandler.NewMockMessageHandler(ctrl)
+			if tt.expect != nil {
+				mockMessageHandler.EXPECT().EventPMPipelineError(gomock.Any(), tt.expect).Times(1)
+			}
+
+			h := &subscribeHandler{
+				messageHandler: mockMessageHandler,
+			}
+
+			err := h.processEventPMPipelineError(context.Background(), tt.event)
+			if (err != nil) != tt.wantError {
+				t.Errorf("processEventPMPipelineError() error = %v, wantError %v", err, tt.wantError)
+			}
+		})
+	}
+}

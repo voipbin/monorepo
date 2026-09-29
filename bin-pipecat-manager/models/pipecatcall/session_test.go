@@ -50,3 +50,35 @@ func TestSession_PendingInReplyToMessageID_concurrentAccess(t *testing.T) {
 	}
 	<-done
 }
+
+func TestSession_MarkPipelineErrorSeen(t *testing.T) {
+	s := &Session{} // zero value must not panic (lazy map)
+
+	if !s.MarkPipelineErrorSeen("authentication") {
+		t.Fatalf("first authentication should be first-seen")
+	}
+	if s.MarkPipelineErrorSeen("authentication") {
+		t.Fatalf("second authentication should not be first-seen")
+	}
+	if !s.MarkPipelineErrorSeen("timeout") {
+		t.Fatalf("a different category should be first-seen")
+	}
+}
+
+func TestSession_MarkPipelineErrorSeen_concurrent(t *testing.T) {
+	s := &Session{}
+	const n = 50
+	results := make(chan bool, n)
+	for i := 0; i < n; i++ {
+		go func() { results <- s.MarkPipelineErrorSeen("unknown") }()
+	}
+	first := 0
+	for i := 0; i < n; i++ {
+		if <-results {
+			first++
+		}
+	}
+	if first != 1 {
+		t.Fatalf("expected exactly one first-seen, got %d", first)
+	}
+}
