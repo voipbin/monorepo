@@ -12,12 +12,18 @@ class RoutingTTSService(FrameProcessor):
         super().__init__()
         self._services = member_services
         self._active_id = None
+        self._start_forwarded = False
 
         for member_id, svc in self._services.items():
             svc.push_frame = self._create_routing_push(svc)
 
     def _create_routing_push(self, svc):
         async def routing_push(frame: Frame, direction: FrameDirection = FrameDirection.DOWNSTREAM):
+            # Every member echoes the StartFrame; forward only the first one.
+            if isinstance(frame, StartFrame):
+                if self._start_forwarded:
+                    return
+                self._start_forwarded = True
             await self.push_frame(frame, direction)
         return routing_push
 

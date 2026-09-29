@@ -51,6 +51,7 @@ def _make_services():
     svc_a.process_frame = AsyncMock()
     svc_a.setup = AsyncMock()
     svc_a.cleanup = AsyncMock()
+    svc_a.broadcast_service_metadata = AsyncMock()
     svc_a.register_function = MagicMock()
     svc_a.unregister_function = MagicMock()
 
@@ -58,6 +59,7 @@ def _make_services():
     svc_b.process_frame = AsyncMock()
     svc_b.setup = AsyncMock()
     svc_b.cleanup = AsyncMock()
+    svc_b.broadcast_service_metadata = AsyncMock()
     svc_b.register_function = MagicMock()
     svc_b.unregister_function = MagicMock()
 
@@ -112,9 +114,9 @@ class TestActiveServiceProperty:
 
 
 class TestRegisterFunction:
-    """Tests for register_function pipecat 1.4.0 LLMService API compatibility.
+    """Tests for register_function pipecat 1.12 LLMService API compatibility.
 
-    flows 1.2.0 calls register_function positionally with (name, handler) plus
+    Callers may call register_function positionally with (name, handler) plus
     keyword cancel_on_interruption / timeout_secs. The 0.0.x start_callback
     parameter was removed; the wrapper must reject it loudly.
     """
@@ -131,6 +133,7 @@ class TestRegisterFunction:
                 handler,
                 cancel_on_interruption=None,
                 timeout_secs=None,
+                cancellable_by_llm=None,
             )
 
     def test_forwards_cancel_on_interruption_false(self):
@@ -145,6 +148,7 @@ class TestRegisterFunction:
                 handler,
                 cancel_on_interruption=False,
                 timeout_secs=None,
+                cancellable_by_llm=None,
             )
 
     def test_forwards_timeout_secs(self):
@@ -159,10 +163,11 @@ class TestRegisterFunction:
                 handler,
                 cancel_on_interruption=None,
                 timeout_secs=12.5,
+                cancellable_by_llm=None,
             )
 
     def test_default_cancel_on_interruption_is_none(self):
-        """Default mirrors pipecat 1.4.0 LLMService.register_function (None, not True)."""
+        """Default mirrors pipecat 1.12 LLMService.register_function (None, not True)."""
         services = _make_services()
         routing = RoutingLLMService(services)
         handler = MagicMock()
@@ -372,3 +377,59 @@ class TestSetupCleanupPropagation:
 
         for svc in services.values():
             svc.cleanup.assert_awaited_once()
+
+class TestUpgrade112Router:
+    """Design 2.5: metadata broadcast + StartFrame dedupe."""
+
+    @pytest.mark.asyncio
+    async def test_start_frame_broadcasts_metadata_on_every_member(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        await routing.process_frame(_frames_mod.StartFrame(), _FrameDirection.DOWNSTREAM)
+        for svc in services.values():
+            svc.broadcast_service_metadata.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_non_start_lifecycle_does_not_broadcast(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        await routing.process_frame(_frames_mod.EndFrame(), _FrameDirection.DOWNSTREAM)
+        for svc in services.values():
+            svc.broadcast_service_metadata.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_member_without_broadcast_is_tolerated(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        del services["member-b"].broadcast_service_metadata
+        routing = RoutingLLMService(services)
+        await routing.process_frame(_frames_mod.StartFrame(), _FrameDirection.DOWNSTREAM)
+        services["member-a"].broadcast_service_metadata.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_only_first_start_frame_forwarded(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        routing.push_frame = AsyncMock()
+        f1, f2 = _frames_mod.StartFrame(), _frames_mod.StartFrame()
+        await services["member-a"].push_frame(f1, _FrameDirection.DOWNSTREAM)
+        await services["member-b"].push_frame(f2, _FrameDirection.DOWNSTREAM)
+        other = MagicMock()
+        await services["member-b"].push_frame(other, _FrameDirection.DOWNSTREAM)
+        assert routing.push_frame.await_args_list[0].args[0] is f1
+        assert [c.args[0] for c in routing.push_frame.await_args_list] == [f1, other]
+
+
+class TestCancellableByLlm:
+    def test_forwards_cancellable_by_llm(self):
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        handler = MagicMock()
+        routing.register_function("fn", handler, cancellable_by_llm=True)
+        for svc in services.values():
+            svc.register_function.assert_called_once_with(
+                "fn", handler, cancel_on_interruption=None, timeout_secs=None, cancellable_by_llm=True,
+            )

@@ -277,7 +277,7 @@ async def test_init_team_pipeline_flowmanager_missing_llm_attr_guard():
     """FlowManager without a _llm attribute raises RuntimeError.
 
     The runner swaps flow_manager._llm = routing_llm so register_function fans
-    out to all team members. If a future pipecat-ai-flows renames that private
+    out to all team members. If a future pipecat.flows renames that private
     attribute, the swap would silently no-op (non-start members get no tool
     registrations). The hasattr guard must fail loudly instead.
     """
@@ -332,7 +332,9 @@ async def test_init_team_pipeline_flowmanager_missing_llm_attr_guard():
 async def test_init_team_pipeline_swaps_flowmanager_llm_to_router():
     """On success, flow_manager._llm is swapped to the routing service.
 
-    This is the load-bearing behavior that makes register_function /
+    Since built-in pipecat.flows the swap is no longer load-bearing (each member
+    LLM auto-registers advertised handlers); kept as a harmless reference. It
+    historically made register_function /
     unregister_function fan out to ALL team members (not just the start member).
     """
     mock_llm = MagicMock()
@@ -735,3 +737,15 @@ async def test_init_team_pipeline_passes_pipeline_id_to_create_llm_service():
     for c in mocks.create_llm_service.call_args_list:
         assert c.args[3] == []
         assert c.kwargs["pipeline_id"] == "pl-team"
+
+@pytest.mark.asyncio
+async def test_team_member_llms_have_no_async_tools():
+    team = {
+        "start_member_id": "m1",
+        "members": [
+            {"id": "m1", "ai": {"engine_model": "openai.gpt-4o", "engine_key": "k"}, "transitions": []},
+        ],
+    }
+    ctx, mocks = await _run_team_init(team)
+    llm = mocks.create_llm_service.return_value[0]
+    assert llm._has_async_tools() is False

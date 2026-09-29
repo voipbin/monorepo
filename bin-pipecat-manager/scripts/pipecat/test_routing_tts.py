@@ -187,3 +187,15 @@ class TestSetupCleanupPropagation:
 
         for svc in services.values():
             svc.cleanup.assert_awaited_once()
+
+class TestUpgrade112TTSRouter:
+    @pytest.mark.asyncio
+    async def test_only_first_start_frame_forwarded(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingTTSService(services)
+        routing.push_frame = AsyncMock()
+        f1, f2 = _frames_mod.StartFrame(), _frames_mod.StartFrame()
+        await services["member-a"].push_frame(f1, _FrameDirection.DOWNSTREAM)
+        await services["member-b"].push_frame(f2, _FrameDirection.DOWNSTREAM)
+        assert [c.args[0] for c in routing.push_frame.await_args_list] == [f1]

@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # conftest.py mocks team_flow itself (for run.py tests). Remove it so we
-# can import the real module. conftest already stubs pipecat_flows, common,
+# can import the real module. conftest already stubs pipecat.flows, common,
 # aiohttp, etc., which team_flow.py needs.
 sys.modules.pop("team_flow", None)
 
@@ -321,3 +321,17 @@ async def test_transition_handler_with_no_tts_stt_routers():
     mock_notify.assert_awaited_once_with(
         "pc-1", "m1", "m2", "transfer_to_m2", resolved_team,
     )
+
+class TestEscapeFlowPlaceholders:
+    def test_escapes_and_does_not_mutate(self):
+        from team_flow import _escape_flow_placeholders
+        msgs = [
+            {"role": "user", "content": "hi {{ name }} and \\{{ x }} {{ a.b }} {not} {{ 1x }}"},
+            {"role": "user", "content": [{"type": "text", "text": "{{ z }}"}]},
+        ]
+        snapshot = [dict(m) for m in msgs]
+        out = _escape_flow_placeholders(msgs)
+        assert msgs == snapshot
+        assert out[0] is not msgs[0]
+        assert out[0]["content"] == "hi \\{{ name }} and \\\\{{ x }} \\{{ a.b }} {not} {{ 1x }}"
+        assert out[1] is msgs[1]

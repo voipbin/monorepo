@@ -17,6 +17,7 @@ class RoutingLLMService(FrameProcessor):
         super().__init__()
         self._services = member_services
         self._active_id = None
+        self._start_forwarded = False
 
         # Override each service's push_frame to route output through us
         for member_id, svc in self._services.items():
@@ -24,6 +25,11 @@ class RoutingLLMService(FrameProcessor):
 
     def _create_routing_push(self, svc):
         async def routing_push(frame: Frame, direction: FrameDirection = FrameDirection.DOWNSTREAM):
+            # Every member echoes the StartFrame; forward only the first one.
+            if isinstance(frame, StartFrame):
+                if self._start_forwarded:
+                    return
+                self._start_forwarded = True
             await self.push_frame(frame, direction)
         return routing_push
 
@@ -49,6 +55,12 @@ class RoutingLLMService(FrameProcessor):
             await super().process_frame(frame, direction)
             for svc in self._services.values():
                 await svc.process_frame(frame, direction)
+            if isinstance(frame, StartFrame):
+                # 1.12 broadcasts service metadata from AIService.push_frame,
+                # which the per-instance routing_push bypasses.
+                for svc in self._services.values():
+                    if hasattr(svc, "broadcast_service_metadata"):
+                        await svc.broadcast_service_metadata()
             return
 
         if self._active_id and self._active_id in self._services:
@@ -56,14 +68,12 @@ class RoutingLLMService(FrameProcessor):
         else:
             await self.push_frame(frame, direction)
 
-    # Delegate FlowManager-facing methods to all services so transitions work.
-    # Signature matches pipecat 1.4.0 LLMService.register_function
-    # (name, handler, *, cancel_on_interruption=None, timeout_secs=None); the
-    # 0.0.x `start_callback` parameter was removed. flows 1.2.0 calls this
-    # positionally with (name, transition_func) plus keyword cancel_on_interruption
-    # / timeout_secs. `**kwargs` is kept only to reject unknown args loudly (e.g. a
+    # Fan-out helpers. Signature matches pipecat 1.12 LLMService.register_function
+    # (name, handler, *, cancel_on_interruption=None, timeout_secs=None,
+    # cancellable_by_llm=None). Built-in pipecat.flows no longer calls this: each
+    # member LLM auto-registers advertised handlers on its own LLMContextFrame. `**kwargs` is kept only to reject unknown args loudly (e.g. a
     # re-introduced start_callback) rather than silently swallow them.
-    def register_function(self, name=None, handler=None, *, cancel_on_interruption=None, timeout_secs=None, **kwargs):
+    def register_function(self, name=None, handler=None, *, cancel_on_interruption=None, timeout_secs=None, cancellable_by_llm=None, **kwargs):
         if kwargs:
             raise TypeError(
                 f"RoutingLLMService.register_function got unexpected kwargs: {list(kwargs)}"
@@ -74,6 +84,7 @@ class RoutingLLMService(FrameProcessor):
                 handler,
                 cancel_on_interruption=cancel_on_interruption,
                 timeout_secs=timeout_secs,
+                cancellable_by_llm=cancellable_by_llm,
             )
 
     def unregister_function(self, name):

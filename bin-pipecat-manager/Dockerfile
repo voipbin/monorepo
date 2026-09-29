@@ -28,7 +28,7 @@ COPY --from=build /app/bin /app/bin
 COPY --from=build /app/scripts/pipecat /app/scripts/pipecat
 
 COPY --from=build /app/scripts/pipecat/requirements.txt /tmp/requirements.txt
-# pipecat-ai 1.4.0's silero/local-smart-turn extras pull in torch. The smart-turn
+# pipecat-ai's silero/local-smart-turn extras pull in torch (1.12: torch>=2.5,<3). The smart-turn
 # model runs on CPU (smart-turn-v3.x-cpu.onnx) and this runner does no GPU work,
 # so install the CPU-only torch/torchaudio wheels FIRST (pinned for a reproducible
 # build). This satisfies the torch requirement before the requirements.txt install
