@@ -43,6 +43,8 @@ func Test_classifyPipelineError(t *testing.T) {
 		{"gemini resource exhausted", "Unknown error occurred: 429 Too Many Requests. {'message': '{\"error\": {\"code\": 429, \"status\": \"RESOURCE_EXHAUSTED\"}}'}", message.ErrorCategoryRateLimited},
 		{"openai quota", "Error during completion: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details.', 'code': 'insufficient_quota'}}", message.ErrorCategoryRateLimited},
 		{"bare RESOURCE_EXHAUSTED", "RESOURCE_EXHAUSTED", message.ErrorCategoryRateLimited},
+		{"429 reason phrase only", "Unknown error occurred: 429 Too Many Requests.", message.ErrorCategoryRateLimited},
+		{"quota free text only", "You exceeded your current quota, please check your plan and billing details.", message.ErrorCategoryRateLimited},
 
 		// timeout
 		{"openai completion timeout", "LLM completion timeout", message.ErrorCategoryTimeout},
@@ -65,6 +67,16 @@ func Test_classifyPipelineError(t *testing.T) {
 		{"id containing 14010", "Unknown error occurred: shard 14010 unavailable", message.ErrorCategoryUnknown},
 		{"transport error", "Unknown error occurred: sent 1011 (internal error) keepalive ping timeout", message.ErrorCategoryUnknown},
 		{"empty", "", message.ErrorCategoryUnknown},
+		{"status regex needs a word boundary after 401/403", `{"status": 4031}`, message.ErrorCategoryUnknown},
+		{"status regex needs a word boundary after 429", `{"code": 4290}`, message.ErrorCategoryUnknown},
+
+		// tier precedence: the earlier tier wins when one text matches several tiers
+		{"function call prefix beats a timeout phrase", "Error executing function call [lookup]: LLM completion timeout", message.ErrorCategoryFunctionCall},
+		{"function call phrase not at the start is not function_call", "LLM completion timeout while waiting for function call", message.ErrorCategoryTimeout},
+		{"rtvi envelope phrase not at the start is not internal", "Unknown error occurred: invalid rtvi transport message", message.ErrorCategoryUnknown},
+		{"tier 1 authentication beats tier 1 rate limit", "RESOURCE_EXHAUSTED then PERMISSION_DENIED", message.ErrorCategoryAuthentication},
+		{"tier 2 authentication beats tier 3 rate limit", "401 Unauthorized: see rate limit docs", message.ErrorCategoryAuthentication},
+		{"tier 3 authentication beats tier 3 timeout", "Invalid API key. LLM completion timeout", message.ErrorCategoryAuthentication},
 	}
 
 	for _, tt := range tests {
@@ -181,7 +193,7 @@ func Test_receiveMessageFrameTypeMessage_error_publishesOnce(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	}
-	wg.Wait()
+	waitWithTimeout(t, &wg)
 
 	if diff := testutil.ToFloat64(metricsPipelineErrorTotal.WithLabelValues("authentication", "false")) - before; diff != 3 {
 		t.Errorf("Wrong metric delta. expect: 3, got: %v", diff)
@@ -208,7 +220,7 @@ func Test_receiveMessageFrameTypeMessage_error_differentCategoryPublishesAgain(t
 	if err := h.receiveMessageFrameTypeMessage(se, errorFrame("LLM completion timeout", false)); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	wg.Wait()
+	waitWithTimeout(t, &wg)
 }
 
 func Test_receiveMessageFrameTypeMessage_error_notNotified(t *testing.T) {
@@ -273,7 +285,7 @@ func Test_receiveMessageFrameTypeMessage_error_textSessionUnknownNotified(t *tes
 	if err := h.receiveMessageFrameTypeMessage(se, errorFrame("Unknown error occurred: 404 Not Found.", false)); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	wg.Wait()
+	waitWithTimeout(t, &wg)
 }
 
 func Test_receiveMessageFrameTypeMessage_errorMalformed(t *testing.T) {
@@ -295,6 +307,9 @@ func Test_receiveMessageFrameTypeMessage_errorResponse(t *testing.T) {
 
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
+	hook := logrustest.NewGlobal()
+	defer hook.Reset()
+
 	before := testutil.ToFloat64(metricsRTVIErrorResponseTotal)
 	frame := []byte(`{"label":"rtvi-ai","type":"error-response","id":"abc","data":{"error":"Invalid message: bad"}}`)
 	if err := h.receiveMessageFrameTypeMessage(se, frame); err != nil {
@@ -302,6 +317,17 @@ func Test_receiveMessageFrameTypeMessage_errorResponse(t *testing.T) {
 	}
 	if diff := testutil.ToFloat64(metricsRTVIErrorResponseTotal) - before; diff != 1 {
 		t.Errorf("Wrong metric delta. expect: 1, got: %v", diff)
+	}
+
+	// the rejection is an operator signal: it must be logged at WARN with the request id.
+	found := false
+	for _, e := range hook.AllEntries() {
+		if e.Level == logrus.WarnLevel && strings.Contains(e.Message, "request_id: abc") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected a WARN log entry for the error-response frame")
 	}
 }
 
@@ -346,5 +372,23 @@ func Test_runnerHandlePipelineError_warnOncePerCategory(t *testing.T) {
 		if got[0].Level != f.expectLvl {
 			t.Errorf("frame %d: wrong log level. expect: %s, got: %s", i, f.expectLvl, got[0].Level)
 		}
+	}
+}
+
+// waitWithTimeout fails the test instead of hanging when an expected publish never happens (for
+// example when a classifier regression suppresses the event and wg.Done is never called).
+func waitWithTimeout(t *testing.T, wg *sync.WaitGroup) {
+	t.Helper()
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatalf("timed out waiting for the expected PublishEvent call")
 	}
 }

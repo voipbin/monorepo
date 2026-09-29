@@ -254,6 +254,20 @@ func Test_EventPMPipelineError_foreignPipecatcall(t *testing.T) {
 			expectCreate:       false,
 		},
 		{
+			name:               "same category near the window edge is skipped",
+			freshPipecatcallID: testPEOtherPipecallID,
+			expectList:         true,
+			listRes:            []*message.Message{noticeRow(t, pmmessage.ErrorCategoryAuthentication, now.Add(-9*time.Minute))},
+			expectCreate:       false,
+		},
+		{
+			name:               "row without tm_create is ignored",
+			freshPipecatcallID: testPEOtherPipecallID,
+			expectList:         true,
+			listRes:            []*message.Message{{Role: message.RoleNotification, Content: `{"type":"pipeline_error","category":"authentication"}`}},
+			expectCreate:       true,
+		},
+		{
 			name:               "same category outside window creates",
 			freshPipecatcallID: testPEOtherPipecallID,
 			expectList:         true,
@@ -344,6 +358,35 @@ func Test_EventPMPipelineError_foreignPipecatcall(t *testing.T) {
 			}
 
 			m.h.EventPMPipelineError(context.Background(), newPipelineErrorEvent(pmmessage.ErrorCategoryAuthentication))
+		})
+	}
+}
+
+func Test_EventPMPipelineError_unrecognizedCategory(t *testing.T) {
+	tests := []struct {
+		name     string
+		category pmmessage.ErrorCategory
+	}{
+		{name: "empty", category: ""},
+		{name: "platform side category", category: pmmessage.ErrorCategoryFunctionCall},
+		{name: "future category", category: "quota_billing"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			m := newPipelineErrorTestMocks(mc)
+
+			m.req.EXPECT().AIV1AIcallGet(gomock.Any(), testPEAicallID).Return(newPipelineErrorAIcall(testPEPipecatcallID), nil)
+			created := m.expectCreate(t)
+
+			m.h.EventPMPipelineError(context.Background(), newPipelineErrorEvent(tt.category))
+
+			expect := `{"type":"pipeline_error","category":"unknown","fatal":false,"pipecatcall_id":"9c5c6e64-6289-4ac9-ad88-b20796a6bc96","message":"An AI service provider returned an error."}`
+			if created.Content != expect {
+				t.Errorf("Wrong match.\nexpect: %s\ngot:    %s", expect, created.Content)
+			}
 		})
 	}
 }
