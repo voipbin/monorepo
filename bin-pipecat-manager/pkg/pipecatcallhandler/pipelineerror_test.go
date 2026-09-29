@@ -66,7 +66,10 @@ func Test_classifyPipelineError(t *testing.T) {
 		{"transport error", "Unknown error occurred: sent 1011 (internal error) keepalive ping timeout", message.ErrorCategoryUnknown},
 		{"empty", "", message.ErrorCategoryUnknown},
 
-		// one isolating case per matcher: each string matches ONLY the named matcher (VOIP-1543)
+		// isolating cases (VOIP-1543): each string matches ONLY the named matcher, so removing that
+		// matcher flips it to unknown. Together with the realistic cases above (which already isolate
+		// api_key_invalid, resource_exhausted, http 401, the auth status/code regex and the 4 timeout
+		// literals), every matcher in pipelineerror.go has one. A new matcher needs a new row here.
 		{"isolate tier1 invalid_api_key", "{'code': 'invalid_api_key'}", message.ErrorCategoryAuthentication},
 		{"isolate tier1 permission_denied", "status PERMISSION_DENIED", message.ErrorCategoryAuthentication},
 		{"isolate tier1 unauthenticated", "UNAUTHENTICATED: request had no credentials", message.ErrorCategoryAuthentication},
@@ -396,9 +399,21 @@ func Test_runnerHandlePipelineError_warnOncePerCategory(t *testing.T) {
 
 // Test_classifyPipelineError_checkOrder pins the documented first-hit order of the classifier
 // checks (VOIP-1543 design §1.2b). Each input matches exactly two checks that yield different
-// categories; the earlier check must win. C1/C2 = tier 0 prefixes, C3/C4 = tier 1, C5/C6 = tier 2
-// (phrase or regex), C7/C8/C9 = tier 3. Same-category pairs are omitted: their order is
-// unobservable. C5/C6 are composites, so that pair is pinned in both phrase/regex combinations.
+// categories; the earlier check must win. Checks, in classifyPipelineError order:
+//
+//	C1 tier 0 prefix "error executing function call [" -> function_call
+//	C2 tier 0 prefix "invalid rtvi transport message"  -> internal
+//	C3 tier 1 auth tokens                              -> authentication
+//	C4 tier 1 rate-limit tokens                        -> rate_limited
+//	C5 tier 2 auth phrases or status/code 401|403      -> authentication
+//	C6 tier 2 rate phrase or status/code 429           -> rate_limited
+//	C7 tier 3 auth phrases                             -> authentication
+//	C8 tier 3 rate-limit phrases                       -> rate_limited
+//	C9 tier 3 timeout phrases                          -> timeout
+//
+// Same-category pairs are omitted (their order is unobservable), as is C1/C2 (two prefixes can
+// never both match). C5/C6 are composites, so that pair is pinned in both phrase/regex
+// combinations. Adding a check means adding a row for every differing-category pair it forms.
 func Test_classifyPipelineError_checkOrder(t *testing.T) {
 	tests := []struct {
 		name   string
