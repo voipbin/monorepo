@@ -82,8 +82,8 @@ type mcpToolHandler struct {
 // NewMcpToolHandler creates a new McpToolHandler. cryptoKeys is the raw
 // MCP_SECRET_ENCRYPTION_KEYS config value; timeoutSeconds is
 // mcp_tool_call_timeout_seconds (design §13), which bounds each whole
-// tools/list or tools/call, handshake and session close included, not each
-// request within it. oauthHandler resolves valid access
+// tools/list or tools/call, handshake included, not each request within it;
+// the session close may run up to sessionCloseFloor past it. oauthHandler resolves valid access
 // tokens for AuthTypeOAuth servers (design §8); pass nil only in tests
 // that don't exercise OAuth servers.
 func NewMcpToolHandler(db dbhandler.DBHandler, cryptoKeys string, timeoutSeconds int, oauthHandler mcpoauthhandler.McpOAuthHandler) (McpToolHandler, error) {

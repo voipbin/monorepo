@@ -1194,7 +1194,7 @@ What each deferral leaves, stated so it is not mistaken for closed:
   (`requestTimeoutDefault`, `bin-common-handler/pkg/requesthandler/main.go:150`), so a slow
   server can make those callers time out while ai-manager goes on to create the aicall, and
   `POST /aicalls` then deletes its activeflow as orphaned
-  (`bin-api-manager/pkg/servicehandler/aicall.go:127-131`). That is also true on main. The
+  (`bin-api-manager/pkg/servicehandler/aicall.go:128-134`). That is also true on main. The
   draft's analysis of this, and why D16's 6-second figure does not fit the paths that
   discover, is the starting point for PR B2.
 - **B19, refresh on a rejected OAuth token (A.11).** A vendor-revoked access token still
