@@ -108,7 +108,7 @@ KUBERNETES_DISABLED=true
 
 ### Recording file sharing
 
-When recordings are uploaded via `/proxy/recording_file_move`, the proxy reads from `--recording_asterisk_directory` (default `/var/spool/asterisk/recording`). In a sidecar deployment, this directory must be shared between the Asterisk container and the proxy container using a Kubernetes `emptyDir` or `hostPath` volume mount.
+When recordings are uploaded via `/proxy/recording_file_move`, the proxy reads from `--recording_asterisk_directory` (default `/var/spool/asterisk/recording`). In a sidecar deployment, this directory must be shared between the Asterisk container and the proxy container using a Kubernetes `emptyDir` or `hostPath` volume mount. Files whose upload fails are kept in this directory for recovery, so it should outlive the pod if they are to be recovered: `emptyDir` is lost on pod deletion, `hostPath` stays on the node, and a named Docker volume (the Komodo deployment) survives container recreation.
 
 ```yaml
 volumes:
