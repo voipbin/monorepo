@@ -15,7 +15,7 @@ Hybrid Go/Python service for real-time AI voice pipeline execution. Go owns tran
 ## Key concepts
 
 - **Pipecatcall** — one AI voice session; one MySQL record + one in-memory session anchored to a single pod
-- **HostID** = `POD_IP` (K8s Downward API); must be set for per-pod queue routing — follow-up RPCs from `bin-ai-manager` use `pipecatcall.HostID`
+- **HostID** = `POD_IP` (set per container in `komodo/docker-compose.yml`: `pipecat-manager-1` / `pipecat-manager-2`); must be set for per-pod queue routing — follow-up RPCs from `bin-ai-manager` use `pipecatcall.HostID`
 - **Per-pod queue** — `bin-manager.pipecat-manager.request.<POD_IP>` (volatile); see [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md)
 - **16 kHz end-to-end** — `audio_out_sample_rate=16000` in Python `PipelineParams` is mandatory; Pipecat defaults to 24 kHz and will cause robotic audio without this setting
 

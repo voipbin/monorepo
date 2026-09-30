@@ -13,7 +13,7 @@ All Go flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `redis_database` | `REDIS_DATABASE` | Redis DB index | no |
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
-| `POD_IP` | `POD_IP` | Pod IP (K8s Downward API); used as HostID for per-pod routing | yes |
+| `POD_IP` | `POD_IP` | Per-container identity (`pipecat-manager-1` / `-2` in `komodo/docker-compose.yml`); used as HostID for per-pod routing | yes |
 
 Python environment variables (set in `.env` or exported):
 
@@ -141,11 +141,10 @@ Three deviations from the Tier 1/2 template, all intentional:
   the K8s Downward API (`status.podIP`) for per-pod queue routing, but that
   wiring was never carried over to Docker Compose — `install/`'s own
   `docker-compose.yml.dist` already fell back to the literal string
-  `pipecat-manager`. The Komodo compose file keeps that same literal
-  (`POD_IP=pipecat-manager`), matching current production behavior exactly.
-  A real per-container unique `HostID` (needed if this service is ever
-  scaled to multiple replicas) is a separate follow-up, not part of this
-  cutover.
+  `pipecat-manager`. The Komodo compose file sets a literal per replica
+  (`POD_IP=pipecat-manager-1` / `pipecat-manager-2`, since the two-replica
+  scale-out), which is unique per container and is what per-pod queue
+  routing uses.
 - **`pipecat-script-runner` sidecar** (added 2026-08-22,
   NOJIRA-Fix-pipecat-runner-sidecar): the Python Pipecat pipeline runs as
   a second service from the same image (`python /app/scripts/pipecat/main.py`,

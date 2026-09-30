@@ -13,8 +13,8 @@
 # pipecat-script-runner: the Python Pipecat pipeline sidecar (FastAPI/
 # uvicorn on 0.0.0.0:8000) the Go service drives via
 # http://localhost:8000/run. On GKE this was a second container in the
-# same pod (the former k8s/deployment.yml pipecat-script-runner, removed in VOIP-1544); it was dropped
-# in the Komodo migration, so every ai_talk action failed with
+# same pod (pipecat-script-runner in the former k8s/deployment.yml,
+# removed in VOIP-1544); it was dropped in the Komodo migration, so every ai_talk action failed with
 # "connection refused" on localhost:8000 and the flow tore the call
 # down (2026-08-22 incident, NOJIRA-Fix-pipecat-runner-sidecar). Same
 # image (all Python deps are baked in), network_mode
