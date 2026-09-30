@@ -186,17 +186,36 @@ func Test_RecoveryStart_enabled(t *testing.T) {
 }
 
 // Test_NewCallHandler_recoveryEnabled checks that the constructor carries the recovery setting
-// into the handler the RecoveryStart guard reads (VOIP-1553).
+// into the handler the RecoveryStart guard reads (VOIP-1553). It goes through the constructor on
+// purpose: the wiring is what is under test.
 func Test_NewCallHandler_recoveryEnabled(t *testing.T) {
-	for _, enabled := range []bool{true, false} {
-		h := NewCallHandler(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, enabled)
+	tests := []struct {
+		name string
 
-		ch, ok := h.(*callHandler)
-		if !ok {
-			t.Fatalf("NewCallHandler returned %T, expected *callHandler", h)
-		}
-		if ch.recoveryEnabled != enabled {
-			t.Errorf("recoveryEnabled = %v, expected %v", ch.recoveryEnabled, enabled)
-		}
+		recoveryEnabled bool
+	}{
+		{
+			name:            "enabled",
+			recoveryEnabled: true,
+		},
+		{
+			name:            "disabled",
+			recoveryEnabled: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewCallHandler(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, tt.recoveryEnabled)
+
+			res, ok := h.(*callHandler)
+			if !ok {
+				t.Errorf("Wrong match. expect: *callHandler, got: %T", h)
+				return
+			}
+			if res.recoveryEnabled != tt.recoveryEnabled {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.recoveryEnabled, res.recoveryEnabled)
+			}
+		})
 	}
 }

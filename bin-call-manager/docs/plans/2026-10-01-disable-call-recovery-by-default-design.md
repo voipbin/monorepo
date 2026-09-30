@@ -1,7 +1,7 @@
 # VOIP-1553: Disable call recovery unless explicitly enabled
 
 Status: design approved (design review rounds 1-2 APPROVED consecutively); implemented in this PR.
-Ticket: VOIP-1553. Analysis (closed, R9/R10 and addendum R4/R5 approved): `~/agent-hermes/notes/tracks/VOIP-1553-analysis.md`.
+Ticket: VOIP-1553. The issue analysis (findings F1-F10 referenced below) is recorded in the VOIP-1553 ticket comments.
 Blocks: VOIP-1555 (Homer repair). Follow-up: VOIP-1556 (recovery redesign).
 
 ## 1. Problem
@@ -113,3 +113,4 @@ Merge alone is not the gate.
 - PR review round 1: APPROVED. MINOR: env binding and constructor assignment were not covered by tests; added `Test_Bootstrap_recoveryEnabledEnv` and `Test_NewCallHandler_recoveryEnabled`. NIT: flag help text aligned with §4.1, status line updated. Mutation: removing the constructor assignment fails `Test_NewCallHandler_recoveryEnabled`; removing the explicit `BindEnv` line does not fail the env test because `viper.AutomaticEnv()` (already enabled in `bindConfig`) resolves `recovery_enabled` from `RECOVERY_ENABLED` on its own, so the env-to-value behaviour the test pins holds either way.
 - PR review round 2: APPROVED. NIT: operations.md true-value list made exact. NIT (event.go Debug line before the disabled Info) and MINOR (`LoadGlobalConfig` copy untestable under `sync.Once`) accepted as is.
 - CI after PR open: `check-test-conventions` failed (docs/conventions/testing.md 13.6, new test names must start with `Test_`). Renamed to `Test_Bootstrap_recoveryEnabledDefault` / `Test_Bootstrap_recoveryEnabledEnv`. The local verification had not run `scripts/check-test-conventions.sh`.
+- PR review rounds 4-5: APPROVED (all applicable CI gates run locally, conventions check). MINOR fixed: design doc no longer references a local path; new tests use table-driven keyed cases and the `Wrong match` `t.Errorf` form (testing.md 13.1, 13.5).

@@ -105,15 +105,17 @@ func Test_Bootstrap_recoveryEnabledDefault(t *testing.T) {
 	}
 
 	if err := Bootstrap(cmd); err != nil {
-		t.Fatalf("Bootstrap() returned error: %v", err)
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+		return
 	}
 
 	flag := cmd.PersistentFlags().Lookup("recovery_enabled")
 	if flag == nil {
-		t.Fatalf("Flag recovery_enabled was not registered")
+		t.Errorf("Wrong match. expect: recovery_enabled flag registered, got: nil")
+		return
 	}
 	if flag.DefValue != "false" {
-		t.Errorf("recovery_enabled default = %q, expected %q", flag.DefValue, "false")
+		t.Errorf("Wrong match. expect: false, got: %v", flag.DefValue)
 	}
 }
 
@@ -121,15 +123,37 @@ func Test_Bootstrap_recoveryEnabledDefault(t *testing.T) {
 // recovery can be turned back on by the env var after VOIP-1556 (VOIP-1553).
 func Test_Bootstrap_recoveryEnabledEnv(t *testing.T) {
 	tests := []struct {
-		name     string
-		env      string
-		expected bool
+		name string
+
+		env string
+
+		expectRes bool
 	}{
-		{"true", "true", true},
-		{"one", "1", true},
-		{"false", "false", false},
-		{"empty", "", false},
-		{"unparsable", "yes", false},
+		{
+			name:      "true",
+			env:       "true",
+			expectRes: true,
+		},
+		{
+			name:      "one",
+			env:       "1",
+			expectRes: true,
+		},
+		{
+			name:      "false",
+			env:       "false",
+			expectRes: false,
+		},
+		{
+			name:      "empty",
+			env:       "",
+			expectRes: false,
+		},
+		{
+			name:      "unparsable",
+			env:       "yes",
+			expectRes: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -141,11 +165,12 @@ func Test_Bootstrap_recoveryEnabledEnv(t *testing.T) {
 				Short: "Test command",
 			}
 			if err := Bootstrap(cmd); err != nil {
-				t.Fatalf("Bootstrap() returned error: %v", err)
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+				return
 			}
 
-			if got := viper.GetBool("recovery_enabled"); got != tt.expected {
-				t.Errorf("recovery_enabled with RECOVERY_ENABLED=%q = %v, expected %v", tt.env, got, tt.expected)
+			if res := viper.GetBool("recovery_enabled"); res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}
