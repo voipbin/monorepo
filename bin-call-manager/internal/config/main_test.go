@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func TestGet(t *testing.T) {
@@ -113,5 +114,39 @@ func TestBootstrap_recoveryEnabledDefault(t *testing.T) {
 	}
 	if flag.DefValue != "false" {
 		t.Errorf("recovery_enabled default = %q, expected %q", flag.DefValue, "false")
+	}
+}
+
+// TestBootstrap_recoveryEnabledEnv checks that RECOVERY_ENABLED is bound to recovery_enabled, so
+// recovery can be turned back on by the env var after VOIP-1556 (VOIP-1553).
+func TestBootstrap_recoveryEnabledEnv(t *testing.T) {
+	tests := []struct {
+		name     string
+		env      string
+		expected bool
+	}{
+		{"true", "true", true},
+		{"one", "1", true},
+		{"false", "false", false},
+		{"empty", "", false},
+		{"unparsable", "yes", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("RECOVERY_ENABLED", tt.env)
+
+			cmd := &cobra.Command{
+				Use:   "test",
+				Short: "Test command",
+			}
+			if err := Bootstrap(cmd); err != nil {
+				t.Fatalf("Bootstrap() returned error: %v", err)
+			}
+
+			if got := viper.GetBool("recovery_enabled"); got != tt.expected {
+				t.Errorf("recovery_enabled with RECOVERY_ENABLED=%q = %v, expected %v", tt.env, got, tt.expected)
+			}
+		})
 	}
 }

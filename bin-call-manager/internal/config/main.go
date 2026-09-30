@@ -62,7 +62,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("homer_auth_token", "", "Homer API authentication token")
 	f.String("homer_whitelist", "", "Comma-separated list of whitelisted IPs for Homer")
 	f.Int("asterisk_ws_port", 8088, "Asterisk WebSocket media port")
-	f.Bool("recovery_enabled", false, "Enable call recovery (automatic and manual /v1/recovery). Disabled by default, see VOIP-1553")
+	f.Bool("recovery_enabled", false, "Enable call recovery (automatic on Asterisk container death and manual /v1/recovery). Disabled by default, see VOIP-1553")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",

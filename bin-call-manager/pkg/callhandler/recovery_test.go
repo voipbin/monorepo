@@ -184,3 +184,19 @@ func Test_RecoveryStart_enabled(t *testing.T) {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }
+
+// Test_NewCallHandler_recoveryEnabled checks that the constructor carries the recovery setting
+// into the handler the RecoveryStart guard reads (VOIP-1553).
+func Test_NewCallHandler_recoveryEnabled(t *testing.T) {
+	for _, enabled := range []bool{true, false} {
+		h := NewCallHandler(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, enabled)
+
+		ch, ok := h.(*callHandler)
+		if !ok {
+			t.Fatalf("NewCallHandler returned %T, expected *callHandler", h)
+		}
+		if ch.recoveryEnabled != enabled {
+			t.Errorf("recoveryEnabled = %v, expected %v", ch.recoveryEnabled, enabled)
+		}
+	}
+}

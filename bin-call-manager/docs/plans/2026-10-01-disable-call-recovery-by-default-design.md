@@ -1,6 +1,6 @@
 # VOIP-1553: Disable call recovery unless explicitly enabled
 
-Status: design, review loop in progress.
+Status: design approved (design review rounds 1-2 APPROVED consecutively); implemented in this PR.
 Ticket: VOIP-1553. Analysis (closed, R9/R10 and addendum R4/R5 approved): `~/agent-hermes/notes/tracks/VOIP-1553-analysis.md`.
 Blocks: VOIP-1555 (Homer repair). Follow-up: VOIP-1556 (recovery redesign).
 
@@ -110,3 +110,4 @@ Merge alone is not the gate.
 
 - Round 1: APPROVED with MINOR items, all addressed: gate step 3 not actionable (replaced with a per-replica startup log), `CLAUDE.md:58-59` inventory, `operations.md:109` stance, dashboard panel descriptions stance; NITs: no test call sites, `TestConfigStruct`, pinned log prefix.
 - Round 2: APPROVED with MINOR items, addressed: gate step 1 also excludes a non-Komodo call-manager container; gate step 3 has an exact Loki selector, full-message match and expected count 2. NITs: startup log and guard use the same value; CLAUDE.md edit is argument-list only.
+- PR review round 1: APPROVED. MINOR: env binding and constructor assignment were not covered by tests; added `TestBootstrap_recoveryEnabledEnv` and `Test_NewCallHandler_recoveryEnabled`. NIT: flag help text aligned with §4.1, status line updated. Mutation: removing the constructor assignment fails `Test_NewCallHandler_recoveryEnabled`; removing the explicit `BindEnv` line does not fail the env test because `viper.AutomaticEnv()` (already enabled in `bindConfig`) resolves `recovery_enabled` from `RECOVERY_ENABLED` on its own, so the env-to-value behaviour the test pins holds either way.
