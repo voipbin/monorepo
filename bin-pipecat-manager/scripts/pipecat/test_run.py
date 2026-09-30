@@ -800,20 +800,28 @@ class TestCreateTTSService:
     @patch("run.GoogleTTSService")
     def test_google_tts_service_creation(self, mock_service):
         """Test Google TTS service is created with voice_id and no explicit credentials."""
+        from pipecat.transcriptions.language import Language
         from run import create_tts_service
 
         create_tts_service("google", voice_id="en-US-Chirp3-HD-Charon")
 
-        mock_service.assert_called_once_with(voice_id="en-US-Chirp3-HD-Charon")
+        mock_service.InputParams.assert_called_once_with(language=Language.EN_US)
+        mock_service.assert_called_once_with(
+            voice_id="en-US-Chirp3-HD-Charon",
+            params=mock_service.InputParams.return_value,
+            max_consecutive_zero_audio_contexts=0,
+        )
 
     @patch("run.GoogleTTSService")
     def test_google_tts_default_voice(self, mock_service):
-        """Test Google TTS uses default voice when none specified."""
+        """Google TTS falls back to the language's Chirp3 HD voice when none is given."""
         from run import create_tts_service
 
         create_tts_service("google")
 
-        mock_service.assert_called_once_with(voice_id="default_voice_id")
+        assert mock_service.call_args.kwargs["voice_id"] == "en-US-Chirp3-HD-Charon"
+        create_tts_service("google", language="ko-KR")
+        assert mock_service.call_args.kwargs["voice_id"] == "ko-KR-Chirp3-HD-Charon"
 
     @patch("run.CartesiaTTSService")
     def test_cartesia_still_works(self, mock_service):

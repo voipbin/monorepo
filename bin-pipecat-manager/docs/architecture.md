@@ -64,7 +64,7 @@ ListenHandler routes over two queues:
 | `/v1/messages$` | POST | Send message into active session |
 | `/v1/ping$` | GET | Sub-second liveness probe (no DB I/O) |
 
-`HostID = POD_IP` (from K8s Downward API) is persisted on `pipecatcall.HostID` so `bin-ai-manager` can route follow-up RPCs to the correct pod. See [docs/patterns/per-pod-queues.md](../../docs/patterns/per-pod-queues.md) and [docs/patterns/per-pod-liveness-preflight.md](../../docs/patterns/per-pod-liveness-preflight.md).
+`HostID = POD_IP` (a per-container literal set in `komodo/docker-compose.yml`: `pipecat-manager-1` / `pipecat-manager-2`) is persisted on `pipecatcall.HostID` so `bin-ai-manager` can route follow-up RPCs to the correct pod. See [docs/patterns/per-pod-queues.md](../../docs/patterns/per-pod-queues.md) and [docs/patterns/per-pod-liveness-preflight.md](../../docs/patterns/per-pod-liveness-preflight.md).
 
 ## Session Lifecycle
 
