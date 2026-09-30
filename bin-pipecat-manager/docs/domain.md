@@ -6,7 +6,7 @@
 A single AI voice session. Has a MySQL record (persistent) plus an in-memory session (bound to one pod).
 
 Key fields:
-- `HostID` — pod IP (`POD_IP` from K8s Downward API); used for per-pod RabbitMQ routing
+- `HostID` — `POD_IP` (per-container literal from `komodo/docker-compose.yml`, e.g. `pipecat-manager-1`); used for per-pod RabbitMQ routing
 - `ReferenceType` / `ReferenceID` — the resource being served (call, conversation, task)
 - `Status` — session lifecycle state
 

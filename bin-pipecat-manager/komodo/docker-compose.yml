@@ -5,17 +5,18 @@
 # NOTE: non-distroless (python:3.12-slim) - image has NEITHER wget nor
 # curl, so the healthcheck uses python3 directly, carried over verbatim
 # from install/docker-compose.yml.dist. POD_IP is not a Komodo Variable -
-# install/'s own default (${POD_IP:-pipecat-manager}, a literal fallback
-# string, not an actual runtime pod IP - this was written for a
-# Kubernetes downward-API value that was never wired up for Docker
-# Compose) is used as-is, matching current production behavior exactly.
+# it is a literal per manager replica (pipecat-manager-1 /
+# pipecat-manager-2, see the P15+16 note below), not a runtime pod IP.
+# install/'s default ${POD_IP:-pipecat-manager} was written for a
+# Kubernetes downward-API value that was never wired up for Docker Compose.
 #
 # pipecat-script-runner: the Python Pipecat pipeline sidecar (FastAPI/
 # uvicorn on 0.0.0.0:8000) the Go service drives via
 # http://localhost:8000/run. On GKE this was a second container in the
-# same pod (k8s/deployment.yml's pipecat-script-runner); it was dropped
-# in the Komodo migration, so every ai_talk action failed with
-# "connection refused" on localhost:8000 and the flow tore the call
+# same pod (pipecat-script-runner in the former k8s/deployment.yml,
+# removed in VOIP-1544); it was dropped in the Komodo migration, so
+# every ai_talk action failed with "connection refused" on
+# localhost:8000 and the flow tore the call
 # down (2026-08-22 incident, NOJIRA-Fix-pipecat-runner-sidecar). Same
 # image (all Python deps are baked in), network_mode
 # "service:pipecat-manager" reproduces the GKE pod's shared localhost
@@ -58,8 +59,9 @@
 #
 # VOIP-1482: the Google service account for Cloud TTS/STT. GKE handed the
 # runner Application Default Credentials from the NODE's service account,
-# so k8s/deployment.yml mounted no key and the Komodo migration carried
-# none - every Google TTS/STT call has failed since the bare-metal cutover.
+# so the former k8s/deployment.yml mounted no key and the Komodo
+# migration carried none - every Google TTS/STT call has failed since
+# the bare-metal cutover.
 # This injects the shared bin-manager service account instead, the same one
 # storage/rag/transcribe/tts already use. Note it is a DIFFERENT principal
 # than the GKE node account, so verify one Google TTS and one Google STT
@@ -138,7 +140,7 @@ services:
       pipecat-manager-1:
         condition: service_healthy
     # The env the GKE pipecat-script-runner container received
-    # (k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
+    # (former k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
     # directly - PLUS the Google service account GKE supplied implicitly.
     #
     # VOIP-1482: GOOGLE_API_KEY is the Gemini LLM key and is read only by
@@ -211,7 +213,7 @@ services:
       pipecat-manager-2:
         condition: service_healthy
     # The env the GKE pipecat-script-runner container received
-    # (k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
+    # (former k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
     # directly - PLUS the Google service account GKE supplied implicitly.
     #
     # VOIP-1482: GOOGLE_API_KEY is the Gemini LLM key and is read only by

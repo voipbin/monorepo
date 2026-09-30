@@ -5,7 +5,7 @@ import asyncio
 import common
 
 from loguru import logger
-from pipecat_flows import FlowManager, FlowArgs, FlowsFunctionSchema, NodeConfig
+from pipecat.flows import FlowManager, FlowArgs, FlowsFunctionSchema, NodeConfig
 
 from message_filters import filter_valid_messages
 
@@ -13,6 +13,24 @@ from message_filters import filter_valid_messages
 # alphanumeric + _.-: only, max 64 chars.
 _MAX_FUNCTION_NAME_LENGTH = 64
 _INVALID_CHARS_RE = re.compile(r'[^a-zA-Z0-9_.\-:]')
+
+
+# Local copy of pipecat.flows.manager._PLACEHOLDER (kept in sync by a real-library test).
+_FLOW_PLACEHOLDER_RE = re.compile(
+    r"(\\?)\{\{\s*([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s*\}\}"
+)
+
+
+def _escape_flow_placeholders(messages: list) -> list:
+    """Escape flows ``{{ key }}`` placeholders in injected history (non-mutating)."""
+    out = []
+    for m in messages:
+        content = m.get("content") if isinstance(m, dict) else None
+        if isinstance(content, str):
+            out.append({**m, "content": _FLOW_PLACEHOLDER_RE.sub(lambda mt: "\\" + mt.group(0), content)})
+        else:
+            out.append(m)
+    return out
 
 
 def _sanitize_function_name(name: str) -> str:
@@ -117,7 +135,7 @@ def build_team_flow(
     # the shared LLMContext with only role_messages (system prompt), losing all
     # prior conversation history.
     if llm_messages:
-        start_node["task_messages"] = filter_valid_messages(llm_messages)
+        start_node["task_messages"] = _escape_flow_placeholders(filter_valid_messages(llm_messages))
 
     return member_nodes, start_node
 

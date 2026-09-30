@@ -1,5 +1,7 @@
 import asyncio
+import importlib
 import os
+import sys
 import json
 import common
 import time
@@ -23,7 +25,10 @@ from pipecat.services.google.llm import GoogleLLMService
 
 # aggregators / context
 from pipecat.processors.aggregators.llm_context import LLMContext, NOT_GIVEN
-from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
+from pipecat.processors.aggregators.llm_response_universal import (
+    LLMContextAggregatorPair,
+    LLMUserAggregatorParams,
+)
 from pipecat.adapters.schemas.function_schema import FunctionSchema
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
 
@@ -35,7 +40,10 @@ from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.serializers.protobuf import ProtobufFrameSerializer
+from pipecat.utils.network import QuickFailureTracker
+from deepgram.core import ApiError
 from pipecat.transports.websocket.client import (
+    WebsocketClientInputTransport,
     WebsocketClientOutputTransport,
     WebsocketClientParams,
     WebsocketClientTransport,
@@ -49,7 +57,108 @@ from routing_llm import RoutingLLMService
 from routing_tts import RoutingTTSService
 from routing_stt import RoutingSTTService
 from team_flow import build_team_flow
-from pipecat_flows import FlowManager
+from pipecat.flows import FlowManager
+
+
+def _make_aggregator(ctx):
+    """Build every LLMContextAggregatorPair the same way (design 2.3).
+
+    pipecat 1.12 turns on empty-user-turn recovery by default; pin it off so
+    the upgrade is audibly identical to 1.4.x.
+    """
+    return LLMContextAggregatorPair(
+        ctx, user_params=LLMUserAggregatorParams(empty_user_turn=None)
+    )
+
+
+def _keep_usable(svc):
+    """Ignore set_usable(False) so a transient provider failure cannot leave the
+    call permanently mute or deaf (design 2.5c). set_usable(True) passes through."""
+    original = svc.set_usable
+
+    async def set_usable(is_usable):
+        if not is_usable:
+            logger.warning(f"{svc}: ignoring set_usable(False) to keep the service usable (design 2.5c)")
+            return
+        await original(is_usable)
+
+    svc.set_usable = set_usable
+    return svc
+
+
+_DEEPGRAM_SETUP_WAIT_SECS = 2.0
+_DEEPGRAM_RETRYABLE_HANDSHAKE_STATUS = (408, 429)
+
+
+class _RetryableHandshake:
+    """Async context manager proxy: 408/429 ApiError at the handshake -> ConnectionError."""
+
+    def __init__(self, cm):
+        self._cm = cm
+
+    async def __aenter__(self):
+        try:
+            return await self._cm.__aenter__()
+        except ApiError as e:
+            if getattr(e, "status_code", None) in _DEEPGRAM_RETRYABLE_HANDSHAKE_STATUS:
+                raise ConnectionError(f"Deepgram transient rejection (status {e.status_code}): {e}") from e
+            raise
+
+    async def __aexit__(self, *exc):
+        return await self._cm.__aexit__(*exc)
+
+
+def _harden_deepgram(svc):
+    """Restore 1.4.0 retry behavior on a Deepgram STT instance (design 2.5c)."""
+    # (1) never give up on quick failures
+    svc._quick_failure_tracker = QuickFailureTracker(max_consecutive_failures=sys.maxsize)
+
+    # (2) 408/429 at the handshake retry instead of giving up
+    listen_v1 = svc._client.listen.v1
+    original_connect = listen_v1.connect
+
+    def connect(*args, **kwargs):
+        return _RetryableHandshake(original_connect(*args, **kwargs))
+
+    listen_v1.connect = connect
+
+    # (3) bounded setup wait
+    async def setup(setup_arg):
+        await super(DeepgramSTTService, svc).setup(setup_arg)
+        # Owned by the service's task manager so it is cancelled with the
+        # pipeline. Not cancelled on timeout: it keeps retrying in the background.
+        task = svc.create_task(svc._connect(), "initial_connect")
+        await asyncio.wait({task}, timeout=_DEEPGRAM_SETUP_WAIT_SECS)
+
+    svc.setup = setup
+    return svc
+
+
+_IMMEDIATE_FIRST_RETRY_MARK = "_voipbin_immediate_first_retry"
+
+
+def _install_deepgram_immediate_first_retry():
+    """(1b) Reconnect immediately after a stable Deepgram connection drops.
+
+    Rebinds only pipecat.services.deepgram.stt's module-level
+    exponential_backoff_time: attempt 0 -> 0, otherwise delegate. Idempotent.
+    """
+    mod = importlib.import_module("pipecat.services.deepgram.stt")
+    current = mod.exponential_backoff_time
+    if getattr(current, _IMMEDIATE_FIRST_RETRY_MARK, None) is True:
+        return
+
+    def exponential_backoff_time(attempt, *args, **kwargs):
+        if attempt == 0:
+            return 0
+        return current(attempt, *args, **kwargs)
+
+    setattr(exponential_backoff_time, _IMMEDIATE_FIRST_RETRY_MARK, True)
+    exponential_backoff_time.__wrapped__ = current
+    mod.exponential_backoff_time = exponential_backoff_time
+
+
+_install_deepgram_immediate_first_retry()
 
 
 def build_vad_params(vad_config: dict | None, smart_turn_enabled: bool = False) -> VADParams:
@@ -354,17 +463,21 @@ def create_tts_service(name: str, **options):
     language = options.get("language")
 
     if name == "cartesia":
-        return CartesiaTTSService(
+        return _keep_usable(CartesiaTTSService(
             api_key=os.getenv("CARTESIA_API_KEY"),
             voice_id=voice_id,
+            model="sonic-3.5",
             language=language,
-        )
+            max_consecutive_zero_audio_contexts=0,
+        ))
     elif name == "elevenlabs":
-        return ElevenLabsTTSService(
+        return _keep_usable(ElevenLabsTTSService(
             api_key=os.getenv("ELEVENLABS_API_KEY"),
             voice_id=voice_id,
+            model="eleven_turbo_v2_5",
             language=language,
-        )
+            max_consecutive_zero_audio_contexts=0,
+        ))
     elif name == "google":
         # Default to Chirp3 HD voice based on language when no voice specified.
         if not options.get("voice_id"):
@@ -377,10 +490,11 @@ def create_tts_service(name: str, **options):
             lang = _parse_language(f"{parts[0]}-{parts[1]}")
         else:
             lang = _parse_language(language) if language else Language.EN_US
-        return GoogleTTSService(
+        return _keep_usable(GoogleTTSService(
             voice_id=voice_id,
             params=GoogleTTSService.InputParams(language=lang),
-        )
+            max_consecutive_zero_audio_contexts=0,
+        ))
     else:
         raise ValueError(f"Unsupported TTS service: {name}")
 
@@ -393,21 +507,22 @@ def create_stt_service(name: str, **options):
             model="nova-2",
             language=language,
             interim_results=True,
+            profanity_filter=True,
         )
-        return DeepgramSTTService(
+        return _keep_usable(_harden_deepgram(DeepgramSTTService(
             api_key=os.getenv("DEEPGRAM_API_KEY"),
             live_options=live_options,
-        )
+        )))
     elif name == "google":
         lang = _parse_language(language) if language else Language.EN_US
-        return GoogleSTTService(
+        return _keep_usable(GoogleSTTService(
             params=GoogleSTTService.InputParams(
                 languages=[lang],
                 model="latest_long",
                 enable_automatic_punctuation=True,
                 enable_interim_results=True,
             ),
-        )
+        ))
     else:
         raise ValueError(f"Unsupported STT service: {name}")
 
@@ -474,7 +589,7 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = LLMContextAggregatorPair(ctx)
+        aggregator = _make_aggregator(ctx)
 
         return llm, aggregator
 
@@ -489,13 +604,13 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = LLMContextAggregatorPair(ctx)
+        aggregator = _make_aggregator(ctx)
 
         return llm, aggregator
 
     elif service_name == "gemini":
         api_key = key or os.getenv("GOOGLE_API_KEY")
-        llm = GoogleLLMService(api_key=api_key, model=model_name)
+        llm = GoogleLLMService(api_key=api_key, model=model_name, stream_idle_timeout_secs=None)
 
         # Use universal LLMContext so GeminiLLMAdapter properly converts
         # OpenAI-format tools to Google's function_declarations format.
@@ -510,8 +625,12 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
             logger.debug(f"Converted {len(standard_tools)} tools to FunctionSchema for Gemini")
         else:
             tools_schema = NOT_GIVEN
+        # Design 2.5e: 1.4.0 converted a lone initial system message to user in
+        # place (len(messages) == 1). Reproduce it on a copy (input untouched).
+        if len(valid_messages) == 1 and valid_messages[0]["role"] == "system":
+            valid_messages = [{**valid_messages[0], "role": "user"}]
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
-        aggregator = LLMContextAggregatorPair(ctx)
+        aggregator = _make_aggregator(ctx)
 
         return llm, aggregator
 
@@ -549,6 +668,38 @@ class UnpacedWebsocketClientTransport(WebsocketClientTransport):
         return self._output
 
 
+class EarlyAudioBufferingInputTransport(WebsocketClientInputTransport):
+    """Hold audio that arrives before StartFrame and replay it in order (design 2.5b)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._early_audio = []
+
+    async def push_audio_frame(self, frame):
+        if self._audio_task is None:
+            if self._params.audio_in_enabled and not self._paused:
+                self._early_audio.append(frame)
+            return
+        await super().push_audio_frame(frame)
+
+    async def set_transport_ready(self, frame):
+        await super().set_transport_ready(frame)
+        held, self._early_audio = self._early_audio, []
+        for f in held:
+            await super().push_audio_frame(f)
+
+
+class BufferingInputWebsocketClientTransport(WebsocketClientTransport):
+    """WebSocket transport whose input buffers early audio."""
+
+    def input(self) -> EarlyAudioBufferingInputTransport:
+        if not self._input:
+            self._input = EarlyAudioBufferingInputTransport(
+                self, self._session, self._params
+            )
+        return self._input
+
+
 def create_websocket_transport(direction: str, id: str, vad_analyzer=None, turn_analyzer=None):
     uri = f"{common.PIPECATCALL_WS_URL}/{id}/ws?direction={direction}"
     logger.info(f"Establishing WebSocket connection to URI: {uri}")
@@ -566,7 +717,7 @@ def create_websocket_transport(direction: str, id: str, vad_analyzer=None, turn_
     if direction == "output":
         transport = UnpacedWebsocketClientTransport(uri=uri, params=params)
     else:
-        transport = WebsocketClientTransport(uri=uri, params=params)
+        transport = BufferingInputWebsocketClientTransport(uri=uri, params=params)
 
     return transport
 
@@ -617,6 +768,11 @@ async def init_team_pipeline(
         start = time.monotonic()
 
         llm_svc, _ = create_llm_service(ai["engine_model"], ai["engine_key"], [], [], pipeline_id=id)
+        # Design 2.5: flows tools default to cancel_on_interruption=False, which
+        # makes 1.12 compose an ASYNC TOOLS system instruction; keep the member
+        # init_prompt in the system slot (1.4 parity). Private API, guarded by
+        # the real-library test.
+        llm_svc._has_async_tools = lambda: False
         llm_services[mid] = llm_svc
 
         if tts_type and ai.get("tts_type"):
@@ -667,14 +823,11 @@ async def init_team_pipeline(
         start_messages.append({"role": "system", "content": start_member["ai"]["init_prompt"]})
     start_messages.extend(filter_valid_messages(llm_messages))
 
-    # Use universal LLMContext + LLMContextAggregatorPair so FlowManager's
-    # create_adapter() returns UniversalLLMAdapter. This ensures tools are
-    # converted through ToolsSchema/FunctionSchema, which all providers
-    # (OpenAI, Gemini, Anthropic) handle correctly. The legacy path
-    # (OpenAILLMContext + provider-specific aggregator) causes tool format
-    # mismatches — e.g. Gemini rejects OpenAI-format tools passed as-is.
+    # Universal LLMContext + LLMContextAggregatorPair. Built-in pipecat.flows
+    # always uses the universal adapter, so tools go through
+    # ToolsSchema/FunctionSchema for every provider.
     context = LLMContext(messages=start_messages, tools=NOT_GIVEN)
-    context_aggregator = LLMContextAggregatorPair(context)
+    context_aggregator = _make_aggregator(context)
 
     # --- Step 4: Create transports ---
     transport_input = None
@@ -721,12 +874,11 @@ async def init_team_pipeline(
             llm_messages=llm_messages,
         )
 
-        # flows 1.2.0 uses a universal adapter (`LLMAdapter()`) regardless of the
-        # passed LLM type, so the constructor `llm=` argument no longer selects a
-        # provider adapter. We still pass the start member's real LLM service for
-        # a valid construction, then swap the internal reference to routing_llm so
-        # register_function / unregister_function fan out to ALL member services
-        # (the swap is the reason; the adapter is universal either way).
+        # pipecat.flows advertises transition handlers via FunctionSchema
+        # (LLMSetToolsFrame); each member LLM auto-registers them on its own
+        # LLMContextFrame, so FlowManager no longer calls register_function.
+        # The _llm swap below is kept only as a harmless reference (flows reads
+        # _llm only in generate_summary, unused here).
         active_llm = routing_llm.active_service
         if active_llm is None:
             raise ValueError(f"No active LLM service for start_member_id={start_member_id}")
@@ -737,13 +889,13 @@ async def init_team_pipeline(
             context_aggregator=context_aggregator,
         )
         # CAUTION: relies on FlowManager storing the LLM as _llm. Verified with
-        # pipecat-ai-flows 1.2.0. The guard fails loudly if a future flows version
-        # renames the attribute, instead of silently leaving non-start members
-        # without tool registrations.
+        # pipecat 1.12.0 built-in flows. The guard fails loudly if a future flows
+        # version renames the attribute, so the private-API drift is noticed on
+        # the next bump instead of the swap silently becoming a no-op.
         if not hasattr(flow_manager, "_llm"):
             raise RuntimeError(
-                "FlowManager no longer exposes _llm; team tool-routing fan-out broken. "
-                "Re-verify pipecat-ai-flows internals after the upgrade."
+                "FlowManager no longer exposes _llm; team LLM reference swap broken. "
+                "Re-verify pipecat.flows internals after the upgrade."
             )
         flow_manager._llm = routing_llm
 

@@ -47,11 +47,13 @@ def _make_services():
     svc_a.process_frame = AsyncMock()
     svc_a.setup = AsyncMock()
     svc_a.cleanup = AsyncMock()
+    svc_a.broadcast_service_metadata = AsyncMock()
 
     svc_b = MagicMock()
     svc_b.process_frame = AsyncMock()
     svc_b.setup = AsyncMock()
     svc_b.cleanup = AsyncMock()
+    svc_b.broadcast_service_metadata = AsyncMock()
 
     return {"member-a": svc_a, "member-b": svc_b}
 
@@ -187,3 +189,47 @@ class TestSetupCleanupPropagation:
 
         for svc in services.values():
             svc.cleanup.assert_awaited_once()
+
+class TestUpgrade112Router:
+    """Design 2.5: metadata broadcast + StartFrame dedupe."""
+
+    @pytest.mark.asyncio
+    async def test_start_frame_broadcasts_metadata_on_every_member(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingSTTService(services)
+        await routing.process_frame(_frames_mod.StartFrame(), _FrameDirection.DOWNSTREAM)
+        for svc in services.values():
+            svc.broadcast_service_metadata.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_non_start_lifecycle_does_not_broadcast(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingSTTService(services)
+        await routing.process_frame(_frames_mod.EndFrame(), _FrameDirection.DOWNSTREAM)
+        for svc in services.values():
+            svc.broadcast_service_metadata.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_member_without_broadcast_is_tolerated(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        del services["member-b"].broadcast_service_metadata
+        routing = RoutingSTTService(services)
+        await routing.process_frame(_frames_mod.StartFrame(), _FrameDirection.DOWNSTREAM)
+        services["member-a"].broadcast_service_metadata.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_only_first_start_frame_forwarded(self):
+        _frames_mod = sys.modules["pipecat.frames.frames"]
+        services = _make_services()
+        routing = RoutingSTTService(services)
+        routing.push_frame = AsyncMock()
+        f1, f2 = _frames_mod.StartFrame(), _frames_mod.StartFrame()
+        await services["member-a"].push_frame(f1, _FrameDirection.DOWNSTREAM)
+        await services["member-b"].push_frame(f2, _FrameDirection.DOWNSTREAM)
+        other = MagicMock()
+        await services["member-b"].push_frame(other, _FrameDirection.DOWNSTREAM)
+        assert routing.push_frame.await_args_list[0].args[0] is f1
+        assert [c.args[0] for c in routing.push_frame.await_args_list] == [f1, other]

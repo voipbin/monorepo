@@ -98,7 +98,7 @@ class TestCreateLLMService:
             tools=[]
         )
 
-        mock_service.assert_called_once_with(api_key="google-test-key", model="gemini-2.5-flash")
+        mock_service.assert_called_once_with(api_key="google-test-key", model="gemini-2.5-flash", stream_idle_timeout_secs=None)
 
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
@@ -118,7 +118,7 @@ class TestCreateLLMService:
                 tools=[]
             )
 
-        mock_service.assert_called_once_with(api_key="env-google-key", model="gemini-1.5-pro")
+        mock_service.assert_called_once_with(api_key="env-google-key", model="gemini-1.5-pro", stream_idle_timeout_secs=None)
 
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
@@ -137,7 +137,7 @@ class TestCreateLLMService:
             tools=[]
         )
 
-        mock_service.assert_called_once_with(api_key="test-key", model="gemini-flash")
+        mock_service.assert_called_once_with(api_key="test-key", model="gemini-flash", stream_idle_timeout_secs=None)
 
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
@@ -156,7 +156,7 @@ class TestCreateLLMService:
             tools=[]
         )
 
-        mock_service.assert_called_once_with(api_key="test-key", model="gemini-2.5-flash")
+        mock_service.assert_called_once_with(api_key="test-key", model="gemini-2.5-flash", stream_idle_timeout_secs=None)
 
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
@@ -175,7 +175,7 @@ class TestCreateLLMService:
             tools=[]
         )
 
-        mock_service.assert_called_once_with(api_key="test-key", model="gemini-1.5-pro-latest")
+        mock_service.assert_called_once_with(api_key="test-key", model="gemini-1.5-pro-latest", stream_idle_timeout_secs=None)
 
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
@@ -392,10 +392,11 @@ class TestCreateLLMService:
 
         mock_filter.assert_not_called()
 
+    @patch("run.LLMUserAggregatorParams")
     @patch("run.LLMContextAggregatorPair")
     @patch("run.LLMContext")
     @patch("run.OpenAILLMService")
-    def test_returns_llm_and_aggregator(self, mock_service, mock_context, mock_pair):
+    def test_returns_llm_and_aggregator(self, mock_service, mock_context, mock_pair, mock_user_params):
         """Test create_llm_service returns the (llm, LLMContextAggregatorPair) tuple."""
         from run import create_llm_service
 
@@ -415,7 +416,8 @@ class TestCreateLLMService:
 
         assert llm is mock_llm
         assert aggregator is mock_pair_instance
-        mock_pair.assert_called_once_with(mock_ctx_instance)
+        mock_user_params.assert_called_once_with(empty_user_turn=None)
+        mock_pair.assert_called_once_with(mock_ctx_instance, user_params=mock_user_params.return_value)
 
     def test_unsupported_service_raises_error(self):
         """Test unsupported service raises ValueError."""
@@ -798,20 +800,34 @@ class TestCreateTTSService:
     @patch("run.GoogleTTSService")
     def test_google_tts_service_creation(self, mock_service):
         """Test Google TTS service is created with voice_id and no explicit credentials."""
+        from pipecat.transcriptions.language import Language
         from run import create_tts_service
 
         create_tts_service("google", voice_id="en-US-Chirp3-HD-Charon")
 
-        mock_service.assert_called_once_with(voice_id="en-US-Chirp3-HD-Charon")
+        mock_service.InputParams.assert_called_once_with(language=Language.EN_US)
+        mock_service.assert_called_once_with(
+            voice_id="en-US-Chirp3-HD-Charon",
+            params=mock_service.InputParams.return_value,
+            max_consecutive_zero_audio_contexts=0,
+        )
 
     @patch("run.GoogleTTSService")
     def test_google_tts_default_voice(self, mock_service):
-        """Test Google TTS uses default voice when none specified."""
+        """Google TTS falls back to the language's Chirp3 HD voice when none is given."""
+        from pipecat.transcriptions.language import Language
         from run import create_tts_service
 
         create_tts_service("google")
 
-        mock_service.assert_called_once_with(voice_id="default_voice_id")
+        assert mock_service.call_args.kwargs["voice_id"] == "en-US-Chirp3-HD-Charon"
+        mock_service.InputParams.assert_called_with(language=Language.EN_US)
+
+        create_tts_service("google", language="ko-KR")
+
+        assert mock_service.call_args.kwargs["voice_id"] == "ko-KR-Chirp3-HD-Charon"
+        assert mock_service.call_args.kwargs["max_consecutive_zero_audio_contexts"] == 0
+        mock_service.InputParams.assert_called_with(language=Language.KO_KR)
 
     @patch("run.CartesiaTTSService")
     def test_cartesia_still_works(self, mock_service):
@@ -824,7 +840,9 @@ class TestCreateTTSService:
         mock_service.assert_called_once_with(
             api_key="test-key",
             voice_id="test-voice",
+            model="sonic-3.5",
             language="en",
+            max_consecutive_zero_audio_contexts=0,
         )
 
     def test_unsupported_tts_raises_error(self):

@@ -16,6 +16,33 @@ class _Language(enum.Enum):
     ZH_CN = "zh-CN"
 
 
+
+class _WebsocketClientInputTransport:
+    """Small real stand-in so run.EarlyAudioBufferingInputTransport is a real class."""
+
+    def __init__(self, transport=None, session=None, params=None, *args, **kwargs):
+        self._params = params if params is not None else MagicMock(audio_in_enabled=True)
+        self._paused = False
+        self._audio_task = None
+        self.pushed = []
+
+    async def set_transport_ready(self, frame):
+        self._audio_task = object()
+
+    async def push_audio_frame(self, frame):
+        if self._params.audio_in_enabled and not self._paused:
+            self.pushed.append(frame)
+
+
+class _ApiError(Exception):
+    """Stand-in for deepgram.core.ApiError (a real Exception for except clauses)."""
+
+    def __init__(self, status_code=None, body=None):
+        super().__init__(f"status {status_code}")
+        self.status_code = status_code
+        self.body = body
+
+
 def _make_mock_module(*attrs, **kw_attrs):
     m = MagicMock()
     for a in attrs:
@@ -79,14 +106,18 @@ _mocks = {
     "pipecat.transports": MagicMock(),
     "pipecat.transports.websocket": MagicMock(),
     "pipecat.transports.websocket.client": _make_mock_module(
-        "WebsocketClientParams", "WebsocketClientTransport", "WebsocketClientOutputTransport"
+        "WebsocketClientParams", "WebsocketClientTransport", "WebsocketClientOutputTransport",
+        WebsocketClientInputTransport=_WebsocketClientInputTransport,
     ),
+    "pipecat.utils": MagicMock(),
+    "pipecat.utils.network": _make_mock_module("QuickFailureTracker"),
+    "deepgram.core": _make_mock_module(ApiError=_ApiError),
     # deepgram SDK
     "deepgram": _make_mock_module("LiveOptions"),
     # aiohttp (used by team_flow.py)
     "aiohttp": _make_mock_module("ClientSession", "ClientTimeout"),
     # pipecat-flows
-    "pipecat_flows": _make_mock_module("FlowManager", "FlowArgs", "FlowsFunctionSchema", "NodeConfig"),
+    "pipecat.flows": _make_mock_module("FlowManager", "FlowArgs", "FlowsFunctionSchema", "NodeConfig"),
     # local modules that may not exist in test env
     "common": MagicMock(PIPECATCALL_WS_URL="ws://localhost", PIPECATCALL_HTTP_URL="http://localhost", PIPELINE_SESSION_TIMEOUT=300),
     "tools": _make_mock_module("tool_register", "tool_unregister", "convert_to_openai_format", "get_tool_names"),
