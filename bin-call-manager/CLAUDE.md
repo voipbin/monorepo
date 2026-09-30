@@ -56,7 +56,7 @@ dbhandler
   ├── confbridgeHandler (reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
   ├── groupcallHandler (reqHandler, notifyHandler, db)
   ├── recoveryHandler (reqHandler, homerAPI config)
-  ├── callHandler (reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler)
+  ├── callHandler (reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandler, recoveryEnabled)
   └── ariEventHandler (sockHandler, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 ```
 

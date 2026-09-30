@@ -10,7 +10,7 @@
 | `external-media` requests fail with Asterisk error | Asterisk snoop channel creation failed; Asterisk WebSocket port not reachable | Verify `asterisk_ws_port` configuration; check Asterisk logs for snoop channel errors; verify network connectivity between call-manager pod and Asterisk |
 | High call create latency | MySQL slow queries on `calls` table; Redis cache miss storm | Check `call_create_total` and `receive_request_process_time` metrics; run `EXPLAIN` on slow queries; verify Redis is reachable |
 | Confbridge does not terminate when last call leaves | `no_auto_leave` flag is set, or `conference` type (does not auto-terminate) | Check confbridge `flags` and `type`; send explicit `/terminate` if stuck in `progressing` |
-| Call-manager pod restarted and calls are orphaned | Pod crash left calls in `progressing` status with no Asterisk channels | Use `/v1/recovery` endpoint with Homer SIP capture data; or use `call-control call update-status` to force `hangup` status |
+| Calls orphaned after an Asterisk container died | Calls left in `progressing` status with no Asterisk channels | Use `call-control call update-status` to force `hangup` status. Call recovery (`/v1/recovery`, automatic recovery on container death) is disabled by default (VOIP-1553) and must not be enabled before VOIP-1556 |
 | Outbound call fails immediately | All dial routes exhausted; outbound config codec mismatch | Check `call_outbound_whitelist_rejected_total` metric; verify `outbound_config` has valid routes; check route-manager for routing entries |
 
 ## Debugging Guide
@@ -108,6 +108,7 @@ followed with 16 more services on the same pattern; the remaining
 | `homer_auth_token` | `HOMER_AUTH_TOKEN` | _(empty)_ | Homer API authentication token (optional) |
 | `homer_whitelist` | `HOMER_WHITELIST` | _(empty)_ | Comma-separated IP whitelist for Homer recovery endpoint |
 | `asterisk_ws_port` | `ASTERISK_WS_PORT` | `8088` | Asterisk WebSocket port for ARI/external-media connections |
+| `recovery_enabled` | `RECOVERY_ENABLED` | `false` | Enables call recovery (automatic on Asterisk container death and manual `/v1/recovery`). Only a value `strconv.ParseBool` reads as true (`1`, `t`, `T`, `true`, `TRUE`, `True`) enables it; anything else, including empty or unparsable values, leaves it disabled. Keep disabled until VOIP-1556 redesigns recovery (VOIP-1553). Startup logs `Call recovery is disabled. RECOVERY_ENABLED is not set to true.` |
 
 ## Prometheus Metrics
 

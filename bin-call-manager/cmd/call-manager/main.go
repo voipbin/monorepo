@@ -149,7 +149,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)
 	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, cfg.HomerAPIAddress, cfg.HomerAuthToken, cfg.HomerWhitelist)
 	outboundConfigHandler := outboundconfighandler.NewOutboundConfigHandler(utilhandler.NewUtilHandler(), db, cache, reqHandler)
-	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandler)
+	if cfg.RecoveryEnabled {
+		logrus.Warn("Call recovery is enabled.")
+	} else {
+		logrus.Info("Call recovery is disabled. RECOVERY_ENABLED is not set to true.")
+	}
+	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandler, cfg.RecoveryEnabled)
 	ariEventHandler := arieventhandler.NewEventHandler(sockHandler, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 
 	// run subscribe listener

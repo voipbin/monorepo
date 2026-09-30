@@ -94,7 +94,7 @@ The old `*.registrar.{base}` suffix is NOT accepted: the VOIP-1385 cutover remov
 
 9. **Outbound calls use dial routes with failover**: outgoing calls carry a `dialroutes` list ordered by preference. The `dialroute_id` field tracks which route is currently active. If a route fails, the next route is tried until the list is exhausted.
 
-10. **Recovery from Homer**: the `/v1/recovery` endpoint reconstructs call state by replaying SIP messages from the Homer SIP capture system. This is a last-resort operation for recovering orphaned calls when Asterisk state is lost (e.g., after an Asterisk crash).
+10. **Recovery from Homer (disabled by default)**: `RecoveryStart` (automatic on an Asterisk container death, or the manual `/v1/recovery` endpoint) re-dials a call's SIP dialog from the Homer SIP capture system onto a live Asterisk. It is disabled unless `RECOVERY_ENABLED=true` (VOIP-1553) because the current path selects already-ended calls and re-runs their last action before the new leg answers; it must not be enabled before the redesign in VOIP-1556.
 
 11. **Registrar/trunk customer resolution is lookup-based and fail-closed**: an incoming registrar-domain call resolves its customer via registrar-manager (`RegistrarV1CustomerDomainGetByRealm` with the full realm); trunk-domain calls resolve via `RegistrarV1TrunkGetByDomainName`. No customer uuid is ever parsed out of the domain string. An unknown realm or a lookup failure rejects the call (hangup with no-route-destination). The `ContactStatusChange` ARI handler resolves the customer through the same realm lookup; an unknown realm there logs a warning and skips the contact refresh instead of failing the event loop.
 

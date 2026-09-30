@@ -160,6 +160,9 @@ type callHandler struct {
 	groupcallHandler      groupcallhandler.GroupcallHandler
 	recoveryHandler       RecoveryHandler
 	outboundConfigHandler outboundconfighandler.OutboundConfigHandler
+
+	// recoveryEnabled gates RecoveryStart. False disables every recovery path (VOIP-1553).
+	recoveryEnabled bool
 }
 
 // contextType
@@ -315,6 +318,7 @@ func NewCallHandler(
 	groupcallHandler groupcallhandler.GroupcallHandler,
 	recoveryHandler RecoveryHandler,
 	outboundConfigHandler outboundconfighandler.OutboundConfigHandler,
+	recoveryEnabled bool,
 ) CallHandler {
 
 	h := &callHandler{
@@ -330,6 +334,7 @@ func NewCallHandler(
 		groupcallHandler:      groupcallHandler,
 		recoveryHandler:       recoveryHandler,
 		outboundConfigHandler: outboundConfigHandler,
+		recoveryEnabled:       recoveryEnabled,
 	}
 
 	return h

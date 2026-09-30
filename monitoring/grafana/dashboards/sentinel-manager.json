@@ -254,7 +254,7 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
       "id": 104,
-      "title": "Recovery Health (leading indicators)",
+      "title": "Recovery Health (leading indicators) - call recovery disabled in call-manager (VOIP-1553)",
       "type": "row"
     },
     {
