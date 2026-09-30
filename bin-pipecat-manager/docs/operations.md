@@ -107,7 +107,7 @@ cd scripts/pipecat && uvicorn main:app --host 0.0.0.0 --port 8000
 ## Deployment Notes
 
 - Both Go (port 8080) and Python (port 8000) components must be running in the same network namespace — the Go side drives the Python runner at `http://localhost:8000/run`.
-- The Dockerfile builds one image carrying both the Go binary and the Python pipeline (deps preinstalled); each deployment runs it twice — once as the Go service, once as the Python runner. On GKE these were two containers in one pod (`k8s/deployment.yml`); on Komodo/Compose they are the `pipecat-manager-1`/`-2` and `pipecat-script-runner-1`/`-2` services, each runner joined to its own manager via `network_mode: "service:pipecat-manager-N"`.
+- The Dockerfile builds one image carrying both the Go binary and the Python pipeline (deps preinstalled); each deployment runs it twice — once as the Go service, once as the Python runner. On GKE these were two containers in one pod (the Kubernetes manifests were removed in VOIP-1544; production is Docker + Komodo only); on Komodo/Compose they are the `pipecat-manager-1`/`-2` and `pipecat-script-runner-1`/`-2` services, each runner joined to its own manager via `network_mode: "service:pipecat-manager-N"`.
 - Per-pod queues are declared **volatile** — they auto-delete when the pod terminates, preventing dead-letter buildup.
 
 ## Deployment (Komodo)
