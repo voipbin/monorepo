@@ -815,13 +815,19 @@ class TestCreateTTSService:
     @patch("run.GoogleTTSService")
     def test_google_tts_default_voice(self, mock_service):
         """Google TTS falls back to the language's Chirp3 HD voice when none is given."""
+        from pipecat.transcriptions.language import Language
         from run import create_tts_service
 
         create_tts_service("google")
 
         assert mock_service.call_args.kwargs["voice_id"] == "en-US-Chirp3-HD-Charon"
+        mock_service.InputParams.assert_called_with(language=Language.EN_US)
+
         create_tts_service("google", language="ko-KR")
+
         assert mock_service.call_args.kwargs["voice_id"] == "ko-KR-Chirp3-HD-Charon"
+        assert mock_service.call_args.kwargs["max_consecutive_zero_audio_contexts"] == 0
+        mock_service.InputParams.assert_called_with(language=Language.KO_KR)
 
     @patch("run.CartesiaTTSService")
     def test_cartesia_still_works(self, mock_service):

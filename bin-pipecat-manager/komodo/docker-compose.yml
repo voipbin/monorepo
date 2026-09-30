@@ -60,7 +60,8 @@
 # VOIP-1482: the Google service account for Cloud TTS/STT. GKE handed the
 # runner Application Default Credentials from the NODE's service account,
 # so the former k8s/deployment.yml mounted no key and the Komodo
-# migration carried none - every Google TTS/STT call has failed since the bare-metal cutover.
+# migration carried none - every Google TTS/STT call has failed since
+# the bare-metal cutover.
 # This injects the shared bin-manager service account instead, the same one
 # storage/rag/transcribe/tts already use. Note it is a DIFFERENT principal
 # than the GKE node account, so verify one Google TTS and one Google STT
