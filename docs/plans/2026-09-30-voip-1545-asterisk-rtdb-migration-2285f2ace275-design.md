@@ -2,7 +2,7 @@
 
 Date: 2026-09-30. Ticket: VOIP-1545. Branch: `VOIP-1545-Add-asterisk-rtdb-migration-2285f2ace275`.
 Issue analysis: covered by the approved VOIP-1545 analysis (RTDB schema delta row, §2 item 3 PR-C, migration-first ordering), closed with 2 consecutive approvals. This document adds the PR-C specifics.
-Status: design review. Round 1: A CHANGES_REQUESTED (1: engine basis), B APPROVED; both engines now required (production MariaDB 12.3, install MySQL 8.0), non-blocking notes applied. Round 2: APPROVED (non-blocking: full PIP_PINS, operator-held alembic.ini; applied). Round 3: APPROVED (non-blocking: final-newline wording, run from pulled main; applied). Design review loop finished.
+Status: design review. Round 1: A CHANGES_REQUESTED (1: engine basis), B APPROVED; both engines now required (production MariaDB 12.3, install MySQL 8.0), non-blocking notes applied. Round 2: APPROVED (non-blocking: full PIP_PINS, operator-held alembic.ini; applied). Round 3: APPROVED (non-blocking: final-newline wording, run from pulled main; applied). Design review loop finished. PR rounds 1-3 APPROVED (round-3 non-blocking notes applied: INSTANT fallback wording, optional metadata-lock check).
 
 ## 1. Background
 
@@ -55,12 +55,13 @@ Plus this design document. No docs change is needed in `bin-dbscheme-manager/doc
 3. The CEO applies the migration to the production `asterisk` database over VPN, from the base monorepo checkout on `main` after `git pull` (so the merged file is present): in `bin-dbscheme-manager/asterisk_config` with the operator's local production `alembic.ini` (the repo only has `alembic.ini.sample`; the real file with the production `asterisk` DB URL is kept locally by the operator and never committed):
    - `alembic -c alembic.ini current`: must print `e89e30cee53f`. If it prints anything else, stop and report instead of upgrading.
    - Optional sanity check: `SELECT COUNT(*) FROM ps_transports` (expected 0 or very small, since transports are static config).
+   - Optional lock check: `SELECT ID, TIME, STATE, INFO FROM information_schema.PROCESSLIST WHERE INFO LIKE '%ps_transports%' AND ID <> CONNECTION_ID()` should return nothing. The ALTER needs a brief exclusive metadata lock on `ps_transports`; nothing in our stack reads that table, but an unexpected long-running session holding it would make the ALTER wait (up to `lock_wait_timeout`).
    - `alembic -c alembic.ini upgrade head`, then `current` again: must print `2285f2ace275 (head)`.
    Hermes does not run this. There is no separate staging `asterisk` database today, so `docs/operations.md`'s "staging first" step has no target here; the throwaway round-trips in §5 on the production engine version stand in for it, as for the 23.4.0 precedent.
 4. The CEO approves `migration-applied-checkpoint` on the main pipeline as the attestation.
 5. Only after that, PR-D (Asterisk 23.5.0) is released.
 
-Impact of the apply: `ALTER TABLE ps_transports ADD COLUMN external_signaling_hostname VARCHAR(40) NULL` on a table that is expected to be empty or tiny (transports are static config here); MariaDB 12.3 and MySQL 8.0 both add a trailing nullable column with the INSTANT algorithm, no data change, nothing reads it. Safe to apply while the current 23.4.0 containers run (23.4.0 does not know the column and does not use realtime transports).
+Impact of the apply: `ALTER TABLE ps_transports ADD COLUMN external_signaling_hostname VARCHAR(40) NULL` on a table that is expected to be empty or tiny (transports are static config here); MariaDB 12.3 and MySQL 8.0 both add a trailing nullable column with the INSTANT algorithm (verified on a throwaway MariaDB 12.3 copy, also under concurrent ps_endpoints/ps_aors activity); should INSTANT not apply on the production table (for example an old row format), the table is empty or tiny so INPLACE/COPY also finishes immediately; no data change, nothing reads it. Safe to apply while the current 23.4.0 containers run (23.4.0 does not know the column and does not use realtime transports).
 
 ## 7. Rollback
 
