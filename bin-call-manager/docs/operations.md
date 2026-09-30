@@ -108,7 +108,7 @@ followed with 16 more services on the same pattern; the remaining
 | `homer_auth_token` | `HOMER_AUTH_TOKEN` | _(empty)_ | Homer API authentication token (optional) |
 | `homer_whitelist` | `HOMER_WHITELIST` | _(empty)_ | Comma-separated IP whitelist for Homer recovery endpoint |
 | `asterisk_ws_port` | `ASTERISK_WS_PORT` | `8088` | Asterisk WebSocket port for ARI/external-media connections |
-| `recovery_enabled` | `RECOVERY_ENABLED` | `false` | Enables call recovery (automatic on Asterisk container death and manual `/v1/recovery`). Only an explicit true value (`true`, `1`, `t`) enables it. Keep disabled until VOIP-1556 redesigns recovery (VOIP-1553). Startup logs `Call recovery is disabled. RECOVERY_ENABLED is not set to true.` |
+| `recovery_enabled` | `RECOVERY_ENABLED` | `false` | Enables call recovery (automatic on Asterisk container death and manual `/v1/recovery`). Only a value `strconv.ParseBool` reads as true (`1`, `t`, `T`, `true`, `TRUE`, `True`) enables it; anything else, including empty or unparsable values, leaves it disabled. Keep disabled until VOIP-1556 redesigns recovery (VOIP-1553). Startup logs `Call recovery is disabled. RECOVERY_ENABLED is not set to true.` |
 
 ## Prometheus Metrics
 
