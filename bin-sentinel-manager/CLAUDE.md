@@ -32,7 +32,7 @@ That last clause is load-bearing, and it is why `waitForCacheSync` is wrapped in
 
 ## CRITICAL: three silent-failure traps in the kubernetes backend
 
-Each of these fails with no panic, no error and no log — just a death event that never publishes, and calls that are never recovered. Each was caught by a separate design-review round as missing from a naive "restore the old code" approach.
+Each of these fails with no panic, no error and no log — just a death event that never publishes, and calls that are never recovered. Each was caught by a separate design-review round as missing from a naive "restore the old code" approach. (Recovery itself is currently disabled by default in `bin-call-manager`, VOIP-1553; these traps still matter because the events must be correct when it is re-enabled.)
 
 1. **`UpdateFunc` must compare `oldPod.UID != newPod.UID`.** client-go only synthesizes a `Deleted` callback for keys *absent* from a relist's object set. A pod deleted and replaced under the same name while the watch was interrupted is still present in the relist, so it arrives as a `Replaced` delta through `UpdateFunc` and **no delete callback ever fires** for the dead generation. On a mismatch, publish `died` for the old pod *before* the new one's `started`.
 2. **`DeleteFunc` must unwrap `cache.DeletedFinalStateUnknown` — never a bare type assertion.** A bare assertion panics on that shape. The reflexive fix (assert with `ok`, return on mismatch) is *worse than the panic*: it silently drops the death. The failure budget makes this path reachable **by design**, since its whole purpose is surviving the interruptions after which a tombstone appears.

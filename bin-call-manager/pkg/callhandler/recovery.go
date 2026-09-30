@@ -17,6 +17,14 @@ func (h *callHandler) RecoveryStart(ctx context.Context, asteriskID string) erro
 		"func":        "RecoveryStart",
 		"asterisk_id": asteriskID,
 	})
+
+	// VOIP-1553: recovery is disabled unless explicitly enabled. The recovery path re-dials ended
+	// calls and re-runs their last action (see VOIP-1556), so this guard must stay the first step.
+	if !h.recoveryEnabled {
+		log.Infof("Call recovery is disabled. Skipping the recovery. asterisk_id: %s", asteriskID)
+		return nil
+	}
+
 	log.Debugf("Starting recovery for asterisk ID: %s", asteriskID)
 
 	// get channels of the give asterisk ID

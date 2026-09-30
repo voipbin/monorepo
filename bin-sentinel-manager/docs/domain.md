@@ -85,7 +85,7 @@ The `<N>` must be a bare run of digits. This is what excludes the co-located `-p
 
 6. **Flap damping.** Past 3 deaths of one container inside 60 seconds, later deaths in that window are not published. A crash-looping container is a symptom to alert on, not something to keep redialing calls against.
 
-7. **An unresolved id is published, not suppressed.** A container that died before its first successful resolution publishes with `asterisk_id: ""`. `bin-call-manager` guards on that and skips recovery — there is genuinely no prior channel history to recover for a container that never registered with Redis. The `sentinel_manager_container_unresolved_asterisk_id_total` counter is the only signal that this happened.
+7. **An unresolved id is published, not suppressed.** A container that died before its first successful resolution publishes with `asterisk_id: ""`. `bin-call-manager` guards on that and skips recovery (recovery itself is currently disabled by default in `bin-call-manager`, VOIP-1553) — there is genuinely no prior channel history to recover for a container that never registered with Redis. The `sentinel_manager_container_unresolved_asterisk_id_total` counter is the only signal that this happened.
 
 8. **Fail loud, never watch nothing.** An unreachable socket proxy at startup exits the process rather than degrading to an idle watcher. Komodo's health monitoring surfaces the resulting crash-loop.
 

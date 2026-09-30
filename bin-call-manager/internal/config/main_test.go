@@ -40,6 +40,7 @@ func TestBootstrap(t *testing.T) {
 		{"homer_api_address", "homer_api_address"},
 		{"homer_auth_token", "homer_auth_token"},
 		{"homer_whitelist", "homer_whitelist"},
+		{"recovery_enabled", "recovery_enabled"},
 	}
 
 	for _, tt := range tests {
@@ -64,6 +65,7 @@ func TestConfigStruct(t *testing.T) {
 		HomerAPIAddress:         "http://homer:9080",
 		HomerAuthToken:          "test-token",
 		HomerWhitelist:          []string{"192.168.1.1", "10.0.0.1"},
+		RecoveryEnabled:         true,
 	}
 
 	tests := []struct {
@@ -81,6 +83,7 @@ func TestConfigStruct(t *testing.T) {
 		{"HomerAPIAddress", cfg.HomerAPIAddress, "http://homer:9080"},
 		{"HomerAuthToken", cfg.HomerAuthToken, "test-token"},
 		{"HomerWhitelistLength", len(cfg.HomerWhitelist), 2},
+		{"RecoveryEnabled", cfg.RecoveryEnabled, true},
 	}
 
 	for _, tt := range tests {
@@ -89,5 +92,26 @@ func TestConfigStruct(t *testing.T) {
 				t.Errorf("Config.%s = %v, expected %v", tt.name, tt.got, tt.expected)
 			}
 		})
+	}
+}
+
+// TestBootstrap_recoveryEnabledDefault pins VOIP-1553: call recovery must be off unless
+// RECOVERY_ENABLED is explicitly set to a true value.
+func TestBootstrap_recoveryEnabledDefault(t *testing.T) {
+	cmd := &cobra.Command{
+		Use:   "test",
+		Short: "Test command",
+	}
+
+	if err := Bootstrap(cmd); err != nil {
+		t.Fatalf("Bootstrap() returned error: %v", err)
+	}
+
+	flag := cmd.PersistentFlags().Lookup("recovery_enabled")
+	if flag == nil {
+		t.Fatalf("Flag recovery_enabled was not registered")
+	}
+	if flag.DefValue != "false" {
+		t.Errorf("recovery_enabled default = %q, expected %q", flag.DefValue, "false")
 	}
 }
