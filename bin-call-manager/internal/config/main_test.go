@@ -96,9 +96,9 @@ func TestConfigStruct(t *testing.T) {
 	}
 }
 
-// TestBootstrap_recoveryEnabledDefault pins VOIP-1553: call recovery must be off unless
+// Test_Bootstrap_recoveryEnabledDefault pins VOIP-1553: call recovery must be off unless
 // RECOVERY_ENABLED is explicitly set to a true value.
-func TestBootstrap_recoveryEnabledDefault(t *testing.T) {
+func Test_Bootstrap_recoveryEnabledDefault(t *testing.T) {
 	cmd := &cobra.Command{
 		Use:   "test",
 		Short: "Test command",
@@ -117,9 +117,9 @@ func TestBootstrap_recoveryEnabledDefault(t *testing.T) {
 	}
 }
 
-// TestBootstrap_recoveryEnabledEnv checks that RECOVERY_ENABLED is bound to recovery_enabled, so
+// Test_Bootstrap_recoveryEnabledEnv checks that RECOVERY_ENABLED is bound to recovery_enabled, so
 // recovery can be turned back on by the env var after VOIP-1556 (VOIP-1553).
-func TestBootstrap_recoveryEnabledEnv(t *testing.T) {
+func Test_Bootstrap_recoveryEnabledEnv(t *testing.T) {
 	tests := []struct {
 		name     string
 		env      string
