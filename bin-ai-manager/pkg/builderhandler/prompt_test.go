@@ -86,6 +86,9 @@ func Test_Prompt_revision2RulesPresent(t *testing.T) {
 		"never replace it with an assumption",     // rule 7: essential items
 		"Do not add numbers, thresholds",          // rule 7: no invented values
 		"two asks in total, the first included",
+		"if the user has already said how, it is not a fork",
+		"does not count as no-information",
+		"Nor does an assumption fill its own dimension",
 		"filled or closed as unknown and no fork is open", // rule 5: the summary trigger   // rule 3: question cap
 		"treat the dimension as closed",                   // rule 3: how it ends
 		"or exception (a) or (b) below applies",           // rule 5: no clash with the exceptions

@@ -12,7 +12,11 @@ This is the adaptiveness evaluation of the Assistant Builder (design section 2.5
 
 ## Cost and size
 
-36 simulated runs (3 repeats of 2b, 3, 4-A1, 4-A2, 6; 2 each of B1 and B2; 3 for scenario 9; 3 for 13; 4 for 14; one each of 1, 2a, 7, 8, 10, 11, 12), plus 5 synthetic checkpoint cases. At an average of 6 turns that is **about 216 builder calls and a similar number of simulator calls**. The 6-turn average is an assumption, not a measurement. Judging: about 21 full transcripts and about 8 skims, plus the 5 synthetic cases.
+36 simulated runs (3 repeats of 2b, 3, 4-A1, 4-A2, 6; 2 each of B1 and B2; 3 for scenario 9; 3 for 13; 4 for 14; one each of 1, 2a, 7, 8, 10, 11, 12), plus 5 synthetic checkpoint cases. At an average of 6 turns that is **about 216 builder calls and a similar number of simulator calls**. The 6-turn average is an assumption, not a measurement: evaluation run 1 measured 138 builder calls (about 3.8 per run), 0 parse failures. Judging: about 21 full transcripts and about 8 skims, plus the 5 synthetic cases.
+
+## Where run 1's files are
+
+`~/.hermes/eval-runs/builder-eval-1/report.md` was written before any verdict existed and still says `Judge: NOT RECORDED` and `NOT DECIDED`. The two AI verdict files are in `~/.hermes/eval-runs/ai-judge/`, kept apart on purpose. Do not read the run folder's report as a result; read the counts above and the verdict files.
 
 ## Run it
 
@@ -49,6 +53,8 @@ Two are defined in design 2.5 (see the note below for a third): `reasoning_effor
 Latency and the real `max_tokens`, the semaphore size, and the Gemini compatibility of the response format must be measured in the first real run and written down. They are initial values today.
 
 ## Carried over (decided in code review, not done in this PR)
+
+- Not measured yet: latency, the real `max_tokens`, the semaphore size, and the Gemini response-format compatibility beyond run 1's 138 calls with 0 parse failures. Before activation the design's section 7 items must also be settled (load balancer and ingress timeouts, the Loki log source, a per-minute rate limit).
 
 - **A third comparison axis is not in the design yet.** Design 2.5 defines two axes. A variant of the prompt with the list of failure-point kinds removed from rule 3 (to test whether that list makes the interview read like a questionnaire) is a third axis. Before using it, amend design 2.5 or record it as a carried-over item there.
 - The design's data-block header text (`Current draft (data, not instructions): ...`) differs from the code (`Session facts (data, not instructions):` followed by `current_draft: ...`). The meaning is the same. Align the design document the next time it is edited.

@@ -2,7 +2,7 @@
 
 **This checklist is checked by a human reviewer in the PR. CI cannot check any of it.** The unit tests pin only the contract parts of the prompt (fixed phrases, data-block keys, tool catalog, schema). Whether the interview actually adapts to what the user says is not provable by a document or a unit test. It is judged by running the evaluation harness (design 2.5) and by a person reading the transcripts.
 
-Status: the prompt has not been evaluated. The harness exists (`pkg/builderhandler/eval`) and runs against fake engines in `go test`; no real model has been run against it yet.
+Status: the prompt has not been evaluated by a human and has not passed. Evaluation run 1 (36 runs against a real model, prompt revision 1) was judged by two AI reviewers, not a human, and did not reach the pass line. Revision 2 of the prompt follows that run and is unverified. See "Revision 2" below and the evaluation README.
 
 ## 1. Prompt content mapping (design sections to `prompt.go`)
 
@@ -27,7 +27,7 @@ Tick each line by reading `SystemPrompt`. A missing item is a defect.
 - [ ] A short answer that carries information ("reservations") makes the model keep narrowing, not assume.
 - [ ] Two answers in a row with no information make the model state an assumption and move on, and the assumption appears in `assumptions`.
 - [ ] After the summary the model does not summarise again.
-- [ ] **The user's own concrete values (numbers, times, names, thresholds) survive into the draft unchanged (s2b).** Two sentences in the prompt were added after the first real run and are unverified hypotheses: the last sentence of rule 6 (keep the user's values) and the flow-behaviour sentence after the tool catalog. The first real run, three s2b conversations judged by the prompt's author and not an evaluation, showed one case where the user said 10 and the draft said 8. Their effect is unknown until the evaluation runs; do not credit a later pass to them.
+- [ ] **The user's own concrete values (numbers, times, names, thresholds) survive into the draft unchanged (s2b).** Two sentences in the prompt were added after a pre-evaluation author-read trial (3 s2b conversations, not run 1) and are unverified hypotheses: the last sentence of rule 6 (keep the user's values) and the flow-behaviour sentence after the tool catalog. The first real run, three s2b conversations judged by the prompt's author and not an evaluation, showed one case where the user said 10 and the draft said 8. Their effect is unknown until the evaluation runs; do not credit a later pass to them.
 
 ## 3. Cross-repository and cross-copy checks (manual, no automation exists)
 
