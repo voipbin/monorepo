@@ -15,7 +15,7 @@ import (
 
 // builderMaxBodyBytes caps the request body. The conversation limit is 40000
 // characters; Korean is 3 bytes a character in UTF-8 and JSON escaping adds
-// more, so 160 KB leaves room for a conversation at the limit without letting a
+// more, so 160 KiB leaves room for a conversation at the limit without letting a
 // caller make the server read an unbounded body.
 const builderMaxBodyBytes = 160 << 10
 

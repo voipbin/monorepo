@@ -79,7 +79,7 @@ Engine-specific API keys (Dialogflow service account, Grok, Anthropic, etc.) fol
 
 The Builder is off until `AI_BUILDER_ENABLED=true` is set **on ai-manager** and ai-manager is restarted; api-manager has no switch of its own and follows ai-manager's status. It is not released and **no evaluation run has been judged by a human** (see `pkg/builderhandler/eval/README.md`, "Runs side by side"). Settle these first:
 - the notice and terms for sending a customer's text to an external model (design section 11), and whether the hosted service may use it at all;
-- a platform-wide daily cap (only a per-customer cap exists), and a per-minute limit (only the shared customer limit of about 16.7 requests per second applies);
+- a platform-wide daily cap (only a per-customer cap exists), and a per-minute limit (none exists; the per-customer limit of about 16.7 requests per second with a burst of 33, and the per-IP limit of 200 requests per second, apply to every route);
 - load balancer and ingress timeouts of at least 65 seconds, and that the log pipeline collects the ai-manager and api-manager logs (neither was confirmed from this repository);
 - how a Builder call holding an RPC worker for up to the LLM deadline affects aicall and tool RPC latency, and the circuit breaker;
 - latency, `max_tokens` and the concurrency value, which are initial values that were never measured.

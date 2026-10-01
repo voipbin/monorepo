@@ -28,14 +28,14 @@ Both runs used 36 simulated runs plus 5 synthetic cases, a builder `gemini-3.8-f
 | AI judge A, true of 41 | 32 | 36 |
 | AI judge B, true of 41 | 30 | 34 |
 | Judges agree | 33 of 41 | 35 of 41 |
-| Pass line | not reached | not decided (no human verdict) |
+| Pass line, computed by `Evaluate` over each AI judge's verdicts | not reached by either judge (A: s4-A1, s5-B1, s5-B2, s7, s8 below the line; B: s2b, s3, s4-A1, s5-B1, s5-B2, s7) | not reached by either judge (A: s1, s2a, s13, s15 below the line; B: s2a, s2b, s13, s15). No human verdict exists, so the gate is not decided as a human gate |
 
 Read this with two cautions. Revision 2 was written after reading run 1's transcripts and verdicts, and the s13 scenarios were rewritten at the same time, so the improvement is partly fitted to the same scenarios; a third run on new scenarios has not been made. And the two judges disagree on 6 to 8 items per run, so the totals are not exact.
 
-What run 2 still got wrong (read from the AI verdicts of run 2):
-- s2b (the restaurant booking scenario) stayed below the line for judge B: one question and then a draft, a behaviour the user never mentioned (hand over to a staff member on request) written into the draft, and no question about a failure point specific to the business.
+What run 2 still got wrong. The verdict files hold only good or bad per run and no reasons, so these items were read from the run 2 transcripts (`~/.hermes/eval-runs/builder-eval-2/`) for the runs the AI judges marked bad:
+- s2b (the restaurant booking scenario) stayed below the line for judge B (s2b#1 and s2b#3 marked bad): one question and then a draft, no question about a failure point specific to the business, and in s2b#3 a behaviour the user never mentioned (hand over to a staff member on request) written into the draft.
 - The retry policy the user called essential in s4-A1 was still not asked about.
-- Values the user never said still reach the draft (a lead time in minutes, a date of birth, a door code).
+- Values the user never said still reach the draft ("arrive 5 to 10 minutes early" in s2a, a date of birth in s4-A1, an entrance password in s6-delivery).
 - s13-c (an ambiguous approval) and s15-1 (the checkpoint sentence without a choice to keep refining) failed for both judges.
 - Two defects visible in drafts: the prompt's own rule name leaked into a draft assumption, and `send_email` was mentioned in a draft body but missing from its tool list.
 
