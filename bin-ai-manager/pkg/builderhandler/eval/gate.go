@@ -1,0 +1,140 @@
+package eval
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+)
+
+// Status of one pass-rule group once a human has judged the transcripts.
+type Status string
+
+const (
+	StatusPass    Status = "pass"
+	StatusFail    Status = "fail"
+	StatusPending Status = "pending"
+)
+
+// GroupStatus is the state of one group.
+type GroupStatus struct {
+	Name    string `json:"name"`
+	Status  Status `json:"status"`
+	Passed  int    `json:"passed"`
+	Failed  int    `json:"failed"`
+	Total   int    `json:"total"`
+	MinPass int    `json:"min_pass"`
+	Aborted int    `json:"aborted"` // runs that stopped on an engine error and must be re-run
+}
+
+// GateReport is the outcome of design 2.5's pass condition.
+type GateReport struct {
+	AutoOK       bool          `json:"auto_ok"`
+	AutoFailures []string      `json:"auto_failures,omitempty"`
+	Groups       []GroupStatus `json:"groups"`
+	Pending      int           `json:"pending_groups"`
+	Failed       int           `json:"failed_groups"`
+	// Pass is true only when every automatic item passed AND every group has
+	// enough human "good" verdicts. It is never true without human verdicts.
+	Pass bool `json:"pass"`
+}
+
+const maxParseFailureRate = 0.05
+
+// Evaluate applies design 2.5's pass condition.
+//
+// Automatic items (must all pass): the JSON parse-failure rate is at most 5%,
+// scenario 9 returns a draft in its first response, and no init_prompt names a
+// forbidden tool. Human items: for each group, at least MinPass of Total runs
+// judged good. verdicts maps run id to good/bad; a missing entry means not yet
+// judged. A run that aborted on an engine error is not judgeable and stays
+// unjudged until it is re-run. Scenario 15 (synthetic, no simulator) is read
+// by a person and reported separately, not part of this gate.
+func Evaluate(results []RunResult, verdicts map[string]bool) GateReport {
+	g := GateReport{AutoOK: true}
+
+	calls, fails := 0, 0
+	for _, r := range results {
+		calls += r.BuilderCalls
+		fails += r.ParseFailures
+		if r.Group == "s9" && r.Aborted == "" && !r.FirstResponseHasDraft {
+			g.AutoFailures = append(g.AutoFailures, fmt.Sprintf("%s: scenario 9 must return a draft in the first response", r.RunID))
+		}
+		if len(r.ForbiddenToolWarnings) > 0 {
+			g.AutoFailures = append(g.AutoFailures, fmt.Sprintf("%s: init_prompt names a forbidden tool (%s)", r.RunID, strings.Join(r.ForbiddenToolWarnings, "; ")))
+		}
+	}
+	if calls > 0 {
+		if rate := float64(fails) / float64(calls); rate > maxParseFailureRate {
+			g.AutoFailures = append(g.AutoFailures, fmt.Sprintf("JSON parse failure rate %.1f%% exceeds %.0f%% (%d of %d builder calls)", rate*100, maxParseFailureRate*100, fails, calls))
+		}
+	}
+	g.AutoOK = len(g.AutoFailures) == 0
+
+	byGroup := map[string][]RunResult{}
+	for _, r := range results {
+		byGroup[r.Group] = append(byGroup[r.Group], r)
+	}
+
+	allPass := true
+	for _, grp := range Groups() {
+		if grp.Name == "s15" {
+			continue
+		}
+		st := GroupStatus{Name: grp.Name, Total: grp.Total, MinPass: grp.MinPass}
+		for _, r := range byGroup[grp.Name] {
+			if r.Aborted != "" {
+				st.Aborted++
+				continue
+			}
+			v, judged := verdicts[r.RunID]
+			if !judged {
+				continue
+			}
+			if v {
+				st.Passed++
+			} else {
+				st.Failed++
+			}
+		}
+		unjudged := grp.Total - st.Passed - st.Failed
+		switch {
+		case st.Passed >= grp.MinPass:
+			st.Status = StatusPass
+		case st.Passed+unjudged < grp.MinPass:
+			st.Status = StatusFail
+		default:
+			st.Status = StatusPending
+		}
+		switch st.Status {
+		case StatusPending:
+			g.Pending++
+			allPass = false
+		case StatusFail:
+			g.Failed++
+			allPass = false
+		}
+		g.Groups = append(g.Groups, st)
+	}
+	g.Pass = g.AutoOK && allPass
+	return g
+}
+
+// LoadVerdicts reads a {"run id": true|false} file. A missing file means
+// nothing has been judged yet. A corrupt file is an error: silently treating
+// it as "no verdicts" would hide a typo, and silently treating it as passing
+// would be worse.
+func LoadVerdicts(path string) (map[string]bool, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return map[string]bool{}, nil
+		}
+		return nil, err
+	}
+	out := map[string]bool{}
+	if err := json.Unmarshal(b, &out); err != nil {
+		return nil, fmt.Errorf("verdicts file %s is not a {run id: bool} object: %w", path, err)
+	}
+	return out, nil
+}
