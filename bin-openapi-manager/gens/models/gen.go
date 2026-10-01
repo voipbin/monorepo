@@ -4058,10 +4058,10 @@ type AIManagerAIBuilderChatResponse struct {
 	// Draft The assistant configuration the builder proposes. It is not saved. The user reviews it and saves it through `POST /ais`.
 	Draft *AIManagerAIBuilderDraft `json:"draft,omitempty"`
 
-	// DraftWarnings Facts the server found about the draft, for example a tool that was removed because it is not allowed here.
+	// DraftWarnings Facts the server found about the draft. Each entry starts with a fixed key, optionally followed by `: ` and a detail, so a client may key on the part before `: `. The keys are `draft_discarded`, `tool_names_invalid`, `tool_removed`, `tools_section_removed`, `forbidden_tool_mentioned`, `init_prompt_truncated`, `name_truncated` and `detail_truncated`. For example `tool_removed: create_call` says a tool that is not allowed here was removed.
 	//
 	//
-	// Example: ["Removed tool create_call: not allowed in a drafted assistant."]
+	// Example: ["tool_removed: create_call"]
 	DraftWarnings *[]string `json:"draft_warnings,omitempty"`
 
 	// Message The builder's next message to show the user. Plain text.

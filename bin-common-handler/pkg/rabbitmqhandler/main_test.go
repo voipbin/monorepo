@@ -1892,10 +1892,10 @@ func Test_executeConsumeRPC_errorsCarryNoBody(t *testing.T) {
 		{
 			name: "the request does not parse",
 			conn: newMockConnection,
-			// Truncated JSON: encoding/json's syntax error names the byte it
-			// stopped at, and the unexpected-end error can echo more. Both err and
-			// the body must stay out of the text, so the secret is placed right at
-			// the point of failure.
+			// Truncated JSON: encoding/json reports only "unexpected end of JSON
+			// input" and quotes nothing, so the secret check below would pass for
+			// any implementation. What this case really pins is the "err:" check:
+			// the parse error must not be appended to the text at all.
 			msg: amqp.Delivery{Body: []byte(`{"uri":"` + secret + `","method":`), ReplyTo: "r"},
 			cb:  func(*sock.Request) (*sock.Response, error) { return nil, nil },
 		},

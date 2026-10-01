@@ -106,8 +106,9 @@ func Test_PostAiBuilderChat_success(t *testing.T) {
 
 // Who may call is decided in the service handler (the one place both server
 // and tests exercise); the server only refuses a caller that is not an Agent
-// before reading the body at all.
-func Test_PostAiBuilderChat_nonAgentIsRefusedBeforeTheBodyIsRead(t *testing.T) {
+// with 403 and never reaches the service. (That the refusal comes before the
+// body is read is by the order of the code; this test does not prove it.)
+func Test_PostAiBuilderChat_nonAgentIsRefusedWith403AndNeverReachesTheService(t *testing.T) {
 	mc := gomock.NewController(t)
 	mockSvc := servicehandler.NewMockServiceHandler(mc) // strict: no service call
 	for name, id := range map[string]*auth.AuthIdentity{
@@ -135,9 +136,10 @@ func Test_PostAiBuilderChat_noIdentityIs401(t *testing.T) {
 
 func Test_PostAiBuilderChat_badJSONIs400AndEchoesNothing(t *testing.T) {
 	var buf strings.Builder
+	origOut, origLevel := logrus.StandardLogger().Out, logrus.GetLevel()
 	logrus.SetOutput(&buf)
 	logrus.SetLevel(logrus.TraceLevel)
-	defer logrus.SetOutput(logrus.StandardLogger().Out)
+	defer func() { logrus.SetOutput(origOut); logrus.SetLevel(origLevel) }()
 
 	mc := gomock.NewController(t)
 	mockSvc := servicehandler.NewMockServiceHandler(mc)
@@ -247,9 +249,10 @@ func Test_PostAiBuilderChat_errorMapping(t *testing.T) {
 // Nothing the customer wrote reaches a log line, whatever fails below.
 func Test_PostAiBuilderChat_neverLogsTheInput(t *testing.T) {
 	var buf strings.Builder
+	origOut, origLevel := logrus.StandardLogger().Out, logrus.GetLevel()
 	logrus.SetOutput(&buf)
 	logrus.SetLevel(logrus.TraceLevel)
-	defer logrus.SetOutput(logrus.StandardLogger().Out)
+	defer func() { logrus.SetOutput(origOut); logrus.SetLevel(origLevel) }()
 
 	for name, svcErr := range map[string]error{
 		"success":          nil,
@@ -370,9 +373,10 @@ func Test_PostAiBuilderChat_passesTheWholeRequestOn(t *testing.T) {
 // pinned instead.
 func Test_PostAiBuilderChat_parseFailureLogCarriesNoUnderlyingError(t *testing.T) {
 	var buf strings.Builder
+	origOut, origLevel := logrus.StandardLogger().Out, logrus.GetLevel()
 	logrus.SetOutput(&buf)
 	logrus.SetLevel(logrus.TraceLevel)
-	defer logrus.SetOutput(logrus.StandardLogger().Out)
+	defer func() { logrus.SetOutput(origOut); logrus.SetLevel(origLevel) }()
 
 	mc := gomock.NewController(t)
 	mockSvc := servicehandler.NewMockServiceHandler(mc)

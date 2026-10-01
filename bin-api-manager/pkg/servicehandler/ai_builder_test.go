@@ -214,9 +214,10 @@ func Test_AIBuilderChat_typedErrorPassesThrough(t *testing.T) {
 // Logs carry the agent, the customer and a message count, never the input.
 func Test_AIBuilderChat_neverLogsTheInput(t *testing.T) {
 	var buf strings.Builder
+	origOut, origLevel := logrus.StandardLogger().Out, logrus.GetLevel()
 	logrus.SetOutput(&buf)
 	logrus.SetLevel(logrus.TraceLevel)
-	defer logrus.SetOutput(logrus.StandardLogger().Out)
+	defer func() { logrus.SetOutput(origOut); logrus.SetLevel(origLevel) }()
 
 	for name, rpcErr := range map[string]error{
 		"ok":        nil,
@@ -335,8 +336,8 @@ func Test_AIBuilderStatus_failureWindowIsShorterThanSuccess(t *testing.T) {
 	}
 }
 
-// Many callers on an expired cache cause ONE RPC, and none of them holds the
-// lock while it runs.
+// Many callers on an expired cache cause ONE RPC. (The test pins the count
+// only; that no caller holds a lock while the RPC runs is by construction.)
 func Test_AIBuilderStatus_concurrentExpiryMakesOneRPC(t *testing.T) {
 	h, mockReq := newBuilderServiceHandler(t)
 	a := builderAgent(amagent.PermissionCustomerAdmin, builderCustomer)

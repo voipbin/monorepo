@@ -68,7 +68,7 @@ const pairFirstMessage = "예약 접수 봇을 만들고 싶어요"
 
 // Scenarios returns the scripted scenarios of design 2.5, in plan order. The
 // domains (reservation, dental, restaurant, customer support, delivery notice,
-// survey, pharmacy stock) deliberately differ from the two few-shot examples in
+// survey, pharmacy stock, among others such as a salon, insurance, a school) deliberately differ from the two few-shot examples in
 // the system prompt.
 func Scenarios() []Scenario {
 	coop := "친절하고 협조적이다. 질문에 구체적으로 답한다."

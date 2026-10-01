@@ -21,7 +21,7 @@ Both runs used 36 simulated runs plus 5 synthetic cases, a builder `gemini-3.8-f
 | | Run 1 | Run 2 |
 |---|---|---|
 | Output folder | `builder-eval-1` | `builder-eval-2` |
-| Prompt | revision 1 (commit `776efb063`) | revision 2 (commit `01f794f37`; `prompt.go` has not changed since, so this is the shipped prompt) |
+| Prompt | revision 1 (commit `776efb063`) | revision 2 (commit `01f794f37`; the `SystemPrompt` constant in `prompt.go` has not changed since, only comments around it, so this is the shipped prompt) |
 | Builder calls (average per run) | 138 (3.8) | 166 (4.6) |
 | Parse failures | 0 | 0 |
 | Aborted | 0 | 0 |
@@ -43,7 +43,7 @@ None of this was fixed in this PR, on purpose: fixing it by reading these transc
 
 ## Where the run folders are
 
-`~/.hermes/eval-runs/builder-eval-1/report.md` (run 1) was written before any verdict existed and still says `Judge: NOT RECORDED` and `NOT DECIDED`. The two AI verdict files are in `~/.hermes/eval-runs/ai-judge/`, kept apart on purpose. Do not read the run folder's report as a result; read the counts above and the verdict files.
+`~/.hermes/eval-runs/builder-eval-1/report.md` (run 1) and `builder-eval-2/report.md` (run 2) were written before any verdict existed and still say `Judge: NOT RECORDED` and `NOT DECIDED`. The two AI verdict files are in `~/.hermes/eval-runs/ai-judge/`, kept apart on purpose. Do not read the run folder's report as a result; read the counts above and the verdict files.
 
 ## Run it
 

@@ -219,9 +219,10 @@ func Test_processBuilder_wrongMethodIs400(t *testing.T) {
 // carry the input), and no crash of the RPC worker.
 func Test_processBuilder_panicBecomesA500WithoutTheInput(t *testing.T) {
 	var buf bytes.Buffer
+	origOut, origLevel := logrus.StandardLogger().Out, logrus.GetLevel()
 	logrus.SetOutput(&buf)
 	logrus.SetLevel(logrus.TraceLevel)
-	defer logrus.SetOutput(logrus.StandardLogger().Out)
+	defer func() { logrus.SetOutput(origOut); logrus.SetLevel(origLevel) }()
 
 	h, bh := newBuilderListenHandler(t)
 	bh.EXPECT().Chat(gomock.Any(), builderCustomerID, gomock.Any()).DoAndReturn(
@@ -248,9 +249,10 @@ func Test_processBuilder_panicBecomesA500WithoutTheInput(t *testing.T) {
 // puts the whole request into a field.
 func Test_processBuilder_neverLogsTheInput(t *testing.T) {
 	var buf bytes.Buffer
+	origOut, origLevel := logrus.StandardLogger().Out, logrus.GetLevel()
 	logrus.SetOutput(&buf)
 	logrus.SetLevel(logrus.TraceLevel)
-	defer logrus.SetOutput(logrus.StandardLogger().Out)
+	defer func() { logrus.SetOutput(origOut); logrus.SetLevel(origLevel) }()
 
 	run := func(name string, req *sock.Request, setup func(bh *builderhandler.MockBuilderHandler)) {
 		t.Run(name, func(t *testing.T) {

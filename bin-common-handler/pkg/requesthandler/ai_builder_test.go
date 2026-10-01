@@ -142,7 +142,7 @@ func Test_AIV1BuilderStatus_garbageBody(t *testing.T) {
 	}
 }
 
-// Nothing the customer wrote may be an error string: a marshal failure, say,
+// Nothing the customer wrote may be an error string: a failure to parse the reply, say,
 // must not quote the draft.
 func Test_AIV1BuilderChat_errorTextHasNoInput(t *testing.T) {
 	const secret = "SECRET-INPUT-STRING-do-not-log"

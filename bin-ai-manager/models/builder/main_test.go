@@ -46,7 +46,8 @@ func Test_ValidateRequest_ok(t *testing.T) {
 		req  *ChatRequest
 	}{
 		{"single user", &ChatRequest{Messages: msgs(1, "hello")}},
-		{"40 messages ending in user", &ChatRequest{Messages: msgs(39, "a")}},
+		{"39 messages ending in user", &ChatRequest{Messages: msgs(39, "a")}},
+		{"40 messages ending in user", &ChatRequest{Messages: append(msgs(39, "a"), Message{Role: RoleUser, Content: "a"})}},
 		{"2000 runes exactly", &ChatRequest{Messages: []Message{{Role: RoleUser, Content: repeat("가", 2000)}}}},
 		{"draft at limits", &ChatRequest{
 			Messages: msgs(1, "hi"),

@@ -433,9 +433,10 @@ func Test_Status(t *testing.T) {
 // when the engine's own error echoes the prompt back.
 func Test_Chat_neverLogsOrReturnsTheUsersInput(t *testing.T) {
 	var buf bytes.Buffer
+	origOut, origLevel := logrus.StandardLogger().Out, logrus.GetLevel()
 	logrus.SetOutput(&buf)
 	logrus.SetLevel(logrus.TraceLevel)
-	defer logrus.SetOutput(logrus.StandardLogger().Out)
+	defer func() { logrus.SetOutput(origOut); logrus.SetLevel(origLevel) }()
 
 	req := &builder.ChatRequest{
 		Messages:     []builder.Message{{Role: builder.RoleUser, Content: secret}},
