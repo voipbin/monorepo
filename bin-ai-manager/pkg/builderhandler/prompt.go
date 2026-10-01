@@ -17,11 +17,11 @@ package builderhandler
 // thing the user called essential with its own assumption, and put values the
 // user never gave into the draft (new rule 7).
 //
-// Two sentences were added after a pre-evaluation author-read trial (three s2b
-// conversations, not evaluation run 1) and
-// are hypotheses, not findings: the last two sentences of rule 6 (keep the user's own
-// values) and the flow-behaviour sentence after the tool catalog. Their effect
-// is unknown until the evaluation runs.
+// Three sentences were added after a pre-evaluation author-read trial (three s2b
+// conversations, not evaluation run 1). They are hypotheses, not findings: the
+// last two sentences of rule 6 (keep the user's own values; keep your suggestion
+// out of the draft) and the flow-behaviour sentence after the tool catalog.
+// Their effect is unknown until the evaluation runs.
 //
 // Design rules this text implements (design doc sections 2.2, 2.3, 2.4, 2.6):
 //   - the code supplies "what to learn" and "how a good interviewer behaves";
