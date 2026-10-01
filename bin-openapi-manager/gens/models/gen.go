@@ -4087,7 +4087,7 @@ type AIManagerAIBuilderDraft struct {
 	// Example: Clinic front desk
 	Name string `json:"name"`
 
-	// ToolNames Tools the assistant may use. Only `connect_call`, `stop_service`, `send_email`, `send_message`, `set_variables` and `case_create` can appear here.
+	// ToolNames Tools the assistant may use. In a response only `connect_call`, `stop_service`, `send_email`, `send_message`, `set_variables` and `case_create` can appear. In a request at most 6 entries are accepted.
 	//
 	//
 	// Example: ["connect_call","stop_service"]

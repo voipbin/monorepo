@@ -37,8 +37,8 @@ func isBuilderRoute(m *sock.Request) bool {
 //   - m and m.Data are never put in any log or error text here;
 //   - EVERY failure, including a body that does not unmarshal, is converted with
 //     errorResponse and returned as (response, nil). Returning the error would
-//     send it through processRequest's tail, which logs it and flattens it to a
-//     bare 400, losing the reason the client acts on;
+//     reach the queue consumer (consume.go), which logs err and publishes a
+//     bare 500, losing the reason the client acts on;
 //   - a panic becomes a bare 500 with no body: the panic value can carry the
 //     input.
 //

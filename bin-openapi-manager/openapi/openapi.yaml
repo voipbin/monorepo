@@ -3690,8 +3690,9 @@ components:
           items:
             $ref: '#/components/schemas/AIManagerToolName'
           description: >
-            Tools the assistant may use. Only `connect_call`, `stop_service`, `send_email`,
-            `send_message`, `set_variables` and `case_create` can appear here.
+            Tools the assistant may use. In a response only `connect_call`, `stop_service`,
+            `send_email`, `send_message`, `set_variables` and `case_create` can appear. In a
+            request at most 6 entries are accepted.
           example: ["connect_call", "stop_service"]
 
     AIManagerAIBuilderChatRequest:
@@ -3711,8 +3712,9 @@ components:
         current_draft:
           $ref: '#/components/schemas/AIManagerAIBuilderDraft'
           description: >
-            The draft currently in the form, if any, including edits the user made by hand. Omit
-            it for a first turn.
+            The `draft` the server returned in the previous turn, if any. Edits the user made to
+            the form by hand are not sent back and the builder does not see them. At most 6 tool
+            names. Omit it for a first turn.
 
     AIManagerAIBuilderChatResponse:
       type: object

@@ -16,9 +16,10 @@ import (
 // takes).
 //
 // Chat waits 55 seconds. ai-manager's own LLM deadline is 40 seconds, so a slow
-// but normal answer is not cut off here first; 55 is also the bound ai-manager's
-// configuration validation enforces for that deadline. Status is a plain read
-// and fails fast.
+// but normal answer is not cut off here first. ai-manager's configuration
+// validation keeps that deadline at 50 seconds or less, which is these 55 minus
+// 5 seconds of headroom for queueing and parsing. Status is a plain read and
+// fails fast.
 const (
 	builderChatTimeout   = 55000
 	builderStatusTimeout = 3000

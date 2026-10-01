@@ -13,9 +13,9 @@ import (
 //
 // The Builder reuses the analysis engine (same base URL, same key), so the key
 // is "configured" only when that engine has one: the Google key when the base
-// URL is Gemini, the OpenAI key otherwise. This is the same selection the
-// analysis engine makes in run(); keeping it in one place means the two cannot
-// disagree about whether a key exists.
+// URL is Gemini, the OpenAI key otherwise. This is the same rule as the
+// analysisKey selection in run(), written a second time here, so a change to
+// one must be made in the other.
 //
 // HARD CONSTRAINT H1: the platform key is read here and handed to the engine,
 // nothing else. It is never written to a customer's AI row.

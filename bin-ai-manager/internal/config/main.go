@@ -111,7 +111,7 @@ type Config struct {
 	AIBuilderMaxOutputTokens   int    // AIBuilderMaxOutputTokens caps one reply's output tokens.
 	AIBuilderDailyLimit        int    // AIBuilderDailyLimit is the per-customer daily limit of Builder turns.
 	AIBuilderMaxConcurrent     int    // AIBuilderMaxConcurrent is the per-process cap of Builder calls running at once.
-	AIBuilderLLMTimeoutSeconds int    // AIBuilderLLMTimeoutSeconds is the deadline of one LLM call. It must stay below the 55 second RPC timeout api-manager waits with.
+	AIBuilderLLMTimeoutSeconds int    // AIBuilderLLMTimeoutSeconds is the deadline of one LLM call. It must be at most 50: api-manager waits 55 seconds and 5 are kept for queueing and parsing.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -178,7 +178,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("ai_builder_max_output_tokens", 4096, "Max output tokens of one Assistant Builder reply. Not measured yet")
 	f.Int("ai_builder_daily_limit", 200, "Per-customer daily limit of Assistant Builder turns")
 	f.Int("ai_builder_max_concurrent", 3, "Per-process cap of Assistant Builder calls running at once. Not measured yet")
-	f.Int("ai_builder_llm_timeout_seconds", 40, "Deadline (seconds) of one Assistant Builder LLM call; must stay below the 55 second RPC timeout. Not measured yet")
+	f.Int("ai_builder_llm_timeout_seconds", 40, "Deadline (seconds) of one Assistant Builder LLM call; must be at most 50 (the 55 second RPC wait minus 5 seconds of headroom). Not measured yet")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
