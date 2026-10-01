@@ -82,7 +82,7 @@ Latency, the real `max_tokens` and the semaphore size were not measured in run 1
 ## Carried over (decided in code review, not done in this PR)
 
 - When the evaluation variants (the signal-table prompt, the JSON-mode and data-block switches, the failure-point-list variant) are deleted: after the first real comparison run, delete every variant that was not used, in the same PR as that run's report.
-- `Config.LLMTimeout` of zero or less means no deadline in `RunTurn`. The server wiring must reject such a value when it reads the setting, because the 40 second limit protects the circuit breaker (design 4.3).
+- `Config.LLMTimeout` of zero or less means no deadline in `RunTurn`. The server configuration validation (`validateBuilderConfig`) rejects such a value at startup, because the 40 second limit protects the circuit breaker (design 4.3); `RunTurn` itself still treats zero as no deadline.
 - Known interaction in the prompt, to be watched in the next run: a fork on an item the user called essential that is closed by the three-turn limit (rule 3) must still go into the draft as a requirement and into assumptions (rule 7). Check it with s4-A1 and s7. Rule 3 is also long and may be split into items in the next revision.
 
 - Not measured yet: latency, the real `max_tokens`, the semaphore size, and the Gemini response-format compatibility beyond the 138 calls of run 1 and the 166 of run 2, with 0 parse failures. Before deploying where the key is set (there is no on/off setting, so deploying is the release) the design's section 7 items must also be settled (load balancer and ingress timeouts, the Loki log source, a per-minute rate limit).

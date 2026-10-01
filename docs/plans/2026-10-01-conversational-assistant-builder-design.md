@@ -213,7 +213,7 @@ square-admin의 AI 생성 화면은 하드코딩된 템플릿 8개(`square-admin
 
 - **켜기와 끄기용 설정은 두지 않는다(대표님 지시, 2026-10-02).** 키가 있으면 사용 가능하다. **`GET /ai_builder/status`는 api-manager가 ai-manager의 전용 RPC `AIV1BuilderStatus`를 호출해 `available = 키 있음`을 돌려준다**(api-manager가 설정을 따로 가지지 않는다). **status는 api-manager의 프로세스 로컬 캐시(전역 값이라 레플리카별로 충분하며 api-manager `cachehandler`에는 범용 get/set이 없다)에 성공 결과 30초, 실패 결과 5초로 보관하고, `IsAgent`와 권한 검사는 캐시 앞에서 한다. status RPC timeout은 3~5초로 명시하며 어떤 오류에서도 `available=false`로 응답한다**(카드를 숨김). status 요청은 세마포어 대상이 아니며 모달을 열 때마다가 아니라 캐시 단위로만 워커를 쓴다. 키가 없으면 `available=false`이므로 카드가 숨겨진다.
 - `ai_builder_model`(기본은 analysis 기본 모델), `ai_builder_reasoning_effort`(기본 `none`, 2.5의 비교로 확정), 4.3의 상한값들.
-- 키는 analysis 엔진이 쓰는 키다(F4). 비어 있으면 호출이 동기 오류(`BUILDER_UNAVAILABLE`)로 즉시 돌아와 화면에 표시된다. 기동 시 키가 비어 있으면, 또는 `ai_builder_model`이 base URL의 제공자와 맞지 않아 보이면(OpenAI 롤백 경로에서 Gemini 모델명 등) 경고 로그를 남긴다(`main.go` 수정, 7절). Builder는 `analysishandler`를 거치지 않고 엔진만 공유하므로 analysis의 모델 allow-set과 무관하다.
+- 키는 analysis 엔진이 쓰는 키다(F4). 비어 있으면 호출이 동기 오류(`BUILDER_UNAVAILABLE`)로 즉시 돌아와 화면에 표시된다. 기동 시 키가 비어 있으면 정보 로그(info) 한 줄을, 키가 있는데 `ai_builder_model`이 base URL의 제공자와 맞지 않아 보이면(OpenAI 롤백 경로에서 Gemini 모델명 등) 경고 로그(warn)를 남긴다(`main.go` 수정, 7절). Builder는 `analysishandler`를 거치지 않고 엔진만 공유하므로 analysis의 모델 allow-set과 무관하다.
 - `GET /ai_builder/status`: `{available, max_messages, max_message_chars}`. 에이전트 로그인이 아니거나 권한이 없거나 키가 없으면 `available=false`(카드 숨김). status도 `!a.IsAgent()` 규칙(F7)을 따른다.
 
 ### 4.7 오류 코드
@@ -236,7 +236,7 @@ reason 코드로 분기하고 문자열 매칭을 하지 않는다. 상태는 F1
 
 ### 4.8 계측
 
-Prometheus: 요청 수(결과별: ok, daily_limit, busy, unavailable, invalid_response, llm_error), 지연 히스토그램, `prompt_tokens`와 `output_tokens` 합계(F12). 본문과 customer id는 라벨에 넣지 않는다. (Builder 라우트는 `processRequest` 앞 분기라 기존 `promReceivedRequestProcessTime`을 건너뛰므로 위 지연 히스토그램이 이를 대신한다.) 도구 제거 수와 경고 수는 이번 범위에서 계측하지 않는다.
+Prometheus: 요청 수(결과별: ok, daily_limit, busy, unavailable, invalid_response, llm_error, invalid_argument, internal), 지연 히스토그램, `builder_tokens_total{kind="prompt"|"completion"}` 합계(F12. 구현에서 결과 라벨 2종과 `kind` 라벨 이름이 설계와 달라졌고 운영 문서가 구현을 따른다). 본문과 customer id는 라벨에 넣지 않는다. (Builder 라우트는 `processRequest` 앞 분기라 기존 `promReceivedRequestProcessTime`을 건너뛰므로 위 지연 히스토그램이 이를 대신한다.) 도구 제거 수와 경고 수는 이번 범위에서 계측하지 않는다.
 
 ## 5. 프런트 (square-admin, 별도 PR)
 
