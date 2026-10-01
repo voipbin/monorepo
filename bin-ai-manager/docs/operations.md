@@ -48,6 +48,13 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `aicall_listen_conversation_flush_jitter_ms` | `AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS` | Upper bound of the random jitter added to the deferred flush delay (`aicall_listen_evaluate_interval_seconds` + jitter). Default `1000` | no |
 | `mcp_tool_call_timeout_seconds` | `MCP_TOOL_CALL_TIMEOUT_SECONDS` | Bounds one whole MCP `tools/list` or `tools/call` (handshake, method, one re-initialisation). Also bounds the whole MCP tool dispatch path. Session-start discovery across all of an AI's servers is separately capped at 2s aggregate (`mcpSessionStartDiscoveryBudget`, a package constant). Default `10` | no |
 | `mcp_tool_exposure_enabled` | `MCP_TOOL_EXPOSURE_ENABLED` | Global rollback switch for advertising MCP tools to the LLM. `false` makes the `GET /v1/aicalls/<uuid>/tools/mcp` RPC return an empty list for every AIcall, exactly as if no AI had MCP tools; built-in tools are unaffected. Default `true` | no |
+| `ai_builder_enabled` | `AI_BUILDER_ENABLED` | Kill switch for the conversational Assistant Builder (VOIP-1558). **Default `false`**: every Builder call fails with `BUILDER_DISABLED` and `GET /v1/ai_builder/status` reports `available=false`. Not released, and not yet judged by a human; see `docs/builder-prompt-review-checklist.md` | no |
+| `ai_builder_model` | `AI_BUILDER_MODEL` | Model for the Builder, served through the analysis engine's base URL and key (so the key is `GOOGLE_API_KEY` when `analysis_engine_base_url` is Gemini, `ENGINE_KEY_CHATGPT` otherwise). Default `gemini-3.8-flash`. Not measured | no |
+| `ai_builder_reasoning_effort` | `AI_BUILDER_REASONING_EFFORT` | `reasoning_effort` sent to the provider; `none` turns Gemini thinking off, empty omits the field. Default `none`. Not measured | no |
+| `ai_builder_max_output_tokens` | `AI_BUILDER_MAX_OUTPUT_TOKENS` | Output token cap of one Builder reply. Default `4096`. Not measured | no |
+| `ai_builder_daily_limit` | `AI_BUILDER_DAILY_LIMIT` | Builder turns one customer may use in a 24 hour window that starts at the first turn (a fixed window, not a calendar day). A turn whose model answer was unusable still counts. Default `200` | no |
+| `ai_builder_max_concurrent` | `AI_BUILDER_MAX_CONCURRENT` | Builder calls running at once **per process**; with two replicas the platform-wide cap is twice this. A full process refuses at once with `BUILDER_BUSY`, and a refused call is not counted. Default `3`. Not measured | no |
+| `ai_builder_llm_timeout_seconds` | `AI_BUILDER_LLM_TIMEOUT_SECONDS` | Deadline of one Builder model call. Must be above 0 and **below 55**, the RPC wait api-manager uses; startup fails otherwise (checked only when the Builder is enabled). Default `40`. Not measured | no |
 
 **Two ordering invariants hold across the listen timing flags, and both are pinned as standing test assertions (`Test_ListenConfigDefaults`), not one-time default checks:**
 
@@ -98,6 +105,9 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `message_delivery_status_update_failed_total` | Counter | — | Delivery status update failures |
 | `summary_start_total` | Counter | — | Summary jobs started |
 | `summary_done_total` | Counter | — | Summary jobs completed |
+| `ai_manager_builder_chat_total` | Counter | `result` | Builder turns by result: `ok`, `invalid_argument`, `disabled`, `unavailable` (no key, or the counter is down), `busy`, `daily_limit`, `invalid_response` (truncated or unparseable answer), `llm_error`. The label is a fixed set; no conversation text or customer id is ever a label. `llm_error` includes a model call that exceeded `ai_builder_llm_timeout_seconds`, so it does not match api-manager's `api_manager_builder_timeout_total`, which is measured against the 55 second RPC wait |
+| `ai_manager_builder_chat_duration_seconds` | Histogram | - | Builder turn latency, from entering `Chat` to returning |
+| `ai_manager_builder_tokens_total` | Counter | `kind` | Model tokens the platform paid for, by `kind` (`prompt`, `completion`). Recorded even when the answer was unusable |
 | `receive_request_process_time` | Histogram | `type`, `method` | RPC request latency |
 | `subscribe_event_process_time` | Histogram | `publisher`, `type` | Event processing latency |
 | `connect` | Gauge | — | Active connections |

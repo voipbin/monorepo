@@ -219,3 +219,43 @@ func TestTranslateBareNotFoundWrapped(t *testing.T) {
 		t.Errorf("reason = %q want RESOURCE_NOT_FOUND", got.Reason)
 	}
 }
+
+// The assistant builder's reasons must reach the client unchanged. They arrive
+// as typed errors from ai-manager, and the translator's first rule passes a
+// typed error through; these tests pin that for every reason (design 4.7), and
+// that the two 429 reasons stay two reasons, because a client retries BUSY
+// soon and must not retry DAILY_LIMIT.
+func TestTranslateBuilderReasonsPassThroughUnchanged(t *testing.T) {
+	tests := []struct {
+		reason string
+		make   func(reason string) *cerrors.VoipbinError
+		status cerrors.Status
+	}{
+		{"BUILDER_DAILY_LIMIT", func(r string) *cerrors.VoipbinError { return cerrors.ResourceExhausted("ai-manager", r, "x") }, cerrors.StatusResourceExhausted},
+		{"BUILDER_BUSY", func(r string) *cerrors.VoipbinError { return cerrors.ResourceExhausted("ai-manager", r, "x") }, cerrors.StatusResourceExhausted},
+		{"BUILDER_DISABLED", func(r string) *cerrors.VoipbinError { return cerrors.Unavailable("ai-manager", r, "x") }, cerrors.StatusUnavailable},
+		{"BUILDER_UNAVAILABLE", func(r string) *cerrors.VoipbinError { return cerrors.Unavailable("ai-manager", r, "x") }, cerrors.StatusUnavailable},
+		{"BUILDER_TIMEOUT", func(r string) *cerrors.VoipbinError { return cerrors.Unavailable("ai-manager", r, "x") }, cerrors.StatusUnavailable},
+		{"BUILDER_RESPONSE_INVALID", func(r string) *cerrors.VoipbinError { return cerrors.Unavailable("ai-manager", r, "x") }, cerrors.StatusUnavailable},
+	}
+	for _, tt := range tests {
+		t.Run(tt.reason, func(t *testing.T) {
+			in := tt.make(tt.reason)
+			wrapped := pkgerrors.Wrapf(in, "could not run the builder")
+			out := translateToVoipbinError(wrapped)
+			if out.Reason != tt.reason || out.Status != tt.status {
+				t.Errorf("got %s/%s, want %s/%s", out.Status, out.Reason, tt.status, tt.reason)
+			}
+			if cerrors.HTTPStatusFor(out.Status) != cerrors.HTTPStatusFor(tt.status) {
+				t.Errorf("the HTTP status changed")
+			}
+		})
+	}
+
+	// The two 429 reasons differ, and neither is the generic rate limit reason.
+	a := translateToVoipbinError(cerrors.ResourceExhausted("ai-manager", "BUILDER_BUSY", "x"))
+	b := translateToVoipbinError(cerrors.ResourceExhausted("ai-manager", "BUILDER_DAILY_LIMIT", "x"))
+	if a.Reason == b.Reason || a.Reason == "RATE_LIMIT_EXCEEDED" || b.Reason == "RATE_LIMIT_EXCEEDED" {
+		t.Errorf("the 429 reasons must stay distinct: %s / %s", a.Reason, b.Reason)
+	}
+}
