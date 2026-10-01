@@ -19,7 +19,7 @@ const dailyWindow = 24 * time.Hour
 
 // Chat runs one Builder turn.
 //
-// ORDER (design 4.3): kill switch and key, ValidateRequest, semaphore,
+// ORDER (design 4.3): key, ValidateRequest, semaphore,
 // daily counter, model call. The order is what keeps a request that was never
 // processed from spending the customer's daily allowance:
 //
@@ -43,9 +43,6 @@ func (h *builderHandler) Chat(ctx context.Context, customerID uuid.UUID, req *bu
 	})
 	defer func() { promBuilderChatDuration.Observe(time.Since(start).Seconds()) }()
 
-	if !h.opts.Enabled {
-		return nil, h.fail(log, resultDisabled, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonDisabled, "the assistant builder is not enabled"))
-	}
 	if !h.opts.KeyConfigured {
 		return nil, h.fail(log, resultUnavailable, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the assistant builder is not available"))
 	}

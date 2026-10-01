@@ -38,7 +38,6 @@ func Test_builderSettings_mapsEverySetting(t *testing.T) {
 	cfg := config.Config{
 		AnalysisEngineBaseURL:      geminiURL,
 		GoogleAPIKey:               "g",
-		AIBuilderEnabled:           true,
 		AIBuilderModel:             "model-x",
 		AIBuilderReasoningEffort:   "low",
 		AIBuilderMaxOutputTokens:   1111,
@@ -54,19 +53,11 @@ func Test_builderSettings_mapsEverySetting(t *testing.T) {
 	if bc.LLMTimeout != 44*time.Second {
 		t.Errorf("LLMTimeout: got %v, want 44s (the value is in seconds)", bc.LLMTimeout)
 	}
-	if !opts.Enabled || opts.DailyLimit != 22 || opts.MaxConcurrent != 33 {
+	if opts.DailyLimit != 22 || opts.MaxConcurrent != 33 {
 		t.Errorf("options: %+v", opts)
 	}
 	if bc.SystemPrompt == "" {
 		t.Error("the production system prompt must be kept")
-	}
-}
-
-// The off-by-default promise: an untouched deploy gets a disabled Builder.
-func Test_builderSettings_disabledByDefault(t *testing.T) {
-	_, opts := builderSettings(&config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g"})
-	if opts.Enabled {
-		t.Error("the Builder must be off unless switched on")
 	}
 }
 
@@ -77,14 +68,13 @@ func Test_builderStartupWarnings(t *testing.T) {
 		cfg  config.Config
 		want int
 	}{
-		{"off: nothing, even when everything is wrong", config.Config{AnalysisEngineBaseURL: openaiURL, AIBuilderModel: "gemini-3.8-flash"}, 0},
-		{"on, key present, matching gemini", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gemini-3.8-flash"}, 0},
-		{"on, key present, matching openai", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gpt-5"}, 0},
-		{"on, no key", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gemini-3.8-flash"}, 1},
-		{"on, gemini model on an openai url (rollback)", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gemini-3.8-flash"}, 1},
-		{"on, openai model on a gemini url", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gpt-5"}, 1},
-		{"on, no key and a mismatch: both reported", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gpt-5"}, 2},
-		{"model prefix is case-insensitive", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "Gemini-3.8-Flash"}, 0},
+		{"key present, matching gemini", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gemini-3.8-flash"}, 0},
+		{"key present, matching openai", config.Config{AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gpt-5"}, 0},
+		{"no key", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gemini-3.8-flash"}, 1},
+		{"gemini model on an openai url (rollback)", config.Config{AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gemini-3.8-flash"}, 1},
+		{"openai model on a gemini url", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gpt-5"}, 1},
+		{"no key and a mismatch: both reported", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gpt-5"}, 2},
+		{"model prefix is case-insensitive", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "Gemini-3.8-Flash"}, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

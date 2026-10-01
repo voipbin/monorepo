@@ -105,7 +105,6 @@ type Config struct {
 	// Assistant Builder (docs/plans/2026-10-01-conversational-assistant-builder-design.md
 	// 4.6). OFF by default. The model, reasoning effort, token cap, concurrency
 	// and timeout are initial values that have not been measured.
-	AIBuilderEnabled           bool   // AIBuilderEnabled is the kill switch. False (default) makes every Builder call fail with BUILDER_DISABLED and status report available=false.
 	AIBuilderModel             string // AIBuilderModel is the model the Builder uses. It goes through the analysis engine's base URL and key.
 	AIBuilderReasoningEffort   string // AIBuilderReasoningEffort is sent as reasoning_effort ("none" disables Gemini thinking; empty omits the field).
 	AIBuilderMaxOutputTokens   int    // AIBuilderMaxOutputTokens caps one reply's output tokens.
@@ -172,7 +171,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("mcp_oauth_github_client_secret", "", "GitHub OAuth App client_secret for MCP server OAuth")
 	f.String("mcp_oauth_linear_client_id", "", "Linear OAuth application client_id for MCP server OAuth")
 	f.String("mcp_oauth_linear_client_secret", "", "Linear OAuth application client_secret for MCP server OAuth")
-	f.Bool("ai_builder_enabled", false, "Kill switch for the Assistant Builder; false (default) disables it")
 	f.String("ai_builder_model", "gemini-3.8-flash", "Model for the Assistant Builder (served through the analysis engine's base URL and key)")
 	f.String("ai_builder_reasoning_effort", "none", "reasoning_effort for the Assistant Builder (none disables Gemini thinking; empty omits the field). Not measured yet")
 	f.Int("ai_builder_max_output_tokens", 4096, "Max output tokens of one Assistant Builder reply. Not measured yet")
@@ -230,7 +228,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"mcp_oauth_linear_client_id":     "MCP_OAUTH_LINEAR_CLIENT_ID",
 		"mcp_oauth_linear_client_secret": "MCP_OAUTH_LINEAR_CLIENT_SECRET",
 
-		"ai_builder_enabled":             "AI_BUILDER_ENABLED",
 		"ai_builder_model":               "AI_BUILDER_MODEL",
 		"ai_builder_reasoning_effort":    "AI_BUILDER_REASONING_EFFORT",
 		"ai_builder_max_output_tokens":   "AI_BUILDER_MAX_OUTPUT_TOKENS",
@@ -316,7 +313,6 @@ func LoadGlobalConfig() {
 			McpOAuthLinearClientID:     viper.GetString("mcp_oauth_linear_client_id"),
 			McpOAuthLinearClientSecret: viper.GetString("mcp_oauth_linear_client_secret"),
 
-			AIBuilderEnabled:           viper.GetBool("ai_builder_enabled"),
 			AIBuilderModel:             viper.GetString("ai_builder_model"),
 			AIBuilderReasoningEffort:   viper.GetString("ai_builder_reasoning_effort"),
 			AIBuilderMaxOutputTokens:   viper.GetInt("ai_builder_max_output_tokens"),
@@ -394,18 +390,13 @@ const builderRPCTimeoutSeconds = 55
 const builderRPCHeadroomSeconds = 5
 
 // validateBuilderConfig refuses a Builder value that would make it misbehave.
-// It runs only when the Builder is enabled: a deploy that never turned the
-// feature on must not fail to start because of a setting it never set.
+// The defaults are valid, so only a value someone set wrongly can fail it.
 //
 // A zero or negative LLM timeout is the one that matters most. builderhandler's
 // RunTurn applies a deadline only when the value is positive, so zero means the
 // call has no deadline at all, and a stuck provider would hold a shared RPC
 // worker and feed the queue's circuit breaker (design 4.3).
 func validateBuilderConfig() error {
-	if !globalConfig.AIBuilderEnabled {
-		return nil
-	}
-
 	invalid := []string{}
 	positives := []struct {
 		name  string

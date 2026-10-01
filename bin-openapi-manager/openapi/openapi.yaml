@@ -3756,7 +3756,7 @@ components:
       properties:
         available:
           type: boolean
-          description: True when the builder is switched on and can run.
+          description: True when the builder can run (the key it needs is configured).
           example: true
         max_messages:
           type: integer

@@ -48,7 +48,6 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `aicall_listen_conversation_flush_jitter_ms` | `AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS` | Upper bound of the random jitter added to the deferred flush delay (`aicall_listen_evaluate_interval_seconds` + jitter). Default `1000` | no |
 | `mcp_tool_call_timeout_seconds` | `MCP_TOOL_CALL_TIMEOUT_SECONDS` | Bounds one whole MCP `tools/list` or `tools/call` (handshake, method, one re-initialisation). Also bounds the whole MCP tool dispatch path. Session-start discovery across all of an AI's servers is separately capped at 2s aggregate (`mcpSessionStartDiscoveryBudget`, a package constant). Default `10` | no |
 | `mcp_tool_exposure_enabled` | `MCP_TOOL_EXPOSURE_ENABLED` | Global rollback switch for advertising MCP tools to the LLM. `false` makes the `GET /v1/aicalls/<uuid>/tools/mcp` RPC return an empty list for every AIcall, exactly as if no AI had MCP tools; built-in tools are unaffected. Default `true` | no |
-| `ai_builder_enabled` | `AI_BUILDER_ENABLED` | Kill switch for the conversational Assistant Builder (VOIP-1558). **Default `false`**: every Builder call fails with `BUILDER_DISABLED` and `GET /v1/ai_builder/status` reports `available=false`. Not released, and not yet judged by a human; see `docs/builder-prompt-review-checklist.md` | no |
 | `ai_builder_model` | `AI_BUILDER_MODEL` | Model for the Builder, served through the analysis engine's base URL and key (so the key is `GOOGLE_API_KEY` when `analysis_engine_base_url` is Gemini, `ENGINE_KEY_CHATGPT` otherwise). Default `gemini-3.8-flash`. Not measured. At startup, with the Builder on, a warning is logged when this name's prefix (`gemini` or not) does not agree with `analysis_engine_base_url` (a base URL containing `generativelanguage` is taken as Gemini); a Gemini-compatible proxy on another URL triggers it too, and it is only a warning | no |
 | `ai_builder_reasoning_effort` | `AI_BUILDER_REASONING_EFFORT` | `reasoning_effort` sent to the provider; `none` turns Gemini thinking off, empty omits the field. Default `none`. Not measured | no |
 | `ai_builder_max_output_tokens` | `AI_BUILDER_MAX_OUTPUT_TOKENS` | Output token cap of one Builder reply. Default `4096`. Not measured | no |
@@ -75,9 +74,9 @@ Engine-specific API keys (Dialogflow service account, Grok, Anthropic, etc.) fol
 
 **Note:** Gemini audit evaluation uses `GOOGLE_API_KEY` (a `AIza...` Google API key), not `ENGINE_KEY_CHATGPT`. The audit model is `gemini-2.5-flash`.
 
-## Assistant Builder: before you switch it on
+## Assistant Builder: before you rely on it
 
-The Builder is off until `AI_BUILDER_ENABLED=true` is set **on ai-manager** and ai-manager is restarted; api-manager has no switch of its own and follows ai-manager's status. It is not released and **no evaluation run has been judged by a human** (see `pkg/builderhandler/eval/README.md`, "Runs side by side"). Settle these first:
+There is no on/off setting. The Builder is available as soon as ai-manager has the key of the analysis engine (`GOOGLE_API_KEY` for a Gemini base URL, `ENGINE_KEY_CHATGPT` otherwise); without it the status route reports `available=false` and chat answers `BUILDER_UNAVAILABLE`. It is not released and **no evaluation run has been judged by a human** (see `pkg/builderhandler/eval/README.md`, "Runs side by side"). Settle these first:
 - the notice and terms for sending a customer's text to an external model (design section 11), and whether the hosted service may use it at all;
 - a platform-wide daily cap (only a per-customer cap exists), and a per-minute limit (none exists; the per-customer limit of about 16.7 requests per second with a burst of 33, and the per-IP limit of 200 requests per second, apply to every route);
 - load balancer and ingress timeouts of at least 65 seconds, and that the log pipeline collects the ai-manager and api-manager logs (neither was confirmed from this repository);

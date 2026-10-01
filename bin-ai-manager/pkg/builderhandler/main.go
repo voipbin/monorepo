@@ -26,10 +26,8 @@ type BuilderHandler interface {
 }
 
 // Options are the operational settings of the handler. Config (turn.go) is the
-// per-turn model behaviour; Options is what surrounds a turn: the kill switch,
-// the key, the daily limit and the concurrency cap.
+// per-turn model behaviour; Options is what surrounds a turn: the key, the daily limit and the concurrency cap.
 type Options struct {
-	Enabled       bool // kill switch; false makes Chat fail with BUILDER_DISABLED
 	KeyConfigured bool // false makes Chat fail with BUILDER_UNAVAILABLE and Status report available=false
 	DailyLimit    int  // per-customer turns per 24 hour window
 	MaxConcurrent int  // per-process cap of calls running at once
@@ -95,7 +93,6 @@ const (
 	resultOK              = "ok"
 	resultDailyLimit      = "daily_limit"
 	resultBusy            = "busy"
-	resultDisabled        = "disabled"
 	resultUnavailable     = "unavailable"
 	resultInvalidResponse = "invalid_response"
 	resultLLMError        = "llm_error"

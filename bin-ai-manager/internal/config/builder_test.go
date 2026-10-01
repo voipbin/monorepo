@@ -9,8 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// The Assistant Builder is off by default. A deploy that never mentions it must
-// behave exactly as before this feature existed.
+// A deploy that never mentions the Assistant Builder gets these defaults.
 func Test_BuilderConfigDefaults(t *testing.T) {
 	viper.Reset()
 	cmd := &cobra.Command{}
@@ -22,7 +21,6 @@ func Test_BuilderConfigDefaults(t *testing.T) {
 		key    string
 		expect interface{}
 	}{
-		{"ai_builder_enabled", false},
 		{"ai_builder_model", "gemini-3.8-flash"},
 		{"ai_builder_reasoning_effort", "none"},
 		{"ai_builder_max_output_tokens", 4096},
@@ -57,7 +55,6 @@ func Test_BuilderConfigEnvBindings(t *testing.T) {
 		t.Fatalf("bind failed: %v", err)
 	}
 
-	t.Setenv("AI_BUILDER_ENABLED", "true")
 	t.Setenv("AI_BUILDER_MODEL", "some-other-model")
 	t.Setenv("AI_BUILDER_REASONING_EFFORT", "low")
 	t.Setenv("AI_BUILDER_MAX_OUTPUT_TOKENS", "1234")
@@ -65,9 +62,6 @@ func Test_BuilderConfigEnvBindings(t *testing.T) {
 	t.Setenv("AI_BUILDER_MAX_CONCURRENT", "7")
 	t.Setenv("AI_BUILDER_LLM_TIMEOUT_SECONDS", "21")
 
-	if !viper.GetBool("ai_builder_enabled") {
-		t.Error("AI_BUILDER_ENABLED not bound")
-	}
 	if viper.GetString("ai_builder_model") != "some-other-model" {
 		t.Error("AI_BUILDER_MODEL not bound")
 	}
@@ -88,13 +82,11 @@ func Test_BuilderConfigEnvBindings(t *testing.T) {
 	}
 }
 
-// Validate must refuse a value that would make the Builder misbehave, and it
-// must not look at the Builder values at all while the feature is off, so an
-// untouched deploy can never fail to start because of a setting it never set.
+// Validate must refuse a value that would make the Builder misbehave. The
+// shipped defaults pass, so an untouched deploy still starts.
 func Test_Validate_Builder(t *testing.T) {
 	good := func() {
 		SetListenDefaultsForTest()
-		globalConfig.AIBuilderEnabled = true
 		globalConfig.AIBuilderModel = "gemini-3.8-flash"
 		globalConfig.AIBuilderReasoningEffort = "none"
 		globalConfig.AIBuilderMaxOutputTokens = 4096
@@ -109,7 +101,7 @@ func Test_Validate_Builder(t *testing.T) {
 		expectError bool
 		expectText  string
 	}{
-		{"enabled with the shipped values passes", func() {}, false, ""},
+		{"the shipped values pass", func() {}, false, ""},
 		{"a zero LLM timeout is rejected: it means no deadline and would let a stuck call hold an RPC worker and feed the circuit breaker",
 			func() { globalConfig.AIBuilderLLMTimeoutSeconds = 0 }, true, "ai_builder_llm_timeout_seconds"},
 		{"a negative LLM timeout is rejected", func() { globalConfig.AIBuilderLLMTimeoutSeconds = -1 }, true, "ai_builder_llm_timeout_seconds"},
@@ -131,15 +123,6 @@ func Test_Validate_Builder(t *testing.T) {
 				globalConfig.AIBuilderDailyLimit = -3
 			},
 			true, "ai_builder_daily_limit"},
-		{"a broken value is ignored while the feature is off",
-			func() {
-				globalConfig.AIBuilderEnabled = false
-				globalConfig.AIBuilderLLMTimeoutSeconds = 0
-				globalConfig.AIBuilderMaxConcurrent = 0
-				globalConfig.AIBuilderDailyLimit = 0
-				globalConfig.AIBuilderMaxOutputTokens = 0
-				globalConfig.AIBuilderModel = ""
-			}, false, ""},
 	}
 
 	for _, tt := range tests {
@@ -166,7 +149,6 @@ func Test_Validate_Builder(t *testing.T) {
 
 func Test_Validate_Builder_namesEveryOffendingValue(t *testing.T) {
 	SetListenDefaultsForTest()
-	globalConfig.AIBuilderEnabled = true
 	globalConfig.AIBuilderModel = "gemini-3.8-flash"
 	globalConfig.AIBuilderMaxOutputTokens = 4096
 	globalConfig.AIBuilderLLMTimeoutSeconds = 0
@@ -194,7 +176,6 @@ func Test_BuilderConfig_envToConfigField(t *testing.T) {
 		t.Fatalf("bind failed: %v", err)
 	}
 
-	t.Setenv("AI_BUILDER_ENABLED", "true")
 	t.Setenv("AI_BUILDER_MODEL", "model-x")
 	t.Setenv("AI_BUILDER_REASONING_EFFORT", "low")
 	t.Setenv("AI_BUILDER_MAX_OUTPUT_TOKENS", "1111")
@@ -206,9 +187,6 @@ func Test_BuilderConfig_envToConfigField(t *testing.T) {
 	LoadGlobalConfig()
 	cfg := Get()
 
-	if !cfg.AIBuilderEnabled {
-		t.Error("AIBuilderEnabled not loaded from AI_BUILDER_ENABLED")
-	}
 	if cfg.AIBuilderModel != "model-x" {
 		t.Errorf("AIBuilderModel: got %q", cfg.AIBuilderModel)
 	}

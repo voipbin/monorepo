@@ -34,7 +34,6 @@ const (
 
 // Error reasons carried in VoipbinError.Reason.
 const (
-	ReasonDisabled        = "BUILDER_DISABLED"
 	ReasonUnavailable     = "BUILDER_UNAVAILABLE"
 	ReasonDailyLimit      = "BUILDER_DAILY_LIMIT"
 	ReasonBusy            = "BUILDER_BUSY"

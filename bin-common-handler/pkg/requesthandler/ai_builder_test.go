@@ -69,7 +69,7 @@ func Test_AIV1BuilderChat_timeout(t *testing.T) {
 // The typed error ai-manager sends must survive the trip, reason included: the
 // client acts on the reason.
 func Test_AIV1BuilderChat_typedErrorKeepsItsReason(t *testing.T) {
-	for _, reason := range []string{builder.ReasonDailyLimit, builder.ReasonBusy, builder.ReasonTimeout, builder.ReasonResponseInvalid, builder.ReasonUnavailable, builder.ReasonDisabled} {
+	for _, reason := range []string{builder.ReasonDailyLimit, builder.ReasonBusy, builder.ReasonTimeout, builder.ReasonResponseInvalid, builder.ReasonUnavailable} {
 		t.Run(reason, func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()

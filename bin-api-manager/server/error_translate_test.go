@@ -233,7 +233,6 @@ func Test_translateBuilderReasonsPassThroughUnchanged(t *testing.T) {
 	}{
 		{"BUILDER_DAILY_LIMIT", func(r string) *cerrors.VoipbinError { return cerrors.ResourceExhausted("ai-manager", r, "x") }, cerrors.StatusResourceExhausted},
 		{"BUILDER_BUSY", func(r string) *cerrors.VoipbinError { return cerrors.ResourceExhausted("ai-manager", r, "x") }, cerrors.StatusResourceExhausted},
-		{"BUILDER_DISABLED", func(r string) *cerrors.VoipbinError { return cerrors.Unavailable("ai-manager", r, "x") }, cerrors.StatusUnavailable},
 		{"BUILDER_UNAVAILABLE", func(r string) *cerrors.VoipbinError { return cerrors.Unavailable("ai-manager", r, "x") }, cerrors.StatusUnavailable},
 		{"BUILDER_TIMEOUT", func(r string) *cerrors.VoipbinError { return cerrors.Unavailable("ai-manager", r, "x") }, cerrors.StatusUnavailable},
 		{"BUILDER_RESPONSE_INVALID", func(r string) *cerrors.VoipbinError { return cerrors.Unavailable("ai-manager", r, "x") }, cerrors.StatusUnavailable},

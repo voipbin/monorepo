@@ -207,18 +207,17 @@ square-admin의 AI 생성 화면은 하드코딩된 템플릿 8개(`square-admin
 - **테스트는 `processRequest` 전체를 통과시키는 형태**여야 한다(핸들러 함수만 호출하면 상위 `log`의 필드를 잡지 못한다). 오류(LLM 오류 mock, 파싱 실패, 검증 실패, 언마샬 실패)와 panic을 유발한 뒤 로그 캡처에 사용자 입력 문자열이 없음을 확인한다. api-manager에도 같은 테스트를 둔다.
 - 오류 응답과 메트릭 라벨에 대화 내용이 들어가지 않는다.
 
-### 4.6 설정과 킬 스위치
+### 4.6 설정
 
-- `ai_builder_enabled`(기본 false). 꺼져 있으면 `BUILDER_DISABLED`(503). **`GET /ai_builder/status`는 api-manager가 ai-manager의 전용 RPC `AIV1BuilderStatus`를 호출해 `available = 켜짐 && 키 있음`을 돌려준다**(api-manager가 설정을 따로 가지지 않는다). **status는 api-manager의 프로세스 로컬 캐시(전역 값이라 레플리카별로 충분하며 api-manager `cachehandler`에는 범용 get/set이 없다)에 성공 결과 30초, 실패 결과 5초로 보관하고, `IsAgent`와 권한 검사는 캐시 앞에서 한다. status RPC timeout은 3~5초로 명시하며 어떤 오류에서도 `available=false`로 응답한다**(카드를 숨김). status 요청은 세마포어 대상이 아니며 모달을 열 때마다가 아니라 캐시 단위로만 워커를 쓴다. 키가 없으면 `available=false`이므로 카드가 숨겨진다.
+- **켜기와 끄기용 설정은 두지 않는다(대표님 지시, 2026-10-02).** 키가 있으면 사용 가능하다. **`GET /ai_builder/status`는 api-manager가 ai-manager의 전용 RPC `AIV1BuilderStatus`를 호출해 `available = 키 있음`을 돌려준다**(api-manager가 설정을 따로 가지지 않는다). **status는 api-manager의 프로세스 로컬 캐시(전역 값이라 레플리카별로 충분하며 api-manager `cachehandler`에는 범용 get/set이 없다)에 성공 결과 30초, 실패 결과 5초로 보관하고, `IsAgent`와 권한 검사는 캐시 앞에서 한다. status RPC timeout은 3~5초로 명시하며 어떤 오류에서도 `available=false`로 응답한다**(카드를 숨김). status 요청은 세마포어 대상이 아니며 모달을 열 때마다가 아니라 캐시 단위로만 워커를 쓴다. 키가 없으면 `available=false`이므로 카드가 숨겨진다.
 - `ai_builder_model`(기본은 analysis 기본 모델), `ai_builder_reasoning_effort`(기본 `none`, 2.5의 비교로 확정), 4.3의 상한값들.
-- 키는 analysis 엔진이 쓰는 키다(F4). 비어 있으면 호출이 동기 오류(`BUILDER_UNAVAILABLE`)로 즉시 돌아와 화면에 표시된다. 기동 시 Builder가 켜져 있고 키가 비어 있으면, 또는 `ai_builder_model`이 base URL의 제공자와 맞지 않아 보이면(OpenAI 롤백 경로에서 Gemini 모델명 등) 경고 로그를 남긴다(`main.go` 수정, 7절). Builder는 `analysishandler`를 거치지 않고 엔진만 공유하므로 analysis의 모델 allow-set과 무관하다.
-- `GET /ai_builder/status`: `{available, max_messages, max_message_chars}`. 에이전트 로그인이 아니거나 권한이 없거나 기능이 꺼져 있으면 `available=false`(카드 숨김). status도 `!a.IsAgent()` 규칙(F7)을 따른다.
+- 키는 analysis 엔진이 쓰는 키다(F4). 비어 있으면 호출이 동기 오류(`BUILDER_UNAVAILABLE`)로 즉시 돌아와 화면에 표시된다. 기동 시 키가 비어 있으면, 또는 `ai_builder_model`이 base URL의 제공자와 맞지 않아 보이면(OpenAI 롤백 경로에서 Gemini 모델명 등) 경고 로그를 남긴다(`main.go` 수정, 7절). Builder는 `analysishandler`를 거치지 않고 엔진만 공유하므로 analysis의 모델 allow-set과 무관하다.
+- `GET /ai_builder/status`: `{available, max_messages, max_message_chars}`. 에이전트 로그인이 아니거나 권한이 없거나 키가 없으면 `available=false`(카드 숨김). status도 `!a.IsAgent()` 규칙(F7)을 따른다.
 
 ### 4.7 오류 코드
 
 | 상황 | 응답 | 프런트 동작 |
 |---|---|---|
-| 기능 꺼짐 | 503 `BUILDER_DISABLED` | 카드 숨김, 직접 호출 시 안내 |
 | 키 누락 | status `available=false`로 카드 숨김. 직접 호출하면 503 `BUILDER_UNAVAILABLE` | "AI 만들기를 사용할 수 없습니다"(셀프호스팅 운영자 안내는 문서) |
 | 일일 상한 | 429 `BUILDER_DAILY_LIMIT` | 고정 안내와 support@voipbin.net |
 | 동시 호출 상한 | 429 `BUILDER_BUSY` | "잠시 후 다시 시도하세요"(자동 재시도 없음) |
@@ -257,7 +256,7 @@ Prometheus: 요청 수(결과별: ok, daily_limit, busy, disabled, unavailable, 
 
 | 위협 | 대응 |
 |---|---|
-| 플랫폼을 무료 LLM 프록시로 남용 | 에이전트 로그인(`IsAgent`), CustomerAdmin 또는 CustomerManager, 고정 시스템 프롬프트, 입력 합산 상한과 본문 바이트 상한, 출력 토큰 상한, 고객당 일일 상한, 킬 스위치 |
+| 플랫폼을 무료 LLM 프록시로 남용 | 에이전트 로그인(`IsAgent`), CustomerAdmin 또는 CustomerManager, 고정 시스템 프롬프트, 입력 합산 상한과 본문 바이트 상한, 출력 토큰 상한, 고객당 일일 상한 |
 | Builder 동시 호출이 ai-manager RPC 워커 10개를 점유해 통화 중 도구 실행이 지연됨(F19) | 프로세스당 동시 호출 3개 세마포어, 초과 시 즉시 429 `BUILDER_BUSY`. 일일 상한과 별개의 통제 |
 | accesskey, delegate, direct 토큰으로 호출(비용 노출 면적) | servicehandler 첫머리에서 `!a.IsAgent()` 거부(F7). 테스트에 accesskey, delegate, direct 케이스 명시 |
 | 클라이언트가 조작한 이력, current_draft | 이력은 사용자 자신의 응답에만 영향. `current_draft`는 데이터 블록으로 구분. 서버는 이력을 신뢰한 권한, 상태 변경을 하지 않음. 비용은 상한이 묶음 |
@@ -277,11 +276,11 @@ monorepo(백엔드, 한 PR). **프롬프트와 평가를 먼저 한다**(인프�
 3. ai-manager: `builderhandler`(세마포어, 호출 순서 4.3), 설정, `BuilderChatCountIncr`, `processRequest` 앞의 Builder 라우트(본문 로그 금지), 메트릭, `main.go`의 키와 모델 정합성 경고, status RPC 처리.
 4. common-handler: `AIV1BuilderChat`(명시 timeout 55초), `AIV1BuilderStatus`, **`rabbitmqhandler/consume.go`의 세 에러 문자열에서 본문 제거**(4.5). vendor는 커밋하지 않으므로 갱신 작업은 없다(4.5의 vendor 정정).
 5. api-manager: `POST /ai_builder/chat`(Builder 라우트에서 RPC timeout을 `BUILDER_TIMEOUT` 503으로, `ErrCircuitOpen`을 503으로 변환하고 두 카운터를 둠, status 프로세스 로컬 캐시(만료 시 갱신은 `singleflight` 또는 뮤텍스 안에서 하나만 수행)와 실패 시 `available=false`), `GET /ai_builder/status`, `MaxBytesReader`, `!IsAgent` 거부, OpenAPI, servicehandler.
-6. docsdev: AI 생성 문서, 셀프호스팅 설정(`ai_builder_enabled`, 엔진 키), 활성화 후 smoke 대화 1회.
+6. docsdev: AI 생성 문서, 셀프호스팅 설정(엔진 키), 활성화 후 smoke 대화 1회.
 
 monorepo-javascript(프런트): OpenAPI 동기화(`voipbin-openapi-sync-to-js`), `prompt_templates.js`의 export 추가(`ais_create.test.js`의 `jest.mock('../prompt_templates', ...)`에 `toolsSection`과 `TOOL_LABELS`를 추가하고 `src/provider` mock의 status 조회 undefined를 처리), 템플릿 다이얼로그의 Builder 화면, 미리보기, 폼 채우기, 테스트. 백엔드 배포 후에 노출한다(status가 `available=true`일 때만 카드).
 
-배포: 백엔드(킬 스위치 꺼진 채), 프런트, 내부 검증 후 활성화.
+배포: 백엔드, 프런트, 내부 검증. 켜기용 설정이 없어 키가 있는 환경에서는 백엔드가 올라가는 즉시 API로 사용 가능하다(플랫폼 비용 발생, 고객당 일일 상한만 적용).
 
 ## 8. 테스트
 
@@ -322,7 +321,7 @@ aicall과 AI 행 생성, activeflow, 세션 유일 제약, 슬롯 해소, 세션
 |---|---|
 | 인터뷰 깊이: 숫자 목표 없이 "충분하면 멈춘다"(현재안) vs 4~8턴 목표 | 현재안. 평가의 비교 결과를 보고 조정해 보고 |
 | 활성화 전에 최소한의 전역 일일 총량 상한을 둘지 | 신규 계정 연쇄 가입이 비용 폭탄이 되는 유일한 경로이고 비용이 작으므로 도입을 권한다(보류를 택하시면 10절 트리거로 관리) |
-| 호스팅 서비스에서 켜는 시점과 범위(킬 스위치는 전역) | 평가 통과 후 내부 검증, 이후 전역 활성화 |
+| 호스팅 서비스에서 공개하는 시점과 범위(켜기용 설정 없음, 배포가 곧 공개) | 평가 통과 후 배포하는 것을 권한다 |
 | 평가가 3회 반복해도 통과하지 못할 때 기능을 접을지 정적 템플릿 보강으로 대체할지 | 대표님 결정. 접거나 템플릿 보강(적응성 요건이 달성되지 않으면 기능 가치가 없다) |
 | 평가 예산(약 38회 실행, 빌더 호출 약 225회와 시뮬레이터 호출, 사람 판정 전문 약 21건과 훑어보기 약 15건)과 통과 기준(2.5) | 현재안 승인 요청. 비용은 소액이며 판정자는 대표님 또는 지정인 |
 | 성공 지표 | v1은 서버가 이미 가진 일일 요청 수, 오류 비율, 토큰 합계(4.8)만 본다. 폼 채우기 비율은 프런트 이벤트가 필요하므로 10절 트리거로 미루고, 임계값은 첫 2주 관찰 후 정한다 |

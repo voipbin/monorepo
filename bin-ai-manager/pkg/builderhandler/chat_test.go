@@ -87,12 +87,11 @@ func testCfg() Config {
 }
 
 // newTestHandler builds a handler with a strict mock cache.
-func newTestHandler(t *testing.T, s Sender, cfg Config, dailyLimit, maxConcurrent int, enabled, keyConfigured bool) (BuilderHandler, *cachehandler.MockCacheHandler) {
+func newTestHandler(t *testing.T, s Sender, cfg Config, dailyLimit, maxConcurrent int, keyConfigured bool) (BuilderHandler, *cachehandler.MockCacheHandler) {
 	t.Helper()
 	mc := gomock.NewController(t)
 	cache := cachehandler.NewMockCacheHandler(mc)
 	h := NewBuilderHandler(s, cache, cfg, Options{
-		Enabled:       enabled,
 		KeyConfigured: keyConfigured,
 		DailyLimit:    dailyLimit,
 		MaxConcurrent: maxConcurrent,
@@ -111,7 +110,7 @@ func reasonOf(t *testing.T, err error) (cerrors.Status, string) {
 
 func Test_Chat_success(t *testing.T) {
 	s := &chatSender{reply: goodReply}
-	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true, true)
+	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
 
 	resp, err := h.Chat(context.Background(), customerID, chatReq())
@@ -126,21 +125,19 @@ func Test_Chat_success(t *testing.T) {
 	}
 }
 
-func Test_Chat_killSwitchAndKey(t *testing.T) {
+func Test_Chat_withoutAKey(t *testing.T) {
 	tests := []struct {
 		name          string
-		enabled       bool
 		keyConfigured bool
 		reason        string
 		status        cerrors.Status
 	}{
-		{"disabled", false, true, builder.ReasonDisabled, cerrors.StatusUnavailable},
-		{"enabled but no key", true, false, builder.ReasonUnavailable, cerrors.StatusUnavailable},
+		{"no key", false, builder.ReasonUnavailable, cerrors.StatusUnavailable},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &chatSender{reply: goodReply}
-			h, _ := newTestHandler(t, s, testCfg(), 200, 3, tt.enabled, tt.keyConfigured) // no cache call expected
+			h, _ := newTestHandler(t, s, testCfg(), 200, 3, tt.keyConfigured) // no cache call expected
 			_, err := h.Chat(context.Background(), customerID, chatReq())
 			st, reason := reasonOf(t, err)
 			if reason != tt.reason || st != tt.status {
@@ -157,7 +154,7 @@ func Test_Chat_killSwitchAndKey(t *testing.T) {
 // platform paid for.
 func Test_Chat_invalidRequestIsNotCounted(t *testing.T) {
 	s := &chatSender{reply: goodReply}
-	h, _ := newTestHandler(t, s, testCfg(), 200, 3, true, true) // strict mock: any cache call fails the test
+	h, _ := newTestHandler(t, s, testCfg(), 200, 3, true) // strict mock: any cache call fails the test
 	bad := &builder.ChatRequest{Messages: []builder.Message{{Role: builder.RoleAssistant, Content: "last is assistant"}}}
 
 	_, err := h.Chat(context.Background(), customerID, bad)
@@ -184,7 +181,7 @@ func Test_Chat_dailyLimitBoundary(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &chatSender{reply: goodReply}
-			h, cache := newTestHandler(t, s, testCfg(), 200, 3, true, true)
+			h, cache := newTestHandler(t, s, testCfg(), 200, 3, true)
 			cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(tt.count, nil)
 
 			_, err := h.Chat(context.Background(), customerID, chatReq())
@@ -209,7 +206,7 @@ func Test_Chat_dailyLimitBoundary(t *testing.T) {
 // spend.
 func Test_Chat_redisErrorFailsClosed(t *testing.T) {
 	s := &chatSender{reply: goodReply}
-	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true, true)
+	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(0), errors.New("redis down "+secret))
 
 	_, err := h.Chat(context.Background(), customerID, chatReq())
@@ -245,7 +242,7 @@ func Test_Chat_turnErrorsMapToReasonsAndAreCounted(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h, cache := newTestHandler(t, tt.sender, testCfg(), 200, 3, true, true)
+			h, cache := newTestHandler(t, tt.sender, testCfg(), 200, 3, true)
 			cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil) // counted
 
 			_, err := h.Chat(context.Background(), customerID, chatReq())
@@ -266,7 +263,7 @@ func Test_Chat_callerDeadlineMapsToTimeout(t *testing.T) {
 	s := &chatSender{block: make(chan struct{})}
 	cfg := testCfg()
 	cfg.LLMTimeout = 5 * time.Second
-	h, cache := newTestHandler(t, s, cfg, 200, 3, true, true)
+	h, cache := newTestHandler(t, s, cfg, 200, 3, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
@@ -282,7 +279,7 @@ func Test_Chat_callerDeadlineMapsToTimeout(t *testing.T) {
 // timeout the customer should be told about.
 func Test_Chat_callerCancelIsNotATimeout(t *testing.T) {
 	s := &chatSender{block: make(chan struct{})}
-	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true, true)
+	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -299,7 +296,7 @@ func Test_Chat_callerCancelIsNotATimeout(t *testing.T) {
 // the running call ends.
 func Test_Chat_semaphore(t *testing.T) {
 	s := &chatSender{block: make(chan struct{}), entered: make(chan struct{}, 8), reply: goodReply}
-	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true, true)
+	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil).Times(3)
 
 	var wg sync.WaitGroup
@@ -346,7 +343,7 @@ func Test_Chat_semaphore(t *testing.T) {
 func Test_Chat_releasesTheSlotOnEveryPath(t *testing.T) {
 	t.Run("daily limit refusal", func(t *testing.T) {
 		s := &chatSender{reply: goodReply}
-		h, cache := newTestHandler(t, s, testCfg(), 200, 1, true, true)
+		h, cache := newTestHandler(t, s, testCfg(), 200, 1, true)
 		cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(999), nil).Times(3)
 		for i := 0; i < 3; i++ {
 			_, err := h.Chat(context.Background(), customerID, chatReq())
@@ -357,7 +354,7 @@ func Test_Chat_releasesTheSlotOnEveryPath(t *testing.T) {
 	})
 	t.Run("redis error", func(t *testing.T) {
 		s := &chatSender{reply: goodReply}
-		h, cache := newTestHandler(t, s, testCfg(), 200, 1, true, true)
+		h, cache := newTestHandler(t, s, testCfg(), 200, 1, true)
 		cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(0), errors.New("x")).Times(3)
 		for i := 0; i < 3; i++ {
 			_, err := h.Chat(context.Background(), customerID, chatReq())
@@ -368,7 +365,7 @@ func Test_Chat_releasesTheSlotOnEveryPath(t *testing.T) {
 	})
 	t.Run("llm error", func(t *testing.T) {
 		s := &chatSender{err: errors.New("boom")}
-		h, cache := newTestHandler(t, s, testCfg(), 200, 1, true, true)
+		h, cache := newTestHandler(t, s, testCfg(), 200, 1, true)
 		cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil).Times(3)
 		for i := 0; i < 3; i++ {
 			_, err := h.Chat(context.Background(), customerID, chatReq())
@@ -379,7 +376,7 @@ func Test_Chat_releasesTheSlotOnEveryPath(t *testing.T) {
 	})
 	t.Run("panic in the engine", func(t *testing.T) {
 		s := &panicSender{}
-		h, cache := newTestHandler(t, s, testCfg(), 200, 1, true, true)
+		h, cache := newTestHandler(t, s, testCfg(), 200, 1, true)
 		cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil).Times(2)
 		func() {
 			defer func() { _ = recover() }()
@@ -406,18 +403,15 @@ func (p *panicSender) SendOnce(context.Context, *openai.ChatCompletionRequest) (
 func Test_Status(t *testing.T) {
 	tests := []struct {
 		name          string
-		enabled       bool
 		keyConfigured bool
 		available     bool
 	}{
-		{"enabled with a key", true, true, true},
-		{"enabled without a key", true, false, false},
-		{"disabled", false, true, false},
-		{"disabled without a key", false, false, false},
+		{"with a key", true, true},
+		{"without a key", false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h, _ := newTestHandler(t, &chatSender{}, testCfg(), 200, 3, tt.enabled, tt.keyConfigured)
+			h, _ := newTestHandler(t, &chatSender{}, testCfg(), 200, 3, tt.keyConfigured)
 			st := h.Status()
 			if st.Available != tt.available {
 				t.Errorf("available: got %v, want %v", st.Available, tt.available)
@@ -454,7 +448,7 @@ func Test_Chat_neverLogsOrReturnsTheUsersInput(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			buf.Reset()
-			h, cache := newTestHandler(t, c.sender, testCfg(), 200, 3, true, true)
+			h, cache := newTestHandler(t, c.sender, testCfg(), 200, 3, true)
 			cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
 			_, err := h.Chat(context.Background(), customerID, req)
 			if err != nil && strings.Contains(err.Error(), secret) {
@@ -471,7 +465,7 @@ func Test_NewBuilderHandler_clampsAnUnusableConcurrency(t *testing.T) {
 	// Config validation rejects 0 at startup; the constructor must still never
 	// build a semaphore that blocks every call forever.
 	s := &chatSender{reply: goodReply}
-	h, cache := newTestHandler(t, s, testCfg(), 200, 0, true, true)
+	h, cache := newTestHandler(t, s, testCfg(), 200, 0, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
 	if _, err := h.Chat(context.Background(), customerID, chatReq()); err != nil {
 		t.Fatalf("a zero concurrency must be raised to at least one, not reject every call: %v", err)
@@ -483,7 +477,7 @@ func Test_NewBuilderHandler_clampsAnUnusableConcurrency(t *testing.T) {
 func Test_Chat_recordsTokensEvenOnAParseFailure(t *testing.T) {
 	before := tokenCount("prompt")
 	s := &chatSender{reply: "garbage"}
-	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true, true)
+	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
 
 	_, _ = h.Chat(context.Background(), customerID, chatReq())
@@ -502,7 +496,7 @@ func tokenCount(kind string) float64 {
 // customer may use, and no other test would notice.
 func Test_Chat_countsWithA24HourWindow(t *testing.T) {
 	s := &chatSender{reply: goodReply}
-	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true, true)
+	h, cache := newTestHandler(t, s, testCfg(), 200, 3, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, 24*time.Hour).Return(int64(1), nil)
 
 	if _, err := h.Chat(context.Background(), customerID, chatReq()); err != nil {
@@ -513,7 +507,7 @@ func Test_Chat_countsWithA24HourWindow(t *testing.T) {
 // An invalid request is refused before anything is counted or any slot taken.
 func Test_Chat_validationRunsBeforeTheSemaphoreAndCounter(t *testing.T) {
 	s := &chatSender{reply: goodReply}
-	h, _ := newTestHandler(t, s, testCfg(), 200, 1, true, true) // strict mock: a counter call fails the test
+	h, _ := newTestHandler(t, s, testCfg(), 200, 1, true) // strict mock: a counter call fails the test
 	for i := 0; i < 3; i++ {
 		_, err := h.Chat(context.Background(), customerID, &builder.ChatRequest{})
 		if _, reason := reasonOf(t, err); reason != builder.ReasonInvalidArgument {
@@ -531,7 +525,7 @@ func resultCount(result string) float64 {
 }
 
 var allResultLabels = []string{
-	resultOK, resultDailyLimit, resultBusy, resultDisabled, resultUnavailable,
+	resultOK, resultDailyLimit, resultBusy, resultUnavailable,
 	resultInvalidResponse, resultLLMError, resultInvalidArgument, resultInternal,
 }
 
@@ -540,26 +534,25 @@ var allResultLabels = []string{
 // requires llm_error to stay apart from the unavailable of a Redis failure.
 func Test_Chat_resultLabels(t *testing.T) {
 	tests := []struct {
-		name   string
-		want   string
-		sender *chatSender
-		req    *builder.ChatRequest
-		setup  func(c *cachehandler.MockCacheHandler)
-		opts   [2]bool // enabled, keyConfigured
-		limit  int
+		name          string
+		want          string
+		sender        *chatSender
+		req           *builder.ChatRequest
+		setup         func(c *cachehandler.MockCacheHandler)
+		keyConfigured bool
+		limit         int
 	}{
-		{"ok", resultOK, &chatSender{reply: goodReply}, chatReq(), counted(1), [2]bool{true, true}, 200},
-		{"invalid request", resultInvalidArgument, &chatSender{reply: goodReply}, &builder.ChatRequest{}, nil, [2]bool{true, true}, 200},
-		{"disabled", resultDisabled, &chatSender{reply: goodReply}, chatReq(), nil, [2]bool{false, true}, 200},
-		{"no key", resultUnavailable, &chatSender{reply: goodReply}, chatReq(), nil, [2]bool{true, false}, 200},
+		{"ok", resultOK, &chatSender{reply: goodReply}, chatReq(), counted(1), true, 200},
+		{"invalid request", resultInvalidArgument, &chatSender{reply: goodReply}, &builder.ChatRequest{}, nil, true, 200},
+		{"no key", resultUnavailable, &chatSender{reply: goodReply}, chatReq(), nil, false, 200},
 		{"counter down", resultUnavailable, &chatSender{reply: goodReply}, chatReq(), func(c *cachehandler.MockCacheHandler) {
 			c.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(0), errors.New("x"))
-		}, [2]bool{true, true}, 200},
-		{"daily limit", resultDailyLimit, &chatSender{reply: goodReply}, chatReq(), counted(201), [2]bool{true, true}, 200},
-		{"provider error", resultLLMError, &chatSender{err: &openai.APIError{HTTPStatusCode: 500}}, chatReq(), counted(1), [2]bool{true, true}, 200},
-		{"llm deadline", resultLLMError, &chatSender{err: context.DeadlineExceeded}, chatReq(), counted(1), [2]bool{true, true}, 200},
-		{"unparseable", resultInvalidResponse, &chatSender{reply: "not json"}, chatReq(), counted(1), [2]bool{true, true}, 200},
-		{"truncated", resultInvalidResponse, &chatSender{reply: `{"message":"x"}`, finish: openai.FinishReasonLength}, chatReq(), counted(1), [2]bool{true, true}, 200},
+		}, true, 200},
+		{"daily limit", resultDailyLimit, &chatSender{reply: goodReply}, chatReq(), counted(201), true, 200},
+		{"provider error", resultLLMError, &chatSender{err: &openai.APIError{HTTPStatusCode: 500}}, chatReq(), counted(1), true, 200},
+		{"llm deadline", resultLLMError, &chatSender{err: context.DeadlineExceeded}, chatReq(), counted(1), true, 200},
+		{"unparseable", resultInvalidResponse, &chatSender{reply: "not json"}, chatReq(), counted(1), true, 200},
+		{"truncated", resultInvalidResponse, &chatSender{reply: `{"message":"x"}`, finish: openai.FinishReasonLength}, chatReq(), counted(1), true, 200},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -568,7 +561,7 @@ func Test_Chat_resultLabels(t *testing.T) {
 				before[l] = resultCount(l)
 			}
 
-			h, cache := newTestHandler(t, tt.sender, testCfg(), tt.limit, 3, tt.opts[0], tt.opts[1])
+			h, cache := newTestHandler(t, tt.sender, testCfg(), tt.limit, 3, tt.keyConfigured)
 			if tt.setup != nil {
 				tt.setup(cache)
 			}
@@ -597,7 +590,7 @@ func counted(n int64) func(c *cachehandler.MockCacheHandler) {
 // A busy refusal is counted under its own label, and not as anything else.
 func Test_Chat_resultLabelBusy(t *testing.T) {
 	s := &chatSender{block: make(chan struct{}), entered: make(chan struct{}, 2), reply: goodReply}
-	h, cache := newTestHandler(t, s, testCfg(), 200, 1, true, true)
+	h, cache := newTestHandler(t, s, testCfg(), 200, 1, true)
 	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
 
 	done := make(chan struct{})
@@ -631,7 +624,7 @@ func Test_Chat_providerAuthFailureIsLoggedAtErrorLevel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hook := logrusTestHook(t)
-			h, cache := newTestHandler(t, &chatSender{err: tt.err}, testCfg(), 200, 3, true, true)
+			h, cache := newTestHandler(t, &chatSender{err: tt.err}, testCfg(), 200, 3, true)
 			cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
 
 			_, _ = h.Chat(context.Background(), customerID, chatReq())

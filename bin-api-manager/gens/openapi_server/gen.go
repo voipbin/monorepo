@@ -4020,7 +4020,7 @@ type AIManagerAIBuilderMessageRole string
 
 // AIManagerAIBuilderStatusResponse defines model for AIManagerAIBuilderStatusResponse.
 type AIManagerAIBuilderStatusResponse struct {
-	// Available True when the builder is switched on and can run.
+	// Available True when the builder can run (the key it needs is configured).
 	Available bool `json:"available"`
 
 	// MaxMessageChars Most characters in one message.

@@ -224,7 +224,6 @@ func Test_PostAiBuilderChat_errorMapping(t *testing.T) {
 		{"timeout", cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonTimeout, "x"), http.StatusServiceUnavailable, builder.ReasonTimeout},
 		{"response invalid", cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonResponseInvalid, "x"), http.StatusServiceUnavailable, builder.ReasonResponseInvalid},
 		{"unavailable", cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "x"), http.StatusServiceUnavailable, builder.ReasonUnavailable},
-		{"disabled", cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonDisabled, "x"), http.StatusServiceUnavailable, builder.ReasonDisabled},
 		{"invalid argument", cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, builder.ReasonInvalidArgument, "x"), http.StatusBadRequest, builder.ReasonInvalidArgument},
 		{"untyped", errors.New("boom"), http.StatusInternalServerError, "INTERNAL"},
 	}
