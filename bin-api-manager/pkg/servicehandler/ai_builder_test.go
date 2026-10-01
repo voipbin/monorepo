@@ -97,7 +97,7 @@ func Test_AIBuilderChat_permissions(t *testing.T) {
 				mockReq.EXPECT().AIV1BuilderChat(gomock.Any(), gomock.Any(), gomock.Any()).Return(&builder.ChatResponse{Message: "ok"}, nil)
 			}
 			_, err := h.AIBuilderChat(context.Background(), tt.a, builderChatReq("hello")) // strict mock: no RPC when denied
-			if !errors.Is(err, tt.expect) && !(tt.expect == nil && err == nil) {
+			if (tt.expect == nil && err != nil) || (tt.expect != nil && !errors.Is(err, tt.expect)) {
 				t.Errorf("got %v, want %v", err, tt.expect)
 			}
 		})
@@ -311,7 +311,7 @@ func Test_AIBuilderStatus_cacheExpires(t *testing.T) {
 }
 
 func Test_AIBuilderStatus_failureWindowIsShorterThanSuccess(t *testing.T) {
-	if !(builderStatusFailTTL < builderStatusOKTTL) || builderStatusOKTTL != 30*time.Second || builderStatusFailTTL != 5*time.Second {
+	if builderStatusFailTTL >= builderStatusOKTTL || builderStatusOKTTL != 30*time.Second || builderStatusFailTTL != 5*time.Second {
 		t.Errorf("ttls: ok=%v fail=%v", builderStatusOKTTL, builderStatusFailTTL)
 	}
 

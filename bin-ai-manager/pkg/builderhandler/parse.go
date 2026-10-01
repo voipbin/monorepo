@@ -283,7 +283,7 @@ func removeToolsSection(s string) (string, bool) {
 		// spaces after it, so a ``` example inside a ```` block does not end it.
 		ch, n, rest, isFence := fenceMark(ln)
 		closes := fenceCh != 0 && isFence && ch == fenceCh && n >= fenceLen && strings.TrimSpace(rest) == ""
-		opens := fenceCh == 0 && isFence && !(ch == '`' && strings.Contains(rest, "`"))
+		opens := fenceCh == 0 && isFence && (ch != '`' || !strings.Contains(rest, "`"))
 		if closes || opens {
 			if opens {
 				fenceCh, fenceLen = ch, n

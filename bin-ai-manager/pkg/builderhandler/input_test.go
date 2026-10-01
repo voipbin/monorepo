@@ -10,18 +10,6 @@ import (
 	"monorepo/bin-ai-manager/models/builder"
 )
 
-func userAsst(n int) []builder.Message {
-	out := make([]builder.Message, 0, n)
-	for i := 0; i < n; i++ {
-		role := builder.RoleUser
-		if i%2 == 1 {
-			role = builder.RoleAssistant
-		}
-		out = append(out, builder.Message{Role: role, Content: "m"})
-	}
-	return out
-}
-
 // userTurnsReq builds a request with exactly n user messages (alternating,
 // ending in user).
 func userTurnsReq(n int) *builder.ChatRequest {
