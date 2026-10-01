@@ -28,6 +28,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
 	"monorepo/bin-ai-manager/pkg/analysishandler"
+	"monorepo/bin-ai-manager/pkg/builderhandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
@@ -196,6 +197,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		cfg.AnalysisReasoningEffort,
 	)
 
+	// The Assistant Builder shares the analysis engine (same provider and key).
+	// It is off unless AI_BUILDER_ENABLED is set. See builderSettings.
+	builderConfig, builderOptions := builderSettings(cfg)
+	builderHandler := builderhandler.NewBuilderHandler(analysisEngine, cache, builderConfig, builderOptions)
+
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
@@ -210,7 +216,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aipromptproposalHandler.SweepStaleProposals(context.Background())
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler, mcpOAuthHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler, mcpOAuthHandler, builderHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -265,6 +271,7 @@ func runListen(
 	analysisHandler analysishandler.AnalysisHandler,
 	mcpServerHandler mcpserverhandler.McpServerHandler,
 	mcpOAuthHandler mcpoauthhandler.McpOAuthHandler,
+	builderHandler builderhandler.BuilderHandler,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	toolHandler := toolhandler.NewToolHandler()
@@ -287,6 +294,7 @@ func runListen(
 		analysisHandler,
 		mcpServerHandler,
 		mcpOAuthHandler,
+		builderHandler,
 	)
 
 	// run

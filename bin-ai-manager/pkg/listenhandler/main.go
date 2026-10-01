@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
 	"monorepo/bin-ai-manager/pkg/analysishandler"
+	"monorepo/bin-ai-manager/pkg/builderhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/mcpoauthhandler"
 	"monorepo/bin-ai-manager/pkg/mcpserverhandler"
@@ -66,6 +67,7 @@ type listenHandler struct {
 	analysisHandler         analysishandler.AnalysisHandler
 	mcpServerHandler        mcpserverhandler.McpServerHandler
 	mcpOAuthHandler         mcpoauthhandler.McpOAuthHandler
+	builderHandler          builderhandler.BuilderHandler
 }
 
 var (
@@ -220,6 +222,7 @@ func NewListenHandler(
 	analysisHandler analysishandler.AnalysisHandler,
 	mcpServerHandler mcpserverhandler.McpServerHandler,
 	mcpOAuthHandler mcpoauthhandler.McpOAuthHandler,
+	builderHandler builderhandler.BuilderHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:   sockHandler,
@@ -241,6 +244,7 @@ func NewListenHandler(
 		analysisHandler:         analysisHandler,
 		mcpServerHandler:        mcpServerHandler,
 		mcpOAuthHandler:         mcpOAuthHandler,
+		builderHandler:          builderHandler,
 	}
 
 	return h
@@ -268,6 +272,13 @@ func (h *listenHandler) Run() error {
 }
 
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
+	// The Assistant Builder is routed BEFORE the log entry below exists: that
+	// entry puts the whole request, body included, into a field, and the
+	// Builder body is the customer's own business description. See processBuilder.
+	if isBuilderRoute(m) {
+		return h.processBuilder(m)
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processRequest",
 		"request": m,
