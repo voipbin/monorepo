@@ -50,7 +50,7 @@ Two are defined in design 2.5 (see the note below for a third): `reasoning_effor
 
 ## Not covered here
 
-Latency and the real `max_tokens`, the semaphore size, and the Gemini compatibility of the response format must be measured in the first real run and written down. They are initial values today.
+Latency, the real `max_tokens` and the semaphore size were not measured in run 1; measure them in the next run and write them down. They are initial values today. (Gemini accepted the response format in run 1: 138 calls, 0 parse failures. That is one run, not a guarantee.)
 
 ## Carried over (decided in code review, not done in this PR)
 

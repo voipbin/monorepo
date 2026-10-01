@@ -89,9 +89,11 @@ func Test_Prompt_revision2RulesPresent(t *testing.T) {
 		"if the user has already said how, it is not a fork",
 		"does not count as no-information",
 		"Nor does an assumption fill its own dimension",
-		"filled or closed as unknown and no fork is open", // rule 5: the summary trigger   // rule 3: question cap
-		"treat the dimension as closed",                   // rule 3: how it ends
-		"or exception (a) or (b) below applies",           // rule 5: no clash with the exceptions
+		"filled or closed as unknown and no fork is open",           // rule 5: the summary trigger
+		"Omit that sentence on a turn in which you are summarising", // rule 3: checkpoint sentence
+		"never pick one silently and never build on both",           // rule 1: contradiction
+		"treat the dimension as closed",                             // rule 3: how it ends
+		"or exception (a) or (b) below applies",                     // rule 5: no clash with the exceptions
 	} {
 		if !strings.Contains(SystemPrompt, want) {
 			t.Errorf("the prompt lost the sentence %q", want)
@@ -221,7 +223,7 @@ func Test_Schema_shape(t *testing.T) {
 	}
 }
 
-func Test_Prompt_isMarkedAsUnevaluatedDraft(t *testing.T) {
+func Test_Prompt_isMarkedNotPassedAndNotHumanEvaluated(t *testing.T) {
 	b, err := os.ReadFile("prompt.go")
 	if err != nil {
 		t.Fatal(err)
@@ -230,8 +232,10 @@ func Test_Prompt_isMarkedAsUnevaluatedDraft(t *testing.T) {
 	if len(head) > 1500 {
 		head = head[:1500]
 	}
-	if !strings.Contains(head, "NOT been evaluated") {
-		t.Fatal("prompt.go must state at the top that the prompt has not passed evaluation")
+	for _, want := range []string{"NOT been evaluated by a human", "Evaluation run 1", "missed the pass line"} {
+		if !strings.Contains(head, want) {
+			t.Fatalf("prompt.go must state at the top that the prompt has not passed evaluation: missing %q", want)
+		}
 	}
 }
 

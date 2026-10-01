@@ -19,7 +19,7 @@ package builderhandler
 //
 // Two sentences were added after a pre-evaluation author-read trial (three s2b
 // conversations, not evaluation run 1) and
-// are hypotheses, not findings: the last sentence of rule 6 (keep the user's own
+// are hypotheses, not findings: the last two sentences of rule 6 (keep the user's own
 // values) and the flow-behaviour sentence after the tool catalog. Their effect
 // is unknown until the evaluation runs.
 //

@@ -934,11 +934,12 @@ func Test_IsAIJudge(t *testing.T) {
 	for name, want := range map[string]bool{
 		"AI reviewer A, not a human":                     true,
 		"ai-judge-A (AI reviewer subagent, NOT a human)": true,
-		"Kim (AI)":   true,
-		"Kim":        false,
-		"Aimee Park": false,
-		"Hailey":     false,
-		"":           false,
+		"Kim (AI)":    true,
+		"ai reviewer": true,
+		"Kim":         false,
+		"Aimee Park":  false,
+		"Hailey":      false,
+		"":            false,
 	} {
 		if got := IsAIJudge(name); got != want {
 			t.Errorf("%q: got %v, want %v", name, got, want)
