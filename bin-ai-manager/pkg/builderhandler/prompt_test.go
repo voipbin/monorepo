@@ -72,6 +72,33 @@ func Test_Prompt_keepsTheUsersOwnValues(t *testing.T) {
 	}
 }
 
+// Evaluation run 1 (AI-judged, not a human) showed three habits: a statement
+// that contradicted an earlier one was followed silently, an empty dimension was
+// skipped after "I don't know", and values the user never gave were written into
+// drafts. These pin that the three rules exist. They are contract sentences, not
+// evidence that the model obeys them; only a judged run is.
+func Test_Prompt_revision2RulesPresent(t *testing.T) {
+	for _, want := range []string{
+		"cannot both hold",                        // rule 1: contradiction
+		"it never fills another dimension",        // rule 3: assumption scope
+		"Do not summarise while a dimension",      // rule 5
+		"Keep what the user said apart from what", // rule 7
+		"never replace it with an assumption",     // rule 7: essential items
+		"Do not add numbers, thresholds",          // rule 7: no invented values
+	} {
+		if !strings.Contains(SystemPrompt, want) {
+			t.Errorf("the prompt lost the sentence %q", want)
+		}
+	}
+}
+
+// The prompt is a Go raw string: a stray backslash-quote would reach the model.
+func Test_Prompt_hasNoEscapedQuotes(t *testing.T) {
+	if strings.Contains(SystemPrompt, `\"`) {
+		t.Fatal("the prompt contains a backslash before a quote")
+	}
+}
+
 // The flow behaviour of the two tools the product description singles out.
 func Test_Prompt_explainsFlowBehaviourOfStopAndConnect(t *testing.T) {
 	if !strings.Contains(SystemPrompt, "moves on to the next node") || !strings.Contains(SystemPrompt, "transfers the caller instead") {

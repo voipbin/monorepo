@@ -35,3 +35,14 @@ Tick each line by reading `SystemPrompt`. A missing item is a defect.
 - [ ] The six tool names in `models/builder` `AllowedTools`, in the prompt catalog and in the response schema enum are the same six, and each has an entry in the frontend `TOOL_LABELS`.
 - [ ] The header skeleton in the prompt is the same header set as the frontend `PROMPT_TEMPLATES`.
 - [ ] The two JSON copies of each error response (`bin-ai-manager/pkg/listenhandler/testdata/builder_*.json` and `bin-api-manager/pkg/servicehandler/testdata/builder_*.json`, added with the server tasks) have identical content. They live in separate Go modules, so the match is verified by eye in review, not by CI.
+
+## Revision 2 (after evaluation run 1)
+
+Evaluation run 1 (36 runs, `builder-eval-1`, 138 builder calls, 0 parse failures) was judged by two AI reviewers, **not a human**, and did not reach the pass line. Their shared findings led to rule 7, to the rule 1, 3 and 5 edits, and to a new first message for the three s13 scenarios (their first message was so complete that the builder summarised and drafted in one turn, so the reaction to a summary never happened). These edits are unverified until a new run is judged. Run the same scenarios in a NEW output directory and report both runs' numbers together.
+
+- [ ] A statement that contradicts an earlier one is pointed out in one sentence and the user is asked which is right (s7). A plain self-correction is followed silently.
+- [ ] A dimension that is still empty is asked about from another angle after the user says "I don't know" elsewhere; the builder never assumes what the business is (s3, s5-B2).
+- [ ] Something the user called essential (for example retrying unreachable patients) is asked about and appears in the draft as a requirement (s4-A1).
+- [ ] Numbers, thresholds, data to collect and extra actions the user never gave are absent from the draft or listed as suggestions in assumptions (s2b, s4-A2, s5-B1).
+- [ ] Defaults the builder proposed are called its suggestion in the summary, not the user's words.
+- [ ] The prompt text still contains no vocabulary of the evaluation scenarios (see the overlap test).
