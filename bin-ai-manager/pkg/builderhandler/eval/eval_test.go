@@ -929,3 +929,38 @@ func Test_Report_unknownVerdictKeyExplainsItself(t *testing.T) {
 		t.Fatalf("the report must say why the gate is not decided:\n%s", rep)
 	}
 }
+
+func Test_IsAIJudge(t *testing.T) {
+	for name, want := range map[string]bool{
+		"AI reviewer A, not a human":                     true,
+		"ai-judge-A (AI reviewer subagent, NOT a human)": true,
+		"Kim (AI)":   true,
+		"Kim":        false,
+		"Aimee Park": false,
+		"Hailey":     false,
+		"":           false,
+	} {
+		if got := IsAIJudge(name); got != want {
+			t.Errorf("%q: got %v, want %v", name, got, want)
+		}
+	}
+}
+
+func Test_Report_aiJudgeIsLabelledNotHuman(t *testing.T) {
+	for judge, want := range map[string]bool{"AI reviewer A, not a human": true, "Kim": false} {
+		dir := t.TempDir()
+		rs := results(36, nil)
+		all := map[string]bool{}
+		for _, r := range rs {
+			all[r.RunID] = true
+		}
+		g := Evaluate(rs, all)
+		if err := WriteReport(dir, Output{Meta: Meta{Real: true}}, g, judge); err != nil {
+			t.Fatal(err)
+		}
+		rep, _ := os.ReadFile(filepath.Join(dir, "report.md"))
+		if got := strings.Contains(string(rep), "AI JUDGED. This is not a human verdict"); got != want {
+			t.Errorf("judge %q: AI label present=%v, want %v", judge, got, want)
+		}
+	}
+}

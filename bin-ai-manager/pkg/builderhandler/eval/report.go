@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -303,6 +304,9 @@ func WriteReport(dir string, out Output, g GateReport, judge string) error {
 		b.WriteString("Judge: **NOT RECORDED**. The judge must not be the author of the prompt under test.\n\n")
 	} else {
 		fmt.Fprintf(&b, "Judge: %s (the code cannot check that this person did not write the prompt).\n\n", judge)
+		if IsAIJudge(judge) {
+			b.WriteString("**AI JUDGED. This is not a human verdict.** It may guide a prompt-fixing loop; it does not satisfy the human-verdict requirement, and no claim that the interview adapts may rest on it.\n\n")
+		}
 	}
 	b.WriteString("| group | status | good | bad | needed | runs |\n|---|---|---|---|---|---|\n")
 	for _, s := range g.Groups {
@@ -349,4 +353,13 @@ func LoadOutput(path string) (Output, error) {
 		return Output{}, fmt.Errorf("%s is not a results.json: %w", path, err)
 	}
 	return out, nil
+}
+
+var aiJudgeRE = regexp.MustCompile(`(?i)(^|[^A-Za-z])AI([^A-Za-z]|$)`)
+
+// IsAIJudge reports whether the judge name says an AI wrote the verdicts. It
+// only reads the name: the code cannot know who really judged, so the
+// convention (put "AI" in the name) is stated in the README.
+func IsAIJudge(judge string) bool {
+	return aiJudgeRE.MatchString(judge)
 }

@@ -8,11 +8,11 @@ This is the adaptiveness evaluation of the Assistant Builder (design section 2.5
 - Mechanical checks (deterministic, in `gate.go`): JSON parse-failure rate at most 5%, scenario 9 returns a draft in the first response, no `init_prompt` names a forbidden tool.
 - Everything else is read by a **judge** (ideally a human) reading the transcripts against the rubric printed at the top of each transcript. The harness never judges interview quality.
 - A run with fake engines (the unit tests) proves only that the wiring works. Its report starts with `NOT RUN AGAINST A REAL MODEL`.
-- The gate is never `PASS` without verdicts, never `PASS` for a run against fake engines (the report says `NOT APPLICABLE`), and never `PASS` without a recorded judge.
+- The gate is never `PASS` without verdicts, never `PASS` for a run against fake engines (the report says `NOT APPLICABLE`), and never `PASS` without a recorded judge. A judge name containing `AI` makes the report say `AI JUDGED. This is not a human verdict`; an AI verdict does not count as the human verdict this README and the PR require (see "Re-running after a prompt change").
 
 ## Cost and size
 
-36 simulated runs (3 repeats of 2b, 3, 4-A1, 4-A2, 6; 2 each of B1 and B2; 3 for scenario 9; 3 for 13; 4 for 14; one each of 1, 2a, 7, 8, 10, 11, 12), plus 5 synthetic checkpoint cases. At an average of 6 turns that is **about 216 builder calls and a similar number of simulator calls**. The 6-turn average is an assumption, not a measurement. Human judging: about 21 full transcripts and about 8 skims, plus the 5 synthetic cases.
+36 simulated runs (3 repeats of 2b, 3, 4-A1, 4-A2, 6; 2 each of B1 and B2; 3 for scenario 9; 3 for 13; 4 for 14; one each of 1, 2a, 7, 8, 10, 11, 12), plus 5 synthetic checkpoint cases. At an average of 6 turns that is **about 216 builder calls and a similar number of simulator calls**. The 6-turn average is an assumption, not a measurement. Judging: about 21 full transcripts and about 8 skims, plus the 5 synthetic cases.
 
 ## Run it
 
