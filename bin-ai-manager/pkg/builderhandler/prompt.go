@@ -10,8 +10,10 @@ package builderhandler
 // treat a green test run as evidence of adaptiveness.
 //
 // Revision 2 follows evaluation run 1, which was judged only by two AI reviewers
-// (not a human), so it is not a pass. Their shared findings, all unverified
-// fixes until a new run is judged: the interviewer skipped a dimension that was
+// (not a human), so it is not a pass. Evaluation run 2, with this revision, was
+// also judged only by two AI reviewers and also missed the pass line for both.
+// Their shared findings from run 1, all unverified fixes until a human judges a
+// run: the interviewer skipped a dimension that was
 // still empty after the user said "I don't know" (rule 3, rule 5); it silently
 // followed a statement that contradicted an earlier one (rule 1); it replaced a
 // thing the user called essential with its own assumption, and put values the

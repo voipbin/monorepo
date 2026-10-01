@@ -131,8 +131,8 @@ func Test_processBuilder_status(t *testing.T) {
 }
 
 // Every failure is turned into a typed response here. Returning the error would
-// hand it to processRequest's tail, which logs it and flattens it to a bare 400,
-// losing the reason the client needs.
+// reach the queue consumer (consume.go), which logs err and publishes a bare
+// 500, losing the reason the client needs.
 func Test_processBuilder_everyErrorBecomesAResponse(t *testing.T) {
 	tests := []struct {
 		name       string

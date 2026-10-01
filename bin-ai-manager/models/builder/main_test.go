@@ -99,12 +99,12 @@ func Test_ValidateRequest_reject(t *testing.T) {
 
 // The aggregate cap must trip before the 40 x 2000 per-message product does.
 func Test_ValidateRequest_totalRuneCap(t *testing.T) {
-	// 20 messages x 2000 runes = 40000 (ok), ending in user (index 19 is assistant, so use 21).
+	// 19 messages x 2000 runes = 38000, which is under the cap.
 	ok := &ChatRequest{Messages: msgs(19, repeat("가", 2000))} // 19 x 2000 = 38000
 	if err := ValidateRequest(ok); err != nil {
 		t.Fatalf("38000 runes should pass: %v", err)
 	}
-	// exactly 40000: 19 x 2000 + 1 x 2000 = 20 messages, last must be user -> use 21 msgs with small tail.
+	// exactly 40000: 19 x 2000 + 1999 + 1 = 40000 runes in 21 messages, the last one from the user.
 	exact := msgs(19, repeat("가", 2000)) // 38000, last index 18 -> user
 	exact = append(exact, Message{Role: RoleAssistant, Content: repeat("가", 1999)}, Message{Role: RoleUser, Content: "가"})
 	if n := totalRunes(&ChatRequest{Messages: exact}); n != MaxTotalRunes {

@@ -20,8 +20,8 @@ func builderChatCountKey(customerID uuid.UUID) string {
 // listenIncrExpireScript: that counter is re-armed on every call because it
 // tracks activity, while this one is a fixed-window limit, and re-arming it on
 // every call would let a customer who keeps calling push the window end away
-// for ever. TTL returns -1 for a key with no expiry (and -2 for a missing key,
-// which INCR has just created), so a counter that lost its TTL heals on its
+// for ever. TTL returns -1 for a key with no expiry (INCR has just created the key if it
+// was missing, so -2 cannot occur here), so a counter that lost its TTL heals on its
 // next increment instead of becoming a permanent lock-out.
 //
 // INCR and EXPIRE are one script so neither can land without the other.

@@ -2,7 +2,7 @@
 
 **This checklist is checked by a human reviewer in the PR. CI cannot check any of it.** The unit tests pin only the contract parts of the prompt (fixed phrases, data-block keys, tool catalog, schema). Whether the interview actually adapts to what the user says is not provable by a document or a unit test. It is judged by running the evaluation harness (design 2.5) and by a person reading the transcripts.
 
-Status: the prompt has not been evaluated by a human and has not passed. Evaluation run 1 (36 runs against a real model, prompt revision 1) was judged by two AI reviewers, not a human, and did not reach the pass line. Revision 2 of the prompt follows that run and is unverified. See "Revision 2" below and the evaluation README.
+Status: the prompt has not been evaluated by a human and has not passed. Evaluation run 1 (36 runs against a real model, prompt revision 1) was judged by two AI reviewers, not a human, and did not reach the pass line. Revision 2 of the prompt follows that run. Evaluation run 2 (revision 2, 166 builder calls, 0 parse failures) was also judged only by two AI reviewers, not a human, and also did not reach the pass line for either of them; revision 2 is therefore still unverified. See "Revision 2" below and the evaluation README.
 
 ## 1. Prompt content mapping (design sections to `prompt.go`)
 
@@ -38,7 +38,7 @@ Tick each line by reading `SystemPrompt`. A missing item is a defect.
 
 ## Revision 2 (after evaluation run 1)
 
-Evaluation run 1 (36 runs, `builder-eval-1`, 138 builder calls, 0 parse failures) was judged by two AI reviewers, **not a human**, and did not reach the pass line. Their shared findings led to rule 7, to the rule 1, 3 and 5 edits, and to a new first message for the three s13 scenarios (their first message was so complete that the builder summarised and drafted in one turn, so the reaction to a summary never happened). These edits are unverified until a new run is judged. Run the same scenarios in a NEW output directory and report both runs' numbers together.
+Evaluation run 1 (36 runs, `builder-eval-1`, 138 builder calls, 0 parse failures) was judged by two AI reviewers, **not a human**, and did not reach the pass line. Their shared findings led to rule 7, to the rule 1, 3 and 5 edits, and to a new first message for the three s13 scenarios (their first message was so complete that the builder summarised and drafted in one turn, so the reaction to a summary never happened). Run 2 then used revision 2 and was judged by two AI reviewers, not a human; neither reached the pass line (numbers side by side in the evaluation README). These edits stay unverified until a human judges a run. After any further prompt change, run the same scenarios in a NEW output directory and report all runs' numbers together.
 
 - [ ] A statement that contradicts an earlier one is pointed out in one sentence and the user is asked which is right (s7). A plain self-correction is followed silently.
 - [ ] A dimension that is still empty is asked about from another angle after the user says "I don't know" elsewhere; the builder never assumes what the business is (s3, s5-B2).

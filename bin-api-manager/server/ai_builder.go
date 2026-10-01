@@ -14,9 +14,11 @@ import (
 )
 
 // builderMaxBodyBytes caps the request body. The conversation limit is 40000
-// characters; Korean is 3 bytes a character in UTF-8 and JSON escaping adds
-// more, so 160 KiB leaves room for a conversation at the limit without letting a
-// caller make the server read an unbounded body.
+// characters; Korean is 3 bytes a character in UTF-8, so a conversation at the
+// limit written as raw UTF-8 is about 120 KB and 160 KiB leaves room for it,
+// without letting a caller make the server read an unbounded body. A client
+// that escapes every character as \uXXXX needs 6 bytes a character and can be
+// refused below the limit; design 4.3 accepts that.
 const builderMaxBodyBytes = 160 << 10
 
 // PostAiBuilderChat runs one turn of the assistant builder conversation.

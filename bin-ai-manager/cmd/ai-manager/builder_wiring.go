@@ -43,8 +43,10 @@ func builderSettings(cfg *config.Config) (builderhandler.Config, builderhandler.
 // Builder is switched on but cannot work as intended (design 4.6). It returns
 // nothing while the Builder is off, so an untouched deploy logs nothing new.
 //
-// Two cases are checked, both because they otherwise fail silently: the status
-// route just reports available=false and the cause is nowhere in the logs.
+// Two cases are checked. A missing key otherwise fails silently: the status
+// route just reports available=false and the cause is nowhere in the logs. A
+// model name that does not match the provider does not affect the status route
+// and only fails when a turn is run, with a provider error.
 //   - no key for the provider the analysis engine points at;
 //   - a model name that does not look like it belongs to that provider (a Gemini
 //     model name on an OpenAI base URL after an OpenAI rollback, or the other way

@@ -257,7 +257,8 @@ func Test_Chat_turnErrorsMapToReasonsAndAreCounted(t *testing.T) {
 	}
 }
 
-// A deadline that belongs to the CALLER (api-manager's RPC timeout) is
+// A deadline that belongs to the CALLER's context (the production listen
+// handler passes none, so this guards a caller that does) is
 // reported by RunTurn as an LLM error with Code "timeout", not as ErrTimeout.
 // The handler must give it the same reason as the LLM deadline: a client
 // should not see two different failures for one cause.

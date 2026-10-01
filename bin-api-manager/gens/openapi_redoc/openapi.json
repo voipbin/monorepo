@@ -4062,7 +4062,7 @@
             }
           },
           "400": {
-            "description": "The request is invalid (INVALID_ARGUMENT), or the body exceeded the size limit (BUILDER_INPUT_TOO_LARGE).\n",
+            "description": "The request is invalid (INVALID_ARGUMENT), the body is not valid JSON (INVALID_JSON_BODY), or the body exceeded the size limit (BUILDER_INPUT_TOO_LARGE).\n",
             "content": {
               "application/json": {
                 "schema": {

@@ -108,9 +108,12 @@ func (h *builderHandler) mapTurnError(log *logrus.Entry, err error) error {
 		return h.fail(log, resultLLMError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonTimeout, "the assistant builder took too long, try again"))
 
 	case errors.As(err, &llm) && llm.Code == "timeout":
-		// A deadline that belongs to the CALLER (for example the RPC timeout
-		// api-manager waits with). RunTurn reports it as an LLM error; to the
-		// client it is the same failure as the LLM deadline.
+		// A deadline that belongs to the CALLER's context rather than to the
+		// LLM deadline. RunTurn reports it as an LLM error with this code; to the
+		// client it is the same failure as the LLM deadline. Today the listen
+		// handler runs Chat on a Background context, so api-manager giving up at
+		// its 55 second wait does not reach here; this branch is defensive, for a
+		// caller that does pass a deadline.
 		return h.fail(log, resultLLMError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonTimeout, "the assistant builder took too long, try again"))
 
 	case errors.Is(err, ErrTruncated), errors.Is(err, ErrInvalidResponse):

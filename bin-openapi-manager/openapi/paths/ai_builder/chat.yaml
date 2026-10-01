@@ -43,8 +43,8 @@ post:
             $ref: '#/components/schemas/AIManagerAIBuilderChatResponse'
     '400':
       description: >
-        The request is invalid (INVALID_ARGUMENT), or the body exceeded the size limit
-        (BUILDER_INPUT_TOO_LARGE).
+        The request is invalid (INVALID_ARGUMENT), the body is not valid JSON
+        (INVALID_JSON_BODY), or the body exceeded the size limit (BUILDER_INPUT_TOO_LARGE).
       content:
         application/json:
           schema:
