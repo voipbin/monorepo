@@ -19,6 +19,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
+	builder "monorepo/bin-ai-manager/models/builder"
 	mcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
@@ -187,6 +188,36 @@ func (m *MockServiceHandler) AIAuditGetsByCustomerID(ctx context.Context, a *aut
 func (mr *MockServiceHandlerMockRecorder) AIAuditGetsByCustomerID(ctx, a, size, token, aicallID, aiID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AIAuditGetsByCustomerID), ctx, a, size, token, aicallID, aiID)
+}
+
+// AIBuilderChat mocks base method.
+func (m *MockServiceHandler) AIBuilderChat(ctx context.Context, a *auth.AuthIdentity, req *builder.ChatRequest) (*builder.ChatResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIBuilderChat", ctx, a, req)
+	ret0, _ := ret[0].(*builder.ChatResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIBuilderChat indicates an expected call of AIBuilderChat.
+func (mr *MockServiceHandlerMockRecorder) AIBuilderChat(ctx, a, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIBuilderChat", reflect.TypeOf((*MockServiceHandler)(nil).AIBuilderChat), ctx, a, req)
+}
+
+// AIBuilderStatus mocks base method.
+func (m *MockServiceHandler) AIBuilderStatus(ctx context.Context, a *auth.AuthIdentity) (*builder.StatusResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIBuilderStatus", ctx, a)
+	ret0, _ := ret[0].(*builder.StatusResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIBuilderStatus indicates an expected call of AIBuilderStatus.
+func (mr *MockServiceHandlerMockRecorder) AIBuilderStatus(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIBuilderStatus", reflect.TypeOf((*MockServiceHandler)(nil).AIBuilderStatus), ctx, a)
 }
 
 // AICreate mocks base method.

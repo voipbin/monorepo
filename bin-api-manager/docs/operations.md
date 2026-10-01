@@ -63,6 +63,8 @@ Metrics are exposed on the configured listen address (default `:2112/metrics`).
 | `api_manager_pubsub_dropped_message_total` | Counter | — | In-process pub/sub messages dropped because a subscriber buffer was full |
 | `api_manager_rate_limit_allowed_total` | Counter | `tier` | Requests allowed by the rate limiter, by tier (`auth_public`, `auth_protected`, `v1`, `provisioning_public`) |
 | `api_manager_rate_limit_rejected_total` | Counter | `tier` | Requests rejected (429) by the rate limiter, by tier |
+| `api_manager_builder_timeout_total` | Counter | - | Assistant builder requests that ended with a deadline. Measured against the 55 second RPC wait, and it also counts the caller's own request context running out; a cancel is not counted. Does not match ai-manager's `llm_error` count, which is measured against `ai_builder_llm_timeout_seconds` |
+| `api_manager_builder_circuit_open_total` | Counter | - | Assistant builder chat requests refused because the circuit to ai-manager was open (chat only; a refused status check is shown as available=false and is not counted here) |
 
 Note: an HTTP request-latency histogram and a WebSocket-connection-count gauge were previously (incorrectly) documented here; neither is registered anywhere in `bin-api-manager` and both have been removed from this table.
 

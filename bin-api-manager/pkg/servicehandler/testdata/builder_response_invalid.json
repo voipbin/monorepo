@@ -1,0 +1,10 @@
+{
+  "status_code": 503,
+  "data_type": "voipbin_error",
+  "data": {
+    "status": "UNAVAILABLE",
+    "reason": "BUILDER_RESPONSE_INVALID",
+    "domain": "ai-manager",
+    "message": "the assistant builder gave an unusable answer, try again"
+  }
+}

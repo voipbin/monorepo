@@ -1,0 +1,78 @@
+post:
+  summary: Run one turn of the assistant builder conversation.
+  description: >
+    Not released and not yet evaluated by a human; do not build on it. There is no on/off setting: wherever the platform key is configured this endpoint answers and the platform pays for each call.
+
+
+    Sends the whole conversation so far and receives the builder's next message, plus a draft
+    assistant configuration once it has enough information. Nothing is saved: the draft only
+    fills the AI create form, and the user reviews it and saves it through `POST /ais`.
+
+
+    The server keeps no conversation. The client sends the full history on every turn, so a
+    refresh does not lose it only if the client stored it. Each message must be `user` or
+    `assistant`, and the last one must be `user`. Strict alternation is not enforced.
+
+
+    The request body may not exceed 160 KiB (163840 bytes), which is enforced while the body is read; a
+    larger body is answered with BUILDER_INPUT_TOO_LARGE (400). The per-message and total limits are reported by
+    `GET /ai_builder/status`.
+
+
+    Each call counts against a per-customer daily limit, from the moment it starts running. That
+    includes a call that then fails (a provider error, a timeout, or a model answer that could not
+    be used). A call refused because the request was invalid, the builder was
+    unavailable, or the service was busy, is not counted.
+
+
+    Requires an Agent identity with the customer admin or manager permission.
+  tags:
+    - AI
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/AIManagerAIBuilderChatRequest'
+  responses:
+    '200':
+      description: The builder's next message and, when ready, a draft.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIBuilderChatResponse'
+    '400':
+      description: >
+        The request is invalid (INVALID_ARGUMENT), the body is not valid JSON
+        (INVALID_JSON_BODY), or the body exceeded the size limit (BUILDER_INPUT_TOO_LARGE).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '429':
+      description: >
+        The daily limit was reached (BUILDER_DAILY_LIMIT), or the service is busy and the
+        request was not run (BUILDER_BUSY). Only the busy case is worth retrying soon. The
+        per-customer and per-IP request rate limits can also answer 429 with the reason
+        RATE_LIMIT_EXCEEDED, which is worth retrying after a short wait.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    '500':
+      $ref: '#/components/responses/InternalError'
+    '503':
+      description: >
+        The builder is not available. The `reason` is one of BUILDER_UNAVAILABLE (no key is configured, or the counter is down; the same reason
+        covers both, so a retry helps only in the second case), BUILDER_TIMEOUT (took too long),
+        BUILDER_RESPONSE_INVALID (the model's answer or the provider failed), or
+        SERVICE_UNAVAILABLE (the service is temporarily cut off). BUILDER_TIMEOUT,
+        BUILDER_RESPONSE_INVALID and SERVICE_UNAVAILABLE are worth retrying.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

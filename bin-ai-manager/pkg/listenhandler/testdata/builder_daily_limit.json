@@ -1,0 +1,10 @@
+{
+  "status_code": 429,
+  "data_type": "voipbin_error",
+  "data": {
+    "status": "RESOURCE_EXHAUSTED",
+    "reason": "BUILDER_DAILY_LIMIT",
+    "domain": "ai-manager",
+    "message": "the daily limit of the assistant builder has been reached"
+  }
+}

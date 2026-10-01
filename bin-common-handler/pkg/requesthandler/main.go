@@ -33,6 +33,7 @@ import (
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	amanalysis "monorepo/bin-ai-manager/models/analysis"
+	ambuilder "monorepo/bin-ai-manager/models/builder"
 	ammcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
@@ -233,6 +234,8 @@ type RequestHandler interface {
 		mcpServerIDs *[]uuid.UUID,
 		autoAICallAuditEnabled bool,
 	) (*amai.AI, error)
+	AIV1BuilderChat(ctx context.Context, customerID uuid.UUID, req *ambuilder.ChatRequest) (*ambuilder.ChatResponse, error)
+	AIV1BuilderStatus(ctx context.Context) (*ambuilder.StatusResponse, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIActivateInsight(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIDirectHashRegenerate(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)

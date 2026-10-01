@@ -4033,6 +4033,103 @@
         }
       }
     },
+    "/ai_builder/chat": {
+      "post": {
+        "summary": "Run one turn of the assistant builder conversation.",
+        "description": "Not released and not yet evaluated by a human; do not build on it. There is no on/off setting: wherever the platform key is configured this endpoint answers and the platform pays for each call.\n\nSends the whole conversation so far and receives the builder's next message, plus a draft assistant configuration once it has enough information. Nothing is saved: the draft only fills the AI create form, and the user reviews it and saves it through `POST /ais`.\n\nThe server keeps no conversation. The client sends the full history on every turn, so a refresh does not lose it only if the client stored it. Each message must be `user` or `assistant`, and the last one must be `user`. Strict alternation is not enforced.\n\nThe request body may not exceed 160 KiB (163840 bytes), which is enforced while the body is read; a larger body is answered with BUILDER_INPUT_TOO_LARGE (400). The per-message and total limits are reported by `GET /ai_builder/status`.\n\nEach call counts against a per-customer daily limit, from the moment it starts running. That includes a call that then fails (a provider error, a timeout, or a model answer that could not be used). A call refused because the request was invalid, the builder was unavailable, or the service was busy, is not counted.\n\nRequires an Agent identity with the customer admin or manager permission.\n",
+        "tags": [
+          "AI"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIManagerAIBuilderChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The builder's next message and, when ready, a draft.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAIBuilderChatResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is invalid (INVALID_ARGUMENT), the body is not valid JSON (INVALID_JSON_BODY), or the body exceeded the size limit (BUILDER_INPUT_TOO_LARGE).\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "429": {
+            "description": "The daily limit was reached (BUILDER_DAILY_LIMIT), or the service is busy and the request was not run (BUILDER_BUSY). Only the busy case is worth retrying soon. The per-customer and per-IP request rate limits can also answer 429 with the reason RATE_LIMIT_EXCEEDED, which is worth retrying after a short wait.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "description": "The builder is not available. The `reason` is one of BUILDER_UNAVAILABLE (no key is configured, or the counter is down; the same reason covers both, so a retry helps only in the second case), BUILDER_TIMEOUT (took too long), BUILDER_RESPONSE_INVALID (the model's answer or the provider failed), or SERVICE_UNAVAILABLE (the service is temporarily cut off). BUILDER_TIMEOUT, BUILDER_RESPONSE_INVALID and SERVICE_UNAVAILABLE are worth retrying.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai_builder/status": {
+      "get": {
+        "summary": "Check whether the assistant builder is available.",
+        "description": "Not released and not yet evaluated by a human. There is no on/off setting: `available` is true wherever the platform key is configured.\n\nReports whether the builder can be used and the input limits the client should enforce. It answers 200 with `available` false for a caller who is not allowed to use the builder, and when the service cannot be reached, so a client can hide the entry point without handling an error. The answer is cached in each server process for up to 30 seconds (5 seconds after a failure), so a change in availability can take that long to show, and two replicas can differ for a moment. When `available` is false, ignore the two limit values: they are 0 for a caller who may not use the builder and for a failed check, and they are the configured limits when the builder has no key.\n",
+        "tags": [
+          "AI"
+        ],
+        "responses": {
+          "200": {
+            "description": "Whether the builder is available and its limits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAIBuilderStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/teams/{id}": {
       "get": {
         "summary": "Get team details.",
@@ -28929,6 +29026,155 @@
             "nullable": true,
             "description": "Timestamp when the proposal was deleted.",
             "example": "2026-01-15T09:30:00.000000Z"
+          }
+        }
+      },
+      "AIManagerAIBuilderMessage": {
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "description": "Who wrote the message. The last message of a request must be `user`.",
+            "example": "user"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "The message text. At most 2000 characters (not bytes) per message, and 40000 in total across the conversation.\n",
+            "example": "I run a dental clinic and want an assistant that answers the phone."
+          }
+        }
+      },
+      "AIManagerAIBuilderDraft": {
+        "type": "object",
+        "description": "The assistant configuration the builder proposes. It is not saved. The user reviews it and saves it through `POST /ais`.\n",
+        "required": [
+          "name",
+          "detail",
+          "init_prompt",
+          "tool_names"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Proposed name of the assistant.",
+            "example": "Clinic front desk"
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Proposed one-line description.",
+            "example": "Answers calls, books appointments and hands urgent cases to staff."
+          },
+          "init_prompt": {
+            "type": "string",
+            "maxLength": 8000,
+            "description": "Proposed instructions for the assistant.",
+            "example": "You are the front desk assistant of a dental clinic. Greet the caller, ask what they need, and book or move appointments."
+          },
+          "tool_names": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AIManagerToolName"
+            },
+            "description": "Tools the assistant may use. In a response only `connect_call`, `stop_service`, `send_email`, `send_message`, `set_variables` and `case_create` can appear. In a request at most 6 entries are accepted.\n",
+            "example": [
+              "connect_call",
+              "stop_service"
+            ]
+          }
+        }
+      },
+      "AIManagerAIBuilderChatRequest": {
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "properties": {
+          "messages": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 40,
+            "items": {
+              "$ref": "#/components/schemas/AIManagerAIBuilderMessage"
+            },
+            "description": "The whole conversation so far, oldest first. The assistant entries are the earlier `message` values the server returned.\n"
+          },
+          "current_draft": {
+            "$ref": "#/components/schemas/AIManagerAIBuilderDraft",
+            "description": "The `draft` the server returned in the previous turn, if any. Edits the user made to the form by hand are not sent back and the builder does not see them. At most 6 tool names. Omit it for a first turn.\n"
+          }
+        }
+      },
+      "AIManagerAIBuilderChatResponse": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The builder's next message to show the user. Plain text.",
+            "example": "What should the assistant do when nobody is free to take a call?"
+          },
+          "draft": {
+            "$ref": "#/components/schemas/AIManagerAIBuilderDraft",
+            "description": "A proposed configuration, present once the builder has enough information."
+          },
+          "assumptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Things the draft assumes that the user did not say, to be confirmed.",
+            "example": [
+              "Opening hours are weekdays 9 to 18."
+            ]
+          },
+          "draft_warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Facts the server found about the draft. Each entry starts with a fixed key, optionally followed by `: ` and a detail, so a client may key on the part before `: `. The keys are `draft_discarded`, `tool_names_invalid`, `tool_removed`, `tools_section_removed`, `forbidden_tool_mentioned`, `init_prompt_truncated`, `name_truncated` and `detail_truncated`. For example `tool_removed: create_call` says a tool that is not allowed here was removed.\n",
+            "example": [
+              "tool_removed: create_call"
+            ]
+          }
+        }
+      },
+      "AIManagerAIBuilderStatusResponse": {
+        "type": "object",
+        "required": [
+          "available",
+          "max_messages",
+          "max_message_chars"
+        ],
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "description": "True when the builder can run (the key it needs is configured).",
+            "example": true
+          },
+          "max_messages": {
+            "type": "integer",
+            "description": "Most messages the client may send in one conversation.",
+            "example": 40
+          },
+          "max_message_chars": {
+            "type": "integer",
+            "description": "Most characters in one message.",
+            "example": 2000
           }
         }
       },

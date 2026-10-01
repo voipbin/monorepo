@@ -3637,6 +3637,136 @@ components:
           example: "2026-01-15T09:30:00.000000Z"
 
 
+    AIManagerAIBuilderMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+          description: Who wrote the message. The last message of a request must be `user`.
+          example: user
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: >
+            The message text. At most 2000 characters (not bytes) per message, and 40000 in
+            total across the conversation.
+          example: "I run a dental clinic and want an assistant that answers the phone."
+
+    AIManagerAIBuilderDraft:
+      type: object
+      description: >
+        The assistant configuration the builder proposes. It is not saved. The user reviews it
+        and saves it through `POST /ais`.
+      required:
+        - name
+        - detail
+        - init_prompt
+        - tool_names
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: Proposed name of the assistant.
+          example: "Clinic front desk"
+        detail:
+          type: string
+          maxLength: 500
+          description: Proposed one-line description.
+          example: "Answers calls, books appointments and hands urgent cases to staff."
+        init_prompt:
+          type: string
+          maxLength: 8000
+          description: Proposed instructions for the assistant.
+          example: "You are the front desk assistant of a dental clinic. Greet the caller, ask what they need, and book or move appointments."
+        tool_names:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIManagerToolName'
+          description: >
+            Tools the assistant may use. In a response only `connect_call`, `stop_service`,
+            `send_email`, `send_message`, `set_variables` and `case_create` can appear. In a
+            request at most 6 entries are accepted.
+          example: ["connect_call", "stop_service"]
+
+    AIManagerAIBuilderChatRequest:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+          minItems: 1
+          maxItems: 40
+          items:
+            $ref: '#/components/schemas/AIManagerAIBuilderMessage'
+          description: >
+            The whole conversation so far, oldest first. The assistant entries are the earlier
+            `message` values the server returned.
+        current_draft:
+          $ref: '#/components/schemas/AIManagerAIBuilderDraft'
+          description: >
+            The `draft` the server returned in the previous turn, if any. Edits the user made to
+            the form by hand are not sent back and the builder does not see them. At most 6 tool
+            names. Omit it for a first turn.
+
+    AIManagerAIBuilderChatResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: The builder's next message to show the user. Plain text.
+          example: "What should the assistant do when nobody is free to take a call?"
+        draft:
+          $ref: '#/components/schemas/AIManagerAIBuilderDraft'
+          description: A proposed configuration, present once the builder has enough information.
+        assumptions:
+          type: array
+          items:
+            type: string
+          description: Things the draft assumes that the user did not say, to be confirmed.
+          example: ["Opening hours are weekdays 9 to 18."]
+        draft_warnings:
+          type: array
+          items:
+            type: string
+          description: >
+            Facts the server found about the draft. Each entry starts with a fixed key, optionally
+            followed by `: ` and a detail, so a client may key on the part before `: `. The keys
+            are `draft_discarded`, `tool_names_invalid`, `tool_removed`, `tools_section_removed`,
+            `forbidden_tool_mentioned`, `init_prompt_truncated`, `name_truncated` and
+            `detail_truncated`. For example `tool_removed: create_call` says a tool that is not
+            allowed here was removed.
+          example: ["tool_removed: create_call"]
+
+    AIManagerAIBuilderStatusResponse:
+      type: object
+      required:
+        - available
+        - max_messages
+        - max_message_chars
+      properties:
+        available:
+          type: boolean
+          description: True when the builder can run (the key it needs is configured).
+          example: true
+        max_messages:
+          type: integer
+          description: Most messages the client may send in one conversation.
+          example: 40
+        max_message_chars:
+          type: integer
+          description: Most characters in one message.
+          example: 2000
+
 #########################################
 # Common
 #########################################
@@ -8601,6 +8731,11 @@ paths:
     $ref: './paths/aipromptproposals/id_reject.yaml'
   /aipromptproposals:
     $ref: './paths/aipromptproposals/main.yaml'
+
+  /ai_builder/chat:
+    $ref: './paths/ai_builder/chat.yaml'
+  /ai_builder/status:
+    $ref: './paths/ai_builder/status.yaml'
 
   /teams/{id}:
     $ref: './paths/teams/id.yaml'

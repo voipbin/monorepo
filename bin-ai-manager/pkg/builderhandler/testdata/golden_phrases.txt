@@ -1,0 +1,8 @@
+# Fixed phrases the Builder product sends. The frontend and the system prompt must
+# match these character for character in meaning. This file is the single source
+# for the frontend PR's checklist: compare it with the strings in square-admin.
+# Lines starting with # are comments. Do not add other lines without a design change.
+지금까지의 정보로 초안을 만들어 주세요
+Please create the draft with the information so far.
+이전 초안을 이어서 다듬고 싶습니다.
+I would like to continue refining the previous draft.

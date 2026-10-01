@@ -75,6 +75,9 @@ type CacheHandler interface {
 	ListenStartLockRelease(ctx context.Context, aicallID uuid.UUID, token string) error
 
 	ListenStateClear(ctx context.Context, aicallID uuid.UUID) error
+
+	// Assistant Builder daily turn counter (see builder.go).
+	BuilderChatCountIncr(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (int64, error)
 }
 
 // NewHandler creates DBHandler
