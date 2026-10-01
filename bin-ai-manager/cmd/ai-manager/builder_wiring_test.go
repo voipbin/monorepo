@@ -73,7 +73,7 @@ func Test_builderStartupWarnings(t *testing.T) {
 		{"no key", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gemini-3.8-flash"}, 1},
 		{"gemini model on an openai url (rollback)", config.Config{AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gemini-3.8-flash"}, 1},
 		{"openai model on a gemini url", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gpt-5"}, 1},
-		{"no key and a mismatch: both reported", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gpt-5"}, 2},
+		{"no key and a mismatch: only the missing key is reported", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gpt-5"}, 1},
 		{"model prefix is case-insensitive", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "Gemini-3.8-Flash"}, 0},
 	}
 	for _, tt := range tests {

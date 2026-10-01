@@ -103,7 +103,7 @@ type Config struct {
 	McpOAuthLinearClientSecret string
 
 	// Assistant Builder (docs/plans/2026-10-01-conversational-assistant-builder-design.md
-	// 4.6). OFF by default. The model, reasoning effort, token cap, concurrency
+	// 4.6). There is no on/off setting; it is available when the key is set. The model, reasoning effort, token cap, concurrency
 	// and timeout are initial values that have not been measured.
 	AIBuilderModel             string // AIBuilderModel is the model the Builder uses. It goes through the analysis engine's base URL and key.
 	AIBuilderReasoningEffort   string // AIBuilderReasoningEffort is sent as reasoning_effort ("none" disables Gemini thinking; empty omits the field).

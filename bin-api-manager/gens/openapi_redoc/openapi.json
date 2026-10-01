@@ -4106,7 +4106,7 @@
     "/ai_builder/status": {
       "get": {
         "summary": "Check whether the assistant builder is available.",
-        "description": "Not released.\n\nReports whether the builder can be used and the input limits the client should enforce. It answers 200 with `available` false for a caller who is not allowed to use the builder, and when the service cannot be reached, so a client can hide the entry point without handling an error. The answer is cached in each server process for up to 30 seconds (5 seconds after a failure), so a change in availability can take that long to show, and two replicas can differ for a moment. When `available` is false, ignore the two limit values: they are 0 for a caller who may not use the builder and for a failed check, and they are the configured limits when the builder is switched off or has no key.\n",
+        "description": "Not released.\n\nReports whether the builder can be used and the input limits the client should enforce. It answers 200 with `available` false for a caller who is not allowed to use the builder, and when the service cannot be reached, so a client can hide the entry point without handling an error. The answer is cached in each server process for up to 30 seconds (5 seconds after a failure), so a change in availability can take that long to show, and two replicas can differ for a moment. When `available` is false, ignore the two limit values: they are 0 for a caller who may not use the builder and for a failed check, and they are the configured limits when the builder has no key.\n",
         "tags": [
           "AI"
         ],

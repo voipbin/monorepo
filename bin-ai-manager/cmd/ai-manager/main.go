@@ -201,6 +201,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// It is available when that key is set. See builderSettings.
 	builderConfig, builderOptions := builderSettings(cfg)
 	for _, w := range builderStartupWarnings(cfg, builderOptions) {
+		if !builderOptions.KeyConfigured {
+			logrus.Info(w) // optional feature, not a fault of this deploy
+			continue
+		}
 		logrus.Warn(w)
 	}
 	builderHandler := builderhandler.NewBuilderHandler(analysisEngine, cache, builderConfig, builderOptions)

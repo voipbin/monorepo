@@ -1,5 +1,7 @@
 # VOIP-1558 Conversational Assistant Builder 디자인 (v8, 상태 없는 동기 멀티턴)
 
+> **갱신(2026-10-02).** 이 문서의 "킬 스위치", "`ai_builder_enabled`", "기본 꺼짐", "`BUILDER_DISABLED`", "어두운 머지", status의 "꺼짐" 상태 서술은 작성 시점의 것이다. 대표님 지시로 켜기용 설정을 제거했고 구현에는 없다(4.6 참조).
+
 Jira: VOIP-1558. 상태: **디자인 리뷰 루프 종료(6, 7회차 A, B 모두 APPROVE, 2회 연속). 7회차의 Medium과 Low는 v8에서 문서 수정으로 반영했다(설계 변경 없음).** 리뷰 이력(이 구조 기준): 1~4회차 A, B 모두 REQUEST_CHANGES, 5회차 A REQUEST_CHANGES와 B APPROVE, 6, 7회차 A, B 모두 APPROVE.
 
 이전 구조(aicall 기반 세션)는 디자인 리뷰 7회를 거쳤으나 차단 지점이 계속 늘어 대표님이 상태 없는 방식으로 전환을 결정했다(2026-10-01). 이전 문서는 `2026-10-01-conversational-assistant-builder-design-v7-aicall-superseded.md`에 보존한다. 지적은 모두 코드로 재검증한 뒤 반영했다.
@@ -234,7 +236,7 @@ reason 코드로 분기하고 문자열 매칭을 하지 않는다. 상태는 F1
 
 ### 4.8 계측
 
-Prometheus: 요청 수(결과별: ok, daily_limit, busy, disabled, unavailable, invalid_response, llm_error), 지연 히스토그램, `prompt_tokens`와 `output_tokens` 합계(F12). 본문과 customer id는 라벨에 넣지 않는다. (Builder 라우트는 `processRequest` 앞 분기라 기존 `promReceivedRequestProcessTime`을 건너뛰므로 위 지연 히스토그램이 이를 대신한다.) 도구 제거 수와 경고 수는 이번 범위에서 계측하지 않는다.
+Prometheus: 요청 수(결과별: ok, daily_limit, busy, unavailable, invalid_response, llm_error), 지연 히스토그램, `prompt_tokens`와 `output_tokens` 합계(F12). 본문과 customer id는 라벨에 넣지 않는다. (Builder 라우트는 `processRequest` 앞 분기라 기존 `promReceivedRequestProcessTime`을 건너뛰므로 위 지연 히스토그램이 이를 대신한다.) 도구 제거 수와 경고 수는 이번 범위에서 계측하지 않는다.
 
 ## 5. 프런트 (square-admin, 별도 PR)
 
