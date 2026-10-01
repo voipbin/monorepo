@@ -4102,13 +4102,13 @@ type AIManagerAIBuilderMessage struct {
 	// Example: I run a dental clinic and want an assistant that answers the phone.
 	Content string `json:"content"`
 
-	// Role Who wrote the message. The first and last messages must be `user`.
+	// Role Who wrote the message. The last message of a request must be `user`.
 	//
 	// Example: user
 	Role AIManagerAIBuilderMessageRole `json:"role"`
 }
 
-// AIManagerAIBuilderMessageRole Who wrote the message. The first and last messages must be `user`.
+// AIManagerAIBuilderMessageRole Who wrote the message. The last message of a request must be `user`.
 //
 // Example: user
 type AIManagerAIBuilderMessageRole string

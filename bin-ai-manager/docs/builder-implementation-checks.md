@@ -11,3 +11,15 @@
 | 알림 규칙의 `consume.go` 에러 문자열 매칭 | 저장소 안 yml, yaml, json에서 `could not parse the message`, `could not reply the message`, `could not marshal the response` 매칭 0건 | grep | 저장소 밖 인프라는 미확인. |
 | LB와 ingress timeout 65초 이상 | 미확인, 활성화 전 선결 | 저장소 밖 | 추가분 2. |
 | Loki 수집 소스 | 미확인, 활성화 전 선결 | 저장소 밖 | 추가분 2. |
+
+## 서버 구현에서 지킬 사본 (T8, T10)
+
+ai-manager와 api-manager는 별도 Go 모듈이라 서로의 테스트를 부를 수 없다. 그래서 Builder의 오류 wire 형식은 같은 JSON 파일 두 벌로 고정한다.
+
+| 파일 5종 | 위치 | 하는 일 |
+|---|---|---|
+| `builder_busy.json`, `builder_daily_limit.json`, `builder_timeout.json`, `builder_response_invalid.json`, `builder_unavailable.json` | `bin-ai-manager/pkg/listenhandler/testdata/` | `Test_processBuilder_wireFormatMatchesTheGoldenFiles`가 `processRequest`의 실제 출력과 비교한다. 갱신은 `go test ./pkg/listenhandler/ -run wireFormat -update` |
+| 같은 이름 5종 | `bin-api-manager/pkg/servicehandler/testdata/` | `Test_AIBuilderChat_restoresTheWireFormatOfEveryReason`가 `cerrors.FromResponse`로 복원해 status와 reason을 확인한다 |
+
+**두 벌이 같은지는 CI가 보지 않는다.** 파일을 바꾸면 반드시 다른 쪽 사본도 바꾸고, PR 리뷰에서 `cmp`로 대조한다. 대조 명령: `for f in busy daily_limit timeout response_invalid unavailable; do cmp bin-ai-manager/pkg/listenhandler/testdata/builder_$f.json bin-api-manager/pkg/servicehandler/testdata/builder_$f.json; done`
+

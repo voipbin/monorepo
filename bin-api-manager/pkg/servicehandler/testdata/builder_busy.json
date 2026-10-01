@@ -1,0 +1,10 @@
+{
+  "status_code": 429,
+  "data_type": "voipbin_error",
+  "data": {
+    "status": "RESOURCE_EXHAUSTED",
+    "reason": "BUILDER_BUSY",
+    "domain": "ai-manager",
+    "message": "the assistant builder is busy, try again shortly"
+  }
+}

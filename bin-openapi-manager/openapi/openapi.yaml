@@ -3648,7 +3648,7 @@ components:
           enum:
             - user
             - assistant
-          description: Who wrote the message. The first and last messages must be `user`.
+          description: Who wrote the message. The last message of a request must be `user`.
           example: user
         content:
           type: string

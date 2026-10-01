@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/builder"
+	"monorepo/bin-ai-manager/pkg/builderhandler"
 	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -49,6 +50,7 @@ func (h *listenHandler) processBuilder(m *sock.Request) (response *sock.Response
 		if r := recover(); r != nil {
 			// r is deliberately not logged or formatted.
 			logrus.WithField("func", "processBuilder").Error("A builder request panicked.")
+			builderhandler.RecordPanic()
 			response = simpleResponse(http.StatusInternalServerError)
 			err = nil
 		}

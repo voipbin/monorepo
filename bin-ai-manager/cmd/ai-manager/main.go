@@ -200,6 +200,9 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// The Assistant Builder shares the analysis engine (same provider and key).
 	// It is off unless AI_BUILDER_ENABLED is set. See builderSettings.
 	builderConfig, builderOptions := builderSettings(cfg)
+	for _, w := range builderStartupWarnings(cfg, builderOptions) {
+		logrus.Warn(w)
+	}
 	builderHandler := builderhandler.NewBuilderHandler(analysisEngine, cache, builderConfig, builderOptions)
 
 	utilHandler := utilhandler.NewUtilHandler()

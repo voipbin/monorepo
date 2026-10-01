@@ -122,6 +122,12 @@ func (h *builderHandler) mapTurnError(log *logrus.Entry, err error) error {
 		// Only the fixed classification code is logged, never the error text.
 		if llm != nil {
 			log = log.WithField("llm_error", llm.Code)
+			if llm.Code == "auth" {
+				// The platform's own key was refused, so every customer is affected.
+				// Error level makes it alertable; the code is a fixed word, never
+				// the provider's text.
+				log.Error("The builder's provider refused the platform key.")
+			}
 		}
 		return h.fail(log, resultLLMError, cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonResponseInvalid, "the assistant builder gave an unusable answer, try again"))
 

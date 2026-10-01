@@ -2,7 +2,10 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -21,6 +24,7 @@ import (
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/circuitbreakerhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
@@ -419,5 +423,60 @@ func Test_AIBuilderStatus_aCancelledCallerDoesNotPoisonTheCache(t *testing.T) {
 	res, _ := h.AIBuilderStatus(context.Background(), a)
 	if !res.Available {
 		t.Error("the cache must hold the successful answer, not the first caller's cancellation")
+	}
+}
+
+// The wire form ai-manager sends for each Builder failure, restored the way the
+// request handler restores it. The files are copies of
+// bin-ai-manager/pkg/listenhandler/testdata/builder_*.json, which that module's
+// test compares with the real output of processRequest. The two copies are kept
+// equal by a person reading the diff (see docs/builder-implementation-checks.md
+// in bin-ai-manager); this test is the api-manager half: whatever the file says
+// must come back as the same status and reason.
+func Test_AIBuilderChat_restoresTheWireFormatOfEveryReason(t *testing.T) {
+	tests := []struct {
+		file   string
+		status cerrors.Status
+		reason string
+		code   int
+	}{
+		{"builder_busy.json", cerrors.StatusResourceExhausted, builder.ReasonBusy, 429},
+		{"builder_daily_limit.json", cerrors.StatusResourceExhausted, builder.ReasonDailyLimit, 429},
+		{"builder_timeout.json", cerrors.StatusUnavailable, builder.ReasonTimeout, 503},
+		{"builder_response_invalid.json", cerrors.StatusUnavailable, builder.ReasonResponseInvalid, 503},
+		{"builder_unavailable.json", cerrors.StatusUnavailable, builder.ReasonUnavailable, 503},
+	}
+	for _, tt := range tests {
+		t.Run(tt.file, func(t *testing.T) {
+			raw, err := os.ReadFile(filepath.Join("testdata", tt.file))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var resp sock.Response
+			if err := json.Unmarshal(raw, &resp); err != nil {
+				t.Fatalf("the golden file is not a sock.Response: %v", err)
+			}
+			if resp.StatusCode != tt.code {
+				t.Errorf("status code: got %d, want %d", resp.StatusCode, tt.code)
+			}
+
+			ve := cerrors.FromResponse(&resp)
+			if ve == nil {
+				t.Fatalf("the response could not be restored as a typed error")
+			}
+			if ve.Status != tt.status || ve.Reason != tt.reason {
+				t.Errorf("got %s/%s, want %s/%s", ve.Status, ve.Reason, tt.status, tt.reason)
+			}
+
+			// And through the service handler: the reason arrives at the edge unchanged.
+			h, mockReq := newBuilderServiceHandler(t)
+			a := builderAgent(amagent.PermissionCustomerAdmin, builderCustomer)
+			mockReq.EXPECT().AIV1BuilderChat(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, ve)
+			_, got := h.AIBuilderChat(context.Background(), a, builderChatReq("hello"))
+			var out *cerrors.VoipbinError
+			if !errors.As(got, &out) || out.Reason != tt.reason {
+				t.Errorf("the reason did not survive the service handler: %v", got)
+			}
+		})
 	}
 }

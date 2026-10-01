@@ -4036,7 +4036,7 @@
     "/ai_builder/chat": {
       "post": {
         "summary": "Run one turn of the assistant builder conversation.",
-        "description": "Not released. Off by default and not yet evaluated by a human; do not build on it.\n\nSends the whole conversation so far and receives the builder's next message, plus a draft assistant configuration once it has enough information. Nothing is saved: the draft only fills the AI create form, and the user reviews it and saves it through `POST /ais`.\n\nThe server keeps no conversation. The client sends the full history on every turn, so a refresh does not lose it only if the client stored it. The last message must be a `user` message, and messages must alternate between `user` and `assistant`.\n\nEach call counts against a per-customer daily limit, including a call whose model answer could not be used. A call refused because the request was invalid, or because the service was busy, is not counted.\n\nRequires an Agent identity with the customer admin or manager permission.\n",
+        "description": "Not released. Off by default and not yet evaluated by a human; do not build on it.\n\nSends the whole conversation so far and receives the builder's next message, plus a draft assistant configuration once it has enough information. Nothing is saved: the draft only fills the AI create form, and the user reviews it and saves it through `POST /ais`.\n\nThe server keeps no conversation. The client sends the full history on every turn, so a refresh does not lose it only if the client stored it. Each message must be `user` or `assistant`, and the last one must be `user`. Strict alternation is not enforced.\n\nEach call counts against a per-customer daily limit, from the moment it starts running. That includes a call that then fails (a provider error, a timeout, or a model answer that could not be used). A call refused because the request was invalid, the builder was switched off or unavailable, or the service was busy, is not counted.\n\nRequires an Agent identity with the customer admin or manager permission.\n",
         "tags": [
           "AI"
         ],
@@ -4091,7 +4091,7 @@
             "$ref": "#/components/responses/InternalError"
           },
           "503": {
-            "description": "The builder is not available. The `reason` is one of BUILDER_DISABLED (switched off), BUILDER_UNAVAILABLE (no key, or the counter is down), BUILDER_TIMEOUT (took too long), BUILDER_RESPONSE_INVALID (the model's answer or the provider failed), or SERVICE_UNAVAILABLE (the service is temporarily cut off). All but BUILDER_DISABLED are worth retrying.\n",
+            "description": "The builder is not available. The `reason` is one of BUILDER_DISABLED (switched off), BUILDER_UNAVAILABLE (no key is configured, or the counter is down; the same reason covers both, so a retry helps only in the second case), BUILDER_TIMEOUT (took too long), BUILDER_RESPONSE_INVALID (the model's answer or the provider failed), or SERVICE_UNAVAILABLE (the service is temporarily cut off). BUILDER_TIMEOUT, BUILDER_RESPONSE_INVALID and SERVICE_UNAVAILABLE are worth retrying.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -29042,7 +29042,7 @@
               "user",
               "assistant"
             ],
-            "description": "Who wrote the message. The first and last messages must be `user`.",
+            "description": "Who wrote the message. The last message of a request must be `user`.",
             "example": "user"
           },
           "content": {

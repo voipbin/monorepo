@@ -1,0 +1,10 @@
+{
+  "status_code": 503,
+  "data_type": "voipbin_error",
+  "data": {
+    "status": "UNAVAILABLE",
+    "reason": "BUILDER_TIMEOUT",
+    "domain": "ai-manager",
+    "message": "the assistant builder took too long, try again"
+  }
+}

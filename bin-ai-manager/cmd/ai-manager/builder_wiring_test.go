@@ -69,3 +69,29 @@ func Test_builderSettings_disabledByDefault(t *testing.T) {
 		t.Error("the Builder must be off unless switched on")
 	}
 }
+
+func Test_builderStartupWarnings(t *testing.T) {
+	const openaiURL = "https://api.openai.com/v1"
+	tests := []struct {
+		name string
+		cfg  config.Config
+		want int
+	}{
+		{"off: nothing, even when everything is wrong", config.Config{AnalysisEngineBaseURL: openaiURL, AIBuilderModel: "gemini-3.8-flash"}, 0},
+		{"on, key present, matching gemini", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gemini-3.8-flash"}, 0},
+		{"on, key present, matching openai", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gpt-5"}, 0},
+		{"on, no key", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gemini-3.8-flash"}, 1},
+		{"on, gemini model on an openai url (rollback)", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gemini-3.8-flash"}, 1},
+		{"on, openai model on a gemini url", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gpt-5"}, 1},
+		{"on, no key and a mismatch: both reported", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gpt-5"}, 2},
+		{"model prefix is case-insensitive", config.Config{AIBuilderEnabled: true, AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "Gemini-3.8-Flash"}, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, opts := builderSettings(&tt.cfg)
+			if got := builderStartupWarnings(&tt.cfg, opts); len(got) != tt.want {
+				t.Errorf("got %d warnings %v, want %d", len(got), got, tt.want)
+			}
+		})
+	}
+}

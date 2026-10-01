@@ -4011,11 +4011,11 @@ type AIManagerAIBuilderMessage struct {
 	// Content The message text. At most 2000 characters (not bytes) per message, and 40000 in total across the conversation.
 	Content string `json:"content"`
 
-	// Role Who wrote the message. The first and last messages must be `user`.
+	// Role Who wrote the message. The last message of a request must be `user`.
 	Role AIManagerAIBuilderMessageRole `json:"role"`
 }
 
-// AIManagerAIBuilderMessageRole Who wrote the message. The first and last messages must be `user`.
+// AIManagerAIBuilderMessageRole Who wrote the message. The last message of a request must be `user`.
 type AIManagerAIBuilderMessageRole string
 
 // AIManagerAIBuilderStatusResponse defines model for AIManagerAIBuilderStatusResponse.

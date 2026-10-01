@@ -13,6 +13,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/models/builder"
@@ -520,4 +521,143 @@ func Test_Chat_validationRunsBeforeTheSemaphoreAndCounter(t *testing.T) {
 	if s.callCount() != 0 {
 		t.Error("no LLM call may happen")
 	}
+}
+
+// resultCount reads ai_manager_builder_chat_total for one result label.
+func resultCount(result string) float64 {
+	return testutil.ToFloat64(promBuilderChatTotal.WithLabelValues(result))
+}
+
+var allResultLabels = []string{
+	resultOK, resultDailyLimit, resultBusy, resultDisabled, resultUnavailable,
+	resultInvalidResponse, resultLLMError, resultInvalidArgument, resultInternal,
+}
+
+// Every outcome raises exactly its own label by one and no other. The labels
+// are what operators alert on and what operations.md documents, and the plan
+// requires llm_error to stay apart from the unavailable of a Redis failure.
+func Test_Chat_resultLabels(t *testing.T) {
+	tests := []struct {
+		name   string
+		want   string
+		sender *chatSender
+		req    *builder.ChatRequest
+		setup  func(c *cachehandler.MockCacheHandler)
+		opts   [2]bool // enabled, keyConfigured
+		limit  int
+	}{
+		{"ok", resultOK, &chatSender{reply: goodReply}, chatReq(), counted(1), [2]bool{true, true}, 200},
+		{"invalid request", resultInvalidArgument, &chatSender{reply: goodReply}, &builder.ChatRequest{}, nil, [2]bool{true, true}, 200},
+		{"disabled", resultDisabled, &chatSender{reply: goodReply}, chatReq(), nil, [2]bool{false, true}, 200},
+		{"no key", resultUnavailable, &chatSender{reply: goodReply}, chatReq(), nil, [2]bool{true, false}, 200},
+		{"counter down", resultUnavailable, &chatSender{reply: goodReply}, chatReq(), func(c *cachehandler.MockCacheHandler) {
+			c.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(0), errors.New("x"))
+		}, [2]bool{true, true}, 200},
+		{"daily limit", resultDailyLimit, &chatSender{reply: goodReply}, chatReq(), counted(201), [2]bool{true, true}, 200},
+		{"provider error", resultLLMError, &chatSender{err: &openai.APIError{HTTPStatusCode: 500}}, chatReq(), counted(1), [2]bool{true, true}, 200},
+		{"llm deadline", resultLLMError, &chatSender{err: context.DeadlineExceeded}, chatReq(), counted(1), [2]bool{true, true}, 200},
+		{"unparseable", resultInvalidResponse, &chatSender{reply: "not json"}, chatReq(), counted(1), [2]bool{true, true}, 200},
+		{"truncated", resultInvalidResponse, &chatSender{reply: `{"message":"x"}`, finish: openai.FinishReasonLength}, chatReq(), counted(1), [2]bool{true, true}, 200},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			before := map[string]float64{}
+			for _, l := range allResultLabels {
+				before[l] = resultCount(l)
+			}
+
+			h, cache := newTestHandler(t, tt.sender, testCfg(), tt.limit, 3, tt.opts[0], tt.opts[1])
+			if tt.setup != nil {
+				tt.setup(cache)
+			}
+			_, _ = h.Chat(context.Background(), customerID, tt.req)
+
+			for _, l := range allResultLabels {
+				delta := resultCount(l) - before[l]
+				want := 0.0
+				if l == tt.want {
+					want = 1
+				}
+				if delta != want {
+					t.Errorf("label %q moved by %v, want %v", l, delta, want)
+				}
+			}
+		})
+	}
+}
+
+func counted(n int64) func(c *cachehandler.MockCacheHandler) {
+	return func(c *cachehandler.MockCacheHandler) {
+		c.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(n, nil)
+	}
+}
+
+// A busy refusal is counted under its own label, and not as anything else.
+func Test_Chat_resultLabelBusy(t *testing.T) {
+	s := &chatSender{block: make(chan struct{}), entered: make(chan struct{}, 2), reply: goodReply}
+	h, cache := newTestHandler(t, s, testCfg(), 200, 1, true, true)
+	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
+
+	done := make(chan struct{})
+	go func() { _, _ = h.Chat(context.Background(), customerID, chatReq()); close(done) }()
+	<-s.entered
+
+	before := resultCount(resultBusy)
+	_, _ = h.Chat(context.Background(), customerID, chatReq())
+	if resultCount(resultBusy)-before != 1 {
+		t.Error("a busy refusal must raise the busy label by one")
+	}
+	close(s.block)
+	<-done
+}
+
+// A provider authentication failure means the platform's own key is wrong or
+// expired and every customer is affected. It is logged at error level so an
+// alert can be built on it; the other provider failures are expected noise.
+func Test_Chat_providerAuthFailureIsLoggedAtErrorLevel(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		wantErr  bool
+		wantCode string
+	}{
+		{"401", &openai.APIError{HTTPStatusCode: 401}, true, "auth"},
+		{"403", &openai.APIError{HTTPStatusCode: 403}, true, "auth"},
+		{"500", &openai.APIError{HTTPStatusCode: 500}, false, "provider_5xx"},
+		{"429", &openai.APIError{HTTPStatusCode: 429}, false, "rate_limit"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hook := logrusTestHook(t)
+			h, cache := newTestHandler(t, &chatSender{err: tt.err}, testCfg(), 200, 3, true, true)
+			cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
+
+			_, _ = h.Chat(context.Background(), customerID, chatReq())
+
+			sawError := false
+			sawCode := false
+			for _, e := range hook.AllEntries() {
+				if e.Level <= logrus.ErrorLevel {
+					sawError = true
+				}
+				if e.Data["llm_error"] == tt.wantCode {
+					sawCode = true
+				}
+			}
+			if sawError != tt.wantErr {
+				t.Errorf("error-level entry: got %v, want %v", sawError, tt.wantErr)
+			}
+			if !sawCode {
+				t.Errorf("the fixed classification code %q must be logged", tt.wantCode)
+			}
+		})
+	}
+}
+
+func logrusTestHook(t *testing.T) *logrustest.Hook {
+	t.Helper()
+	hook := logrustest.NewGlobal()
+	logrus.SetLevel(logrus.TraceLevel)
+	t.Cleanup(func() { hook.Reset() })
+	return hook
 }

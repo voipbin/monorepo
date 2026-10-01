@@ -10,13 +10,14 @@ post:
 
 
     The server keeps no conversation. The client sends the full history on every turn, so a
-    refresh does not lose it only if the client stored it. The last message must be a `user`
-    message, and messages must alternate between `user` and `assistant`.
+    refresh does not lose it only if the client stored it. Each message must be `user` or
+    `assistant`, and the last one must be `user`. Strict alternation is not enforced.
 
 
-    Each call counts against a per-customer daily limit, including a call whose model answer
-    could not be used. A call refused because the request was invalid, or because the service
-    was busy, is not counted.
+    Each call counts against a per-customer daily limit, from the moment it starts running. That
+    includes a call that then fails (a provider error, a timeout, or a model answer that could not
+    be used). A call refused because the request was invalid, the builder was switched off or
+    unavailable, or the service was busy, is not counted.
 
 
     Requires an Agent identity with the customer admin or manager permission.
@@ -60,10 +61,11 @@ post:
     '503':
       description: >
         The builder is not available. The `reason` is one of BUILDER_DISABLED (switched off),
-        BUILDER_UNAVAILABLE (no key, or the counter is down), BUILDER_TIMEOUT (took too long),
+        BUILDER_UNAVAILABLE (no key is configured, or the counter is down; the same reason
+        covers both, so a retry helps only in the second case), BUILDER_TIMEOUT (took too long),
         BUILDER_RESPONSE_INVALID (the model's answer or the provider failed), or
-        SERVICE_UNAVAILABLE (the service is temporarily cut off). All but BUILDER_DISABLED
-        are worth retrying.
+        SERVICE_UNAVAILABLE (the service is temporarily cut off). BUILDER_TIMEOUT,
+        BUILDER_RESPONSE_INVALID and SERVICE_UNAVAILABLE are worth retrying.
       content:
         application/json:
           schema:

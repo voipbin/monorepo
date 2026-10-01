@@ -387,6 +387,12 @@ func Validate() error {
 // or api-manager would give up first while ai-manager kept working and counting.
 const builderRPCTimeoutSeconds = 55
 
+// builderRPCHeadroomSeconds is the room kept between the LLM deadline and the
+// RPC wait for queueing and parsing. Without it a deadline of 54 passes the
+// check and api-manager gives up first while ai-manager keeps working, and
+// counting, on a call nobody is waiting for.
+const builderRPCHeadroomSeconds = 5
+
 // validateBuilderConfig refuses a Builder value that would make it misbehave.
 // It runs only when the Builder is enabled: a deploy that never turned the
 // feature on must not fail to start because of a setting it never set.
@@ -415,8 +421,8 @@ func validateBuilderConfig() error {
 			invalid = append(invalid, fmt.Sprintf("%s must be > 0, got %d", p.name, p.value))
 		}
 	}
-	if globalConfig.AIBuilderLLMTimeoutSeconds >= builderRPCTimeoutSeconds {
-		invalid = append(invalid, fmt.Sprintf("ai_builder_llm_timeout_seconds must be < %d (the RPC timeout), got %d", builderRPCTimeoutSeconds, globalConfig.AIBuilderLLMTimeoutSeconds))
+	if globalConfig.AIBuilderLLMTimeoutSeconds > builderRPCTimeoutSeconds-builderRPCHeadroomSeconds {
+		invalid = append(invalid, fmt.Sprintf("ai_builder_llm_timeout_seconds must be <= %d (the %d second RPC wait minus %d seconds of headroom), got %d", builderRPCTimeoutSeconds-builderRPCHeadroomSeconds, builderRPCTimeoutSeconds, builderRPCHeadroomSeconds, globalConfig.AIBuilderLLMTimeoutSeconds))
 	}
 	if strings.TrimSpace(globalConfig.AIBuilderModel) == "" {
 		invalid = append(invalid, "ai_builder_model must not be empty")

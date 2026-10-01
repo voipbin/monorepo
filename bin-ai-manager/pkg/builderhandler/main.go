@@ -103,7 +103,18 @@ const (
 	// validation is the customer's mistake and costs nothing; counting it apart
 	// keeps it out of the llm_error and unavailable rates operators watch.
 	resultInvalidArgument = "invalid_argument"
+	// resultInternal is a panic that listenhandler recovered. The call may have
+	// been counted against the daily limit already, so it must show up here.
+	resultInternal = "internal"
 )
+
+// RecordPanic counts a Builder request whose handling panicked. It is for the
+// listen handler's recover, which cannot see the handler's own metrics. The
+// label is a fixed word; the panic value, which can carry the input, is not
+// an argument on purpose.
+func RecordPanic() {
+	promBuilderChatTotal.WithLabelValues(resultInternal).Inc()
+}
 
 // NewBuilderHandler creates the handler.
 //

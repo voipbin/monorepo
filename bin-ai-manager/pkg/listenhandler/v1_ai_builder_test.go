@@ -4,11 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 
@@ -337,4 +341,108 @@ func Test_processBuilder_chatPassesTheCurrentDraftOn(t *testing.T) {
 	if err != nil || resp.StatusCode != http.StatusOK {
 		t.Fatalf("got %v / %+v", err, resp)
 	}
+}
+
+var updateBuilderGolden = flag.Bool("update", false, "rewrite the builder wire golden files in testdata")
+
+// builderWireReasons are the reasons whose wire form api-manager must be able
+// to restore (design 4.7). The golden file of each is what ai-manager really
+// puts on the queue for that failure, taken from processRequest's output, not
+// from a hand-built value.
+//
+// api-manager keeps a copy of each file under
+// bin-api-manager/pkg/servicehandler/testdata and restores it with
+// cerrors.FromResponse. The two modules cannot import each other's tests, so
+// the copies are kept equal by a person reading the diff: the checklist in
+// docs/builder-implementation-checks.md says so. Change a file here, change
+// its copy there.
+var builderWireReasons = []struct {
+	file string
+	err  error
+}{
+	{"builder_busy.json", cerrors.ResourceExhausted(commonoutline.ServiceNameAIManager, builder.ReasonBusy, "the assistant builder is busy, try again shortly")},
+	{"builder_daily_limit.json", cerrors.ResourceExhausted(commonoutline.ServiceNameAIManager, builder.ReasonDailyLimit, "the daily limit of the assistant builder has been reached")},
+	{"builder_timeout.json", cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonTimeout, "the assistant builder took too long, try again")},
+	{"builder_response_invalid.json", cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonResponseInvalid, "the assistant builder gave an unusable answer, try again")},
+	{"builder_unavailable.json", cerrors.Unavailable(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the assistant builder is not available")},
+}
+
+func Test_processBuilder_wireFormatMatchesTheGoldenFiles(t *testing.T) {
+	for _, tt := range builderWireReasons {
+		t.Run(tt.file, func(t *testing.T) {
+			h, bh := newBuilderListenHandler(t)
+			// The cause is attached on purpose: it must not reach the wire.
+			failure := tt.err.(*cerrors.VoipbinError).Wrap(errors.New(secretInput))
+			bh.EXPECT().Chat(gomock.Any(), builderCustomerID, gomock.Any()).Return(nil, failure)
+
+			resp, err := h.processRequest(builderChatRequest(t, builderCustomerID, "hello"))
+			if err != nil {
+				t.Fatalf("got err: %v", err)
+			}
+			got, errMarshal := json.MarshalIndent(resp, "", "  ")
+			if errMarshal != nil {
+				t.Fatal(errMarshal)
+			}
+			got = append(got, '\n')
+
+			path := filepath.Join("testdata", tt.file)
+			if *updateBuilderGolden {
+				if err := os.MkdirAll("testdata", 0o755); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(path, got, 0o644); err != nil {
+					t.Fatal(err)
+				}
+			}
+			want, errRead := os.ReadFile(path)
+			if errRead != nil {
+				t.Fatalf("cannot read the golden file (run with -update once): %v", errRead)
+			}
+			if !bytes.Equal(got, want) {
+				t.Errorf("the wire form changed.\nwant: %s\ngot:  %s", want, got)
+			}
+			if strings.Contains(string(got), secretInput) {
+				t.Error("the error cause reached the wire")
+			}
+		})
+	}
+}
+
+// A recovered panic is counted under its own fixed label.
+func Test_processBuilder_panicIsCounted(t *testing.T) {
+	before := panicCount(t)
+	h, bh := newBuilderListenHandler(t)
+	bh.EXPECT().Chat(gomock.Any(), builderCustomerID, gomock.Any()).DoAndReturn(
+		func(_ any, _ uuid.UUID, _ *builder.ChatRequest) (*builder.ChatResponse, error) { panic("boom") })
+
+	resp, err := h.processRequest(builderChatRequest(t, builderCustomerID, "hello"))
+	if err != nil || resp.StatusCode != http.StatusInternalServerError {
+		t.Fatalf("got %v / %+v", err, resp)
+	}
+	if panicCount(t)-before != 1 {
+		t.Error("the panic must be counted")
+	}
+}
+
+// panicCount reads ai_manager_builder_chat_total{result="internal"} from the
+// default registry, because the counter itself is private to builderhandler.
+func panicCount(t *testing.T) float64 {
+	t.Helper()
+	families, err := prometheus.DefaultGatherer.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range families {
+		if f.GetName() != "ai_manager_builder_chat_total" {
+			continue
+		}
+		for _, m := range f.GetMetric() {
+			for _, l := range m.GetLabel() {
+				if l.GetName() == "result" && l.GetValue() == "internal" {
+					return m.GetCounter().GetValue()
+				}
+			}
+		}
+	}
+	return 0
 }
