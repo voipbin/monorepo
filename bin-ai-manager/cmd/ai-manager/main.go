@@ -200,12 +200,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// The Assistant Builder shares the analysis engine (same provider and key).
 	// It is available when that key is set. See builderSettings.
 	builderConfig, builderOptions := builderSettings(cfg)
-	for _, w := range builderStartupWarnings(cfg, builderOptions) {
-		if !builderOptions.KeyConfigured {
-			logrus.Info(w) // optional feature, not a fault of this deploy
-			continue
-		}
-		logrus.Warn(w)
+	infos, warns := builderStartupNotes(cfg, builderOptions)
+	for _, m := range infos {
+		logrus.Info(m)
+	}
+	for _, m := range warns {
+		logrus.Warn(m)
 	}
 	builderHandler := builderhandler.NewBuilderHandler(analysisEngine, cache, builderConfig, builderOptions)
 

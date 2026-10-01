@@ -61,26 +61,28 @@ func Test_builderSettings_mapsEverySetting(t *testing.T) {
 	}
 }
 
-func Test_builderStartupWarnings(t *testing.T) {
+func Test_builderStartupNotes(t *testing.T) {
 	const openaiURL = "https://api.openai.com/v1"
 	tests := []struct {
-		name string
-		cfg  config.Config
-		want int
+		name      string
+		cfg       config.Config
+		wantInfos int
+		wantWarns int
 	}{
-		{"key present, matching gemini", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gemini-3.8-flash"}, 0},
-		{"key present, matching openai", config.Config{AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gpt-5"}, 0},
-		{"no key", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gemini-3.8-flash"}, 1},
-		{"gemini model on an openai url (rollback)", config.Config{AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gemini-3.8-flash"}, 1},
-		{"openai model on a gemini url", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gpt-5"}, 1},
-		{"no key and a mismatch: only the missing key is reported", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gpt-5"}, 1},
-		{"model prefix is case-insensitive", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "Gemini-3.8-Flash"}, 0},
+		{"key present, matching gemini", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gemini-3.8-flash"}, 0, 0},
+		{"key present, matching openai", config.Config{AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gpt-5"}, 0, 0},
+		{"no key", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gemini-3.8-flash"}, 1, 0},
+		{"gemini model on an openai url (rollback)", config.Config{AnalysisEngineBaseURL: openaiURL, EngineKeyChatGPT: "o", AIBuilderModel: "gemini-3.8-flash"}, 0, 1},
+		{"openai model on a gemini url", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "gpt-5"}, 0, 1},
+		{"no key and a mismatch: only the missing key is reported", config.Config{AnalysisEngineBaseURL: geminiURL, AIBuilderModel: "gpt-5"}, 1, 0},
+		{"model prefix is case-insensitive", config.Config{AnalysisEngineBaseURL: geminiURL, GoogleAPIKey: "g", AIBuilderModel: "Gemini-3.8-Flash"}, 0, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, opts := builderSettings(&tt.cfg)
-			if got := builderStartupWarnings(&tt.cfg, opts); len(got) != tt.want {
-				t.Errorf("got %d warnings %v, want %d", len(got), got, tt.want)
+			infos, warns := builderStartupNotes(&tt.cfg, opts)
+			if len(infos) != tt.wantInfos || len(warns) != tt.wantWarns {
+				t.Errorf("got infos %v and warnings %v, want %d and %d", infos, warns, tt.wantInfos, tt.wantWarns)
 			}
 		})
 	}

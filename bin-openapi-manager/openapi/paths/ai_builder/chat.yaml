@@ -1,7 +1,7 @@
 post:
   summary: Run one turn of the assistant builder conversation.
   description: >
-    Not released and not yet evaluated by a human; do not build on it.
+    Not released and not yet evaluated by a human; do not build on it. There is no on/off setting: wherever the platform key is configured this endpoint answers and the platform pays for each call.
 
 
     Sends the whole conversation so far and receives the builder's next message, plus a draft

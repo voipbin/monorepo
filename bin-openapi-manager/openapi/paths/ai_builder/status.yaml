@@ -1,7 +1,7 @@
 get:
   summary: Check whether the assistant builder is available.
   description: >
-    Not released.
+    Not released and not yet evaluated by a human. There is no on/off setting: `available` is true wherever the platform key is configured.
 
 
     Reports whether the builder can be used and the input limits the client should enforce. It

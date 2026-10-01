@@ -20,7 +20,7 @@
 6. **구현에서 계획과 달라진 점(서버 구현 중 기록, 동작 변경 없음 또는 아래 이유).**
    - `NewBuilderHandler`의 마지막 인자는 `keyConfigured bool`이 아니라 `Options{KeyConfigured, DailyLimit, MaxConcurrent}` 구조체이다(`Enabled`는 대표님 지시로 제거). 일일 한도, 동시 호출 수까지 넘겨야 해서 묶었다.
    - 메트릭 `result` 라벨이 설계 4.8의 7개에 더해 `invalid_argument`(검증 실패, 고객 실수라 `llm_error`와 `unavailable`의 비율에 섞지 않으려는 것)와 `internal`(listenhandler가 복구한 panic)을 갖는다.
-   - 기동 시 설정 검증(`validateBuilderConfig`)을 추가했다. 켜져 있을 때만 양수 검사, LLM 시간 제한 0 이하 거부(이월 항목), 55초 RPC 대기에서 5초 여유를 뺀 50초 초과 거부, 모델 비어 있음 거부.
+   - 기동 시 설정 검증(`validateBuilderConfig`)을 추가했다. (구현에서는 항상 검사한다. 켜기용 설정이 제거되었다.) 양수 검사, LLM 시간 제한 0 이하 거부(이월 항목), 55초 RPC 대기에서 5초 여유를 뺀 50초 초과 거부, 모델 비어 있음 거부.
    - `ai_builder_model`의 기본값은 `analysis_default_model`을 따르지 않고 같은 값(`gemini-3.8-flash`)을 따로 둔다. 연동하지 않은 이유는 Builder만 모델을 바꿀 수 있어야 하기 때문이다.
    - 이 계획 본문의 일부 이름과 서술은 구현과 다르며 구현이 맞다. T6의 설정 이름은 `ai_builder_llm_timeout_seconds`(계획의 `_sec`는 오기), T8의 새 파일은 `v1_ai_builder.go`, T9의 `consume.go`는 요청 파싱과 응답 marshal 오류 문자열에서 본문뿐 아니라 err도 뺐다(json 오류가 바이트를 인용할 수 있어서). 설계 2.5와 11절의 "약 38회, 225호출, 훑어보기 15건"은 이 계획 4번의 정정값(36회, 216, 8건)이 맞으며 설계 본문은 고치지 않았다.
    - 프롬프트의 규칙은 설계 2.3과 계획 T4의 6개가 아니라 7개이다. 규칙 7("사용자가 말한 것과 빌더가 제안한 것을 구분한다")은 평가 실행 1 이후 프롬프트 개정 2에서 추가되었다.

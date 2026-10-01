@@ -333,7 +333,7 @@ Public endpoint — no authentication required. Redeems a token issued by `POST 
 | DELETE | `/ais/:id` | bin-ai-manager | Delete AI agent |
 | POST | `/ais/:id/activate_insight` | bin-ai-manager | Make this Insight AI the customer's active one |
 | POST | `/ais/:id/direct-hash-regenerate` | bin-ai-manager | Regenerate direct hash |
-| POST | `/ai_builder/chat` | bin-ai-manager | One turn of the assistant builder conversation. Agent with customer admin or manager only. Not released. The server keeps no conversation |
+| POST | `/ai_builder/chat` | bin-ai-manager | One turn of the assistant builder conversation. Agent with customer admin or manager only. Not released, and no on/off setting: it answers wherever the platform key is configured. The server keeps no conversation |
 | GET | `/ai_builder/status` | bin-ai-manager | Whether the assistant builder is available. 200 with `available=false` for a caller who may not use it. Cached in the process for 30 seconds (5 on failure) |
 | GET | `/aicalls` | bin-ai-manager | List AI call sessions |
 | POST | `/aicalls` | bin-ai-manager | Create AI call session |

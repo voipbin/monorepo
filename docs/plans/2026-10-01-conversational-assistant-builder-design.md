@@ -278,7 +278,7 @@ monorepo(백엔드, 한 PR). **프롬프트와 평가를 먼저 한다**(인프�
 3. ai-manager: `builderhandler`(세마포어, 호출 순서 4.3), 설정, `BuilderChatCountIncr`, `processRequest` 앞의 Builder 라우트(본문 로그 금지), 메트릭, `main.go`의 키와 모델 정합성 경고, status RPC 처리.
 4. common-handler: `AIV1BuilderChat`(명시 timeout 55초), `AIV1BuilderStatus`, **`rabbitmqhandler/consume.go`의 세 에러 문자열에서 본문 제거**(4.5). vendor는 커밋하지 않으므로 갱신 작업은 없다(4.5의 vendor 정정).
 5. api-manager: `POST /ai_builder/chat`(Builder 라우트에서 RPC timeout을 `BUILDER_TIMEOUT` 503으로, `ErrCircuitOpen`을 503으로 변환하고 두 카운터를 둠, status 프로세스 로컬 캐시(만료 시 갱신은 `singleflight` 또는 뮤텍스 안에서 하나만 수행)와 실패 시 `available=false`), `GET /ai_builder/status`, `MaxBytesReader`, `!IsAgent` 거부, OpenAPI, servicehandler.
-6. docsdev: AI 생성 문서, 셀프호스팅 설정(엔진 키), 활성화 후 smoke 대화 1회.
+6. docsdev: AI 생성 문서, 셀프호스팅 설정(엔진 키), 배포 후 smoke 대화 1회.
 
 monorepo-javascript(프런트): OpenAPI 동기화(`voipbin-openapi-sync-to-js`), `prompt_templates.js`의 export 추가(`ais_create.test.js`의 `jest.mock('../prompt_templates', ...)`에 `toolsSection`과 `TOOL_LABELS`를 추가하고 `src/provider` mock의 status 조회 undefined를 처리), 템플릿 다이얼로그의 Builder 화면, 미리보기, 폼 채우기, 테스트. 백엔드 배포 후에 노출한다(status가 `available=true`일 때만 카드).
 
