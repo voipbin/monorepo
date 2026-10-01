@@ -1,0 +1,70 @@
+post:
+  summary: Run one turn of the assistant builder conversation.
+  description: >
+    Not released. Off by default and not yet evaluated by a human; do not build on it.
+
+
+    Sends the whole conversation so far and receives the builder's next message, plus a draft
+    assistant configuration once it has enough information. Nothing is saved: the draft only
+    fills the AI create form, and the user reviews it and saves it through `POST /ais`.
+
+
+    The server keeps no conversation. The client sends the full history on every turn, so a
+    refresh does not lose it only if the client stored it. The last message must be a `user`
+    message, and messages must alternate between `user` and `assistant`.
+
+
+    Each call counts against a per-customer daily limit, including a call whose model answer
+    could not be used. A call refused because the request was invalid, or because the service
+    was busy, is not counted.
+
+
+    Requires an Agent identity with the customer admin or manager permission.
+  tags:
+    - AI
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/AIManagerAIBuilderChatRequest'
+  responses:
+    '200':
+      description: The builder's next message and, when ready, a draft.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIBuilderChatResponse'
+    '400':
+      description: >
+        The request is invalid (INVALID_ARGUMENT), or the body exceeded the size limit
+        (BUILDER_INPUT_TOO_LARGE).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '429':
+      description: >
+        The daily limit was reached (BUILDER_DAILY_LIMIT), or the service is busy and the
+        request was not run (BUILDER_BUSY). Only the busy case is worth retrying soon.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    '500':
+      $ref: '#/components/responses/InternalError'
+    '503':
+      description: >
+        The builder is not available. The `reason` is one of BUILDER_DISABLED (switched off),
+        BUILDER_UNAVAILABLE (no key, or the counter is down), BUILDER_TIMEOUT (took too long),
+        BUILDER_RESPONSE_INVALID (the model's answer or the provider failed), or
+        SERVICE_UNAVAILABLE (the service is temporarily cut off). All but BUILDER_DISABLED
+        are worth retrying.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

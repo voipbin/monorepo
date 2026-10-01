@@ -58,6 +58,24 @@ func (e AIManagerAIAuditStatus) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerAIBuilderMessageRole.
+const (
+	Assistant AIManagerAIBuilderMessageRole = "assistant"
+	User      AIManagerAIBuilderMessageRole = "user"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerAIBuilderMessageRole enum.
+func (e AIManagerAIBuilderMessageRole) Valid() bool {
+	switch e {
+	case Assistant:
+		return true
+	case User:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerAIEngineModel.
 const (
 	AIManagerAIEngineModelGeminiGemini2Dot0Flash AIManagerAIEngineModel = "gemini.gemini-2.0-flash"
@@ -3948,6 +3966,69 @@ type AIManagerAIAudit struct {
 
 // AIManagerAIAuditStatus Status of the AI audit.
 type AIManagerAIAuditStatus string
+
+// AIManagerAIBuilderChatRequest defines model for AIManagerAIBuilderChatRequest.
+type AIManagerAIBuilderChatRequest struct {
+	// CurrentDraft The assistant configuration the builder proposes. It is not saved. The user reviews it and saves it through `POST /ais`.
+	CurrentDraft *AIManagerAIBuilderDraft `json:"current_draft,omitempty"`
+
+	// Messages The whole conversation so far, oldest first. The assistant entries are the earlier `message` values the server returned.
+	Messages []AIManagerAIBuilderMessage `json:"messages"`
+}
+
+// AIManagerAIBuilderChatResponse defines model for AIManagerAIBuilderChatResponse.
+type AIManagerAIBuilderChatResponse struct {
+	// Assumptions Things the draft assumes that the user did not say, to be confirmed.
+	Assumptions *[]string `json:"assumptions,omitempty"`
+
+	// Draft The assistant configuration the builder proposes. It is not saved. The user reviews it and saves it through `POST /ais`.
+	Draft *AIManagerAIBuilderDraft `json:"draft,omitempty"`
+
+	// DraftWarnings Facts the server found about the draft, for example a tool that was removed because it is not allowed here.
+	DraftWarnings *[]string `json:"draft_warnings,omitempty"`
+
+	// Message The builder's next message to show the user. Plain text.
+	Message string `json:"message"`
+}
+
+// AIManagerAIBuilderDraft The assistant configuration the builder proposes. It is not saved. The user reviews it and saves it through `POST /ais`.
+type AIManagerAIBuilderDraft struct {
+	// Detail Proposed one-line description.
+	Detail string `json:"detail"`
+
+	// InitPrompt Proposed instructions for the assistant.
+	InitPrompt string `json:"init_prompt"`
+
+	// Name Proposed name of the assistant.
+	Name string `json:"name"`
+
+	// ToolNames Tools the assistant may use. Only `connect_call`, `stop_service`, `send_email`, `send_message`, `set_variables` and `case_create` can appear here.
+	ToolNames []AIManagerToolName `json:"tool_names"`
+}
+
+// AIManagerAIBuilderMessage defines model for AIManagerAIBuilderMessage.
+type AIManagerAIBuilderMessage struct {
+	// Content The message text. At most 2000 characters (not bytes) per message, and 40000 in total across the conversation.
+	Content string `json:"content"`
+
+	// Role Who wrote the message. The first and last messages must be `user`.
+	Role AIManagerAIBuilderMessageRole `json:"role"`
+}
+
+// AIManagerAIBuilderMessageRole Who wrote the message. The first and last messages must be `user`.
+type AIManagerAIBuilderMessageRole string
+
+// AIManagerAIBuilderStatusResponse defines model for AIManagerAIBuilderStatusResponse.
+type AIManagerAIBuilderStatusResponse struct {
+	// Available True when the builder is switched on and can run.
+	Available bool `json:"available"`
+
+	// MaxMessageChars Most characters in one message.
+	MaxMessageChars int `json:"max_message_chars"`
+
+	// MaxMessages Most messages the client may send in one conversation.
+	MaxMessages int `json:"max_messages"`
+}
 
 // AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 type AIManagerAIEngineModel string
@@ -10943,6 +11024,9 @@ type PutAgentsIdStatusJSONRequestBody PutAgentsIdStatusJSONBody
 // PutAgentsIdTagIdsJSONRequestBody defines body for PutAgentsIdTagIds for application/json ContentType.
 type PutAgentsIdTagIdsJSONRequestBody PutAgentsIdTagIdsJSONBody
 
+// PostAiBuilderChatJSONRequestBody defines body for PostAiBuilderChat for application/json ContentType.
+type PostAiBuilderChatJSONRequestBody = AIManagerAIBuilderChatRequest
+
 // PostAiauditsJSONRequestBody defines body for PostAiaudits for application/json ContentType.
 type PostAiauditsJSONRequestBody PostAiauditsJSONBody
 
@@ -11479,6 +11563,12 @@ type ServerInterface interface {
 	// Get aggregated timeline events
 	// (GET /aggregated-events)
 	GetAggregatedEvents(c *gin.Context, params GetAggregatedEventsParams)
+	// Run one turn of the assistant builder conversation.
+	// (POST /ai_builder/chat)
+	PostAiBuilderChat(c *gin.Context)
+	// Check whether the assistant builder is available.
+	// (GET /ai_builder/status)
+	GetAiBuilderStatus(c *gin.Context)
 	// Gets a list of AI audits.
 	// (GET /aiaudits)
 	GetAiaudits(c *gin.Context, params GetAiauditsParams)
@@ -13298,6 +13388,32 @@ func (siw *ServerInterfaceWrapper) GetAggregatedEvents(c *gin.Context) {
 	}
 
 	siw.Handler.GetAggregatedEvents(c, params)
+}
+
+// PostAiBuilderChat operation middleware
+func (siw *ServerInterfaceWrapper) PostAiBuilderChat(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAiBuilderChat(c)
+}
+
+// GetAiBuilderStatus operation middleware
+func (siw *ServerInterfaceWrapper) GetAiBuilderStatus(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAiBuilderStatus(c)
 }
 
 // GetAiaudits operation middleware
@@ -24109,6 +24225,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/agents/:id/status", wrapper.PutAgentsIdStatus)
 	router.PUT(options.BaseURL+"/agents/:id/tag_ids", wrapper.PutAgentsIdTagIds)
 	router.GET(options.BaseURL+"/aggregated-events", wrapper.GetAggregatedEvents)
+	router.POST(options.BaseURL+"/ai_builder/chat", wrapper.PostAiBuilderChat)
+	router.GET(options.BaseURL+"/ai_builder/status", wrapper.GetAiBuilderStatus)
 	router.GET(options.BaseURL+"/aiaudits", wrapper.GetAiaudits)
 	router.POST(options.BaseURL+"/aiaudits", wrapper.PostAiaudits)
 	router.DELETE(options.BaseURL+"/aiaudits/:id", wrapper.DeleteAiauditsId)
@@ -26351,6 +26469,161 @@ func (response GetAggregatedEvents404JSONResponse) VisitGetAggregatedEventsRespo
 type GetAggregatedEvents500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetAggregatedEvents500JSONResponse) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAiBuilderChatRequestObject struct {
+	Body *PostAiBuilderChatJSONRequestBody
+}
+
+type PostAiBuilderChatResponseObject interface {
+	VisitPostAiBuilderChatResponse(w http.ResponseWriter) error
+}
+
+type PostAiBuilderChat200JSONResponse AIManagerAIBuilderChatResponse
+
+func (response PostAiBuilderChat200JSONResponse) VisitPostAiBuilderChatResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAiBuilderChat400JSONResponse ErrorResponse
+
+func (response PostAiBuilderChat400JSONResponse) VisitPostAiBuilderChatResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAiBuilderChat401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostAiBuilderChat401JSONResponse) VisitPostAiBuilderChatResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAiBuilderChat403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostAiBuilderChat403JSONResponse) VisitPostAiBuilderChatResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAiBuilderChat429JSONResponse ErrorResponse
+
+func (response PostAiBuilderChat429JSONResponse) VisitPostAiBuilderChatResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAiBuilderChat500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostAiBuilderChat500JSONResponse) VisitPostAiBuilderChatResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostAiBuilderChat503JSONResponse ErrorResponse
+
+func (response PostAiBuilderChat503JSONResponse) VisitPostAiBuilderChatResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAiBuilderStatusRequestObject struct {
+}
+
+type GetAiBuilderStatusResponseObject interface {
+	VisitGetAiBuilderStatusResponse(w http.ResponseWriter) error
+}
+
+type GetAiBuilderStatus200JSONResponse AIManagerAIBuilderStatusResponse
+
+func (response GetAiBuilderStatus200JSONResponse) VisitGetAiBuilderStatusResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAiBuilderStatus401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAiBuilderStatus401JSONResponse) VisitGetAiBuilderStatusResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAiBuilderStatus500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAiBuilderStatus500JSONResponse) VisitGetAiBuilderStatusResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -59999,6 +60272,12 @@ type StrictServerInterface interface {
 	// Get aggregated timeline events
 	// (GET /aggregated-events)
 	GetAggregatedEvents(ctx context.Context, request GetAggregatedEventsRequestObject) (GetAggregatedEventsResponseObject, error)
+	// Run one turn of the assistant builder conversation.
+	// (POST /ai_builder/chat)
+	PostAiBuilderChat(ctx context.Context, request PostAiBuilderChatRequestObject) (PostAiBuilderChatResponseObject, error)
+	// Check whether the assistant builder is available.
+	// (GET /ai_builder/status)
+	GetAiBuilderStatus(ctx context.Context, request GetAiBuilderStatusRequestObject) (GetAiBuilderStatusResponseObject, error)
 	// Gets a list of AI audits.
 	// (GET /aiaudits)
 	GetAiaudits(ctx context.Context, request GetAiauditsRequestObject) (GetAiauditsResponseObject, error)
@@ -61911,6 +62190,61 @@ func (sh *strictHandler) GetAggregatedEvents(ctx *gin.Context, params GetAggrega
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetAggregatedEventsResponseObject); ok {
 		if err := validResponse.VisitGetAggregatedEventsResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAiBuilderChat operation middleware
+func (sh *strictHandler) PostAiBuilderChat(ctx *gin.Context) {
+	var request PostAiBuilderChatRequestObject
+
+	var body PostAiBuilderChatJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(ctx, err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAiBuilderChat(ctx, request.(PostAiBuilderChatRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAiBuilderChat")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostAiBuilderChatResponseObject); ok {
+		if err := validResponse.VisitPostAiBuilderChatResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAiBuilderStatus operation middleware
+func (sh *strictHandler) GetAiBuilderStatus(ctx *gin.Context) {
+	var request GetAiBuilderStatusRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAiBuilderStatus(ctx, request.(GetAiBuilderStatusRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAiBuilderStatus")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetAiBuilderStatusResponseObject); ok {
+		if err := validResponse.VisitGetAiBuilderStatusResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

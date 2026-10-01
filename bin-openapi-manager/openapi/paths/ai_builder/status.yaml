@@ -1,0 +1,23 @@
+get:
+  summary: Check whether the assistant builder is available.
+  description: >
+    Not released. Off by default.
+
+
+    Reports whether the builder can be used and the input limits the client should enforce. It
+    answers 200 with `available` false for a caller who is not allowed to use the builder, and
+    when the service cannot be reached, so a client can hide the entry point without handling
+    an error. The answer is cached in the server for a short time.
+  tags:
+    - AI
+  responses:
+    '200':
+      description: Whether the builder is available and its limits.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIBuilderStatusResponse'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

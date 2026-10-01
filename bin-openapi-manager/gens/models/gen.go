@@ -50,6 +50,24 @@ func (e AIManagerAIAuditStatus) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerAIBuilderMessageRole.
+const (
+	Assistant AIManagerAIBuilderMessageRole = "assistant"
+	User      AIManagerAIBuilderMessageRole = "user"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerAIBuilderMessageRole enum.
+func (e AIManagerAIBuilderMessageRole) Valid() bool {
+	switch e {
+	case Assistant:
+		return true
+	case User:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerAIEngineModel.
 const (
 	AIManagerAIEngineModelGeminiGemini2Dot0Flash AIManagerAIEngineModel = "gemini.gemini-2.0-flash"
@@ -4020,6 +4038,98 @@ type AIManagerAIAudit struct {
 //
 // Example: progressing
 type AIManagerAIAuditStatus string
+
+// AIManagerAIBuilderChatRequest defines model for AIManagerAIBuilderChatRequest.
+type AIManagerAIBuilderChatRequest struct {
+	// CurrentDraft The assistant configuration the builder proposes. It is not saved. The user reviews it and saves it through `POST /ais`.
+	CurrentDraft *AIManagerAIBuilderDraft `json:"current_draft,omitempty"`
+
+	// Messages The whole conversation so far, oldest first. The assistant entries are the earlier `message` values the server returned.
+	Messages []AIManagerAIBuilderMessage `json:"messages"`
+}
+
+// AIManagerAIBuilderChatResponse defines model for AIManagerAIBuilderChatResponse.
+type AIManagerAIBuilderChatResponse struct {
+	// Assumptions Things the draft assumes that the user did not say, to be confirmed.
+	//
+	// Example: ["Opening hours are weekdays 9 to 18."]
+	Assumptions *[]string `json:"assumptions,omitempty"`
+
+	// Draft The assistant configuration the builder proposes. It is not saved. The user reviews it and saves it through `POST /ais`.
+	Draft *AIManagerAIBuilderDraft `json:"draft,omitempty"`
+
+	// DraftWarnings Facts the server found about the draft, for example a tool that was removed because it is not allowed here.
+	//
+	//
+	// Example: ["Removed tool create_call: not allowed in a drafted assistant."]
+	DraftWarnings *[]string `json:"draft_warnings,omitempty"`
+
+	// Message The builder's next message to show the user. Plain text.
+	//
+	// Example: What should the assistant do when nobody is free to take a call?
+	Message string `json:"message"`
+}
+
+// AIManagerAIBuilderDraft The assistant configuration the builder proposes. It is not saved. The user reviews it and saves it through `POST /ais`.
+type AIManagerAIBuilderDraft struct {
+	// Detail Proposed one-line description.
+	//
+	// Example: Answers calls, books appointments and hands urgent cases to staff.
+	Detail string `json:"detail"`
+
+	// InitPrompt Proposed instructions for the assistant.
+	//
+	// Example: You are the front desk assistant of a dental clinic. Greet the caller, ask what they need, and book or move appointments.
+	InitPrompt string `json:"init_prompt"`
+
+	// Name Proposed name of the assistant.
+	//
+	// Example: Clinic front desk
+	Name string `json:"name"`
+
+	// ToolNames Tools the assistant may use. Only `connect_call`, `stop_service`, `send_email`, `send_message`, `set_variables` and `case_create` can appear here.
+	//
+	//
+	// Example: ["connect_call","stop_service"]
+	ToolNames []AIManagerToolName `json:"tool_names"`
+}
+
+// AIManagerAIBuilderMessage defines model for AIManagerAIBuilderMessage.
+type AIManagerAIBuilderMessage struct {
+	// Content The message text. At most 2000 characters (not bytes) per message, and 40000 in total across the conversation.
+	//
+	//
+	// Example: I run a dental clinic and want an assistant that answers the phone.
+	Content string `json:"content"`
+
+	// Role Who wrote the message. The first and last messages must be `user`.
+	//
+	// Example: user
+	Role AIManagerAIBuilderMessageRole `json:"role"`
+}
+
+// AIManagerAIBuilderMessageRole Who wrote the message. The first and last messages must be `user`.
+//
+// Example: user
+type AIManagerAIBuilderMessageRole string
+
+// AIManagerAIBuilderStatusResponse defines model for AIManagerAIBuilderStatusResponse.
+type AIManagerAIBuilderStatusResponse struct {
+	// Available True when the builder is switched on and can run.
+	//
+	// Example: true
+	Available bool `json:"available"`
+
+	// MaxMessageChars Most characters in one message.
+	//
+	// Example: 2000
+	MaxMessageChars int `json:"max_message_chars"`
+
+	// MaxMessages Most messages the client may send in one conversation.
+	//
+	// Example: 40
+	MaxMessages int `json:"max_messages"`
+}
 
 // AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 //
@@ -13608,6 +13718,9 @@ type PutAgentsIdStatusJSONRequestBody PutAgentsIdStatusJSONBody
 
 // PutAgentsIdTagIdsJSONRequestBody defines body for PutAgentsIdTagIds for application/json ContentType.
 type PutAgentsIdTagIdsJSONRequestBody PutAgentsIdTagIdsJSONBody
+
+// PostAiBuilderChatJSONRequestBody defines body for PostAiBuilderChat for application/json ContentType.
+type PostAiBuilderChatJSONRequestBody = AIManagerAIBuilderChatRequest
 
 // PostAiauditsJSONRequestBody defines body for PostAiaudits for application/json ContentType.
 type PostAiauditsJSONRequestBody PostAiauditsJSONBody
