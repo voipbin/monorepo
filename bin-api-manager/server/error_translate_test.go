@@ -225,7 +225,7 @@ func TestTranslateBareNotFoundWrapped(t *testing.T) {
 // typed error through; these tests pin that for every reason (design 4.7), and
 // that the two 429 reasons stay two reasons, because a client retries BUSY
 // soon and must not retry DAILY_LIMIT.
-func TestTranslateBuilderReasonsPassThroughUnchanged(t *testing.T) {
+func Test_translateBuilderReasonsPassThroughUnchanged(t *testing.T) {
 	tests := []struct {
 		reason string
 		make   func(reason string) *cerrors.VoipbinError
