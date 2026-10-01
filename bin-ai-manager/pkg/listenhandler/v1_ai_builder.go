@@ -91,7 +91,7 @@ func (h *listenHandler) processBuilderChatPost(ctx context.Context, m *sock.Requ
 
 	data, errMarshal := json.Marshal(res)
 	if errMarshal != nil {
-		return errorResponse(cerrors.Internal(commonoutline.ServiceNameAIManager, builder.ReasonInvalidArgument, "the response could not be written"))
+		return errorResponse(cerrors.Internal(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the response could not be written"))
 	}
 
 	return &sock.Response{StatusCode: http.StatusOK, DataType: "application/json", Data: data}
@@ -100,7 +100,7 @@ func (h *listenHandler) processBuilderChatPost(ctx context.Context, m *sock.Requ
 func (h *listenHandler) processBuilderStatusGet() *sock.Response {
 	data, errMarshal := json.Marshal(h.builderHandler.Status())
 	if errMarshal != nil {
-		return errorResponse(cerrors.Internal(commonoutline.ServiceNameAIManager, builder.ReasonInvalidArgument, "the response could not be written"))
+		return errorResponse(cerrors.Internal(commonoutline.ServiceNameAIManager, builder.ReasonUnavailable, "the response could not be written"))
 	}
 
 	return &sock.Response{StatusCode: http.StatusOK, DataType: "application/json", Data: data}
