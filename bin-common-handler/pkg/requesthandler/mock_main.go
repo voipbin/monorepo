@@ -19,6 +19,7 @@ import (
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	analysis "monorepo/bin-ai-manager/models/analysis"
+	builder "monorepo/bin-ai-manager/models/builder"
 	mcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
@@ -612,6 +613,36 @@ func (m *MockRequestHandler) AIV1AIcallToolList(ctx context.Context, aicallID uu
 func (mr *MockRequestHandlerMockRecorder) AIV1AIcallToolList(ctx, aicallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallToolList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallToolList), ctx, aicallID)
+}
+
+// AIV1BuilderChat mocks base method.
+func (m *MockRequestHandler) AIV1BuilderChat(ctx context.Context, customerID uuid.UUID, req *builder.ChatRequest) (*builder.ChatResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1BuilderChat", ctx, customerID, req)
+	ret0, _ := ret[0].(*builder.ChatResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1BuilderChat indicates an expected call of AIV1BuilderChat.
+func (mr *MockRequestHandlerMockRecorder) AIV1BuilderChat(ctx, customerID, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1BuilderChat", reflect.TypeOf((*MockRequestHandler)(nil).AIV1BuilderChat), ctx, customerID, req)
+}
+
+// AIV1BuilderStatus mocks base method.
+func (m *MockRequestHandler) AIV1BuilderStatus(ctx context.Context) (*builder.StatusResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1BuilderStatus", ctx)
+	ret0, _ := ret[0].(*builder.StatusResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1BuilderStatus indicates an expected call of AIV1BuilderStatus.
+func (mr *MockRequestHandlerMockRecorder) AIV1BuilderStatus(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1BuilderStatus", reflect.TypeOf((*MockRequestHandler)(nil).AIV1BuilderStatus), ctx)
 }
 
 // AIV1McpOAuthCallback mocks base method.

@@ -11,9 +11,11 @@ package rabbitmqhandler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"monorepo/bin-common-handler/models/sock"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -1860,5 +1862,87 @@ func TestHealthChecker_DoesNotCloseHealthyConnection(t *testing.T) {
 
 	if mockConn.closeCalled != 0 {
 		t.Errorf("Expected connection.Close() NOT to be called, got %d", mockConn.closeCalled)
+	}
+}
+
+// failingPublishChannel is a channel whose PublishWithContext always fails.
+type failingPublishChannel struct {
+	mockChannel
+	err error
+}
+
+func (c *failingPublishChannel) PublishWithContext(context.Context, string, string, bool, bool, amqp.Publishing) error {
+	return c.err
+}
+
+// The error strings of executeConsumeRPC are logged by the caller. They must
+// never carry a request or response body: a reply the broker refused can hold a
+// customer's conversation (the Assistant Builder's draft and prompt), and the
+// request queue is shared, so another publisher's malformed body would be
+// written to the log too.
+func Test_executeConsumeRPC_errorsCarryNoBody(t *testing.T) {
+	const secret = "SECRET-BODY-do-not-log"
+
+	tests := []struct {
+		name string
+		conn func() *mockConnection
+		msg  amqp.Delivery
+		cb   sock.CbMsgRPC
+	}{
+		{
+			name: "the request does not parse",
+			conn: newMockConnection,
+			// Truncated JSON: encoding/json's syntax error names the byte it
+			// stopped at, and the unexpected-end error can echo more. Both err and
+			// the body must stay out of the text, so the secret is placed right at
+			// the point of failure.
+			msg: amqp.Delivery{Body: []byte(`{"uri":"` + secret + `","method":`), ReplyTo: "r"},
+			cb:  func(*sock.Request) (*sock.Response, error) { return nil, nil },
+		},
+		{
+			name: "the response does not marshal",
+			conn: newMockConnection,
+			msg:  amqp.Delivery{Body: []byte(`{"uri":"/x","method":"GET"}`), ReplyTo: "r"},
+			cb: func(*sock.Request) (*sock.Response, error) {
+				// json.RawMessage is validated on marshal, so invalid JSON fails there.
+				return &sock.Response{StatusCode: 200, Data: json.RawMessage("{" + secret)}, nil
+			},
+		},
+		{
+			name: "the reply cannot be published",
+			conn: func() *mockConnection {
+				c := newMockConnection()
+				c.channelFunc = func() (amqpChannel, error) {
+					return &failingPublishChannel{err: errors.New("broker said no")}, nil
+				}
+				return c
+			},
+			msg: amqp.Delivery{Body: []byte(`{"uri":"/x","method":"GET"}`), ReplyTo: "r"},
+			cb: func(*sock.Request) (*sock.Response, error) {
+				return &sock.Response{StatusCode: 200, Data: json.RawMessage(`{"draft":"` + secret + `"}`)}, nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &rabbit{connection: tt.conn()}
+			err := r.executeConsumeRPC(tt.msg, tt.cb)
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+			if strings.Contains(err.Error(), secret) {
+				t.Errorf("the error carries a body: %v", err)
+			}
+			// The json and marshal errors can quote the byte or value where they
+			// stopped (encoding/json quotes at least one byte, and a type error
+			// names a field). A whole secret is not always quoted, so a substring
+			// check alone cannot prove the underlying error stays out. Pin the
+			// shape instead: only the publish failure, which comes from the broker
+			// client and not from the body, may carry an err.
+			if tt.name != "the reply cannot be published" && strings.Contains(err.Error(), "err:") {
+				t.Errorf("a parse or marshal error text must not carry the underlying json error: %v", err)
+			}
+		})
 	}
 }

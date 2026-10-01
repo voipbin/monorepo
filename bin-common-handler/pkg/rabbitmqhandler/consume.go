@@ -280,7 +280,11 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 	// message parse
 	var req sock.Request
 	if err := json.Unmarshal(message.Body, &req); err != nil {
-		return fmt.Errorf("could not parse the message. message: %s, err: %v", string(message.Body), err)
+		// Neither the body nor err goes into the text. The queue is shared, so
+		// the body can be another publisher's conversation, and a json error
+		// can quote the byte it stopped at. The length is enough to tell a
+		// truncated message from a wrong one.
+		return fmt.Errorf("could not parse the message. body_len: %d", len(message.Body))
 	}
 
 	// execute callback
@@ -314,7 +318,10 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 
 	resMsg, err := json.Marshal(res)
 	if err != nil {
-		return fmt.Errorf("could not marshal the response. res: %v, err: %v", res, err)
+		// res is the reply to a caller and can hold customer data (the Assistant
+		// Builder's draft and prompt). It and err, which can quote it, stay out
+		// of the text.
+		return fmt.Errorf("could not marshal the response")
 	}
 
 	if err := channel.PublishWithContext(
@@ -328,7 +335,9 @@ func (r *rabbit) executeConsumeRPC(message amqp.Delivery, cbConsume sock.CbMsgRP
 			CorrelationId: message.CorrelationId,
 			Body:          resMsg,
 		}); err != nil {
-		return fmt.Errorf("could not reply the message. message: %v, err: %v", res, err)
+		// res stays out of the text, for the same reason as above. err comes
+		// from the broker client, not from the body.
+		return fmt.Errorf("could not reply the message. err: %v", err)
 	}
 
 	return nil
