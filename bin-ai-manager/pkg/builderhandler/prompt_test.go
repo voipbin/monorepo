@@ -85,9 +85,10 @@ func Test_Prompt_revision2RulesPresent(t *testing.T) {
 		"Keep what the user said apart from what", // rule 7
 		"never replace it with an assumption",     // rule 7: essential items
 		"Do not add numbers, thresholds",          // rule 7: no invented values
-		"two asks in total, the first included",   // rule 3: question cap
-		"treat the dimension as closed",           // rule 3: how it ends
-		"or exception (a) or (b) below applies",   // rule 5: no clash with the exceptions
+		"two asks in total, the first included",
+		"filled or closed as unknown and no fork is open", // rule 5: the summary trigger   // rule 3: question cap
+		"treat the dimension as closed",                   // rule 3: how it ends
+		"or exception (a) or (b) below applies",           // rule 5: no clash with the exceptions
 	} {
 		if !strings.Contains(SystemPrompt, want) {
 			t.Errorf("the prompt lost the sentence %q", want)
