@@ -889,3 +889,43 @@ func Test_RunConversation_truncationCountsAsParseFailure(t *testing.T) {
 		t.Fatalf("%+v", res)
 	}
 }
+
+// A run that failed half way never wrote results.json, but its transcripts are
+// on disk. Starting again in that directory must not overwrite them.
+func Test_RunAll_refusesANonEmptyDirectory(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "s2b-1.md"), []byte("an earlier transcript"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := RunAll(context.Background(), &fakeBuilder{}, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), []string{"s9"}, dir); err == nil {
+		t.Fatal("a directory holding an earlier transcript must be refused")
+	}
+	b, _ := os.ReadFile(filepath.Join(dir, "s2b-1.md"))
+	if string(b) != "an earlier transcript" {
+		t.Fatal("the earlier transcript was overwritten")
+	}
+	// verdicts.json alone is fine: the judge may have written it first.
+	dir2 := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir2, "verdicts.json"), []byte(`{"judge":"Kim","verdicts":{}}`), 0o600)
+	if _, err := RunAll(context.Background(), &fakeBuilder{}, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), []string{"s9"}, dir2); err != nil {
+		t.Fatalf("a directory with only verdicts.json is allowed: %v", err)
+	}
+}
+
+func Test_Report_unknownVerdictKeyExplainsItself(t *testing.T) {
+	dir := t.TempDir()
+	out := Output{Meta: Meta{Real: true}}
+	rs := results(36, nil)
+	all := map[string]bool{"s2b#9": true}
+	for _, r := range rs {
+		all[r.RunID] = true
+	}
+	g := Evaluate(rs, all)
+	if err := WriteReport(dir, out, g, "Kim"); err != nil {
+		t.Fatal(err)
+	}
+	rep, _ := os.ReadFile(filepath.Join(dir, "report.md"))
+	if !strings.Contains(string(rep), "match no run") || strings.Contains(string(rep), "0 group(s) pending") {
+		t.Fatalf("the report must say why the gate is not decided:\n%s", rep)
+	}
+}

@@ -574,3 +574,33 @@ func Test_Parse_shorterRunDoesNotCloseALongerFence(t *testing.T) {
 		t.Fatalf("the ``` line does not close a ```` fence, so the header is still code:\n%q", got)
 	}
 }
+
+// Two spaces of backticks are not a fence, and an H1 titled like the section is
+// the document title: both are easy to break with a one-character change.
+func Test_Parse_fenceMinimumLengthAndH1Guard(t *testing.T) {
+	got, removed := removeToolsSection("# T\n``\n## Tools & Capabilities\nx\n## Next\nafter\n")
+	if !removed || strings.Contains(got, "\nx\n") || !strings.Contains(got, "## Next") {
+		t.Fatalf("two backticks do not open a fence, so the header after them is real:\n%q", got)
+	}
+	got, removed = removeToolsSection("# Tools & Capabilities\n\n## Identity\nhelp\n")
+	if removed || !strings.Contains(got, "# Tools & Capabilities") {
+		t.Fatalf("an H1 with that title is the document title and must stay:\n%q", got)
+	}
+}
+
+// What the parser does with an answer whose code fence is never closed inside
+// the section it is removing. Per CommonMark an unclosed fence runs to the end
+// of the document, so everything after it goes with the section. That is the
+// documented behaviour, not an accident: the section removal is reported in
+// draft_warnings, and the alternative (guessing where a broken fence ends)
+// would keep model-written tool text in the prompt.
+func Test_Parse_unclosedFenceInsideRemovedSectionRunsToTheEnd(t *testing.T) {
+	got, removed := removeToolsSection("# T\n## Tools & Capabilities\nx\n```\nunclosed\n## Other\nafter\n")
+	if !removed || strings.Contains(got, "after") {
+		t.Fatalf("documented behaviour: the unclosed fence swallows the rest:\n%q", got)
+	}
+	p := mustParseDraft(t, "# T\n## Identity\nhelp\n## Tools & Capabilities\nx\n```\nunclosed\n## Other\nafter\n")
+	if !hasWarning(p.Warnings, WarnToolsSectionRemoved) || !strings.Contains(p.Draft.InitPrompt, "## Identity") {
+		t.Fatalf("the removal must be reported and the earlier sections kept: %v\n%q", p.Warnings, p.Draft.InitPrompt)
+	}
+}

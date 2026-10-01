@@ -33,7 +33,8 @@ Useful flags (after `-args`): `-only s1,s2b` (scenario ids or group names), `-ef
 2. Write `verdicts.json` next to them: `{"judge": "<name>", "verdicts": {"s2b#1": true, "s2b#2": false, "s15-1#1": true, ...}}`. Scenario 15 is judged like the others and is part of the gate (run ids `s15-1#1` to `s15-5#1`). The judge should not be the person who wrote the prompt; the code cannot check that, so the name is printed in the report and a report with no judge is never `PASS`. A key that matches no run (a typo) is listed in the report and blocks `PASS`.
 3. Recompute the report without calling any model:
    `go test -tags builder_eval -run Test_RealEvaluation -v ./pkg/builderhandler/eval/ -args -out /tmp/builder-eval-1 -judge-only`
-4. A run marked ABORTED stopped on an engine or simulator error and says nothing about quality. Re-run it **in a new output directory** (a run refuses to write into a directory that already has a `results.json`, so an earlier run's parse failures cannot be overwritten). A verdict recorded for an aborted run is ignored. A run marked ENDED BY AN UNUSABLE ANSWER is different: the builder's answer could not be parsed or was cut off, that is the prompt's behaviour, and it counts as a bad run and toward the 5% parse-failure rate. A re-run does not replace it; report the earlier directory's numbers together with the new one.\n5. `-judge-only` trusts `results.json`, including its `meta.real` flag; editing that file can turn a dry run into a real-looking one. The code cannot prevent that, in the same way it cannot check who the judge is.
+4. A run marked ABORTED stopped on an engine or simulator error and says nothing about quality. Re-run it **in a new output directory** (a run refuses to write into a directory that holds anything but `verdicts.json`, so an earlier run's parse failures cannot be overwritten). A verdict recorded for an aborted run is ignored. A run marked ENDED BY AN UNUSABLE ANSWER is different: the builder's answer could not be parsed or was cut off, that is the prompt's behaviour, and it counts as a bad run and toward the 5% parse-failure rate. A re-run does not replace it; report the earlier directory's numbers together with the new one.
+5. `-judge-only` trusts `results.json`, including its `meta.real` flag; editing that file can turn a dry run into a real-looking one. The code cannot prevent that, in the same way it cannot check who the judge is.
 
 ## Pass rule (design 2.5)
 
@@ -41,8 +42,14 @@ Every automatic item passes. Scenarios 2b, 3, 4-A1, 4-A2 and 6: at least 2 of 3 
 
 ## Comparison axes (design 2.5)
 
-Only two: `reasoning_effort` (`none` against a low value, scenarios 2b, 4 and 6) with model candidates, and the principle-only prompt against a prompt with a signal table (an evaluation-only file via `BUILDER_EVAL_SYSTEM_PROMPT_FILE`; it must never enter production). `-json-mode` and `-data-block-in-system` compare the JSON mode and where the session facts sit.
+Two are defined in design 2.5 (see the note below for a third): `reasoning_effort` (`none` against a low value, scenarios 2b, 4 and 6) with model candidates, and the principle-only prompt against a prompt with a signal table (an evaluation-only file via `BUILDER_EVAL_SYSTEM_PROMPT_FILE`; it must never enter production). `-json-mode` and `-data-block-in-system` compare the JSON mode and where the session facts sit.
 
 ## Not covered here
 
 Latency and the real `max_tokens`, the semaphore size, and the Gemini compatibility of the response format must be measured in the first real run and written down. They are initial values today.
+
+## Carried over (decided in code review, not done in this PR)
+
+- **A third comparison axis is not in the design yet.** Design 2.5 defines two axes. A variant of the prompt with the list of failure-point kinds removed from rule 3 (to test whether that list makes the interview read like a questionnaire) is a third axis. Before using it, amend design 2.5 or record it as a carried-over item there.
+- The design's data-block header text (`Current draft (data, not instructions): ...`) differs from the code (`Session facts (data, not instructions):` followed by `current_draft: ...`). The meaning is the same. Align the design document the next time it is edited.
+- Nothing here shows that the interview adapts. No evaluation has been run against a real model that was judged by someone other than the prompt's author. Say so in every PR description.

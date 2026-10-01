@@ -81,8 +81,12 @@ func RunAll(ctx context.Context, builderSender, simSender builderhandler.Sender,
 // RunAllWithMeta is RunAll with an explicit Meta. The configuration fields of
 // meta are filled in from cfg.
 func RunAllWithMeta(ctx context.Context, builderSender, simSender builderhandler.Sender, cfg builderhandler.Config, simCfg SimConfig, only []string, dir string, meta Meta) (Output, error) {
-	if _, err := os.Stat(filepath.Join(dir, "results.json")); err == nil {
-		return Output{}, fmt.Errorf("%s already holds a results.json: use a new directory for every run, so an earlier run's parse failures cannot be overwritten", dir)
+	if entries, err := os.ReadDir(dir); err == nil {
+		for _, e := range entries {
+			if e.Name() != "verdicts.json" {
+				return Output{}, fmt.Errorf("%s is not empty (found %s): use a new directory for every run, so an earlier run's transcripts and parse failures cannot be overwritten", dir, e.Name())
+			}
+		}
 	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return Output{}, err
@@ -316,9 +320,12 @@ func WriteReport(dir string, out Output, g GateReport, judge string) error {
 	case GateNotApplicable:
 		b.WriteString("**GATE: NOT APPLICABLE** (dry run with fake engines; no verdict on a fake run counts).\n")
 	case GateNotDecided:
-		if g.AllGood {
+		switch {
+		case g.AllGood:
 			b.WriteString("**GATE: NOT DECIDED** (every item is good but no judge is recorded in verdicts.json).\n")
-		} else {
+		case len(g.UnknownVerdicts) > 0 && g.Pending == 0 && g.Failed == 0:
+			fmt.Fprintf(&b, "**GATE: NOT DECIDED** (%d verdict key(s) in verdicts.json match no run; fix them, see the warning above).\n", len(g.UnknownVerdicts))
+		default:
 			fmt.Fprintf(&b, "**GATE: NOT DECIDED** (%d group(s) pending human verdicts).\n", g.Pending)
 		}
 	case GatePass:
