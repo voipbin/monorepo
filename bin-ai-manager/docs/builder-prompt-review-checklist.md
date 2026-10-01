@@ -45,4 +45,6 @@ Evaluation run 1 (36 runs, `builder-eval-1`, 138 builder calls, 0 parse failures
 - [ ] Something the user called essential (for example retrying unreachable patients) is asked about and appears in the draft as a requirement (s4-A1).
 - [ ] Numbers, thresholds, data to collect and extra actions the user never gave are absent from the draft or listed as suggestions in assumptions (s2b, s4-A2, s5-B1).
 - [ ] Defaults the builder proposed are called its suggestion in the summary, not the user's words.
-- [ ] The prompt text still contains no vocabulary of the evaluation scenarios (see the overlap test).
+- [ ] The prompt text contains no vocabulary of the evaluation scenarios. `Test_Prompt_carriesNoEvaluationScenarioVocabulary` checks a short deny list only; a reviewer still reads the prompt. (`Test_Plan_personasAvoidFewShotDomains` checks the other direction, scenarios against the few-shot domains.)
+- [ ] An empty dimension is asked about at most twice, then recorded as unknown and treated as closed; an "I don't know" never turns into an endless interview (s3, s5-B2, s12).
+- [ ] s13: a run where no summary appeared is reported as not verified, not as a pass.

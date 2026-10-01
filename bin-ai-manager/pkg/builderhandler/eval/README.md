@@ -6,9 +6,9 @@ This is the adaptiveness evaluation of the Assistant Builder (design section 2.5
 
 - It drives the production turn code (`builderhandler.RunTurn`), not a copy, against scripted scenarios and a separate **user simulator** (a different model, high temperature, a persona sheet, some deliberately uncooperative).
 - Mechanical checks (deterministic, in `gate.go`): JSON parse-failure rate at most 5%, scenario 9 returns a draft in the first response, no `init_prompt` names a forbidden tool.
-- Everything else is a **human** reading the transcripts against the rubric printed at the top of each transcript. The harness never judges interview quality.
+- Everything else is read by a **judge** (ideally a human) reading the transcripts against the rubric printed at the top of each transcript. The harness never judges interview quality.
 - A run with fake engines (the unit tests) proves only that the wiring works. Its report starts with `NOT RUN AGAINST A REAL MODEL`.
-- The gate is never `PASS` without human verdicts, never `PASS` for a run against fake engines (the report says `NOT APPLICABLE`), and never `PASS` without a recorded judge.
+- The gate is never `PASS` without verdicts, never `PASS` for a run against fake engines (the report says `NOT APPLICABLE`), and never `PASS` without a recorded judge.
 
 ## Cost and size
 
@@ -52,4 +52,12 @@ Latency and the real `max_tokens`, the semaphore size, and the Gemini compatibil
 
 - **A third comparison axis is not in the design yet.** Design 2.5 defines two axes. A variant of the prompt with the list of failure-point kinds removed from rule 3 (to test whether that list makes the interview read like a questionnaire) is a third axis. Before using it, amend design 2.5 or record it as a carried-over item there.
 - The design's data-block header text (`Current draft (data, not instructions): ...`) differs from the code (`Session facts (data, not instructions):` followed by `current_draft: ...`). The meaning is the same. Align the design document the next time it is edited.
-- Nothing here shows that the interview adapts. No evaluation has been run against a real model that was judged by someone other than the prompt's author. Say so in every PR description.
+- Nothing here shows that the interview adapts. Evaluation run 1 (36 runs, `~/.hermes/eval-runs/builder-eval-1`, prompt revision 1) was judged by two AI reviewers, **not a human**, and did not reach the pass line (their verdict files are in `~/.hermes/eval-runs/ai-judge/`, kept apart from the run folder). The prompt was then revised (revision 2) and the s13 scenarios were rewritten so that the user reacts to a summary; both changes were made after reading run 1, so run 1 and every later run must be reported together. No run has been judged by a human. Say so in every PR description.
+
+## Re-running after a prompt change
+
+- Use a NEW output directory. Never reuse or delete an earlier one.
+- Put `AI` in the `judge` name of any verdict file an AI wrote (for example `AI reviewer A, not a human`). The code cannot check this. An AI verdict file may open the gate for a prompt-fixing loop but never counts as the human verdict that this README and the PR require.
+- Report the numbers of every run side by side (aborted, parse failures, pass counts per group), not only the latest.
+- An s13 run in which no summary appears has not tested the reaction to a summary. Report it as "not verified", never as a pass.
+

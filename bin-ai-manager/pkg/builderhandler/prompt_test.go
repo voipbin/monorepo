@@ -85,6 +85,9 @@ func Test_Prompt_revision2RulesPresent(t *testing.T) {
 		"Keep what the user said apart from what", // rule 7
 		"never replace it with an assumption",     // rule 7: essential items
 		"Do not add numbers, thresholds",          // rule 7: no invented values
+		"at most twice about the same dimension",  // rule 3: question cap
+		"treat the dimension as closed",           // rule 3: how it ends
+		"or exception (a) or (b) below applies",   // rule 5: no clash with the exceptions
 	} {
 		if !strings.Contains(SystemPrompt, want) {
 			t.Errorf("the prompt lost the sentence %q", want)
@@ -243,5 +246,21 @@ func Test_Prompt_sizeBudget(t *testing.T) {
 	}
 	if n := len([]rune(SystemPrompt)); n < 3000 {
 		t.Fatalf("system prompt is only %d runes; something was dropped", n)
+	}
+}
+
+// Direction the scenario test cannot cover: the PROMPT must not carry the
+// evaluation scenarios' own vocabulary, or a pass would measure memorised
+// examples. This is a short deny list, not proof; a reviewer still reads the
+// prompt. Domain examples belong only in the two few-shot dialogues.
+func Test_Prompt_carriesNoEvaluationScenarioVocabulary(t *testing.T) {
+	lower := strings.ToLower(SystemPrompt)
+	for _, w := range []string{
+		"치과", "병원", "재시도", "영업시간", "24시간", "노쇼", "위약금", "약국", "배송", "학원", "미용", "안경",
+		"dental", "clinic", "hospital", "retry", "business hours", "no-show", "pharmacy", "delivery", "salon", "optician",
+	} {
+		if strings.Contains(lower, strings.ToLower(w)) {
+			t.Errorf("the prompt contains the evaluation scenario word %q", w)
+		}
 	}
 }
