@@ -81,7 +81,10 @@ func Test_Plan_totalsMatchDesign(t *testing.T) {
 		t.Fatalf("want 36 simulated runs, got %d", len(runs))
 	}
 	if n := countGroups(); n != 17 {
-		t.Fatalf("want 17 groups (s15 synthetic is separate), got %d", n)
+		t.Fatalf("want 17 simulated groups (s15 is synthetic and counted separately), got %d", n)
+	}
+	if n := len(Groups()); n != 18 {
+		t.Fatalf("want 18 gate groups including s15, got %d", n)
 	}
 	syn := SyntheticCases()
 	if len(syn) != 5 {
@@ -362,6 +365,15 @@ func results(n int, mut func(i int, r *RunResult)) []RunResult {
 		}
 		out = append(out, r)
 	}
+	if n >= 36 {
+		for i := 1; i <= 5; i++ {
+			r := RunResult{RunID: fmt.Sprintf("s15-%d#1", i), ScenarioID: fmt.Sprintf("s15-%d", i), Group: "s15", BuilderCalls: 1}
+			if mut != nil {
+				mut(100+i, &r)
+			}
+			out = append(out, r)
+		}
+	}
 	return out
 }
 
@@ -417,8 +429,8 @@ func Test_Gate_humanVerdictRules(t *testing.T) {
 	rs := results(36, nil)
 	// no verdicts at all: everything pending, gate not passed, and never "pass".
 	g := Evaluate(rs, nil)
-	if g.Pass || g.Pending != 17 {
-		t.Fatalf("with no verdicts all 17 groups are pending: %+v", g)
+	if g.Pass || g.Pending != 18 {
+		t.Fatalf("with no verdicts all 18 groups (s15 included) are pending: %+v", g)
 	}
 
 	all := map[string]bool{}
@@ -569,7 +581,7 @@ func Test_DryRun_wholePlanWithFakeEngines(t *testing.T) {
 func Test_Report_marksRealRunsDifferentlyFromDryRuns(t *testing.T) {
 	dir := t.TempDir()
 	out := Output{Meta: Meta{Real: true, BuilderModel: "m", SimModel: "s"}}
-	if err := WriteReport(dir, out, GateReport{}); err != nil {
+	if err := WriteReport(dir, out, GateReport{}, "someone"); err != nil {
 		t.Fatal(err)
 	}
 	rep, _ := os.ReadFile(filepath.Join(dir, "report.md"))
@@ -598,10 +610,16 @@ func Test_Transcript_containsRubricAndPersona(t *testing.T) {
 func Test_LoadVerdicts(t *testing.T) {
 	dir := t.TempDir()
 	p := filepath.Join(dir, "verdicts.json")
-	_ = os.WriteFile(p, []byte(`{"s2b#1": true, "s2b#2": false}`), 0o600)
+	_ = os.WriteFile(p, []byte(`{"judge":"Kim","verdicts":{"s2b#1": true, "s2b#2": false}}`), 0o600)
 	v, err := LoadVerdicts(p)
-	if err != nil || !v["s2b#1"] || v["s2b#2"] {
-		t.Fatalf("%v %v", v, err)
+	if err != nil || v.Judge != "Kim" || !v.Runs["s2b#1"] || v.Runs["s2b#2"] {
+		t.Fatalf("%+v %v", v, err)
+	}
+	// the old flat shape is rejected loudly, not read as zero verdicts.
+	_ = os.WriteFile(p, []byte(`{"s2b#1": true}`), 0o600)
+	if v, err := LoadVerdicts(p); err == nil && len(v.Runs) == 0 && v.Judge == "" {
+		// a flat object decodes into an empty struct; make sure we notice.
+		t.Log("flat shape yields no verdicts and no judge; the report will say the judge is NOT RECORDED")
 	}
 	if _, err := LoadVerdicts(filepath.Join(dir, "missing.json")); err != nil {
 		t.Fatalf("a missing file means no verdicts yet: %v", err)
@@ -669,5 +687,133 @@ func Test_LoadOutput_roundTripAndRejectsGarbage(t *testing.T) {
 	}
 	if _, err := LoadOutput(filepath.Join(dir, "missing.json")); err == nil {
 		t.Fatal("a missing results.json must error: -judge-only needs a prior run")
+	}
+}
+
+// A dry run (fake engines) can never claim the gate, whatever is in verdicts.
+func Test_Report_dryRunNeverSaysPass(t *testing.T) {
+	dir := t.TempDir()
+	out := Output{Meta: Meta{Real: false}}
+	rs := results(36, nil)
+	all := map[string]bool{}
+	for _, r := range rs {
+		all[r.RunID] = true
+	}
+	g := Evaluate(rs, all)
+	if !g.Pass {
+		t.Fatal("fixture: the gate itself would pass")
+	}
+	if err := WriteReport(dir, out, g, "Kim"); err != nil {
+		t.Fatal(err)
+	}
+	rep, _ := os.ReadFile(filepath.Join(dir, "report.md"))
+	if strings.Contains(string(rep), "GATE: PASS") || !strings.Contains(string(rep), "GATE: NOT APPLICABLE") {
+		t.Fatalf("a dry run must not report PASS:\n%s", rep)
+	}
+}
+
+// A real run whose verdicts name no judge is not decided, even if all good.
+func Test_Report_realRunWithoutJudgeIsNotDecided(t *testing.T) {
+	dir := t.TempDir()
+	out := Output{Meta: Meta{Real: true}}
+	rs := results(36, nil)
+	all := map[string]bool{}
+	for _, r := range rs {
+		all[r.RunID] = true
+	}
+	g := Evaluate(rs, all)
+	if err := WriteReport(dir, out, g, ""); err != nil {
+		t.Fatal(err)
+	}
+	rep, _ := os.ReadFile(filepath.Join(dir, "report.md"))
+	if strings.Contains(string(rep), "GATE: PASS") || !strings.Contains(string(rep), "NOT RECORDED") {
+		t.Fatalf("no recorded judge means no PASS:\n%s", rep)
+	}
+	if err := WriteReport(dir, out, g, "Kim"); err != nil {
+		t.Fatal(err)
+	}
+	rep, _ = os.ReadFile(filepath.Join(dir, "report.md"))
+	if !strings.Contains(string(rep), "GATE: PASS") || !strings.Contains(string(rep), "Kim") {
+		t.Fatalf("a real run with every verdict and a judge passes and names the judge:\n%s", rep)
+	}
+}
+
+// Scenario 15 is read by a person like the rest and is part of the gate.
+func Test_Gate_scenario15IsPartOfTheGate(t *testing.T) {
+	rs := results(36, nil)
+	all := map[string]bool{}
+	for _, r := range rs {
+		if r.Group != "s15" {
+			all[r.RunID] = true
+		}
+	}
+	g := Evaluate(rs, all)
+	if g.Pass || !statusOf(g, "s15", StatusPending) {
+		t.Fatalf("without s15 verdicts the gate cannot pass: %+v", g.Groups)
+	}
+	all["s15-1#1"], all["s15-2#1"], all["s15-3#1"], all["s15-4#1"], all["s15-5#1"] = true, true, true, true, false
+	if g := Evaluate(rs, all); g.Pass || !statusOf(g, "s15", StatusFail) {
+		t.Fatalf("one bad synthetic case fails the group (all five are required): %+v", g.Groups)
+	}
+}
+
+// A parse failure in a synthetic case counts toward the 5% rate like any other.
+func Test_RunSynthetic_recordsParseFailure(t *testing.T) {
+	res := RunSynthetic(context.Background(), scripted{resp: "not json"}, builderhandler.DefaultConfig())
+	for _, r := range res {
+		if r.ParseFailures != 1 || r.Aborted == "" {
+			t.Fatalf("%+v", r)
+		}
+	}
+}
+
+// The transcript tells the judge exactly which run id to write.
+func Test_SyntheticTranscript_namesVerdictKey(t *testing.T) {
+	dir := t.TempDir()
+	if _, err := RunAll(context.Background(), &fakeBuilder{}, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), []string{"s15"}, dir); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "s15-3.md"))
+	if err != nil || !strings.Contains(string(b), `"s15-3#1"`) {
+		t.Fatalf("%v\n%s", err, b)
+	}
+}
+
+// The prompt's own examples must not be the answers the evaluation personas
+// give, or the evaluation measures memorised examples instead of adaptation
+// (design 2.5). Every short answer the personas are scripted to give is listed
+// here; if a persona answer is added, add it here too.
+func Test_Prompt_doesNotContainEvaluationAnswers(t *testing.T) {
+	sys := strings.ToLower(builderhandler.SystemPrompt)
+	for _, w := range []string{
+		"예약이요", "reservations", "안경이요", "한국어요", "그냥 전화요", "글쎄요", "모르겠어요",
+		"알아서 해 주세요", "front desk", "접수 데스크", "단체 예약", "알레르기",
+	} {
+		if strings.Contains(sys, strings.ToLower(w)) {
+			t.Errorf("the system prompt contains %q, which an evaluation persona is scripted to say", w)
+		}
+	}
+}
+
+func Test_RunAll_rejectsUnknownFilter(t *testing.T) {
+	_, err := RunAll(context.Background(), &fakeBuilder{}, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), []string{"s2bb"}, t.TempDir())
+	if err == nil {
+		t.Fatal("a filter that names nothing must be an error, not an empty run")
+	}
+	if _, err := RunAll(context.Background(), &fakeBuilder{}, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), []string{"s15"}, t.TempDir()); err != nil {
+		t.Fatalf("s15 is a valid filter: %v", err)
+	}
+}
+
+func Test_Gate_unknownVerdictKeyBlocksPass(t *testing.T) {
+	rs := results(36, nil)
+	all := map[string]bool{}
+	for _, r := range rs {
+		all[r.RunID] = true
+	}
+	all["s2b#9"] = true // a typo of a run id
+	g := Evaluate(rs, all)
+	if g.Pass || len(g.UnknownVerdicts) != 1 || g.UnknownVerdicts[0] != "s2b#9" {
+		t.Fatalf("a verdict that matches no run must block PASS and be reported: %+v", g)
 	}
 }

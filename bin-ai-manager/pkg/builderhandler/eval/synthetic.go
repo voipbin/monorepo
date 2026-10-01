@@ -2,6 +2,7 @@ package eval
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"monorepo/bin-ai-manager/models/builder"
@@ -108,6 +109,9 @@ func RunSynthetic(ctx context.Context, sender builderhandler.Sender, cfg builder
 			r.BuilderCompletionTokens = turn.Usage.CompletionTokens
 		}
 		if err != nil {
+			if errors.Is(err, builderhandler.ErrInvalidResponse) || errors.Is(err, builderhandler.ErrTruncated) {
+				r.ParseFailures = 1
+			}
 			r.Aborted = err.Error()
 			out = append(out, r)
 			continue

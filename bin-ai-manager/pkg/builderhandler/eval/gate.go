@@ -32,8 +32,10 @@ type GateReport struct {
 	AutoOK       bool          `json:"auto_ok"`
 	AutoFailures []string      `json:"auto_failures,omitempty"`
 	Groups       []GroupStatus `json:"groups"`
-	Pending      int           `json:"pending_groups"`
-	Failed       int           `json:"failed_groups"`
+	// UnknownVerdicts are verdict keys that match no run (usually a typo).
+	UnknownVerdicts []string `json:"unknown_verdicts,omitempty"`
+	Pending         int      `json:"pending_groups"`
+	Failed          int      `json:"failed_groups"`
 	// Pass is true only when every automatic item passed AND every group has
 	// enough human "good" verdicts. It is never true without human verdicts.
 	Pass bool `json:"pass"`
@@ -49,9 +51,10 @@ const maxParseFailureRate = 0.05
 // judged good. verdicts maps run id to good/bad; a missing entry means not yet
 // judged. A run that aborted on an engine error is not judgeable and stays
 // unjudged until it is re-run. Scenario 15 (synthetic, no simulator) is read
-// by a person and reported separately, not part of this gate.
+// by a person and is part of this gate: pass the synthetic results in results
+// as well, and record a verdict for each of s15-1#1 to s15-5#1.
 func Evaluate(results []RunResult, verdicts map[string]bool) GateReport {
-	g := GateReport{AutoOK: true}
+	g := GateReport{AutoOK: true, UnknownVerdicts: UnknownVerdictIDs(results, verdicts)}
 
 	calls, fails := 0, 0
 	for _, r := range results {
@@ -78,9 +81,6 @@ func Evaluate(results []RunResult, verdicts map[string]bool) GateReport {
 
 	allPass := true
 	for _, grp := range Groups() {
-		if grp.Name == "s15" {
-			continue
-		}
 		st := GroupStatus{Name: grp.Name, Total: grp.Total, MinPass: grp.MinPass}
 		for _, r := range byGroup[grp.Name] {
 			if r.Aborted != "" {
@@ -116,25 +116,37 @@ func Evaluate(results []RunResult, verdicts map[string]bool) GateReport {
 		}
 		g.Groups = append(g.Groups, st)
 	}
-	g.Pass = g.AutoOK && allPass
+	g.Pass = g.AutoOK && allPass && len(g.UnknownVerdicts) == 0
 	return g
 }
 
-// LoadVerdicts reads a {"run id": true|false} file. A missing file means
-// nothing has been judged yet. A corrupt file is an error: silently treating
-// it as "no verdicts" would hide a typo, and silently treating it as passing
-// would be worse.
-func LoadVerdicts(path string) (map[string]bool, error) {
+// Verdicts is the content of verdicts.json: who judged, and one good/bad
+// verdict per run id. The judge name is recorded so the report can show it; the
+// code cannot verify that the judge is not the author of the prompt, so
+// independence stays a human responsibility that the report makes visible.
+type Verdicts struct {
+	Judge string          `json:"judge"`
+	Runs  map[string]bool `json:"verdicts"`
+}
+
+// LoadVerdicts reads verdicts.json. A missing file means nothing has been
+// judged yet. A corrupt file is an error: silently treating it as "no
+// verdicts" would hide a typo, and silently treating it as passing would be
+// worse.
+func LoadVerdicts(path string) (Verdicts, error) {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return map[string]bool{}, nil
+			return Verdicts{Runs: map[string]bool{}}, nil
 		}
-		return nil, err
+		return Verdicts{}, err
 	}
-	out := map[string]bool{}
-	if err := json.Unmarshal(b, &out); err != nil {
-		return nil, fmt.Errorf("verdicts file %s is not a {run id: bool} object: %w", path, err)
+	var v Verdicts
+	if err := json.Unmarshal(b, &v); err != nil {
+		return Verdicts{}, fmt.Errorf(`verdicts file %s must look like {"judge": "name", "verdicts": {"run id": true}}: %w`, path, err)
 	}
-	return out, nil
+	if v.Runs == nil {
+		v.Runs = map[string]bool{}
+	}
+	return v, nil
 }

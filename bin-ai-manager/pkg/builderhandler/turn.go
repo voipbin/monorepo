@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/sashabaranov/go-openai"
 
@@ -69,10 +68,14 @@ func RunTurn(ctx context.Context, sender Sender, cfg Config, req *builder.ChatRe
 		if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == nil {
 			return nil, ErrTimeout
 		}
-		return nil, fmt.Errorf("%w: %s", ErrLLM, ClassifyLLMError(err))
+		return nil, &LLMError{Code: ClassifyLLMError(err)}
 	}
-	if resp == nil || len(resp.Choices) == 0 {
+	if resp == nil {
 		return &TurnResult{}, ErrInvalidResponse
+	}
+	if len(resp.Choices) == 0 {
+		// The platform was still billed for the tokens.
+		return &TurnResult{Usage: resp.Usage}, ErrInvalidResponse
 	}
 
 	choice := resp.Choices[0]
@@ -129,6 +132,9 @@ func responseFormat(mode JSONMode) *openai.ChatCompletionResponseFormat {
 func ClassifyLLMError(err error) string {
 	if errors.Is(err, context.DeadlineExceeded) {
 		return "timeout"
+	}
+	if errors.Is(err, context.Canceled) {
+		return "canceled"
 	}
 	status := 0
 	var apiErr *openai.APIError

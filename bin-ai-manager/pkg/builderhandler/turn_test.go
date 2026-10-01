@@ -254,10 +254,35 @@ func Test_RunTurn_engineErrorDoesNotEchoInput(t *testing.T) {
 	}
 }
 
-func Test_RunTurn_noChoices(t *testing.T) {
-	f := &fakeSender{resp: &openai.ChatCompletionResponse{}}
-	if _, err := RunTurn(context.Background(), f, DefaultConfig(), baseReq()); !errors.Is(err, ErrInvalidResponse) {
+func Test_RunTurn_noChoicesStillReportsUsage(t *testing.T) {
+	f := &fakeSender{resp: &openai.ChatCompletionResponse{Usage: openai.Usage{PromptTokens: 9, CompletionTokens: 3, TotalTokens: 12}}}
+	res, err := RunTurn(context.Background(), f, DefaultConfig(), baseReq())
+	if !errors.Is(err, ErrInvalidResponse) {
 		t.Fatalf("want ErrInvalidResponse, got %v", err)
+	}
+	if res == nil || res.Usage.TotalTokens != 12 {
+		t.Fatalf("the platform was billed for these tokens: %+v", res)
+	}
+}
+
+// The classification travels as a typed value, so the caller never parses the
+// error text to decide a reason or a metric label.
+func Test_RunTurn_llmErrorCarriesTypedCode(t *testing.T) {
+	f := &fakeSender{err: &openai.APIError{HTTPStatusCode: 429, Message: "SECRET echo"}}
+	_, err := RunTurn(context.Background(), f, DefaultConfig(), baseReq())
+	var le *LLMError
+	if !errors.Is(err, ErrLLM) || !errors.As(err, &le) || le.Code != "rate_limit" {
+		t.Fatalf("want ErrLLM with code rate_limit, got %v", err)
+	}
+	if strings.Contains(err.Error(), "SECRET") {
+		t.Fatalf("leaked: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	_, err = RunTurn(ctx, &fakeSender{wait: time.Second}, DefaultConfig(), baseReq())
+	if !errors.As(err, &le) || le.Code != "canceled" {
+		t.Fatalf("a cancelled caller is code canceled, got %v", err)
 	}
 }
 
@@ -290,6 +315,7 @@ func Test_ClassifyLLMError(t *testing.T) {
 		want string
 	}{
 		{context.DeadlineExceeded, "timeout"},
+		{context.Canceled, "canceled"},
 		{&openai.APIError{HTTPStatusCode: 401}, "auth"},
 		{&openai.APIError{HTTPStatusCode: 403}, "auth"},
 		{&openai.APIError{HTTPStatusCode: 429}, "rate_limit"},

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -96,6 +97,9 @@ func RunAllWithMeta(ctx context.Context, builderSender, simSender builderhandler
 	}
 
 	out := Output{Meta: meta}
+	if err := validateOnly(only); err != nil {
+		return out, err
+	}
 	specs := PlanRuns(only)
 	for _, spec := range specs {
 		if err := ctx.Err(); err != nil {
@@ -123,10 +127,44 @@ func RunAllWithMeta(ctx context.Context, builderSender, simSender builderhandler
 	if err != nil {
 		return out, err
 	}
-	if err := WriteReport(dir, out, Evaluate(out.Runs, verdicts)); err != nil {
+	all := append(append([]RunResult{}, out.Runs...), out.Synthetic...)
+	if err := WriteReport(dir, out, Evaluate(all, verdicts.Runs), verdicts.Judge); err != nil {
 		return out, err
 	}
 	return out, nil
+}
+
+// validateOnly rejects a filter that names no scenario or group, so a typo
+// cannot produce an empty run that reads as "nothing failed".
+func validateOnly(only []string) error {
+	known := map[string]bool{"s15": true}
+	for _, s := range Scenarios() {
+		known[s.ID] = true
+		known[s.Group] = true
+	}
+	for _, o := range only {
+		if !known[o] {
+			return fmt.Errorf("-only: %q is not a scenario id or group name", o)
+		}
+	}
+	return nil
+}
+
+// UnknownVerdictIDs lists verdict keys that match no run. A typo in a run id
+// would otherwise leave that run silently unjudged.
+func UnknownVerdictIDs(runs []RunResult, verdicts map[string]bool) []string {
+	have := map[string]bool{}
+	for _, r := range runs {
+		have[r.RunID] = true
+	}
+	var out []string
+	for id := range verdicts {
+		if !have[id] {
+			out = append(out, id)
+		}
+	}
+	sort.Strings(out)
+	return out
 }
 
 func contains(xs []string, s string) bool {
@@ -191,7 +229,7 @@ func writeSyntheticTranscript(dir string, i int, r RunResult) error {
 	c := SyntheticCases()[i]
 	var b strings.Builder
 	fmt.Fprintf(&b, "# %s  %s\n\n", r.RunID, c.Name)
-	fmt.Fprintf(&b, "Injected facts: user_turns=%d, draft_exists=%t, checkpoint=%t\n\n", c.Turns, c.HasDraft, c.Turns >= 6 && (c.Turns-6)%4 == 0)
+	fmt.Fprintf(&b, "Injected facts: user_turns=%d, draft_exists=%t, checkpoint=%t\n\n", c.Turns, c.HasDraft, builderhandler.IsCheckpoint(c.Turns))
 	fmt.Fprintf(&b, "Expect: %s\n\nNo Korean text is matched automatically. A person reads the reply.\n\n", c.Expect)
 	b.WriteString("## Conversation\n\n")
 	for _, m := range r.Turns {
@@ -204,12 +242,13 @@ func writeSyntheticTranscript(dir string, i int, r RunResult) error {
 	if r.Aborted != "" {
 		fmt.Fprintf(&b, "ABORTED: %s\n", r.Aborted)
 	}
+	fmt.Fprintf(&b, "\nVerdict: add \"%s\": true or false to verdicts.json\n", r.RunID)
 	return os.WriteFile(filepath.Join(dir, fmt.Sprintf("s15-%d.md", i+1)), []byte(b.String()), 0o644)
 }
 
 // WriteReport writes report.md. A report over fake engines says so in its first
 // line, and the gate is never described as passed without human verdicts.
-func WriteReport(dir string, out Output, g GateReport) error {
+func WriteReport(dir string, out Output, g GateReport, judge string) error {
 	var b strings.Builder
 	b.WriteString("# Builder evaluation report\n\n")
 	if !out.Meta.Real {
@@ -246,7 +285,12 @@ func WriteReport(dir string, out Output, g GateReport) error {
 		b.WriteString("\n")
 	}
 
-	b.WriteString("## Human verdicts\n\nRead each transcript (<scenario>-<n>.md) against the rubric and write verdicts.json as {\"<run id>\": true|false}. Then re-run with -judge-only to recompute this report.\n\n")
+	b.WriteString("## Human verdicts\n\nRead each transcript (<scenario>-<n>.md and s15-<n>.md) against the rubric and write verdicts.json as {\"judge\": \"<name>\", \"verdicts\": {\"<run id>\": true|false}}. Then re-run with -judge-only to recompute this report.\n\n")
+	if judge == "" {
+		b.WriteString("Judge: **NOT RECORDED**. The judge must not be the author of the prompt under test.\n\n")
+	} else {
+		fmt.Fprintf(&b, "Judge: %s (the code cannot check that this person did not write the prompt).\n\n", judge)
+	}
 	b.WriteString("| group | status | good | bad | needed | runs |\n|---|---|---|---|---|---|\n")
 	for _, s := range g.Groups {
 		note := ""
@@ -256,15 +300,22 @@ func WriteReport(dir string, out Output, g GateReport) error {
 		fmt.Fprintf(&b, "| %s | %s | %d | %d | %d | %d%s |\n", s.Name, s.Status, s.Passed, s.Failed, s.MinPass, s.Total, note)
 	}
 	b.WriteString("\n")
+	for _, id := range g.UnknownVerdicts {
+		fmt.Fprintf(&b, "WARNING: verdicts.json has a key that matches no run: %s\n", id)
+	}
 	switch {
+	case !out.Meta.Real:
+		b.WriteString("**GATE: NOT APPLICABLE** (dry run with fake engines; no verdict on a fake run counts).\n")
+	case g.Pass && judge == "":
+		b.WriteString("**GATE: NOT DECIDED** (every item is good but no judge is recorded in verdicts.json).\n")
 	case g.Pass:
-		b.WriteString("**GATE: PASS** (every automatic item passed and every group reached its minimum of good verdicts).\n")
+		fmt.Fprintf(&b, "**GATE: PASS** (every automatic item passed and every group, scenario 15 included, reached its minimum of good verdicts; judge: %s).\n", judge)
 	case g.Failed > 0 || !g.AutoOK:
 		fmt.Fprintf(&b, "**GATE: FAIL** (%d group(s) cannot reach their minimum, automatic ok: %t). Fix the prompt, re-run, and report to the CEO if three attempts fail.\n", g.Failed, g.AutoOK)
 	default:
 		fmt.Fprintf(&b, "**GATE: NOT DECIDED** (%d group(s) pending human verdicts).\n", g.Pending)
 	}
-	b.WriteString("\nScenario 15 (synthetic checkpoint cases) is read by a person from s15-1.md to s15-5.md and is not part of the automatic gate.\n")
+	b.WriteString("\nScenario 15 (synthetic checkpoint cases, s15-1.md to s15-5.md) is judged by a person like the others and is part of the gate; its run ids are s15-1#1 to s15-5#1.\n")
 	return os.WriteFile(filepath.Join(dir, "report.md"), []byte(b.String()), 0o644)
 }
 

@@ -20,8 +20,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sashabaranov/go-openai"
-
 	"monorepo/bin-ai-manager/pkg/builderhandler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
 )
@@ -65,7 +63,12 @@ func Test_RealEvaluation(t *testing.T) {
 	cfg := builderhandler.DefaultConfig()
 	cfg.Model = model
 	cfg.ReasoningEffort = *flagEffort
-	cfg.JSONMode = builderhandler.JSONMode(*flagJSON)
+	switch m := builderhandler.JSONMode(*flagJSON); m {
+	case builderhandler.JSONModeSchema, builderhandler.JSONModeObject, builderhandler.JSONModeNone:
+		cfg.JSONMode = m
+	default:
+		t.Fatalf("-json-mode must be json_schema, json_object or none, got %q", *flagJSON)
+	}
 	cfg.DataBlockInSystem = *flagSysBlk
 	if v := os.Getenv("BUILDER_EVAL_SYSTEM_PROMPT_FILE"); v != "" {
 		b, err := os.ReadFile(v)
@@ -92,7 +95,6 @@ func Test_RealEvaluation(t *testing.T) {
 		t.Fatalf("evaluation stopped early: %v", err)
 	}
 	t.Logf("done: %d runs, %d synthetic cases. Read %s/report.md, judge the transcripts, write verdicts.json, then run again with -judge-only.", len(out.Runs), len(out.Synthetic), *flagOut)
-	_ = openai.ChatMessageRoleUser
 }
 
 func judgeOnly(t *testing.T, dir string) {
@@ -105,8 +107,9 @@ func judgeOnly(t *testing.T, dir string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	g := Evaluate(out.Runs, verdicts)
-	if err := WriteReport(dir, out, g); err != nil {
+	all := append(append([]RunResult{}, out.Runs...), out.Synthetic...)
+	g := Evaluate(all, verdicts.Runs)
+	if err := WriteReport(dir, out, g, verdicts.Judge); err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("report rewritten: pass=%t pending=%d failed=%d", g.Pass, g.Pending, g.Failed)

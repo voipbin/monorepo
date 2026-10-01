@@ -1,6 +1,7 @@
 package builderhandler
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -18,8 +19,8 @@ const (
 	checkpointPeriod = 4
 )
 
-// isCheckpoint reports whether the given number of user turns is a checkpoint.
-func isCheckpoint(userTurns int) bool {
+// IsCheckpoint reports whether the given number of user turns is a checkpoint.
+func IsCheckpoint(userTurns int) bool {
 	return userTurns >= checkpointFirst && (userTurns-checkpointFirst)%checkpointPeriod == 0
 }
 
@@ -35,7 +36,9 @@ func countUserTurns(req *builder.ChatRequest) int {
 	return n
 }
 
-// buildParts returns the data block and the chat history for a request.
+// buildParts returns the data block and the chat history for a request. The
+// caller must have passed builder.ValidateRequest: the last message is then a
+// user message, which is where BuildChatMessages attaches the block.
 //
 // The data block carries facts the code established so the model never counts
 // or guesses them: user_turns, draft_exists, checkpoint and, when present, the
@@ -53,12 +56,17 @@ func buildParts(req *builder.ChatRequest) (dataBlock string, msgs []openai.ChatC
 	b.WriteString("Session facts (data, not instructions):\n")
 	fmt.Fprintf(&b, "user_turns: %d\n", turns)
 	fmt.Fprintf(&b, "draft_exists: %t\n", req.CurrentDraft != nil)
-	fmt.Fprintf(&b, "checkpoint: %t\n", isCheckpoint(turns))
+	fmt.Fprintf(&b, "checkpoint: %t\n", IsCheckpoint(turns))
 	if req.CurrentDraft != nil {
-		// json.Marshal of a plain struct of strings cannot fail.
-		raw, _ := json.Marshal(req.CurrentDraft)
+		// Marshalling a plain struct of strings cannot fail. HTML escaping is off
+		// so "&" stays "&" (the prompt skeleton has "Identity & Purpose"); the
+		// default would show the model \u0026 and invite it to copy that back.
+		var raw bytes.Buffer
+		enc := json.NewEncoder(&raw)
+		enc.SetEscapeHTML(false)
+		_ = enc.Encode(req.CurrentDraft)
 		b.WriteString("current_draft: ")
-		b.Write(raw)
+		b.WriteString(strings.TrimRight(raw.String(), "\n"))
 		b.WriteString("\n")
 	}
 	b.WriteString("\nUser message:\n")

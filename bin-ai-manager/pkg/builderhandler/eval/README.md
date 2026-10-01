@@ -8,7 +8,7 @@ This is the adaptiveness evaluation of the Assistant Builder (design section 2.5
 - Mechanical checks (deterministic, in `gate.go`): JSON parse-failure rate at most 5%, scenario 9 returns a draft in the first response, no `init_prompt` names a forbidden tool.
 - Everything else is a **human** reading the transcripts against the rubric printed at the top of each transcript. The harness never judges interview quality.
 - A run with fake engines (the unit tests) proves only that the wiring works. Its report starts with `NOT RUN AGAINST A REAL MODEL`.
-- The gate is never `PASS` without human verdicts.
+- The gate is never `PASS` without human verdicts, never `PASS` for a run against fake engines (the report says `NOT APPLICABLE`), and never `PASS` without a recorded judge.
 
 ## Cost and size
 
@@ -30,7 +30,7 @@ Useful flags (after `-args`): `-only s1,s2b` (scenario ids or group names), `-ef
 ## Judge
 
 1. Read `report.md`, then each `<scenario>-<n>.md` and `s15-<n>.md`.
-2. Write `verdicts.json` next to them: `{"s2b#1": true, "s2b#2": false, ...}`. The judge should not be the person who wrote the prompt.
+2. Write `verdicts.json` next to them: `{"judge": "<name>", "verdicts": {"s2b#1": true, "s2b#2": false, "s15-1#1": true, ...}}`. Scenario 15 is judged like the others and is part of the gate (run ids `s15-1#1` to `s15-5#1`). The judge should not be the person who wrote the prompt; the code cannot check that, so the name is printed in the report and a report with no judge is never `PASS`. A key that matches no run (a typo) is listed in the report and blocks `PASS`.
 3. Recompute the report without calling any model:
    `go test -tags builder_eval -run Test_RealEvaluation -v ./pkg/builderhandler/eval/ -args -out /tmp/builder-eval-1 -judge-only`
 4. A run marked ABORTED stopped on an engine or simulator error and says nothing about quality. Re-run it. A verdict recorded for an aborted run is ignored.

@@ -170,6 +170,22 @@ func contains(s, sub string) bool {
 	return false
 }
 
+// Empty tool names cost zero runes, so only a count cap bounds the list.
+func Test_ValidateRequest_toolNamesAreCounted(t *testing.T) {
+	ok := &ChatRequest{Messages: msgs(1, "a"), CurrentDraft: &Draft{ToolNames: make([]string, len(AllowedTools))}}
+	if err := ValidateRequest(ok); err != nil {
+		t.Fatalf("a draft with %d tool names must pass: %v", len(AllowedTools), err)
+	}
+	bad := &ChatRequest{Messages: msgs(1, "a"), CurrentDraft: &Draft{ToolNames: make([]string, len(AllowedTools)+1)}}
+	if err := ValidateRequest(bad); err == nil {
+		t.Fatal("more tool names than the allow-list must be rejected")
+	}
+	huge := &ChatRequest{Messages: msgs(1, "a"), CurrentDraft: &Draft{ToolNames: make([]string, 5_000_000)}}
+	if err := ValidateRequest(huge); err == nil {
+		t.Fatal("five million empty tool names must not pass")
+	}
+}
+
 func Test_AllowedTools_subsetOfAllToolNames(t *testing.T) {
 	all := map[tool.ToolName]bool{}
 	for _, n := range tool.AllToolNames {

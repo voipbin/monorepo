@@ -6,6 +6,7 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"monorepo/bin-ai-manager/models/builder"
@@ -21,6 +22,14 @@ var (
 	ErrTimeout         = errors.New("builder: llm deadline exceeded")
 	ErrLLM             = errors.New("builder: llm error")
 )
+
+// LLMError is the concrete error behind ErrLLM. errors.Is(err, ErrLLM) holds,
+// and errors.As gives the fixed classification code, so callers never have to
+// parse the error text. Code is one of the ClassifyLLMError values.
+type LLMError struct{ Code string }
+
+func (e *LLMError) Error() string        { return "builder: llm error: " + e.Code }
+func (e *LLMError) Is(target error) bool { return target == ErrLLM }
 
 // Warning strings recorded in draft_warnings. They are facts the code
 // established, never model prose. The client may key on the prefix before ": ".
@@ -78,7 +87,7 @@ func Parse(raw string) (*ParsedResponse, error) {
 	}
 
 	// Order: decode, required check, section removal, re-check, truncation.
-	if draft.Name == "" || draft.InitPrompt == "" {
+	if strings.TrimSpace(draft.Name) == "" || strings.TrimSpace(draft.InitPrompt) == "" {
 		out.discardDraft()
 		return out, nil
 	}
@@ -145,12 +154,17 @@ func firstUsableObject(raw string) (map[string]json.RawMessage, bool) {
 		if err := dec.Decode(&fields); err != nil {
 			continue
 		}
+		// An object that decoded is consumed whole: a nested object inside it is
+		// not a separate candidate (it would adopt a draft's inner "message").
+		consumed := int(dec.InputOffset())
 		mr, ok := fields["message"]
 		if !ok {
+			i += consumed - 1
 			continue
 		}
 		var msg string
 		if err := json.Unmarshal(mr, &msg); err != nil || msg == "" {
+			i += consumed - 1
 			continue
 		}
 		return fields, true
@@ -180,12 +194,21 @@ func decodeDraft(raw json.RawMessage) (d *builder.Draft, toolNamesInvalid bool) 
 	return d, toolNamesInvalid
 }
 
+// maxRemovedToolWarnings bounds how many removed tool names are reported, so a
+// hostile or broken answer cannot flood draft_warnings.
+const maxRemovedToolWarnings = 10
+
+var identifierRE = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,64}$`)
+
 // filterTools keeps only allow-listed tools, de-duplicated, in first-seen
-// order, and records each removed name.
+// order, and records each removed name. A removed name is echoed only when it
+// looks like an identifier; anything else is reported without the text, because
+// draft_warnings reaches the client and the logs and the name is model output.
 func filterTools(names []string, warnings *[]string) []string {
 	kept := make([]string, 0, len(names))
 	seen := map[string]bool{}
 	removed := map[string]bool{}
+	reported := 0
 	for _, n := range names {
 		if builder.IsAllowedTool(n) {
 			if !seen[n] {
@@ -194,9 +217,15 @@ func filterTools(names []string, warnings *[]string) []string {
 			}
 			continue
 		}
-		if !removed[n] {
-			removed[n] = true
+		if removed[n] || reported >= maxRemovedToolWarnings {
+			continue
+		}
+		removed[n] = true
+		reported++
+		if identifierRE.MatchString(n) {
 			*warnings = append(*warnings, WarnToolRemoved+": "+n)
+		} else {
+			*warnings = append(*warnings, WarnToolRemoved)
 		}
 	}
 	return kept
@@ -210,7 +239,14 @@ func truncateRunes(s string, max int) (string, bool) {
 	return string(r[:max]), true
 }
 
-var headerRE = regexp.MustCompile(`^(#{1,6})[ \t]+(.*?)[ \t]*$`)
+// headerRE allows up to three leading spaces, as CommonMark does.
+var headerRE = regexp.MustCompile(`^ {0,3}(#{1,6})[ \t]+(.*?)[ \t]*$`)
+
+// isFenceLine reports whether the line opens or closes a fenced code block.
+func isFenceLine(line string) bool {
+	t := strings.TrimLeft(line, " ")
+	return strings.HasPrefix(t, "```") || strings.HasPrefix(t, "~~~")
+}
 
 // removeToolsSection deletes every "Tools & Capabilities" section. The frontend
 // builds that section from its own label table, so a model-written copy would
@@ -221,7 +257,24 @@ func removeToolsSection(s string) (string, bool) {
 	kept := make([]string, 0, len(lines))
 	removed := false
 	skipLevel := 0
+	inFence := false
 	for _, ln := range lines {
+		// Lines inside a code fence are never headers. Inside a section being
+		// removed they are removed with it.
+		if isFenceLine(ln) {
+			inFence = !inFence
+			if skipLevel > 0 {
+				continue
+			}
+			kept = append(kept, ln)
+			continue
+		}
+		if inFence {
+			if skipLevel == 0 {
+				kept = append(kept, ln)
+			}
+			continue
+		}
 		m := headerRE.FindStringSubmatch(strings.TrimRight(ln, "\r"))
 		if skipLevel > 0 {
 			if m != nil && len(m[1]) <= skipLevel {
@@ -243,8 +296,20 @@ func removeToolsSection(s string) (string, bool) {
 	return strings.TrimRight(strings.Join(kept, "\n"), "\n \t") + "\n", true
 }
 
+// isToolsHeader matches the section title after dropping the decoration models
+// commonly add: emphasis marks, backticks, a trailing colon and leading symbols
+// or emoji. A title that merely contains the words ("... Overview") is not a
+// match.
 func isToolsHeader(title string) bool {
-	return strings.EqualFold(strings.Join(strings.Fields(title), " "), "tools & capabilities")
+	t := strings.Map(func(r rune) rune {
+		if r == '*' || r == '_' || r == '`' {
+			return -1
+		}
+		return r
+	}, title)
+	t = strings.TrimLeftFunc(t, func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsDigit(r) })
+	t = strings.TrimRight(t, ": \t")
+	return strings.EqualFold(strings.Join(strings.Fields(t), " "), "tools & capabilities")
 }
 
 // forbiddenToolMentions lists tool identifiers that exist in the product but

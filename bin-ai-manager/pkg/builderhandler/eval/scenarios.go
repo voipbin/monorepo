@@ -169,7 +169,7 @@ func Scenarios() []Scenario {
 		{ID: "s11", Group: "s11", Title: "impossible requests and a structural change after the draft", MaxTurns: 8, Repeats: 1, ContinueAfterDraft: 2,
 			FirstMessage: "전화로 결제까지 받고 외부 예약 시스템에 자동으로 등록하는 봇을 만들고 싶어요",
 			Persona: Persona{
-				Facts:    "운동 시설이 아닌 스튜디오 대관 업체. 결제는 카드이고 외부 예약 사이트에 직접 등록하고 싶다.",
+				Facts:    "스튜디오 대관 업체. 결제는 카드이고 외부 예약 사이트에 직접 등록하고 싶다.",
 				Style:    "보통 길이로 답한다.",
 				Behavior: "AI가 한계를 말하면 받아들이고 가능한 대안을 고른다. 초안이 나온 뒤 '이걸 AI 세 개로 나눠서 만들어 주세요'라고 요청한다."}},
 		{ID: "s12", Group: "s12", Title: "out of scope and an instruction-ignoring request", MaxTurns: 6, Repeats: 1,

@@ -71,6 +71,11 @@ func ValidateRequest(req *ChatRequest) error {
 		if utf8.RuneCountInString(d.InitPrompt) > MaxInitPromptRunes {
 			return invalid("current_draft.init_prompt exceeds %d characters", MaxInitPromptRunes)
 		}
+		// Empty names cost zero runes, so the aggregate cap alone does not bound
+		// the list. A real draft never has more tools than the allow-list.
+		if len(d.ToolNames) > len(AllowedTools) {
+			return invalid("current_draft.tool_names exceeds %d entries", len(AllowedTools))
+		}
 	}
 	if totalRunes(req) > MaxTotalRunes {
 		return invalid("total input exceeds %d characters", MaxTotalRunes)

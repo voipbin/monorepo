@@ -35,7 +35,7 @@ func userTurnsReq(n int) *builder.ChatRequest {
 	return &builder.ChatRequest{Messages: ms}
 }
 
-func Test_isCheckpoint(t *testing.T) {
+func Test_IsCheckpoint(t *testing.T) {
 	// Design 2.3 rule 3: 6, 10, 14, 18, ... every 4th user turn up to the cap.
 	want := map[int]bool{}
 	for n := 6; n <= 40; n += 4 {
@@ -47,8 +47,8 @@ func Test_isCheckpoint(t *testing.T) {
 		}
 	}
 	for n := 0; n <= 40; n++ {
-		if got := isCheckpoint(n); got != want[n] {
-			t.Errorf("isCheckpoint(%d) = %v, want %v", n, got, want[n])
+		if got := IsCheckpoint(n); got != want[n] {
+			t.Errorf("IsCheckpoint(%d) = %v, want %v", n, got, want[n])
 		}
 	}
 }
@@ -134,6 +134,20 @@ func Test_buildParts_currentDraftIsJSONAndUntouched(t *testing.T) {
 	}
 	if strings.Contains(line, "\n") {
 		t.Fatal("JSON serialisation must stay on a single line")
+	}
+}
+
+// "&" is in the prompt skeleton ("Identity & Purpose"). The default encoder
+// would show the model \u0026 and invite it to copy that back into init_prompt.
+func Test_buildParts_doesNotHTMLEscapeTheDraft(t *testing.T) {
+	req := userTurnsReq(1)
+	req.CurrentDraft = &builder.Draft{Name: "A", InitPrompt: "## Identity & Purpose <b>"}
+	block, _ := buildParts(req)
+	if strings.Contains(block, `\u0026`) || strings.Contains(block, `\u003c`) {
+		t.Fatalf("HTML escaping must be off:\n%s", block)
+	}
+	if !strings.Contains(block, "Identity & Purpose <b>") {
+		t.Fatalf("draft text must appear as written:\n%s", block)
 	}
 }
 
