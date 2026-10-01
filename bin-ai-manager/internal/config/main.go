@@ -101,6 +101,17 @@ type Config struct {
 	McpOAuthGithubClientSecret string
 	McpOAuthLinearClientID     string
 	McpOAuthLinearClientSecret string
+
+	// Assistant Builder (docs/plans/2026-10-01-conversational-assistant-builder-design.md
+	// 4.6). OFF by default. The model, reasoning effort, token cap, concurrency
+	// and timeout are initial values that have not been measured.
+	AIBuilderEnabled           bool   // AIBuilderEnabled is the kill switch. False (default) makes every Builder call fail with BUILDER_DISABLED and status report available=false.
+	AIBuilderModel             string // AIBuilderModel is the model the Builder uses. It goes through the analysis engine's base URL and key.
+	AIBuilderReasoningEffort   string // AIBuilderReasoningEffort is sent as reasoning_effort ("none" disables Gemini thinking; empty omits the field).
+	AIBuilderMaxOutputTokens   int    // AIBuilderMaxOutputTokens caps one reply's output tokens.
+	AIBuilderDailyLimit        int    // AIBuilderDailyLimit is the per-customer daily limit of Builder turns.
+	AIBuilderMaxConcurrent     int    // AIBuilderMaxConcurrent is the per-process cap of Builder calls running at once.
+	AIBuilderLLMTimeoutSeconds int    // AIBuilderLLMTimeoutSeconds is the deadline of one LLM call. It must stay below the 55 second RPC timeout api-manager waits with.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -161,6 +172,13 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("mcp_oauth_github_client_secret", "", "GitHub OAuth App client_secret for MCP server OAuth")
 	f.String("mcp_oauth_linear_client_id", "", "Linear OAuth application client_id for MCP server OAuth")
 	f.String("mcp_oauth_linear_client_secret", "", "Linear OAuth application client_secret for MCP server OAuth")
+	f.Bool("ai_builder_enabled", false, "Kill switch for the Assistant Builder; false (default) disables it")
+	f.String("ai_builder_model", "gemini-3.8-flash", "Model for the Assistant Builder (served through the analysis engine's base URL and key)")
+	f.String("ai_builder_reasoning_effort", "none", "reasoning_effort for the Assistant Builder (none disables Gemini thinking; empty omits the field). Not measured yet")
+	f.Int("ai_builder_max_output_tokens", 4096, "Max output tokens of one Assistant Builder reply. Not measured yet")
+	f.Int("ai_builder_daily_limit", 200, "Per-customer daily limit of Assistant Builder turns")
+	f.Int("ai_builder_max_concurrent", 3, "Per-process cap of Assistant Builder calls running at once. Not measured yet")
+	f.Int("ai_builder_llm_timeout_seconds", 40, "Deadline (seconds) of one Assistant Builder LLM call; must stay below the 55 second RPC timeout. Not measured yet")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -211,6 +229,14 @@ func bindConfig(cmd *cobra.Command) error {
 		"mcp_oauth_github_client_secret": "MCP_OAUTH_GITHUB_CLIENT_SECRET",
 		"mcp_oauth_linear_client_id":     "MCP_OAUTH_LINEAR_CLIENT_ID",
 		"mcp_oauth_linear_client_secret": "MCP_OAUTH_LINEAR_CLIENT_SECRET",
+
+		"ai_builder_enabled":             "AI_BUILDER_ENABLED",
+		"ai_builder_model":               "AI_BUILDER_MODEL",
+		"ai_builder_reasoning_effort":    "AI_BUILDER_REASONING_EFFORT",
+		"ai_builder_max_output_tokens":   "AI_BUILDER_MAX_OUTPUT_TOKENS",
+		"ai_builder_daily_limit":         "AI_BUILDER_DAILY_LIMIT",
+		"ai_builder_max_concurrent":      "AI_BUILDER_MAX_CONCURRENT",
+		"ai_builder_llm_timeout_seconds": "AI_BUILDER_LLM_TIMEOUT_SECONDS",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -289,6 +315,14 @@ func LoadGlobalConfig() {
 			McpOAuthGithubClientSecret: viper.GetString("mcp_oauth_github_client_secret"),
 			McpOAuthLinearClientID:     viper.GetString("mcp_oauth_linear_client_id"),
 			McpOAuthLinearClientSecret: viper.GetString("mcp_oauth_linear_client_secret"),
+
+			AIBuilderEnabled:           viper.GetBool("ai_builder_enabled"),
+			AIBuilderModel:             viper.GetString("ai_builder_model"),
+			AIBuilderReasoningEffort:   viper.GetString("ai_builder_reasoning_effort"),
+			AIBuilderMaxOutputTokens:   viper.GetInt("ai_builder_max_output_tokens"),
+			AIBuilderDailyLimit:        viper.GetInt("ai_builder_daily_limit"),
+			AIBuilderMaxConcurrent:     viper.GetInt("ai_builder_max_concurrent"),
+			AIBuilderLLMTimeoutSeconds: viper.GetInt("ai_builder_llm_timeout_seconds"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
@@ -339,6 +373,57 @@ func SetAIcallSendCooldownSecondsForTest(seconds int) {
 func Validate() error {
 	if errListen := validateListenConfig(); errListen != nil {
 		return errListen
+	}
+
+	if errBuilder := validateBuilderConfig(); errBuilder != nil {
+		return errBuilder
+	}
+
+	return nil
+}
+
+// builderRPCTimeoutSeconds is the timeout api-manager waits with for one
+// Builder RPC (design 4.3, 4.5). The LLM deadline must stay strictly below it,
+// or api-manager would give up first while ai-manager kept working and counting.
+const builderRPCTimeoutSeconds = 55
+
+// validateBuilderConfig refuses a Builder value that would make it misbehave.
+// It runs only when the Builder is enabled: a deploy that never turned the
+// feature on must not fail to start because of a setting it never set.
+//
+// A zero or negative LLM timeout is the one that matters most. builderhandler's
+// RunTurn applies a deadline only when the value is positive, so zero means the
+// call has no deadline at all, and a stuck provider would hold a shared RPC
+// worker and feed the queue's circuit breaker (design 4.3).
+func validateBuilderConfig() error {
+	if !globalConfig.AIBuilderEnabled {
+		return nil
+	}
+
+	invalid := []string{}
+	positives := []struct {
+		name  string
+		value int
+	}{
+		{"ai_builder_max_output_tokens", globalConfig.AIBuilderMaxOutputTokens},
+		{"ai_builder_daily_limit", globalConfig.AIBuilderDailyLimit},
+		{"ai_builder_max_concurrent", globalConfig.AIBuilderMaxConcurrent},
+		{"ai_builder_llm_timeout_seconds", globalConfig.AIBuilderLLMTimeoutSeconds},
+	}
+	for _, p := range positives {
+		if p.value <= 0 {
+			invalid = append(invalid, fmt.Sprintf("%s must be > 0, got %d", p.name, p.value))
+		}
+	}
+	if globalConfig.AIBuilderLLMTimeoutSeconds >= builderRPCTimeoutSeconds {
+		invalid = append(invalid, fmt.Sprintf("ai_builder_llm_timeout_seconds must be < %d (the RPC timeout), got %d", builderRPCTimeoutSeconds, globalConfig.AIBuilderLLMTimeoutSeconds))
+	}
+	if strings.TrimSpace(globalConfig.AIBuilderModel) == "" {
+		invalid = append(invalid, "ai_builder_model must not be empty")
+	}
+
+	if len(invalid) > 0 {
+		return errors.Errorf("invalid assistant builder configuration: %s", strings.Join(invalid, "; "))
 	}
 
 	return nil
