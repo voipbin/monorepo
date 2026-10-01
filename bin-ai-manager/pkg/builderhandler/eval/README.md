@@ -16,7 +16,7 @@ This is the adaptiveness evaluation of the Assistant Builder (design section 2.5
 
 ## Runs side by side (AI judged; no run has been judged by a human)
 
-Both runs used 36 simulated runs plus 5 synthetic cases, a builder `gemini-3.8-flash` and a simulator `gemini-3.7-flash`. Every verdict below was written by an AI reviewer, **not a human**. Counts are verdicts marked true out of 41 per judge (`~/.hermes/eval-runs/ai-judge/`).
+Both runs used 36 simulated runs plus 5 synthetic cases, a builder `gemini-3.8-flash` and a simulator `gemini-3.7-flash`. Every verdict below was written by an AI reviewer, **not a human**. Counts are verdicts marked true out of 41 per judge (`~/.hermes/eval-runs/ai-judge/`). The `~/.hermes/eval-runs/...` paths in this file are the author's local evaluation output; they are not part of this repository, so a reader cannot open them and has to take the counts from this file.
 
 | | Run 1 | Run 2 |
 |---|---|---|
