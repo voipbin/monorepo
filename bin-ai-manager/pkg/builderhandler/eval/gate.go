@@ -36,9 +36,11 @@ type GateReport struct {
 	UnknownVerdicts []string `json:"unknown_verdicts,omitempty"`
 	Pending         int      `json:"pending_groups"`
 	Failed          int      `json:"failed_groups"`
-	// Pass is true only when every automatic item passed AND every group has
-	// enough human "good" verdicts. It is never true without human verdicts.
-	Pass bool `json:"pass"`
+	// AllGood is true only when every automatic item passed AND every group has
+	// enough human "good" verdicts. It says nothing about provenance: a run
+	// against fake engines, or verdicts with no recorded judge, can be AllGood.
+	// Use Verdict to get the statement that may be shown to a reader.
+	AllGood bool `json:"all_good"`
 }
 
 const maxParseFailureRate = 0.05
@@ -83,6 +85,12 @@ func Evaluate(results []RunResult, verdicts map[string]bool) GateReport {
 	for _, grp := range Groups() {
 		st := GroupStatus{Name: grp.Name, Total: grp.Total, MinPass: grp.MinPass}
 		for _, r := range byGroup[grp.Name] {
+			if r.ParseFailures > 0 {
+				// The builder's answer was unusable. No verdict can rescue it,
+				// and a re-run is a new run, not a replacement.
+				st.Failed++
+				continue
+			}
 			if r.Aborted != "" {
 				st.Aborted++
 				continue
@@ -116,8 +124,34 @@ func Evaluate(results []RunResult, verdicts map[string]bool) GateReport {
 		}
 		g.Groups = append(g.Groups, st)
 	}
-	g.Pass = g.AutoOK && allPass && len(g.UnknownVerdicts) == 0
+	g.AllGood = g.AutoOK && allPass && len(g.UnknownVerdicts) == 0
 	return g
+}
+
+// Gate verdict words. Verdict is the only place that decides which one applies.
+const (
+	GatePass          = "PASS"
+	GateFail          = "FAIL"
+	GateNotDecided    = "NOT DECIDED"
+	GateNotApplicable = "NOT APPLICABLE"
+)
+
+// Verdict is the one statement about the gate that may be shown or acted on.
+// A run against fake engines is never PASS or FAIL, and verdicts with no
+// recorded judge are never PASS.
+func (g GateReport) Verdict(real bool, judge string) string {
+	switch {
+	case !real:
+		return GateNotApplicable
+	case g.AllGood && strings.TrimSpace(judge) == "":
+		return GateNotDecided
+	case g.AllGood:
+		return GatePass
+	case g.Failed > 0 || !g.AutoOK:
+		return GateFail
+	default:
+		return GateNotDecided
+	}
 }
 
 // Verdicts is the content of verdicts.json: who judged, and one good/bad

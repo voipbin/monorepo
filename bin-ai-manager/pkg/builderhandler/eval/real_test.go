@@ -112,5 +112,5 @@ func judgeOnly(t *testing.T, dir string) {
 	if err := WriteReport(dir, out, g, verdicts.Judge); err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("report rewritten: pass=%t pending=%d failed=%d", g.Pass, g.Pending, g.Failed)
+	t.Logf("report rewritten: gate=%s pending=%d failed=%d", g.Verdict(out.Meta.Real, verdicts.Judge), g.Pending, g.Failed)
 }

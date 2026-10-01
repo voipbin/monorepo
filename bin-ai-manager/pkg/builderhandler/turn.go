@@ -64,7 +64,10 @@ func RunTurn(ctx context.Context, sender Sender, cfg Config, req *builder.ChatRe
 
 	resp, err := sender.SendOnce(callCtx, chatReq)
 	if err != nil {
-		// The deadline we set is a timeout. A cancelled caller is not.
+		// The deadline we set is the LLM timeout. A deadline or cancellation that
+		// belongs to the caller (for example the RPC timeout api-manager owns) is
+		// reported as *LLMError with Code "timeout" or "canceled"; the handler
+		// that maps errors to reasons must treat Code "timeout" like ErrTimeout.
 		if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == nil {
 			return nil, ErrTimeout
 		}

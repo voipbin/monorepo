@@ -33,7 +33,7 @@ Useful flags (after `-args`): `-only s1,s2b` (scenario ids or group names), `-ef
 2. Write `verdicts.json` next to them: `{"judge": "<name>", "verdicts": {"s2b#1": true, "s2b#2": false, "s15-1#1": true, ...}}`. Scenario 15 is judged like the others and is part of the gate (run ids `s15-1#1` to `s15-5#1`). The judge should not be the person who wrote the prompt; the code cannot check that, so the name is printed in the report and a report with no judge is never `PASS`. A key that matches no run (a typo) is listed in the report and blocks `PASS`.
 3. Recompute the report without calling any model:
    `go test -tags builder_eval -run Test_RealEvaluation -v ./pkg/builderhandler/eval/ -args -out /tmp/builder-eval-1 -judge-only`
-4. A run marked ABORTED stopped on an engine or simulator error and says nothing about quality. Re-run it. A verdict recorded for an aborted run is ignored.
+4. A run marked ABORTED stopped on an engine or simulator error and says nothing about quality. Re-run it **in a new output directory** (a run refuses to write into a directory that already has a `results.json`, so an earlier run's parse failures cannot be overwritten). A verdict recorded for an aborted run is ignored. A run marked ENDED BY AN UNUSABLE ANSWER is different: the builder's answer could not be parsed or was cut off, that is the prompt's behaviour, and it counts as a bad run and toward the 5% parse-failure rate. A re-run does not replace it; report the earlier directory's numbers together with the new one.\n5. `-judge-only` trusts `results.json`, including its `meta.real` flag; editing that file can turn a dry run into a real-looking one. The code cannot prevent that, in the same way it cannot check who the judge is.
 
 ## Pass rule (design 2.5)
 

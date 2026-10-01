@@ -111,8 +111,10 @@ func RunSynthetic(ctx context.Context, sender builderhandler.Sender, cfg builder
 		if err != nil {
 			if errors.Is(err, builderhandler.ErrInvalidResponse) || errors.Is(err, builderhandler.ErrTruncated) {
 				r.ParseFailures = 1
+				r.ParseFailed = err.Error()
+			} else {
+				r.Aborted = err.Error()
 			}
-			r.Aborted = err.Error()
 			out = append(out, r)
 			continue
 		}

@@ -72,7 +72,10 @@ func ValidateRequest(req *ChatRequest) error {
 			return invalid("current_draft.init_prompt exceeds %d characters", MaxInitPromptRunes)
 		}
 		// Empty names cost zero runes, so the aggregate cap alone does not bound
-		// the list. A real draft never has more tools than the allow-list.
+		// the list. current_draft is always the previous response's draft, which
+		// the parser has already cut down to allow-listed tools, so a real one
+		// never has more tools than the allow-list (edits the user makes in the
+		// form are not sent back, design 4.2).
 		if len(d.ToolNames) > len(AllowedTools) {
 			return invalid("current_draft.tool_names exceeds %d entries", len(AllowedTools))
 		}

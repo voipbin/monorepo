@@ -33,6 +33,11 @@ type RunResult struct {
 	// nothing about interview quality (engine error, simulator failure). Such a
 	// run is not judgeable and must be re-run.
 	Aborted string `json:"aborted,omitempty"`
+	// ParseFailed is non-empty when the run ended because the builder's answer
+	// could not be parsed or was cut off. That IS the prompt's behaviour, so
+	// the run is not "aborted": it counts toward the parse-failure rate and
+	// counts as a bad run for its group, and re-running it cannot erase it.
+	ParseFailed string `json:"parse_failed,omitempty"`
 
 	BuilderPromptTokens     int `json:"builder_prompt_tokens"`
 	BuilderCompletionTokens int `json:"builder_completion_tokens"`
@@ -65,6 +70,8 @@ func RunConversation(ctx context.Context, builderSender, simSender builderhandle
 		if err != nil {
 			if errors.Is(err, builderhandler.ErrInvalidResponse) || errors.Is(err, builderhandler.ErrTruncated) {
 				res.ParseFailures++
+				res.ParseFailed = fmt.Sprintf("builder call %d: %v", call, err)
+				return res
 			}
 			res.Aborted = fmt.Sprintf("builder call %d: %v", call, err)
 			return res

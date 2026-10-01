@@ -479,3 +479,98 @@ func Test_Parse_whitespaceOnlyNameOrPromptDiscardsDraft(t *testing.T) {
 		}
 	}
 }
+
+// ---- code review round 2 ----
+
+// A longer fence is not closed by a shorter one: the ``` example inside a
+// ```` block stays inside it, so the Tools header after the block is real.
+func Test_Parse_fenceLengthAndKind(t *testing.T) {
+	got, removed := removeToolsSection("# T\n````md\n```\nexample\n```\n````\n## Tools & Capabilities\nx\n## Next\nafter\n")
+	if !removed || strings.Contains(got, "\nx\n") || !strings.Contains(got, "example") || !strings.Contains(got, "## Next") {
+		t.Fatalf("a ``` line inside a ```` block must not close it:\n%q", got)
+	}
+	// tildes: a ``` line inside a ~~~ block is plain text.
+	got, removed = removeToolsSection("# T\n~~~\n```\n## Tools & Capabilities\n~~~\nkeep\n")
+	if removed || !strings.Contains(got, "keep") || !strings.Contains(got, "## Tools & Capabilities") {
+		t.Fatalf("a header inside a ~~~ block is not a header:\n%q", got)
+	}
+	// a closing fence must be bare: text after it makes it another opener.
+	got, removed = removeToolsSection("# T\n```\ncode\n``` not a close\n## Tools & Capabilities\nx\n```\n## Next\nafter\n")
+	if removed {
+		t.Fatalf("the header sits inside a still-open fence:\n%q", got)
+	}
+	// an unclosed fence runs to the end (CommonMark): nothing after it is a header.
+	if _, removed = removeToolsSection("# T\n```\n## Tools & Capabilities\nx\n"); removed {
+		t.Fatal("a header inside an unclosed fence is code")
+	}
+}
+
+func Test_Parse_adjacentObjectsAreReached(t *testing.T) {
+	p, err := Parse(`{"x":1}{"message":"ok"}`)
+	if err != nil || p.Message != "ok" {
+		t.Fatalf("an object that starts right where the previous one ends must be reached: err=%v p=%+v", err, p)
+	}
+	p, err = Parse(`{"message":""}{"message":"ok"}`)
+	if err != nil || p.Message != "ok" {
+		t.Fatalf("err=%v p=%+v", err, p)
+	}
+}
+
+func Test_Parse_boundaries(t *testing.T) {
+	// exactly the limit is not truncated.
+	exact := strings.Repeat("n", builder.MaxNameRunes)
+	p, err := Parse(`{"message":"m","draft":{"name":"` + exact + `","init_prompt":"# A"}}`)
+	if err != nil || p.Draft == nil || hasWarning(p.Warnings, WarnNameTruncated) || len(p.Draft.Name) != builder.MaxNameRunes {
+		t.Fatalf("a name of exactly %d runes must pass untouched: %+v err=%v", builder.MaxNameRunes, p, err)
+	}
+	// identifier-shaped names: 64 is echoed, 65 is not.
+	for n, wantEcho := range map[int]bool{64: true, 65: false} {
+		id := strings.Repeat("a", n)
+		p, _ := Parse(`{"message":"m","draft":{"name":"A","init_prompt":"# A","tool_names":["` + id + `"]}}`)
+		echoed := hasWarning(p.Warnings, WarnToolRemoved+": "+id)
+		if echoed != wantEcho {
+			t.Errorf("%d-char tool name: echoed=%v, want %v (%v)", n, echoed, wantEcho, p.Warnings)
+		}
+	}
+	// a longer identifier that merely contains a banned name is not a mention.
+	p, _ = Parse(`{"message":"m","draft":{"name":"A","init_prompt":"# A\nuse xstop_flow here and stop_flowx too","tool_names":[]}}`)
+	if hasWarningPrefix(p.Warnings, WarnForbiddenToolMentioned) {
+		t.Fatalf("identifier-embedded names are not mentions: %v", p.Warnings)
+	}
+	// the cleaned prompt ends with exactly one newline.
+	pp := mustParseDraft(t, "# A\n\n## Tools & Capabilities\n- x\n\n\n")
+	if !strings.HasSuffix(pp.Draft.InitPrompt, "\n") || strings.HasSuffix(pp.Draft.InitPrompt, "\n\n") {
+		t.Fatalf("want a single trailing newline, got %q", pp.Draft.InitPrompt)
+	}
+}
+
+// The tilde fence is a real fence: a header inside it is not a header, and the
+// fence opened with tildes is not closed by backticks.
+func Test_Parse_tildeFenceHidesHeaders(t *testing.T) {
+	got, removed := removeToolsSection("# T\n~~~\n## Tools & Capabilities\nx\n~~~\nkeep\n")
+	if removed || !strings.Contains(got, "x") {
+		t.Fatalf("a header inside a ~~~ fence is code:\n%q", got)
+	}
+	got, removed = removeToolsSection("# T\n~~~\n```\n~~~\n## Tools & Capabilities\nx\n## Next\nafter\n")
+	if !removed || strings.Contains(got, "\nx\n") || !strings.Contains(got, "## Next") {
+		t.Fatalf("the ~~~ block closes at ~~~, not at a ``` line inside it; the header after it is real:\n%q", got)
+	}
+}
+
+// CommonMark: an info string after a backtick fence may not contain a backtick,
+// so a line such as "``` a ` b" is not a fence opener.
+func Test_Parse_backtickInfoStringWithBacktickIsNotAFence(t *testing.T) {
+	got, removed := removeToolsSection("# T\n``` a ` b\n## Tools & Capabilities\nx\n## Next\nafter\n")
+	if !removed || strings.Contains(got, "\nx\n") || !strings.Contains(got, "## Next") {
+		t.Fatalf("a line with a backtick in its info string does not open a fence:\n%q", got)
+	}
+}
+
+// A fence that is closed by a SHORTER run of the same character stays open
+// until a long enough closer, so everything between is code.
+func Test_Parse_shorterRunDoesNotCloseALongerFence(t *testing.T) {
+	got, removed := removeToolsSection("# T\n````\n```\n## Tools & Capabilities\nx\n")
+	if removed || !strings.Contains(got, "x") {
+		t.Fatalf("the ``` line does not close a ```` fence, so the header is still code:\n%q", got)
+	}
+}

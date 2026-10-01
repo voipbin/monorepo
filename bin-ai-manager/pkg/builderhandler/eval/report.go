@@ -81,6 +81,9 @@ func RunAll(ctx context.Context, builderSender, simSender builderhandler.Sender,
 // RunAllWithMeta is RunAll with an explicit Meta. The configuration fields of
 // meta are filled in from cfg.
 func RunAllWithMeta(ctx context.Context, builderSender, simSender builderhandler.Sender, cfg builderhandler.Config, simCfg SimConfig, only []string, dir string, meta Meta) (Output, error) {
+	if _, err := os.Stat(filepath.Join(dir, "results.json")); err == nil {
+		return Output{}, fmt.Errorf("%s already holds a results.json: use a new directory for every run, so an earlier run's parse failures cannot be overwritten", dir)
+	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return Output{}, err
 	}
@@ -205,7 +208,10 @@ func writeTranscript(dir, stem string, spec RunSpec, r RunResult) error {
 	}
 	b.WriteString("## Outcome\n\n")
 	if r.Aborted != "" {
-		fmt.Fprintf(&b, "ABORTED (not judgeable, re-run): %s\n\n", r.Aborted)
+		fmt.Fprintf(&b, "ABORTED (not judgeable, re-run in a new directory): %s\n\n", r.Aborted)
+	}
+	if r.ParseFailed != "" {
+		fmt.Fprintf(&b, "ENDED BY AN UNUSABLE ANSWER (counts as a bad run and toward the parse-failure rate; a re-run does not replace it): %s\n\n", r.ParseFailed)
 	}
 	fmt.Fprintf(&b, "- builder calls: %d, parse failures: %d\n", r.BuilderCalls, r.ParseFailures)
 	fmt.Fprintf(&b, "- tokens builder prompt/completion: %d/%d, simulator: %d/%d\n", r.BuilderPromptTokens, r.BuilderCompletionTokens, r.SimPromptTokens, r.SimCompletionTokens)
@@ -241,6 +247,9 @@ func writeSyntheticTranscript(dir string, i int, r RunResult) error {
 	}
 	if r.Aborted != "" {
 		fmt.Fprintf(&b, "ABORTED: %s\n", r.Aborted)
+	}
+	if r.ParseFailed != "" {
+		fmt.Fprintf(&b, "ENDED BY AN UNUSABLE ANSWER: %s\n", r.ParseFailed)
 	}
 	fmt.Fprintf(&b, "\nVerdict: add \"%s\": true or false to verdicts.json\n", r.RunID)
 	return os.WriteFile(filepath.Join(dir, fmt.Sprintf("s15-%d.md", i+1)), []byte(b.String()), 0o644)
@@ -303,17 +312,19 @@ func WriteReport(dir string, out Output, g GateReport, judge string) error {
 	for _, id := range g.UnknownVerdicts {
 		fmt.Fprintf(&b, "WARNING: verdicts.json has a key that matches no run: %s\n", id)
 	}
-	switch {
-	case !out.Meta.Real:
+	switch g.Verdict(out.Meta.Real, judge) {
+	case GateNotApplicable:
 		b.WriteString("**GATE: NOT APPLICABLE** (dry run with fake engines; no verdict on a fake run counts).\n")
-	case g.Pass && judge == "":
-		b.WriteString("**GATE: NOT DECIDED** (every item is good but no judge is recorded in verdicts.json).\n")
-	case g.Pass:
+	case GateNotDecided:
+		if g.AllGood {
+			b.WriteString("**GATE: NOT DECIDED** (every item is good but no judge is recorded in verdicts.json).\n")
+		} else {
+			fmt.Fprintf(&b, "**GATE: NOT DECIDED** (%d group(s) pending human verdicts).\n", g.Pending)
+		}
+	case GatePass:
 		fmt.Fprintf(&b, "**GATE: PASS** (every automatic item passed and every group, scenario 15 included, reached its minimum of good verdicts; judge: %s).\n", judge)
-	case g.Failed > 0 || !g.AutoOK:
-		fmt.Fprintf(&b, "**GATE: FAIL** (%d group(s) cannot reach their minimum, automatic ok: %t). Fix the prompt, re-run, and report to the CEO if three attempts fail.\n", g.Failed, g.AutoOK)
-	default:
-		fmt.Fprintf(&b, "**GATE: NOT DECIDED** (%d group(s) pending human verdicts).\n", g.Pending)
+	case GateFail:
+		fmt.Fprintf(&b, "**GATE: FAIL** (%d group(s) cannot reach their minimum, automatic ok: %t). Fix the prompt, re-run in a NEW directory, and report to the CEO if three attempts fail.\n", g.Failed, g.AutoOK)
 	}
 	b.WriteString("\nScenario 15 (synthetic checkpoint cases, s15-1.md to s15-5.md) is judged by a person like the others and is part of the gate; its run ids are s15-1#1 to s15-5#1.\n")
 	return os.WriteFile(filepath.Join(dir, "report.md"), []byte(b.String()), 0o644)

@@ -242,10 +242,27 @@ func truncateRunes(s string, max int) (string, bool) {
 // headerRE allows up to three leading spaces, as CommonMark does.
 var headerRE = regexp.MustCompile(`^ {0,3}(#{1,6})[ \t]+(.*?)[ \t]*$`)
 
-// isFenceLine reports whether the line opens or closes a fenced code block.
-func isFenceLine(line string) bool {
-	t := strings.TrimLeft(line, " ")
-	return strings.HasPrefix(t, "```") || strings.HasPrefix(t, "~~~")
+// fenceMark parses a fence line: up to three leading spaces, then three or
+// more backticks or tildes. rest is whatever follows the run (the info string
+// on an opening line). ok is false for any other line.
+func fenceMark(line string) (ch byte, n int, rest string, ok bool) {
+	t := strings.TrimRight(line, "\r")
+	i := 0
+	for i < len(t) && i < 4 && t[i] == ' ' {
+		i++
+	}
+	if i > 3 || i >= len(t) || (t[i] != '`' && t[i] != '~') {
+		return 0, 0, "", false
+	}
+	ch = t[i]
+	j := i
+	for j < len(t) && t[j] == ch {
+		j++
+	}
+	if j-i < 3 {
+		return 0, 0, "", false
+	}
+	return ch, j - i, t[j:], true
 }
 
 // removeToolsSection deletes every "Tools & Capabilities" section. The frontend
@@ -257,19 +274,28 @@ func removeToolsSection(s string) (string, bool) {
 	kept := make([]string, 0, len(lines))
 	removed := false
 	skipLevel := 0
-	inFence := false
+	var fenceCh byte // 0 when not inside a fence
+	fenceLen := 0
 	for _, ln := range lines {
 		// Lines inside a code fence are never headers. Inside a section being
-		// removed they are removed with it.
-		if isFenceLine(ln) {
-			inFence = !inFence
-			if skipLevel > 0 {
-				continue
+		// removed they are removed with it. A fence closes only on a line of the
+		// same character, at least as long as the opener, with nothing but
+		// spaces after it, so a ``` example inside a ```` block does not end it.
+		ch, n, rest, isFence := fenceMark(ln)
+		closes := fenceCh != 0 && isFence && ch == fenceCh && n >= fenceLen && strings.TrimSpace(rest) == ""
+		opens := fenceCh == 0 && isFence && !(ch == '`' && strings.Contains(rest, "`"))
+		if closes || opens {
+			if opens {
+				fenceCh, fenceLen = ch, n
+			} else {
+				fenceCh, fenceLen = 0, 0
 			}
-			kept = append(kept, ln)
+			if skipLevel == 0 {
+				kept = append(kept, ln)
+			}
 			continue
 		}
-		if inFence {
+		if fenceCh != 0 {
 			if skipLevel == 0 {
 				kept = append(kept, ln)
 			}

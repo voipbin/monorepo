@@ -243,7 +243,7 @@ func Test_RunConversation_firstResponseDraft(t *testing.T) {
 func Test_RunConversation_parseFailureIsRecordedAndEndsRun(t *testing.T) {
 	sc := Scenario{ID: "x", Group: "x", FirstMessage: "hi", MaxTurns: 5, Persona: Persona{Facts: "f"}}
 	res := RunConversation(context.Background(), scripted{resp: "not json"}, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), RunSpec{RunID: "x#1", Scenario: sc})
-	if res.ParseFailures != 1 || res.BuilderCalls != 1 || res.Aborted == "" {
+	if res.ParseFailures != 1 || res.BuilderCalls != 1 || res.ParseFailed == "" || res.Aborted != "" {
 		t.Fatalf("%+v", res)
 	}
 }
@@ -429,7 +429,7 @@ func Test_Gate_humanVerdictRules(t *testing.T) {
 	rs := results(36, nil)
 	// no verdicts at all: everything pending, gate not passed, and never "pass".
 	g := Evaluate(rs, nil)
-	if g.Pass || g.Pending != 18 {
+	if g.AllGood || g.Pending != 18 {
 		t.Fatalf("with no verdicts all 18 groups (s15 included) are pending: %+v", g)
 	}
 
@@ -438,7 +438,7 @@ func Test_Gate_humanVerdictRules(t *testing.T) {
 		all[r.RunID] = true
 	}
 	g = Evaluate(rs, all)
-	if !g.Pass || g.Pending != 0 {
+	if !g.AllGood || g.Pending != 0 {
 		t.Fatalf("all true must pass: %+v", g)
 	}
 
@@ -450,7 +450,7 @@ func Test_Gate_humanVerdictRules(t *testing.T) {
 	}
 	one := copyMap(two)
 	one["s2b#2"] = false
-	if g := Evaluate(rs, one); !statusOf(g, "s2b", StatusFail) || g.Pass {
+	if g := Evaluate(rs, one); !statusOf(g, "s2b", StatusFail) || g.AllGood {
 		t.Fatalf("1 of 3 must fail s2b: %+v", g.Groups)
 	}
 
@@ -483,7 +483,7 @@ func Test_Gate_autoFailureBlocksPassEvenWithAllVerdicts(t *testing.T) {
 	for _, r := range rs {
 		all[r.RunID] = true
 	}
-	if g := Evaluate(rs, all); g.Pass {
+	if g := Evaluate(rs, all); g.AllGood {
 		t.Fatal("human approval cannot override a failed auto item")
 	}
 }
@@ -494,7 +494,7 @@ func Test_Gate_missingRunsAreNotPass(t *testing.T) {
 	for _, r := range rs {
 		all[r.RunID] = true
 	}
-	if g := Evaluate(rs, all); g.Pass {
+	if g := Evaluate(rs, all); g.AllGood {
 		t.Fatal("a gate over an incomplete run set must not pass")
 	}
 }
@@ -560,7 +560,7 @@ func Test_DryRun_wholePlanWithFakeEngines(t *testing.T) {
 	if !g.AutoOK {
 		t.Errorf("auto failed: %v", g.AutoFailures)
 	}
-	if g.Pass {
+	if g.AllGood {
 		t.Error("a dry run can never pass the gate: nobody judged anything")
 	}
 	rep, err := os.ReadFile(filepath.Join(dir, "report.md"))
@@ -652,7 +652,7 @@ func Test_Gate_abortedRunVerdictIsIgnored(t *testing.T) {
 			t.Fatalf("aborted=%d passed=%d, want 2 and 1", s.Aborted, s.Passed)
 		}
 	}
-	if g.Pass {
+	if g.AllGood {
 		t.Fatal("the gate must not pass while runs are aborted")
 	}
 }
@@ -700,7 +700,7 @@ func Test_Report_dryRunNeverSaysPass(t *testing.T) {
 		all[r.RunID] = true
 	}
 	g := Evaluate(rs, all)
-	if !g.Pass {
+	if !g.AllGood {
 		t.Fatal("fixture: the gate itself would pass")
 	}
 	if err := WriteReport(dir, out, g, "Kim"); err != nil {
@@ -748,11 +748,11 @@ func Test_Gate_scenario15IsPartOfTheGate(t *testing.T) {
 		}
 	}
 	g := Evaluate(rs, all)
-	if g.Pass || !statusOf(g, "s15", StatusPending) {
+	if g.AllGood || !statusOf(g, "s15", StatusPending) {
 		t.Fatalf("without s15 verdicts the gate cannot pass: %+v", g.Groups)
 	}
 	all["s15-1#1"], all["s15-2#1"], all["s15-3#1"], all["s15-4#1"], all["s15-5#1"] = true, true, true, true, false
-	if g := Evaluate(rs, all); g.Pass || !statusOf(g, "s15", StatusFail) {
+	if g := Evaluate(rs, all); g.AllGood || !statusOf(g, "s15", StatusFail) {
 		t.Fatalf("one bad synthetic case fails the group (all five are required): %+v", g.Groups)
 	}
 }
@@ -761,7 +761,7 @@ func Test_Gate_scenario15IsPartOfTheGate(t *testing.T) {
 func Test_RunSynthetic_recordsParseFailure(t *testing.T) {
 	res := RunSynthetic(context.Background(), scripted{resp: "not json"}, builderhandler.DefaultConfig())
 	for _, r := range res {
-		if r.ParseFailures != 1 || r.Aborted == "" {
+		if r.ParseFailures != 1 || r.ParseFailed == "" || r.Aborted != "" {
 			t.Fatalf("%+v", r)
 		}
 	}
@@ -813,7 +813,79 @@ func Test_Gate_unknownVerdictKeyBlocksPass(t *testing.T) {
 	}
 	all["s2b#9"] = true // a typo of a run id
 	g := Evaluate(rs, all)
-	if g.Pass || len(g.UnknownVerdicts) != 1 || g.UnknownVerdicts[0] != "s2b#9" {
+	if g.AllGood || len(g.UnknownVerdicts) != 1 || g.UnknownVerdicts[0] != "s2b#9" {
 		t.Fatalf("a verdict that matches no run must block PASS and be reported: %+v", g)
+	}
+}
+
+// A run that ended on an unusable answer is the prompt's behaviour. It is not
+// "aborted", so a re-run cannot erase it, and no verdict can rescue it.
+func Test_Gate_parseFailureIsABadRunNotAnAbort(t *testing.T) {
+	rs := results(36, func(i int, r *RunResult) {
+		if r.RunID == "s1#1" {
+			r.ParseFailures = 1
+			r.ParseFailed = "builder call 1: no usable response object"
+		}
+	})
+	all := map[string]bool{}
+	for _, r := range rs {
+		all[r.RunID] = true
+	}
+	g := Evaluate(rs, all)
+	if g.AllGood || !statusOf(g, "s1", StatusFail) {
+		t.Fatalf("a parse-failed run must fail its group even with a good verdict: %+v", g.Groups)
+	}
+	for _, s := range g.Groups {
+		if s.Name == "s1" && s.Aborted != 0 {
+			t.Fatalf("a parse failure must not be counted as aborted: %+v", s)
+		}
+	}
+}
+
+func Test_Verdict_singleSourceOfTruth(t *testing.T) {
+	good := GateReport{AutoOK: true, AllGood: true}
+	cases := []struct {
+		g     GateReport
+		real  bool
+		judge string
+		want  string
+	}{
+		{good, false, "Kim", GateNotApplicable},
+		{good, true, "", GateNotDecided},
+		{good, true, "  ", GateNotDecided},
+		{good, true, "Kim", GatePass},
+		{GateReport{AutoOK: true, Failed: 1}, true, "Kim", GateFail},
+		{GateReport{AutoOK: false}, true, "Kim", GateFail},
+		{GateReport{AutoOK: true, Pending: 3}, true, "Kim", GateNotDecided},
+		{GateReport{AutoOK: true, Failed: 1}, false, "Kim", GateNotApplicable},
+	}
+	for i, c := range cases {
+		if got := c.g.Verdict(c.real, c.judge); got != c.want {
+			t.Errorf("case %d: got %q, want %q", i, got, c.want)
+		}
+	}
+}
+
+// A new run must not overwrite an earlier result set: its parse failures would
+// vanish from the record.
+func Test_RunAll_refusesToOverwriteResults(t *testing.T) {
+	dir := t.TempDir()
+	if _, err := RunAll(context.Background(), &fakeBuilder{}, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), []string{"s9"}, dir); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := RunAll(context.Background(), &fakeBuilder{}, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), []string{"s9"}, dir); err == nil {
+		t.Fatal("a second run into the same directory must be refused")
+	}
+}
+
+// A truncated answer in a conversation is a parse failure of the prompt.
+func Test_RunConversation_truncationCountsAsParseFailure(t *testing.T) {
+	sc := Scenario{ID: "x", Group: "x", FirstMessage: "hi", MaxTurns: 3, Persona: Persona{Facts: "f"}}
+	cut := senderFunc(func(_ context.Context, _ *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+		return &openai.ChatCompletionResponse{Choices: []openai.ChatCompletionChoice{{Message: openai.ChatCompletionMessage{Content: `{"message":"ab`}, FinishReason: openai.FinishReasonLength}}}, nil
+	})
+	res := RunConversation(context.Background(), cut, &fakeSim{}, builderhandler.DefaultConfig(), DefaultSimConfig(), RunSpec{RunID: "x#1", Scenario: sc})
+	if res.ParseFailures != 1 || res.ParseFailed == "" {
+		t.Fatalf("%+v", res)
 	}
 }

@@ -8,6 +8,11 @@ package builderhandler
 // harness (design 2.5) and by a human reviewer, never by these tests. Do not
 // treat a green test run as evidence of adaptiveness.
 //
+// Two sentences were added after the first (unjudged, author-read) real run and
+// are hypotheses, not findings: the last sentence of rule 6 (keep the user's own
+// values) and the flow-behaviour sentence after the tool catalog. Their effect
+// is unknown until the evaluation runs.
+//
 // Design rules this text implements (design doc sections 2.2, 2.3, 2.4, 2.6):
 //   - the code supplies "what to learn" and "how a good interviewer behaves";
 //     which question to ask next is decided by the model on every turn;
