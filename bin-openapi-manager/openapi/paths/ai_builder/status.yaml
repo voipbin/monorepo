@@ -7,7 +7,9 @@ get:
     Reports whether the builder can be used and the input limits the client should enforce. It
     answers 200 with `available` false for a caller who is not allowed to use the builder, and
     when the service cannot be reached, so a client can hide the entry point without handling
-    an error. The answer is cached in the server for a short time.
+    an error. The answer is cached in each server process for up to 30 seconds (5 seconds after a
+    failure), so a change in availability can take that long to show, and two replicas can differ
+    for a moment. When `available` is false the two limit values are 0 and mean nothing.
   tags:
     - AI
   responses:

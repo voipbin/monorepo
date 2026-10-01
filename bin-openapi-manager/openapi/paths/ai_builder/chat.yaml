@@ -14,6 +14,11 @@ post:
     `assistant`, and the last one must be `user`. Strict alternation is not enforced.
 
 
+    The request body may not exceed 160 KB, which is checked before the JSON is read; a larger body
+    is answered with BUILDER_INPUT_TOO_LARGE. The per-message and total limits are reported by
+    `GET /ai_builder/status`.
+
+
     Each call counts against a per-customer daily limit, from the moment it starts running. That
     includes a call that then fails (a provider error, a timeout, or a model answer that could not
     be used). A call refused because the request was invalid, the builder was switched off or
@@ -51,7 +56,9 @@ post:
     '429':
       description: >
         The daily limit was reached (BUILDER_DAILY_LIMIT), or the service is busy and the
-        request was not run (BUILDER_BUSY). Only the busy case is worth retrying soon.
+        request was not run (BUILDER_BUSY). Only the busy case is worth retrying soon. The
+        platform-wide request limit can also answer 429 with the reason RATE_LIMIT_EXCEEDED,
+        which is worth retrying after a short wait.
       content:
         application/json:
           schema:

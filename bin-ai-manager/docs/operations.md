@@ -75,6 +75,16 @@ Engine-specific API keys (Dialogflow service account, Grok, Anthropic, etc.) fol
 
 **Note:** Gemini audit evaluation uses `GOOGLE_API_KEY` (a `AIza...` Google API key), not `ENGINE_KEY_CHATGPT`. The audit model is `gemini-2.5-flash`.
 
+## Assistant Builder: before you switch it on
+
+The Builder is off until `AI_BUILDER_ENABLED=true` is set **on ai-manager** and ai-manager is restarted; api-manager has no switch of its own and follows ai-manager's status. It is not released and **no evaluation run has been judged by a human** (see `pkg/builderhandler/eval/README.md`, "Runs side by side"). Settle these first:
+- the notice and terms for sending a customer's text to an external model (design section 11), and whether the hosted service may use it at all;
+- a platform-wide daily cap (only a per-customer cap exists), and a per-minute limit (only the shared customer limit of about 16.7 requests per second applies);
+- load balancer and ingress timeouts of at least 65 seconds, and that the log pipeline collects the ai-manager and api-manager logs (neither was confirmed from this repository);
+- how a Builder call holding an RPC worker for up to the LLM deadline affects aicall and tool RPC latency, and the circuit breaker;
+- latency, `max_tokens` and the concurrency value, which are initial values that were never measured.
+With the Builder on but no key for the analysis engine's provider, `GET /v1/ai_builder/status` quietly answers `available=false` and the only trace is one warning at startup.
+
 ## Prometheus Metrics
 
 Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metrics`).

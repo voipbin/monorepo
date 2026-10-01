@@ -12,11 +12,38 @@ This is the adaptiveness evaluation of the Assistant Builder (design section 2.5
 
 ## Cost and size
 
-36 simulated runs (3 repeats of 2b, 3, 4-A1, 4-A2, 6; 2 each of B1 and B2; 3 for scenario 9; 3 for 13; 4 for 14; one each of 1, 2a, 7, 8, 10, 11, 12), plus 5 synthetic checkpoint cases. At an average of 6 turns that is **about 216 builder calls and a similar number of simulator calls**. The 6-turn average is an assumption, not a measurement: evaluation run 1 measured 138 builder calls (about 3.8 per run), 0 parse failures. Judging: about 21 full transcripts and about 8 skims, plus the 5 synthetic cases.
+36 simulated runs (3 repeats of 2b, 3, 4-A1, 4-A2, 6; 2 each of B1 and B2; 3 for scenario 9; 3 for 13; 4 for 14; one each of 1, 2a, 7, 8, 10, 11, 12), plus 5 synthetic checkpoint cases. At an average of 6 turns that is **about 216 builder calls and a similar number of simulator calls**. The 6-turn average is an assumption, not a measurement: evaluation run 1 measured 138 builder calls (about 3.8 per run) and run 2 measured 166 (about 4.6 per run), both with 0 parse failures. Judging: about 21 full transcripts and about 8 skims, plus the 5 synthetic cases.
 
-## Where run 1's files are
+## Runs side by side (AI judged; no run has been judged by a human)
 
-`~/.hermes/eval-runs/builder-eval-1/report.md` was written before any verdict existed and still says `Judge: NOT RECORDED` and `NOT DECIDED`. The two AI verdict files are in `~/.hermes/eval-runs/ai-judge/`, kept apart on purpose. Do not read the run folder's report as a result; read the counts above and the verdict files.
+Both runs used 36 simulated runs plus 5 synthetic cases, a builder `gemini-3.8-flash` and a simulator `gemini-3.7-flash`. Every verdict below was written by an AI reviewer, **not a human**. Counts are verdicts marked true out of 41 per judge (`~/.hermes/eval-runs/ai-judge/`).
+
+| | Run 1 | Run 2 |
+|---|---|---|
+| Output folder | `builder-eval-1` | `builder-eval-2` |
+| Prompt | revision 1 (commit `776efb063`) | revision 2 (commit `01f794f37`; `prompt.go` has not changed since, so this is the shipped prompt) |
+| Builder calls (average per run) | 138 (3.8) | 166 (4.6) |
+| Parse failures | 0 | 0 |
+| Aborted | 0 | 0 |
+| AI judge A, true of 41 | 32 | 36 |
+| AI judge B, true of 41 | 30 | 34 |
+| Judges agree | 33 of 41 | 35 of 41 |
+| Pass line | not reached | not decided (no human verdict) |
+
+Read this with two cautions. Revision 2 was written after reading run 1's transcripts and verdicts, and the s13 scenarios were rewritten at the same time, so the improvement is partly fitted to the same scenarios; a third run on new scenarios has not been made. And the two judges disagree on 6 to 8 items per run, so the totals are not exact.
+
+What run 2 still got wrong (read from the AI verdicts of run 2):
+- s2b (the restaurant booking scenario) stayed below the line for judge B: one question and then a draft, a behaviour the user never mentioned (hand over to a staff member on request) written into the draft, and no question about a failure point specific to the business.
+- The retry policy the user called essential in s4-A1 was still not asked about.
+- Values the user never said still reach the draft (a lead time in minutes, a date of birth, a door code).
+- s13-c (an ambiguous approval) and s15-1 (the checkpoint sentence without a choice to keep refining) failed for both judges.
+- Two defects visible in drafts: the prompt's own rule name leaked into a draft assumption, and `send_email` was mentioned in a draft body but missing from its tool list.
+
+None of this was fixed in this PR, on purpose: fixing it by reading these transcripts would fit the prompt to them more tightly.
+
+## Where the run folders are
+
+`~/.hermes/eval-runs/builder-eval-1/report.md` (run 1) was written before any verdict existed and still says `Judge: NOT RECORDED` and `NOT DECIDED`. The two AI verdict files are in `~/.hermes/eval-runs/ai-judge/`, kept apart on purpose. Do not read the run folder's report as a result; read the counts above and the verdict files.
 
 ## Run it
 
@@ -50,7 +77,7 @@ Two are defined in design 2.5 (see the note below for a third): `reasoning_effor
 
 ## Not covered here
 
-Latency, the real `max_tokens` and the semaphore size were not measured in run 1; measure them in the next run and write them down. They are initial values today. (Gemini accepted the response format in run 1: 138 calls, 0 parse failures. That is one run, not a guarantee.)
+Latency, the real `max_tokens` and the semaphore size were not measured in run 1 or run 2; measure them in the next run and write them down. They are initial values today. (Gemini accepted the response format in both runs: 138 and 166 calls, 0 parse failures. That is two runs, not a guarantee.)
 
 ## Carried over (decided in code review, not done in this PR)
 
@@ -58,7 +85,7 @@ Latency, the real `max_tokens` and the semaphore size were not measured in run 1
 - `Config.LLMTimeout` of zero or less means no deadline in `RunTurn`. The server wiring must reject such a value when it reads the setting, because the 40 second limit protects the circuit breaker (design 4.3).
 - Known interaction in the prompt, to be watched in the next run: a fork on an item the user called essential that is closed by the three-turn limit (rule 3) must still go into the draft as a requirement and into assumptions (rule 7). Check it with s4-A1 and s7. Rule 3 is also long and may be split into items in the next revision.
 
-- Not measured yet: latency, the real `max_tokens`, the semaphore size, and the Gemini response-format compatibility beyond run 1's 138 calls with 0 parse failures. Before activation the design's section 7 items must also be settled (load balancer and ingress timeouts, the Loki log source, a per-minute rate limit).
+- Not measured yet: latency, the real `max_tokens`, the semaphore size, and the Gemini response-format compatibility beyond the 138 calls of run 1 and the 166 of run 2, with 0 parse failures. Before activation the design's section 7 items must also be settled (load balancer and ingress timeouts, the Loki log source, a per-minute rate limit).
 
 - **A third comparison axis is not in the design yet.** Design 2.5 defines two axes. A variant of the prompt with the list of failure-point kinds removed from rule 3 (to test whether that list makes the interview read like a questionnaire) is a third axis. Before using it, amend design 2.5 or record it as a carried-over item there.
 - The design's data-block header text (`Current draft (data, not instructions): ...`) differs from the code (`Session facts (data, not instructions):` followed by `current_draft: ...`). The meaning is the same. Align the design document the next time it is edited.

@@ -1,3 +1,5 @@
+> **폐기된 문서.** 이 v7 설계는 AI call을 재사용하는 구조 (a)이며, 구조 (e)로 바뀌면서 대체되었다. 현행 설계는 `2026-10-01-conversational-assistant-builder-design.md`이다. 기록으로만 보존한다.
+
 # VOIP-1558 Conversational Assistant Builder 디자인 (v7, 구조 결정 대기)
 
 Jira: VOIP-1558. 상태: 디자인 리뷰 7회차 대기. 이슈 분석 리뷰 루프는 4회차(3, 4회차 연속 APPROVE)로 종료되었고 결과는 Jira 코멘트에 기록되어 있다.
