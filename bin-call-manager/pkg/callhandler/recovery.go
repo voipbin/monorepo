@@ -53,7 +53,9 @@ func (h *callHandler) RecoveryStart(ctx context.Context, asteriskID string) erro
 				log.Errorf("Could not run recovery for channel. err: %v", err)
 				return
 			}
-			log.Info("Recovery completed successfully")
+			// the outcome (skipped, claim refused, channel created) is logged by recoveryRun; a switched call logs
+			// "Switched the call to the recovery channel" when the remote answers.
+			log.Info("Recovery run finished")
 		}(ch)
 	}
 
@@ -108,6 +110,7 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 		log.Infof("Another recovery holds the claim. Skipping the call recovery. call_id: %s", c.ID)
 		return nil
 	}
+	log.Infof("Took the recovery claim. call_id: %s", c.ID)
 
 	recoveryDetail, err := h.recoveryHandler.GetRecoveryDetail(ctx, ch.SIPCallID, role)
 	if err != nil {

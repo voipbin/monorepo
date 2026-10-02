@@ -398,6 +398,7 @@ func Test_sipHeaderOnly(t *testing.T) {
 		{name: "spaced name", length: "Content-Length :   5", body: "hello"},
 		{name: "lower case", length: "content-length: 5", body: "hello"},
 		{name: "no content-length, no body", length: ""},
+		{name: "folded line looking like a compact header", length: "Subject: a\r\n l: x\r\nContent-Length: 5", body: "hello"},
 	}
 
 	for _, tt := range tests {

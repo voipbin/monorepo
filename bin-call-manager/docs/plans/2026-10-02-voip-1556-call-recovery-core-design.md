@@ -452,3 +452,13 @@ Step and section numbers in each round refer to the revision reviewed in that ro
   without a reset: request-side return contract kept (warning and `res, nil` when hanging up a changed channel fails),
   wording of the 3 s wait and late ChannelCreated, extra SELECT stated in section 7, failure test (B); step 5 hangup by
   Stasis call id, skip-path read error, late ChannelCreated as pre-existing (A).
+
+## 10. Code review history
+
+- Round 1: A APPROVED, B APPROVED. Fixed: Homer rows parsed without their body (strict SDP parsing dropped valid
+  messages), claim error logged as a warning, tests for single/no Record-Route, body stripping and action failure.
+- Round 2: A APPROVED, B APPROVED. Fixed: non-SIP Homer rows logged at debug with one summary line, folded lines in
+  the Content-Length rewrite, Content-Length header form tests.
+- Round 3: A APPROVED, B APPROVED (three consecutive approvals; loop closed). Applied without a reset: the
+  RecoveryStart goroutine logs "Recovery run finished" instead of a success claim, an info line when the claim is
+  taken, expected log noise documented in `docs/operations.md`, a folded-line test.
