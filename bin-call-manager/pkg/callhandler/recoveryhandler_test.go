@@ -154,6 +154,36 @@ func Test_getRecoveryDetail(t *testing.T) {
 			expect:   outgoingExpectLater,
 		},
 		{
+			name:     "outgoing, single Record-Route",
+			messages: []*sip.Msg{out["invite2"], singleRR200(t)},
+			role:     asteriskRoleUAC,
+			expect: func() recoveryDetail {
+				e := outgoingExpect
+				e.Routes, e.RecordRoutes, e.CSeq = tRR1, tRR1, 102+recoveryCSeqMargin
+				return e
+			}(),
+		},
+		{
+			name:     "outgoing, no Record-Route",
+			messages: []*sip.Msg{out["invite2"], noRR200(t)},
+			role:     asteriskRoleUAC,
+			expect: func() recoveryDetail {
+				e := outgoingExpect
+				e.Routes, e.RecordRoutes, e.CSeq = "", "", 102+recoveryCSeqMargin
+				return e
+			}(),
+		},
+		{
+			name:     "incoming, single Record-Route",
+			messages: []*sip.Msg{singleRRInvite(t), in["200"]},
+			role:     asteriskRoleUAS,
+			expect: func() recoveryDetail {
+				e := incomingExpect
+				e.Routes, e.RecordRoutes = tRR2, tRR2
+				return e
+			}(),
+		},
+		{
 			name:     "incoming, ACK before 200, no request from Asterisk",
 			messages: pick(in, "ack", "200", "invite", "remotebye200"),
 			role:     asteriskRoleUAS,
@@ -252,7 +282,7 @@ func Test_getRecoveryDetail_error(t *testing.T) {
 		{"forked 2xx", append(pick(out, "invite2", "200"), forked), asteriskRoleUAC},
 		{"differing copies of the 2xx", append(pick(out, "invite2", "200"), otherCopy), asteriskRoleUAC},
 		{"missing remote tag", []*sip.Msg{noFromTag, noFromTag200}, asteriskRoleUAS},
-		{"incoming capture with the wrong role still needs its own 2xx", pick(in, "invite"), asteriskRoleUAS},
+		{"incoming INVITE without its 2xx", pick(in, "invite"), asteriskRoleUAS},
 	}
 
 	for _, tt := range tests {
@@ -298,4 +328,52 @@ func laterTagless200(t *testing.T) *sip.Msg {
 	return sipMsg(t, "SIP/2.0 200 OK", "Via: SIP/2.0/UDP 172.24.0.244:5060;branch=z9hG4bK-7",
 		`From: "Agent" <sip:+15550100@voipbin.net>;tag=as-1`, "To: <sip:+15550199@carrier.example.com>;tag=rem-9",
 		"Call-ID: "+tCallID, "CSeq: 110 INVITE", "Contact: <sip:other@198.51.100.99:5070>", "Content-Length: 0")
+}
+
+func singleRR200(t *testing.T) *sip.Msg {
+	return sipMsg(t, "SIP/2.0 200 OK", "Via: SIP/2.0/UDP 172.24.0.244:5060;branch=z9hG4bK-1", "Record-Route: "+tRR1,
+		`From: "Agent" <sip:+15550100@voipbin.net>;tag=as-1`, "To: <sip:+15550199@carrier.example.com>;tag=rem-1",
+		"Call-ID: "+tCallID, "CSeq: 102 INVITE", "Contact: <sip:remote@198.51.100.20:5070;transport=udp>", "Content-Length: 0")
+}
+
+func noRR200(t *testing.T) *sip.Msg {
+	return sipMsg(t, "SIP/2.0 200 OK", "Via: SIP/2.0/UDP 172.24.0.244:5060;branch=z9hG4bK-1",
+		`From: "Agent" <sip:+15550100@voipbin.net>;tag=as-1`, "To: <sip:+15550199@carrier.example.com>;tag=rem-1",
+		"Call-ID: "+tCallID, "CSeq: 102 INVITE", "Contact: <sip:remote@198.51.100.20:5070;transport=udp>", "Content-Length: 0")
+}
+
+func singleRRInvite(t *testing.T) *sip.Msg {
+	return sipMsg(t, "INVITE sip:2000@172.24.0.101:5060 SIP/2.0", "Via: SIP/2.0/TCP 172.24.0.246;branch=z9hG4bK-9", "Record-Route: "+tRR2,
+		`From: "Caller" <sip:alice@example.com>;tag=caller-1`, "To: <sip:2000@abcd.reg.voipbin.net>",
+		"Call-ID: "+tCallID, "CSeq: 7 INVITE", "Contact: <sip:alice@203.0.113.7:5060>", "Content-Length: 0")
+}
+
+// Test_filterSIPMessages_body checks a message whose SDP body the SIP parser rejects (a declined dynamic payload
+// without rtpmap) is still used: only the headers are parsed.
+func Test_filterSIPMessages_body(t *testing.T) {
+	body := "v=0\r\no=- 1 1 IN IP4 198.51.100.20\r\ns=-\r\nc=IN IP4 198.51.100.20\r\nt=0 0\r\n" +
+		"m=audio 4000 RTP/AVP 0\r\na=rtpmap:0 PCMU/8000\r\nm=video 0 RTP/AVP 96\r\n"
+	raw := strings.Join([]string{
+		"SIP/2.0 200 OK",
+		"Via: SIP/2.0/UDP 172.24.0.244:5060;branch=z9hG4bK-1",
+		`From: "Agent" <sip:+15550100@voipbin.net>;tag=as-1`,
+		"To: <sip:+15550199@carrier.example.com>;tag=rem-1",
+		"Call-ID: " + tCallID,
+		"CSeq: 102 INVITE",
+		"Contact: <sip:remote@198.51.100.20:5070;transport=udp>",
+		"Content-Type: application/sdp",
+		fmt.Sprintf("Content-Length: %d", len(body)),
+	}, "\r\n") + "\r\n\r\n" + body
+
+	if _, err := sip.ParseMsg([]byte(raw)); err == nil {
+		t.Fatalf("the test body is expected to be rejected by the full parser")
+	}
+
+	res := filterSIPMessages([]HomerSIPMessageDetail{{ID: 1, CallID: tCallID, Raw: raw}}, tCallID)
+	if len(res) != 1 {
+		t.Fatalf("Wrong match. expect: 1 message, got: %d", len(res))
+	}
+	if res[0].Status != 200 || getTag(res[0].To) != "rem-1" {
+		t.Errorf("Wrong match. expect: 200 with tag rem-1, got: %d %s", res[0].Status, getTag(res[0].To))
+	}
 }

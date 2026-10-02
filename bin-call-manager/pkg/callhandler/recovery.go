@@ -99,8 +99,13 @@ func (h *callHandler) recoveryRun(ctx context.Context, ch *channel.Channel) erro
 	}
 
 	// fail closed: without the claim (held by another recovery, or a cache error) no recovery leg is created.
-	if claimed, errClaim := h.db.CallRecoveryClaim(ctx, c.ID, recoveryClaimTTL); errClaim != nil || !claimed {
-		log.Infof("Skipping the call recovery without the recovery claim. call_id: %s, claimed: %v, err: %v", c.ID, claimed, errClaim)
+	claimed, errClaim := h.db.CallRecoveryClaim(ctx, c.ID, recoveryClaimTTL)
+	if errClaim != nil {
+		log.Warnf("Could not take the recovery claim. Skipping the call recovery. call_id: %s, err: %v", c.ID, errClaim)
+		return nil
+	}
+	if !claimed {
+		log.Infof("Another recovery holds the claim. Skipping the call recovery. call_id: %s", c.ID)
 		return nil
 	}
 

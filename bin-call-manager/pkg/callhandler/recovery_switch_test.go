@@ -275,6 +275,41 @@ func Test_recoverySwitch_afterCommit(t *testing.T) {
 	}
 }
 
+// Test_recoverySwitch_actionError checks a failing action after the switch hangs up the call, so no silent
+// progressing call remains.
+func Test_recoverySwitch_actionError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h, m := newRecoveryTestHandler(mc)
+	ctx := context.Background()
+	cn := recoveryChannel(ari.ChannelStateUp)
+
+	// an unsupported action type fails, and moving to the next action fails too: actionExecute returns an error.
+	failing := switchedCall()
+	failing.Action = fmaction.Action{ID: uuid.FromStringOrNil("7e1d2c3b-9f74-11f1-8a9b-0c1d2e3f4a10"), Type: fmaction.Type("unsupported")}
+	m.req.EXPECT().CallV1CallActionNext(ctx, tRecoveryCallID, false).Return(fmt.Errorf("flow-manager down"))
+
+	m.util.EXPECT().UUIDCreate().Return(tRecoveryBridgeID)
+	m.db.EXPECT().CallSetChannelIDAndBridgeIDIfOwned(ctx, tRecoveryCallID, tRecoveryOldChannel, tRecoveryChannelID, tRecoveryBridgeID.String()).Return(true, nil)
+	m.bridge.EXPECT().Start(ctx, cn.AsteriskID, tRecoveryBridgeID.String(), gomock.Any(), gomock.Any()).Return(&bridge.Bridge{ID: tRecoveryBridgeID.String()}, nil)
+	m.bridge.EXPECT().ChannelJoin(ctx, tRecoveryBridgeID.String(), tRecoveryChannelID, "", false, false).Return(nil)
+	m.channel.EXPECT().HangingUpWithDelay(ctx, tRecoveryChannelID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(cn, nil)
+	m.db.EXPECT().CallGetFromDB(ctx, tRecoveryCallID).Return(failing, nil)
+
+	// the hangup of the call after the failed action
+	m.db.EXPECT().CallGet(ctx, tRecoveryCallID).Return(switchedCall(), nil)
+	m.db.EXPECT().CallSetStatus(ctx, tRecoveryCallID, call.StatusTerminating).Return(nil)
+	m.db.EXPECT().CallGet(ctx, tRecoveryCallID).Return(terminatingSwitchedCall(), nil)
+	m.notify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), call.EventTypeCallTerminating, gomock.Any())
+	m.db.EXPECT().CallGetFromDB(ctx, tRecoveryCallID).Return(switchedCall(), nil)
+	m.channel.EXPECT().HangingUp(ctx, tRecoveryChannelID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{ID: tRecoveryChannelID}, nil)
+
+	if err := h.recoverySwitch(ctx, cn); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
 func Test_startContextCallRecovery(t *testing.T) {
 
 	tests := []struct {

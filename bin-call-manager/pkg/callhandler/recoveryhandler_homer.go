@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/jart/gosip/sip"
@@ -145,7 +146,7 @@ func filterSIPMessages(rows []HomerSIPMessageDetail, callID string) []*sip.Msg {
 			continue
 		}
 
-		tmp, err := sip.ParseMsg([]byte(row.Raw))
+		tmp, err := sip.ParseMsg(sipHeaderOnly(row.Raw))
 		if err != nil {
 			log.Warnf("Skipping a row that could not be parsed as SIP. row_id: %d, err: %v", row.ID, err)
 			continue
@@ -159,5 +160,33 @@ func filterSIPMessages(rows []HomerSIPMessageDetail, callID string) []*sip.Msg {
 		res = append(res, tmp)
 	}
 
+	if len(rows) > 0 && len(res) == 0 {
+		log.Warnf("No usable SIP message among the Homer rows. rows: %d", len(rows))
+	}
+
 	return res
+}
+
+// sipHeaderOnly returns the SIP message without its body and with Content-Length 0. Recovery needs only headers,
+// and the SIP parser also parses SDP bodies strictly (e.g. a declined dynamic payload without rtpmap fails), which
+// would drop a valid INVITE or 2xx.
+func sipHeaderOnly(raw string) []byte {
+	idx := strings.Index(raw, "\r\n\r\n")
+	if idx < 0 {
+		return []byte(raw)
+	}
+
+	lines := strings.Split(raw[:idx], "\r\n")
+	for i, line := range lines {
+		name, _, ok := strings.Cut(line, ":")
+		if !ok {
+			continue
+		}
+		name = strings.TrimSpace(name)
+		if strings.EqualFold(name, "Content-Length") || strings.EqualFold(name, "l") {
+			lines[i] = name + ": 0"
+		}
+	}
+
+	return []byte(strings.Join(lines, "\r\n") + "\r\n\r\n")
 }
