@@ -148,7 +148,8 @@ func filterSIPMessages(rows []HomerSIPMessageDetail, callID string) []*sip.Msg {
 
 		tmp, err := sip.ParseMsg(sipHeaderOnly(row.Raw))
 		if err != nil {
-			log.Warnf("Skipping a row that could not be parsed as SIP. row_id: %d, err: %v", row.ID, err)
+			// correlated non-SIP rows (e.g. RTCP, logs) of the same call land here; summarized below.
+			log.Debugf("Skipping a row that could not be parsed as SIP. row_id: %d, err: %v", row.ID, err)
 			continue
 		}
 
@@ -160,16 +161,15 @@ func filterSIPMessages(rows []HomerSIPMessageDetail, callID string) []*sip.Msg {
 		res = append(res, tmp)
 	}
 
-	if len(rows) > 0 && len(res) == 0 {
-		log.Warnf("No usable SIP message among the Homer rows. rows: %d", len(rows))
-	}
+	log.Infof("Filtered the Homer rows. rows: %d, sip_messages: %d", len(rows), len(res))
 
 	return res
 }
 
 // sipHeaderOnly returns the SIP message without its body and with Content-Length 0. Recovery needs only headers,
 // and the SIP parser also parses SDP bodies strictly (e.g. a declined dynamic payload without rtpmap fails), which
-// would drop a valid INVITE or 2xx.
+// would drop a valid INVITE or 2xx. It expects the CRLF wire format Homer stores; other input is returned as is
+// (and fails in the parser as before).
 func sipHeaderOnly(raw string) []byte {
 	idx := strings.Index(raw, "\r\n\r\n")
 	if idx < 0 {
@@ -178,6 +178,9 @@ func sipHeaderOnly(raw string) []byte {
 
 	lines := strings.Split(raw[:idx], "\r\n")
 	for i, line := range lines {
+		if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
+			continue // folded continuation of the previous header
+		}
 		name, _, ok := strings.Cut(line, ":")
 		if !ok {
 			continue

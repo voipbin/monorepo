@@ -377,3 +377,44 @@ func Test_filterSIPMessages_body(t *testing.T) {
 		t.Errorf("Wrong match. expect: 200 with tag rem-1, got: %d %s", res[0].Status, getTag(res[0].To))
 	}
 }
+
+// Test_sipHeaderOnly checks the header forms of Content-Length and a message without it.
+func Test_sipHeaderOnly(t *testing.T) {
+	head := []string{
+		"SIP/2.0 200 OK",
+		"Via: SIP/2.0/UDP 172.24.0.244:5060;branch=z9hG4bK-1",
+		`From: "Agent" <sip:+15550100@voipbin.net>;tag=as-1`,
+		"To: <sip:+15550199@carrier.example.com>;tag=rem-1",
+		"Call-ID: " + tCallID,
+		"CSeq: 102 INVITE",
+	}
+
+	tests := []struct {
+		name   string
+		length string // the Content-Length header line, or "" for none
+		body   string
+	}{
+		{name: "compact form", length: "l: 5", body: "hello"},
+		{name: "spaced name", length: "Content-Length :   5", body: "hello"},
+		{name: "lower case", length: "content-length: 5", body: "hello"},
+		{name: "no content-length, no body", length: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lines := append([]string{}, head...)
+			if tt.length != "" {
+				lines = append(lines, tt.length)
+			}
+			raw := strings.Join(lines, "\r\n") + "\r\n\r\n" + tt.body
+
+			m, err := sip.ParseMsg(sipHeaderOnly(raw))
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if m.CallID != tCallID || m.CSeq != 102 || getTag(m.From) != "as-1" || getTag(m.To) != "rem-1" {
+				t.Errorf("Wrong match. got: call_id %s, cseq %d, from tag %s, to tag %s", m.CallID, m.CSeq, getTag(m.From), getTag(m.To))
+			}
+		})
+	}
+}
