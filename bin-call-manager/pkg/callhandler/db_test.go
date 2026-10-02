@@ -795,7 +795,7 @@ func Test_UpdateHangup(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, tt.responseCall)
 
-			_, err := h.UpdateHangupInfo(ctx, tt.id, tt.reason, tt.hangupBy)
+			_, _, err := h.UpdateHangupInfo(ctx, tt.id, "", tt.reason, tt.hangupBy)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

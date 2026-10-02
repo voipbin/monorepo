@@ -141,9 +141,11 @@ func Test_Hangup(t *testing.T) {
 
 			mockUtil.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
 
-			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(tt.responseCall, nil)
+			readCall := *tt.responseCall // the call as read at destroy time (progressing)
+			mockDB.EXPECT().CallGetByChannelID(ctx, tt.channel.ID).Return(&readCall, nil)
 			mockBridge.EXPECT().Destroy(ctx, tt.responseCall.BridgeID).Return(nil)
-			mockDB.EXPECT().CallSetHangup(ctx, tt.responseCall.ID, call.HangupReasonNormal, call.HangupByRemote).Return(nil)
+			// a progressing call: the hangup is recorded only while this channel owns the call (VOIP-1556).
+			mockDB.EXPECT().CallSetHangupIfChannel(ctx, tt.responseCall.ID, tt.channel.ID, call.HangupReasonNormal, call.HangupByRemote).Return(true, nil)
 			tt.responseCall.Status = call.StatusHangup
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallHangup, gomock.Any())
@@ -170,6 +172,7 @@ func Test_Hangup(t *testing.T) {
 				}
 				mockDB.EXPECT().CallGet(ctx, tmpCall.ID).Return(tmpCall2, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, tmpCall2.CustomerID, call.EventTypeCallTerminating, gomock.Any())
+				mockDB.EXPECT().CallGetFromDB(ctx, tmpCall.ID).Return(tmpCall2, nil)
 				mockChannel.EXPECT().HangingUp(ctx, tmpCall2.ChannelID, ari.ChannelCauseNormalClearing).Return(tt.responseChannel, nil)
 			}
 
@@ -285,6 +288,7 @@ func Test_hangingUpWithCause(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(&tmpCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tmpCall.CustomerID, tt.expectEventType, &tmpCall)
 
+			mockDB.EXPECT().CallGetFromDB(ctx, tt.responseCall.ID).Return(&tmpCall, nil)
 			mockChannel.EXPECT().HangingUp(ctx, tmpCall.ChannelID, tt.cause).Return(tt.responseChannel, nil)
 
 			res, err := h.hangingUpWithCause(ctx, tt.id, tt.cause)
@@ -372,6 +376,7 @@ func Test_hangingupWithReference(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
+			mockDB.EXPECT().CallGetFromDB(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockChannel.EXPECT().HangingUp(ctx, tt.responseCall.ChannelID, tt.responseReferenceChannel.HangupCause).Return(tt.responseReferenceChannel, nil)
 
 			res, err := h.hangingupWithReference(ctx, tt.call, tt.referenceID)

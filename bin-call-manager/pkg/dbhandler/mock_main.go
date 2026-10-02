@@ -254,6 +254,21 @@ func (mr *MockDBHandlerMockRecorder) CallGetByChannelID(ctx, channelID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetByChannelID", reflect.TypeOf((*MockDBHandler)(nil).CallGetByChannelID), ctx, channelID)
 }
 
+// CallGetFromDB mocks base method.
+func (m *MockDBHandler) CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallGetFromDB", ctx, id)
+	ret0, _ := ret[0].(*call.Call)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallGetFromDB indicates an expected call of CallGetFromDB.
+func (mr *MockDBHandlerMockRecorder) CallGetFromDB(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGetFromDB", reflect.TypeOf((*MockDBHandler)(nil).CallGetFromDB), ctx, id)
+}
+
 // CallList mocks base method.
 func (m *MockDBHandler) CallList(ctx context.Context, size uint64, token string, filters map[call.Field]any) ([]*call.Call, error) {
 	m.ctrl.T.Helper()
@@ -267,6 +282,21 @@ func (m *MockDBHandler) CallList(ctx context.Context, size uint64, token string,
 func (mr *MockDBHandlerMockRecorder) CallList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallList", reflect.TypeOf((*MockDBHandler)(nil).CallList), ctx, size, token, filters)
+}
+
+// CallRecoveryClaim mocks base method.
+func (m *MockDBHandler) CallRecoveryClaim(ctx context.Context, id uuid.UUID, ttl time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallRecoveryClaim", ctx, id, ttl)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallRecoveryClaim indicates an expected call of CallRecoveryClaim.
+func (mr *MockDBHandlerMockRecorder) CallRecoveryClaim(ctx, id, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallRecoveryClaim", reflect.TypeOf((*MockDBHandler)(nil).CallRecoveryClaim), ctx, id, ttl)
 }
 
 // CallRemoveChainedCallID mocks base method.
@@ -339,18 +369,19 @@ func (mr *MockDBHandlerMockRecorder) CallSetBridgeID(ctx, id, bridgeID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetBridgeID", reflect.TypeOf((*MockDBHandler)(nil).CallSetBridgeID), ctx, id, bridgeID)
 }
 
-// CallSetChannelIDAndBridgeID mocks base method.
-func (m *MockDBHandler) CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID, bridgeID string) error {
+// CallSetChannelIDAndBridgeIDIfOwned mocks base method.
+func (m *MockDBHandler) CallSetChannelIDAndBridgeIDIfOwned(ctx context.Context, id uuid.UUID, oldChannelID, newChannelID, bridgeID string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSetChannelIDAndBridgeID", ctx, id, channelID, bridgeID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "CallSetChannelIDAndBridgeIDIfOwned", ctx, id, oldChannelID, newChannelID, bridgeID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// CallSetChannelIDAndBridgeID indicates an expected call of CallSetChannelIDAndBridgeID.
-func (mr *MockDBHandlerMockRecorder) CallSetChannelIDAndBridgeID(ctx, id, channelID, bridgeID any) *gomock.Call {
+// CallSetChannelIDAndBridgeIDIfOwned indicates an expected call of CallSetChannelIDAndBridgeIDIfOwned.
+func (mr *MockDBHandlerMockRecorder) CallSetChannelIDAndBridgeIDIfOwned(ctx, id, oldChannelID, newChannelID, bridgeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetChannelIDAndBridgeID", reflect.TypeOf((*MockDBHandler)(nil).CallSetChannelIDAndBridgeID), ctx, id, channelID, bridgeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetChannelIDAndBridgeIDIfOwned", reflect.TypeOf((*MockDBHandler)(nil).CallSetChannelIDAndBridgeIDIfOwned), ctx, id, oldChannelID, newChannelID, bridgeID)
 }
 
 // CallSetConfbridgeID mocks base method.
@@ -421,6 +452,21 @@ func (m *MockDBHandler) CallSetHangup(ctx context.Context, id uuid.UUID, reason 
 func (mr *MockDBHandlerMockRecorder) CallSetHangup(ctx, id, reason, hangupBy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetHangup", reflect.TypeOf((*MockDBHandler)(nil).CallSetHangup), ctx, id, reason, hangupBy)
+}
+
+// CallSetHangupIfChannel mocks base method.
+func (m *MockDBHandler) CallSetHangupIfChannel(ctx context.Context, id uuid.UUID, channelID string, reason call.HangupReason, hangupBy call.HangupBy) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallSetHangupIfChannel", ctx, id, channelID, reason, hangupBy)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallSetHangupIfChannel indicates an expected call of CallSetHangupIfChannel.
+func (mr *MockDBHandlerMockRecorder) CallSetHangupIfChannel(ctx, id, channelID, reason, hangupBy any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetHangupIfChannel", reflect.TypeOf((*MockDBHandler)(nil).CallSetHangupIfChannel), ctx, id, channelID, reason, hangupBy)
 }
 
 // CallSetMasterCallID mocks base method.

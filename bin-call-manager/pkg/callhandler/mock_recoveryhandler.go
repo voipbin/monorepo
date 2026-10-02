@@ -41,16 +41,16 @@ func (m *MockRecoveryHandler) EXPECT() *MockRecoveryHandlerMockRecorder {
 }
 
 // GetRecoveryDetail mocks base method.
-func (m *MockRecoveryHandler) GetRecoveryDetail(ctx context.Context, callID string) (*recoveryDetail, error) {
+func (m *MockRecoveryHandler) GetRecoveryDetail(ctx context.Context, callID string, role asteriskRole) (*recoveryDetail, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRecoveryDetail", ctx, callID)
+	ret := m.ctrl.Call(m, "GetRecoveryDetail", ctx, callID, role)
 	ret0, _ := ret[0].(*recoveryDetail)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetRecoveryDetail indicates an expected call of GetRecoveryDetail.
-func (mr *MockRecoveryHandlerMockRecorder) GetRecoveryDetail(ctx, callID any) *gomock.Call {
+func (mr *MockRecoveryHandlerMockRecorder) GetRecoveryDetail(ctx, callID, role any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecoveryDetail", reflect.TypeOf((*MockRecoveryHandler)(nil).GetRecoveryDetail), ctx, callID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecoveryDetail", reflect.TypeOf((*MockRecoveryHandler)(nil).GetRecoveryDetail), ctx, callID, role)
 }

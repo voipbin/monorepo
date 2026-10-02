@@ -10,7 +10,7 @@
 | `external-media` requests fail with Asterisk error | Asterisk snoop channel creation failed; Asterisk WebSocket port not reachable | Verify `asterisk_ws_port` configuration; check Asterisk logs for snoop channel errors; verify network connectivity between call-manager pod and Asterisk |
 | High call create latency | MySQL slow queries on `calls` table; Redis cache miss storm | Check `call_create_total` and `receive_request_process_time` metrics; run `EXPLAIN` on slow queries; verify Redis is reachable |
 | Confbridge does not terminate when last call leaves | `no_auto_leave` flag is set, or `conference` type (does not auto-terminate) | Check confbridge `flags` and `type`; send explicit `/terminate` if stuck in `progressing` |
-| Calls orphaned after an Asterisk container died | Calls left in `progressing` status with no Asterisk channels | Use `call-control call update-status` to force `hangup` status. Call recovery (`/v1/recovery`, automatic recovery on container death) is disabled by default (VOIP-1553) and must not be enabled before VOIP-1556 |
+| Calls orphaned after an Asterisk container died | Calls left in `progressing` status with no Asterisk channels | Use `call-control call update-status` to force `hangup` status. Call recovery (`/v1/recovery`, automatic recovery on container death) is disabled by default (VOIP-1553); enabling it is a gated crash test approved by the CEO, production use after the drain (VOIP-1560) |
 | Outbound call fails immediately | All dial routes exhausted; outbound config codec mismatch | Check `call_outbound_whitelist_rejected_total` metric; verify `outbound_config` has valid routes; check route-manager for routing entries |
 
 ## Debugging Guide
@@ -106,9 +106,9 @@ followed with 16 more services on the same pattern; the remaining
 | `redis_database` | `REDIS_DATABASE` | `0` | Redis logical database index |
 | `homer_api_address` | `HOMER_API_ADDRESS` | _(empty)_ | Homer SIP capture API base URL (optional) |
 | `homer_auth_token` | `HOMER_AUTH_TOKEN` | _(empty)_ | Homer API authentication token (optional) |
-| `homer_whitelist` | `HOMER_WHITELIST` | _(empty)_ | Comma-separated IP whitelist for Homer recovery endpoint |
+| `homer_whitelist` | `HOMER_WHITELIST` | _(empty)_ | Comma-separated IPs whose capture rows Homer excludes from the recovery query (the Kamailio outer interface). Call recovery reconstructs the dialog from the remaining rows and fails closed when copies of the same message differ, so this must exclude the hops that rewrite Contact or Record-Route |
 | `asterisk_ws_port` | `ASTERISK_WS_PORT` | `8088` | Asterisk WebSocket port for ARI/external-media connections |
-| `recovery_enabled` | `RECOVERY_ENABLED` | `false` | Enables call recovery (automatic on Asterisk container death and manual `/v1/recovery`). Only a value `strconv.ParseBool` reads as true (`1`, `t`, `T`, `true`, `TRUE`, `True`) enables it; anything else, including empty or unparsable values, leaves it disabled. Keep disabled until VOIP-1556 redesigns recovery (VOIP-1553). Startup logs `Call recovery is disabled. RECOVERY_ENABLED is not set to true.` |
+| `recovery_enabled` | `RECOVERY_ENABLED` | `false` | Enables call recovery (automatic on Asterisk container death and manual `/v1/recovery`). Only a value `strconv.ParseBool` reads as true (`1`, `t`, `T`, `true`, `TRUE`, `True`) enables it; anything else, including empty or unparsable values, leaves it disabled. Keep disabled in production; enabling it is a gated crash test approved by the CEO, and production use follows the drain (VOIP-1560). When enabled, a recovered call logs `Switched the call to the recovery channel`; expected noise: the old channel's late destroy after a switch, and a recovery leg the remote refused, each log `Could not get the call info from the db` (error) followed by consumer retries, because no call is owned by that channel. Startup logs `Call recovery is disabled. RECOVERY_ENABLED is not set to true.` |
 
 ## Prometheus Metrics
 

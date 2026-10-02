@@ -469,6 +469,10 @@ func (h *handler) ChannelGetsForRecovery(
 		Where(squirrel.Eq{string(channel.FieldType): channelType}).
 		Where(squirrel.Gt{string(channel.FieldTMCreate): startTime}).
 		Where(squirrel.Lt{string(channel.FieldTMCreate): endTime}).
+		// VOIP-1556: only live (not ended), answered channels with a SIP Call-ID can be recovered.
+		Where(squirrel.Eq{string(channel.FieldTMEnd): nil}).
+		Where(squirrel.NotEq{string(channel.FieldTMAnswer): nil}).
+		Where(squirrel.NotEq{string(channel.FieldSIPCallID): ""}).
 		OrderBy(string(channel.FieldTMCreate) + " DESC").
 		Limit(size).
 		PlaceholderFormat(squirrel.Question).

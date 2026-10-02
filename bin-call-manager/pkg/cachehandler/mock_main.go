@@ -21,6 +21,7 @@ import (
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	recording "monorepo/bin-call-manager/models/recording"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -136,6 +137,21 @@ func (m *MockCacheHandler) CallGet(ctx context.Context, id uuid.UUID) (*call.Cal
 func (mr *MockCacheHandlerMockRecorder) CallGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallGet", reflect.TypeOf((*MockCacheHandler)(nil).CallGet), ctx, id)
+}
+
+// CallRecoveryClaim mocks base method.
+func (m *MockCacheHandler) CallRecoveryClaim(ctx context.Context, callID uuid.UUID, ttl time.Duration) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallRecoveryClaim", ctx, callID, ttl)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallRecoveryClaim indicates an expected call of CallRecoveryClaim.
+func (mr *MockCacheHandlerMockRecorder) CallRecoveryClaim(ctx, callID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallRecoveryClaim", reflect.TypeOf((*MockCacheHandler)(nil).CallRecoveryClaim), ctx, callID, ttl)
 }
 
 // CallSet mocks base method.

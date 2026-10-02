@@ -51,13 +51,16 @@ type DBHandler interface {
 	CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *fmaction.Action, hold bool) error
 	CallSetActionNextHold(ctx context.Context, id uuid.UUID, hold bool) error
 	CallSetBridgeID(ctx context.Context, id uuid.UUID, bridgeID string) error
-	CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID string, bridgeID string) error
+	CallSetChannelIDAndBridgeIDIfOwned(ctx context.Context, id uuid.UUID, oldChannelID string, newChannelID string, bridgeID string) (bool, error)
 	CallSetConfbridgeID(ctx context.Context, id, confbridgeID uuid.UUID) error
 	CallSetData(ctx context.Context, id uuid.UUID, data map[call.DataType]string) error
 	CallAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error
 	CallRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error
 	CallSetFlowID(ctx context.Context, id, flowID uuid.UUID) error
 	CallSetHangup(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) error
+	CallSetHangupIfChannel(ctx context.Context, id uuid.UUID, channelID string, reason call.HangupReason, hangupBy call.HangupBy) (bool, error)
+	CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error)
+	CallRecoveryClaim(ctx context.Context, id uuid.UUID, ttl time.Duration) (bool, error)
 	CallSetMasterCallID(ctx context.Context, id uuid.UUID, callID uuid.UUID) error
 	CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDirection call.MuteDirection) error
 	CallSetStatus(ctx context.Context, id uuid.UUID, status call.Status) error

@@ -4,6 +4,7 @@ package cachehandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
@@ -38,6 +39,8 @@ type CacheHandler interface {
 
 	CallAppAMDGet(ctx context.Context, channelID string) (*callapplication.AMD, error)
 	CallAppAMDSet(ctx context.Context, channelID string, app *callapplication.AMD) error
+
+	CallRecoveryClaim(ctx context.Context, callID uuid.UUID, ttl time.Duration) (bool, error)
 
 	ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error)
 	ExternalMediaGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*externalmedia.ExternalMedia, error)

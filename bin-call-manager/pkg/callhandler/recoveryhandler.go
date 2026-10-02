@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -30,6 +29,7 @@ type recoveryDetail struct {
 	ToURI     string
 	ToTag     string
 
+	// CSeq is the local CSeq for the recovery INVITE. 0 means "not known, let the dialog choose".
 	CSeq int
 }
 
@@ -37,12 +37,18 @@ type asteriskRole string
 
 const (
 	asteriskRoleUnknown asteriskRole = ""
-	asteriskRoleUAC     asteriskRole = "uac" // User Agent Client
-	asteriskRoleUAS     asteriskRole = "uas" // User Agent Server
+	asteriskRoleUAC     asteriskRole = "uac" // User Agent Client: Asterisk sent the initial INVITE
+	asteriskRoleUAS     asteriskRole = "uas" // User Agent Server: Asterisk received the initial INVITE
 )
 
+// recoveryCSeqMargin is added to the highest CSeq Asterisk is known to have used in the dialog.
+// RFC 3261 12.2.1.1 requires the local CSeq to increase, not to be contiguous; the margin covers
+// Asterisk requests missing from the capture (HEP loss, ingest delay, a refresh just before the crash),
+// which would otherwise make the remote reject the recovery INVITE with 500 (RFC 3261 12.2.2).
+const recoveryCSeqMargin = 100
+
 type RecoveryHandler interface {
-	GetRecoveryDetail(ctx context.Context, callID string) (*recoveryDetail, error)
+	GetRecoveryDetail(ctx context.Context, callID string, role asteriskRole) (*recoveryDetail, error)
 }
 
 type recoveryHandler struct {
@@ -80,10 +86,14 @@ func NewRecoveryHandler(
 	}
 }
 
-func (h *recoveryHandler) GetRecoveryDetail(ctx context.Context, callID string) (*recoveryDetail, error) {
+// GetRecoveryDetail returns Asterisk's own side of the SIP dialog with the given Call-ID,
+// reconstructed from the Homer capture. role is Asterisk's role in the dialog, taken from
+// call-manager's own call record (outgoing call: UAC, incoming call: UAS).
+func (h *recoveryHandler) GetRecoveryDetail(ctx context.Context, callID string, role asteriskRole) (*recoveryDetail, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "GetRecoveryDetail",
-		"callID": callID,
+		"func":    "GetRecoveryDetail",
+		"call_id": callID,
+		"role":    role,
 	})
 
 	if h.homerAPIAddress == "" || h.homerAuthToken == "" {
@@ -95,7 +105,7 @@ func (h *recoveryHandler) GetRecoveryDetail(ctx context.Context, callID string) 
 		return nil, errors.Wrapf(err, "could not get SIP messages for call ID. call_id: %s", callID)
 	}
 
-	res, err := h.getRecoveryDetail(ctx, sipMessages)
+	res, err := getRecoveryDetail(sipMessages, role)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get recovery details for call ID. call_id: %s", callID)
 	}
@@ -104,173 +114,196 @@ func (h *recoveryHandler) GetRecoveryDetail(ctx context.Context, callID string) 
 	return res, nil
 }
 
-func (h *recoveryHandler) getRecoveryDetail(ctx context.Context, messages []*sip.Msg) (*recoveryDetail, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":  "getRecoveryDetails",
-		"count": len(messages),
-	})
-
+// getRecoveryDetail reconstructs Asterisk's side of the dialog from the captured messages.
+// The result does not depend on the order of the messages; ambiguous captures fail.
+func getRecoveryDetail(messages []*sip.Msg, role asteriskRole) (*recoveryDetail, error) {
 	if len(messages) == 0 {
 		return nil, errors.New("no SIP messages provided")
 	}
+	if role != asteriskRoleUAC && role != asteriskRoleUAS {
+		return nil, fmt.Errorf("unsupported asterisk role. role: %s", role)
+	}
 
-	var firstInvite *sip.Msg
-	var role asteriskRole
+	invites, responses, err := findDialogCreation(messages)
+	if err != nil {
+		return nil, err
+	}
 
-	// Find the first INVITE message
-	for _, msg := range messages {
-		if msg.Method == sip.MethodInvite {
-			firstInvite = msg
-			var err error
-			role, err = h.determineRole(msg)
-			if err != nil {
-				log.Warnf("Error determining role for INVITE message: %v", err)
-				continue
-			} else if role != asteriskRoleUnknown {
-				log.Debugf("Found INVITE message with role: %s", role)
-				break
-			} else {
-				log.Debug("Found an INVITE message but could not determine its role.")
-			}
-		} else {
-			log.Tracef("Skipping non-INVITE message: %s", msg.Method)
+	invite := invites[0]
+	response := responses[0]
+
+	// the fields each role takes from the initial INVITE and from the dialog-creating 2xx must agree across copies.
+	var inviteKey, responseKey func(m *sip.Msg) string
+	switch role {
+	case asteriskRoleUAC:
+		inviteKey = func(m *sip.Msg) string { return addrString(m.From) + "|" + addrString(m.To) }
+		responseKey = func(m *sip.Msg) string {
+			return getTag(m.To) + "|" + addrString(m.Contact) + "|" + addrString(m.RecordRoute)
+		}
+	case asteriskRoleUAS:
+		inviteKey = func(m *sip.Msg) string {
+			return addrString(m.From) + "|" + addrString(m.To) + "|" + addrString(m.Contact) + "|" + addrString(m.RecordRoute)
+		}
+		responseKey = func(m *sip.Msg) string { return getTag(m.To) }
+	}
+	if !sameKey(invites, inviteKey) {
+		return nil, errors.New("copies of the initial INVITE differ")
+	}
+	if !sameKey(responses, responseKey) {
+		return nil, errors.New("copies of the dialog-creating response differ")
+	}
+
+	res := &recoveryDetail{
+		CallID: invite.CallID,
+	}
+
+	switch role {
+	case asteriskRoleUAC:
+		res.FromDisplay, res.FromURI, res.FromTag = addrDisplay(invite.From), addrURI(invite.From), getTag(invite.From)
+		res.ToDisplay, res.ToURI, res.ToTag = addrDisplay(invite.To), addrURI(invite.To), getTag(response.To)
+
+		res.RequestURI = addrURI(response.Contact)
+		if res.RequestURI == "" {
+			res.RequestURI = addrURI(invite.To)
+		}
+		if response.RecordRoute != nil {
+			res.Routes = response.RecordRoute.Reversed().String()
+			res.RecordRoutes = response.RecordRoute.String()
+		}
+
+	case asteriskRoleUAS:
+		res.FromDisplay, res.FromURI, res.FromTag = addrDisplay(invite.To), addrURI(invite.To), getTag(response.To)
+		res.ToDisplay, res.ToURI, res.ToTag = addrDisplay(invite.From), addrURI(invite.From), getTag(invite.From)
+
+		res.RequestURI = addrURI(invite.Contact)
+		if res.RequestURI == "" {
+			res.RequestURI = addrURI(invite.From)
+		}
+		if invite.RecordRoute != nil {
+			res.Routes = invite.RecordRoute.String()
+			res.RecordRoutes = invite.RecordRoute.String()
 		}
 	}
 
-	if firstInvite == nil {
-		return nil, errors.New("no INVITE message found in the SIP message list")
+	// local CSeq: the transactions Asterisk started carry its tag in From (its requests and the responses to them).
+	maxCSeq := 0
+	for _, m := range messages {
+		if getTag(m.From) == res.FromTag && m.CSeq > maxCSeq {
+			maxCSeq = m.CSeq
+		}
+	}
+	if maxCSeq > 0 {
+		res.CSeq = maxCSeq + recoveryCSeqMargin
 	}
 
-	if role == asteriskRoleUnknown {
-		return nil, errors.New("no INVITE message with a known role found")
+	if res.CallID == "" || res.FromTag == "" || res.ToTag == "" || res.FromURI == "" || res.ToURI == "" || res.RequestURI == "" {
+		return nil, fmt.Errorf("incomplete dialog. call_id: %s, from_tag: %s, to_tag: %s, from_uri: %s, to_uri: %s, request_uri: %s",
+			res.CallID, res.FromTag, res.ToTag, res.FromURI, res.ToURI, res.RequestURI)
 	}
-
-	res := &recoveryDetail{}
-	requestURI, routes, recordRoutes := h.extractContactAndRoutes(messages, firstInvite, role)
-	if requestURI == "" {
-		return nil, errors.New("the request URI is missing")
-	}
-	res.RequestURI = requestURI
-
-	listRoutes := strings.Split(routes, ",")
-	if len(listRoutes) > 1 {
-		res.Routes = strings.Join(listRoutes, ",")
-		res.Routes = strings.TrimSpace(res.Routes)
-	}
-
-	listRecordRoutes := strings.Split(recordRoutes, ",")
-	if len(listRecordRoutes) > 1 {
-		res.RecordRoutes = strings.Join(listRecordRoutes, ",")
-		res.RecordRoutes = strings.TrimSpace(res.RecordRoutes)
-	}
-	log.Debugf("Extracted request URI and routes. RequestURI: %s, Routes: %s, RecordRoutes: %s", res.RequestURI, res.Routes, res.RecordRoutes)
-
-	lastMsg := messages[len(messages)-1]
-	if errValidate := h.validateLastMessage(lastMsg); errValidate != nil {
-		return nil, errValidate
-	}
-
-	res.CallID = lastMsg.CallID
-
-	res.FromDisplay = lastMsg.From.Display
-	res.FromURI = lastMsg.From.Uri.String()
-	res.FromTag = lastMsg.From.Param.Get("tag").Value
-
-	res.ToDisplay = lastMsg.To.Display
-	res.ToURI = lastMsg.To.Uri.String()
-	res.ToTag = lastMsg.To.Param.Get("tag").Value
-
-	res.CSeq = lastMsg.CSeq + 1
 
 	return res, nil
 }
 
-func (h *recoveryHandler) determineRole(firstMessage *sip.Msg) (asteriskRole, error) {
-	if firstMessage == nil {
-		return asteriskRoleUnknown, errors.New("first message is nil")
+// findDialogCreation returns the copies of the INVITE that created the dialog and of the 2xx that answered it.
+// The dialog-creating 2xx is the INVITE 2xx with a To tag, answering a To-tagless INVITE in the capture
+// (same From tag and CSeq), with the lowest CSeq. This skips INVITEs challenged with 401/407 (no 2xx)
+// and 2xx of re-INVITEs (the re-INVITE carries a To tag). Several copies of the returned messages
+// (retransmissions, capture hops, forked 2xx) are returned together for the caller's consistency check.
+func findDialogCreation(messages []*sip.Msg) ([]*sip.Msg, []*sip.Msg, error) {
+	type key struct {
+		fromTag string
+		cseq    int
 	}
 
-	if !firstMessage.IsResponse() && firstMessage.Method == sip.MethodInvite {
-		vboutHeader := firstMessage.XHeader.Get("VBOUT-SDP_Transport")
-		if vboutHeader != nil {
-			return asteriskRoleUAC, nil
-		} else {
-			return asteriskRoleUAS, nil
+	initialInvites := map[key][]*sip.Msg{}
+	for _, m := range messages {
+		if m.IsResponse() || m.Method != sip.MethodInvite || getTag(m.To) != "" {
+			continue
+		}
+		k := key{fromTag: getTag(m.From), cseq: m.CSeq}
+		initialInvites[k] = append(initialInvites[k], m)
+	}
+	if len(initialInvites) == 0 {
+		return nil, nil, errors.New("no initial INVITE found")
+	}
+
+	var found []key
+	responses := map[key][]*sip.Msg{}
+	for _, m := range messages {
+		if !m.IsResponse() || m.Status < 200 || m.Status >= 300 || m.CSeqMethod != sip.MethodInvite || getTag(m.To) == "" {
+			continue
+		}
+		k := key{fromTag: getTag(m.From), cseq: m.CSeq}
+		if _, ok := initialInvites[k]; !ok {
+			continue
+		}
+		if _, ok := responses[k]; !ok {
+			found = append(found, k)
+		}
+		responses[k] = append(responses[k], m)
+	}
+	if len(found) == 0 {
+		return nil, nil, errors.New("no 2xx response for an initial INVITE found")
+	}
+
+	lowest := found[0]
+	for _, k := range found[1:] {
+		if k.cseq < lowest.cseq {
+			lowest = k
+		}
+	}
+	for _, k := range found {
+		if k.cseq == lowest.cseq && k.fromTag != lowest.fromTag {
+			return nil, nil, errors.New("several dialogs created with the same CSeq")
 		}
 	}
 
-	return "", fmt.Errorf("first message is not an INVITE request, method: %s, isResponse: %t",
-		firstMessage.Method, firstMessage.IsResponse())
+	// forked 2xx (different To tags) are rejected by the copy consistency check of the caller.
+	return initialInvites[lowest], responses[lowest], nil
 }
 
-func (h *recoveryHandler) extractContactAndRoutes(messages []*sip.Msg, firstInvite *sip.Msg, role asteriskRole) (string, string, string) {
-	remoteContact := ""
-	routes := ""
-	recordRoutes := ""
-
-	switch role {
-	case asteriskRoleUAC:
-		firstSuccessfulResponse := h.findFirstSuccessfulResponse(messages, firstInvite.CSeq)
-		if firstSuccessfulResponse != nil {
-			if contact := firstSuccessfulResponse.Contact; contact != nil {
-				remoteContact = contact.Uri.String()
-			} else if firstInvite.To != nil {
-				remoteContact = firstInvite.To.Uri.String()
-			}
-
-			if firstSuccessfulResponse.RecordRoute != nil {
-				routes = firstSuccessfulResponse.RecordRoute.Reversed().String()
-				recordRoutes = firstSuccessfulResponse.RecordRoute.String()
-			}
-		} else if firstInvite.To != nil {
-			remoteContact = firstInvite.To.Uri.String()
+// sameKey returns true if key gives the same value for every message.
+func sameKey(messages []*sip.Msg, key func(m *sip.Msg) string) bool {
+	for _, m := range messages[1:] {
+		if key(m) != key(messages[0]) {
+			return false
 		}
-
-	case asteriskRoleUAS:
-		if contact := firstInvite.Contact; contact != nil {
-			remoteContact = contact.Uri.String()
-		} else if firstInvite.From != nil {
-			remoteContact = firstInvite.From.Uri.String()
-		}
-
-		if firstInvite.RecordRoute != nil {
-			routes = firstInvite.RecordRoute.String()
-			recordRoutes = firstInvite.RecordRoute.String()
-		}
-	default:
-		// Handle default case in the calling function. This should never happen, but leaving here as documentation
-		return remoteContact, routes, recordRoutes
 	}
-
-	return remoteContact, routes, recordRoutes
+	return true
 }
 
-func (h *recoveryHandler) findFirstSuccessfulResponse(messages []*sip.Msg, inviteCSeq int) *sip.Msg {
-	for _, msg := range messages {
-		if msg != nil && msg.IsResponse() && msg.Status >= 200 && msg.Status < 300 &&
-			msg.CSeqMethod == sip.MethodInvite && msg.CSeq == inviteCSeq {
-			return msg
-		}
+// getTag returns the tag parameter of the given address, or "" if the address or the tag is missing.
+func getTag(addr *sip.Addr) string {
+	if addr == nil {
+		return ""
 	}
-	return nil
+	tag := addr.Param.Get("tag")
+	if tag == nil {
+		return ""
+	}
+	return tag.Value
 }
 
-func (h *recoveryHandler) validateLastMessage(lastMsg *sip.Msg) error {
-	if lastMsg == nil {
-		return errors.New("last message is nil")
+// addrURI returns the URI of the given address, or "" if the address is missing.
+func addrURI(addr *sip.Addr) string {
+	if addr == nil || addr.Uri == nil {
+		return ""
 	}
+	return addr.Uri.String()
+}
 
-	if lastMsg.CallID == "" {
-		return errors.New("the Call-ID is missing")
+// addrDisplay returns the display name of the given address, or "" if the address is missing.
+func addrDisplay(addr *sip.Addr) string {
+	if addr == nil {
+		return ""
 	}
+	return addr.Display
+}
 
-	if lastMsg.From == nil {
-		return errors.New("the From header is missing")
+// addrString returns the given address list as a string, or "" if it is missing.
+func addrString(addr *sip.Addr) string {
+	if addr == nil {
+		return ""
 	}
-
-	if lastMsg.To == nil {
-		return errors.New("the To header is missing")
-	}
-
-	return nil
+	return addr.String()
 }

@@ -229,6 +229,12 @@ func Test_getChannelType(t *testing.T) {
 			expectRes: channel.TypeCall,
 		},
 		{
+			name: "call recovery",
+
+			context:   channel.ContextCallRecovery,
+			expectRes: channel.TypeCall,
+		},
+		{
 			name: "join call",
 
 			context:   channel.ContextJoinCall,

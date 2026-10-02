@@ -210,6 +210,9 @@ const (
 	StasisDataTypeReferenceType   StasisDataType = "reference_type"    // given channel's reference type
 	StasisDataTypeReferenceID     StasisDataType = "reference_id"      // given channel's reference id
 
+	// call recovery
+	StasisDataTypeRecoveryChannelID StasisDataType = "recovery_channel_id" // channel id the recovery channel takes over from
+
 	// SIP dependent types
 	StasisDataTypeSIPCallID  StasisDataType = "sip_call_id" // SIP Call-ID
 	StasisDataTypeSIPPAI     StasisDataType = "sip_pai"     // SIP P-Asserted-Identity

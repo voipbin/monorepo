@@ -64,6 +64,7 @@ func (h *channelHandler) getChannelType(chContext channel.Context) channel.Type 
 		channel.ContextCallIncoming:  channel.TypeCall,
 		channel.ContextCallOutgoing:  channel.TypeCall,
 		channel.ContextCallService:   channel.TypeCall,
+		channel.ContextCallRecovery:  channel.TypeCall, // VOIP-1556: its state changes and destroy go through call handling
 		channel.ContextJoinCall:      channel.TypeJoin,
 		channel.ContextRecording:     channel.TypeRecording,
 	}

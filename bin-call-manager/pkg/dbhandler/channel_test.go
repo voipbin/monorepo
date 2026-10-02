@@ -1753,9 +1753,16 @@ func Test_ChannelList(t *testing.T) {
 
 func Test_ChannelListForRecovery(t *testing.T) {
 
+	type testChannel struct {
+		channel  *channel.Channel
+		tmCreate *time.Time
+		tmAnswer *time.Time // nil: not answered
+		tmEnd    *time.Time // nil: not ended
+	}
+
 	type test struct {
 		name     string
-		channels []*channel.Channel
+		channels []testChannel
 
 		asteriskID  string
 		channelType channel.Type
@@ -1763,34 +1770,86 @@ func Test_ChannelListForRecovery(t *testing.T) {
 		endTime     *time.Time
 		size        uint64
 
-		responseCurTimes []*time.Time
-
 		expectRes []*channel.Channel
 	}
 
 	tests := []test{
 		{
 			name: "normal",
-			channels: []*channel.Channel{
+			channels: []testChannel{
 				{
-					ID:         "94e47248-48dc-11f0-95bc-e7af7d0649ff",
-					AsteriskID: "3e:50:6b:43:bb:32",
-					Type:       channel.TypeCall,
+					// created before the time range
+					channel: &channel.Channel{
+						ID:         "94e47248-48dc-11f0-95bc-e7af7d0649ff",
+						AsteriskID: "3e:50:6b:43:bb:32",
+						Type:       channel.TypeCall,
+						SIPCallID:  "94e47248-sip",
+					},
+					tmCreate: testhelper.TimePtr("2025-06-14T01:00:00.000000Z"),
+					tmAnswer: testhelper.TimePtr("2025-06-14T01:00:01.000000Z"),
 				},
 				{
-					ID:         "951aff48-48dc-11f0-b5a4-ef7f3e74ce09",
-					AsteriskID: "3e:50:6b:43:bb:32",
-					Type:       channel.TypeCall,
+					channel: &channel.Channel{
+						ID:         "951aff48-48dc-11f0-b5a4-ef7f3e74ce09",
+						AsteriskID: "3e:50:6b:43:bb:32",
+						Type:       channel.TypeCall,
+						SIPCallID:  "951aff48-sip",
+					},
+					tmCreate: testhelper.TimePtr("2025-06-14T02:00:00.000000Z"),
+					tmAnswer: testhelper.TimePtr("2025-06-14T02:00:01.000000Z"),
 				},
 				{
-					ID:         "9543bb4a-48dc-11f0-be5c-47c96fc104ff",
-					AsteriskID: "3e:50:6b:43:bb:32",
-					Type:       channel.TypeCall,
+					channel: &channel.Channel{
+						ID:         "9543bb4a-48dc-11f0-be5c-47c96fc104ff",
+						AsteriskID: "3e:50:6b:43:bb:32",
+						Type:       channel.TypeCall,
+						SIPCallID:  "9543bb4a-sip",
+					},
+					tmCreate: testhelper.TimePtr("2025-06-14T03:00:00.000000Z"),
+					tmAnswer: testhelper.TimePtr("2025-06-14T03:00:01.000000Z"),
 				},
 				{
-					ID:         "9568a1bc-48dc-11f0-80d6-3facb800a905",
-					AsteriskID: "3e:50:6b:43:bb:32",
-					Type:       channel.TypeCall,
+					// created after the time range
+					channel: &channel.Channel{
+						ID:         "9568a1bc-48dc-11f0-80d6-3facb800a905",
+						AsteriskID: "3e:50:6b:43:bb:32",
+						Type:       channel.TypeCall,
+						SIPCallID:  "9568a1bc-sip",
+					},
+					tmCreate: testhelper.TimePtr("2025-06-14T04:00:00.000000Z"),
+					tmAnswer: testhelper.TimePtr("2025-06-14T04:00:01.000000Z"),
+				},
+				{
+					// ended
+					channel: &channel.Channel{
+						ID:         "6a1f3d52-9f6e-11f1-9d0a-1f0f4e6c2a01",
+						AsteriskID: "3e:50:6b:43:bb:32",
+						Type:       channel.TypeCall,
+						SIPCallID:  "6a1f3d52-sip",
+					},
+					tmCreate: testhelper.TimePtr("2025-06-14T02:10:00.000000Z"),
+					tmAnswer: testhelper.TimePtr("2025-06-14T02:10:01.000000Z"),
+					tmEnd:    testhelper.TimePtr("2025-06-14T02:20:00.000000Z"),
+				},
+				{
+					// not answered
+					channel: &channel.Channel{
+						ID:         "6a5e8b2c-9f6e-11f1-8a3b-7b2d5c9e1f02",
+						AsteriskID: "3e:50:6b:43:bb:32",
+						Type:       channel.TypeCall,
+						SIPCallID:  "6a5e8b2c-sip",
+					},
+					tmCreate: testhelper.TimePtr("2025-06-14T02:30:00.000000Z"),
+				},
+				{
+					// no SIP Call-ID
+					channel: &channel.Channel{
+						ID:         "6a9c4e1a-9f6e-11f1-b7c4-3e8f1a2d4b03",
+						AsteriskID: "3e:50:6b:43:bb:32",
+						Type:       channel.TypeCall,
+					},
+					tmCreate: testhelper.TimePtr("2025-06-14T02:40:00.000000Z"),
+					tmAnswer: testhelper.TimePtr("2025-06-14T02:40:01.000000Z"),
 				},
 			},
 
@@ -1800,42 +1859,39 @@ func Test_ChannelListForRecovery(t *testing.T) {
 			endTime:     testhelper.TimePtr("2025-06-14T03:30:00.000000Z"),
 			size:        10,
 
-			responseCurTimes: []*time.Time{
-				testhelper.TimePtr("2025-06-14T01:00:00.000000Z"),
-				testhelper.TimePtr("2025-06-14T02:00:00.000000Z"),
-				testhelper.TimePtr("2025-06-14T03:00:00.000000Z"),
-				testhelper.TimePtr("2025-06-14T04:00:00.000000Z"),
-			},
-
 			expectRes: []*channel.Channel{
 				{
 					ID:         "9543bb4a-48dc-11f0-be5c-47c96fc104ff",
 					AsteriskID: "3e:50:6b:43:bb:32",
 					Type:       channel.TypeCall,
+					SIPCallID:  "9543bb4a-sip",
 
 					Data:       map[string]any{},
 					StasisData: map[channel.StasisDataType]string{},
 
-					TMAnswer:  nil,
+					State:     ari.ChannelStateUp,
+					TMAnswer:  testhelper.TimePtr("2025-06-14T03:00:01.000000Z"),
 					TMRinging: nil,
 					TMEnd:     nil,
 					TMCreate:  testhelper.TimePtr("2025-06-14T03:00:00.000000Z"),
-					TMUpdate:  nil,
+					TMUpdate:  testhelper.TimePtr("2025-06-14T03:00:01.000000Z"),
 					TMDelete:  nil,
 				},
 				{
 					ID:         "951aff48-48dc-11f0-b5a4-ef7f3e74ce09",
 					AsteriskID: "3e:50:6b:43:bb:32",
 					Type:       channel.TypeCall,
+					SIPCallID:  "951aff48-sip",
 
 					Data:       map[string]any{},
 					StasisData: map[channel.StasisDataType]string{},
 
-					TMAnswer:  nil,
+					State:     ari.ChannelStateUp,
+					TMAnswer:  testhelper.TimePtr("2025-06-14T02:00:01.000000Z"),
 					TMRinging: nil,
 					TMEnd:     nil,
 					TMCreate:  testhelper.TimePtr("2025-06-14T02:00:00.000000Z"),
-					TMUpdate:  nil,
+					TMUpdate:  testhelper.TimePtr("2025-06-14T02:00:01.000000Z"),
 					TMDelete:  nil,
 				},
 			},
@@ -1858,10 +1914,24 @@ func Test_ChannelListForRecovery(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			for i, c := range tt.channels {
-				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTimes[i])
-				mockCache.EXPECT().ChannelSet(ctx, gomock.Any())
-				_ = h.ChannelCreate(ctx, c)
+			mockCache.EXPECT().ChannelSet(ctx, gomock.Any()).AnyTimes()
+			for _, c := range tt.channels {
+				mockUtil.EXPECT().TimeNow().Return(c.tmCreate)
+				if errCreate := h.ChannelCreate(ctx, c.channel); errCreate != nil {
+					t.Fatalf("Could not create the channel. err: %v", errCreate)
+				}
+				if c.tmAnswer != nil {
+					mockUtil.EXPECT().TimeNow().Return(c.tmAnswer)
+					if errAnswer := h.ChannelSetStateAnswer(ctx, c.channel.ID, ari.ChannelStateUp); errAnswer != nil {
+						t.Fatalf("Could not answer the channel. err: %v", errAnswer)
+					}
+				}
+				if c.tmEnd != nil {
+					mockUtil.EXPECT().TimeNow().Return(c.tmEnd)
+					if errEnd := h.ChannelEndAndDelete(ctx, c.channel.ID, ari.ChannelCauseNormalClearing); errEnd != nil {
+						t.Fatalf("Could not end the channel. err: %v", errEnd)
+					}
+				}
 			}
 
 			res, err := h.ChannelGetsForRecovery(ctx, tt.asteriskID, tt.channelType, tt.startTime, tt.endTime, tt.size)
