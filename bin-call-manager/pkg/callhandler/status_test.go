@@ -293,6 +293,7 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
 				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+				mockDB.EXPECT().CallGetFromDB(gomock.Any(), tt.responseCall.ID).Return(tt.responseCall, nil)
 				mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
 			}
 
@@ -382,6 +383,7 @@ func Test_UpdateStatusProgressing_rtpDebugEnabled(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+			mockDB.EXPECT().CallGetFromDB(gomock.Any(), tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
 
 			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
@@ -472,6 +474,7 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+			mockDB.EXPECT().CallGetFromDB(gomock.Any(), tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
 
 			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
@@ -623,6 +626,7 @@ func Test_UpdateStatusProgressing_rtpDebugFromMetadata(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+			mockDB.EXPECT().CallGetFromDB(gomock.Any(), tt.responseCall.ID).Return(tt.responseCall, nil)
 			mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
 
 			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {

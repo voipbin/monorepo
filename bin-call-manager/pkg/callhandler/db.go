@@ -429,25 +429,39 @@ func (h *callHandler) UpdateConfbridgeID(ctx context.Context, id uuid.UUID, conf
 	return res, nil
 }
 
-// UpdateHangupInfo updates call's the hangup info
-func (h *callHandler) UpdateHangupInfo(ctx context.Context, id uuid.UUID, reason call.HangupReason, hangupBy call.HangupBy) (*call.Call, error) {
+// UpdateHangupInfo updates call's the hangup info.
+// If ownerChannelID is not empty, the hangup is recorded only while the call is owned by that channel, and
+// written reports whether it was recorded. With an empty ownerChannelID the hangup is always recorded.
+func (h *callHandler) UpdateHangupInfo(ctx context.Context, id uuid.UUID, ownerChannelID string, reason call.HangupReason, hangupBy call.HangupBy) (*call.Call, bool, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "UpdateHangupInfo",
-		"call_id":   id,
-		"hangup_by": hangupBy,
-		"reason":    reason,
+		"func":             "UpdateHangupInfo",
+		"call_id":          id,
+		"owner_channel_id": ownerChannelID,
+		"hangup_by":        hangupBy,
+		"reason":           reason,
 	})
 
-	if errSet := h.db.CallSetHangup(ctx, id, reason, hangupBy); errSet != nil {
-		log.Errorf("Could not update the call info. err: %v", errSet)
-		// we don't channel hangup here, we are assumming the channel has already gone.
-		return nil, errSet
+	if ownerChannelID == "" {
+		if errSet := h.db.CallSetHangup(ctx, id, reason, hangupBy); errSet != nil {
+			log.Errorf("Could not update the call info. err: %v", errSet)
+			// we don't channel hangup here, we are assumming the channel has already gone.
+			return nil, false, errSet
+		}
+	} else {
+		written, errSet := h.db.CallSetHangupIfChannel(ctx, id, ownerChannelID, reason, hangupBy)
+		if errSet != nil {
+			log.Errorf("Could not update the call info. err: %v", errSet)
+			return nil, false, errSet
+		}
+		if !written {
+			return nil, false, nil
+		}
 	}
 
 	res, err := h.db.CallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get hungup call data. call: %s, err: %v", id, err)
-		return nil, err
+		return nil, false, err
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, call.EventTypeCallHangup, res)
 	promCallHangupTotal.WithLabelValues(string(res.Direction), string(res.Type), string(reason)).Inc()
@@ -462,7 +476,7 @@ func (h *callHandler) UpdateHangupInfo(ctx context.Context, id uuid.UUID, reason
 		promCallDurationSeconds.WithLabelValues(string(res.Direction), string(res.Type)).Observe(tmEnd.Sub(*res.TMCreate).Seconds())
 	}
 
-	return res, nil
+	return res, true, nil
 }
 
 // UpdateData updates call's data

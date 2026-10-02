@@ -695,10 +695,76 @@ func (h *handler) CallSetMuteDirection(ctx context.Context, id uuid.UUID, muteDi
 	})
 }
 
-// CallSetChannelIDAndBridgeID sets the call's channel_id and bridge_id
-func (h *handler) CallSetChannelIDAndBridgeID(ctx context.Context, id uuid.UUID, channelID string, bridgeID string) error {
-	return h.CallUpdate(ctx, id, map[call.Field]any{
-		call.FieldChannelID: channelID,
+// CallSetChannelIDAndBridgeIDIfOwned moves a progressing call from oldChannelID to newChannelID and sets its bridge_id
+// in one conditional statement. It returns true only when the call was progressing and owned by oldChannelID, so
+// of several concurrent writers at most one succeeds. Used by the call recovery switch (VOIP-1556).
+func (h *handler) CallSetChannelIDAndBridgeIDIfOwned(ctx context.Context, id uuid.UUID, oldChannelID string, newChannelID string, bridgeID string) (bool, error) {
+	fields := map[call.Field]any{
+		call.FieldChannelID: newChannelID,
 		call.FieldBridgeID:  bridgeID,
+		call.FieldTMUpdate:  h.utilHandler.TimeNow(),
+	}
+
+	return h.callUpdateWhere(ctx, id, fields, squirrel.Eq{
+		string(call.FieldChannelID): oldChannelID,
+		string(call.FieldStatus):    call.StatusProgressing,
 	})
+}
+
+// CallSetHangupIfChannel records the hangup like CallSetHangup, but only while the call is still owned by channelID.
+// It returns false when the call has moved to another channel (VOIP-1556).
+func (h *handler) CallSetHangupIfChannel(ctx context.Context, id uuid.UUID, channelID string, reason call.HangupReason, hangupBy call.HangupBy) (bool, error) {
+	ts := h.utilHandler.TimeNow()
+	fields := map[call.Field]any{
+		call.FieldStatus:       call.StatusHangup,
+		call.FieldHangupBy:     hangupBy,
+		call.FieldHangupReason: reason,
+		call.FieldTMHangup:     ts,
+		call.FieldTMUpdate:     ts,
+	}
+
+	return h.callUpdateWhere(ctx, id, fields, squirrel.Eq{
+		string(call.FieldChannelID): channelID,
+	})
+}
+
+// CallGetFromDB returns the call read from the DB, bypassing the cache.
+// Use it where a decision depends on the latest committed channel_id or status.
+func (h *handler) CallGetFromDB(ctx context.Context, id uuid.UUID) (*call.Call, error) {
+	return h.callGetFromDB(ctx, id)
+}
+
+// callUpdateWhere updates the given fields of the call only when the extra condition matches.
+// It returns whether a row was changed, and refreshes the cache when it was.
+func (h *handler) callUpdateWhere(ctx context.Context, id uuid.UUID, fields map[call.Field]any, cond squirrel.Eq) (bool, error) {
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return false, fmt.Errorf("callUpdateWhere: prepare fields failed: %w", err)
+	}
+
+	sqlStr, args, err := squirrel.Update(callTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		Where(cond).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("callUpdateWhere: build SQL failed: %w", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, sqlStr, args...)
+	if err != nil {
+		return false, fmt.Errorf("callUpdateWhere: exec failed: %w", err)
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("callUpdateWhere: rows affected failed: %w", err)
+	}
+	if affected == 0 {
+		return false, nil
+	}
+
+	_ = h.callUpdateToCache(ctx, id)
+	return true, nil
 }

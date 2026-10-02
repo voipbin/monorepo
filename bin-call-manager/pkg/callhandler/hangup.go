@@ -53,12 +53,26 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Ca
 	reason := call.CalculateHangupReason(c.Direction, c.Status, cn.HangupCause)
 	hangupBy := call.CalculateHangupBy(c.Status)
 
-	// set hangup
-	res, err := h.UpdateHangupInfo(ctx, c.ID, reason, hangupBy)
+	// set hangup.
+	// VOIP-1556: a progressing call can be moved to a call recovery channel between the read above and this write.
+	// Its hangup is recorded only while this channel still owns it; other statuses are written as before.
+	ownerChannelID := ""
+	if c.Status == call.StatusProgressing {
+		ownerChannelID = cn.ID
+	}
+	res, written, err := h.UpdateHangupInfo(ctx, c.ID, ownerChannelID, reason, hangupBy)
 	if err != nil {
 		// we don't channel hangup here, because the channel has already gone.
 		log.Errorf("Could not set the hangup reason. err: %v", err)
 		return nil, err
+	}
+	if !written {
+		log.Infof("The call moved to another channel before hangup. Skipping the hangup. call_id: %s, channel_id: %s", c.ID, cn.ID)
+		cur, errGet := h.db.CallGetFromDB(ctx, c.ID)
+		if errGet != nil {
+			return nil, errors.Wrap(errGet, "could not get the moved call")
+		}
+		return cur, nil
 	}
 
 	// RTP debug: stop recording if enabled for this call
@@ -154,8 +168,24 @@ func (h *callHandler) hangingUpWithCause(ctx context.Context, id uuid.UUID, caus
 		return nil, err
 	}
 
-	cn, err := h.channelHandler.HangingUp(ctx, c.ChannelID, cause)
+	// VOIP-1556: hang up the channel that owns the call after the status write. The call may have been moved to
+	// another channel (call recovery switch, route failover) since it was read above; the cache refresh after a
+	// write is not ordered with other writers, so read the DB.
+	channelID := c.ChannelID
+	if cur, errGet := h.db.CallGetFromDB(ctx, c.ID); errGet != nil {
+		log.Warnf("Could not get the call from the db. Using the channel read before. channel_id: %s, err: %v", channelID, errGet)
+	} else {
+		channelID = cur.ChannelID
+	}
+
+	cn, err := h.channelHandler.HangingUp(ctx, channelID, cause)
 	if err != nil {
+		if channelID != c.ChannelID {
+			// the call moved to a channel that could not be hung up (e.g. a failover channel not created yet).
+			// keep the previous return contract: the call is already terminating.
+			log.Warnf("Could not hang up the moved call channel. channel_id: %s, err: %v", channelID, err)
+			return res, nil
+		}
 		log.Errorf("Could not hang up the call channel. err: %v", err)
 		return nil, err
 	}

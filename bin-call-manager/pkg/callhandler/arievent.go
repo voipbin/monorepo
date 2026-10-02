@@ -90,6 +90,15 @@ func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Cha
 		"func":    "ARIChannelStateChange",
 		"channel": cn,
 	})
+
+	// a call recovery channel takes the call over when the remote answers; its other states do not touch the call.
+	if channel.Context(cn.StasisData[channel.StasisDataTypeContext]) == channel.ContextCallRecovery {
+		if cn.State != ari.ChannelStateUp {
+			return nil
+		}
+		return h.recoverySwitch(ctx, cn)
+	}
+
 	status := call.GetStatusByChannelState(cn.State)
 	if status != call.StatusRinging && status != call.StatusProgressing {
 		// the call cares only riniging/progressing at here.

@@ -26,6 +26,7 @@ import (
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // list of application name
@@ -293,7 +294,7 @@ func (h *callHandler) startContextOutgoingCall(ctx context.Context, cn *channel.
 	}
 
 	// create call bridge
-	bridgeID, err := h.addCallBridge(ctx, cn, callID)
+	bridgeID, err := h.addCallBridge(ctx, cn, callID, h.utilHandler.UUIDCreate().String())
 	if err != nil {
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
 		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
@@ -337,46 +338,102 @@ func (h *callHandler) startContextApplication(ctx context.Context, cn *channel.C
 }
 
 // startContextCallRecovery handles context call-recovery context type of StasisStart event.
+// It only dials the recovery channel. The channel takes the call over after the remote answered
+// (recoverySwitch, on the channel's Up state).
 func (h *callHandler) startContextCallRecovery(ctx context.Context, cn *channel.Channel) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startContextCallRecovery",
 		"channel_id": cn.ID,
+		"call_id":    cn.StasisData[channel.StasisDataTypeCallID],
 	})
 	log.Infof("Executing startContextCallRecovery. channel_id: %s", cn.ID)
 
-	callID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeCallID])
-	log.Debugf("Parsed info. call_id: %s", callID)
-
 	// dial to the destination
 	if errDial := h.channelHandler.Dial(ctx, cn.ID, "", defaultDialTimeout); errDial != nil {
-		log.Errorf("Could not dial the channel to the destination. channel_id: %s, err: %v", cn.ID, errDial)
-		return errors.Wrap(errDial, "could not dial the channel to the destination")
-	}
-
-	c, err := h.Get(ctx, callID)
-	if err != nil {
-		return errors.Wrapf(err, "could not get call by call ID. call_id: %s", callID)
-	}
-	log.WithField("call", c).Debugf("Got call info. call_id: %s", c.ID)
-
-	bridgeID, err := h.addCallBridge(ctx, cn, c.ID)
-	if err != nil {
-		return errors.Wrapf(err, "could not add the channel to the join bridge. call_id: %s", c.ID)
-	}
-
-	if errSet := h.db.CallSetChannelIDAndBridgeID(ctx, c.ID, cn.ID, bridgeID); errSet != nil {
-		return errors.Wrapf(errSet, "could not set call channel and bridge id. call_id: %s", c.ID)
-	}
-
-	if errExecute := h.actionExecute(ctx, c); errExecute != nil {
-		return errors.Wrapf(errExecute, "could not execute action for call. call_id: %s", c.ID)
+		// an undialled channel in the stasis is owned by no call. hang it up here; a redelivery would only re-dial.
+		log.Errorf("Could not dial the recovery channel. Hanging up the channel. channel_id: %s, err: %v", cn.ID, errDial)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
+		return nil
 	}
 
 	return nil
 }
 
-// addCallBridge creates a call bridge and put the channel into the join bridge.
-func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, callID uuid.UUID) (string, error) {
+// recoverySwitch moves the call from its old channel to the answered recovery channel (VOIP-1556).
+// The DB switch is committed first and is conditional (the call must still be progressing and owned by the
+// old channel), so of several deliveries of the Up event only one creates the bridge and runs the action.
+// Handled outcomes return nil; only an error with no side effect is returned for redelivery.
+func (h *callHandler) recoverySwitch(ctx context.Context, cn *channel.Channel) error {
+	callID := uuid.FromStringOrNil(cn.StasisData[channel.StasisDataTypeCallID])
+	oldChannelID := cn.StasisData[channel.StasisDataTypeRecoveryChannelID]
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "recoverySwitch",
+		"channel_id":     cn.ID,
+		"call_id":        callID,
+		"old_channel_id": oldChannelID,
+	})
+
+	// commit first, before touching the Asterisk.
+	bridgeID := h.utilHandler.UUIDCreate().String()
+	switched, errSwitch := h.db.CallSetChannelIDAndBridgeIDIfOwned(ctx, callID, oldChannelID, cn.ID, bridgeID)
+	if errSwitch != nil {
+		log.Errorf("Could not switch the call to the recovery channel. Checking the call. err: %v", errSwitch)
+	}
+	if !switched {
+		// not switched, or the update failed (it may have applied). decide from the committed state.
+		c, err := h.db.CallGetFromDB(ctx, callID)
+		if err != nil && !errors.Is(err, dbhandler.ErrNotFound) {
+			return errors.Wrapf(err, "could not get the call after a refused switch. call_id: %s", callID)
+		}
+		if err == nil && c.ChannelID == cn.ID {
+			// another delivery of this event, or the failed update itself, already switched the call.
+			log.Infof("The call is already owned by the recovery channel. call_id: %s, channel_id: %s", callID, cn.ID)
+			return nil
+		}
+
+		// the call was hung up, is hanging up, or is owned by another channel. end the recovery leg only.
+		log.Infof("Refused the call recovery switch. Hanging up the recovery channel. call_id: %s, channel_id: %s", callID, cn.ID)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
+		return nil
+	}
+	log.Infof("Switched the call to the recovery channel. call_id: %s, channel_id: %s, bridge_id: %s", callID, cn.ID, bridgeID)
+
+	// the call is owned by the recovery channel now. from here a failure ends the recovery channel,
+	// whose destroy records the call's hangup.
+	if _, errBridge := h.addCallBridge(ctx, cn, callID, bridgeID); errBridge != nil {
+		log.Errorf("Could not add the recovery channel to the call bridge. Hanging up the channel. err: %v", errBridge)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
+		return nil
+	}
+
+	// the call duration limit restarts on the recovery channel.
+	if _, errDelay := h.channelHandler.HangingUpWithDelay(ctx, cn.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration); errDelay != nil {
+		log.Warnf("Could not set the call duration timeout on the recovery channel. err: %v", errDelay)
+	}
+
+	c, err := h.db.CallGetFromDB(ctx, callID)
+	if err != nil {
+		log.Errorf("Could not get the switched call. Hanging up the call. err: %v", err)
+		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
+		return nil
+	}
+	if c.Status != call.StatusProgressing || c.ChannelID != cn.ID {
+		log.Infof("The call ended before its action could resume. call_id: %s, status: %s", c.ID, c.Status)
+		return nil
+	}
+
+	// the current action runs again on the recovery channel.
+	if errExecute := h.actionExecute(ctx, c); errExecute != nil {
+		log.Errorf("Could not execute the action for the recovered call. Hanging up the call. err: %v", errExecute)
+		_, _ = h.HangingUp(ctx, callID, call.HangupReasonNormal)
+		return nil
+	}
+
+	return nil
+}
+
+// addCallBridge creates a call bridge with the given bridge id and put the channel into the join bridge.
+func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, callID uuid.UUID, bridgeID string) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "addCallBridge",
 		"call_id":    callID,
@@ -401,7 +458,6 @@ func (h *callHandler) addCallBridge(ctx context.Context, cn *channel.Channel, ca
 	// res_timing_timerfd) to continuously pump empty audio frames every 20ms.
 	// This guarantees a stable, uninterrupted media clock, allowing seamless whisper
 	// and snoop audio injections regardless of the base channel's actual media state.
-	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCall, callID)
 	tmp, err := h.bridgeHandler.Start(ctx, cn.AsteriskID, bridgeID, bridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU})
 	if err != nil {
@@ -585,7 +641,7 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	}
 
 	// create call bridge
-	callBridgeID, err := h.addCallBridge(ctx, cn, id)
+	callBridgeID, err := h.addCallBridge(ctx, cn, id, h.utilHandler.UUIDCreate().String())
 	if err != nil {
 		log.Errorf("Could not add the channel to the join bridge. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder) // return 500. server error

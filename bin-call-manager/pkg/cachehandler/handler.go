@@ -220,6 +220,19 @@ func (h *handler) CallAppAMDSet(ctx context.Context, channelID string, app *call
 	return nil
 }
 
+// CallRecoveryClaim takes the recovery claim for the given call (Redis SET NX with the given ttl).
+// It returns true when this caller took the claim, false when another recovery holds it (VOIP-1556).
+func (h *handler) CallRecoveryClaim(ctx context.Context, callID uuid.UUID, ttl time.Duration) (bool, error) {
+	key := fmt.Sprintf("call:recovery:%s", callID)
+
+	res, err := h.Cache.SetNX(ctx, key, 1, ttl).Result()
+	if err != nil {
+		return false, err
+	}
+
+	return res, nil
+}
+
 // ExternalMediaGet returns the given external media info from the cache
 func (h *handler) ExternalMediaGet(ctx context.Context, externalMediaID uuid.UUID) (*externalmedia.ExternalMedia, error) {
 	key := fmt.Sprintf("external_media:%s", externalMediaID)

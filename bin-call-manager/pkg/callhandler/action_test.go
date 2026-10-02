@@ -1401,6 +1401,7 @@ func Test_actionExecuteHangup_reason(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
+			mockDB.EXPECT().CallGetFromDB(ctx, tt.call.ID).Return(tt.call, nil)
 			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.expectCause).Return(tt.responseChannel, nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
@@ -1552,6 +1553,7 @@ func Test_actionExecuteHangup_reference(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallTerminating, tt.responseCall)
 
+			mockDB.EXPECT().CallGetFromDB(ctx, tt.call.ID).Return(tt.call, nil)
 			mockChannel.EXPECT().HangingUp(ctx, tt.call.ChannelID, tt.expectCause).Return(tt.responseChannel, nil)
 
 			if err := h.actionExecute(ctx, tt.call); err != nil {
@@ -1616,6 +1618,7 @@ func Test_ActionNextForce(t *testing.T) {
 			mockDB.EXPECT().CallSetStatus(ctx, tt.call.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.call.CustomerID, gomock.Any(), gomock.Any())
+			mockDB.EXPECT().CallGetFromDB(ctx, tt.call.ID).Return(tt.call, nil)
 			mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(tt.responseChannel, nil)
 
 			if err := h.ActionNextForce(ctx, tt.call); err != nil {

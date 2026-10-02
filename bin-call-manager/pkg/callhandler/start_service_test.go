@@ -102,6 +102,7 @@ func Test_startServiceFromAMD(t *testing.T) {
 				}
 				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(tmpCall, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+				mockDB.EXPECT().CallGetFromDB(ctx, gomock.Any()).Return(tmpCall, nil)
 				mockChannel.EXPECT().HangingUp(ctx, gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
 			} else {
 				if !tt.responseAMD.Async {
