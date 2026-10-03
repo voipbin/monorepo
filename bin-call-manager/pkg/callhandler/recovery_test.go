@@ -336,8 +336,8 @@ func Test_recoveryRun_claim(t *testing.T) {
 	}
 }
 
-// Test_RecoveryStart_enabled checks that the guard does not block recovery when it is
-// explicitly enabled: the channel lookup runs.
+// Test_RecoveryStart_enabled checks that RecoveryStart looks up channels for the given asterisk
+// ID (the only entry point of call recovery).
 func Test_RecoveryStart_enabled(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
