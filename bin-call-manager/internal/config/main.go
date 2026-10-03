@@ -30,10 +30,6 @@ type Config struct {
 	HomerAuthToken          string   // HomerAuthToken is the authentication token for the Homer API.
 	HomerWhitelist          []string // HomerWhitelist is a list of whitelisted IP addresses for Homer.
 	AsteriskWSPort          int      // AsteriskWSPort is the Asterisk HTTP server port for WebSocket media connections.
-	// RecoveryEnabled enables call recovery (automatic on an Asterisk container death and manual
-	// /v1/recovery). False, the default, disables both. Must not be enabled before the recovery
-	// redesign (VOIP-1556) lands; see VOIP-1553.
-	RecoveryEnabled bool
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -62,7 +58,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("homer_auth_token", "", "Homer API authentication token")
 	f.String("homer_whitelist", "", "Comma-separated list of whitelisted IPs for Homer")
 	f.Int("asterisk_ws_port", 8088, "Asterisk WebSocket media port")
-	f.Bool("recovery_enabled", false, "Enable call recovery (automatic on Asterisk container death and manual /v1/recovery). Disabled by default, see VOIP-1553")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -76,7 +71,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"homer_auth_token":          "HOMER_AUTH_TOKEN",
 		"homer_whitelist":           "HOMER_WHITELIST",
 		"asterisk_ws_port":          "ASTERISK_WS_PORT",
-		"recovery_enabled":          "RECOVERY_ENABLED",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -120,7 +114,6 @@ func LoadGlobalConfig() {
 			HomerAuthToken:          viper.GetString("homer_auth_token"),
 			HomerWhitelist:          homerWhitelist,
 			AsteriskWSPort:          viper.GetInt("asterisk_ws_port"),
-			RecoveryEnabled:         viper.GetBool("recovery_enabled"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

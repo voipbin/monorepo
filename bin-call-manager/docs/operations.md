@@ -108,7 +108,8 @@ followed with 16 more services on the same pattern; the remaining
 | `homer_auth_token` | `HOMER_AUTH_TOKEN` | _(empty)_ | Homer API authentication token (optional) |
 | `homer_whitelist` | `HOMER_WHITELIST` | _(empty)_ | Comma-separated IPs whose capture rows Homer excludes from the recovery query (the Kamailio outer interface). Call recovery reconstructs the dialog from the remaining rows and fails closed when copies of the same message differ, so this must exclude the hops that rewrite Contact or Record-Route |
 | `asterisk_ws_port` | `ASTERISK_WS_PORT` | `8088` | Asterisk WebSocket port for ARI/external-media connections |
-| `recovery_enabled` | `RECOVERY_ENABLED` | `false` | Enables call recovery (automatic on Asterisk container death and manual `/v1/recovery`). Only a value `strconv.ParseBool` reads as true (`1`, `t`, `T`, `true`, `TRUE`, `True`) enables it; anything else, including empty or unparsable values, leaves it disabled. Keep disabled in production; enabling it is a gated crash test approved by the CEO, and production use follows the drain (VOIP-1560). When enabled, a recovered call logs `Switched the call to the recovery channel`; expected noise: the old channel's late destroy after a switch, and a recovery leg the remote refused, each log `Could not get the call info from the db` (error) followed by consumer retries, because no call is owned by that channel. Startup logs `Call recovery is disabled. RECOVERY_ENABLED is not set to true.` |
+
+Call recovery always runs (no on/off setting). A recovered call logs `Switched the call to the recovery channel`. Expected noise during a switch: the old channel's late destroy after a switch, and a recovery leg the remote refused, each log `Could not get the call info from the db` (error) followed by consumer retries, because no call is owned by that channel.
 
 ## Prometheus Metrics
 

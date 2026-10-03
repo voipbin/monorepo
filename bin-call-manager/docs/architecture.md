@@ -108,7 +108,7 @@ Requests arrive via RabbitMQ queue `bin-manager.call-manager.request`. The `list
 | `/v1/outbound_configs$` | POST | Create an outbound config |
 | `/v1/outbound_configs\?` | GET | List outbound configs |
 | `/v1/outbound_configs/{{UUID}}$` | GET/POST/DELETE | Get, update, or delete outbound config |
-| `/v1/recovery$` | POST | Recover call state from Homer SIP capture. Disabled unless `RECOVERY_ENABLED=true` (VOIP-1553): returns 200 without doing anything |
+| `/v1/recovery$` | POST | Recover call state from Homer SIP capture. Runs unconditionally (subject to VOIP-1556's own selection and skip rules) |
 | `/v1/recordings\?` | GET | List recordings |
 | `/v1/recordings$` | POST | Create a recording |
 | `/v1/recordings/{{UUID}}$` | GET/DELETE | Get or delete a recording |

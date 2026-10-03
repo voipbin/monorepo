@@ -150,7 +150,7 @@ RabbitMQ events published through `notifyhandler.PublishEvent`. The payload is `
 {"container_name":"voip-asterisk-call-docker-2","service":"asterisk-call","asterisk_id":"3e:50:6b:43:bb:32"}
 ```
 
-Identical on both backends. On Kubernetes, `container_name` is the pod name and `asterisk_id` comes from the pod's `asterisk-id` annotation; on Docker they come from the container name and the Redis-resolved state table. `bin-call-manager` consumes `container_died`, filters on `service == "asterisk-call"`, and calls `RecoveryStart(asterisk_id)` — which pulls that instance's last 24h of channels, looks up each one's SIP dialog via Homer, and PJSIP-redials it onto a live instance. An event with an empty `asterisk_id` is dropped by call-manager's empty-id guard. Call recovery is currently disabled in `bin-call-manager` by default (`RECOVERY_ENABLED`, VOIP-1553; redesign in VOIP-1556), so no recovery after a container death is the expected state.
+Identical on both backends. On Kubernetes, `container_name` is the pod name and `asterisk_id` comes from the pod's `asterisk-id` annotation; on Docker they come from the container name and the Redis-resolved state table. `bin-call-manager` consumes `container_died`, filters on `service == "asterisk-call"`, and calls `RecoveryStart(asterisk_id)` — which pulls that instance's last 24h of channels, looks up each one's SIP dialog via Homer, and PJSIP-redials it onto a live instance. An event with an empty `asterisk_id` is dropped by call-manager's empty-id guard.
 
 ### Global topic exchange (VOIP-1404 / VOIP-1405 / VOIP-1407 / VOIP-1418)
 
