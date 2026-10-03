@@ -336,27 +336,8 @@ func Test_recoveryRun_claim(t *testing.T) {
 	}
 }
 
-// Test_RecoveryStart_disabled pins VOIP-1553: RecoveryStart is the only entry point of call
-// recovery, and with recovery disabled it must return before any channel lookup. The strict
-// mock controller is the assertion.
-func Test_RecoveryStart_disabled(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	h := &callHandler{
-		utilHandler:    utilhandler.NewMockUtilHandler(mc),
-		channelHandler: channelhandler.NewMockChannelHandler(mc),
-
-		recoveryEnabled: false,
-	}
-
-	if err := h.RecoveryStart(context.Background(), "3e:50:6b:43:bb:32"); err != nil {
-		t.Errorf("Wrong match. expect: ok, got: %v", err)
-	}
-}
-
-// Test_RecoveryStart_enabled checks that the guard does not block recovery when it is
-// explicitly enabled: the channel lookup runs.
+// Test_RecoveryStart_enabled checks that RecoveryStart looks up channels for the given asterisk
+// ID (the only entry point of call recovery).
 func Test_RecoveryStart_enabled(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -367,8 +348,6 @@ func Test_RecoveryStart_enabled(t *testing.T) {
 	h := &callHandler{
 		utilHandler:    mockUtil,
 		channelHandler: mockChannel,
-
-		recoveryEnabled: true,
 	}
 
 	ctx := context.Background()
@@ -383,40 +362,5 @@ func Test_RecoveryStart_enabled(t *testing.T) {
 
 	if err := h.RecoveryStart(ctx, "3e:50:6b:43:bb:32"); err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
-	}
-}
-
-// Test_NewCallHandler_recoveryEnabled checks that the constructor carries the recovery setting
-// into the handler the RecoveryStart guard reads (VOIP-1553). It goes through the constructor on
-// purpose: the wiring is what is under test.
-func Test_NewCallHandler_recoveryEnabled(t *testing.T) {
-	tests := []struct {
-		name string
-
-		recoveryEnabled bool
-	}{
-		{
-			name:            "enabled",
-			recoveryEnabled: true,
-		},
-		{
-			name:            "disabled",
-			recoveryEnabled: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := NewCallHandler(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, tt.recoveryEnabled)
-
-			res, ok := h.(*callHandler)
-			if !ok {
-				t.Errorf("Wrong match. expect: *callHandler, got: %T", h)
-				return
-			}
-			if res.recoveryEnabled != tt.recoveryEnabled {
-				t.Errorf("Wrong match. expect: %v, got: %v", tt.recoveryEnabled, res.recoveryEnabled)
-			}
-		})
 	}
 }

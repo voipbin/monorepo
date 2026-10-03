@@ -4,7 +4,7 @@ Watches Asterisk container lifecycles and publishes `container_started` /
 `container_died` events to RabbitMQ. `bin-call-manager` consumes the death
 events and recovers the affected calls.
 
-> Call recovery is currently disabled in `bin-call-manager` by default (`RECOVERY_ENABLED`, VOIP-1553; redesign in VOIP-1556), so no recovery after a container death is the expected state.
+> Call recovery in `bin-call-manager` now runs unconditionally on every `container_died` event this service publishes (subject to call-manager's own event-level `service`/`asterisk_id` checks and VOIP-1556's call-selection rules).
 
 Two peer backends, selected by `SENTINEL_BACKEND`:
 

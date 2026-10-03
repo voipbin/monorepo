@@ -25,7 +25,7 @@ Most of this page is backend-specific. `SENTINEL_BACKEND` decides which half app
 | `container_died` events publish with an empty `asterisk_id` | The asterisk-id never resolved — most often a Redis DB mismatch, a container that never registered, or an IP that resolves from an unexpected network | Check `sentinel_manager_container_unresolved_asterisk_id_total`; confirm `REDIS_DATABASE=1` matches voip-asterisk-proxy's; verify `asterisk.*.address-internal` keys exist and their values match the containers' `production`-network IPs |
 | `sentinel_manager_container_asterisk_id_refresh_miss_total` climbing | A container's Redis key has gone stale while the container is still alive (the proxy sidecar stopped refreshing it) | Leading indicator — the id is still held (sticky last-known) but the NEXT recreation will re-resolve from nothing. Check that container's `-proxy` sidecar |
 | RabbitMQ publish errors in logs | RabbitMQ unreachable or wrong `RABBITMQ_ADDRESS` | Verify connectivity; check the address format `amqp://user:pass@host:5672` |
-| Downstream calls not recovered after an Asterisk container died | Expected while call recovery is disabled in call-manager (default, VOIP-1553): call-manager logs `Call recovery is disabled`. Otherwise sentinel published but call-manager filtered or guarded the event | Check call-manager's `RECOVERY_ENABLED` first. Then check the event's `service` (must be `asterisk-call`) and `asterisk_id` (must be non-empty); then check call-manager's `EventSMContainerDied` logs |
+| Downstream calls not recovered after an Asterisk container died | Sentinel published but call-manager filtered or guarded the event | Check the event's `service` (must be `asterisk-call`) and `asterisk_id` (must be non-empty); then check call-manager's `EventSMContainerDied` logs |
 | Repeated deaths stop producing events | Flap damping engaged (>3 deaths / 60s for that container) | Expected. Find and fix the crash-loop; the window drains on its own |
 
 ### Kubernetes backend
@@ -165,7 +165,7 @@ Metrics are served at `<prometheus_listen_address><prometheus_endpoint>` (defaul
 
 Metrics are split three ways: shared by both backends, Docker-only, and Kubernetes-only.
 
-Call recovery is currently disabled in `bin-call-manager` by default (`RECOVERY_ENABLED`, VOIP-1553; redesign in VOIP-1556), so no recovery after a container death is the expected state. The recovery-related wording in the descriptions below describes what these counters mean once recovery is re-enabled.
+The recovery-related wording in the descriptions below describes what these counters mean.
 
 | Metric | Type | Labels | Description |
 |--------|------|--------|-------------|

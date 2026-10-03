@@ -345,8 +345,6 @@ func Test_EventSMContainerDied(t *testing.T) {
 				db:             mockDB,
 				notifyHandler:  mockNotify,
 				channelHandler: mockChannel,
-
-				recoveryEnabled: true,
 			}
 
 			ctx := context.Background()
@@ -388,8 +386,6 @@ func Test_EventSMContainerDied_recoveryError(t *testing.T) {
 		db:             dbhandler.NewMockDBHandler(mc),
 		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
 		channelHandler: mockChannel,
-
-		recoveryEnabled: true,
 	}
 
 	ctx := context.Background()
@@ -408,33 +404,5 @@ func Test_EventSMContainerDied_recoveryError(t *testing.T) {
 
 	if err := h.EventSMContainerDied(ctx, event); err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
-	}
-}
-
-// Test_EventSMContainerDied_recoveryDisabled pins VOIP-1553: with recovery disabled, a valid
-// asterisk-call death event must not look up any channel. The strict mock controller is the
-// assertion: any GetChannelsForRecovery or time lookup call fails the test.
-func Test_EventSMContainerDied_recoveryDisabled(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	h := &callHandler{
-		utilHandler:    utilhandler.NewMockUtilHandler(mc),
-		reqHandler:     requesthandler.NewMockRequestHandler(mc),
-		db:             dbhandler.NewMockDBHandler(mc),
-		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
-		channelHandler: channelhandler.NewMockChannelHandler(mc),
-
-		recoveryEnabled: false,
-	}
-
-	event := &smcontainer.Event{
-		ContainerName: "voip-asterisk-call-docker-1",
-		Service:       smcontainer.ServiceAsteriskCall,
-		AsteriskID:    "3e:50:6b:43:bb:32",
-	}
-
-	if err := h.EventSMContainerDied(context.Background(), event); err != nil {
-		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }

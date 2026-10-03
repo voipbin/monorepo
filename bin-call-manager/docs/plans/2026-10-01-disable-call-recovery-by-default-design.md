@@ -1,6 +1,8 @@
 # VOIP-1553: Disable call recovery unless explicitly enabled
 
 Status: design approved (design review rounds 1-2 APPROVED consecutively); implemented in this PR.
+
+Superseded 2026-10-03: the `RECOVERY_ENABLED` gate this design introduced was removed entirely (not just turned on) in `docs/plans/2026-10-03-remove-recovery-enabled-flag-design.md`, per CEO instruction. This document is left unedited as a historical record of why the gate existed.
 Ticket: VOIP-1553. The issue analysis (findings F1-F10 referenced below) is recorded in the VOIP-1553 ticket comments.
 Blocks: VOIP-1555 (Homer repair). Follow-up: VOIP-1556 (recovery redesign).
 
