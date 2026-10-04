@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
@@ -288,6 +289,28 @@ func (h *callHandler) CreateCallOutgoing(
 	if err != nil {
 		// we could not find owner info, but just write the log here.
 		log.Errorf("Could not get address owner info. err: %v", err)
+	}
+
+	// Fallback: if the destination address itself has no resolvable owner
+	// (e.g. a raw SIP registrar-contact URI for an agent's extension) but
+	// this call is the inner leg of a groupcall whose OWN owner is known
+	// (e.g. the outer agent-destination groupcall created by
+	// groupcallhandler.startWithDestination), inherit that owner. This is
+	// a call-manager-internal fallback only: it does not change the
+	// priority of a directly-resolvable destination owner, and it never
+	// fires for a groupcall whose own owner is None (ringall/linear outer
+	// groupcalls, and the linear 2nd+ destination path -- see
+	// docs/plans/2026-10-04-groupcall-owner-inheritance.md §3 non-goals).
+	if ownerType == commonidentity.OwnerTypeNone && groupcallID != uuid.Nil {
+		parentGroupcall, errGroupcall := h.groupcallHandler.Get(ctx, groupcallID)
+		switch {
+		case errGroupcall != nil:
+			log.Errorf("Could not get parent groupcall for owner inheritance. groupcall_id: %s, err: %v", groupcallID, errGroupcall)
+		case parentGroupcall.OwnerType != commonidentity.OwnerTypeNone:
+			log.Debugf("Inheriting owner from parent groupcall. groupcall_id: %s, owner_type: %s, owner_id: %s", groupcallID, parentGroupcall.OwnerType, parentGroupcall.OwnerID)
+			ownerType = parentGroupcall.OwnerType
+			ownerID = parentGroupcall.OwnerID
+		}
 	}
 
 	// create a call

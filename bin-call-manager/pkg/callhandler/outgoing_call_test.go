@@ -3692,3 +3692,248 @@ func Test_CreateCallOutgoing_whitelistRejectedEvent(t *testing.T) {
 		})
 	}
 }
+
+// Test_CreateCallOutgoing_OwnerInheritance verifies the VOIP-1561 fallback: when
+// getAddressOwner cannot resolve an owner for the destination (OwnerTypeNone),
+// CreateCallOutgoing inherits owner from the parent groupcall IF that groupcall's
+// own owner is known. The destination-resolved owner always takes priority over
+// the fallback, and the fallback never fires when groupcallID is Nil or the
+// parent groupcall lookup errors/returns no owner.
+func Test_CreateCallOutgoing_OwnerInheritance(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		activeflowID uuid.UUID
+		groupcallID  uuid.UUID
+		source       commonaddress.Address
+		destination  commonaddress.Address
+
+		responseActiveflow   *fmactiveflow.Activeflow
+		responseAgent        *amagent.Agent // response of AgentV1AgentGetByCustomerIDAndAddress for the destination
+		responseGroupcall    *groupcall.Groupcall
+		responseGroupcallErr error
+		responseUUIDChannel  uuid.UUID
+
+		expectGroupcallGetCalled bool
+		expectOwnerType          commonidentity.OwnerType
+		expectOwnerID            uuid.UUID
+	}{
+		{
+			name: "destination owner unresolved, parent groupcall owner=agent -> inherited",
+
+			id:           uuid.FromStringOrNil("c0000000-0000-4000-8000-000000000001"),
+			customerID:   uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000c1"),
+			flowID:       uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000f1"),
+			activeflowID: uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a1"),
+			groupcallID:  uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a1"),
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "testsrc@test.com",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "registrar-contact-uri@test.com",
+			},
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				CurrentAction: fmaction.Action{ID: fmaction.IDStart},
+			},
+			responseAgent: nil, // destination owner cannot be resolved (raw SIP contact URI)
+			responseGroupcall: &groupcall.Groupcall{
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000aa"),
+				},
+			},
+			responseUUIDChannel: uuid.FromStringOrNil("c0000000-0000-4000-8000-00000000cc01"),
+
+			expectGroupcallGetCalled: true,
+			expectOwnerType:          commonidentity.OwnerTypeAgent,
+			expectOwnerID:            uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000aa"),
+		},
+		{
+			name: "destination owner unresolved, parent groupcall owner=None -> stays None (ringall/linear outer groupcall)",
+
+			id:           uuid.FromStringOrNil("c0000000-0000-4000-8000-000000000002"),
+			customerID:   uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000c2"),
+			flowID:       uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000f2"),
+			activeflowID: uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a2"),
+			groupcallID:  uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a2"),
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "testsrc2@test.com",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "sip-contact-2@test.com",
+			},
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				CurrentAction: fmaction.Action{ID: fmaction.IDStart},
+			},
+			responseAgent:       nil,
+			responseGroupcall:   &groupcall.Groupcall{}, // OwnerType defaults to OwnerTypeNone
+			responseUUIDChannel: uuid.FromStringOrNil("c0000000-0000-4000-8000-00000000cc012"),
+
+			expectGroupcallGetCalled: true,
+			expectOwnerType:          commonidentity.OwnerTypeNone,
+			expectOwnerID:            uuid.Nil,
+		},
+		{
+			name: "destination owner resolved directly -> fallback not consulted, direct owner wins",
+
+			id:           uuid.FromStringOrNil("c0000000-0000-4000-8000-000000000003"),
+			customerID:   uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000c3"),
+			flowID:       uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000f3"),
+			activeflowID: uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a3"),
+			groupcallID:  uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a3"),
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "testsrc3@test.com",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "directly-resolvable@test.com",
+			},
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				CurrentAction: fmaction.Action{ID: fmaction.IDStart},
+			},
+			responseAgent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000aa3"),
+					CustomerID: uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000c3"),
+				},
+			},
+			responseUUIDChannel: uuid.FromStringOrNil("c0000000-0000-4000-8000-00000000cc013"),
+
+			// groupcallHandler.Get must NOT be called: ownerType != None after getAddressOwner.
+			expectGroupcallGetCalled: false,
+			expectOwnerType:          commonidentity.OwnerTypeAgent,
+			expectOwnerID:            uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000aa3"),
+		},
+		{
+			name: "groupcallID is Nil -> fallback not attempted, stays None",
+
+			id:           uuid.FromStringOrNil("c0000000-0000-4000-8000-000000000004"),
+			customerID:   uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000c4"),
+			flowID:       uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000f4"),
+			activeflowID: uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a4"),
+			groupcallID:  uuid.Nil,
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "testsrc4@test.com",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "unresolvable-4@test.com",
+			},
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				CurrentAction: fmaction.Action{ID: fmaction.IDStart},
+			},
+			responseAgent:            nil,
+			responseUUIDChannel:      uuid.FromStringOrNil("c0000000-0000-4000-8000-00000000cc014"),
+			expectGroupcallGetCalled: false,
+			expectOwnerType:          commonidentity.OwnerTypeNone,
+			expectOwnerID:            uuid.Nil,
+		},
+		{
+			name: "groupcall lookup errors -> fallback skipped, stays None",
+
+			id:           uuid.FromStringOrNil("c0000000-0000-4000-8000-000000000005"),
+			customerID:   uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000c5"),
+			flowID:       uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000f5"),
+			activeflowID: uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a5"),
+			groupcallID:  uuid.FromStringOrNil("c0000000-0000-4000-8000-0000000000a5"),
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "testsrc5@test.com",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "unresolvable-5@test.com",
+			},
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				CurrentAction: fmaction.Action{ID: fmaction.IDStart},
+			},
+			responseAgent:            nil,
+			responseGroupcallErr:     fmt.Errorf("groupcall not found"),
+			responseUUIDChannel:      uuid.FromStringOrNil("c0000000-0000-4000-8000-00000000cc015"),
+			expectGroupcallGetCalled: true,
+			expectOwnerType:          commonidentity.OwnerTypeNone,
+			expectOwnerID:            uuid.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+
+			h := &callHandler{
+				utilHandler:           mockUtil,
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				db:                    mockDB,
+				channelHandler:        mockChannel,
+				outboundConfigHandler: mockOutboundConfig,
+				groupcallHandler:      mockGroupcall,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			}, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, nil)
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
+
+			if tt.expectGroupcallGetCalled {
+				mockGroupcall.EXPECT().Get(ctx, tt.groupcallID).Return(tt.responseGroupcall, tt.responseGroupcallErr)
+			}
+
+			var capturedCall *call.Call
+			mockDB.EXPECT().CallCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, c *call.Call) error {
+				if c.OwnerType != tt.expectOwnerType {
+					t.Errorf("Wrong owner type. expect: %v, got: %v", tt.expectOwnerType, c.OwnerType)
+				}
+				if c.OwnerID != tt.expectOwnerID {
+					t.Errorf("Wrong owner id. expect: %v, got: %v", tt.expectOwnerID, c.OwnerID)
+				}
+				capturedCall = c
+				return nil
+			})
+			mockDB.EXPECT().CallGet(ctx, tt.id).DoAndReturn(func(_ context.Context, _ uuid.UUID) (*call.Call, error) {
+				return capturedCall, nil
+			})
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.customerID, call.EventTypeCallCreated, gomock.Any())
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.id, defaultHealthDelay, 0).Return(nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), gomock.Any(), gomock.Any(), "", "", "", gomock.Any()).Return(&channel.Channel{}, nil)
+
+			_, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, uuid.Nil, tt.groupcallID, tt.source, tt.destination, false, false, "", nil, nil)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
