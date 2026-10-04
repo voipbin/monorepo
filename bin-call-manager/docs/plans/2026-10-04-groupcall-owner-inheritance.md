@@ -18,7 +18,7 @@ Consequence for square-talk (SQUARE-87, blocked by this ticket):
 1. An agent-bound chained SIP call leg created under an owner=agent parent groupcall is itself created with `owner_type=agent, owner_id=<that agent>`.
 2. No change to any RPC request/response shape, proto, or OpenAPI contract. No vendor/mock regeneration in any other service.
 3. No change to the owner of groupcalls or calls whose destination is independently resolvable (tel/sip NOT nested under an agent groupcall) — today's `getAddressOwner(destination)` result continues to take priority.
-4. Verified test coverage for every call path identified in the analysis: queue, flow `connect`, AI tool, direct `POST /calls` to an agent, blind transfer, attended transfer, both `ring_method=ringall` and `ring_method=linear` agents.
+4. Verified test coverage for every call path identified in the analysis: queue, flow `connect`, AI tool, direct `POST /calls` to an agent, blind transfer, attended transfer, both `ring_method=ringall` and `ring_method=linear` agents. **Includes an explicit direct-extension-dial test case** (not just agent-address destinations) — `IsGroupcallTypeAddress`, `getDialDestinationsAddressTypeExtension`, and `getAddressOwner` all treat `TypeAgent`/`TypeExtension` destinations via the identical `AgentV1AgentGetByCustomerIDAndAddress` code path, so this is a regression-coverage requirement, not a new code path.
 
 ## 3. Non-goals
 
@@ -133,10 +133,15 @@ None outstanding — all CEO decision points for this ticket's scope (decisions 
 
 ## 10. Approval status
 
-Draft — Design Review round 1: CHANGES_REQUESTED (2 items), both fixed below. Awaiting round 2.
+**APPROVED** — Design Review→Fix loop closed. Round 1: CHANGES_REQUESTED (2 items, fixed). Round 2: APPROVED. Round 3: APPROVED (2 consecutive, min-3-round floor satisfied). Non-blocking round-3 note (explicit extension-dial test case) folded into §2 Goal 4 above.
 
 ## Iter-1 review response summary
 
 - 1 (§5.3 모델 인용 오류): `groupcall.Groupcall.OwnerType`의 실제 정의 파일을 `models/groupcall/main.go:13-15`로 정정, `Identity`(ID/CustomerID)와 `Owner`(OwnerType/OwnerID)를 별도로 embed한다고 정정. 본인 재확인(`sed -n '1,20p' models/groupcall/main.go`).
 - 2 (§6 매트릭스 ringall 다중 목적지 fan-out 미반영): `startRingall:136-147`의 `mapGroupcalls` 고루틴 fan-out(각 branch가 outer `id`가 아닌 자신의 `chainedGroupcallID`로 `startWithDestination` 재귀 호출) 행을 매트릭스에 추가. 본인 재확인(`sed -n '130,160p' pkg/groupcallhandler/start.go`).
+
+## Iter-2 review response summary (round 3, non-blocking)
+
+- Round 3 승인, 비차단 보완 2건 중 1건(Extension dial 테스트 명시성)만 반영: §2 Goal 4에 direct-extension-dial 테스트 케이스 요구사항 명시. 나머지 1건(§3 비고의 `start.go:325-360` 줄 번호 근사치)은 사소한 범위 오차로 수정 불필요(실제 322-363, 본문 서술 내용 자체는 정확).
+
 
