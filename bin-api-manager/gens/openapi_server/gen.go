@@ -10225,6 +10225,9 @@ type PostServiceAgentsContactAddressesIdClaimJSONBody struct {
 
 // GetServiceAgentsContactCasesParams defines parameters for GetServiceAgentsContactCases.
 type GetServiceAgentsContactCasesParams struct {
+	// ContactId Filter to cases attributed to this Contact.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
 	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
@@ -20875,6 +20878,14 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsContactCases(c *gin.Context) 
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetServiceAgentsContactCasesParams
+
+	// ------------- Optional query parameter "contact_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
+		return
+	}
 
 	// ------------- Optional query parameter "page_size" -------------
 

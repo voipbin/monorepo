@@ -1039,7 +1039,7 @@ type ServiceHandler interface {
 	) (*cvmessage.WebhookMessage, error)
 
 	// service_agent case
-	ServiceAgentCaseList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmkase.Case, string, error)
+	ServiceAgentCaseList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, contactID uuid.UUID) ([]*cmkase.Case, string, error)
 	ServiceAgentCaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	ServiceAgentCaseAssign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, ownerID uuid.UUID) (*cmkase.Case, error)

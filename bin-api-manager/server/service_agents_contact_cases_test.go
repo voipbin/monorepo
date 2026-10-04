@@ -32,9 +32,10 @@ func Test_contactCasesGET(t *testing.T) {
 
 		expectPageToken string
 		expectPageSize  uint64
+		expectContactID uuid.UUID
 	}{
 		{
-			name: "normal",
+			name: "normal, no contact_id",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
@@ -51,6 +52,29 @@ func Test_contactCasesGET(t *testing.T) {
 
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectPageSize:  10,
+			expectContactID: uuid.Nil,
+		},
+		{
+			// VOIP-1563: contact_id query param is parsed and threaded
+			// through to ServiceAgentCaseList.
+			name: "with contact_id filter",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5a5ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contact_cases?page_size=5&contact_id=9a9ec0ba-8004-11ec-aea5-439829c92a7c",
+
+			responseCases: []*cmkase.Case{
+				{
+					ID: uuid.FromStringOrNil("7a7ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			},
+
+			expectPageToken: "",
+			expectPageSize:  5,
+			expectContactID: uuid.FromStringOrNil("9a9ec0ba-8004-11ec-aea5-439829c92a7c"),
 		},
 	}
 
@@ -73,7 +97,7 @@ func Test_contactCasesGET(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentCaseList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCases, "", nil)
+			mockSvc.EXPECT().ServiceAgentCaseList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectContactID).Return(tt.responseCases, "", nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

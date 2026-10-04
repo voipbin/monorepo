@@ -14,11 +14,10 @@ import (
 )
 
 // ServiceAgentCaseList sends a request to contact-manager to list cases for
-// the service agent's own customer. Status/owner_type/owner_id/contact_id
-// filters are deliberately left empty/nil -- this returns the full list for
-// the customer with no server-side owner filtering; square-talk filters
-// client-side (design §3.1/3.3).
-func (h *serviceHandler) ServiceAgentCaseList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmkase.Case, string, error) {
+// the service agent's own customer, optionally filtered by contactID
+// (VOIP-1563). Status/owner_type/owner_id/reference_id filters remain
+// unsupported on this surface.
+func (h *serviceHandler) ServiceAgentCaseList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, contactID uuid.UUID) ([]*cmkase.Case, string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentCaseList",
 		"customer_id": a.CustomerID,
@@ -29,7 +28,7 @@ func (h *serviceHandler) ServiceAgentCaseList(ctx context.Context, a *auth.AuthI
 		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
-	items, nextToken, err := h.reqHandler.ContactV1CaseList(ctx, a.CustomerID, "", "", uuid.Nil, uuid.Nil, size, token, "")
+	items, nextToken, err := h.reqHandler.ContactV1CaseList(ctx, a.CustomerID, "", "", uuid.Nil, contactID, size, token, "")
 	if err != nil {
 		log.Errorf("Could not list cases. err: %v", err)
 		return nil, "", err

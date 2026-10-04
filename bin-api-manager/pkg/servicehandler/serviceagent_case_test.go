@@ -26,6 +26,7 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 		agent     *auth.AuthIdentity
 		pageSize  uint64
 		pageToken string
+		contactID uuid.UUID
 
 		responseCases     []*cmkase.Case
 		responseNextToken string
@@ -35,7 +36,7 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 		{
 			// Plain Agent permission (not Admin/Manager) must be able to list
 			// its own customer's cases via the service_agents surface.
-			name: "agent permission",
+			name: "agent permission, no contact_id filter",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
@@ -45,6 +46,7 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 			}),
 			pageSize:  10,
 			pageToken: "2020-10-20T01:00:00.995000Z",
+			contactID: uuid.Nil,
 
 			responseCases: []*cmkase.Case{
 				{
@@ -56,6 +58,35 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 			expectRes: []*cmkase.Case{
 				{
 					ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+				},
+			},
+		},
+		{
+			// VOIP-1563: contact_id is threaded through to ContactV1CaseList
+			// unchanged (6th RPC arg), narrowing the result to that contact's
+			// cases.
+			name: "agent permission, with contact_id filter",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("11111111-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("22222222-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			pageSize:  25,
+			pageToken: "",
+			contactID: uuid.FromStringOrNil("33333333-8270-11ed-914d-6bceafeffecb"),
+
+			responseCases: []*cmkase.Case{
+				{
+					ID: uuid.FromStringOrNil("44444444-8270-11ed-914d-6bceafeffecb"),
+				},
+			},
+			responseNextToken: "",
+
+			expectRes: []*cmkase.Case{
+				{
+					ID: uuid.FromStringOrNil("44444444-8270-11ed-914d-6bceafeffecb"),
 				},
 			},
 		},
@@ -75,9 +106,9 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ContactV1CaseList(ctx, tt.agent.CustomerID, "", "", uuid.Nil, uuid.Nil, tt.pageSize, tt.pageToken, "").Return(tt.responseCases, tt.responseNextToken, nil)
+			mockReq.EXPECT().ContactV1CaseList(ctx, tt.agent.CustomerID, "", "", uuid.Nil, tt.contactID, tt.pageSize, tt.pageToken, "").Return(tt.responseCases, tt.responseNextToken, nil)
 
-			res, nextToken, err := h.ServiceAgentCaseList(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, nextToken, err := h.ServiceAgentCaseList(ctx, tt.agent, tt.pageSize, tt.pageToken, tt.contactID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

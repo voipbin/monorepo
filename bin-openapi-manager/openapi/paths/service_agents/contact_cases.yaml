@@ -1,9 +1,16 @@
 get:
   summary: Get list of contact cases
-  description: Retrieves a paginated list of cases for the authenticated agent's customer.
+  description: Retrieves a paginated list of cases for the authenticated agent's customer, optionally filtered by contact_id.
   tags:
     - Service Agent
   parameters:
+    - name: contact_id
+      in: query
+      description: Filter to cases attributed to this Contact.
+      schema:
+        type: string
+        format: uuid
+        example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
   responses:
