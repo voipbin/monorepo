@@ -123,7 +123,7 @@ Listing and Viewing Cases
 
 .. note:: **AI Implementation Hint**
 
-   ``GET /service_agents/contact_cases`` returns every open and closed case for the customer with no server-side ``status``/``owner_id`` filter -- console UIs (e.g. an agent's "My Cases" view) are expected to filter the result client-side. There is no ``status=open`` or ``owner_id=<my-agent-id>`` query parameter on this endpoint today. A ``contact_id`` filter IS supported (added VOIP-1563) -- use it instead of client-side filtering when showing a specific contact's case history, since the client-side cache is capped at the first 100 cases per customer and silently drops any case beyond that for larger tenants.
+   ``GET /service_agents/contact_cases`` returns every open and closed case for the customer with no server-side ``status``/``owner_id`` filter -- console UIs (e.g. an agent's "My Cases" view) are expected to filter the result client-side. There is no ``status=open`` or ``owner_id=<my-agent-id>`` query parameter on this endpoint today. A ``contact_id`` filter IS supported (added VOIP-1563) -- use it to fetch a specific contact's case history server-side instead of filtering the full customer-wide result client-side.
 
 
 Assigning and Closing
