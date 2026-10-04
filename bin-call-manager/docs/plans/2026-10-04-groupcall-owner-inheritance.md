@@ -18,7 +18,7 @@ Consequence for square-talk (SQUARE-87, blocked by this ticket):
 1. An agent-bound chained SIP call leg created under an owner=agent parent groupcall is itself created with `owner_type=agent, owner_id=<that agent>`.
 2. No change to any RPC request/response shape, proto, or OpenAPI contract. No vendor/mock regeneration in any other service.
 3. No change to the owner of groupcalls or calls whose destination is independently resolvable (tel/sip NOT nested under an agent groupcall) — today's `getAddressOwner(destination)` result continues to take priority.
-4. Verified test coverage for every call path identified in the analysis: queue, flow `connect`, AI tool, direct `POST /calls` to an agent, blind transfer, attended transfer, both `ring_method=ringall` and `ring_method=linear` agents. **Includes an explicit direct-extension-dial test case** (not just agent-address destinations) — `IsGroupcallTypeAddress`, `getDialDestinationsAddressTypeExtension`, and `getAddressOwner` all treat `TypeAgent`/`TypeExtension` destinations via the identical `AgentV1AgentGetByCustomerIDAndAddress` code path, so this is a regression-coverage requirement, not a new code path.
+4. Verified test coverage for every call path identified in the analysis: queue, flow `connect`, AI tool, direct `POST /calls` to an agent, blind transfer, attended transfer, both `ring_method=ringall` and `ring_method=linear` agents. `CreateCallOutgoing` rejects any destination whose `Type` is not `TypeSIP`/`TypeTel` at its own entry guard (`outgoing_call.go:148-150`) — by the time any of the above paths reaches this function, the destination has already been resolved down to a SIP contact URI (`getDialDestinationsAddressTypeExtension`, `dial.go:179-209`) or is a directly-dialed tel/sip address. `getAddressOwner`'s `TypeAgent` branch (`start.go:755-761`, backed by `AgentV1AgentGet`) is therefore unreachable from this call site — it only exists in `getAddressOwner` because the same helper is also consulted elsewhere in the package. Test coverage at this level is correctly expressed entirely in terms of SIP/Tel destinations (§6 below); no `TypeAgent`/`TypeExtension` destination test case is meaningful or addable here.
 
 ## 3. Non-goals
 
@@ -143,5 +143,13 @@ None outstanding — all CEO decision points for this ticket's scope (decisions 
 ## Iter-2 review response summary (round 3, non-blocking)
 
 - Round 3 승인, 비차단 보완 2건 중 1건(Extension dial 테스트 명시성)만 반영: §2 Goal 4에 direct-extension-dial 테스트 케이스 요구사항 명시. 나머지 1건(§3 비고의 `start.go:325-360` 줄 번호 근사치)은 사소한 범위 오차로 수정 불필요(실제 322-363, 본문 서술 내용 자체는 정확).
+
+## Iter-3 review response summary (PR review round 3 finding, design doc correction)
+
+- **이 응답은 코드가 아니라 §2 Goal 4 자체의 오류를 바로잡습니다.** PR 코드 리뷰 3회차에서 "TypeAgent/TypeExtension 목적지 테스트 케이스 누락"을 CHANGES_REQUESTED로 지적했으나, 재검증 결과 그 요청의 전제(Iter-2가 추가한 "`IsGroupcallTypeAddress`/`getDialDestinationsAddressTypeExtension`/`getAddressOwner`가 TypeAgent/TypeExtension을 동일 코드 경로로 처리한다")가 사실과 다릅니다.
+  - `CreateCallOutgoing`은 자체 진입 가드에서 `destination.Type`이 `TypeSIP`/`TypeTel`이 아니면 즉시 에러를 반환합니다(`outgoing_call.go:148-150`, 본인 재확인). 따라서 이 함수 내부에서 `getAddressOwner`가 호출될 때 `destination.Type`은 항상 SIP 또는 Tel이며, `TypeAgent` 분기(`start.go:755-761`, `AgentV1AgentGet` 사용)는 **도달 불가능**합니다.
+  - Extension으로 가는 모든 경로는 `getDialDestinationsAddressTypeExtension`(`dial.go:179-209`)에서 registrar contact URI로 변환된 뒤 `TypeSIP` 목적지로 `CreateCallOutgoing`에 들어옵니다. 즉 기존 5개 테스트 케이스의 SIP 목적지(`registrar-contact-uri@test.com`, `sip-contact-2@test.com` 등)가 이미 "direct extension dial" 시나리오를 정확히 표현하고 있습니다.
+  - §2 Goal 4를 위 사실에 맞게 재작성했습니다. `TypeAgent`/`TypeExtension` 목적지 전용 테스트는 이 호출부에서는 **추가할 수 없는(의미 없는) 테스트**이므로 추가하지 않습니다. Iter-2의 해당 문구는 잘못된 근거였음을 여기 기록합니다.
+
 
 
