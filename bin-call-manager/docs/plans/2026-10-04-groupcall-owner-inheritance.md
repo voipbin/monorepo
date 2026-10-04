@@ -1,0 +1,135 @@
+# VOIP-1561: Inherit groupcall owner for agent-bound chained calls
+
+Status: Draft
+Ticket: VOIP-1561 (sibling: SQUARE-87)
+Source: Fully re-verified via 8-round analysis review loop (rounds 7-8 consecutive APPROVED), see `../../../.worktrees/SQUARE-87-In-call-caller-context-panel-and-live-transcript/square-talk/docs/plans/2026-10-04-incall-context-and-live-transcript-analysis.md` §4.1, §4.3 (a-2). CEO confirmed decision (1)/(6): implement (a-2), linear 2nd+ destination path left unsupported (follow-up).
+
+## 1. Problem statement
+
+Every inbound-to-agent call leg (queue assignment, flow `connect`, AI tool agent-transfer, direct extension dial, blind/attended transfer landing on an agent) is created with `owner_id = Nil`, while agent-initiated outbound legs get `owner_id = agent`. Root cause: these inbound legs are always the inner SIP "chained call" of a 2-level groupcall structure, and the function that creates that chained call (`CreateCallOutgoing`) determines owner purely from `getAddressOwner(destination)`, which cannot resolve an agent from a raw SIP contact URI (it returns `OwnerTypeNone`) and has no fallback.
+
+Consequence for square-talk (SQUARE-87, blocked by this ticket):
+- `GET /service_agents/calls` (owner-filtered) never lists the agent's own inbound calls.
+- `GET /service_agents/calls/{id}` 403s for inbound calls (`serviceagent_call.go:77`, `AgentID() != OwnerID`).
+- The `agent_id:<id>:call` websocket topic never fires for inbound calls (routing key is built from `OwnerID`, `bin-webhook-manager/pkg/webhookhandler/routingkey.go:49-51`).
+
+## 2. Goals
+
+1. An agent-bound chained SIP call leg created under an owner=agent parent groupcall is itself created with `owner_type=agent, owner_id=<that agent>`.
+2. No change to any RPC request/response shape, proto, or OpenAPI contract. No vendor/mock regeneration in any other service.
+3. No change to the owner of groupcalls or calls whose destination is independently resolvable (tel/sip NOT nested under an agent groupcall) — today's `getAddressOwner(destination)` result continues to take priority.
+4. Verified test coverage for every call path identified in the analysis: queue, flow `connect`, AI tool, direct `POST /calls` to an agent, blind transfer, attended transfer, both `ring_method=ringall` and `ring_method=linear` agents.
+
+## 3. Non-goals
+
+- Fixing `ring_method=linear` 2nd+ destination inheriting owner (`groupcallhandler/dial.go:90` path) — parent groupcall owner is structurally `None` there (no owner to inherit from without a separate RPC/lookup change). CEO-confirmed non-goal (decision 6); filed as follow-up once a concrete need surfaces.
+- Fixing `ring_method=linear` being effectively ignored for agent destinations (pre-existing defect, `start.go:325-360` fires all agent addresses concurrently via goroutines) — pre-existing, out of scope, filed as follow-up defect candidate.
+- Backfilling historical (pre-deploy) `owner_id=Nil` call rows — CEO-confirmed non-goal (decision 4).
+- Any bin-common-handler RPC signature change (the a-1 alternative) — explicitly rejected in favor of (a-2)'s local-only change.
+- square-talk frontend changes — tracked entirely in SQUARE-87.
+
+## 4. Affected files
+
+| File | Why |
+|---|---|
+| `bin-call-manager/pkg/callhandler/outgoing_call.go` | `CreateCallOutgoing`: add parent-groupcall owner fallback right after the existing `getAddressOwner` call (~line 287). |
+| `bin-call-manager/pkg/callhandler/outgoing_call_test.go` | New unit tests for the fallback (table-driven, add cases to/near `Test_CreateCallOutgoing_TypeSIP`). |
+| `bin-call-manager/pkg/callhandler/main.go` | No signature change expected; `groupcallHandler` field already present on `callHandler` (line 160) and already used elsewhere in the same file (`outgoing_call.go:84,507`) — confirms `h.groupcallHandler.Get` is reachable without any wiring change. |
+
+No other file needs to change. `groupcallhandler/start.go` (chained-call creation call sites at `:153`, `:230`, `:355`) and `groupcallhandler/dial.go:125` are NOT touched — they already call `CallV1CallCreateWithID` → eventually `CreateCallOutgoing`, which is the single inheritance point. `bin-common-handler/pkg/requesthandler/call_calls.go:157-172` (`CallV1CallCreateWithID` signature) is explicitly NOT touched (confirms no RPC/vendor impact).
+
+## 5. Exact change
+
+### 5.1 Current code (`outgoing_call.go`, around line 285-291)
+
+```go
+	// get address owner info
+	ownerType, ownerID, err := h.getAddressOwner(ctx, customerID, &destination)
+	if err != nil {
+		// we could not find owner info, but just write the log here.
+		log.Errorf("Could not get address owner info. err: %v", err)
+	}
+```
+
+### 5.2 New code
+
+```go
+	// get address owner info
+	ownerType, ownerID, err := h.getAddressOwner(ctx, customerID, &destination)
+	if err != nil {
+		// we could not find owner info, but just write the log here.
+		log.Errorf("Could not get address owner info. err: %v", err)
+	}
+
+	// Fallback: if the destination address itself has no resolvable owner
+	// (e.g. a raw SIP registrar-contact URI for an agent's extension) but
+	// this call is the inner leg of a groupcall whose OWN owner is known
+	// (e.g. the outer agent-destination groupcall created by
+	// groupcallhandler.startWithDestination), inherit that owner. This is
+	// a call-manager-internal fallback only: it does not change the
+	// priority of a directly-resolvable destination owner, and it never
+	// fires for a groupcall whose own owner is None (ringall/linear outer
+	// groupcalls, and the linear 2nd+ destination path -- see
+	// docs/plans/2026-10-04-groupcall-owner-inheritance.md §3 non-goals).
+	if ownerType == commonidentity.OwnerTypeNone && groupcallID != uuid.Nil {
+		parentGroupcall, errGroupcall := h.groupcallHandler.Get(ctx, groupcallID)
+		switch {
+		case errGroupcall != nil:
+			log.Errorf("Could not get parent groupcall for owner inheritance. groupcall_id: %s, err: %v", groupcallID, errGroupcall)
+		case parentGroupcall.OwnerType != commonidentity.OwnerTypeNone:
+			log.Debugf("Inheriting owner from parent groupcall. groupcall_id: %s, owner_type: %s, owner_id: %s", groupcallID, parentGroupcall.OwnerType, parentGroupcall.OwnerID)
+			ownerType = parentGroupcall.OwnerType
+			ownerID = parentGroupcall.OwnerID
+		}
+	}
+```
+
+Placement: strictly after the existing `getAddressOwner` call and strictly before the `h.Create(...)` call (currently ~line 293) that consumes `ownerType`/`ownerID`. No other line in the function changes.
+
+### 5.3 Wire-field checklist (verified against this repo 2026-10-04)
+
+| Field | Source | Verified shape |
+|---|---|---|
+| `groupcall.Groupcall.OwnerType` | `bin-call-manager/models/groupcall/groupcall.go` (embeds `commonidentity.Identity` per hard-copy-forbidden convention) | `commonidentity.OwnerType`, confirmed via `groupcallhandler/db.go:121` `Get` returning `*groupcall.Groupcall` |
+| `groupcallHandler.Get(ctx, id uuid.UUID) (*groupcall.Groupcall, error)` | `bin-call-manager/pkg/groupcallhandler/db.go:121-133` | Returns typed `cerrors.NotFound` (`Status=NotFound`) on `dbhandler.ErrNotFound`, wrapped generic error otherwise — handled above via the `errGroupcall != nil` branch, no special-casing needed since both outcomes just skip inheritance and log. |
+| `commonidentity.OwnerTypeNone` / `OwnerTypeAgent` | `bin-common-handler/models/identity/owner.go:16-17` | `OwnerTypeNone OwnerType = ""`, `OwnerTypeAgent OwnerType = "agent"` |
+| `h.groupcallHandler` field | `bin-call-manager/pkg/callhandler/main.go:160,315,330` | Already wired into `callHandler`; already called in the same file at `outgoing_call.go:84` (`IsGroupcallTypeAddress`) and `:507` (`Start`) — no new dependency injection needed. |
+| `groupcallID` parameter | `CreateCallOutgoing` signature, `outgoing_call.go` (~line 107-122) | Already a parameter of the function; passed through from every call site (`groupcallhandler/start.go:153,230,355`, `dial.go:125`) — confirmed via `grep -n groupcallID bin-call-manager/pkg/groupcallhandler/start.go` before drafting. |
+
+## 6. Call-path coverage matrix (test plan, maps to decision (1)/(4.1))
+
+| Path | Outer groupcall owner | Inner chained call before fix | After fix |
+|---|---|---|---|
+| Queue → agent, `ring_method=ringall` | agent (`startWithDestination`) | None | agent (inherited) |
+| Queue → agent, `ring_method=linear` (single agent) | agent (`startWithDestination`, via `startLinear` nested groupcall) | None | agent (inherited) |
+| Flow `connect` → agent | agent | None | agent (inherited) |
+| AI tool → agent | agent | None | agent (inherited) |
+| `POST /calls` (API) → agent destination | agent | None | agent (inherited) |
+| Blind transfer → agent | agent | None | agent (inherited) |
+| Attended transfer → agent | agent | None | agent (inherited) |
+| Agent-initiated outbound (browser dial) | n/a (no groupcall) | agent (via `getAddressOwner(source)`, unaffected path) | agent (unchanged, regression check only) |
+| `ring_method=linear`, 2nd+ destination is an extension | None (`dial.go:90` nested groupcall) | None | None (unchanged — non-goal §3) |
+| Tel/SIP destination NOT nested under an agent groupcall | directly resolved by `getAddressOwner` | directly resolved | unchanged (fallback never triggers, `ownerType != OwnerTypeNone`) |
+
+## 7. Verification plan
+
+1. `cd bin-call-manager && go build ./...` — must pass with zero new warnings.
+2. `go test ./pkg/callhandler/... -run CreateCallOutgoing -v` — all existing tests green (regression), plus new table-driven cases covering every row of §6 above.
+3. `go vet ./...` and the repo's standard lint target (per `CLAUDE.md` build/test commands — confirm exact command before running).
+4. Manual trace re-check: after implementing, re-grep `groupcallhandler/start.go:153,230,355` and `dial.go:125` to confirm none of their call sites needed changes (they shouldn't — single inheritance point is `outgoing_call.go`).
+5. No changes expected to `go.sum`/vendor in any other service — confirm with `git status` scoped to the worktree showing only `bin-call-manager/pkg/callhandler/outgoing_call.go` and its test file.
+
+## 8. Rollout / risk
+
+- **Risk: increased exposure.** Previously-`owner=Nil` inbound call rows become visible to the owning agent in list/detail/delete. This is the intended effect (SQUARE-87 depends on it) but widens what an agent can see/delete about their own calls. No cross-tenant exposure (owner is still scoped to the correct agent/customer).
+- **Risk: event volume.** `agent_id:<id>:call` webhook/websocket events will fire for calls that previously generated no agent-scoped event. Expected and required for SQUARE-87's "On call now" / live list features; no fan-out to other customers.
+- **Risk: none for RPC/schema compatibility** — single-file, call-manager-internal change; no proto/OpenAPI/vendor touch confirmed in §4/§7.5.
+- **Rollback:** revert the single diff in `outgoing_call.go`; no data migration involved (no non-goal-4 backfill means no destructive or stateful rollback concern).
+
+## 9. Open questions
+
+None outstanding — all CEO decision points for this ticket's scope (decisions 1, 4, 6) were locked before this doc was drafted. Reviewer should focus on: correctness of the fallback condition (especially interaction with the `ownerType == OwnerTypeNone` check when `getAddressOwner` itself errored vs. cleanly returned None), and whether §6's coverage matrix is actually exhaustive against the current code.
+
+## 10. Approval status
+
+Draft — awaiting Design Review→Fix loop.
