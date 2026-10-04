@@ -34,8 +34,8 @@ Consequence: square-talk (SQUARE-87) cannot reliably show "this contact's cases"
 | `bin-api-manager/pkg/servicehandler/serviceagent_case.go` | `ServiceAgentCaseList` gains a `contactID uuid.UUID` parameter; passes it to `ContactV1CaseList` instead of the hard-coded `uuid.Nil`. Remove the now-stale design comment claiming "deliberately left empty." |
 | `bin-api-manager/pkg/servicehandler/main.go` | `ServiceAgentCaseList` interface signature gains the `contactID uuid.UUID` parameter. |
 | `bin-api-manager/pkg/servicehandler/mock_main.go` | Regenerated (not hand-edited) via `go generate ./pkg/servicehandler/...` (mockgen) to match the updated interface. |
-| `bin-api-manager/pkg/servicehandler/serviceagent_case_test.go` | Update existing `Test_ServiceAgentCaseList` call sites for the new parameter; add new table-driven cases for the filter. |
-| `bin-api-manager/server/service_agents_contact_cases_test.go` (if it exists; else create) | Add/update HTTP-layer test for `contact_id` query param parsing. |
+| `bin-api-manager/server/service_agents_contact_cases_test.go` | **Already exists** (confirmed). `Test_contactCasesGET`'s mock expectation at line 76 currently calls `mockSvc.EXPECT().ServiceAgentCaseList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken)` with exactly 4 arguments; add a 5th argument (`tt.expectContactID`) to match the new signature, plus new table-driven cases exercising `contact_id` present/absent in the query string. |
+| `bin-api-manager/pkg/servicehandler/serviceagent_case_test.go` | **Already exists** (confirmed). `Test_ServiceAgentCaseList` currently calls `h.ServiceAgentCaseList(ctx, tt.agent, tt.pageSize, tt.pageToken)` (4 args, line 80) and expects `mockReq.EXPECT().ContactV1CaseList(ctx, tt.agent.CustomerID, "", "", uuid.Nil, uuid.Nil, tt.pageSize, tt.pageToken, "")` (line 78, `contactID` is the 6th RPC argument, currently hard-coded `uuid.Nil`). Update both call sites to thread a new `tt.contactID` field through, and add cases where `tt.contactID != uuid.Nil` asserts the RPC mock receives that value instead of `uuid.Nil` in the 6th position. |
 
 No `bin-contact-manager` change: `ContactV1CaseList`'s RPC handler and the underlying `dbhandler` query already support `contactID` (proven by the admin surface using it today).
 
@@ -129,7 +129,8 @@ and update the call site: `h.serviceHandler.ServiceAgentCaseList(c.Request.Conte
 ## 7. Rollout / risk
 
 - **Risk: none for backward compatibility** — omitting `contact_id` is identical to today's call (`uuid.Nil`), verified by §5.2's diff.
-- **Risk: none for cross-tenant exposure** — `contactID` is an additional AND-filter within `a.CustomerID`'s existing tenant scope; the RPC/dbhandler query ANDs both, never ORs or overrides the tenant filter (same guarantee the admin surface already relies on).
+- **Risk: none for cross-tenant exposure** — verified against the actual query builder (`bin-contact-manager/pkg/dbhandler/kase.go:522-538`): `customer_id` is always the first `AND`-ed `Where` clause; `contact_id` (when non-Nil) is an additional `AND`-ed clause, never an `OR` or override. A cross-tenant `contact_id` yields zero rows (the `customer_id` clause alone excludes it), not an error or a leaked existence signal — same guarantee the admin surface already relies on.
+- **External consumer: `voipbin-go` SDK (separate repo, github.com/voipbin/voipbin-go).** This public Go SDK's `gens/voipbin_client/gen.go` is generated from the SAME `bin-openapi-manager/openapi/openapi.yaml` (`voipbin-go/openapi/config_client/generate.go`). The `contact_id` parameter addition is purely additive (new optional query param on an existing endpoint) — it cannot break SDK callers who don't pass it, and oapi-codegen's client-side generation does not require existing call sites to change. **Scope decision: regenerating/releasing `voipbin-go` is explicitly OUT OF SCOPE for this PR.** It is a separate repository with its own release/versioning cycle; this PR only changes `monorepo`. A follow-up ticket should regenerate and release `voipbin-go` once this PR's OpenAPI change is on `main`, so public SDK users eventually get typed access to the new filter — not a correctness blocker for VOIP-1563 or SQUARE-87, since neither consumes `voipbin-go`.
 - **Rollback:** revert the diff; no data migration, no schema change.
 
 ## 8. Open questions
@@ -138,4 +139,11 @@ None outstanding. Scope was CEO-confirmed (decision 9, 9-a) before drafting.
 
 ## 9. Approval status
 
-Draft — awaiting Design Review→Fix loop.
+Draft — Design Review round 1: APPROVED. Round 2: CHANGES_REQUESTED (2 items, fixed below). Awaiting round 3.
+
+## Iter-1 review response summary
+
+- 1 (`voipbin-go` 외부 SDK 누락): §7에 `voipbin-go`(별도 레포, 동일 openapi.yaml 소스)가 영향받는 소비자임을 명시, 이번 PR 범위에서 제외하고 후속 티켓으로 재생성/릴리스하기로 결정. 본인 재확인(`voipbin-go/openapi/config_client/generate.go`, `voipbin.go:47`).
+- 2 (기존 테스트 파일 존재 불확실 서술): §4 두 항목을 "이미 존재함" 확정 서술로 교체, 정확한 현재 mock 인자 개수/위치(4개 args, `ContactV1CaseList`의 6번째 RPC 인자) 명시. 본인 재확인(`service_agents_contact_cases_test.go:76`, `serviceagent_case_test.go:78,80`).
+- 크로스테넌트 권한 재확인 결과(§7): `kase.go:522-538` 쿼리빌더가 `customer_id`를 항상 선행 AND 조건으로 고정함을 직접 확인, 문서에 구체적 근거 추가.
+
