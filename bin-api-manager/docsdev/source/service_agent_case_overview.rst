@@ -109,6 +109,12 @@ Listing and Viewing Cases
 
     $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases?page_size=50&token=<token>'
 
+**List cases for a specific contact**
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/contact_cases?contact_id=<contact-id>&page_size=50&token=<token>'
+
 **Get a case**
 
 .. code::
@@ -117,7 +123,7 @@ Listing and Viewing Cases
 
 .. note:: **AI Implementation Hint**
 
-   ``GET /service_agents/contact_cases`` returns every open and closed case for the customer with no server-side ``status``/``owner_id`` filter -- console UIs (e.g. an agent's "My Cases" view) are expected to filter the result client-side. There is no ``status=open`` or ``owner_id=<my-agent-id>`` query parameter on this endpoint today.
+   ``GET /service_agents/contact_cases`` returns every open and closed case for the customer with no server-side ``status``/``owner_id`` filter -- console UIs (e.g. an agent's "My Cases" view) are expected to filter the result client-side. There is no ``status=open`` or ``owner_id=<my-agent-id>`` query parameter on this endpoint today. A ``contact_id`` filter IS supported (added VOIP-1563) -- use it instead of client-side filtering when showing a specific contact's case history, since the client-side cache is capped at the first 100 cases per customer and silently drops any case beyond that for larger tenants.
 
 
 Assigning and Closing
