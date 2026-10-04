@@ -90,7 +90,7 @@ Placement: strictly after the existing `getAddressOwner` call and strictly befor
 
 | Field | Source | Verified shape |
 |---|---|---|
-| `groupcall.Groupcall.OwnerType` | `bin-call-manager/models/groupcall/groupcall.go` (embeds `commonidentity.Identity` per hard-copy-forbidden convention) | `commonidentity.OwnerType`, confirmed via `groupcallhandler/db.go:121` `Get` returning `*groupcall.Groupcall` |
+| `groupcall.Groupcall.OwnerType` | `bin-call-manager/models/groupcall/main.go:13-15` (`Groupcall` embeds BOTH `commonidentity.Identity` (ID/CustomerID, `identity.go`) AND `commonidentity.Owner` (OwnerType/OwnerID, `owner.go`) per hard-copy-forbidden convention) | `commonidentity.OwnerType`, field promoted from the embedded `Owner` struct; confirmed via `groupcallhandler/db.go:121` `Get` returning `*groupcall.Groupcall` |
 | `groupcallHandler.Get(ctx, id uuid.UUID) (*groupcall.Groupcall, error)` | `bin-call-manager/pkg/groupcallhandler/db.go:121-133` | Returns typed `cerrors.NotFound` (`Status=NotFound`) on `dbhandler.ErrNotFound`, wrapped generic error otherwise — handled above via the `errGroupcall != nil` branch, no special-casing needed since both outcomes just skip inheritance and log. |
 | `commonidentity.OwnerTypeNone` / `OwnerTypeAgent` | `bin-common-handler/models/identity/owner.go:16-17` | `OwnerTypeNone OwnerType = ""`, `OwnerTypeAgent OwnerType = "agent"` |
 | `h.groupcallHandler` field | `bin-call-manager/pkg/callhandler/main.go:160,315,330` | Already wired into `callHandler`; already called in the same file at `outgoing_call.go:84` (`IsGroupcallTypeAddress`) and `:507` (`Start`) — no new dependency injection needed. |
@@ -100,7 +100,8 @@ Placement: strictly after the existing `getAddressOwner` call and strictly befor
 
 | Path | Outer groupcall owner | Inner chained call before fix | After fix |
 |---|---|---|---|
-| Queue → agent, `ring_method=ringall` | agent (`startWithDestination`) | None | agent (inherited) |
+| Queue → agent, `ring_method=ringall`, single agent in queue | agent (`startWithDestination`) | None | agent (inherited) |
+| Queue → agent, `ring_method=ringall`, multiple agents (fan-out) | agent per-branch (`startRingall:136-147`, `mapGroupcalls` goroutine fan-out, each branch recurses into `startWithDestination(ctx, chainedGroupcallID, ...)` with its OWN `chainedGroupcallID`, not the outer `id`) | None | agent (inherited per-branch; `groupcallID` passed into `CreateCallOutgoing` is each branch's own `chainedGroupcallID`, which independently resolves to `OwnerTypeAgent` via `h.groupcallHandler.Get`) |
 | Queue → agent, `ring_method=linear` (single agent) | agent (`startWithDestination`, via `startLinear` nested groupcall) | None | agent (inherited) |
 | Flow `connect` → agent | agent | None | agent (inherited) |
 | AI tool → agent | agent | None | agent (inherited) |
@@ -132,4 +133,10 @@ None outstanding — all CEO decision points for this ticket's scope (decisions 
 
 ## 10. Approval status
 
-Draft — awaiting Design Review→Fix loop.
+Draft — Design Review round 1: CHANGES_REQUESTED (2 items), both fixed below. Awaiting round 2.
+
+## Iter-1 review response summary
+
+- 1 (§5.3 모델 인용 오류): `groupcall.Groupcall.OwnerType`의 실제 정의 파일을 `models/groupcall/main.go:13-15`로 정정, `Identity`(ID/CustomerID)와 `Owner`(OwnerType/OwnerID)를 별도로 embed한다고 정정. 본인 재확인(`sed -n '1,20p' models/groupcall/main.go`).
+- 2 (§6 매트릭스 ringall 다중 목적지 fan-out 미반영): `startRingall:136-147`의 `mapGroupcalls` 고루틴 fan-out(각 branch가 outer `id`가 아닌 자신의 `chainedGroupcallID`로 `startWithDestination` 재귀 호출) 행을 매트릭스에 추가. 본인 재확인(`sed -n '130,160p' pkg/groupcallhandler/start.go`).
+
