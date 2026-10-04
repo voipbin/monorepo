@@ -124,7 +124,7 @@ and update the call site: `h.serviceHandler.ServiceAgentCaseList(c.Request.Conte
 4. `go test ./pkg/servicehandler/... -run ServiceAgentCaseList -v` — update existing test call sites (new parameter), add cases: (a) `contact_id` omitted → `uuid.Nil` passed through (regression, today's behavior), (b) `contact_id` provided → passed through unchanged to the RPC mock.
 5. `go test ./server/... -run ServiceAgentContactCases -v` (or equivalent existing test file name) — HTTP-layer param parsing test for `contact_id` present/absent.
 6. `go vet ./...`.
-7. Full `go test ./...` for regression (no other `ServiceAgentCaseList` call sites expected — confirm via `grep -rn "ServiceAgentCaseList(" --include=*.go . | grep -v vendor`).
+7. Full `go test ./...` for regression, run from the `bin-api-manager/` directory (it is its own Go module in this monorepo; running from the repo root would pull in unrelated services) — no other `ServiceAgentCaseList` call sites expected (confirm via `grep -rn "ServiceAgentCaseList(" --include=*.go . | grep -v vendor`).
 
 ## 7. Rollout / risk
 
@@ -139,7 +139,11 @@ None outstanding. Scope was CEO-confirmed (decision 9, 9-a) before drafting.
 
 ## 9. Approval status
 
-Draft — Design Review round 1: APPROVED. Round 2: CHANGES_REQUESTED (2 items, fixed below). Awaiting round 3.
+**APPROVED** — Design Review→Fix loop closed. Round 1: APPROVED. Round 2: CHANGES_REQUESTED (2 items, fixed). Round 3: APPROVED. Round 4: APPROVED (2 consecutive, min-3-round floor satisfied).
+
+## Iter-2 review response summary (round 4, non-blocking)
+
+- Round 4 승인, 비차단 보완 1건(§6 `go test ./...` 실행 위치 명시) 반영: bin-api-manager가 자체 Go 모듈이므로 해당 디렉터리에서 실행함을 명시.
 
 ## Iter-1 review response summary
 
