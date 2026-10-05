@@ -25,7 +25,6 @@ import (
 func Test_extensionsGET(t *testing.T) {
 
 	tmCreate := time.Date(2026, 10, 5, 1, 2, 3, 456000000, time.UTC)
-	tmCreateNewer := time.Date(2026, 10, 5, 1, 2, 3, 456000000, time.UTC)
 	tmCreateOlderKST := time.Date(2026, 10, 4, 10, 11, 12, 0, time.FixedZone("KST", 9*3600))
 
 	tests := []struct {
@@ -104,7 +103,7 @@ func Test_extensionsGET(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("7ea872bc-bbc5-11ef-83ae-dfcd9b190c58"),
 					},
-					TMCreate: &tmCreateNewer,
+					TMCreate: &tmCreate,
 				},
 				{
 					Identity: commonidentity.Identity{
@@ -354,6 +353,42 @@ func Test_extensionsIDGET_invalid_id(t *testing.T) {
 	}
 	if !strings.Contains(w.Body.String(), `"reason":"INVALID_ID"`) {
 		t.Errorf("Wrong match. expect: reason INVALID_ID, got: %s", w.Body.String())
+	}
+}
+
+// A request without an authenticated identity must be rejected before the service handler is reached.
+func Test_extensions_unauthenticated(t *testing.T) {
+	tests := []struct {
+		name     string
+		reqQuery string
+	}{
+		{"list", "/service_agents/extensions"},
+		{"get", "/service_agents/extensions/7f22ea24-bbc5-11ef-8c3f-139aa5535776"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			// no expectation: any call to the service handler fails the test.
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
+			r.ServeHTTP(w, req)
+
+			if w.Code != http.StatusUnauthorized {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusUnauthorized, w.Code)
+			}
+			if !strings.Contains(w.Body.String(), `"reason":"AUTHENTICATION_REQUIRED"`) {
+				t.Errorf("Wrong match. expect: reason AUTHENTICATION_REQUIRED, got: %s", w.Body.String())
+			}
+		})
 	}
 }
 
