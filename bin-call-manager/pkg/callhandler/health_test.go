@@ -258,6 +258,9 @@ func Test_healthHangup(t *testing.T) {
 		TMEnd:       endedAt,
 		TMDelete:    endedAt,
 	}
+	// a channel row that only has one of the two end markers is still an ended channel
+	endedOnlyTMEnd := &channel.Channel{ID: channelID, HangupCause: ari.ChannelCauseNormalClearing, TMEnd: endedAt}
+	endedOnlyTMDelete := &channel.Channel{ID: channelID, HangupCause: ari.ChannelCauseNormalClearing, TMDelete: endedAt}
 	aliveChannel := &channel.Channel{ID: channelID}
 
 	// expectHangup sets the expectations of Hangup for a call with the given status. reason and by are the values that
@@ -366,6 +369,38 @@ func Test_healthHangup(t *testing.T) {
 			},
 		},
 		{
+			name:            "canceling call whose channel only has tm_end finishes through Hangup",
+			responseCall:    newCall(call.StatusCanceling, call.DirectionOutgoing),
+			responseChannel: endedOnlyTMEnd,
+			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
+				expectHangup(ctx, m, c, call.HangupReasonCanceled, call.HangupByLocal)
+			},
+		},
+		{
+			name:            "canceling call whose channel only has tm_delete finishes through Hangup",
+			responseCall:    newCall(call.StatusCanceling, call.DirectionOutgoing),
+			responseChannel: endedOnlyTMDelete,
+			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
+				expectHangup(ctx, m, c, call.HangupReasonCanceled, call.HangupByLocal)
+			},
+		},
+		{
+			name:            "Hangup error is only logged",
+			responseCall:    newCall(call.StatusCanceling, call.DirectionOutgoing),
+			responseChannel: endedChannel,
+			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
+				m.db.EXPECT().CallGetByChannelID(ctx, channelID).Return(nil, fmt.Errorf("could not get the call"))
+			},
+		},
+		{
+			name:         "failed call: a hangup write failure stops the activeflow request",
+			responseCall: newCall(call.StatusDialing, call.DirectionOutgoing),
+			channelErr:   dbhandler.ErrNotFound,
+			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
+				m.db.EXPECT().CallSetHangup(ctx, id, call.HangupReasonFailed, call.HangupByLocal).Return(fmt.Errorf("could not write"))
+			},
+		},
+		{
 			name:         "call read failure",
 			responseCall: nil,
 			callErr:      fmt.Errorf("could not query. CallGet"),
@@ -423,9 +458,19 @@ func Test_healthHangup(t *testing.T) {
 			responseCall:    newCall(call.StatusProgressing, call.DirectionOutgoing),
 			responseChannel: endedChannel,
 			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
-				done := *c
-				done.Status = call.StatusHangup
-				m.db.EXPECT().CallGet(ctx, id).Return(&done, nil)
+				// the whole HangingUp sequence, to pin its arguments: the call goes to terminating and the channel
+				// hangup is requested with the cause of the normal hangup reason.
+				terminating := *c
+				terminating.Status = call.StatusTerminating
+
+				m.util.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+				m.db.EXPECT().CallGet(ctx, id).Return(c, nil)
+				m.db.EXPECT().CallSetStatus(ctx, id, call.StatusTerminating).Return(nil)
+				m.db.EXPECT().CallGet(ctx, id).Return(&terminating, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, terminating.CustomerID, call.EventTypeCallTerminating, &terminating)
+				m.db.EXPECT().CallGetFromDB(ctx, id).Return(&terminating, nil)
+				m.channel.EXPECT().HangingUp(ctx, channelID, call.ConvertHangupReasonToChannelCause(call.HangupReasonNormal)).
+					Return(&channel.Channel{ID: channelID}, nil)
 			},
 		},
 	}
@@ -441,7 +486,7 @@ func Test_healthHangup(t *testing.T) {
 
 			m.db.EXPECT().CallGetFromDB(ctx, id).Return(tt.responseCall, tt.callErr)
 
-			// the channel is read only for a call that is not final
+			// the channel is read only for a call that is not final (the same condition as healthHangup; keep them in sync)
 			if tt.callErr == nil && tt.responseCall.Status != call.StatusHangup && tt.responseCall.TMHangup == nil && tt.responseCall.TMDelete == nil {
 				m.db.EXPECT().ChannelGet(ctx, channelID).Return(tt.responseChannel, tt.channelErr)
 			}
