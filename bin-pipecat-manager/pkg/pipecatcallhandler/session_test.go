@@ -23,6 +23,7 @@ func TestSessionCreate(t *testing.T) {
 
 		pc                  *pipecatcall.Pipecatcall
 		asteriskStreamingID uuid.UUID
+		llmRunnerType       string
 		llmKey              string
 
 		existingSession *pipecatcall.Session
@@ -43,6 +44,7 @@ func TestSessionCreate(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("6c6cc815-b48c-11f0-92ae-3ff0e71e6d4d"),
 			},
 			asteriskStreamingID: uuid.FromStringOrNil("5b374a54-b48c-11f0-8c36-477d3f6baf0d"),
+			llmRunnerType:       "openai.gpt-5",
 			llmKey:              "test-llm-key",
 
 			existingSession: nil,
@@ -61,6 +63,7 @@ func TestSessionCreate(t *testing.T) {
 				STTType:       pipecatcall.STTTypeDeepgram,
 			},
 			asteriskStreamingID: uuid.FromStringOrNil("5b374a54-b48c-11f0-8c36-477d3f6baf0d"),
+			llmRunnerType:       "openai.gpt-5",
 			llmKey:              "test-llm-key",
 
 			expectErr:    false,
@@ -76,6 +79,7 @@ func TestSessionCreate(t *testing.T) {
 				},
 			},
 			asteriskStreamingID: uuid.FromStringOrNil("5b374a54-b48c-11f0-8c36-477d3f6baf0d"),
+			llmRunnerType:       "openai.gpt-5",
 			llmKey:              "test-llm-key",
 
 			existingSession: &pipecatcall.Session{
@@ -99,7 +103,7 @@ func TestSessionCreate(t *testing.T) {
 				h.mapPipecatcallSession[tt.existingSession.ID] = tt.existingSession
 			}
 
-			result, err := h.SessionCreate(tt.pc, tt.asteriskStreamingID, nil, nil, tt.llmKey)
+			result, err := h.SessionCreate(tt.pc, tt.asteriskStreamingID, nil, nil, tt.llmRunnerType, tt.llmKey)
 
 			if tt.expectErr {
 				if err == nil {
@@ -128,6 +132,10 @@ func TestSessionCreate(t *testing.T) {
 
 			if result.HasSTT != tt.expectHasSTT {
 				t.Errorf("SessionCreate() HasSTT = %v, want %v", result.HasSTT, tt.expectHasSTT)
+			}
+
+			if result.LLMRunnerType != tt.llmRunnerType {
+				t.Errorf("SessionCreate() LLMRunnerType = %v, want %v", result.LLMRunnerType, tt.llmRunnerType)
 			}
 
 			if result.LLMKey != tt.llmKey {
@@ -494,5 +502,37 @@ func TestSessionStop_closesWebSocket(t *testing.T) {
 	// Verify session was removed
 	if _, ok := h.mapPipecatcallSession[id]; ok {
 		t.Errorf("session should be deleted after SessionStop")
+	}
+}
+
+// TestSessionCreate_runnerTypeAndKeyNotSwapped pins the argument order of the
+// two adjacent string parameters: a swap must fail.
+func TestSessionCreate_runnerTypeAndKeyNotSwapped(t *testing.T) {
+	h := &pipecatcallHandler{
+		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
+		muPipecatcallSession:  sync.Mutex{},
+	}
+	pc := &pipecatcall.Pipecatcall{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("0f1e2d3c-1111-2222-3333-444455556666"),
+			CustomerID: uuid.FromStringOrNil("1f2e3d4c-1111-2222-3333-444455556666"),
+		},
+	}
+
+	se, err := h.SessionCreate(pc, pc.ID, nil, nil, "platform_openrouter.anthropic/claude-haiku-4.5", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if se.LLMRunnerType != "platform_openrouter.anthropic/claude-haiku-4.5" || se.LLMKey != "" {
+		t.Errorf("fields swapped or wrong. runner_type: %q, key: %q", se.LLMRunnerType, se.LLMKey)
+	}
+
+	pc2 := &pipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("0f1e2d3c-1111-2222-3333-444455557777")}}
+	se2, err := h.SessionCreate(pc2, pc2.ID, nil, nil, "openai.gpt-5", "customer-key")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if se2.LLMRunnerType != "openai.gpt-5" || se2.LLMKey != "customer-key" {
+		t.Errorf("fields swapped or wrong. runner_type: %q, key: %q", se2.LLMRunnerType, se2.LLMKey)
 	}
 }

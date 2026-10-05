@@ -34,7 +34,7 @@ var (
 	// LLM services VoIPBin wires. Generic "timed out" / "deadline exceeded" text is NOT matched:
 	// Google STT inactivity reconnects use it and must stay "unknown".
 	pipelineErrorPhrasesAuthenticationText = []string{"api key not valid", "invalid api key", "incorrect api key", "invalid authentication"}
-	pipelineErrorPhrasesRateLimitedText    = []string{"rate limit", "exceeded your current quota", "quota exceeded"}
+	pipelineErrorPhrasesRateLimitedText    = []string{"rate limit", "exceeded your current quota", "quota exceeded", "insufficient credits", "more credits"}
 	pipelineErrorPhrasesTimeout            = []string{
 		"llm completion timeout",                     // pipecat OpenAILLMService (openai, grok) httpx timeout
 		"error during completion: request timed out", // openai APITimeoutError via OpenAILLMService

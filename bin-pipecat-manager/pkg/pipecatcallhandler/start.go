@@ -36,6 +36,12 @@ func (h *pipecatcallHandler) Start(
 		"reference_id":   referenceID,
 	})
 
+	// Keyless classification before anything is written: a rejected model must not
+	// leave a DB row behind, and the error propagates to the caller.
+	if _, _, errResolve := resolveSessionLLM(llmType, ""); errResolve != nil {
+		return nil, errors.Wrapf(errResolve, "could not resolve llm type")
+	}
+
 	res, err := h.Create(
 		ctx,
 		id,
@@ -88,10 +94,13 @@ func (h *pipecatcallHandler) startReferenceTypeCall(ctx context.Context, pc *pip
 	}
 	log.WithField("call", c).Info("Retrieved call info. call_id: ", c.ID)
 
-	llmKey := h.runGetLLMKey(ctx, pc)
+	llmRunnerType, llmKey, err := h.runGetLLMKey(ctx, pc)
+	if err != nil {
+		return errors.Wrapf(err, "could not resolve llm type")
+	}
 
 	// Create session with nil Asterisk connection — Python runner can start immediately
-	se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmKey)
+	se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmRunnerType, llmKey)
 	if err != nil {
 		return errors.Wrapf(err, "could not create pipecatcall session")
 	}
@@ -194,10 +203,17 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		llmKey = ai.EngineKey
 	}
 
+	// Resolve from pc.LLMType alone (no RPC): a failed AI lookup above cannot bypass
+	// this. Routed models get a blank key; rejected models fail the start.
+	llmRunnerType, llmKey, err := resolveSessionLLM(pc.LLMType, llmKey)
+	if err != nil {
+		return errors.Wrapf(err, "could not resolve llm type")
+	}
+
 	switch c.ReferenceType {
 	case amaicall.ReferenceTypeCall:
 		// Create session with nil Asterisk connection — Python runner can start immediately
-		se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmKey)
+		se, err := h.SessionCreate(pc, pc.ID, nil, nil, llmRunnerType, llmKey)
 		if err != nil {
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}
@@ -274,7 +290,7 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 		return nil
 
 	default:
-		se, err := h.SessionCreate(pc, uuid.Nil, nil, nil, llmKey)
+		se, err := h.SessionCreate(pc, uuid.Nil, nil, nil, llmRunnerType, llmKey)
 		if err != nil {
 			return errors.Wrapf(err, "could not create pipecatcall session")
 		}

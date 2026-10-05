@@ -48,7 +48,8 @@ func Test_runnerStartScript_toolResolveFallback(t *testing.T) {
 		ReferenceID:   aicallID,
 	}
 	se := &pipecatcall.Session{
-		Ctx: context.Background(),
+		Ctx:           context.Background(),
+		LLMRunnerType: "openai.gpt-5",
 	}
 
 	ac := &amaicall.AIcall{

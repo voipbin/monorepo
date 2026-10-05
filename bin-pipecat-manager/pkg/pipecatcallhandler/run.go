@@ -40,7 +40,10 @@ type resolvedMemberData struct {
 // resolvedAIData contains the AI engine configuration for a team member,
 // including credentials, model, prompt, and TTS/STT settings.
 type resolvedAIData struct {
-	EngineModel      string          `json:"engine_model"`
+	EngineModel string `json:"engine_model"`
+	// LLMType is what the runner must use (resolved server-side, fail-closed).
+	// No omitempty: an empty value is the explicit "rejected" signal.
+	LLMType          string          `json:"llm_type"`
 	EngineKey        string          `json:"engine_key"`
 	InitPrompt       string          `json:"init_prompt"`
 	Parameter        map[string]any  `json:"parameter,omitempty"`
@@ -110,26 +113,32 @@ func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Sess
 	}
 }
 
-func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.Pipecatcall) string {
+// runGetLLMKey returns what the python runner must receive for the session's LLM:
+// the resolved runner type and the key to forward. The raw engine_key is looked up
+// from the AI when available (a failed lookup warns and proceeds without a key,
+// which only matters for direct models), then the decision is made by
+// resolveSessionLLM from pc.LLMType alone. An error means the model is rejected.
+func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.Pipecatcall) (string, string, error) {
+	aiKey := ""
+
 	switch pc.ReferenceType {
 	case pipecatcall.ReferenceTypeAICall:
 		c, err := h.requestHandler.AIV1AIcallGet(ctx, pc.ReferenceID)
 		if err != nil {
 			logrus.Errorf("Could not get ai call info. err: %v", err)
-			return ""
+			break
 		}
 
 		a, err := h.resolveAIFromAIcall(ctx, c)
 		if err != nil {
 			logrus.Errorf("Could not resolve ai info. err: %v", err)
-			return ""
+			break
 		}
 
-		return a.EngineKey
-
-	default:
-		return ""
+		aiKey = a.EngineKey
 	}
+
+	return resolveSessionLLM(pc.LLMType, aiKey)
 }
 
 // resolveTeamForPython builds the full team data for the Python runner, including engine keys.
@@ -173,7 +182,7 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 		if errAI != nil {
 			return nil, fmt.Errorf("could not get AI for member %s: %w", m.ID, errAI)
 		}
-		logrus.WithField("ai", ai).Debugf("Retrieved AI info for member. member_id: %s, ai_id: %s", m.ID, m.AIID)
+		logrus.Debugf("Retrieved AI info for member. member_id: %s, ai_id: %s", m.ID, m.AIID)
 
 		tools := h.toolHandler.GetByNames(ai.Type, ai.ToolNames)
 
@@ -193,12 +202,28 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 			transitions = []amteam.Transition{}
 		}
 
+		// Same resolver as the single-AI path. Rejected: empty llm_type (the runner
+		// fails at pipeline init) and an operator log with identifiers only. Routed
+		// (and rejected) members never carry a key to the runner: the resolver returns
+		// empty type and key on rejection.
+		llmType, engineKey, errResolve := resolveSessionLLM(pipecatcall.LLMType(ai.EngineModel), ai.EngineKey)
+		if errResolve != nil {
+			logrus.WithFields(logrus.Fields{
+				"func":        "resolveTeamForPython",
+				"team_id":     team.ID,
+				"member_id":   m.ID,
+				"ai_id":       m.AIID,
+				"customer_id": ai.CustomerID,
+			}).Errorf("Team member has an engine model that is not available; the member will fail at pipeline init. member_id: %s, customer_id: %s", m.ID, ai.CustomerID)
+		}
+
 		resolved.Members = append(resolved.Members, resolvedMemberData{
 			ID:   m.ID,
 			Name: m.Name,
 			AI: resolvedAIData{
 				EngineModel:      string(ai.EngineModel),
-				EngineKey:        ai.EngineKey,
+				LLMType:          llmType,
+				EngineKey:        engineKey,
 				InitPrompt:       ai.InitPrompt,
 				Parameter:        ai.Parameter,
 				TTSType:          string(ai.TTSType),

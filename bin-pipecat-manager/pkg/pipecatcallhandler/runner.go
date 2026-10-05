@@ -101,6 +101,12 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	})
 	log.Debugf("Starting pipecat runner. pipecatcall_id: %s", pc.ID)
 
+	// The runner type must come from the session (resolved at start). Never fall
+	// back to pc.LLMType: that is the customer-facing id and could bypass the resolver.
+	if se.LLMRunnerType == "" {
+		return errors.New("session has no resolved llm type")
+	}
+
 	// Get tools and resolve team based on reference type.
 	// For AICall references, fetch AIcall once and use for both tool and team resolution.
 	// Team-backed calls skip resolveAIFromAIcall since per-member tools come from resolvedTeam.
@@ -207,7 +213,7 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	if errStart := h.pythonRunner.Start(
 		se.Ctx,
 		pc.ID,
-		string(pc.LLMType),
+		se.LLMRunnerType,
 		string(se.LLMKey),
 		pc.LLMMessages,
 		string(pc.STTType),

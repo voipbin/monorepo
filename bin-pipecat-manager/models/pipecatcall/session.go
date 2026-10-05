@@ -31,7 +31,9 @@ type Session struct {
 	connAstOnce         sync.Once
 
 	// llm
-	LLMKey string `json:"-"`
+	// LLMRunnerType is the resolved type handed to the python runner (never pc.LLMType).
+	LLMRunnerType string `json:"-"`
+	LLMKey        string `json:"-"`
 
 	// InReplyToMessageID correlation (VOIP-1234 §4-1): prevents cross-talk when
 	// an aicall is reused for a rapid sequence of send-text requests (e.g. an
