@@ -507,7 +507,7 @@ func TestSessionStop_closesWebSocket(t *testing.T) {
 
 // TestSessionCreate_runnerTypeAndKeyNotSwapped pins the argument order of the
 // two adjacent string parameters: a swap must fail.
-func TestSessionCreate_runnerTypeAndKeyNotSwapped(t *testing.T) {
+func Test_SessionCreate_runnerTypeAndKeyNotSwapped(t *testing.T) {
 	h := &pipecatcallHandler{
 		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
 		muPipecatcallSession:  sync.Mutex{},

@@ -46,11 +46,11 @@ func containsStr(s, sub string) bool {
 }
 
 func Test_errorResponse_invalidEngineModel(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(ctrl)
-	h := aihandler.NewAIHandler(requesthandler.NewMockRequestHandler(ctrl), notifyhandler.NewMockNotifyHandler(ctrl), mockDB)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := aihandler.NewAIHandler(requesthandler.NewMockRequestHandler(mc), notifyhandler.NewMockNotifyHandler(mc), mockDB)
 
 	t.Run("create", func(t *testing.T) {
 		_, err := h.Create(context.Background(), uuid.Must(uuid.NewV4()), "n", "d", ai.TypeNormal,

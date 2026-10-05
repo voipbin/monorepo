@@ -56,13 +56,13 @@ func assertInvalidEngineModel(t *testing.T, err error) {
 }
 
 func Test_Create_invalidEngineModelIsTyped(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
 	h := &aiHandler{
-		db:            dbhandler.NewMockDBHandler(ctrl),
-		reqHandler:    requesthandler.NewMockRequestHandler(ctrl),
-		notifyHandler: notifyhandler.NewMockNotifyHandler(ctrl),
+		db:            dbhandler.NewMockDBHandler(mc),
+		reqHandler:    requesthandler.NewMockRequestHandler(mc),
+		notifyHandler: notifyhandler.NewMockNotifyHandler(mc),
 		utilHandler:   utilhandler.NewUtilHandler(),
 	}
 
@@ -73,16 +73,16 @@ func Test_Create_invalidEngineModelIsTyped(t *testing.T) {
 }
 
 func Test_Update_invalidEngineModelIsTyped(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(&ai.AI{EngineModel: ai.EngineModelOpenaiGPT5}, nil).Times(1)
 
 	h := &aiHandler{
 		db:            mockDB,
-		reqHandler:    requesthandler.NewMockRequestHandler(ctrl),
-		notifyHandler: notifyhandler.NewMockNotifyHandler(ctrl),
+		reqHandler:    requesthandler.NewMockRequestHandler(mc),
+		notifyHandler: notifyhandler.NewMockNotifyHandler(mc),
 		utilHandler:   utilhandler.NewUtilHandler(),
 	}
 

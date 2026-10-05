@@ -32,12 +32,12 @@ func Test_Create_EngineModelPolicy(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB := dbhandler.NewMockDBHandler(ctrl)
-			mockReq := requesthandler.NewMockRequestHandler(ctrl)
-			mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 			if !tt.wantError {
@@ -80,11 +80,11 @@ func Test_Update_EngineModelValidatedOnlyOnChange(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			mockDB := dbhandler.NewMockDBHandler(ctrl)
-			mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 			stored := &ai.AI{Name: "n", EngineModel: tt.stored}

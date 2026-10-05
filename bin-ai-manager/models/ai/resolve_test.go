@@ -2,7 +2,7 @@ package ai
 
 import "testing"
 
-func TestExistingElevenModelsAreDirectCatalogEntries(t *testing.T) {
+func Test_ExistingElevenModelsAreDirectCatalogEntries(t *testing.T) {
 	for _, id := range []EngineModel{
 		EngineModelGeminiGemini2Dot5Flash, EngineModelGeminiGemini2Dot5Pro, EngineModelGeminiGemini2Dot0Flash, EngineModelGeminiGeminiProLatest,
 		EngineModelOpenaiGPT5Dot2, EngineModelOpenaiGPT5Dot1, EngineModelOpenaiGPT5, EngineModelOpenaiGPT5Mini, EngineModelOpenaiGPT5Nano,
@@ -18,7 +18,7 @@ func TestExistingElevenModelsAreDirectCatalogEntries(t *testing.T) {
 	}
 }
 
-func TestResolveEngine(t *testing.T) {
+func Test_ResolveEngine(t *testing.T) {
 	tests := []struct {
 		name           string
 		model          EngineModel
@@ -65,7 +65,7 @@ func TestResolveEngine(t *testing.T) {
 	}
 }
 
-func TestResolveEngineAllOpenRouterEntriesBlankKey(t *testing.T) {
+func Test_ResolveEngineAllOpenRouterEntriesBlankKey(t *testing.T) {
 	for _, e := range catalog {
 		r, o := ResolveEngine(e.ID)
 		if o != OutcomeCatalog {

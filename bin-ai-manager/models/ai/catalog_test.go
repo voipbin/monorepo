@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCatalogInvariants(t *testing.T) {
+func Test_CatalogInvariants(t *testing.T) {
 	seen := map[EngineModel]bool{}
 	for _, e := range catalog {
 		if seen[e.ID] {
@@ -38,7 +38,7 @@ func TestCatalogInvariants(t *testing.T) {
 	}
 }
 
-func TestCatalogPublicViewHidesInternals(t *testing.T) {
+func Test_CatalogPublicViewHidesInternals(t *testing.T) {
 	b, err := json.Marshal(CatalogView())
 	if err != nil {
 		t.Fatal(err)
@@ -50,7 +50,7 @@ func TestCatalogPublicViewHidesInternals(t *testing.T) {
 	}
 }
 
-func TestCatalogViewShape(t *testing.T) {
+func Test_CatalogViewShape(t *testing.T) {
 	view := CatalogView()
 	if len(view) != len(catalog) {
 		t.Fatalf("view length mismatch. expect: %d, got: %d", len(catalog), len(view))
@@ -78,7 +78,7 @@ func hasRecommended(view []ModelInfo, id EngineModel) bool {
 	return false
 }
 
-func TestCatalogContainsExistingModelsAsDirect(t *testing.T) {
+func Test_CatalogContainsExistingModelsAsDirect(t *testing.T) {
 	ids := []EngineModel{
 		EngineModelGeminiGemini2Dot5Flash, EngineModelGeminiGemini2Dot5Pro, EngineModelGeminiGemini2Dot0Flash, EngineModelGeminiGeminiProLatest,
 		EngineModelOpenaiGPT5Dot2, EngineModelOpenaiGPT5Dot1, EngineModelOpenaiGPT5, EngineModelOpenaiGPT5Mini, EngineModelOpenaiGPT5Nano,
@@ -100,7 +100,7 @@ func TestCatalogContainsExistingModelsAsDirect(t *testing.T) {
 	}
 }
 
-func TestCatalogViewPlatformManagedMatchesRoute(t *testing.T) {
+func Test_CatalogViewPlatformManagedMatchesRoute(t *testing.T) {
 	view := CatalogView()
 	if len(view) != len(catalog) {
 		t.Fatalf("view length mismatch. expect: %d, got: %d", len(catalog), len(view))
@@ -149,7 +149,7 @@ func TestCatalogViewPlatformManagedMatchesRoute(t *testing.T) {
 	}
 }
 
-func TestCatalogCustomerFacingTextHasNoBannedTerms(t *testing.T) {
+func Test_CatalogCustomerFacingTextHasNoBannedTerms(t *testing.T) {
 	banned := []string{"twilio", "vonage", "plivo", "messagebird", "fonoster", "alternative to", "openrouter", "zero data"}
 	for _, e := range catalog {
 		for field, text := range map[string]string{"label": e.Label, "description": e.Description} {
