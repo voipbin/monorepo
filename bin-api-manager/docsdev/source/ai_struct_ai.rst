@@ -49,9 +49,9 @@ AI
 * ``detail`` (String, Optional): A description of the AI's purpose or additional notes.
 * ``type`` (enum string, Optional): The AI's operating mode. ``normal`` (default) is a general-purpose AI usable in calls, tasks, and conversations. ``insight`` restricts the AI to the Insight tool set (:ref:`AllInsightToolNames <ai-struct-ai-tool_names>`) and uses a dedicated system prompt tailored for agent-facing Q&A over a contact-manager Case. See :ref:`Type <ai-struct-ai-type>`.
 * ``is_insight_active`` (Boolean): Whether this is the customer's **active** Insight AI (the one the Case Insight Assistant panel auto-attaches to a Case). Only meaningful when ``type`` is ``insight``; always ``false`` for ``type=normal`` AIs. A customer may keep any number of Insight AIs (e.g. to prepare a new prompt or model before switching to it), but at most one may be active at a time. Newly created Insight AIs are always inactive. Activate one with ``POST /ais/{id}/activate_insight``. When a customer has no active Insight AI, the most recently created one is used. See :ref:`Insight AI activation <ai-struct-ai-is_insight_active>`.
-* ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-4o``, ``anthropic.claude-3-5-sonnet``). See :ref:`Engine Models <ai-struct-ai-engine_model>`.
+* ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-5-mini``, ``gemini.gemini-2.5-flash``). Use an ``id`` returned by ``GET /ai_models``. See :ref:`Engine Models <ai-struct-ai-engine_model>` and :ref:`AI Models <ai-models>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as ``{}``.
-* ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard.
+* ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard. For models whose ``platform_managed`` field in ``GET /ai_models`` is ``true``, the platform supplies the credentials: send an empty string, and any value you send is ignored.
 * ``rag_id`` (UUID, Optional): The knowledge base ID for the ``search_knowledge`` tool. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/rags``. When set, the AI assistant can search this knowledge base during voice calls. Set to ``00000000-0000-0000-0000-000000000000`` or omit to disable.
 * ``init_prompt`` (String, Required): The system prompt that defines the AI's behavior, persona, and instructions. No enforced length limit.
 * ``current_prompt_history_id`` (string/UUID): UUID of the most-recent ``ai_ai_prompt_histories``
@@ -96,7 +96,7 @@ Example
         "detail": "AI assistant for handling sales inquiries",
         "type": "normal",
         "is_insight_active": false,
-        "engine_model": "openai.gpt-4o",
+        "engine_model": "openai.gpt-5-mini",
         "parameter": {},
         "engine_key": "sk-...",
         "rag_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -185,48 +185,32 @@ Status / reason                         Cause
 
 Engine Model
 ------------
-The engine_model field specifies which LLM provider and model to use. Format: ``<provider>.<model>``.
+The ``engine_model`` field specifies which LLM provider and model to use. Format: ``<provider>.<model>``.
+
+The set of selectable models is a curated catalog. Retrieve it with ``GET /ai_models`` (see :ref:`AI Models <ai-models>`) and use the returned ``id`` as ``engine_model``.
 
 **Supported Providers**
 
-======================== ================================ =======================================
-Provider                 Format                           Examples
-======================== ================================ =======================================
-OpenAI                   ``openai.<model>``               openai.gpt-4o, openai.gpt-4o-mini
-Anthropic                ``anthropic.<model>``            anthropic.claude-3-5-sonnet
-AWS Bedrock              ``aws.<model>``                  aws.claude-3-sonnet
-Azure OpenAI             ``azure.<model>``                azure.gpt-4
-Cerebras                 ``cerebras.<model>``             cerebras.llama3.1-8b
-DeepSeek                 ``deepseek.<model>``             deepseek.deepseek-chat
-Fireworks                ``fireworks.<model>``            fireworks.llama-v3-70b
-Google Gemini            ``gemini.<model>``               gemini.gemini-1.5-pro
-Grok                     ``grok.<model>``                 grok.grok-1
-Groq                     ``groq.<model>``                 groq.llama3-70b-8192
-Mistral                  ``mistral.<model>``              mistral.mistral-large
-NVIDIA NIM               ``nvidia.<model>``               nvidia.llama3-70b
-Ollama                   ``ollama.<model>``               ollama.llama3
-OpenRouter               ``openrouter.<model>``           openrouter.meta-llama/llama-3-70b
-Perplexity               ``perplexity.<model>``           perplexity.llama-3-sonar-large
-Qwen                     ``qwen.<model>``                 qwen.qwen-max
-SambaNova                ``sambanova.<model>``            sambanova.llama3-70b
-Together AI              ``together.<model>``             together.meta-llama/Llama-3-70b
-Dialogflow               ``dialogflow.<type>``            dialogflow.cx, dialogflow.es
-======================== ================================ =======================================
+======================== ================================ ========================================== ==========================
+Provider                 Format                           Examples                                   API key (``engine_key``)
+======================== ================================ ========================================== ==========================
+OpenAI                   ``openai.<model>``               openai.gpt-5, openai.gpt-5-mini            Your own key
+Google Gemini            ``gemini.<model>``               gemini.gemini-2.5-flash                    Your own key
+xAI Grok                 ``grok.<model>``                 grok.grok-3-mini                           Your own key
+Anthropic                ``anthropic.<model>``            anthropic.claude-sonnet-4.5                Not required
+Meta                     ``meta.<model>``                 meta.llama-3.3-70b-instruct                Not required
+DeepSeek                 ``deepseek.<model>``             deepseek.deepseek-v3.2                     Not required
+Qwen                     ``qwen.<model>``                 qwen.qwen3-235b-a22b-2507                  Not required
+Mistral                  ``mistral.<model>``              mistral.mistral-small-3.2-24b-instruct     Not required
+======================== ================================ ========================================== ==========================
 
-**Common OpenAI Models**
+Models listed as "Not required" are managed by the platform (``platform_managed`` is ``true`` in ``GET /ai_models``). Send an empty ``engine_key`` for them.
 
-==================== ======================================
-Model                Description
-==================== ======================================
-gpt-4o               Latest GPT-4 Omni model (recommended)
-gpt-4o-mini          Smaller, faster GPT-4 Omni variant
-gpt-4-turbo          GPT-4 Turbo with vision capabilities
-gpt-4                Original GPT-4 model
-gpt-3.5-turbo        Fast and cost-effective model
-o1                   OpenAI o1 reasoning model
-o1-mini              Smaller o1 reasoning model
-o3-mini              Latest o3 mini reasoning model
-==================== ======================================
+**Validation**
+
+* On ``POST /ais``, ``engine_model`` must be an ``id`` from ``GET /ai_models``. Models that use the ``openai.``, ``gemini.``, or ``grok.`` prefix and are not in the list are also accepted and run with your own ``engine_key``.
+* Any other value (for example an ``anthropic.`` model that is not in the list) is rejected.
+* On ``PUT /ais/{id}``, the check runs only when ``engine_model`` changes, so an existing AI that already stores an older value can still be updated without touching the model.
 
 .. _ai-struct-ai-tts_type:
 

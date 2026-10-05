@@ -9,7 +9,7 @@ Overview
    * **Cost:** Chargeable (credit deduction per AI session based on LLM, TTS, and STT usage)
    * **Async:** Yes. AI sessions run asynchronously during calls. Monitor via ``GET https://api.voipbin.net/v1.0/calls/{id}`` or WebSocket events.
 
-VoIPBin's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.
+VoIPBin's AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Google Gemini, xAI Grok, Anthropic, Meta, DeepSeek, Qwen, and Mistral models), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.
 
 .. note:: **AI Implementation Hint**
 
@@ -818,8 +818,8 @@ Troubleshooting
 **Common HTTP Errors**
 
 * **400 Bad Request:**
-    * **Cause:** Invalid ``engine_model`` format. Must be ``<provider>.<model>`` (e.g., ``openai.gpt-4o``).
-    * **Fix:** Verify the format matches the provider table in :ref:`Engine Models <ai-struct-ai-engine_model>`.
+    * **Cause:** Invalid ``engine_model`` format. Must be ``<provider>.<model>`` (e.g., ``openai.gpt-5-mini``) and must be a model returned by ``GET /ai_models``.
+    * **Fix:** Pick an ``id`` from ``GET /ai_models`` (see :ref:`AI Models <ai-models>`) and check the provider table in :ref:`Engine Models <ai-struct-ai-engine_model>`.
 
 * **402 Payment Required:**
     * **Cause:** Insufficient account balance for AI session (LLM + TTS + STT costs).

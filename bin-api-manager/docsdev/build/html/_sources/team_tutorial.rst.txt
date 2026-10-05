@@ -29,7 +29,7 @@ First, create the AI configurations that will back each team member. In this exa
         --data-raw '{
             "name": "Receptionist AI",
             "detail": "Qualifies caller intent and routes to the right specialist",
-            "engine_model": "openai.gpt-4o",
+            "engine_model": "openai.gpt-5-mini",
             "engine_key": "sk-...",
             "init_prompt": "You are a friendly receptionist. Greet the caller, ask how you can help, and determine if they need billing assistance or technical support.",
             "tts_type": "elevenlabs",
@@ -57,7 +57,7 @@ Response:
         --data-raw '{
             "name": "Billing Specialist AI",
             "detail": "Handles billing inquiries, payment issues, and account charges",
-            "engine_model": "openai.gpt-4o",
+            "engine_model": "openai.gpt-5-mini",
             "engine_key": "sk-...",
             "init_prompt": "You are a billing specialist. Help callers with invoices, payments, charges, and account balance questions. Be precise with numbers and dates.",
             "tts_type": "elevenlabs",

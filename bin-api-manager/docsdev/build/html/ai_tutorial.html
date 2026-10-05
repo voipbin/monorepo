@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_models.html">AI Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
@@ -647,7 +648,7 @@
 <li><p>A valid authentication token (String). Obtain via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an accesskey from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Obtain one owned by your account via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>A destination phone number in E.164 format or an internal extension.</p></li>
-<li><p>An LLM provider API key (String). Obtain from your provider’s dashboard (e.g., OpenAI, Anthropic).</p></li>
+<li><p>An LLM provider API key (String). Obtain from your provider’s dashboard (e.g., OpenAI, Google Gemini, xAI). Models marked <code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> in <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> need no provider key.</p></li>
 <li><p>(Optional) A pre-created AI configuration (UUID). Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or use inline action settings.</p></li>
 <li><p>(Optional) A flow ID (UUID). Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
 </ul>
@@ -990,7 +991,7 @@ $ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/ais?token=
     &quot;name&quot;: &quot;Case Insight Assistant v2&quot;,
     &quot;detail&quot;: &quot;Trial run with a larger model&quot;,
     &quot;type&quot;: &quot;insight&quot;,
-    &quot;engine_model&quot;: &quot;openai.gpt-4o&quot;,
+    &quot;engine_model&quot;: &quot;openai.gpt-5-mini&quot;,
     &quot;engine_key&quot;: &quot;&lt;YOUR_OPENAI_KEY&gt;&quot;,
     &quot;init_prompt&quot;: &quot;You help agents understand the history of a support case.&quot;,
     &quot;tts_type&quot;: &quot;elevenlabs&quot;,
@@ -1007,7 +1008,7 @@ $ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/ais/b1c2d3
     &quot;name&quot;: &quot;Case Insight Assistant v2&quot;,
     &quot;type&quot;: &quot;insight&quot;,
     &quot;is_insight_active&quot;: true,
-    &quot;engine_model&quot;: &quot;openai.gpt-4o&quot;,
+    &quot;engine_model&quot;: &quot;openai.gpt-5-mini&quot;,
     &quot;tm_create&quot;: &quot;2024-02-09 07:01:35.666687&quot;,
     &quot;tm_update&quot;: &quot;2024-02-09 07:05:12.123456&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
@@ -1030,7 +1031,7 @@ $ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/ais/b1c2d3
     &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;Sales Assistant AI&quot;,
     &quot;detail&quot;: &quot;AI assistant for handling sales inquiries&quot;,
-    &quot;engine_model&quot;: &quot;openai.gpt-4o&quot;,
+    &quot;engine_model&quot;: &quot;openai.gpt-5-mini&quot;,
     &quot;direct_hash&quot;: &quot;c5d6e7f8a9b0&quot;,
     &quot;tm_create&quot;: &quot;2024-02-09 07:01:35.666687&quot;,
     &quot;tm_update&quot;: &quot;2024-02-09 07:05:12.123456&quot;,
@@ -1050,7 +1051,7 @@ $ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/ais/b1c2d3
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Invalid <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> format or missing required action fields.</p></li>
-<li><p><strong>Fix:</strong> Verify <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> uses <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code> format (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-4o</span></code>). Ensure <code class="docutils literal notranslate"><span class="pre">initial_prompt</span></code> is provided.</p></li>
+<li><p><strong>Fix:</strong> Verify <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> uses <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code> format (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-5-mini</span></code>). List the selectable models with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code>. Ensure <code class="docutils literal notranslate"><span class="pre">initial_prompt</span></code> is provided.</p></li>
 </ul>
 </dd>
 </dl>
