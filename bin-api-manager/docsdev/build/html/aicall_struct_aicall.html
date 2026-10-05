@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_models.html">AI Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
@@ -674,7 +675,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this AI call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">assistance_type</span></code> (enum string): The type of AI assistance. See <a class="reference internal" href="#aicall-struct-aicall-assistance-type"><span class="std std-ref">Assistance Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">assistance_id</span></code> (UUID): The ID of the AI configuration or team used for this call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai-teams</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ai_engine_model</span></code> (string): The LLM engine and model used (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-4o</span></code>, <code class="docutils literal notranslate"><span class="pre">anthropic.claude-3-5-sonnet</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ai_engine_model</span></code> (string): The LLM engine and model used (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-5-mini</span></code>, <code class="docutils literal notranslate"><span class="pre">gemini.gemini-2.5-flash</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ai_tts_type</span></code> (string): The text-to-speech provider type (e.g., <code class="docutils literal notranslate"><span class="pre">openai</span></code>, <code class="docutils literal notranslate"><span class="pre">elevenlabs</span></code>, <code class="docutils literal notranslate"><span class="pre">deepgram</span></code>, <code class="docutils literal notranslate"><span class="pre">cartesia</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ai_tts_voice_id</span></code> (string): The voice identifier used for text-to-speech output.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ai_stt_type</span></code> (string): The speech-to-text provider type (e.g., <code class="docutils literal notranslate"><span class="pre">deepgram</span></code>, <code class="docutils literal notranslate"><span class="pre">cartesia</span></code>).</p></li>
@@ -801,7 +802,7 @@ calls, or an AI with no usable whitelisted server).</p>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;assistance_type&quot;</span><span class="p">:</span> <span class="s2">&quot;ai&quot;</span><span class="p">,</span>
     <span class="s2">&quot;assistance_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ai_engine_model&quot;</span><span class="p">:</span> <span class="s2">&quot;openai.gpt-4o&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ai_engine_model&quot;</span><span class="p">:</span> <span class="s2">&quot;openai.gpt-5-mini&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ai_tts_type&quot;</span><span class="p">:</span> <span class="s2">&quot;elevenlabs&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ai_tts_voice_id&quot;</span><span class="p">:</span> <span class="s2">&quot;21m00Tcm4TlvDq8ikWAM&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ai_stt_type&quot;</span><span class="p">:</span> <span class="s2">&quot;deepgram&quot;</span><span class="p">,</span>

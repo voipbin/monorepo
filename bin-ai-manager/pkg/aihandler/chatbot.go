@@ -17,6 +17,16 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
+// errInvalidEngineModel returns the typed INVALID_ENGINE_MODEL error (HTTP 400).
+// The message is customer-facing: it must stay free of internal routing terms.
+func errInvalidEngineModel(engineModel ai.EngineModel) error {
+	return cerrors.InvalidArgument(
+		commonoutline.ServiceNameAIManager,
+		"INVALID_ENGINE_MODEL",
+		fmt.Sprintf("invalid engine_model: %q is not in the supported model list and does not use an allowed provider prefix. See GET /ai_models for the valid values.", engineModel),
+	)
+}
+
 func (h *aiHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -39,7 +49,7 @@ func (h *aiHandler) Create(
 ) (*ai.AI, error) {
 
 	if !ai.IsValidEngineModel(engineModel) {
-		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
+		return nil, errInvalidEngineModel(engineModel)
 	}
 
 	if aiType == ai.TypeNone {
@@ -116,10 +126,6 @@ func (h *aiHandler) Update(
 	autoAICallAuditEnabled bool,
 ) (*ai.AI, error) {
 
-	if !ai.IsValidEngineModel(engineModel) {
-		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
-	}
-
 	if !ttsType.IsValid() {
 		return nil, fmt.Errorf("invalid tts_type: %s. valid values: %s", ttsType, strings.Join(ttsType.ValidValues(), ", "))
 	}
@@ -136,6 +142,11 @@ func (h *aiHandler) Update(
 	preUpdateAI, errGet := h.db.AIGet(ctx, id)
 	if errGet != nil {
 		return nil, errors.Wrapf(errGet, "could not get current ai for update")
+	}
+
+	// Only a changed engine model is validated, so an unchanged legacy value keeps saving.
+	if engineModel != preUpdateAI.EngineModel && !ai.IsValidEngineModel(engineModel) {
+		return nil, errInvalidEngineModel(engineModel)
 	}
 
 	// A caller omitting the type field (aiType == TypeNone) means "leave it

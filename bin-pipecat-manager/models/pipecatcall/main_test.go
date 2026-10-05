@@ -92,7 +92,7 @@ func TestPipecatcall(t *testing.T) {
 			referenceType: ReferenceTypeAICall,
 			referenceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440003"),
 			hostID:        "host-456",
-			llmType:       LLMType("anthropic.claude-2"),
+			llmType:       LLMType("gemini.gemini-2.5-pro"),
 			sttType:       STTTypeDeepgram,
 			sttLanguage:   "ko-KR",
 			ttsType:       TTSTypeElevenLabs,

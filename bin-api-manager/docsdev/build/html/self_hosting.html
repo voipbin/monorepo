@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_models.html">AI Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
@@ -1234,12 +1235,18 @@ of these variables differently and is out of scope for this page.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">GOOGLE_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code>
 (restart <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>)</p></td>
 </tr>
-<tr class="row-even"><td><p>Speech-to-text</p></td>
+<tr class="row-even"><td><p>LLM / conversation (real-time voice pipeline, platform-managed models)</p></td>
+<td><p>OpenRouter (serves the Anthropic Claude, Meta Llama, DeepSeek, Qwen,
+and Mistral models that <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> lists with
+<code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> set to <code class="docutils literal notranslate"><span class="pre">true</span></code>)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code> (restart <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Speech-to-text</p></td>
 <td><p>Deepgram, AWS Transcribe, Google Cloud Speech-to-Text</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">DEEPGRAM_API_KEY</span></code>; <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>/<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>;
 <code class="docutils literal notranslate"><span class="pre">GOOGLE_APPLICATION_CREDENTIALS</span></code> (restart <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td><p>Text-to-speech</p></td>
+<tr class="row-even"><td><p>Text-to-speech</p></td>
 <td><p>ElevenLabs, Cartesia, AWS Polly, Google Cloud TTS</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">ELEVENLABS_API_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">CARTESIA_API_KEY</span></code>;
 <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY</span></code>/<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_KEY</span></code>;
@@ -1274,10 +1281,43 @@ change has no effect.</p></li>
 <p><code class="docutils literal notranslate"><span class="pre">XAI_API_KEY</span></code> has no dedicated feature write-up beyond its
 <code class="docutils literal notranslate"><span class="pre">.env.template</span></code> entry; it is consumed by <code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code>’s
 real-time voice pipeline as an LLM alternative, not by <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>.</p>
+<section id="openrouter-key-for-platform-managed-models">
+<h4>OpenRouter key for platform-managed models<a class="headerlink" href="#openrouter-key-for-platform-managed-models" title="Link to this heading">¶</a></h4>
+<p>Models that <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> reports with <code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> set to
+<code class="docutils literal notranslate"><span class="pre">true</span></code> (Anthropic Claude, Meta Llama, DeepSeek, Qwen, and Mistral) do
+not use the per-AI <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> that a user enters. In the real-time
+voice pipeline they are served through OpenRouter with a key that you,
+the operator, supply once as <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY</span></code> in <code class="docutils literal notranslate"><span class="pre">.env</span></code>. Notes
+on how it behaves in this installer’s Docker Compose stack:</p>
+<ul class="simple">
+<li><p>The variable is passed to the <code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> service only.
+<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> (the Go service) does not read it, so restarting
+<code class="docutils literal notranslate"><span class="pre">pipecat-manager</span></code> for this key has no effect. Restart
+<code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> instead.</p></li>
+<li><p>The installer writes <code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY=</span></code> empty by default. With an
+empty key these models stay selectable in the catalog (there is no
+global on/off switch), but a session that uses one fails when the
+runner initializes the LLM service, with the error
+<code class="docutils literal notranslate"><span class="pre">OpenRouter</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">configured</span></code>. Other models (OpenAI, Gemini, xAI)
+are not affected.</p></li>
+<li><p>A non-empty but invalid key is not detected at startup. The first
+request is rejected by OpenRouter with HTTP 401, which the runner
+classifies as an authentication error, the same as an invalid key for
+any other LLM provider.</p></li>
+<li><p>Requests are sent with OpenRouter’s zero data retention routing and
+<code class="docutils literal notranslate"><span class="pre">data_collection</span></code> set to <code class="docutils literal notranslate"><span class="pre">deny</span></code>, and only to endpoints that
+support tool calling. This is fixed and not configurable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pipecat-script-runner</span></code> is pinned by image digest in
+<code class="docutils literal notranslate"><span class="pre">docker-compose.yml.dist</span></code>. The key has an effect only after the
+runner image that contains the platform-managed model support is
+adopted (for example with <code class="docutils literal notranslate"><span class="pre">scripts/sync-compose-images.sh</span></code>). Setting the key
+while the pinned image is older does nothing.</p></li>
+</ul>
 <p>After setting an AI provider key, restart the service(s) that actually
 consume that specific variable, per the tables above:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>ai-manager<span class="w">           </span><span class="c1"># OPENAI_API_KEY (batch)</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>pipecat-manager<span class="w">       </span><span class="c1"># OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY (real-time)</span>
+sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>pipecat-script-runner<span class="w"> </span><span class="c1"># OPENROUTER_API_KEY (platform-managed models)</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>transcribe-manager<span class="w">    </span><span class="c1"># DEEPGRAM_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>tts-manager<span class="w">           </span><span class="c1"># ELEVENLABS_API_KEY, CARTESIA_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS</span>
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>rag-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
@@ -1285,6 +1325,7 @@ sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class=
 sudo<span class="w"> </span>./voipbin<span class="w"> </span>restart<span class="w"> </span>api-manager<span class="w">           </span><span class="c1"># GOOGLE_APPLICATION_CREDENTIALS</span>
 </pre></div>
 </div>
+</section>
 </section>
 <section id="shared-gcp-storage-and-project-variables">
 <h3>Shared GCP storage and project variables<a class="headerlink" href="#shared-gcp-storage-and-project-variables" title="Link to this heading">¶</a></h3>
@@ -1885,7 +1926,10 @@ the full output of <code class="docutils literal notranslate"><span class="pre">
 </ul>
 </li>
 <li><a class="reference internal" href="#provider-configuration">Provider configuration</a><ul>
-<li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a></li>
+<li><a class="reference internal" href="#ai-voice-agent-providers">AI voice agent providers</a><ul>
+<li><a class="reference internal" href="#openrouter-key-for-platform-managed-models">OpenRouter key for platform-managed models</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#shared-gcp-storage-and-project-variables">Shared GCP storage and project variables</a></li>
 <li><a class="reference internal" href="#telephony-and-messaging-providers">Telephony and messaging providers</a></li>
 <li><a class="reference internal" href="#email-providers">Email providers</a></li>

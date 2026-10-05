@@ -88,6 +88,11 @@ func Test_classifyPipelineError(t *testing.T) {
 		{"isolate tier3 exceeded your current quota", "You exceeded your current quota.", message.ErrorCategoryRateLimited},
 		{"isolate tier3 quota exceeded", "Daily quota exceeded", message.ErrorCategoryRateLimited},
 
+		// OpenRouter credit exhaustion (platform key out of credits)
+		{"openrouter insufficient credits", "Error during completion: Error code: 402 - {'error': {'message': 'Insufficient credits. Add more using https://openrouter.ai/settings/credits', 'code': 402}}", message.ErrorCategoryRateLimited},
+		{"isolate tier3 insufficient credits", "Insufficient credits", message.ErrorCategoryRateLimited},
+		{"isolate tier3 more credits", "This request requires more credits, or fewer max_tokens", message.ErrorCategoryRateLimited},
+
 		// negatives: word boundary on the status/code regexes, prefix anchoring of tier 0 (VOIP-1543)
 		{"status regex needs a word boundary after 401/403", "{\"status\": 4031}", message.ErrorCategoryUnknown},
 		{"status regex needs a word boundary after 429", "{\"code\": 4290}", message.ErrorCategoryUnknown},
@@ -557,4 +562,35 @@ func waitWithTimeout(t *testing.T, wg *sync.WaitGroup) {
 	case <-time.After(5 * time.Second):
 		t.Fatalf("timed out waiting for the expected PublishEvent call")
 	}
+}
+
+// OpenRouter credit exhaustion must notify even in a voice session (rate_limited always notifies).
+func Test_receiveMessageFrameTypeMessage_error_openRouterCreditsVoiceNotified(t *testing.T) {
+	if !shouldNotifyPipelineError(message.ErrorCategoryRateLimited, false, true) {
+		t.Fatalf("rate_limited must notify voice sessions")
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := pipecatcallHandler{notifyHandler: mockNotify}
+	se := newPipelineErrorTestSession(true) // voice session
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	mockNotify.EXPECT().PublishEvent(se.Ctx, message.EventTypePipelineError, gomock.Any()).Times(1).DoAndReturn(
+		func(_ any, _ any, evt any) {
+			defer wg.Done()
+			e := evt.(*message.PipelineErrorEvent)
+			if e.Category != message.ErrorCategoryRateLimited {
+				t.Errorf("Wrong match. expect: rate_limited, got: %s", e.Category)
+			}
+		},
+	)
+
+	if err := h.receiveMessageFrameTypeMessage(se, errorFrame("Error during completion: Error code: 402 - Insufficient credits. Add more at openrouter", false)); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	waitWithTimeout(t, &wg)
 }

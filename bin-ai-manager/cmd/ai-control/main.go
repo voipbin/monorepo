@@ -210,8 +210,8 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate engine model
-	if engineModel != "" && !ai.IsValidEngineModel(engineModel) {
-		return fmt.Errorf("invalid engine model: %s", engineModel)
+	if err := validateEngineModelCreate(engineModel); err != nil {
+		return err
 	}
 
 	// Validate tts_type
@@ -333,9 +333,9 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Validate engine model if provided
-	if engineModel != "" && !ai.IsValidEngineModel(engineModel) {
-		return fmt.Errorf("invalid engine model: %s", engineModel)
+	// Validate engine model if provided (only when it differs from the stored value)
+	if err := validateEngineModelUpdate(context.Background(), handler, targetID, engineModel); err != nil {
+		return err
 	}
 
 	// Validate tts_type
@@ -402,6 +402,37 @@ func runDelete(cmd *cobra.Command, args []string) error {
 }
 
 // Handler initialization
+
+// aiGetter is the subset of aihandler.AIHandler needed to read the stored AI.
+type aiGetter interface {
+	Get(ctx context.Context, id uuid.UUID) (*ai.AI, error)
+}
+
+// validateEngineModelCreate validates a non-empty engine model on create.
+func validateEngineModelCreate(engineModel ai.EngineModel) error {
+	if engineModel != "" && !ai.IsValidEngineModel(engineModel) {
+		return fmt.Errorf("invalid engine model: %s", engineModel)
+	}
+	return nil
+}
+
+// validateEngineModelUpdate validates a non-empty engine model on update only when it
+// differs from the stored value, so an unchanged legacy value keeps saving.
+func validateEngineModelUpdate(ctx context.Context, getter aiGetter, id uuid.UUID, engineModel ai.EngineModel) error {
+	if engineModel == "" {
+		return nil
+	}
+
+	stored, err := getter.Get(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "could not get the current AI")
+	}
+
+	if engineModel != stored.EngineModel && !ai.IsValidEngineModel(engineModel) {
+		return fmt.Errorf("invalid engine model: %s", engineModel)
+	}
+	return nil
+}
 
 func initHandler() (aihandler.AIHandler, error) {
 	db, err := commondatabasehandler.Connect(config.Get().DatabaseDSN)

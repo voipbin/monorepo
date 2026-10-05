@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	"monorepo/bin-pipecat-manager/pkg/toolhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -349,4 +350,51 @@ func TestReasonLabel(t *testing.T) {
 			t.Errorf("reasonLabel(%d) = %q, want %q", c.in, got, c.want)
 		}
 	}
+}
+
+func Test_runnerStartScript_llmRunnerType(t *testing.T) {
+	pc := &pipecatcall.Pipecatcall{
+		Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("7e1f0a52-1111-2222-3333-444455556666")},
+		ReferenceType: pipecatcall.ReferenceTypeCall,
+		// pc.LLMType must never be used as a fallback for the runner type.
+		LLMType: pipecatcall.LLMType("openai.gpt-5"),
+	}
+
+	t.Run("empty session runner type errors and does not start python", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockPython := NewMockPythonRunner(mc) // no Start expectation: any call fails the test
+		h := &pipecatcallHandler{pythonRunner: mockPython}
+
+		se := &pipecatcall.Session{Ctx: context.Background(), LLMKey: "k"}
+		if err := h.runnerStartScript(pc, se); err == nil {
+			t.Fatalf("expected error for empty LLMRunnerType, got nil")
+		}
+	})
+
+	t.Run("session runner type is passed to python, not pc.LLMType", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockPython := NewMockPythonRunner(mc)
+		mockTool := toolhandler.NewMockToolHandler(mc)
+		h := &pipecatcallHandler{pythonRunner: mockPython, toolHandler: mockTool}
+
+		mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return(nil)
+		mockPython.EXPECT().Start(
+			gomock.Any(), pc.ID,
+			"platform_openrouter.anthropic/claude-haiku-4.5", "",
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		).Return(nil)
+
+		se := &pipecatcall.Session{
+			Ctx:           context.Background(),
+			LLMRunnerType: "platform_openrouter.anthropic/claude-haiku-4.5",
+		}
+		if err := h.runnerStartScript(pc, se); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
 }

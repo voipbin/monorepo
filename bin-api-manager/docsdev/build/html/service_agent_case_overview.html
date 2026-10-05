@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_models.html">AI Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
@@ -753,6 +754,10 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases?page_size=50&amp;token=&lt;token&gt;&#39;
 </pre></div>
 </div>
+<p><strong>List cases for a specific contact</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases?contact_id=&lt;contact-id&gt;&amp;page_size=50&amp;token=&lt;token&gt;&#39;
+</pre></div>
+</div>
 <p><strong>Get a case</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/service_agents/contact_cases/&lt;case-id&gt;?token=&lt;token&gt;&#39;
 </pre></div>
@@ -760,7 +765,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/contact_cases</span></code> returns every open and closed case for the customer with no server-side <code class="docutils literal notranslate"><span class="pre">status</span></code>/<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> filter – console UIs (e.g. an agent’s “My Cases” view) are expected to filter the result client-side. There is no <code class="docutils literal notranslate"><span class="pre">status=open</span></code> or <code class="docutils literal notranslate"><span class="pre">owner_id=&lt;my-agent-id&gt;</span></code> query parameter on this endpoint today.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/contact_cases</span></code> returns every open and closed case for the customer with no server-side <code class="docutils literal notranslate"><span class="pre">status</span></code>/<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> filter – console UIs (e.g. an agent’s “My Cases” view) are expected to filter the result client-side. There is no <code class="docutils literal notranslate"><span class="pre">status=open</span></code> or <code class="docutils literal notranslate"><span class="pre">owner_id=&lt;my-agent-id&gt;</span></code> query parameter on this endpoint today. A <code class="docutils literal notranslate"><span class="pre">contact_id</span></code> filter IS supported (added VOIP-1563) – use it to fetch a specific contact’s case history server-side instead of filtering the full customer-wide result client-side.</p>
 </div>
 </section>
 <section id="assigning-and-closing">

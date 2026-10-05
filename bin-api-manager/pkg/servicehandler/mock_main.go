@@ -295,6 +295,21 @@ func (mr *MockServiceHandlerMockRecorder) AIGetsByCustomerID(ctx, a, size, token
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AIGetsByCustomerID), ctx, a, size, token)
 }
 
+// AIModelList mocks base method.
+func (m *MockServiceHandler) AIModelList(ctx context.Context, a *auth.AuthIdentity) ([]*ai.ModelInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIModelList", ctx, a)
+	ret0, _ := ret[0].([]*ai.ModelInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIModelList indicates an expected call of AIModelList.
+func (mr *MockServiceHandlerMockRecorder) AIModelList(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIModelList", reflect.TypeOf((*MockServiceHandler)(nil).AIModelList), ctx, a)
+}
+
 // AIParticipantGets mocks base method.
 func (m *MockServiceHandler) AIParticipantGets(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, pageToken string, pageSize uint64) ([]*participant.WebhookMessage, error) {
 	m.ctrl.T.Helper()

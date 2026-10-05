@@ -213,6 +213,7 @@ type RequestHandler interface {
 	SendRequest(ctx context.Context, queue commonoutline.QueueName, uri string, method sock.RequestMethod, timeout int, delay int, dataType string, data json.RawMessage) (*sock.Response, error)
 
 	// ai-manager ai
+	AIV1AIModelList(ctx context.Context) ([]amai.ModelInfo, error)
 	AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIList(ctx context.Context, pageToken string, pageSize uint64, filters map[amai.Field]any) ([]amai.AI, error)
 	AIV1AICreate(

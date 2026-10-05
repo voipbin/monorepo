@@ -202,21 +202,6 @@ func GetEngineModelName(engineModel EngineModel) string {
 	return s[idx+1:]
 }
 
-func IsValidEngineModel(engineModel EngineModel) bool {
-	tmp := strings.Split(string(engineModel), ".")
-	if len(tmp) < 2 {
-		return false
-	}
-
-	for _, target := range EngineModelTargets {
-		if EngineModelTarget(tmp[0]) == target {
-			return true
-		}
-	}
-
-	return false
-}
-
 // Type define
 type Type string
 

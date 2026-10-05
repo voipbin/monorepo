@@ -376,6 +376,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_models.html">AI Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_mcpserver.html">MCP Server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
@@ -649,7 +650,7 @@
 <li><p><strong>Async:</strong> Yes. AI sessions run asynchronously during calls. Monitor via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> or WebSocket events.</p></li>
 </ul>
 </div>
-<p>VoIPBin’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Anthropic, Gemini, and 15+ others), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.</p>
+<p>VoIPBin’s AI is a built-in AI agent that enables automated, intelligent voice interactions during live calls. The AI integrates with multiple LLM providers (OpenAI, Google Gemini, xAI Grok, Anthropic, Meta, DeepSeek, Qwen, and Mistral models), real-time speech processing, and tool functions to create dynamic, interactive voice experiences.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -1545,8 +1546,8 @@ fault.</p></li>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> Invalid <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> format. Must be <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-4o</span></code>).</p></li>
-<li><p><strong>Fix:</strong> Verify the format matches the provider table in <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-engine-model"><span class="std std-ref">Engine Models</span></a>.</p></li>
+<li><p><strong>Cause:</strong> Invalid <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> (reason <code class="docutils literal notranslate"><span class="pre">INVALID_ENGINE_MODEL</span></code>). The value must be returned by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> or use an allowed provider prefix (<code class="docutils literal notranslate"><span class="pre">openai</span></code>, <code class="docutils literal notranslate"><span class="pre">gemini</span></code>, <code class="docutils literal notranslate"><span class="pre">grok</span></code>), for example <code class="docutils literal notranslate"><span class="pre">openai.gpt-5-mini</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Pick an <code class="docutils literal notranslate"><span class="pre">id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> (see <a class="reference internal" href="ai_models.html#ai-models"><span class="std std-ref">AI Models</span></a>) and check the provider table in <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-engine-model"><span class="std std-ref">Engine Models</span></a>.</p></li>
 </ul>
 </dd>
 </dl>

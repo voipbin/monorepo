@@ -68,6 +68,8 @@ _mocks = {
     "pipecat.services.deepgram.stt": _make_mock_module("DeepgramSTTService", "LiveOptions"),
     "pipecat.services.openai": MagicMock(),
     "pipecat.services.openai.llm": _make_mock_module("OpenAILLMService"),
+    "pipecat.services.openrouter": MagicMock(),
+    "pipecat.services.openrouter.llm": _make_mock_module("OpenRouterLLMService"),
     "pipecat.transcriptions": MagicMock(),
     "pipecat.transcriptions.language": _make_mock_module(Language=_Language),
     "pipecat.processors": MagicMock(),

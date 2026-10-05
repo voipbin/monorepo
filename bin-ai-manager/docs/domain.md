@@ -9,7 +9,7 @@ Key fields:
 - `type` — `normal` (default) or `insight`. An Insight AI uses a dedicated system prompt and is restricted to the Insight tool set.
 - `is_insight_active` — boolean; marks the single `type=insight` AI that the Case Insight Assistant panel auto-attaches to. A customer may hold any number of Insight AIs, but at most one may be active — enforced by the `ai_ais.active_insight_key` generated column and its unique index (see `bin-dbscheme-manager` migration `27a91e200854`). Creates always default to `false`; only `POST /v1/ais/<uuid>/activate_insight` (`dbhandler.AIActivateInsight`) ever sets it `true`, and it is cleared unconditionally on delete and on any update whose resolved type is not `insight`. When a customer has no active Insight AI, resolution falls back to the most recently created one.
 - `engine_type` — provider identifier (see engine list below)
-- `engine_model` — format `<target>.<model>` e.g. `openai.gpt-4o`, `grok.grok-3`, `dialogflow.cx`
+- `engine_model` — format `<target>.<model>` e.g. `openai.gpt-5`, `grok.grok-3`, `anthropic.claude-haiku-4.5`. Validated against the model catalog on create, and on update only when the value changes (see Engine Model Catalog below)
 - `init_prompt` — system prompt injected at session start
 - `current_prompt_history_id` — UUID pointing to the `ai_ai_prompt_histories` row that reflects the init_prompt at this moment; `uuid.Nil` when no history has been recorded yet. Updated atomically with every prompt change/clear. Exposed in webhook events.
 - `tool_names` — list of LLM tool names enabled for this AI
@@ -107,6 +107,27 @@ Since VOIP-1405 every event is also published to the global topic exchange `bin-
 `AI`, `AIcall`, `Summary`, and `Team` need no override — their own ids already are the subscription addresses.
 
 The routing keys above are pinned by the golden table in `models/ai/routingkey_golden_test.go`, which must be updated in the same change as any event-type or address change.
+
+## Engine Model Catalog
+
+`models/ai/catalog.go` holds `catalog`, the curated allow-list of selectable engine models. Each `ModelEntry` has `ID` (the `EngineModel`), `Label`, `Vendor`, `Route`, `UpstreamSlug`, `Recommended`, `Tags` and `Description`.
+
+- `Route` is `direct` (the customer supplies the provider key; runner type is the model id itself) or `openrouter` (platform-managed, no customer key needed). `Route` and `UpstreamSlug` are internal and never leave the platform.
+- Direct entries: Gemini (2.5 Flash, 2.5 Pro, 2.0 Flash, Pro latest), OpenAI (GPT-5.2, 5.1, 5, 5 mini, 5 nano), xAI (Grok 3, Grok 3 mini).
+- OpenRouter entries (`anthropic.claude-haiku-4.5`, `anthropic.claude-sonnet-4.5`, `meta.llama-3.3-70b-instruct`, `meta.llama-4-maverick`, `deepseek.deepseek-v3.2`, `qwen.qwen3-235b-a22b-2507`, `qwen.qwen3-30b-a3b-instruct-2507`, `mistral.mistral-medium-3.1`, `mistral.mistral-small-3.2-24b-instruct`) map to an upstream slug such as `anthropic/claude-haiku-4.5`.
+- `CatalogView()` returns the customer-facing `ModelInfo` list served by `GET /v1/ai_models` (`GET /ai_models` on the public API): `id`, `label`, `vendor`, `recommended`, `tags` (never null), `description`, `platform_managed` (true for `openrouter` routes). Tags currently include `low-cost`.
+
+### ResolveEngine
+
+`ResolveEngine(EngineModel)` (`models/ai/resolve.go`) is fail-closed and returns a `Resolved` (`Entry`, `RunnerType`, `BlankKey`) plus an `Outcome`:
+
+| Outcome | When | Result |
+|---------|------|--------|
+| `OutcomeCatalog` | The model id exactly matches a catalog entry | Direct route: `RunnerType` is the model id. OpenRouter route: `RunnerType` is `platform_openrouter.<upstream slug>` and `BlankKey` is true, so the customer `engine_key` is never forwarded |
+| `OutcomeDirectPassthrough` | Not in the catalog, but the id is `<prefix>.<non-empty rest>` with prefix `openai`, `gemini` or `grok` | `RunnerType` is the model id, `Entry` is nil, the customer key is used. Keeps existing AIs with older direct model names working |
+| `OutcomeRejected` | Anything else (unknown prefix, empty rest, no dot, e.g. `dialogflow.cx`) | Zero `Resolved`; create/update fails with an invalid engine model error and a session start fails |
+
+`IsValidEngineModel` returns true for every outcome except `OutcomeRejected`. Create always validates; update validates only when `engine_model` changed, so an unchanged legacy value keeps saving. bin-pipecat-manager calls `ResolveEngine` at session start (`resolveSessionLLM`), so a rejected model cannot bypass validation.
 
 ## LLM Engine Providers
 

@@ -11,7 +11,7 @@ Before using AI features, you need:
 * A valid authentication token (String). Obtain via ``POST /auth/login`` or use an accesskey from ``GET /accesskeys``.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Obtain one owned by your account via ``GET /numbers``.
 * A destination phone number in E.164 format or an internal extension.
-* An LLM provider API key (String). Obtain from your provider's dashboard (e.g., OpenAI, Anthropic).
+* An LLM provider API key (String). Obtain from your provider's dashboard (e.g., OpenAI, Google Gemini, xAI). Models marked ``platform_managed`` in ``GET /ai_models`` need no provider key.
 * (Optional) A pre-created AI configuration (UUID). Create one via ``POST /ais`` or use inline action settings.
 * (Optional) A flow ID (UUID). Create one via ``POST /flows`` or obtain from ``GET /flows``.
 
@@ -378,7 +378,7 @@ A customer may keep several ``type=insight`` AI configurations, but only one is 
         "name": "Case Insight Assistant v2",
         "detail": "Trial run with a larger model",
         "type": "insight",
-        "engine_model": "openai.gpt-4o",
+        "engine_model": "openai.gpt-5-mini",
         "engine_key": "<YOUR_OPENAI_KEY>",
         "init_prompt": "You help agents understand the history of a support case.",
         "tts_type": "elevenlabs",
@@ -395,7 +395,7 @@ A customer may keep several ``type=insight`` AI configurations, but only one is 
         "name": "Case Insight Assistant v2",
         "type": "insight",
         "is_insight_active": true,
-        "engine_model": "openai.gpt-4o",
+        "engine_model": "openai.gpt-5-mini",
         "tm_create": "2024-02-09 07:01:35.666687",
         "tm_update": "2024-02-09 07:05:12.123456",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -419,7 +419,7 @@ Regenerate the direct hash for an AI configuration. This invalidates the previou
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "name": "Sales Assistant AI",
         "detail": "AI assistant for handling sales inquiries",
-        "engine_model": "openai.gpt-4o",
+        "engine_model": "openai.gpt-5-mini",
         "direct_hash": "c5d6e7f8a9b0",
         "tm_create": "2024-02-09 07:01:35.666687",
         "tm_update": "2024-02-09 07:05:12.123456",
@@ -434,8 +434,8 @@ Troubleshooting
 ---------------
 
 * **400 Bad Request:**
-    * **Cause:** Invalid ``engine_model`` format or missing required action fields.
-    * **Fix:** Verify ``engine_model`` uses ``<provider>.<model>`` format (e.g., ``openai.gpt-4o``). Ensure ``initial_prompt`` is provided.
+    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``: the value must be returned by ``GET /ai_models`` or use an allowed provider prefix ``openai``, ``gemini``, ``grok``) or missing required action fields.
+    * **Fix:** Verify ``engine_model`` is a value returned by ``GET /ai_models`` or uses an allowed provider prefix in ``<provider>.<model>`` format (e.g., ``openai.gpt-5-mini``). List the selectable models with ``GET /ai_models``. Ensure ``initial_prompt`` is provided.
 
 * **402 Payment Required:**
     * **Cause:** Insufficient VoIPBin account balance.

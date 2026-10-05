@@ -64,7 +64,7 @@ func Test_runnerStartScript_mcpToolList(t *testing.T) {
 			pythonRunner:   mockPython,
 		}
 
-		se := &pipecatcall.Session{Ctx: context.Background()}
+		se := &pipecatcall.Session{Ctx: context.Background(), LLMRunnerType: "openai.gpt-5"}
 
 		builtins := []aitool.Tool{{Name: "call_hangup"}}
 		mcpTools := []aitool.Tool{{Name: "mcp_deadbeef_do_thing"}}
@@ -120,7 +120,7 @@ func Test_runnerStartScript_mcpToolList(t *testing.T) {
 			pythonRunner:   mockPython,
 		}
 
-		se := &pipecatcall.Session{Ctx: context.Background()}
+		se := &pipecatcall.Session{Ctx: context.Background(), LLMRunnerType: "openai.gpt-5"}
 
 		builtins := []aitool.Tool{{Name: "call_hangup"}}
 

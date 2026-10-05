@@ -1,0 +1,26 @@
+get:
+  summary: Gets the list of available AI engine models.
+  description: |
+    Returns the catalog of engine models that can be set in the `engine_model` field of an AI.
+    The whole catalog is returned in a single page, so `page_size` and `page_token` are not used.
+    Models with `platform_managed` set to true do not need an `engine_key`.
+  tags:
+    - AI
+  responses:
+    '200':
+      description: The list of available AI engine models.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIManagerAIModel'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

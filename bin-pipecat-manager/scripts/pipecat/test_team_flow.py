@@ -351,3 +351,23 @@ class TestEscapeFlowPlaceholders:
         assert out[0] is not msgs[0]
         assert out[0]["content"] == "hi \\{{ name }} and \\\\{{ x }} \\{{ a.b }} {not} {{ 1x }}"
         assert out[1] is msgs[1]
+
+
+class TestBuildMemberInfoKeepsCustomerModel:
+    def test_member_info_uses_customer_engine_model_not_runner_type(self):
+        """member_switched must carry the customer model id; the resolved llm_type
+        (platform_openrouter.<slug>) and the key must never leak."""
+        from team_flow import _build_member_info
+        member = {
+            "id": "m1",
+            "name": "Agent",
+            "ai": {
+                "engine_model": "anthropic.claude-haiku-4.5",
+                "engine_key": "secret",
+                "llm_type": "platform_openrouter.anthropic/claude-haiku-4.5",
+            },
+        }
+        info = _build_member_info(member)
+        assert info["engine_model"] == "anthropic.claude-haiku-4.5"
+        assert "platform_openrouter" not in repr(info)
+        assert "secret" not in repr(info)

@@ -21,6 +21,7 @@ from pipecat.transcriptions.language import Language
 
 # llm
 from pipecat.services.openai.llm import OpenAILLMService
+from pipecat.services.openrouter.llm import OpenRouterLLMService
 from pipecat.services.google.llm import GoogleLLMService
 
 # aggregators / context
@@ -567,6 +568,26 @@ def _openai_tools_to_standard(openai_tools: list[dict]) -> list[FunctionSchema]:
     return schemas
 
 
+def _member_llm_type(ai: dict) -> str:
+    """Return the LLM type the runner must build for a resolved team member.
+
+    llm_type is computed by the Go resolver. None means an older Go that does
+    not send the field (legacy behavior, but routed/internal services are never
+    honored from the customer-facing engine_model); "" means Go rejected the
+    member, which never falls back to engine_model for any provider.
+    """
+    resolved = ai.get("llm_type")
+    if resolved is None:
+        fallback = ai.get("engine_model") or ""
+        svc = fallback.replace(":", ".", 1).split(".", 1)[0].lower() if fallback else ""
+        if svc in ("platform_openrouter", "openrouter"):
+            raise ValueError("engine model is not available")
+        return fallback
+    if resolved == "":
+        raise ValueError("engine model is not available")
+    return resolved
+
+
 def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], pipeline_id: str = "", **options):
     valid_messages = filter_valid_messages(messages)
 
@@ -629,6 +650,36 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         # place (len(messages) == 1). Reproduce it on a copy (input untouched).
         if len(valid_messages) == 1 and valid_messages[0]["role"] == "system":
             valid_messages = [{**valid_messages[0], "role": "user"}]
+        ctx = LLMContext(messages=valid_messages, tools=tools_schema)
+        aggregator = _make_aggregator(ctx)
+
+        return llm, aggregator
+
+    elif service_name == "platform_openrouter":
+        # Internal service name emitted only by the Go resolver
+        # (platform_openrouter.<slug>). The raw "openrouter" service is
+        # intentionally NOT supported. The key argument is intentionally
+        # ignored: customers never supply it.
+        api_key = os.getenv("OPENROUTER_API_KEY", "")
+        if not api_key:
+            raise ValueError("OpenRouter is not configured")
+        # The OpenAI client merges settings.extra into the top-level kwargs of
+        # chat.completions.create(), and the SDK rejects an unknown top-level
+        # `provider` kwarg; it must travel inside `extra_body`.
+        llm = OpenRouterLLMService(
+            api_key=api_key,
+            settings=OpenRouterLLMService.Settings(
+                model=model_name,
+                extra={"extra_body": {"provider": {
+                    "zdr": True,
+                    "data_collection": "deny",
+                    "require_parameters": True,
+                }}},
+            ),
+        )
+
+        standard_tools = _openai_tools_to_standard(tools)
+        tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
         ctx = LLMContext(messages=valid_messages, tools=tools_schema)
         aggregator = _make_aggregator(ctx)
 
@@ -767,7 +818,7 @@ async def init_team_pipeline(
         ai = member["ai"]
         start = time.monotonic()
 
-        llm_svc, _ = create_llm_service(ai["engine_model"], ai["engine_key"], [], [], pipeline_id=id)
+        llm_svc, _ = create_llm_service(_member_llm_type(ai), ai["engine_key"], [], [], pipeline_id=id)
         # Design 2.5: flows tools default to cancel_on_interruption=False, which
         # makes 1.12 compose an ASYNC TOOLS system instruction; keep the member
         # init_prompt in the system slot (1.4 parity). Private API, guarded by

@@ -2676,6 +2676,48 @@
         }
       }
     },
+    "/ai_models": {
+      "get": {
+        "summary": "Gets the list of available AI engine models.",
+        "description": "Returns the catalog of engine models that can be set in the `engine_model` field of an AI.\nThe whole catalog is returned in a single page, so `page_size` and `page_token` are not used.\nModels with `platform_managed` set to true do not need an `engine_key`.\n",
+        "tags": [
+          "AI"
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of available AI engine models.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/AIManagerAIModel"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/aisummaries/{id}": {
       "get": {
         "summary": "Get ai summary details.",
@@ -27173,34 +27215,63 @@
       },
       "AIManagerAIEngineModel": {
         "type": "string",
-        "description": "Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.",
-        "example": "openai.gpt-5",
-        "enum": [
-          "gemini.gemini-2.5-flash",
-          "gemini.gemini-2.5-pro",
-          "gemini.gemini-2.0-flash",
-          "gemini.gemini-pro-latest",
-          "openai.gpt-5.2",
-          "openai.gpt-5.1",
-          "openai.gpt-5",
-          "openai.gpt-5-mini",
-          "openai.gpt-5-nano",
-          "grok.grok-3",
-          "grok.grok-3-mini"
+        "description": "Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.",
+        "example": "openai.gpt-5"
+      },
+      "AIManagerAIModel": {
+        "type": "object",
+        "description": "An AI engine model that can be selected for an AI.",
+        "required": [
+          "id",
+          "label",
+          "vendor",
+          "recommended",
+          "tags",
+          "description",
+          "platform_managed"
         ],
-        "x-enum-varnames": [
-          "AIManagerAIEngineModelGeminiGemini2Dot5Flash",
-          "AIManagerAIEngineModelGeminiGemini2Dot5Pro",
-          "AIManagerAIEngineModelGeminiGemini2Dot0Flash",
-          "AIManagerAIEngineModelGeminiGeminiProLatest",
-          "AIManagerAIEngineModelOpenaiGPT5Dot2",
-          "AIManagerAIEngineModelOpenaiGPT5Dot1",
-          "AIManagerAIEngineModelOpenaiGPT5",
-          "AIManagerAIEngineModelOpenaiGPT5Mini",
-          "AIManagerAIEngineModelOpenaiGPT5Nano",
-          "AIManagerAIEngineModelGrok3",
-          "AIManagerAIEngineModelGrok3Mini"
-        ]
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The model identifier to use as `engine_model`. Returned from the `id` field of the `GET /ai_models` response.",
+            "example": "gemini.gemini-2.5-flash"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable model name.",
+            "example": "Gemini 2.5 Flash"
+          },
+          "vendor": {
+            "type": "string",
+            "description": "Model vendor used to group models.",
+            "example": "Google"
+          },
+          "recommended": {
+            "type": "boolean",
+            "description": "Whether the platform recommends this model.",
+            "example": true
+          },
+          "tags": {
+            "type": "array",
+            "description": "Model tags. Currently `low-cost` only.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "low-cost"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "A short description of the model.",
+            "example": "Fast and low-cost model suited to real-time voice conversations."
+          },
+          "platform_managed": {
+            "type": "boolean",
+            "description": "If true, the platform supplies the credentials and `engine_key` is not needed.",
+            "example": false
+          }
+        }
       },
       "AIManagerVADConfig": {
         "type": "object",

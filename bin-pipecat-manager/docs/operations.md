@@ -22,6 +22,7 @@ Python environment variables (set in `.env` or exported):
 | `OPENAI_API_KEY` | OpenAI LLM |
 | `XAI_API_KEY` | Grok (xAI) LLM |
 | `GOOGLE_API_KEY` | Gemini LLM only (passed explicitly to `GoogleLLMService`) |
+| `OPENROUTER_API_KEY` | Platform-held OpenRouter key for catalog models routed as `platform_openrouter.<slug>` (Claude, Llama, DeepSeek, Qwen, Mistral). Read only by the Python runner, never from the customer `engine_key`. Requests are sent with ZDR routing (`zdr`, `data_collection: deny`, `require_parameters`). An empty key makes these models fail at runner init with `OpenRouter is not configured`; an invalid non-empty key yields the provider authentication error like any other provider key (no special casing). |
 | `ANTHROPIC_API_KEY` | Not used today. The runner's LLM dispatch (`run.py`) handles only OpenAI, Grok and Gemini, and no deployment provisions this key. |
 | `DEEPGRAM_API_KEY` | Deepgram STT |
 | `CARTESIA_API_KEY` | Cartesia TTS |

@@ -868,6 +868,7 @@ func Test_runGetLLMKey(t *testing.T) {
 				},
 				ReferenceType: pipecatcall.ReferenceTypeAICall,
 				ReferenceID:   referenceID,
+				LLMType:       "openai.gpt-5",
 			},
 
 			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
@@ -894,6 +895,7 @@ func Test_runGetLLMKey(t *testing.T) {
 				},
 				ReferenceType: pipecatcall.ReferenceTypeAICall,
 				ReferenceID:   referenceID,
+				LLMType:       "openai.gpt-5",
 			},
 
 			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
@@ -929,6 +931,7 @@ func Test_runGetLLMKey(t *testing.T) {
 				},
 				ReferenceType: pipecatcall.ReferenceTypeAICall,
 				ReferenceID:   referenceID,
+				LLMType:       "openai.gpt-5",
 			},
 
 			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
@@ -946,6 +949,7 @@ func Test_runGetLLMKey(t *testing.T) {
 				},
 				ReferenceType: pipecatcall.ReferenceTypeAICall,
 				ReferenceID:   referenceID,
+				LLMType:       "openai.gpt-5",
 			},
 
 			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
@@ -967,6 +971,7 @@ func Test_runGetLLMKey(t *testing.T) {
 				},
 				ReferenceType: pipecatcall.ReferenceTypeCall,
 				ReferenceID:   referenceID,
+				LLMType:       "openai.gpt-5",
 			},
 
 			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {},
@@ -987,7 +992,10 @@ func Test_runGetLLMKey(t *testing.T) {
 				requestHandler: mockReq,
 			}
 
-			result := h.runGetLLMKey(context.Background(), tt.pc)
+			_, result, errKey := h.runGetLLMKey(context.Background(), tt.pc)
+			if errKey != nil {
+				t.Fatalf("unexpected error: %v", errKey)
+			}
 			if result != tt.expectedKey {
 				t.Errorf("Wrong LLM key. expect: %q, got: %q", tt.expectedKey, result)
 			}

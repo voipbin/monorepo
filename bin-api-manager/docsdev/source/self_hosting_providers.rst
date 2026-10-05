@@ -27,6 +27,11 @@ AI voice agent providers
      - OpenAI, Google Gemini, xAI
      - ``OPENAI_API_KEY``, ``GOOGLE_API_KEY``, ``XAI_API_KEY``
        (restart ``pipecat-manager``)
+   * - LLM / conversation (real-time voice pipeline, platform-managed models)
+     - OpenRouter (serves the Anthropic Claude, Meta Llama, DeepSeek, Qwen,
+       and Mistral models that ``GET /ai_models`` lists with
+       ``platform_managed`` set to ``true``)
+     - ``OPENROUTER_API_KEY`` (restart ``pipecat-script-runner``)
    * - Speech-to-text
      - Deepgram, AWS Transcribe, Google Cloud Speech-to-Text
      - ``DEEPGRAM_API_KEY``; ``AWS_ACCESS_KEY``/``AWS_SECRET_KEY``;
@@ -64,6 +69,39 @@ confuse them:
 ``.env.template`` entry; it is consumed by ``pipecat-manager``'s
 real-time voice pipeline as an LLM alternative, not by ``ai-manager``.
 
+OpenRouter key for platform-managed models
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Models that ``GET /ai_models`` reports with ``platform_managed`` set to
+``true`` (Anthropic Claude, Meta Llama, DeepSeek, Qwen, and Mistral) do
+not use the per-AI ``engine_key`` that a user enters. In the real-time
+voice pipeline they are served through OpenRouter with a key that you,
+the operator, supply once as ``OPENROUTER_API_KEY`` in ``.env``. Notes
+on how it behaves in this installer's Docker Compose stack:
+
+- The variable is passed to the ``pipecat-script-runner`` service only.
+  ``pipecat-manager`` (the Go service) does not read it, so restarting
+  ``pipecat-manager`` for this key has no effect. Restart
+  ``pipecat-script-runner`` instead.
+- The installer writes ``OPENROUTER_API_KEY=`` empty by default. With an
+  empty key these models stay selectable in the catalog (there is no
+  global on/off switch), but a session that uses one fails when the
+  runner initializes the LLM service, with the error
+  ``OpenRouter is not configured``. Other models (OpenAI, Gemini, xAI)
+  are not affected.
+- A non-empty but invalid key is not detected at startup. The first
+  request is rejected by OpenRouter with HTTP 401, which the runner
+  classifies as an authentication error, the same as an invalid key for
+  any other LLM provider.
+- Requests are sent with OpenRouter's zero data retention routing and
+  ``data_collection`` set to ``deny``, and only to endpoints that
+  support tool calling. This is fixed and not configurable.
+- ``pipecat-script-runner`` is pinned by image digest in
+  ``docker-compose.yml.dist``. The key has an effect only after the
+  runner image that contains the platform-managed model support is
+  adopted (for example with ``scripts/sync-compose-images.sh``). Setting the key
+  while the pinned image is older does nothing.
+
 After setting an AI provider key, restart the service(s) that actually
 consume that specific variable, per the tables above:
 
@@ -71,6 +109,7 @@ consume that specific variable, per the tables above:
 
     sudo ./voipbin restart ai-manager           # OPENAI_API_KEY (batch)
     sudo ./voipbin restart pipecat-manager       # OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY (real-time)
+    sudo ./voipbin restart pipecat-script-runner # OPENROUTER_API_KEY (platform-managed models)
     sudo ./voipbin restart transcribe-manager    # DEEPGRAM_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart tts-manager           # ELEVENLABS_API_KEY, CARTESIA_API_KEY, AWS_*, GOOGLE_APPLICATION_CREDENTIALS
     sudo ./voipbin restart rag-manager           # GOOGLE_APPLICATION_CREDENTIALS

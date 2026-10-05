@@ -306,6 +306,7 @@ type ServiceHandler interface {
 		autoAICallAuditEnabled bool,
 	) (*amai.WebhookMessage, error)
 	AIGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amai.WebhookMessage, error)
+	AIModelList(ctx context.Context, a *auth.AuthIdentity) ([]*amai.ModelInfo, error)
 	AIGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error)
 	AIDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error)
 	AIBuilderChat(ctx context.Context, a *auth.AuthIdentity, req *ambuilder.ChatRequest) (*ambuilder.ChatResponse, error)

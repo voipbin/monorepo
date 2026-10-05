@@ -16,6 +16,7 @@ func (h *pipecatcallHandler) SessionCreate(
 	asteriskStreamingID uuid.UUID,
 	connAst *websocket.Conn,
 	connAstDone chan struct{},
+	llmRunnerType string,
 	llmKey string,
 ) (*pipecatcall.Session, error) {
 
@@ -45,7 +46,8 @@ func (h *pipecatcallHandler) SessionCreate(
 		ConnAstDone:         connAstDone,
 		ConnAstReady:        connAstReady,
 
-		LLMKey: llmKey,
+		LLMRunnerType: llmRunnerType,
+		LLMKey:        llmKey,
 
 		HasSTT: pc.STTType != pipecatcall.STTTypeNone,
 	}

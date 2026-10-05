@@ -40,7 +40,7 @@ AIcall
 * ``customer_id`` (UUID): The customer who owns this AI call. Obtained from the ``id`` field of ``GET /customers``.
 * ``assistance_type`` (enum string): The type of AI assistance. See :ref:`Assistance Type <aicall-struct-aicall-assistance-type>`.
 * ``assistance_id`` (UUID): The ID of the AI configuration or team used for this call. Obtained from the ``id`` field of ``GET /ais`` or ``GET /ai-teams``.
-* ``ai_engine_model`` (string): The LLM engine and model used (e.g., ``openai.gpt-4o``, ``anthropic.claude-3-5-sonnet``).
+* ``ai_engine_model`` (string): The LLM engine and model used (e.g., ``openai.gpt-5-mini``, ``gemini.gemini-2.5-flash``).
 * ``ai_tts_type`` (string): The text-to-speech provider type (e.g., ``openai``, ``elevenlabs``, ``deepgram``, ``cartesia``).
 * ``ai_tts_voice_id`` (string): The voice identifier used for text-to-speech output.
 * ``ai_stt_type`` (string): The speech-to-text provider type (e.g., ``deepgram``, ``cartesia``).
@@ -136,7 +136,7 @@ Example
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "assistance_type": "ai",
         "assistance_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-        "ai_engine_model": "openai.gpt-4o",
+        "ai_engine_model": "openai.gpt-5-mini",
         "ai_tts_type": "elevenlabs",
         "ai_tts_voice_id": "21m00Tcm4TlvDq8ikWAM",
         "ai_stt_type": "deepgram",

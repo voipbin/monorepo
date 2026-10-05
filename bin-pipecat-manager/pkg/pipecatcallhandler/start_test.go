@@ -42,6 +42,7 @@ func Test_startReferenceTypeCall_callGetFailure(t *testing.T) {
 		},
 		ReferenceType: pipecatcall.ReferenceTypeCall,
 		ReferenceID:   referenceID,
+		LLMType:       pipecatcall.LLMType("openai.gpt-5"),
 	}
 
 	// CallV1CallGet fails
@@ -81,6 +82,7 @@ func Test_startReferenceTypeCall_externalMediaFailure(t *testing.T) {
 		},
 		ReferenceType: pipecatcall.ReferenceTypeCall,
 		ReferenceID:   referenceID,
+		LLMType:       pipecatcall.LLMType("openai.gpt-5"),
 	}
 
 	// CallV1CallGet succeeds
@@ -194,6 +196,7 @@ func Test_startReferenceTypeCall_websocketDialFailure(t *testing.T) {
 		},
 		ReferenceType: pipecatcall.ReferenceTypeCall,
 		ReferenceID:   referenceID,
+		LLMType:       pipecatcall.LLMType("openai.gpt-5"),
 	}
 
 	// CallV1CallGet succeeds

@@ -433,3 +433,15 @@ class TestCancellableByLlm:
             svc.register_function.assert_called_once_with(
                 "fn", handler, cancel_on_interruption=None, timeout_secs=None, cancellable_by_llm=True,
             )
+
+
+class TestMixedProviderMembers:
+    def test_routes_by_member_id_regardless_of_provider(self):
+        """A direct-provider member and an OpenRouter-backed member coexist; switching
+        selects the matching service instance."""
+        services = _make_services()  # member-a: direct, member-b: OpenRouter-backed
+        routing = RoutingLLMService(services)
+        routing.set_active_member("member-b")
+        assert routing.active_service is services["member-b"]
+        routing.set_active_member("member-a")
+        assert routing.active_service is services["member-a"]

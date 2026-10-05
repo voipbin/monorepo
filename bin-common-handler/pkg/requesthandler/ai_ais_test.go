@@ -94,6 +94,70 @@ func Test_AIV1AIList(t *testing.T) {
 	}
 }
 
+func Test_AIV1AIModelList(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     []amai.ModelInfo
+	}{
+		{
+			name: "normal",
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`[{"id":"gemini.gemini-2.5-flash","label":"Gemini 2.5 Flash","vendor":"Google","recommended":true,"tags":["low-cost"],"description":"fast","platform_managed":false}]`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:    "/v1/ai_models",
+				Method: sock.RequestMethodGet,
+			},
+			expectRes: []amai.ModelInfo{
+				{
+					ID:              "gemini.gemini-2.5-flash",
+					Label:           "Gemini 2.5 Flash",
+					Vendor:          "Google",
+					Recommended:     true,
+					Tags:            []string{"low-cost"},
+					Description:     "fast",
+					PlatformManaged: false,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			h := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := h.AIV1AIModelList(ctx)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_AIV1AIGet(t *testing.T) {
 
 	type test struct {
