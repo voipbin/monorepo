@@ -599,12 +599,9 @@ func Test_Hangup_forcedHangupStatus(t *testing.T) {
 	}
 	hungup := *c
 
-	reason := call.CalculateHangupReason(c.Direction, c.Status, cn.HangupCause)
-	by := call.CalculateHangupBy(c.Status)
-
 	m.db.EXPECT().CallGetByChannelID(ctx, cn.ID).Return(c, nil)
 	m.bridge.EXPECT().Destroy(ctx, c.BridgeID).Return(nil)
-	m.db.EXPECT().CallSetHangup(ctx, c.ID, reason, by).Return(nil)
+	m.db.EXPECT().CallSetHangup(ctx, c.ID, call.HangupReasonNormal, call.HangupByRemote).Return(nil)
 	m.db.EXPECT().CallGet(ctx, c.ID).Return(&hungup, nil)
 	m.notify.EXPECT().PublishWebhookEvent(ctx, hungup.CustomerID, call.EventTypeCallHangup, &hungup)
 	m.req.EXPECT().FlowV1ActiveflowStop(ctx, c.ActiveflowID).Return(nil, nil)

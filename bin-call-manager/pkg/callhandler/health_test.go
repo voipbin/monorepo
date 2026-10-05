@@ -290,6 +290,22 @@ func Test_healthHangup(t *testing.T) {
 		}
 	}
 
+	// expectHangingUp sets the whole HangingUp sequence to pin its arguments: the call goes to the given status and
+	// the channel hangup is requested with the cause of the normal hangup reason.
+	expectHangingUp := func(ctx context.Context, m recoveryMocks, c *call.Call, status call.Status, eventType string) {
+		next := *c
+		next.Status = status
+
+		m.util.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
+		m.db.EXPECT().CallGet(ctx, id).Return(c, nil)
+		m.db.EXPECT().CallSetStatus(ctx, id, status).Return(nil)
+		m.db.EXPECT().CallGet(ctx, id).Return(&next, nil)
+		m.notify.EXPECT().PublishWebhookEvent(ctx, next.CustomerID, eventType, &next)
+		m.db.EXPECT().CallGetFromDB(ctx, id).Return(&next, nil)
+		m.channel.EXPECT().HangingUp(ctx, channelID, call.ConvertHangupReasonToChannelCause(call.HangupReasonNormal)).
+			Return(&channel.Channel{ID: channelID}, nil)
+	}
+
 	tests := []struct {
 		name string
 
@@ -437,10 +453,7 @@ func Test_healthHangup(t *testing.T) {
 			responseCall:    newCall(call.StatusDialing, call.DirectionOutgoing),
 			responseChannel: endedChannel,
 			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
-				// HangingUp reads the call from the cache first. a hangup status there ends it at once.
-				done := *c
-				done.Status = call.StatusHangup
-				m.db.EXPECT().CallGet(ctx, id).Return(&done, nil)
+				expectHangingUp(ctx, m, c, call.StatusCanceling, call.EventTypeCallCanceling)
 			},
 		},
 		{
@@ -448,9 +461,7 @@ func Test_healthHangup(t *testing.T) {
 			responseCall:    newCall(call.StatusRinging, call.DirectionOutgoing),
 			responseChannel: endedChannel,
 			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
-				done := *c
-				done.Status = call.StatusHangup
-				m.db.EXPECT().CallGet(ctx, id).Return(&done, nil)
+				expectHangingUp(ctx, m, c, call.StatusCanceling, call.EventTypeCallCanceling)
 			},
 		},
 		{
@@ -458,19 +469,7 @@ func Test_healthHangup(t *testing.T) {
 			responseCall:    newCall(call.StatusProgressing, call.DirectionOutgoing),
 			responseChannel: endedChannel,
 			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
-				// the whole HangingUp sequence, to pin its arguments: the call goes to terminating and the channel
-				// hangup is requested with the cause of the normal hangup reason.
-				terminating := *c
-				terminating.Status = call.StatusTerminating
-
-				m.util.EXPECT().TimeGetCurTime().Return(utilhandler.TimeGetCurTime()).AnyTimes()
-				m.db.EXPECT().CallGet(ctx, id).Return(c, nil)
-				m.db.EXPECT().CallSetStatus(ctx, id, call.StatusTerminating).Return(nil)
-				m.db.EXPECT().CallGet(ctx, id).Return(&terminating, nil)
-				m.notify.EXPECT().PublishWebhookEvent(ctx, terminating.CustomerID, call.EventTypeCallTerminating, &terminating)
-				m.db.EXPECT().CallGetFromDB(ctx, id).Return(&terminating, nil)
-				m.channel.EXPECT().HangingUp(ctx, channelID, call.ConvertHangupReasonToChannelCause(call.HangupReasonNormal)).
-					Return(&channel.Channel{ID: channelID}, nil)
+				expectHangingUp(ctx, m, c, call.StatusTerminating, call.EventTypeCallTerminating)
 			},
 		},
 	}
