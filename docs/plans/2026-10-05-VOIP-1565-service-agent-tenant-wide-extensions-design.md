@@ -1,6 +1,6 @@
 # VOIP-1565 Service Agent: 고객사 전체 extension 조회와 타인 extension 비밀번호 마스킹 (설계 + 구현 계획)
 
-- 상태: Draft (Design Review 대기)
+- 상태: APPROVED (Design Review 3회 완료)
 - 작성일: 2026-10-05
 - 티켓: VOIP-1565 (본 저장소), 동반 티켓 SQUARE-89 (monorepo-javascript, 별도 PR)
 - 기준 코드: origin/main 440b71f9d
@@ -126,7 +126,7 @@ func maskExtensionForAgent(ws *rmextension.WebhookMessage, owned bool) *rmextens
    - List: 항목 `CustomerID` 불일치 제외, page_size/token 전달, filters(customer_id, deleted=false).
    - Get: 본인 평문 / 같은 고객사 타인 마스킹 200 / 타 고객사 NotFound / superadmin 타 고객사 NotFound / 삭제된(`TMDelete`) NotFound.
    - **404 응답 동일성**: 타 고객사, 삭제된, 존재하지 않는(registrar 가 typed `EXTENSION_NOT_FOUND` 반환 mock) 세 경우의 `cerrors.VoipbinError`(Status, Domain, Reason, Message)가 모두 같음을 단일 테스트가 비교. 서버 핸들러 테스트에서는 세 경우의 HTTP 응답 본문이 동일한지도 확인.
-   - 소유 판정은 `agentGet` 결과 기준(JWT `a.Agent.Addresses` 와 다를 때 `agentGet` 을 따름) — 3회차 회귀 고정.
+   - 소유 판정은 `agentGet` 결과 기준(JWT `a.Agent.Addresses` 와 다를 때 `agentGet` 을 따름), 소유 판정 소스 회귀 테스트.
    - `agentGet` 실패 → 오류(fail closed), 삭제된 agent(빈 Addresses) → 전부 마스킹.
    - 비-Agent 신원(direct/accesskey/delegate) → `ErrAuthenticationRequired`.
    - List 에서 `agentGet` 호출이 요청당 1회(gomock `Times(1)`).

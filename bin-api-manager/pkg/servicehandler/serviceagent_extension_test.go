@@ -96,6 +96,7 @@ func Test_ServiceAgentExtensionList(t *testing.T) {
 	ownExt := newTestSAExtension(testSAExtOwnID, testSAExtCustomerID, "own")
 	otherExt := newTestSAExtension(testSAExtOtherID, testSAExtCustomerID, "other")
 	foreignExt := newTestSAExtension(testSAExtForeignID, testSAExtOtherCustomerID, "foreign")
+	thirdExt := newTestSAExtension(uuid.FromStringOrNil("9c9c9c9c-bbc1-11ef-b531-a3248f6d1477"), testSAExtCustomerID, "third")
 
 	tests := []struct {
 		name  string
@@ -115,6 +116,22 @@ func Test_ServiceAgentExtensionList(t *testing.T) {
 			},
 			responseExtensions: []rmextension.Extension{ownExt, otherExt},
 			expectRes:          []*rmextension.WebhookMessage{ownExt.ConvertWebhookMessage(), newTestSAExtMasked(otherExt)},
+		},
+		{
+			name:  "an agent that owns several extensions sees all of them in plain and the rest masked",
+			agent: newTestSAExtAgent(amagent.PermissionCustomerAgent, nil),
+			responseAgent: &amagent.Agent{
+				Addresses: []commonaddress.Address{
+					newTestSAExtAddress(testSAExtOwnID),
+					newTestSAExtAddress(testSAExtOtherID),
+				},
+			},
+			responseExtensions: []rmextension.Extension{ownExt, otherExt, thirdExt},
+			expectRes: []*rmextension.WebhookMessage{
+				ownExt.ConvertWebhookMessage(),
+				otherExt.ConvertWebhookMessage(),
+				newTestSAExtMasked(thirdExt),
+			},
 		},
 		{
 			name:  "ownership follows the fresh agent record, not the JWT addresses (assigned after login)",
@@ -320,6 +337,17 @@ func Test_ServiceAgentExtensionGet(t *testing.T) {
 			responseExtension: &ownExt,
 			responseAgent:     &amagent.Agent{Addresses: []commonaddress.Address{newTestSAExtAddress(testSAExtOwnID)}},
 			expectRes:         ownExt.ConvertWebhookMessage(),
+		},
+		{
+			name:              "the second of several owned extensions is returned with credentials",
+			agent:             newTestSAExtAgent(amagent.PermissionCustomerAgent, nil),
+			extensionID:       testSAExtOtherID,
+			responseExtension: &otherExt,
+			responseAgent: &amagent.Agent{Addresses: []commonaddress.Address{
+				newTestSAExtAddress(testSAExtOwnID),
+				newTestSAExtAddress(testSAExtOtherID),
+			}},
+			expectRes: otherExt.ConvertWebhookMessage(),
 		},
 		{
 			name:              "another agent's extension of the same customer is masked",

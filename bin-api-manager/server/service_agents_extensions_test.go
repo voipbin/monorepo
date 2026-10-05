@@ -25,6 +25,8 @@ import (
 func Test_extensionsGET(t *testing.T) {
 
 	tmCreate := time.Date(2026, 10, 5, 1, 2, 3, 456000000, time.UTC)
+	tmCreateNewer := time.Date(2026, 10, 5, 1, 2, 3, 456000000, time.UTC)
+	tmCreateOlderKST := time.Date(2026, 10, 4, 10, 11, 12, 0, time.FixedZone("KST", 9*3600))
 
 	tests := []struct {
 		name  string
@@ -86,6 +88,35 @@ func Test_extensionsGET(t *testing.T) {
 			expectPageToken: "2026-10-06T00:00:00.000000Z",
 			expectPageSize:  20,
 			expectRes:       `{"result":[{"id":"7ea872bc-bbc5-11ef-83ae-dfcd9b190c58","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":"2026-10-05T01:02:03.456Z","tm_update":null,"tm_delete":null}],"next_page_token":"2026-10-05T01:02:03.456000Z"}`,
+		},
+		{
+			name: "the next token is the tm_create of the last item, in UTC",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/service_agents/extensions",
+
+			responseExtensions: []*rmextension.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("7ea872bc-bbc5-11ef-83ae-dfcd9b190c58"),
+					},
+					TMCreate: &tmCreateNewer,
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("7efedf4e-bbc5-11ef-8d7d-ff69121f9899"),
+					},
+					TMCreate: &tmCreateOlderKST,
+				},
+			},
+
+			expectPageToken: "",
+			expectPageSize:  100,
+			expectRes:       `{"result":[{"id":"7ea872bc-bbc5-11ef-83ae-dfcd9b190c58","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":"2026-10-05T01:02:03.456Z","tm_update":null,"tm_delete":null},{"id":"7efedf4e-bbc5-11ef-8d7d-ff69121f9899","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","extension":"","domain_name":"","username":"","password":"","direct_hash":"","tm_create":"2026-10-04T10:11:12+09:00","tm_update":null,"tm_delete":null}],"next_page_token":"2026-10-04T01:11:12.000000Z"}`,
 		},
 		{
 			name: "a page size of exactly 100 is kept",
@@ -291,6 +322,38 @@ func Test_extensionsIDGET_not_found_bodies_are_identical(t *testing.T) {
 	}
 	if !strings.Contains(bodyA, `"reason":"EXTENSION_NOT_FOUND"`) {
 		t.Errorf("Wrong match. expect: reason EXTENSION_NOT_FOUND, got: %s", bodyA)
+	}
+}
+
+func Test_extensionsIDGET_invalid_id(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	// no expectation: the service handler must not be called for a malformed id.
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest("GET", "/service_agents/extensions/not-a-uuid", nil)
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+	}
+	if !strings.Contains(w.Body.String(), `"reason":"INVALID_ID"`) {
+		t.Errorf("Wrong match. expect: reason INVALID_ID, got: %s", w.Body.String())
 	}
 }
 
