@@ -116,10 +116,6 @@ func (h *aiHandler) Update(
 	autoAICallAuditEnabled bool,
 ) (*ai.AI, error) {
 
-	if !ai.IsValidEngineModel(engineModel) {
-		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
-	}
-
 	if !ttsType.IsValid() {
 		return nil, fmt.Errorf("invalid tts_type: %s. valid values: %s", ttsType, strings.Join(ttsType.ValidValues(), ", "))
 	}
@@ -136,6 +132,11 @@ func (h *aiHandler) Update(
 	preUpdateAI, errGet := h.db.AIGet(ctx, id)
 	if errGet != nil {
 		return nil, errors.Wrapf(errGet, "could not get current ai for update")
+	}
+
+	// Only a changed engine model is validated, so an unchanged legacy value keeps saving.
+	if engineModel != preUpdateAI.EngineModel && !ai.IsValidEngineModel(engineModel) {
+		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
 	}
 
 	// A caller omitting the type field (aiType == TypeNone) means "leave it

@@ -327,36 +327,18 @@ func TestIsValidEngineModel(t *testing.T) {
 		engineModel EngineModel
 		expected    bool
 	}{
-		{
-			name:        "openai_gpt5_is_valid",
-			engineModel: EngineModelOpenaiGPT5,
-			expected:    true,
-		},
-		{
-			name:        "gemini_2_5_flash_is_valid",
-			engineModel: EngineModelGeminiGemini2Dot5Flash,
-			expected:    true,
-		},
-		{
-			name:        "anthropic_model_is_valid",
-			engineModel: EngineModel("anthropic.claude-3"),
-			expected:    true,
-		},
-		{
-			name:        "invalid_model_no_dot",
-			engineModel: EngineModel("invalid"),
-			expected:    false,
-		},
-		{
-			name:        "invalid_target",
-			engineModel: EngineModel("unknown.model"),
-			expected:    false,
-		},
-		{
-			name:        "grok_model_is_valid",
-			engineModel: EngineModel("grok.grok-3"),
-			expected:    true,
-		},
+		{"openai_gpt5_is_valid", EngineModelOpenaiGPT5, true},
+		{"gemini_2_5_flash_is_valid", EngineModelGeminiGemini2Dot5Flash, true},
+		{"grok_model_is_valid", EngineModel("grok.grok-3"), true},
+		{"catalog_openrouter_model_is_valid", EngineModel("anthropic.claude-haiku-4.5"), true},
+		{"direct_passthrough_is_valid", EngineModel("openai.gpt-4o"), true},
+		{"anthropic_not_in_catalog_is_invalid", EngineModel("anthropic.claude-3"), false},
+		{"anthropic_opus_not_in_catalog_is_invalid", EngineModel("anthropic.claude-opus-4"), false},
+		{"raw_openrouter_is_invalid", EngineModel("openrouter.meta-llama/llama-3-70b"), false},
+		{"internal_type_is_invalid", EngineModel("platform_openrouter.x"), false},
+		{"invalid_model_no_dot", EngineModel("invalid"), false},
+		{"empty_is_invalid", EngineModel(""), false},
+		{"invalid_target", EngineModel("unknown.model"), false},
 	}
 
 	for _, tt := range tests {

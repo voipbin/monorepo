@@ -261,7 +261,8 @@ func TestUpdate(t *testing.T) {
 			ttsType:     ai.TTSTypeOpenAI,
 			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
-				// Should not call database
+				// validation runs after the stored AI fetch; nothing is written
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(&ai.AI{EngineModel: ai.EngineModelOpenaiGPT5}, nil).Times(1)
 			},
 			wantError: true,
 			errorMsg:  "invalid engine model",

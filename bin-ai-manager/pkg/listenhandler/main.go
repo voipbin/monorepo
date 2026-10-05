@@ -78,6 +78,7 @@ var (
 	// ais
 	regV1AIsGet                    = regexp.MustCompile(`/v1/ais\?`)
 	regV1AIs                       = regexp.MustCompile("/v1/ais$")
+	regV1AIModels                  = regexp.MustCompile("/v1/ai_models$")
 	regV1AIsIDActivateInsight      = regexp.MustCompile("/v1/ais/" + regUUID + "/activate_insight$")
 	regV1AIsIDDirectHashRegenerate = regexp.MustCompile("/v1/ais/" + regUUID + "/direct-hash-regenerate$")
 	regV1AIsIDParticipants         = regexp.MustCompile("/v1/ais/" + regUUID + `/participants(\?|$)`)
@@ -302,6 +303,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AIsGet(ctx, m)
 		requestType = "/v1/ais"
+
+	// GET /ai_models
+	case regV1AIModels.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIModelsGet(ctx, m)
+		requestType = "/v1/ai_models"
 
 	// POST /ais
 	case regV1AIs.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
