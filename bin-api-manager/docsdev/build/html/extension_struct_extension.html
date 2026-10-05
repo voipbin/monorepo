@@ -675,6 +675,11 @@
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
+<p><strong>Agent Access Hint</strong></p>
+<p>Agents read extensions through <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/extensions</span></code> and <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/extensions/{id}</span></code>. These return the extensions of the agent’s whole customer, so an agent can see its colleagues’ extension numbers and names. <code class="docutils literal notranslate"><span class="pre">password</span></code> and <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> are returned only for the extensions assigned to the calling agent (listed in the <code class="docutils literal notranslate"><span class="pre">addresses</span></code> of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/me</span></code> with <code class="docutils literal notranslate"><span class="pre">type</span></code> <code class="docutils literal notranslate"><span class="pre">extension</span></code>). For every other extension both fields are empty strings (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>). An extension that does not exist, has been deleted, or belongs to another customer is reported as <code class="docutils literal notranslate"><span class="pre">404</span></code> <code class="docutils literal notranslate"><span class="pre">EXTENSION_NOT_FOUND</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>Unlike other resources that use <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> as a sentinel for “not yet occurred” timestamps, extensions use an empty string (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>) for <code class="docutils literal notranslate"><span class="pre">tm_update</span></code> and <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> when the event has not occurred.</p>
 </div>

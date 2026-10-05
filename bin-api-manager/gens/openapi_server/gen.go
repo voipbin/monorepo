@@ -52659,6 +52659,20 @@ func (response GetServiceAgentsExtensions401JSONResponse) VisitGetServiceAgentsE
 	return err
 }
 
+type GetServiceAgentsExtensions403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsExtensions403JSONResponse) VisitGetServiceAgentsExtensionsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsExtensions500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetServiceAgentsExtensions500JSONResponse) VisitGetServiceAgentsExtensionsResponse(w http.ResponseWriter) error {

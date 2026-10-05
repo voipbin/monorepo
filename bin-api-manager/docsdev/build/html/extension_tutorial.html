@@ -656,6 +656,11 @@
 <section id="get-list-of-extensions">
 <h3>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Link to this heading">¶</a></h3>
 <p>Gets the list of registered extensions for your account.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Agent Access Hint</strong></p>
+<p>An agent token calls <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/service_agents/extensions</span></code> instead. The list covers every extension of the agent’s customer, but <code class="docutils literal notranslate"><span class="pre">password</span></code> and <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> are filled in only for the extensions assigned to the calling agent and are empty strings for the others.</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
