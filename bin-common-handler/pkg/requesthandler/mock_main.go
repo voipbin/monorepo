@@ -301,6 +301,21 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIList(ctx, pageToken, pageSize, f
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIList), ctx, pageToken, pageSize, filters)
 }
 
+// AIV1AIModelList mocks base method.
+func (m *MockRequestHandler) AIV1AIModelList(ctx context.Context) ([]ai.ModelInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIModelList", ctx)
+	ret0, _ := ret[0].([]ai.ModelInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIModelList indicates an expected call of AIV1AIModelList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIModelList(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIModelList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIModelList), ctx)
+}
+
 // AIV1AIParticipantList mocks base method.
 func (m *MockRequestHandler) AIV1AIParticipantList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]*participant.WebhookMessage, error) {
 	m.ctrl.T.Helper()

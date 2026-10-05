@@ -76,51 +76,6 @@ func (e AIManagerAIBuilderMessageRole) Valid() bool {
 	}
 }
 
-// Defines values for AIManagerAIEngineModel.
-const (
-	AIManagerAIEngineModelGeminiGemini2Dot0Flash AIManagerAIEngineModel = "gemini.gemini-2.0-flash"
-	AIManagerAIEngineModelGeminiGemini2Dot5Flash AIManagerAIEngineModel = "gemini.gemini-2.5-flash"
-	AIManagerAIEngineModelGeminiGemini2Dot5Pro   AIManagerAIEngineModel = "gemini.gemini-2.5-pro"
-	AIManagerAIEngineModelGeminiGeminiProLatest  AIManagerAIEngineModel = "gemini.gemini-pro-latest"
-	AIManagerAIEngineModelGrok3                  AIManagerAIEngineModel = "grok.grok-3"
-	AIManagerAIEngineModelGrok3Mini              AIManagerAIEngineModel = "grok.grok-3-mini"
-	AIManagerAIEngineModelOpenaiGPT5             AIManagerAIEngineModel = "openai.gpt-5"
-	AIManagerAIEngineModelOpenaiGPT5Dot1         AIManagerAIEngineModel = "openai.gpt-5.1"
-	AIManagerAIEngineModelOpenaiGPT5Dot2         AIManagerAIEngineModel = "openai.gpt-5.2"
-	AIManagerAIEngineModelOpenaiGPT5Mini         AIManagerAIEngineModel = "openai.gpt-5-mini"
-	AIManagerAIEngineModelOpenaiGPT5Nano         AIManagerAIEngineModel = "openai.gpt-5-nano"
-)
-
-// Valid indicates whether the value is a known member of the AIManagerAIEngineModel enum.
-func (e AIManagerAIEngineModel) Valid() bool {
-	switch e {
-	case AIManagerAIEngineModelGeminiGemini2Dot0Flash:
-		return true
-	case AIManagerAIEngineModelGeminiGemini2Dot5Flash:
-		return true
-	case AIManagerAIEngineModelGeminiGemini2Dot5Pro:
-		return true
-	case AIManagerAIEngineModelGeminiGeminiProLatest:
-		return true
-	case AIManagerAIEngineModelGrok3:
-		return true
-	case AIManagerAIEngineModelGrok3Mini:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5Dot1:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5Dot2:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5Mini:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5Nano:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for AIManagerAIPromptProposalStatus.
 const (
 	AIManagerAIPromptProposalStatusAccepted    AIManagerAIPromptProposalStatus = "accepted"
@@ -3858,7 +3813,7 @@ type AIManagerAI struct {
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
 
 	// Id The unique identifier of the AI.
@@ -4030,8 +3985,32 @@ type AIManagerAIBuilderStatusResponse struct {
 	MaxMessages int `json:"max_messages"`
 }
 
-// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
-type AIManagerAIEngineModel string
+// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
+type AIManagerAIEngineModel = string
+
+// AIManagerAIModel An AI engine model that can be selected for an AI.
+type AIManagerAIModel struct {
+	// Description A short description of the model.
+	Description string `json:"description"`
+
+	// Id The model identifier to use as `engine_model`. Returned from the `id` field of the `GET /ai_models` response.
+	Id string `json:"id"`
+
+	// Label Human-readable model name.
+	Label string `json:"label"`
+
+	// PlatformManaged If true, the platform supplies the credentials and `engine_key` is not needed.
+	PlatformManaged bool `json:"platform_managed"`
+
+	// Recommended Whether the platform recommends this model.
+	Recommended bool `json:"recommended"`
+
+	// Tags Model tags. Currently `low-cost` only.
+	Tags []string `json:"tags"`
+
+	// Vendor Model vendor used to group models.
+	Vendor string `json:"vendor"`
+}
 
 // AIManagerAIPromptHistory defines model for AIManagerAIPromptHistory.
 type AIManagerAIPromptHistory struct {
@@ -4110,7 +4089,7 @@ type AIManagerAIcall struct {
 	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
 
 	// AiSmartTurnEnabled Smart turn detection setting frozen from the AI configuration at call start.
@@ -8361,7 +8340,7 @@ type PostAisJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
 
@@ -8409,7 +8388,7 @@ type PutAisIdJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
 
@@ -11572,6 +11551,9 @@ type ServerInterface interface {
 	// Check whether the assistant builder is available.
 	// (GET /ai_builder/status)
 	GetAiBuilderStatus(c *gin.Context)
+	// Gets the list of available AI engine models.
+	// (GET /ai_models)
+	GetAiModels(c *gin.Context)
 	// Gets a list of AI audits.
 	// (GET /aiaudits)
 	GetAiaudits(c *gin.Context, params GetAiauditsParams)
@@ -13417,6 +13399,19 @@ func (siw *ServerInterfaceWrapper) GetAiBuilderStatus(c *gin.Context) {
 	}
 
 	siw.Handler.GetAiBuilderStatus(c)
+}
+
+// GetAiModels operation middleware
+func (siw *ServerInterfaceWrapper) GetAiModels(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAiModels(c)
 }
 
 // GetAiaudits operation middleware
@@ -24238,6 +24233,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/aggregated-events", wrapper.GetAggregatedEvents)
 	router.POST(options.BaseURL+"/ai_builder/chat", wrapper.PostAiBuilderChat)
 	router.GET(options.BaseURL+"/ai_builder/status", wrapper.GetAiBuilderStatus)
+	router.GET(options.BaseURL+"/ai_models", wrapper.GetAiModels)
 	router.GET(options.BaseURL+"/aiaudits", wrapper.GetAiaudits)
 	router.POST(options.BaseURL+"/aiaudits", wrapper.PostAiaudits)
 	router.DELETE(options.BaseURL+"/aiaudits/:id", wrapper.DeleteAiauditsId)
@@ -26635,6 +26631,59 @@ func (response GetAiBuilderStatus401JSONResponse) VisitGetAiBuilderStatusRespons
 type GetAiBuilderStatus500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetAiBuilderStatus500JSONResponse) VisitGetAiBuilderStatusResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAiModelsRequestObject struct {
+}
+
+type GetAiModelsResponseObject interface {
+	VisitGetAiModelsResponse(w http.ResponseWriter) error
+}
+
+type GetAiModels200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string             `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerAIModel `json:"result,omitempty"`
+}
+
+func (response GetAiModels200JSONResponse) VisitGetAiModelsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAiModels401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAiModels401JSONResponse) VisitGetAiModelsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAiModels500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAiModels500JSONResponse) VisitGetAiModelsResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -60289,6 +60338,9 @@ type StrictServerInterface interface {
 	// Check whether the assistant builder is available.
 	// (GET /ai_builder/status)
 	GetAiBuilderStatus(ctx context.Context, request GetAiBuilderStatusRequestObject) (GetAiBuilderStatusResponseObject, error)
+	// Gets the list of available AI engine models.
+	// (GET /ai_models)
+	GetAiModels(ctx context.Context, request GetAiModelsRequestObject) (GetAiModelsResponseObject, error)
 	// Gets a list of AI audits.
 	// (GET /aiaudits)
 	GetAiaudits(ctx context.Context, request GetAiauditsRequestObject) (GetAiauditsResponseObject, error)
@@ -62256,6 +62308,30 @@ func (sh *strictHandler) GetAiBuilderStatus(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(GetAiBuilderStatusResponseObject); ok {
 		if err := validResponse.VisitGetAiBuilderStatusResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAiModels operation middleware
+func (sh *strictHandler) GetAiModels(ctx *gin.Context) {
+	var request GetAiModelsRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAiModels(ctx, request.(GetAiModelsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAiModels")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetAiModelsResponseObject); ok {
+		if err := validResponse.VisitGetAiModelsResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

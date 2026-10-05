@@ -39,6 +39,22 @@ func (r *requestHandler) AIV1AIList(ctx context.Context, pageToken string, pageS
 	return res, nil
 }
 
+// AIV1AIModelList sends a request to ai-manager
+// to getting the customer-facing engine model catalog.
+func (r *requestHandler) AIV1AIModelList(ctx context.Context) ([]amai.ModelInfo, error) {
+	tmp, err := r.sendRequestAI(ctx, "/v1/ai_models", sock.RequestMethodGet, "ai/ai_models", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []amai.ModelInfo
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return res, nil
+}
+
 // AIV1AIGet returns the ai.
 func (r *requestHandler) AIV1AIGet(ctx context.Context, aiID uuid.UUID) (*amai.AI, error) {
 

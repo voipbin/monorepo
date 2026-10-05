@@ -68,51 +68,6 @@ func (e AIManagerAIBuilderMessageRole) Valid() bool {
 	}
 }
 
-// Defines values for AIManagerAIEngineModel.
-const (
-	AIManagerAIEngineModelGeminiGemini2Dot0Flash AIManagerAIEngineModel = "gemini.gemini-2.0-flash"
-	AIManagerAIEngineModelGeminiGemini2Dot5Flash AIManagerAIEngineModel = "gemini.gemini-2.5-flash"
-	AIManagerAIEngineModelGeminiGemini2Dot5Pro   AIManagerAIEngineModel = "gemini.gemini-2.5-pro"
-	AIManagerAIEngineModelGeminiGeminiProLatest  AIManagerAIEngineModel = "gemini.gemini-pro-latest"
-	AIManagerAIEngineModelGrok3                  AIManagerAIEngineModel = "grok.grok-3"
-	AIManagerAIEngineModelGrok3Mini              AIManagerAIEngineModel = "grok.grok-3-mini"
-	AIManagerAIEngineModelOpenaiGPT5             AIManagerAIEngineModel = "openai.gpt-5"
-	AIManagerAIEngineModelOpenaiGPT5Dot1         AIManagerAIEngineModel = "openai.gpt-5.1"
-	AIManagerAIEngineModelOpenaiGPT5Dot2         AIManagerAIEngineModel = "openai.gpt-5.2"
-	AIManagerAIEngineModelOpenaiGPT5Mini         AIManagerAIEngineModel = "openai.gpt-5-mini"
-	AIManagerAIEngineModelOpenaiGPT5Nano         AIManagerAIEngineModel = "openai.gpt-5-nano"
-)
-
-// Valid indicates whether the value is a known member of the AIManagerAIEngineModel enum.
-func (e AIManagerAIEngineModel) Valid() bool {
-	switch e {
-	case AIManagerAIEngineModelGeminiGemini2Dot0Flash:
-		return true
-	case AIManagerAIEngineModelGeminiGemini2Dot5Flash:
-		return true
-	case AIManagerAIEngineModelGeminiGemini2Dot5Pro:
-		return true
-	case AIManagerAIEngineModelGeminiGeminiProLatest:
-		return true
-	case AIManagerAIEngineModelGrok3:
-		return true
-	case AIManagerAIEngineModelGrok3Mini:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5Dot1:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5Dot2:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5Mini:
-		return true
-	case AIManagerAIEngineModelOpenaiGPT5Nano:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for AIManagerAIPromptProposalStatus.
 const (
 	AIManagerAIPromptProposalStatusAccepted    AIManagerAIPromptProposalStatus = "accepted"
@@ -3863,7 +3818,7 @@ type AIManagerAI struct {
 	// Example: sk-...redacted...
 	EngineKey *string `json:"engine_key,omitempty"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 	//
 	// Example: openai.gpt-5
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
@@ -4131,10 +4086,48 @@ type AIManagerAIBuilderStatusResponse struct {
 	MaxMessages int `json:"max_messages"`
 }
 
-// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 //
 // Example: openai.gpt-5
-type AIManagerAIEngineModel string
+type AIManagerAIEngineModel = string
+
+// AIManagerAIModel An AI engine model that can be selected for an AI.
+type AIManagerAIModel struct {
+	// Description A short description of the model.
+	//
+	// Example: Fast and low-cost model suited to real-time voice conversations.
+	Description string `json:"description"`
+
+	// Id The model identifier to use as `engine_model`. Returned from the `id` field of the `GET /ai_models` response.
+	//
+	// Example: gemini.gemini-2.5-flash
+	Id string `json:"id"`
+
+	// Label Human-readable model name.
+	//
+	// Example: Gemini 2.5 Flash
+	Label string `json:"label"`
+
+	// PlatformManaged If true, the platform supplies the credentials and `engine_key` is not needed.
+	//
+	// Example: false
+	PlatformManaged bool `json:"platform_managed"`
+
+	// Recommended Whether the platform recommends this model.
+	//
+	// Example: true
+	Recommended bool `json:"recommended"`
+
+	// Tags Model tags. Currently `low-cost` only.
+	//
+	// Example: ["low-cost"]
+	Tags []string `json:"tags"`
+
+	// Vendor Model vendor used to group models.
+	//
+	// Example: Google
+	Vendor string `json:"vendor"`
+}
 
 // AIManagerAIPromptHistory defines model for AIManagerAIPromptHistory.
 type AIManagerAIPromptHistory struct {
@@ -4259,7 +4252,7 @@ type AIManagerAIcall struct {
 	// Example: 550e8400-e29b-41d4-a716-446655440000
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 	//
 	// Example: openai.gpt-5
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
@@ -10710,7 +10703,7 @@ type PostAisJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 	//
 	// Example: openai.gpt-5
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
@@ -10768,7 +10761,7 @@ type PutAisIdJSONBody struct {
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
 	//
 	// Example: openai.gpt-5
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`

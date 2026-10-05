@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -213,6 +214,92 @@ func Test_AIListByCustomerID(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_AIModelList(t *testing.T) {
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+		},
+		Permission: amagent.PermissionNone,
+	})
+
+	tests := []struct {
+		name string
+
+		agent    *auth.AuthIdentity
+		response []amai.ModelInfo
+
+		expectRes []*amai.ModelInfo
+	}{
+		{
+			name:  "agent without any permission can read the catalog",
+			agent: agent,
+			response: []amai.ModelInfo{
+				{ID: "openai.gpt-5", Label: "GPT-5", Vendor: "OpenAI", Tags: []string{}},
+				{ID: "gemini.gemini-2.5-flash", Label: "Gemini 2.5 Flash", Vendor: "Google", Recommended: true, Tags: []string{"low-cost"}},
+			},
+			expectRes: []*amai.ModelInfo{
+				{ID: "openai.gpt-5", Label: "GPT-5", Vendor: "OpenAI", Tags: []string{}},
+				{ID: "gemini.gemini-2.5-flash", Label: "Gemini 2.5 Flash", Vendor: "Google", Recommended: true, Tags: []string{"low-cost"}},
+			},
+		},
+		{
+			name:      "empty catalog",
+			agent:     agent,
+			response:  []amai.ModelInfo{},
+			expectRes: []*amai.ModelInfo{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().AIV1AIModelList(ctx).Return(tt.response, nil)
+
+			res, err := h.AIModelList(ctx, tt.agent)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect:%v\ngot:%v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AIModelList_error(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := serviceHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	a := auth.NewAgentIdentity(&amagent.Agent{})
+	mockReq.EXPECT().AIV1AIModelList(ctx).Return(nil, errors.New("boom"))
+
+	if _, err := h.AIModelList(ctx, a); err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_AIModelList_nilIdentity(t *testing.T) {
+	h := serviceHandler{}
+	if _, err := h.AIModelList(context.Background(), nil); err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
 	}
 }
 

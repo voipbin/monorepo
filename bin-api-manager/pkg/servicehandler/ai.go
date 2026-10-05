@@ -272,6 +272,32 @@ func (h *serviceHandler) convertAIFilters(filters map[string]string) (map[amai.F
 	return result, nil
 }
 
+// AIModelList returns the engine model catalog.
+// The catalog is non-sensitive and read-only, so any authenticated identity may read it.
+func (h *serviceHandler) AIModelList(ctx context.Context, a *auth.AuthIdentity) ([]*amai.ModelInfo, error) {
+	if a == nil {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":     "AIModelList",
+		"username": a.DisplayName(),
+	})
+
+	tmps, err := h.reqHandler.AIV1AIModelList(ctx)
+	if err != nil {
+		log.Errorf("Could not get the AI model list from the ai manager. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get ai models", err)
+	}
+
+	res := make([]*amai.ModelInfo, 0, len(tmps))
+	for i := range tmps {
+		res = append(res, &tmps[i])
+	}
+
+	return res, nil
+}
+
 // AIGet gets the AI of the given id.
 // It returns AI if it succeed.
 func (h *serviceHandler) AIGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error) {
