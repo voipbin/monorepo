@@ -177,6 +177,7 @@ No Insight AI is active                     The Case panel falls back to the mos
 Status / reason                         Cause
 ======================================= ============================================================
 ``400 AI_NOT_INSIGHT_TYPE``             The target AI is not ``type=insight``. Only Insight AIs can be activated.
+``400 INVALID_ENGINE_MODEL``            The ``engine_model`` is not returned by ``GET /ai_models`` and does not use an allowed provider prefix (``openai``, ``gemini``, ``grok``). Returned on create and update.
 ``404 AI_NOT_FOUND``                    The target AI does not exist or has been deleted.
 ``409 AI_INSIGHT_ACTIVATION_CONFLICT``  Another activation for the same customer was in flight. Retry the request.
 ======================================= ============================================================

@@ -434,8 +434,8 @@ Troubleshooting
 ---------------
 
 * **400 Bad Request:**
-    * **Cause:** Invalid ``engine_model`` format or missing required action fields.
-    * **Fix:** Verify ``engine_model`` uses ``<provider>.<model>`` format (e.g., ``openai.gpt-5-mini``). List the selectable models with ``GET /ai_models``. Ensure ``initial_prompt`` is provided.
+    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``: the value must be returned by ``GET /ai_models`` or use an allowed provider prefix ``openai``, ``gemini``, ``grok``) or missing required action fields.
+    * **Fix:** Verify ``engine_model`` is a value returned by ``GET /ai_models`` or uses an allowed provider prefix in ``<provider>.<model>`` format (e.g., ``openai.gpt-5-mini``). List the selectable models with ``GET /ai_models``. Ensure ``initial_prompt`` is provided.
 
 * **402 Payment Required:**
     * **Cause:** Insufficient VoIPBin account balance.

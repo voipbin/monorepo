@@ -818,7 +818,7 @@ Troubleshooting
 **Common HTTP Errors**
 
 * **400 Bad Request:**
-    * **Cause:** Invalid ``engine_model`` format. Must be ``<provider>.<model>`` (e.g., ``openai.gpt-5-mini``) and must be a model returned by ``GET /ai_models``.
+    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``). The value must be returned by ``GET /ai_models`` or use an allowed provider prefix (``openai``, ``gemini``, ``grok``), for example ``openai.gpt-5-mini``.
     * **Fix:** Pick an ``id`` from ``GET /ai_models`` (see :ref:`AI Models <ai-models>`) and check the provider table in :ref:`Engine Models <ai-struct-ai-engine_model>`.
 
 * **402 Payment Required:**

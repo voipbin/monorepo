@@ -7,7 +7,7 @@ The AI Models endpoint returns the catalog of LLM models that can be used as the
 
 .. note:: **AI Implementation Hint**
 
-   Always read the model ``id`` from ``GET /ai_models`` response rather than hard-coding it. The catalog can change over time. An ``id`` that is not in the list (and does not use the ``openai.``, ``gemini.``, or ``grok.`` prefix) is rejected when you create an AI.
+   Always read the model ``id`` from ``GET /ai_models`` response rather than hard-coding it. The catalog can change over time. An ``id`` that is not in the list (and does not use the ``openai.``, ``gemini.``, or ``grok.`` prefix) is rejected with ``HTTP 400 INVALID_ENGINE_MODEL`` when you create or update an AI.
 
 .. _ai-models-get:
 

@@ -838,10 +838,13 @@ no versioned prompt history has been recorded yet.</p></li>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">AI_NOT_INSIGHT_TYPE</span></code></p></td>
 <td><p>The target AI is not <code class="docutils literal notranslate"><span class="pre">type=insight</span></code>. Only Insight AIs can be activated.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">AI_NOT_FOUND</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">INVALID_ENGINE_MODEL</span></code></p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> is not returned by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> and does not use an allowed provider prefix (<code class="docutils literal notranslate"><span class="pre">openai</span></code>, <code class="docutils literal notranslate"><span class="pre">gemini</span></code>, <code class="docutils literal notranslate"><span class="pre">grok</span></code>). Returned on create and update.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">AI_NOT_FOUND</span></code></p></td>
 <td><p>The target AI does not exist or has been deleted.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">AI_INSIGHT_ACTIVATION_CONFLICT</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">AI_INSIGHT_ACTIVATION_CONFLICT</span></code></p></td>
 <td><p>Another activation for the same customer was in flight. Retry the request.</p></td>
 </tr>
 </tbody>

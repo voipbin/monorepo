@@ -68,7 +68,7 @@ func TestCreate(t *testing.T) {
 				// Should not call database
 			},
 			wantError: true,
-			errorMsg:  "invalid engine model",
+			errorMsg:  "invalid engine_model",
 		},
 		{
 			name:        "fails_with_invalid_tts_type",
@@ -265,7 +265,7 @@ func TestUpdate(t *testing.T) {
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(&ai.AI{EngineModel: ai.EngineModelOpenaiGPT5}, nil).Times(1)
 			},
 			wantError: true,
-			errorMsg:  "invalid engine model",
+			errorMsg:  "invalid engine_model",
 		},
 		{
 			name:        "fails_with_invalid_tts_type",
