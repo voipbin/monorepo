@@ -79,6 +79,8 @@ func (h *serviceHandler) ServiceAgentExtensionList(ctx context.Context, a *auth.
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	// PermissionAll is the tenant-isolation gate shared with the other service_agents endpoints (e.g. ServiceAgentAgentList).
+	// For an agent it only checks the customer, which is a.CustomerID here, so it passes for every agent of the customer.
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
 		return nil, serviceerrors.ErrPermissionDenied
@@ -145,6 +147,8 @@ func (h *serviceHandler) ServiceAgentExtensionGet(ctx context.Context, a *auth.A
 		return nil, newExtensionNotFound()
 	}
 
+	// Tenant-isolation gate shared with the other service_agents endpoints. The customer was already compared above,
+	// so this only keeps the endpoint aligned with the sibling endpoints.
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
 		return nil, serviceerrors.ErrPermissionDenied
