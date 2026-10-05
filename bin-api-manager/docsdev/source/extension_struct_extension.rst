@@ -38,6 +38,10 @@ Extension
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any extension property. Empty string if never updated.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the extension was deleted. Empty string if not deleted.
 
+.. note:: **Agent Access Hint**
+
+   Agents read extensions through ``GET /service_agents/extensions`` and ``GET /service_agents/extensions/{id}``. These return the extensions of the agent's whole customer, so an agent can see its colleagues' extension numbers and names. ``password`` and ``direct_hash`` are returned only for the extensions assigned to the calling agent (listed in the ``addresses`` of ``GET /service_agents/me`` with ``type`` ``extension``). For every other extension both fields are empty strings (``""``). An extension that does not exist, has been deleted, or belongs to another customer is reported as ``404`` ``EXTENSION_NOT_FOUND``.
+
 .. note:: **AI Implementation Hint**
 
    Unlike other resources that use ``9999-01-01 00:00:00.000000`` as a sentinel for "not yet occurred" timestamps, extensions use an empty string (``""``) for ``tm_update`` and ``tm_delete`` when the event has not occurred.

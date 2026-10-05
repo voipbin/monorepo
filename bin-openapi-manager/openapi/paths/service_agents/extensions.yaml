@@ -1,6 +1,11 @@
 get:
   summary: Get list of extensions
-  description: Retrieves a paginated list of extensions associated with the authenticated agent.
+  description: |
+    Retrieves a paginated list of the extensions of the authenticated agent's customer.
+
+    The `password` and `direct_hash` fields are returned only for the extensions assigned to the authenticated agent.
+    For every other extension of the customer they are returned as empty strings.
+    The agent's own extensions can be identified through the `addresses` (`type: extension`) of `GET /service_agents/me`.
   tags:
     - Service Agent
   parameters:
@@ -22,5 +27,7 @@ get:
                       $ref: '#/components/schemas/RegistrarManagerExtension'
     '401':
       $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
     '500':
       $ref: '#/components/responses/InternalError'

@@ -20,6 +20,10 @@ Get list of extensions
 
 Gets the list of registered extensions for your account.
 
+.. note:: **Agent Access Hint**
+
+   An agent token calls ``GET /v1.0/service_agents/extensions`` instead. The list covers every extension of the agent's customer, but ``password`` and ``direct_hash`` are filled in only for the extensions assigned to the calling agent and are empty strings for the others.
+
 .. code::
 
     $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/extensions?token=<YOUR_AUTH_TOKEN>'

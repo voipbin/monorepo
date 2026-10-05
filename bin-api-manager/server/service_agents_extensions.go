@@ -26,7 +26,21 @@ func (h *server) GetServiceAgentsExtensions(c *gin.Context, params openapi_serve
 		"agent": a,
 	})
 
-	tmps, err := h.serviceHandler.ServiceAgentExtensionList(c.Request.Context(), a)
+	pageSize := uint64(100)
+	if params.PageSize != nil {
+		pageSize = uint64(*params.PageSize)
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	tmps, err := h.serviceHandler.ServiceAgentExtensionList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get extensions info. err: %v", err)
 		abortWithServiceError(c, err)
