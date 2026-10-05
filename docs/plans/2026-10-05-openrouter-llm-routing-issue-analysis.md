@@ -4,6 +4,8 @@ Status: Issue-analysis review loop, round 5 pending (rounds 1-3 CHANGES_REQUESTE
 Branch: NOJIRA-Route-LLM-via-OpenRouter
 Date: 2026-10-05
 
+> Correction note (2026-10-05, plan stage): statements below about the installer (`secret_schema.py`, k8s, dummy default key) were written against the deprecated `voipbin/install` repo. The active self-host installer is `install/` in `voipbin/voipbin` (Docker Compose, empty `OPENROUTER_API_KEY=` by default); see the plan Task 2 and design 3.4. Analysis conclusions are unaffected.
+
 ## 1. Request (CEO decisions, 2026-10-05)
 
 - Today only Gemini, OpenAI (and Grok) are usable as AI engine models. Extend the
