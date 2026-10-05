@@ -544,3 +544,72 @@ func Test_isRetryable(t *testing.T) {
 		})
 	}
 }
+
+// Test_Hangup_alreadyHungup checks a call that has tm_hangup is not hung up a second time: no bridge destroy, no hangup
+// write, no webhook, no activeflow stop.
+func Test_Hangup_alreadyHungup(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h, m := newRecoveryTestHandler(mc)
+	ctx := context.Background()
+
+	cn := &channel.Channel{
+		ID:          "8d1f6a3e-4b5c-11f1-9a7e-5b6c7d8e9f10",
+		HangupCause: ari.ChannelCauseNormalClearing,
+	}
+	tmHangup := time.Date(2026, 10, 1, 23, 8, 50, 0, time.UTC)
+	c := &call.Call{
+		Identity:  commonidentity.Identity{ID: uuid.FromStringOrNil("8e2a7b4f-4b5c-11f1-8b8f-6c7d8e9f0a11")},
+		ChannelID: cn.ID,
+		Status:    call.StatusHangup,
+		Direction: call.DirectionOutgoing,
+		TMHangup:  &tmHangup,
+	}
+
+	m.db.EXPECT().CallGetByChannelID(ctx, cn.ID).Return(c, nil)
+
+	res, err := h.Hangup(ctx, cn)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res != c {
+		t.Errorf("Wrong match. expect: the stored call, got: %v", res)
+	}
+}
+
+// Test_Hangup_forcedHangupStatus checks a call that was forced to the hangup status (call-control update-status) has no
+// tm_hangup and still gets the full cleanup from the channel destroy event.
+func Test_Hangup_forcedHangupStatus(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h, m := newRecoveryTestHandler(mc)
+	ctx := context.Background()
+
+	cn := &channel.Channel{
+		ID:          "9f3b8c50-4b5c-11f1-9c9a-7d8e9f0a1b12",
+		HangupCause: ari.ChannelCauseNormalClearing,
+	}
+	c := &call.Call{
+		Identity:  commonidentity.Identity{ID: uuid.FromStringOrNil("a04c9d61-4b5c-11f1-8dab-8e9f0a1b2c13")},
+		ChannelID: cn.ID,
+		Status:    call.StatusHangup,
+		Direction: call.DirectionIncoming,
+	}
+	hungup := *c
+
+	reason := call.CalculateHangupReason(c.Direction, c.Status, cn.HangupCause)
+	by := call.CalculateHangupBy(c.Status)
+
+	m.db.EXPECT().CallGetByChannelID(ctx, cn.ID).Return(c, nil)
+	m.bridge.EXPECT().Destroy(ctx, c.BridgeID).Return(nil)
+	m.db.EXPECT().CallSetHangup(ctx, c.ID, reason, by).Return(nil)
+	m.db.EXPECT().CallGet(ctx, c.ID).Return(&hungup, nil)
+	m.notify.EXPECT().PublishWebhookEvent(ctx, hungup.CustomerID, call.EventTypeCallHangup, &hungup)
+	m.req.EXPECT().FlowV1ActiveflowStop(ctx, c.ActiveflowID).Return(nil, nil)
+
+	if _, err := h.Hangup(ctx, cn); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
