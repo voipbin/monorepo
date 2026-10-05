@@ -99,3 +99,66 @@ func TestCatalogContainsExistingModelsAsDirect(t *testing.T) {
 		}
 	}
 }
+
+func TestCatalogViewPlatformManagedMatchesRoute(t *testing.T) {
+	view := CatalogView()
+	if len(view) != len(catalog) {
+		t.Fatalf("view length mismatch. expect: %d, got: %d", len(catalog), len(view))
+	}
+
+	b, err := json.Marshal(view)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded []map[string]any
+	if err := json.Unmarshal(b, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if len(decoded) != len(catalog) {
+		t.Fatalf("decoded length mismatch. expect: %d, got: %d", len(catalog), len(decoded))
+	}
+
+	managed, direct := 0, 0
+	for i, e := range catalog {
+		expect := e.Route == RouteOpenRouter
+		if expect {
+			managed++
+		} else {
+			direct++
+		}
+
+		if view[i].ID != e.ID {
+			t.Fatalf("order mismatch at %d. expect: %s, got: %s", i, e.ID, view[i].ID)
+		}
+		if view[i].PlatformManaged != expect {
+			t.Errorf("%s: platform_managed mismatch. route: %s, expect: %v, got: %v", e.ID, e.Route, expect, view[i].PlatformManaged)
+		}
+
+		raw, ok := decoded[i]["platform_managed"]
+		if !ok {
+			t.Errorf("%s: platform_managed key missing in JSON", e.ID)
+			continue
+		}
+		got, ok := raw.(bool)
+		if !ok || got != expect {
+			t.Errorf("%s: JSON platform_managed mismatch. route: %s, expect: %v, got: %v", e.ID, e.Route, expect, raw)
+		}
+	}
+	if managed == 0 || direct == 0 {
+		t.Errorf("catalog must contain both routes. managed: %d, direct: %d", managed, direct)
+	}
+}
+
+func TestCatalogCustomerFacingTextHasNoBannedTerms(t *testing.T) {
+	banned := []string{"twilio", "vonage", "plivo", "messagebird", "fonoster", "alternative to", "openrouter", "zero data"}
+	for _, e := range catalog {
+		for field, text := range map[string]string{"label": e.Label, "description": e.Description} {
+			lower := strings.ToLower(text)
+			for _, b := range banned {
+				if strings.Contains(lower, b) {
+					t.Errorf("%s: %s contains banned term %q: %q", e.ID, field, b, text)
+				}
+			}
+		}
+	}
+}
