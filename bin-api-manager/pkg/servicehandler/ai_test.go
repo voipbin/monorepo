@@ -18,6 +18,7 @@ import (
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 )
 
 func Test_AICreate(t *testing.T) {
@@ -300,6 +301,15 @@ func Test_AIModelList_nilIdentity(t *testing.T) {
 	h := serviceHandler{}
 	if _, err := h.AIModelList(context.Background(), nil); err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
+
+func Test_AIModelList_directAccess(t *testing.T) {
+	h := serviceHandler{}
+	a := auth.NewDirectIdentity(&auth.DirectScope{CustomerID: uuid.FromStringOrNil("5f4a0d9c-1b2e-11ee-8b6a-6f1f0c9a1111")})
+	_, err := h.AIModelList(context.Background(), a)
+	if !errors.Is(err, serviceerrors.ErrDirectAccessNotSupported) {
+		t.Errorf("Wrong match. expect: %v, got: %v", serviceerrors.ErrDirectAccessNotSupported, err)
 	}
 }
 

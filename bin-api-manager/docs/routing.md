@@ -326,6 +326,7 @@ Public endpoint — no authentication required. Redeems a token issued by `POST 
 
 | HTTP Method | Path | Backend Service | Notes |
 |------------|------|----------------|-------|
+| GET | `/ai_models` | bin-ai-manager | List the engine model catalog (not paginated). Logged-in users and accesskeys only; direct tokens are rejected |
 | GET | `/ais` | bin-ai-manager | List AI agents |
 | POST | `/ais` | bin-ai-manager | Create AI agent |
 | GET | `/ais/:id` | bin-ai-manager | Get AI agent |

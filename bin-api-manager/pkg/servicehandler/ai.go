@@ -273,10 +273,14 @@ func (h *serviceHandler) convertAIFilters(filters map[string]string) (map[amai.F
 }
 
 // AIModelList returns the engine model catalog.
-// The catalog is non-sensitive and read-only, so any authenticated identity may read it.
+// The catalog is non-sensitive and read-only, so any logged-in user or accesskey may read it.
+// Direct (public token) identities are rejected, like the other AI methods.
 func (h *serviceHandler) AIModelList(ctx context.Context, a *auth.AuthIdentity) ([]*amai.ModelInfo, error) {
 	if a == nil {
 		return nil, serviceerrors.ErrPermissionDenied
+	}
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{

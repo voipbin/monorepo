@@ -45,6 +45,7 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 
 | Pattern | Purpose |
 |---------|---------|
+| `GET /v1/ai_models` | List the curated engine model catalog (customer-facing `ModelInfo` view, not paginated; Route and upstream slug are never exposed) |
 | `GET /v1/ais?` | List AI configurations (paginated) |
 | `GET/PUT/DELETE /v1/ais/<uuid>` | Get / update / delete AI config |
 | `POST /v1/ais` | Create AI configuration |
