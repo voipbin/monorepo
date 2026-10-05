@@ -148,6 +148,24 @@ func Test_HealthCheck(t *testing.T) {
 			expectRetryCount: 1,
 		},
 		{
+			name: "a wrapped not found error is counted like a missing channel row",
+
+			id:         uuid.FromStringOrNil("d0760324-75d6-443d-aa6f-d3b8703bf78a"),
+			retryCount: 0,
+
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0760324-75d6-443d-aa6f-d3b8703bf78a"),
+				},
+				ChannelID: "cba7edf9-8586-40c0-992b-5885103228c1",
+				Status:    call.StatusDialing,
+			},
+			responseChannelErr: fmt.Errorf("wrapped: %w", dbhandler.ErrNotFound),
+
+			expectHealth:     true,
+			expectRetryCount: 1,
+		},
+		{
 			name: "channel row is still missing at the third check",
 
 			id:         uuid.FromStringOrNil("d0760324-75d6-443d-aa6f-d3b8703bf78a"),
@@ -337,6 +355,14 @@ func Test_healthHangup(t *testing.T) {
 			name:         "dialing call without a channel row is finalized as failed",
 			responseCall: newCall(call.StatusDialing, call.DirectionOutgoing),
 			channelErr:   dbhandler.ErrNotFound,
+			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
+				expectFailedCall(ctx, m, c, true)
+			},
+		},
+		{
+			name:         "dialing call with a wrapped not found error is finalized as failed",
+			responseCall: newCall(call.StatusDialing, call.DirectionOutgoing),
+			channelErr:   fmt.Errorf("wrapped: %w", dbhandler.ErrNotFound),
 			expect: func(ctx context.Context, m recoveryMocks, c *call.Call) {
 				expectFailedCall(ctx, m, c, true)
 			},
