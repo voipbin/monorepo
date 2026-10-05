@@ -935,3 +935,157 @@ class TestCreateSTTService:
 
         with pytest.raises(ValueError, match="Unsupported STT service"):
             create_stt_service("nonexistent")
+
+
+class TestPlatformOpenRouter:
+    """platform_openrouter.<slug>: platform-held key, ZDR provider routing.
+
+    The customer key argument is ignored by design; the raw `openrouter`
+    service is NOT supported (it must stay "Unsupported LLM service").
+    """
+
+    EXPECTED_PROVIDER = {
+        "zdr": True,
+        "data_collection": "deny",
+        "require_parameters": True,
+    }
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_uses_env_key_not_customer_key(self, mock_service, mock_context, mock_pair):
+        from run import create_llm_service
+
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
+            llm, aggregator = create_llm_service(
+                type="platform_openrouter.anthropic/claude-haiku-4.5",
+                key="customer-supplied-key",
+                messages=[{"role": "user", "content": "hello"}],
+                tools=[],
+            )
+
+        assert mock_service.call_count == 1
+        assert mock_service.call_args.kwargs["api_key"] == "env-or-key"
+        assert "customer-supplied-key" not in repr(mock_service.call_args)
+        assert llm is mock_service.return_value
+        assert aggregator is mock_pair.return_value
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_model_is_slug_and_provider_extra_body(self, mock_service, mock_context, mock_pair):
+        from run import create_llm_service
+
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
+            create_llm_service(
+                type="platform_openrouter.meta-llama/llama-3.3-70b-instruct",
+                key="",
+                messages=[],
+                tools=[],
+            )
+
+        settings_cls = mock_service.Settings
+        assert settings_cls.call_count == 1
+        kwargs = settings_cls.call_args.kwargs
+        # Split on the first "." only: the slug itself may contain dots.
+        assert kwargs["model"] == "meta-llama/llama-3.3-70b-instruct"
+        assert kwargs["extra"] == {"extra_body": {"provider": self.EXPECTED_PROVIDER}}
+        assert mock_service.call_args.kwargs["settings"] is settings_cls.return_value
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_slug_with_dots_keeps_full_slug(self, mock_service, mock_context, mock_pair):
+        from run import create_llm_service
+
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
+            create_llm_service(
+                type="platform_openrouter.anthropic/claude-haiku-4.5",
+                key="", messages=[], tools=[],
+            )
+        assert mock_service.Settings.call_args.kwargs["model"] == "anthropic/claude-haiku-4.5"
+
+    @pytest.mark.parametrize("env", [None, ""])
+    @patch("run.OpenRouterLLMService")
+    def test_missing_or_empty_env_key_raises(self, mock_service, env):
+        from run import create_llm_service
+
+        environ = {k: v for k, v in os.environ.items() if k != "OPENROUTER_API_KEY"}
+        if env is not None:
+            environ["OPENROUTER_API_KEY"] = env
+        with patch.dict(os.environ, environ, clear=True):
+            with pytest.raises(ValueError, match="OpenRouter is not configured"):
+                # A customer key must NOT rescue a missing platform key.
+                create_llm_service(
+                    type="platform_openrouter.anthropic/claude-haiku-4.5",
+                    key="customer-supplied-key", messages=[], tools=[],
+                )
+        mock_service.assert_not_called()
+
+    @pytest.mark.parametrize("llm_type", ["openrouter.meta-llama/llama-3-70b", "OpenRouter:x/y"])
+    @patch("run.OpenRouterLLMService")
+    def test_raw_openrouter_is_unsupported(self, mock_service, llm_type):
+        from run import create_llm_service
+
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
+            with pytest.raises(ValueError, match="Unsupported LLM service"):
+                create_llm_service(type=llm_type, key="k", messages=[], tools=[])
+        mock_service.assert_not_called()
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_service_name_case_insensitive_colon_separator(self, mock_service, mock_context, mock_pair):
+        """The shared parser lowercases the service name; the colon form still resolves here
+        (the Go-side resolver never emits it, and the fallback guard in
+        _member_llm_type rejects it for customer-sourced values)."""
+        from run import create_llm_service
+
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
+            create_llm_service(type="platform_openrouter:a/b", key="", messages=[], tools=[])
+        assert mock_service.Settings.call_args.kwargs["model"] == "a/b"
+
+
+def _real_openrouter_probe_script():
+    return (
+        "import json\n"
+        "from pipecat.services.openrouter.llm import OpenRouterLLMService\n"
+        "provider = {'zdr': True, 'data_collection': 'deny', 'require_parameters': True}\n"
+        "svc = OpenRouterLLMService(api_key='fake-key-for-test', settings=OpenRouterLLMService.Settings(\n"
+        "    model='anthropic/claude-haiku-4.5', extra={'extra_body': {'provider': provider}}))\n"
+        "params = svc.build_chat_completion_params({'messages': [{'role': 'user', 'content': 'hi'}], 'tools': [], 'tool_choice': 'none'})\n"
+        "print(json.dumps({'top_keys': sorted(params.keys()), 'extra_body': params.get('extra_body'), 'model': params.get('model'), 'provider_top': 'provider' in params}))\n"
+    )
+
+
+def test_extra_body_provider_reaches_chat_completion_kwargs_with_real_service():
+    """Proves with the REAL OpenRouterLLMService that settings.extra['extra_body'] becomes a
+    top-level `extra_body` kwarg (what the OpenAI SDK forwards in the request body), and that
+    `provider` is NOT a top-level kwarg (the SDK would reject it).
+
+    conftest.py replaces `pipecat` with mocks in this process, so the real library is
+    exercised in a clean subprocess (no network, fake key).
+    """
+    import json
+    import subprocess
+    import sys
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        probe = subprocess.run(
+            [sys.executable, "-c", "import pipecat.services.openrouter.llm"],
+            cwd=tmp, capture_output=True, text=True,
+        )
+        if probe.returncode != 0:
+            pytest.skip("real pipecat-ai (openrouter extra) is not importable in this environment")
+        res = subprocess.run(
+            [sys.executable, "-c", _real_openrouter_probe_script()],
+            cwd=tmp, capture_output=True, text=True,
+        )
+    assert res.returncode == 0, res.stderr[-2000:]
+    out = json.loads(res.stdout.strip().splitlines()[-1])
+    assert out["model"] == "anthropic/claude-haiku-4.5"
+    assert out["provider_top"] is False
+    assert out["extra_body"]["provider"]["zdr"] is True
+    assert out["extra_body"]["provider"]["data_collection"] == "deny"
+    assert out["extra_body"]["provider"]["require_parameters"] is True

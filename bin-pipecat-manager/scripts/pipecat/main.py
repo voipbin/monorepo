@@ -40,6 +40,8 @@ class Tool(BaseModel):
 class ResolvedAI(BaseModel):
     engine_model: str
     engine_key: str
+    # None: older Go that does not send the field. "": Go rejected the member.
+    llm_type: Optional[str] = None
     init_prompt: Optional[str] = None
     parameter: Optional[dict] = None
     tts_type: Optional[str] = None

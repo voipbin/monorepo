@@ -42,7 +42,7 @@ def _two_google_members():
     ]
 
 
-async def _run_team_init(resolved_team, pipeline_id="test-gate", **kwargs):
+async def _run_team_init(resolved_team, pipeline_id="test-gate", llm_side_effect=None, **kwargs):
     """Await init_team_pipeline on the success-path mock harness.
 
     Reuses the mock set from test_init_team_pipeline_swaps_flowmanager_llm_to_router
@@ -68,7 +68,7 @@ async def _run_team_init(resolved_team, pipeline_id="test-gate", **kwargs):
     flow_manager_stub._llm = MagicMock()
     flow_manager_stub.initialize = AsyncMock()
 
-    with patch("run.create_llm_service", return_value=(mock_llm, MagicMock())) as mock_create_llm, \
+    with patch("run.create_llm_service", return_value=(mock_llm, MagicMock()), side_effect=llm_side_effect) as mock_create_llm, \
          patch("run.RoutingLLMService", return_value=mock_routing), \
          patch("run._make_aggregator", return_value=MagicMock()) as mock_make_aggregator, \
          patch("run.LLMContext") as mock_llm_context, \
@@ -191,6 +191,7 @@ async def test_init_team_pipeline_unsupported_member_llm():
                 "name": "Agent A",
                 "ai": {
                     "engine_model": "unsupported.model",
+                    "llm_type": "unsupported.model",
                     "engine_key": "fake-key",
                 },
                 "tools": [],
@@ -775,3 +776,117 @@ async def test_init_team_pipeline_disables_async_tool_instruction_on_members():
     _, mocks = await _run_team_init(team)
 
     assert mocks.llm._has_async_tools() is False
+
+
+# --- Task 12: Go-resolved llm_type for team members -------------------------
+
+def _member(mid, engine_model, engine_key="", **ai_extra):
+    ai = {"engine_model": engine_model, "engine_key": engine_key}
+    ai.update(ai_extra)
+    return {"id": mid, "name": mid, "ai": ai, "tools": [], "transitions": []}
+
+
+@pytest.mark.asyncio
+async def test_team_member_uses_resolved_llm_type_not_engine_model():
+    team = {
+        "start_member_id": "m1",
+        "members": [_member("m1", "anthropic.claude-haiku-4.5", llm_type="platform_openrouter.anthropic/claude-haiku-4.5")],
+    }
+    _, mocks = await _run_team_init(team)
+    args = mocks.create_llm_service.call_args.args
+    assert args[0] == "platform_openrouter.anthropic/claude-haiku-4.5"
+    assert args[1] == ""
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("engine_model", [
+    "anthropic.claude-haiku-4.5",
+    "openrouter.meta-llama/llama-3-70b",
+    "OpenAI.gpt-4o",
+    "openai.gpt-4o",
+])
+async def test_team_member_empty_llm_type_raises_for_any_engine_model(engine_model):
+    """Go rejected the member (llm_type == ""): never fall back to engine_model."""
+    team = {"start_member_id": "m1", "members": [_member("m1", engine_model, llm_type="")]}
+    with pytest.raises(ValueError, match="engine model is not available"):
+        await _run_team_init(team)
+
+
+@pytest.mark.asyncio
+async def test_team_member_missing_llm_type_keeps_legacy_for_direct_model():
+    team = {"start_member_id": "m1", "members": [_member("m1", "openai.gpt-4o", "k")]}
+    _, mocks = await _run_team_init(team)
+    args = mocks.create_llm_service.call_args.args
+    assert args[0] == "openai.gpt-4o" and args[1] == "k"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("engine_model", [
+    "platform_openrouter.anthropic/claude-haiku-4.5",
+    "Platform_OpenRouter:x/y",
+    "openrouter.meta-llama/llama-3-70b",
+    "OpenRouter:x/y",
+])
+async def test_team_member_missing_llm_type_rejects_routed_services(engine_model):
+    """Older Go (no llm_type): never honor routed/internal services from engine_model."""
+    team = {"start_member_id": "m1", "members": [_member("m1", engine_model, "customer-key")]}
+    with pytest.raises(ValueError, match="engine model is not available"):
+        await _run_team_init(team)
+
+
+@pytest.mark.asyncio
+async def test_mixed_direct_and_openrouter_team_builds_both_services(monkeypatch):
+    """A direct member and an OpenRouter member each get their own service through the real
+    create_llm_service, with the customer key used only for the direct one."""
+    import run
+    monkeypatch.setenv("OPENROUTER_API_KEY", "env-or-key")
+    real_create = run.create_llm_service
+    with patch("run.OpenAILLMService") as mock_openai, \
+         patch("run.OpenRouterLLMService") as mock_or, \
+         patch("run.LLMContext"), patch("run.LLMContextAggregatorPair"):
+        team = {
+            "start_member_id": "m1",
+            "members": [
+                _member("m1", "openai.gpt-4o", "customer-openai-key", llm_type="openai.gpt-4o"),
+                _member("m2", "anthropic.claude-haiku-4.5", "stale-customer-key",
+                        llm_type="platform_openrouter.anthropic/claude-haiku-4.5"),
+            ],
+        }
+        _, mocks = await _run_team_init(team, llm_side_effect=real_create)
+        assert mocks.create_llm_service.call_count == 2
+        mock_openai.assert_called_once_with(api_key="customer-openai-key", model="gpt-4o")
+        assert mock_or.call_args.kwargs["api_key"] == "env-or-key"
+        assert mock_or.Settings.call_args.kwargs["model"] == "anthropic/claude-haiku-4.5"
+        assert "stale-customer-key" not in repr(mock_or.call_args)
+
+
+def test_resolved_ai_llm_type_is_optional_and_distinguishes_none_from_empty():
+    pytest.importorskip("fastapi")
+    from main import ResolvedAI
+    base = {"engine_model": "openai.gpt-4o", "engine_key": "k"}
+    assert ResolvedAI(**base).llm_type is None
+    assert ResolvedAI(**base, llm_type="").llm_type == ""
+    assert ResolvedAI(**base, llm_type="openai.gpt-4o").llm_type == "openai.gpt-4o"
+
+
+class TestMemberLLMType:
+    def test_value_used_as_is(self):
+        from run import _member_llm_type
+        assert _member_llm_type({"engine_model": "x.y", "llm_type": "platform_openrouter.a/b"}) == "platform_openrouter.a/b"
+
+    def test_empty_string_rejected_for_any_provider(self):
+        from run import _member_llm_type
+        for em in ("openai.gpt-4o", "OpenAI.gpt-4o", "anthropic.x", ""):
+            with pytest.raises(ValueError, match="engine model is not available"):
+                _member_llm_type({"engine_model": em, "llm_type": ""})
+
+    def test_none_falls_back_for_direct(self):
+        from run import _member_llm_type
+        assert _member_llm_type({"engine_model": "gemini.gemini-2.5-flash"}) == "gemini.gemini-2.5-flash"
+        assert _member_llm_type({"engine_model": "grok.grok-3", "llm_type": None}) == "grok.grok-3"
+
+    def test_none_rejects_routed(self):
+        from run import _member_llm_type
+        for em in ("openrouter.a/b", "platform_openrouter.a/b", "platform_openrouter:a/b", "OpenRouter:a/b"):
+            with pytest.raises(ValueError, match="engine model is not available"):
+                _member_llm_type({"engine_model": em})
