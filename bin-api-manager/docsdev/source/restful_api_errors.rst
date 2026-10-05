@@ -595,7 +595,7 @@ Reasons fired by extension endpoints (``/extensions``, ``/extensions/{id}*``, ``
      - Cause → Fix
    * - ``EXTENSION_NOT_FOUND``
      - 404
-     - Extension ID does not exist or belongs to another customer. Fired by ``GET /extensions/{id}``, ``PUT /extensions/{id}``, ``DELETE /extensions/{id}``, and ``POST /extensions/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /extensions`` list call.
+     - Extension ID does not exist or belongs to another customer. Fired by ``GET /extensions/{id}``, ``PUT /extensions/{id}``, ``DELETE /extensions/{id}``, and ``POST /extensions/{id}/direct_hash_regenerate``. Also fired by ``GET /service_agents/extensions/{id}``, where an unknown ID, a deleted extension and an extension of another customer are deliberately indistinguishable. **Fix:** Verify the ID was obtained from a recent ``GET /extensions`` (or ``GET /service_agents/extensions``) list call.
 
 Talk Reasons
 ^^^^^^^^^^^^

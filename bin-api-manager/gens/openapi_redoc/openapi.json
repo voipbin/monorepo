@@ -19487,11 +19487,21 @@
     "/service_agents/contact_cases": {
       "get": {
         "summary": "Get list of contact cases",
-        "description": "Retrieves a paginated list of cases for the authenticated agent's customer.",
+        "description": "Retrieves a paginated list of cases for the authenticated agent's customer, optionally filtered by contact_id.",
         "tags": [
           "Service Agent"
         ],
         "parameters": [
+          {
+            "name": "contact_id",
+            "in": "query",
+            "description": "Filter to cases attributed to this Contact.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+            }
+          },
           {
             "$ref": "#/components/parameters/PageSize"
           },
@@ -19564,7 +19574,7 @@
     "/service_agents/extensions/{id}": {
       "get": {
         "summary": "Get extension details",
-        "description": "Retrieves detailed information about a specific extension by its ID.",
+        "description": "Retrieves detailed information about a specific extension of the authenticated agent's customer by its ID.\n\nThe `password` and `direct_hash` fields are returned only when the extension is assigned to the authenticated agent.\nFor an extension assigned to someone else they are returned as empty strings.\n\nAn extension that does not exist, that has been deleted, or that belongs to another customer is reported identically as `404 EXTENSION_NOT_FOUND`.\n",
         "tags": [
           "Service Agent"
         ],
@@ -19611,7 +19621,7 @@
     "/service_agents/extensions": {
       "get": {
         "summary": "Get list of extensions",
-        "description": "Retrieves a paginated list of extensions associated with the authenticated agent.",
+        "description": "Retrieves a paginated list of the extensions of the authenticated agent's customer.\n\nThe `password` and `direct_hash` fields are returned only for the extensions assigned to the authenticated agent.\nFor every other extension of the customer they are returned as empty strings.\nThe agent's own extensions can be identified through the `addresses` (`type: extension`) of `GET /service_agents/me`.\n",
         "tags": [
           "Service Agent"
         ],
@@ -19651,6 +19661,9 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"

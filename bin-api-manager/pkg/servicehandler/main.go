@@ -1161,7 +1161,7 @@ type ServiceHandler interface {
 
 	// service_agent extension
 	ServiceAgentExtensionGet(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*rmextension.WebhookMessage, error)
-	ServiceAgentExtensionList(ctx context.Context, a *auth.AuthIdentity) ([]*rmextension.WebhookMessage, error)
+	ServiceAgentExtensionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmextension.WebhookMessage, error)
 
 	// storage file handlers
 	ServiceAgentFileCreate(ctx context.Context, a *auth.AuthIdentity, f multipart.File, fileType smfile.Type, name string, detail string, filename string) (*smfile.WebhookMessage, error)

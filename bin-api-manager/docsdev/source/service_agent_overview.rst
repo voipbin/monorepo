@@ -82,7 +82,7 @@ The table below groups every ``/service_agents/*`` path by the resource it front
      -
    * - ``GET /service_agents/extensions*``
      - :ref:`Extension <extension-main>`
-     -
+     - Customer-wide: returns every extension of the agent's customer. ``password`` and ``direct_hash`` are filled in only for the extensions assigned to the calling agent (empty strings otherwise)
    * - ``GET/POST/DELETE /service_agents/files*``
      - :ref:`Storage <storage-main>`
      -

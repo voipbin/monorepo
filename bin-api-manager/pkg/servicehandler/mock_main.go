@@ -5253,18 +5253,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionGet(ctx, a, exten
 }
 
 // ServiceAgentExtensionList mocks base method.
-func (m *MockServiceHandler) ServiceAgentExtensionList(ctx context.Context, a *auth.AuthIdentity) ([]*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentExtensionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentExtensionList", ctx, a)
+	ret := m.ctrl.Call(m, "ServiceAgentExtensionList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*extension.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentExtensionList indicates an expected call of ServiceAgentExtensionList.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionList(ctx, a any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentExtensionList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentExtensionList), ctx, a)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentExtensionList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentExtensionList), ctx, a, size, token)
 }
 
 // ServiceAgentFileCreate mocks base method.
