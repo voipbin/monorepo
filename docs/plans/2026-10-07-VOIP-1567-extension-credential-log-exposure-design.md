@@ -1,6 +1,6 @@
 # VOIP-1567 extension 자격 증명 로그 노출 설계
 
-- 상태: Draft (설계 리뷰 6회차 대기, 5회차 반영)
+- 상태: APPROVED (설계 리뷰 7회차, 6-7회차 연속 승인)
 - 티켓: VOIP-1567
 - 선행 문서: docs/plans/2026-10-07-VOIP-1567-extension-credential-log-exposure-analysis.md (이슈 분석, 범위와 결정 확정)
 - 범위: 분석 문서 4절의 유형 1(extension, trunk 객체 5곳)과 유형 2(`AuthIdentity` 단일 지점). 유형 3, 4 는 대표님 결정으로 처리하지 않는다.
