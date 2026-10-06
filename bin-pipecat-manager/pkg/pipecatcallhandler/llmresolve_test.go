@@ -3,6 +3,7 @@ package pipecatcallhandler
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -12,6 +13,7 @@ import (
 	aitool "monorepo/bin-ai-manager/models/tool"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/pkg/dbhandler"
@@ -38,7 +40,15 @@ func Test_resolveSessionLLM(t *testing.T) {
 		{"openrouter catalog meta slug", "meta.llama-3.3-70b-instruct", "customer-key", "platform_openrouter.meta-llama/llama-3.3-70b-instruct", "", false},
 		{"passthrough keeps key", "openai.gpt-4o", "customer-key", "openai.gpt-4o", "customer-key", false},
 		{"rejected legacy anthropic", "anthropic.claude-opus-4", "customer-key", "", "", true},
-		{"rejected raw openrouter", "openrouter.meta-llama/llama-3-70b", "customer-key", "", "", true},
+		{"custom openrouter forwards the key", "openrouter.meta-llama/llama-3-70b", "dummy-new-key", "openrouter.meta-llama/llama-3-70b", "dummy-new-key", false},
+		{"custom openrouter keeps dotted id", "openrouter.mistralai/mistral-medium-3.1", "dummy-new-key", "openrouter.mistralai/mistral-medium-3.1", "dummy-new-key", false},
+		{"custom openrouter trims the key", "openrouter.vendor/model-a", "  dummy-new-key  ", "openrouter.vendor/model-a", "dummy-new-key", false},
+		{"custom openrouter empty key fails", "openrouter.vendor/model-a", "", "", "", true},
+		{"custom openrouter blank key fails", "openrouter.vendor/model-a", " \t\n ", "", "", true},
+		{"rejected custom without slash", "openrouter.dummy-key-not-real", "dummy-new-key", "", "", true},
+		{"rejected custom router id", "openrouter.openrouter/auto", "dummy-new-key", "", "", true},
+		{"rejected custom variant suffix", "openrouter.vendor/model:free", "dummy-new-key", "", "", true},
+		{"rejected custom catalog entry id", "custom.openrouter", "dummy-new-key", "", "", true},
 		{"rejected internal prefix", "platform_openrouter.x", "customer-key", "", "", true},
 		{"rejected empty", "", "customer-key", "", "", true},
 		{"rejected unknown", "unknown.x", "", "", "", true},
@@ -60,10 +70,74 @@ func Test_resolveSessionLLM(t *testing.T) {
 	}
 }
 
+func Test_resolveSessionLLM_errorTextDoesNotEchoCustomInput(t *testing.T) {
+	tests := []struct {
+		name string
+
+		llmType pipecatcall.LLMType
+		aiKey   string
+
+		expectContains    string
+		expectNotContains string
+	}{
+		{"malformed custom id is not echoed", "openrouter.dummy-key-not-real", "dummy-new-key", "engine model is not available", "dummy-key-not-real"},
+		{"upper case custom prefix is not echoed", "OpenRouter.dummy-key-not-real", "dummy-new-key", "engine model is not available", "dummy-key-not-real"},
+		{"empty custom key error has no model id", "openrouter.vendor/model-a", "", "custom engine key is empty", "vendor/model-a"},
+		{"other rejected input keeps the existing text", "unknown.x", "", "engine model is not available: unknown.x", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, _, err := resolveSessionLLM(tt.llmType, tt.aiKey)
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+			if !strings.Contains(err.Error(), tt.expectContains) {
+				t.Errorf("err = %q, want it to contain %q", err.Error(), tt.expectContains)
+			}
+			if tt.expectNotContains != "" && strings.Contains(err.Error(), tt.expectNotContains) {
+				t.Errorf("err = %q must not contain %q", err.Error(), tt.expectNotContains)
+			}
+		})
+	}
+}
+
+func Test_classifySessionLLM(t *testing.T) {
+	tests := []struct {
+		name string
+
+		llmType pipecatcall.LLMType
+
+		expectErr         bool
+		expectNotContains string
+	}{
+		{"custom openrouter passes without a key", "openrouter.vendor/model-a", false, ""},
+		{"direct catalog passes", "openai.gpt-5", false, ""},
+		{"openrouter catalog passes", "anthropic.claude-haiku-4.5", false, ""},
+		{"rejected legacy anthropic", "anthropic.claude-opus-4", true, ""},
+		{"rejected custom router id", "openrouter.openrouter/auto", true, "openrouter/auto"},
+		{"rejected custom without slash", "openrouter.dummy-key-not-real", true, "dummy-key-not-real"},
+		{"rejected internal prefix", "platform_openrouter.x", true, ""},
+		{"rejected empty", "", true, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := classifySessionLLM(tt.llmType)
+			if (err != nil) != tt.expectErr {
+				t.Fatalf("err = %v, expectErr = %v", err, tt.expectErr)
+			}
+			if err != nil && tt.expectNotContains != "" && strings.Contains(err.Error(), tt.expectNotContains) {
+				t.Errorf("err = %q must not contain %q", err.Error(), tt.expectNotContains)
+			}
+		})
+	}
+}
+
 // Test_Start_rejectedModelDoesNotCreate pins that a Rejected model fails Start
 // before h.Create (no DB row): the DB mock has no expectations, so any call fails.
 func Test_Start_rejectedModelDoesNotCreate(t *testing.T) {
-	for _, model := range []pipecatcall.LLMType{"anthropic.claude-opus-4", "openrouter.meta-llama/llama-3-70b", ""} {
+	for _, model := range []pipecatcall.LLMType{"anthropic.claude-opus-4", "openrouter.openrouter/auto", "openrouter.a/b:free", ""} {
 		t.Run(string(model), func(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
@@ -80,6 +154,37 @@ func Test_Start_rejectedModelDoesNotCreate(t *testing.T) {
 				t.Fatalf("expected error and nil result, got res=%v err=%v", res, err)
 			}
 		})
+	}
+}
+
+// Test_Start_customModelPassesClassification pins that the keyless pre-check in
+// Start() accepts a custom OpenRouter model (the key only exists later, in the
+// run path), so h.Create runs once. An unsupported reference type then ends Start
+// before any runner is touched.
+func Test_Start_customModelPassesClassification(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &pipecatcallHandler{db: mockDB, notifyHandler: mockNotify, hostID: "host-1"}
+
+	id := uuid.FromStringOrNil("11110000-1111-2222-3333-444455556666")
+	created := &pipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: id}}
+
+	mockDB.EXPECT().PipecatcallCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().PipecatcallGet(gomock.Any(), id).Return(created, nil).Times(1)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), pipecatcall.EventTypeCreated, created).Times(1)
+
+	res, err := h.Start(context.Background(),
+		id, uuid.FromStringOrNil("11110000-1111-2222-3333-444455557777"),
+		uuid.Nil, pipecatcall.ReferenceType("unsupported"), uuid.Nil,
+		"openrouter.vendor/model-a", nil, pipecatcall.STTTypeNone, "", pipecatcall.TTSTypeNone, "", "")
+	if err == nil || res != nil {
+		t.Fatalf("expected the invalid reference type error and nil result, got res=%v err=%v", res, err)
+	}
+	if !strings.Contains(err.Error(), "invalid reference type") {
+		t.Errorf("err = %q, want it to fail on the reference type, not on classification", err.Error())
 	}
 }
 
@@ -127,6 +232,33 @@ func Test_runGetLLMKey_resolves(t *testing.T) {
 			expectKey:        "",
 		},
 		{
+			name:    "custom model forwards the trimmed ai key",
+			llmType: "openrouter.a/b",
+			prepare: func(m *requesthandler.MockRequestHandler) {
+				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineKey: "  dummy-old-key  "}, nil)
+			},
+			expectRunnerType: "openrouter.a/b",
+			expectKey:        "dummy-old-key",
+		},
+		{
+			name:    "custom model with ai lookup failure has no key and errors",
+			llmType: "openrouter.a/b",
+			prepare: func(m *requesthandler.MockRequestHandler) {
+				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(nil, fmt.Errorf("boom"))
+			},
+			expectErr: true,
+		},
+		{
+			name:    "custom model with an empty stored key errors",
+			llmType: "openrouter.a/b",
+			prepare: func(m *requesthandler.MockRequestHandler) {
+				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineKey: ""}, nil)
+			},
+			expectErr: true,
+		},
+		{
 			name:    "ai lookup failure cannot bypass rejection of stored openrouter.x",
 			llmType: "openrouter.x",
 			prepare: func(m *requesthandler.MockRequestHandler) {
@@ -163,31 +295,45 @@ func Test_runGetLLMKey_resolves(t *testing.T) {
 	}
 }
 
-// Test_startReferenceTypeCall_rejectedModel: rejected model errors before any
-// session is created or any Asterisk resource is started.
+// Test_startReferenceTypeCall_rejectedModel: a rejected model, or a custom model
+// (which has no key on this path because the call reference never looks the AI
+// up), errors before any session is created or any Asterisk resource is started.
 func Test_startReferenceTypeCall_rejectedModel(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
+	tests := []struct {
+		name string
 
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	h := &pipecatcallHandler{
-		requestHandler:        mockReq,
-		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
+		llmType pipecatcall.LLMType
+	}{
+		{"rejected legacy model", "anthropic.claude-opus-4"},
+		{"custom model has no key on the call reference", "openrouter.vendor/model-a"},
 	}
-	referenceID := uuid.FromStringOrNil("b2c3d4e5-1111-2222-3333-444455556666")
-	pc := &pipecatcall.Pipecatcall{
-		Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666")},
-		ReferenceType: pipecatcall.ReferenceTypeCall,
-		ReferenceID:   referenceID,
-		LLMType:       "openrouter.meta-llama/llama-3-70b",
-	}
-	mockReq.EXPECT().CallV1CallGet(gomock.Any(), referenceID).Return(&cmcall.Call{}, nil)
 
-	if err := h.startReferenceTypeCall(context.Background(), pc); err == nil {
-		t.Fatal("expected error for rejected model")
-	}
-	if len(h.mapPipecatcallSession) != 0 {
-		t.Errorf("no session may be created for a rejected model")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &pipecatcallHandler{
+				requestHandler:        mockReq,
+				mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
+			}
+			referenceID := uuid.FromStringOrNil("b2c3d4e5-1111-2222-3333-444455556666")
+			pc := &pipecatcall.Pipecatcall{
+				Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("a1b2c3d4-1111-2222-3333-444455556666")},
+				ReferenceType: pipecatcall.ReferenceTypeCall,
+				ReferenceID:   referenceID,
+				LLMType:       tt.llmType,
+			}
+			mockReq.EXPECT().CallV1CallGet(gomock.Any(), referenceID).Return(&cmcall.Call{}, nil)
+
+			if err := h.startReferenceTypeCall(context.Background(), pc); err == nil {
+				t.Fatal("expected error")
+			}
+			if len(h.mapPipecatcallSession) != 0 {
+				t.Errorf("no session may be created")
+			}
+		})
 	}
 }
 
@@ -213,6 +359,8 @@ func Test_startReferenceTypeAIcall_runnerHandoff(t *testing.T) {
 		{name: "passthrough keeps the key", llmType: "openai.gpt-4o", expectRunnerType: "openai.gpt-4o", expectKey: "customer-key"},
 		{name: "direct model with ai lookup failure still proceeds (warn and proceed)", llmType: "openai.gpt-5", aiGetErr: fmt.Errorf("boom"), expectRunnerType: "openai.gpt-5", expectKey: ""},
 		{name: "openrouter model with ai lookup failure still resolves to the slug type", llmType: "meta.llama-4-maverick", aiGetErr: fmt.Errorf("boom"), expectRunnerType: "platform_openrouter.meta-llama/llama-4-maverick", expectKey: ""},
+		{name: "custom model forwards the customer key", llmType: "openrouter.vendor/model-a", expectRunnerType: "openrouter.vendor/model-a", expectKey: "customer-key"},
+		{name: "custom model with ai lookup failure errors", llmType: "openrouter.vendor/model-a", aiGetErr: fmt.Errorf("boom"), expectErr: true},
 		{name: "stored raw openrouter.x with ai lookup failure errors", llmType: "openrouter.x", aiGetErr: fmt.Errorf("boom"), expectErr: true},
 		{name: "rejected legacy model errors", llmType: "anthropic.claude-opus-4", expectErr: true},
 	}

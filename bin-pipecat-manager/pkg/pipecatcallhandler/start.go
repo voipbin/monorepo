@@ -38,7 +38,7 @@ func (h *pipecatcallHandler) Start(
 
 	// Keyless classification before anything is written: a rejected model must not
 	// leave a DB row behind, and the error propagates to the caller.
-	if _, _, errResolve := resolveSessionLLM(llmType, ""); errResolve != nil {
+	if errResolve := classifySessionLLM(llmType); errResolve != nil {
 		return nil, errors.Wrapf(errResolve, "could not resolve llm type")
 	}
 

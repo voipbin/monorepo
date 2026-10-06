@@ -21,13 +21,18 @@ func Test_Create_EngineModelPolicy(t *testing.T) {
 	tests := []struct {
 		name        string
 		engineModel ai.EngineModel
+		engineKey   string
 		wantError   bool
 	}{
-		{"rejects_anthropic_not_in_catalog", "anthropic.claude-opus-4", true},
-		{"rejects_raw_openrouter", "openrouter.meta-llama/llama-3-70b", true},
-		{"rejects_internal_type", "platform_openrouter.x", true},
-		{"accepts_catalog_openrouter_model", "anthropic.claude-haiku-4.5", false},
-		{"accepts_direct_passthrough", "openai.gpt-4o", false},
+		{"rejects_anthropic_not_in_catalog", "anthropic.claude-opus-4", "key", true},
+		{"rejects_custom_openrouter_without_key", "openrouter.meta-llama/llama-3-70b", "", true},
+		{"rejects_custom_openrouter_with_blank_key", "openrouter.meta-llama/llama-3-70b", "   ", true},
+		{"rejects_custom_openrouter_bad_id", "openrouter.llama", "dummy-new-key", true},
+		{"accepts_custom_openrouter_with_key", "openrouter.meta-llama/llama-3-70b", "dummy-new-key", false},
+		{"rejects_internal_type", "platform_openrouter.x", "key", true},
+		{"accepts_catalog_openrouter_model", "anthropic.claude-haiku-4.5", "key", false},
+		{"accepts_direct_passthrough", "openai.gpt-4o", "key", false},
+		{"accepts_direct_passthrough_without_key", "openai.gpt-4o", "", false},
 	}
 
 	for _, tt := range tests {
@@ -51,7 +56,7 @@ func Test_Create_EngineModelPolicy(t *testing.T) {
 
 			h := &aiHandler{db: mockDB, reqHandler: mockReq, notifyHandler: mockNotify, utilHandler: utilhandler.NewUtilHandler()}
 
-			_, err := h.Create(context.Background(), uuid.Must(uuid.NewV4()), "n", "", ai.TypeNormal, tt.engineModel, nil, "key", uuid.Nil, "prompt",
+			_, err := h.Create(context.Background(), uuid.Must(uuid.NewV4()), "n", "", ai.TypeNormal, tt.engineModel, nil, tt.engineKey, uuid.Nil, "prompt",
 				ai.TTSTypeNone, "", ai.STTTypeNone, "", []tool.ToolName{}, nil, false, false)
 			if (err != nil) != tt.wantError {
 				t.Errorf("Create() error = %v, wantError %v", err, tt.wantError)
@@ -65,17 +70,25 @@ func Test_Update_EngineModelValidatedOnlyOnChange(t *testing.T) {
 		name        string
 		stored      ai.EngineModel
 		requested   ai.EngineModel
+		engineKey   string
 		wantError   bool
 		expectWrite bool
 	}{
-		{"unchanged_legacy_value_passes", "anthropic.claude-opus-4", "anthropic.claude-opus-4", false, true},
-		{"unchanged_legacy_openrouter_value_passes", "openrouter.x/y", "openrouter.x/y", false, true},
-		{"change_to_invalid_fails", "openai.gpt-5", "anthropic.claude-opus-4", true, false},
-		{"change_from_legacy_to_invalid_fails", "anthropic.claude-opus-4", "unknown.model", true, false},
-		{"change_to_catalog_passes", "anthropic.claude-opus-4", "anthropic.claude-haiku-4.5", false, true},
-		{"change_to_direct_passthrough_passes", "openai.gpt-5", "openai.gpt-4o", false, true},
-		{"stored_empty_requested_empty_passes", "", "", false, true},
-		{"change_to_empty_fails", "openai.gpt-5", "", true, false},
+		{"unchanged_legacy_value_passes", "anthropic.claude-opus-4", "anthropic.claude-opus-4", "key", false, true},
+		{"unchanged_legacy_openrouter_value_passes", "openrouter.x/y", "openrouter.x/y", "key", false, true},
+		{"unchanged_legacy_openrouter_value_empty_key_fails", "openrouter.x/y", "openrouter.x/y", "", true, false},
+		{"unchanged_custom_value_blank_key_fails", "openrouter.a/b", "openrouter.a/b", "   ", true, false},
+		{"unchanged_custom_value_with_key_passes", "openrouter.a/b", "openrouter.a/b", "dummy-new-key", false, true},
+		{"change_to_custom_with_key_passes", "openai.gpt-5", "openrouter.a/b", "dummy-new-key", false, true},
+		{"change_to_custom_empty_key_fails", "openai.gpt-5", "openrouter.a/b", "", true, false},
+		{"change_to_bad_custom_fails", "openai.gpt-5", "openrouter.a", "dummy-new-key", true, false},
+		{"change_from_custom_to_direct_empty_key_passes", "openrouter.a/b", "openai.gpt-5", "", false, true},
+		{"change_to_invalid_fails", "openai.gpt-5", "anthropic.claude-opus-4", "key", true, false},
+		{"change_from_legacy_to_invalid_fails", "anthropic.claude-opus-4", "unknown.model", "key", true, false},
+		{"change_to_catalog_passes", "anthropic.claude-opus-4", "anthropic.claude-haiku-4.5", "key", false, true},
+		{"change_to_direct_passthrough_passes", "openai.gpt-5", "openai.gpt-4o", "key", false, true},
+		{"stored_empty_requested_empty_passes", "", "", "key", false, true},
+		{"change_to_empty_fails", "openai.gpt-5", "", "key", true, false},
 	}
 
 	for _, tt := range tests {
@@ -101,7 +114,7 @@ func Test_Update_EngineModelValidatedOnlyOnChange(t *testing.T) {
 
 			h := &aiHandler{db: mockDB, notifyHandler: mockNotify, utilHandler: utilhandler.NewUtilHandler()}
 
-			_, err := h.Update(context.Background(), stored.ID, "n", "", ai.TypeNormal, tt.requested, nil, "key", uuid.Nil, "prompt",
+			_, err := h.Update(context.Background(), stored.ID, "n", "", ai.TypeNormal, tt.requested, nil, tt.engineKey, uuid.Nil, "prompt",
 				ai.TTSTypeNone, "", ai.STTTypeNone, "", []tool.ToolName{}, nil, false, false)
 			if (err != nil) != tt.wantError {
 				t.Errorf("Update() error = %v, wantError %v", err, tt.wantError)
