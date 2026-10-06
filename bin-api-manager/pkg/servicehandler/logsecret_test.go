@@ -48,6 +48,9 @@ func assertNoSecretInLogs(t *testing.T, hook *logrustest.Hook, wantMsg string, s
 			t.Fatalf("could not marshal the log fields: %v", err)
 		}
 		for _, secret := range secrets {
+			if strings.Contains(entry.Message, secret) {
+				t.Errorf("secret leaked into the log message: %q", entry.Message)
+			}
 			if strings.Contains(string(b), secret) {
 				t.Errorf("secret leaked into the JSON log fields of %q: %s", entry.Message, b)
 			}
