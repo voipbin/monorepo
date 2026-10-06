@@ -385,6 +385,21 @@ func Test_ServiceAgentMeUpdateAddresses_extension(t *testing.T) {
 			expectUpdate: true,
 		},
 		{
+			name:  "several stored extensions are all retained when they are sent back",
+			agent: newAgent(amagent.PermissionCustomerAgent),
+			addresses: []commonaddress.Address{
+				ownExt,
+				{Type: commonaddress.TypeExtension, Target: otherExtID, TargetName: "1002"},
+				tel,
+			},
+			stored: []commonaddress.Address{
+				ownExt,
+				{Type: commonaddress.TypeExtension, Target: otherExtID, TargetName: "1002"},
+			},
+			expectLookup: true,
+			expectUpdate: true,
+		},
+		{
 			name:         "the order of the addresses does not matter",
 			agent:        newAgent(amagent.PermissionCustomerAgent),
 			addresses:    []commonaddress.Address{tel, ownExt},

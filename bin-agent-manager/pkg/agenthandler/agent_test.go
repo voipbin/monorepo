@@ -1199,6 +1199,13 @@ func Test_UpdateAddresses_rejections(t *testing.T) {
 			},
 		},
 		{
+			name: "a tel address without any digit after a valid tel is rejected",
+			addresses: []commonaddress.Address{
+				{Type: commonaddress.TypeTel, Target: "+15550100"},
+				{Type: commonaddress.TypeTel, Target: "anonymous"},
+			},
+		},
+		{
 			name: "an empty tel address is rejected",
 			addresses: []commonaddress.Address{
 				{Type: commonaddress.TypeTel, Target: ""},
