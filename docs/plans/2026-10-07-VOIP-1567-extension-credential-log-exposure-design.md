@@ -1,6 +1,6 @@
 # VOIP-1567 extension 자격 증명 로그 노출 설계
 
-- 상태: Draft (설계 리뷰 5회차 대기, 4회차 반영)
+- 상태: Draft (설계 리뷰 6회차 대기, 5회차 반영)
 - 티켓: VOIP-1567
 - 선행 문서: docs/plans/2026-10-07-VOIP-1567-extension-credential-log-exposure-analysis.md (이슈 분석, 범위와 결정 확정)
 - 범위: 분석 문서 4절의 유형 1(extension, trunk 객체 5곳)과 유형 2(`AuthIdentity` 단일 지점). 유형 3, 4 는 대표님 결정으로 처리하지 않는다.
@@ -11,7 +11,7 @@
 
 - extension, trunk 의 `password`, `direct_hash` 가 로그에 나오지 않게 한다(유형 1).
 - 인증된 요청 로그에 agent `direct_hash` 와 direct scope `hash_fingerprint` 가 나오지 않게 한다(유형 2).
-- 유형 2 는 로그의 키 구조를 그대로 유지한다. 유형 1 은 객체 키를 요약 키로 바꾸는 예외다(D4 에 열거).
+- 유형 2 는 로그의 최상위 키 구조를 그대로 유지한다(멤버 안의 필드는 허용 목록으로 줄어든다). 유형 1 은 객체 키를 요약 키로 바꾸는 예외다(D4 에 열거).
 
 비목표.
 
@@ -41,7 +41,7 @@
 `bin-api-manager/models/auth/auth.go` 의 `AuthIdentity` 에 `MarshalJSON` 을 구현해 비밀 필드를 뺀 출력만 만든다. 호출 지점은 바꾸지 않는다.
 
 - 수신자는 값 수신자(`func (a AuthIdentity) MarshalJSON()`)로 한다. 포인터와 값 모두에 적용되고, nil 포인터는 `encoding/json` 이 `null` 로 처리한다.
-- 출력은 기존 구조를 유지하고 비밀 필드만 뺀다. 최상위 키는 기존과 같은 `Type`, `CustomerID`, `Agent`, `Accesskey`, `DirectScope`, `DelegateScope` 이고, 값이 nil 인 멤버는 기존 출력과 같이 `null` 로 둔다.
+- 최상위 키와 멤버별 JSON 키 이름은 기존과 같게 유지하고, 비밀 필드와 로그에 불필요한 필드를 뺀다(허용 목록). 최상위 키는 기존과 같은 `Type`, `CustomerID`, `Agent`, `Accesskey`, `DirectScope`, `DelegateScope` 이고, 값이 nil 인 멤버는 기존 출력과 같이 `null` 로 둔다.
 - 멤버별 출력 필드.
   - `Agent`: `id`, `customer_id`, `username`, `name`, `status`, `permission`. 제외: `direct_hash`, `direct_id`, `addresses`, `tag_ids`, `ring_method`, `detail`, 시각 필드. 로그에 필요한 식별과 권한 판단 정보만 남긴다.
   - `Accesskey`: `id`, `customer_id`, `token_prefix`. 제외: `raw_token`(생성 시에만 채워짐), 이름과 상세, 시각.
@@ -79,7 +79,7 @@
 
 - 배포 순서 제약이 없다. api-manager 와 call-manager 를 각각 배포하면 된다.
 - 외부 계약(API, 이벤트, DB) 변경이 없다.
-- 로그 출력 형태 변경(유형 1): 키 제거는 `tag`(`extension.go:52`)와 `trunk`(`trunk.go:44`)이고, 신설은 `customer_id`, `extension`(문자열), `trunk_id`, `domain_name`, `extension_id`(call-manager 3곳)다. `extension` 키는 객체에서 문자열(번호)로 타입이 바뀐다. 필드 타입을 고정해 색인하는 쪽이 있으면 충돌할 수 있으나 저장소 안에는 없고, 저장소 밖은 확인하지 못해 위험으로 기록한다.
+- 로그 출력 형태 변경(유형 1): 키 제거는 `tag`(`extension.go:52`)와 `trunk`(`start_incoming_domain_type_trunk.go:44`)이고, 신설은 `customer_id`, `extension`(문자열), `trunk_id`, `domain_name`, `extension_id`(call-manager 3곳)다. `extension` 키는 객체에서 문자열(번호)로 타입이 바뀐다. 필드 타입을 고정해 색인하는 쪽이 있으면 충돌할 수 있으나 저장소 안에는 없고, 저장소 밖은 확인하지 못해 위험으로 기록한다.
 - 로그 출력 형태 변경(유형 2): `agent`, `auth`, `auth_identity` 필드 안에서 위 제외 필드가 사라진다. 저장소 안에는 이 필드를 파싱하는 알림이나 대시보드가 없다(확인함). 저장소 밖의 Grafana 쿼리에 대해서는 확인하지 못했으므로 위험으로 기록한다.
 
 ### D5. 이미 기록된 값과 수용 위험
