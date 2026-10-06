@@ -30,7 +30,7 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 	})
 	log.WithFields(logrus.Fields{
 		"data_type": dataType,
-		"data":      data,
+		"data_len":  len(data),
 	}).Debugf("Sending an webhook. customer_id: %s", customerID)
 
 	// system customers have no webhook configuration
@@ -123,7 +123,7 @@ func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.U
 	})
 	log.WithFields(logrus.Fields{
 		"data_type": dataType,
-		"data":      data,
+		"data_len":  len(data),
 	}).Debugf("Sending an webhook. customer_id: %s", customerID)
 
 	// resolve the customer's signing secret, best-effort. A lookup failure must

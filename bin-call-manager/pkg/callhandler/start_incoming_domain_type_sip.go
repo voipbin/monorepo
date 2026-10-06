@@ -220,7 +220,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDirectAI(ctx context.Context, cn
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return nil
 	}
-	log.WithField("ai", a).Debugf("Retrieved AI info. ai_id: %s", a.ID)
+	log.WithField("ai_id", a.ID).Debugf("Retrieved AI info. ai_id: %s", a.ID)
 
 	destination := &commonaddress.Address{
 		Type:   commonaddress.TypeAI,

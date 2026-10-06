@@ -445,3 +445,29 @@ func Test_AIDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_loggableEngineModel(t *testing.T) {
+	tests := []struct {
+		name  string
+		model amai.EngineModel
+
+		expectRes string
+	}{
+		{"custom", "openrouter.a/b", "openrouter.<redacted>"},
+		{"upper case prefix", "OpenRouter.x", "openrouter.<redacted>"},
+		{"pasted key shaped value", "OPENROUTER.dummy-key-not-real", "openrouter.<redacted>"},
+		{"leading space", " openrouter.x", "openrouter.<redacted>"},
+		{"prefix only", "openrouter.", "openrouter.<redacted>"},
+		{"direct model", "openai.gpt-5", "openai.gpt-5"},
+		{"empty", "", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := loggableEngineModel(tt.model)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

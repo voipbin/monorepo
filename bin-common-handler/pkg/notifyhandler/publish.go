@@ -31,7 +31,6 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "PublishWebhook",
 		"customer_id": customerID,
-		"data":        data,
 		"event_type":  eventType,
 	})
 

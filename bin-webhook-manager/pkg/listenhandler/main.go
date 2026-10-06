@@ -146,8 +146,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var response *sock.Response
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processRequest",
-		"request": m,
+		"func":       "processRequest",
+		"uri":        m.URI,
+		"method":     m.Method,
+		"request_id": m.RequestID,
 	})
 
 	start := time.Now()
