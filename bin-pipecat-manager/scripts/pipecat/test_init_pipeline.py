@@ -799,6 +799,19 @@ async def test_team_member_uses_resolved_llm_type_not_engine_model():
 
 
 @pytest.mark.asyncio
+async def test_team_member_custom_openrouter_llm_type_and_key_are_forwarded():
+    """The Go resolver emits llm_type "openrouter.<id>" with the customer key; both reach the runner unchanged."""
+    team = {
+        "start_member_id": "m1",
+        "members": [_member("m1", "openrouter.vendor/model-a", "dummy-typed-key", llm_type="openrouter.vendor/model-a")],
+    }
+    _, mocks = await _run_team_init(team)
+    args = mocks.create_llm_service.call_args.args
+    assert args[0] == "openrouter.vendor/model-a"
+    assert args[1] == "dummy-typed-key"
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("engine_model", [
     "anthropic.claude-haiku-4.5",
     "openrouter.meta-llama/llama-3-70b",
