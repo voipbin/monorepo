@@ -727,7 +727,9 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 					ID:         uuid.FromStringOrNil("b5352e7c-3071-11ef-8ca8-1f8365f8db34"),
 					CustomerID: uuid.FromStringOrNil("9884e39e-3071-11ef-9e2e-bfa99d572134"),
 				},
-				Extension: "2000",
+				Extension:  "2000",
+				Password:   secretLogPassword,
+				DirectHash: secretLogDirectHash,
 			},
 
 			expectExtensionID: uuid.FromStringOrNil("b5352e7c-3071-11ef-8ca8-1f8365f8db34"),
@@ -752,7 +754,9 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 						ID:         uuid.FromStringOrNil("b5710de8-3071-11ef-a281-e3ba0cb3824b"),
 						CustomerID: uuid.FromStringOrNil("b556c3d4-3071-11ef-bb2d-ab2af3aa5a97"),
 					},
-					Extension: "3000",
+					Extension:  "3000",
+					Password:   secretLogPassword,
+					DirectHash: secretLogDirectHash,
 				},
 			},
 
@@ -771,6 +775,8 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			hook := newSecretLogHook(t)
+
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -801,6 +807,8 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			assertNoSecretInLogs(t, hook, "Found extension info", secretLogPassword, secretLogDirectHash)
 
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)

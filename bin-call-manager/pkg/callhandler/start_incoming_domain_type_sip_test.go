@@ -399,7 +399,9 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 					CustomerID: uuid.FromStringOrNil("138ca9fa-5e5f-11ed-a85f-9f66d5e00566"),
 				},
-				Extension: "1001",
+				Extension:  "1001",
+				Password:   secretLogPassword,
+				DirectHash: secretLogDirectHash,
 			},
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -411,6 +413,8 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			hook := newSecretLogHook(t)
+
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -475,6 +479,8 @@ func Test_startIncomingDomainTypeSIP_directExtension(t *testing.T) {
 			if err := h.startIncomingDomainTypeSIP(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			assertNoSecretInLogs(t, hook, "Retrieved extension info", secretLogPassword, secretLogDirectHash)
 		})
 	}
 }

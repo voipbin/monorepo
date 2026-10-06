@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"slices"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -73,6 +74,85 @@ type DelegateScope struct {
 	CustomerID uuid.UUID `json:"customer_id"`
 	IssuedBy   uuid.UUID `json:"issued_by"`
 	JTI        string    `json:"jti"`
+}
+
+// MarshalJSON renders a log-safe summary of the identity. AuthIdentity is never
+// deserialized or sent over the wire; its only JSON consumers are the logrus
+// JSON formatter and json.Marshal in tests, and the request handlers log the
+// whole identity as a field. The output keeps the top-level keys and the
+// member key names, but is an allow list: secrets (agent direct_hash, accesskey
+// raw_token, direct scope hash_fingerprint) and fields not needed for
+// debugging are left out. A field added to a member later is therefore hidden
+// from logs until it is added here, which fails safe.
+//
+// The value receiver makes it apply to both AuthIdentity and *AuthIdentity.
+// It does not apply to %v/%+v formatting or to a text log formatter.
+func (a AuthIdentity) MarshalJSON() ([]byte, error) {
+	type agentView struct {
+		ID         uuid.UUID          `json:"id"`
+		CustomerID uuid.UUID          `json:"customer_id"`
+		Username   string             `json:"username"`
+		Name       string             `json:"name"`
+		Status     amagent.Status     `json:"status"`
+		Permission amagent.Permission `json:"permission"`
+	}
+	type accesskeyView struct {
+		ID          uuid.UUID `json:"id"`
+		CustomerID  uuid.UUID `json:"customer_id"`
+		TokenPrefix string    `json:"token_prefix"`
+	}
+	type directScopeView struct {
+		CustomerID           uuid.UUID `json:"customer_id"`
+		ResourceType         string    `json:"resource_type"`
+		ResourceID           uuid.UUID `json:"resource_id"`
+		AllowedResourceTypes []string  `json:"allowed_resource_types"`
+		AllowedResourceID    uuid.UUID `json:"allowed_resource_id"`
+		DirectID             uuid.UUID `json:"direct_id"`
+		BootExpire           string    `json:"boot_expire"`
+		ScopeVersion         int       `json:"scope_version"`
+	}
+	view := struct {
+		Type          Type
+		CustomerID    uuid.UUID
+		Agent         *agentView
+		Accesskey     *accesskeyView
+		DirectScope   *directScopeView
+		DelegateScope *DelegateScope
+	}{
+		Type:          a.Type,
+		CustomerID:    a.CustomerID,
+		DelegateScope: a.DelegateScope,
+	}
+	if a.Agent != nil {
+		view.Agent = &agentView{
+			ID:         a.Agent.ID,
+			CustomerID: a.Agent.CustomerID,
+			Username:   a.Agent.Username,
+			Name:       a.Agent.Name,
+			Status:     a.Agent.Status,
+			Permission: a.Agent.Permission,
+		}
+	}
+	if a.Accesskey != nil {
+		view.Accesskey = &accesskeyView{
+			ID:          a.Accesskey.ID,
+			CustomerID:  a.Accesskey.CustomerID,
+			TokenPrefix: a.Accesskey.TokenPrefix,
+		}
+	}
+	if d := a.DirectScope; d != nil {
+		view.DirectScope = &directScopeView{
+			CustomerID:           d.CustomerID,
+			ResourceType:         d.ResourceType,
+			ResourceID:           d.ResourceID,
+			AllowedResourceTypes: d.AllowedResourceTypes,
+			AllowedResourceID:    d.AllowedResourceID,
+			DirectID:             d.DirectID,
+			BootExpire:           d.BootExpire,
+			ScopeVersion:         d.ScopeVersion,
+		}
+	}
+	return json.Marshal(view)
 }
 
 // IsAgent returns true if the identity was created from an agent JWT.
