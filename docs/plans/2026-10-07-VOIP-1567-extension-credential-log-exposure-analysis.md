@@ -1,6 +1,6 @@
 # VOIP-1567 extension 자격 증명 로그 노출 이슈 분석
 
-- 상태: Draft (이슈 분석 리뷰 3회차 대기, 2회차 반영)
+- 상태: Draft (이슈 분석 리뷰 4회차 대기, 3회차 반영)
 - 티켓: VOIP-1567 (원 제목의 [registrar-manager] 는 오기, 실제 대상은 api-manager 와 call-manager)
 - 기준 코드: origin/main 163952de1
 
@@ -45,11 +45,11 @@
 
 ## 3. 영향 평가
 
-- 노출 자원: extension 의 SIP password 와 direct_hash, trunk 의 SIP password, agent 의 direct_hash, direct scope 의 hash_fingerprint.
+- 노출 자원: extension 의 SIP password 와 direct_hash, trunk 의 SIP password, agent 의 direct_hash. direct scope 의 `hash_fingerprint` 는 원문 hash 가 아니라 키 기반 MAC 으로 파생된 값이지만, 5절에서 방어적으로 출력에서 제외한다.
 - 노출 위치: 로그 수집 경로(Loki 등). 접근 주체는 로그 열람 권한이 있는 내부 운영자다. 외부 공격자가 이 경로로 직접 읽는 것은 아니다.
 - 규모: 유형 2 는 인증된 API 요청마다 발생해 양이 가장 많다. 유형 1 은 extension 조회, 수정, 삭제와 extension, trunk 로 오는 통화마다 발생한다. 이미 쌓인 값이 있을 것으로 추정한다.
 - 이미 기록된 값의 잔존 여부는 측정하지 못했다. 로그 보존 기간과 실제 잔존 건수는 확인하지 않았다. 확인에는 인프라 시크릿 복호화가 필요해 이번 분석에서는 접근하지 않았다. 코드상 추정과 측정은 구분해 둔다.
-- `password_hash` 는 `json:"-"` 라 로그에 나오지 않는다(재현으로 확인). 노출되는 것은 `direct_hash` 계열이다.
+- `password_hash` 는 `json:"-"` 라 `WithField` 객체 로그(JSON 경로)에는 나오지 않는다(재현으로 확인). 노출되는 것은 `direct_hash` 계열이다. `pkg/servicehandler/auth.go:96` 의 `log.Debugf("... data: %v", data)` 는 `data` 가 `map[string]interface{}{"agent": a}`(`a` 는 `*amagent.Agent`)라서 맵 안의 포인터가 구조체 내용이 아니라 주소로 출력된다. 이 역시 재현으로 확인했고, 이 경로로는 `password_hash` 도 `direct_hash` 도 나오지 않는다.
 
 ## 4. 범위
 
@@ -62,7 +62,11 @@
 
 범위 밖(이번에 하지 않음).
 
-- 유형 3(Agent 직접 로그 14곳)과 유형 4(Direct 객체와 hash 문자열 로그 약 27곳). 대표님 결정으로 처리하지 않는다. 이로 인해 유형 3, 4 의 `direct_hash` 와 공개 링크 `hash` 가 이벤트성 로그(생성, 재생성, 조회)에 계속 남는다는 점을 수용 위험으로 기록한다.
+- 유형 3(Agent 직접 로그 14곳)과 유형 4(Direct 객체와 hash 문자열 로그 약 27곳). 대표님 결정으로 처리하지 않는다. 이로 인해 유형 3, 4 의 `direct_hash` 와 공개 링크 `hash` 가 계속 남는다는 점을 수용 위험으로 기록한다. 빈도는 낮지 않다.
+
+  - 유형 3 은 로그인마다(`pkg/servicehandler/auth.go:29`), agent 조회마다(`pkg/servicehandler/agent.go:32,73`), agent 로 연결되는 통화마다(call-manager `start_incoming_domain_type_sip.go:313`, `start_incoming_domain_type_registrar.go:101`, `outgoing_call.go:493`, `groupcallhandler/dial.go:237`) 기록한다.
+  - 유형 4 는 direct 통화마다 hash 문자열을 기록한다(call-manager `start_incoming_domain_type_sip.go:83`). 생성, 재생성 이벤트 로그가 나머지다.
+  - 따라서 유형 2 를 닫아도 agent 의 `direct_hash` 는 로그인과 통화 경로에서 계속 쌓인다. 이후 처리 여부는 대표님 몫이다.
 - 일반적 로그 redaction 훅이나 CI 게이트, 공용 redaction 도구 신설. 이번 수정이 가장 위험한 유형(SIP password)과 가장 빈번한 유형(요청 로그)을 닫으므로 새 도구는 만들지 않는다.
 - 로그의 `Debug` 고정 자체(운영 로그 레벨 정책). 별개 주제다.
 
