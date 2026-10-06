@@ -1,6 +1,6 @@
 # VOIP-1566 extension 자기 등록 차단과 소유 판정 강화 (설계 + 구현 계획)
 
-- 상태: Draft (Design Review 4회차 대기)
+- 상태: Draft (Design Review 5회차 대기)
 - 작성일: 2026-10-06
 - 티켓: VOIP-1566
 - 기준 코드: origin/main bc68e3c32
@@ -71,6 +71,9 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 ### 7.3 문서와 생성물
 - `bin-api-manager/docsdev/source/service_agent_overview.rst`(me/addresses 설명, "AI Implementation Hint" PUT 교체형 문구 포함)
 - `bin-openapi-manager/openapi/paths/service_agents/me_addresses.yaml`(description 갱신, `components/responses/PermissionDenied` 403 추가)
+- `bin-api-manager/docsdev/source/agent_overview.rst`: 207행(extension 을 "numeric characters only" 로 안내하는 서술을 "extension 의 UUID, 관리자 경로로만 등록" 으로 정정, tel 숫자 포함 규칙 명시), 480행(상담사 역할의 "Can update own status and addresses" 에 extension 은 제외임을 명시)
+- `bin-api-manager/docsdev/source/agent_tutorial.rst`: 13행(extension numeric-only 서술 정정), 181행(PUT 교체 의미와 extension 변경 제약, tel 숫자 포함 규칙)
+- `bin-openapi-manager/openapi/paths/agents/id_addresses.yaml`: description 에 extension target 은 canonical UUID 로 저장됨과 tel 숫자 포함 규칙을 반영(400 응답 설명 포함)
 - 생성물: `bin-openapi-manager/openapi/openapi.yaml`(번들 변경 시), `bin-api-manager/gens/openapi_server/gen.go`, `bin-api-manager/gens/openapi_redoc/openapi.json`, `api.html`, `bin-api-manager/docsdev/build` 중 실제 변경 파일만 커밋.
 
 ### 7.4 테스트 (파일별)
@@ -79,6 +82,7 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 - `bin-api-manager/pkg/servicehandler/serviceagent_extension_test.go`: D6. List 와 Get 에서 canonical, 변형 형식(32hex, 중괄호, urn, 대문자), Nil, 변형 row 소유자가 마스킹됨.
 - `bin-agent-manager/pkg/agenthandler/agent_test.go` 계열: D3. `UpdateAddresses` 변형이 canonical 로 저장, 타 agent canonical 소유 시 중복 거부, `Create` 변형이 canonical 로 저장, 비-UUID 는 기존 동작 유지. D7. tel `anonymous` 거부: `UpdateAddresses` 는 오류 반환, `Create` 는 `cerrors.InvalidArgument` 반환(400 매핑 단언). 숫자 포함 허용, sip 무영향. `UpdateAddresses` 에 동일 extension 중복 제출 시 canonical 화 후 UNIQUE 위반이 400 으로 응답됨을 확인.
 - `bin-agent-manager/cmd/agent-control/normalize_addresses_test.go`: D4. 순수 함수 단위: `normalizeAddresses` 후 `addressesDiffer` 가 extension 변형을 변경으로 판정, canonical 은 불변, 변형과 타 agent canonical 의 `collisionKey` 충돌. (`scanAgents` 는 DB 의존이라 단위 범위 밖.)
+- 추가 케이스: D1 역할 무관(Admin/Manager 권한 identity 로도 extension 추가는 거부), D7 저장된 숫자 없는 tel(`anonymous`) row 재제출 거부.
 - 변이 시험 목록: 방어선 1(canonical 비교 제거), 방어선 2(튜플 비교의 Target 또는 TargetName 항 제거, 비-canonical 허용, 재조회 생략), D3(canonical 화 제거), D7(검사 제거). 각 변이에서 대응 테스트가 실패해야 한다.
 
 ## 8. 위험과 트레이드오프
@@ -98,7 +102,7 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 
 ## 10. 문서 영향
 
-- RST, OpenAPI, redoc, docsdev/build (D8).
+- RST(`service_agent_overview.rst`, `agent_overview.rst`, `agent_tutorial.rst`), OpenAPI(`me_addresses.yaml`, `id_addresses.yaml`), redoc, docsdev/build (D8, 7.3).
 
 ## 11. 정리 runbook와 롤백 (D4)
 
