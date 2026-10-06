@@ -120,6 +120,7 @@ func (h *pipecatcallHandler) runAsteriskReceivedMediaHandle(se *pipecatcall.Sess
 // resolveSessionLLM from pc.LLMType alone. An error means the model is rejected.
 func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.Pipecatcall) (string, string, error) {
 	aiKey := ""
+	var liveAI *amai.AI
 
 	switch pc.ReferenceType {
 	case pipecatcall.ReferenceTypeAICall:
@@ -136,9 +137,18 @@ func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.P
 		}
 
 		aiKey = a.EngineKey
+		liveAI = a
 	}
 
-	return resolveSessionLLM(pc.LLMType, aiKey)
+	runnerType, runnerKey, err := resolveSessionLLM(pc.LLMType, aiKey)
+	if err != nil {
+		return "", "", err
+	}
+	if errCheck := checkLiveEngineVendor(pc.LLMType, liveAI, runnerKey); errCheck != nil {
+		return "", "", errCheck
+	}
+
+	return runnerType, runnerKey, nil
 }
 
 // resolveTeamForPython builds the full team data for the Python runner, including engine keys.

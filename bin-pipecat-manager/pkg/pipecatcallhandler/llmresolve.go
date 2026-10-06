@@ -59,3 +59,31 @@ func resolveSessionLLM(llmType pipecatcall.LLMType, aiKey string) (runnerType st
 
 	return r.RunnerType, aiKey, nil
 }
+
+// engineVendor returns the lower-cased vendor prefix of an engine model ("openai" for
+// "openai.gpt-5", "openrouter" for "openrouter.vendor/model"). It identifies which
+// provider a customer key belongs to.
+func engineVendor(m string) string {
+	return strings.ToLower(strings.SplitN(strings.TrimSpace(m), ".", 2)[0])
+}
+
+// checkLiveEngineVendor guards the customer key against a stale session model.
+//
+// The session llm_type is a snapshot taken when the aicall was created, while the
+// key is read live from the AI on every start. If the AI was edited to another
+// vendor in between (for example from a custom OpenRouter model to an OpenAI model),
+// the new key would be sent to the old vendor. When a key is about to be forwarded
+// and the live AI's vendor differs from the session's, the start is rejected.
+// A model change within the same vendor keeps working. liveAI is nil when the AI
+// lookup failed; then no live key was read, so there is nothing to protect.
+func checkLiveEngineVendor(llmType pipecatcall.LLMType, liveAI *amai.AI, runnerKey string) error {
+	if liveAI == nil || runnerKey == "" {
+		return nil
+	}
+
+	if engineVendor(string(llmType)) != engineVendor(string(liveAI.EngineModel)) {
+		return errors.New("engine model of the ai has changed since the session was created")
+	}
+
+	return nil
+}

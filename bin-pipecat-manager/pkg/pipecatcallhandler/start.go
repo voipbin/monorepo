@@ -209,6 +209,9 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 	if err != nil {
 		return errors.Wrapf(err, "could not resolve llm type")
 	}
+	if errCheck := checkLiveEngineVendor(pc.LLMType, ai, llmKey); errCheck != nil {
+		return errors.Wrapf(errCheck, "could not resolve llm type")
+	}
 
 	switch c.ReferenceType {
 	case amaicall.ReferenceTypeCall:

@@ -880,7 +880,8 @@ func Test_runGetLLMKey(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: aiID,
 					},
-					EngineKey: "ai-direct-key",
+					EngineModel: "openai.gpt-5",
+					EngineKey:   "ai-direct-key",
 				}, nil)
 			},
 
@@ -916,7 +917,8 @@ func Test_runGetLLMKey(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: memberAIID,
 					},
-					EngineKey: "team-member-key",
+					EngineModel: "openai.gpt-5",
+					EngineKey:   "team-member-key",
 				}, nil)
 			},
 

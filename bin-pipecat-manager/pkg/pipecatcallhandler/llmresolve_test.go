@@ -209,7 +209,7 @@ func Test_runGetLLMKey_resolves(t *testing.T) {
 			llmType: "anthropic.claude-haiku-4.5",
 			prepare: func(m *requesthandler.MockRequestHandler) {
 				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
-				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineKey: "customer-key"}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineModel: "anthropic.claude-haiku-4.5", EngineKey: "customer-key"}, nil)
 			},
 			expectRunnerType: "platform_openrouter.anthropic/claude-haiku-4.5",
 			expectKey:        "",
@@ -219,7 +219,7 @@ func Test_runGetLLMKey_resolves(t *testing.T) {
 			llmType: "openai.gpt-5",
 			prepare: func(m *requesthandler.MockRequestHandler) {
 				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
-				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineKey: "customer-key"}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineModel: "openai.gpt-5", EngineKey: "customer-key"}, nil)
 			},
 			expectRunnerType: "openai.gpt-5",
 			expectKey:        "customer-key",
@@ -238,7 +238,7 @@ func Test_runGetLLMKey_resolves(t *testing.T) {
 			llmType: "openrouter.a/b",
 			prepare: func(m *requesthandler.MockRequestHandler) {
 				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
-				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineKey: "  dummy-old-key  "}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineModel: "openrouter.a/b", EngineKey: "  dummy-old-key  "}, nil)
 			},
 			expectRunnerType: "openrouter.a/b",
 			expectKey:        "dummy-old-key",
@@ -256,9 +256,47 @@ func Test_runGetLLMKey_resolves(t *testing.T) {
 			llmType: "openrouter.a/b",
 			prepare: func(m *requesthandler.MockRequestHandler) {
 				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
-				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineKey: ""}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineModel: "openrouter.a/b", EngineKey: ""}, nil)
 			},
 			expectErr: true,
+		},
+		{
+			name:    "custom session with a live ai moved to openai rejects the new key",
+			llmType: "openrouter.a/b",
+			prepare: func(m *requesthandler.MockRequestHandler) {
+				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineModel: "openai.gpt-5", EngineKey: "dummy-new-key"}, nil)
+			},
+			expectErr: true,
+		},
+		{
+			name:    "openai session with a live ai moved to custom openrouter rejects the new key",
+			llmType: "openai.gpt-5",
+			prepare: func(m *requesthandler.MockRequestHandler) {
+				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineModel: "openrouter.a/b", EngineKey: "dummy-new-key"}, nil)
+			},
+			expectErr: true,
+		},
+		{
+			name:    "model change within the same vendor keeps working",
+			llmType: "openrouter.a/b",
+			prepare: func(m *requesthandler.MockRequestHandler) {
+				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineModel: "openrouter.c/d", EngineKey: "dummy-old-key"}, nil)
+			},
+			expectRunnerType: "openrouter.a/b",
+			expectKey:        "dummy-old-key",
+		},
+		{
+			name:    "routed session never forwards a key so a live vendor change is not blocked",
+			llmType: "anthropic.claude-haiku-4.5",
+			prepare: func(m *requesthandler.MockRequestHandler) {
+				m.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(&amaicall.AIcall{AssistanceType: amaicall.AssistanceTypeAI, AssistanceID: aiID}, nil)
+				m.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{EngineModel: "openai.gpt-5", EngineKey: "dummy-new-key"}, nil)
+			},
+			expectRunnerType: "platform_openrouter.anthropic/claude-haiku-4.5",
+			expectKey:        "",
 		},
 		{
 			name:    "ai lookup failure cannot bypass rejection of stored openrouter.x",
@@ -350,6 +388,7 @@ func Test_startReferenceTypeAIcall_runnerHandoff(t *testing.T) {
 		name string
 
 		llmType   pipecatcall.LLMType
+		aiModel   amai.EngineModel // live AI model; defaults to llmType
 		aiGetErr  error
 		expectErr bool
 
@@ -365,6 +404,8 @@ func Test_startReferenceTypeAIcall_runnerHandoff(t *testing.T) {
 		{name: "custom model with ai lookup failure errors", llmType: "openrouter.vendor/model-a", aiGetErr: fmt.Errorf("boom"), expectErr: true},
 		{name: "stored raw openrouter.x with ai lookup failure errors", llmType: "openrouter.x", aiGetErr: fmt.Errorf("boom"), expectErr: true},
 		{name: "rejected legacy model errors", llmType: "anthropic.claude-opus-4", expectErr: true},
+		{name: "custom session with a live ai moved to openai errors", llmType: "openrouter.vendor/model-a", aiModel: "openai.gpt-5", expectErr: true},
+		{name: "openai session with a live ai moved to custom errors", llmType: "openai.gpt-5", aiModel: "openrouter.vendor/model-a", expectErr: true},
 	}
 
 	for _, tt := range tests {
@@ -400,10 +441,15 @@ func Test_startReferenceTypeAIcall_runnerHandoff(t *testing.T) {
 			if tt.aiGetErr != nil {
 				mockReq.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(nil, tt.aiGetErr).AnyTimes()
 			} else {
+				aiModel := tt.aiModel
+				if aiModel == "" {
+					aiModel = amai.EngineModel(tt.llmType)
+				}
 				mockReq.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{
-					Identity:  commonidentity.Identity{ID: aiID},
-					Type:      amai.TypeNormal,
-					EngineKey: "customer-key",
+					Identity:    commonidentity.Identity{ID: aiID},
+					Type:        amai.TypeNormal,
+					EngineModel: aiModel,
+					EngineKey:   "customer-key",
 				}, nil).AnyTimes()
 			}
 			mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{}).AnyTimes()
