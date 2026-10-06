@@ -49,7 +49,10 @@ func (h *serviceHandler) extensionGet(ctx context.Context, id uuid.UUID) (*rmext
 		log.Errorf("Could not get an tag. err: %v", err)
 		return nil, err
 	}
-	log.WithField("tag", res).Debug("Received result.")
+	log.WithFields(logrus.Fields{
+		"customer_id": res.CustomerID,
+		"extension":   res.Extension,
+	}).Debug("Received result.")
 
 	// create result
 	return res, nil

@@ -131,7 +131,11 @@ func (h *callHandler) startIncomingDomainTypeSIPDirectExtension(ctx context.Cont
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return nil
 	}
-	log.WithField("extension", ext).Debugf("Retrieved extension info. extension_id: %s", ext.ID)
+	log.WithFields(logrus.Fields{
+		"extension_id": ext.ID,
+		"customer_id":  ext.CustomerID,
+		"extension":    ext.Extension,
+	}).Debugf("Retrieved extension info. extension_id: %s", ext.ID)
 
 	destination := &commonaddress.Address{
 		Type:       commonaddress.TypeExtension,

@@ -287,8 +287,10 @@ func Test_ExtensionGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 
-				Name:   "test",
-				Detail: "test detail",
+				Name:       "test",
+				Detail:     "test detail",
+				Password:   secretLogPassword,
+				DirectHash: secretLogDirectHash,
 			},
 			&rmextension.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -296,14 +298,18 @@ func Test_ExtensionGet(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 
-				Name:   "test",
-				Detail: "test detail",
+				Name:       "test",
+				Detail:     "test detail",
+				Password:   secretLogPassword,
+				DirectHash: secretLogDirectHash,
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			hook := newSecretLogHook(t)
+
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -325,6 +331,8 @@ func Test_ExtensionGet(t *testing.T) {
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
+
+			assertNoSecretInLogs(t, hook, "Received result.", secretLogPassword, secretLogDirectHash)
 		})
 	}
 }

@@ -352,7 +352,11 @@ func (h *callHandler) parseAddressTypeExtension(ctx context.Context, customerID 
 			log.Errorf("Could not get extension info. err: %v", err)
 			return nil, err
 		}
-		log.WithField("extension", tmp).Debugf("Found extension info. extension_id: %v", tmp.ID)
+		log.WithFields(logrus.Fields{
+			"extension_id": tmp.ID,
+			"customer_id":  tmp.CustomerID,
+			"extension":    tmp.Extension,
+		}).Debugf("Found extension info. extension_id: %v", tmp.ID)
 
 		if tmp.CustomerID != customerID {
 			log.Errorf("The extension has wrong customer id.")
@@ -380,7 +384,11 @@ func (h *callHandler) parseAddressTypeExtension(ctx context.Context, customerID 
 
 		ext = &tmps[0]
 	}
-	log.WithField("extension", ext).Debugf("Found extension info. extension_id: %s", ext.ID)
+	log.WithFields(logrus.Fields{
+		"extension_id": ext.ID,
+		"customer_id":  ext.CustomerID,
+		"extension":    ext.Extension,
+	}).Debugf("Found extension info. extension_id: %s", ext.ID)
 
 	res := &commonaddress.Address{
 		Type:       commonaddress.TypeExtension,

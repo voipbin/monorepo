@@ -41,7 +41,11 @@ func (h *callHandler) startIncomingDomainTypeTrunk(ctx context.Context, cn *chan
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
 		return nil
 	}
-	log.WithField("trunk", trunk).Debugf("Found trunk info. trunk_id: %s", trunk.ID)
+	log.WithFields(logrus.Fields{
+		"trunk_id":    trunk.ID,
+		"customer_id": trunk.CustomerID,
+		"domain_name": trunk.DomainName,
+	}).Debugf("Found trunk info. trunk_id: %s", trunk.ID)
 
 	return h.startIncomingDomainTypeTrunkDestinationTypeTel(ctx, cn, trunk.CustomerID, source, destination)
 }

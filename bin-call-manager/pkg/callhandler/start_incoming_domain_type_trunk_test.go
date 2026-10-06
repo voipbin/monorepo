@@ -75,6 +75,7 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 					ID:         uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
 					CustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
 				},
+				Password: secretLogPassword,
 			},
 			responseFlow: &fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -109,6 +110,8 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			hook := newSecretLogHook(t)
+
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -183,6 +186,8 @@ func Test_startIncomingDomainTypeTrunk(t *testing.T) {
 			if err := h.startIncomingDomainTypeTrunk(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
+
+			assertNoSecretInLogs(t, hook, "Found trunk info", secretLogPassword)
 		})
 	}
 }
