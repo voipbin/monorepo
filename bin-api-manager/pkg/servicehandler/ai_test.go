@@ -242,10 +242,12 @@ func Test_AIModelList(t *testing.T) {
 			response: []amai.ModelInfo{
 				{ID: "openai.gpt-5", Label: "GPT-5", Vendor: "OpenAI", Tags: []string{}},
 				{ID: "gemini.gemini-2.5-flash", Label: "Gemini 2.5 Flash", Vendor: "Google", Recommended: true, Tags: []string{"low-cost"}},
+				{ID: "custom.openrouter", Label: "OpenRouter model (your OpenRouter key)", Vendor: "OpenRouter", Tags: []string{}, KeyMode: "own_required", ModelIDPrefix: "openrouter."},
 			},
 			expectRes: []*amai.ModelInfo{
 				{ID: "openai.gpt-5", Label: "GPT-5", Vendor: "OpenAI", Tags: []string{}},
 				{ID: "gemini.gemini-2.5-flash", Label: "Gemini 2.5 Flash", Vendor: "Google", Recommended: true, Tags: []string{"low-cost"}},
+				{ID: "custom.openrouter", Label: "OpenRouter model (your OpenRouter key)", Vendor: "OpenRouter", Tags: []string{}, KeyMode: "own_required", ModelIDPrefix: "openrouter."},
 			},
 		},
 		{

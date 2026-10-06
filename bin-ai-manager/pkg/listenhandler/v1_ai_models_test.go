@@ -2,6 +2,7 @@ package listenhandler
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -35,18 +36,47 @@ func Test_processV1AIModelsGet(t *testing.T) {
 		t.Fatalf("Wrong item count. expect: %d, got: %d", len(ai.CatalogView()), len(items))
 	}
 	for _, item := range items {
-		for _, key := range []string{"id", "label", "vendor", "recommended", "tags", "description", "platform_managed"} {
+		for _, key := range []string{"id", "label", "vendor", "recommended", "tags", "description", "platform_managed", "key_mode"} {
 			if _, ok := item[key]; !ok {
 				t.Errorf("item %v misses key %s", item["id"], key)
 			}
 		}
 	}
 
-	body := strings.ToLower(string(res.Data))
-	for _, banned := range []string{"slug", "openrouter", "meta-llama/", "\"route\""} {
-		if strings.Contains(body, banned) {
-			t.Errorf("response leaks %q", banned)
+	// The custom entry is checked by key name: its id, label and prefix legitimately
+	// contain "openrouter" (which itself contains "route").
+	allowedOpenRouter := map[string]bool{"id": true, "label": true, "vendor": true, "description": true, "model_id_prefix": true}
+	prefixed := 0
+	for _, item := range items {
+		if _, ok := item["model_id_prefix"]; ok {
+			prefixed++
+			for k, v := range item {
+				lower := strings.ToLower(fmt.Sprint(v))
+				if strings.Contains(lower, "slug") || strings.Contains(lower, "meta-llama/") {
+					t.Errorf("custom entry field %s leaks internals", k)
+				}
+				if !allowedOpenRouter[k] && strings.Contains(lower, "openrouter") {
+					t.Errorf("custom entry field %s must not mention openrouter", k)
+				}
+			}
+			for _, k := range []string{"slug", "upstream_slug", "route", "custom_prefix"} {
+				if _, ok := item[k]; ok {
+					t.Errorf("custom entry leaks key %s", k)
+				}
+			}
+			continue
 		}
+
+		raw, _ := json.Marshal(item)
+		body := strings.ToLower(string(raw))
+		for _, banned := range []string{"slug", "openrouter", "meta-llama/", "\"route\""} {
+			if strings.Contains(body, banned) {
+				t.Errorf("item %v leaks %q", item["id"], banned)
+			}
+		}
+	}
+	if prefixed != 1 {
+		t.Errorf("exactly one entry must carry model_id_prefix. got: %d", prefixed)
 	}
 }
 

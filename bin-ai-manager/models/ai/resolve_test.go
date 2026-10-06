@@ -67,6 +67,14 @@ func Test_ResolveEngine(t *testing.T) {
 
 func Test_ResolveEngineAllOpenRouterEntriesBlankKey(t *testing.T) {
 	for _, e := range catalog {
+		if e.Route == RouteCustomOpenRouter {
+			// The custom entry is a placeholder, never a selectable model.
+			if _, o := ResolveEngine(e.ID); o != OutcomeRejected {
+				t.Errorf("%s must be rejected as a stored value. got: %v", e.ID, o)
+			}
+			continue
+		}
+
 		r, o := ResolveEngine(e.ID)
 		if o != OutcomeCatalog {
 			t.Errorf("%s must resolve", e.ID)

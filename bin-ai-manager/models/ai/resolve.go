@@ -27,7 +27,7 @@ var directPassthroughPrefixes = map[string]bool{"openai": true, "gemini": true, 
 // ResolveEngine maps a customer-facing engine model to the runner type (fail-closed).
 func ResolveEngine(m EngineModel) (Resolved, Outcome) {
 	for i := range catalog {
-		if catalog[i].ID != m {
+		if catalog[i].ID != m || catalog[i].Route == RouteCustomOpenRouter {
 			continue
 		}
 

@@ -6,7 +6,20 @@ type Route string
 const (
 	RouteDirect     Route = "direct"
 	RouteOpenRouter Route = "openrouter"
+
+	// RouteCustomOpenRouter is the single customer-keyed OpenRouter entry.
+	RouteCustomOpenRouter Route = "custom_openrouter"
 )
+
+// Key modes describe how the engine key is handled for a model.
+const (
+	KeyModePlatform     = "platform"       // platform supplies the key
+	KeyModeOwnOrDefault = "own_or_default" // customer key, or the platform default when empty
+	KeyModeOwnRequired  = "own_required"   // customer key is mandatory
+)
+
+// EngineModelPrefixCustomOpenRouter is prepended to the model ID the customer types.
+const EngineModelPrefixCustomOpenRouter = "openrouter."
 
 // TagLowCost marks models with a low per-token price.
 const TagLowCost = "low-cost"
@@ -21,6 +34,7 @@ type ModelEntry struct {
 	Recommended  bool
 	Tags         []string
 	Description  string
+	CustomPrefix string // set only for entries where the customer types the model ID
 }
 
 // ModelInfo is the customer-facing view returned by GET /ai_models.
@@ -32,6 +46,8 @@ type ModelInfo struct {
 	Tags            []string    `json:"tags"`
 	Description     string      `json:"description"`
 	PlatformManaged bool        `json:"platform_managed"`
+	KeyMode         string      `json:"key_mode"`
+	ModelIDPrefix   string      `json:"model_id_prefix,omitempty"`
 }
 
 // CatalogView returns the customer-facing view of the catalog.
@@ -42,6 +58,14 @@ func CatalogView() []ModelInfo {
 		if tags == nil {
 			tags = []string{}
 		}
+		keyMode := KeyModeOwnOrDefault
+		switch e.Route {
+		case RouteOpenRouter:
+			keyMode = KeyModePlatform
+		case RouteCustomOpenRouter:
+			keyMode = KeyModeOwnRequired
+		}
+
 		res = append(res, ModelInfo{
 			ID:              e.ID,
 			Label:           e.Label,
@@ -50,6 +74,8 @@ func CatalogView() []ModelInfo {
 			Tags:            tags,
 			Description:     e.Description,
 			PlatformManaged: e.Route == RouteOpenRouter,
+			KeyMode:         keyMode,
+			ModelIDPrefix:   e.CustomPrefix,
 		})
 	}
 	return res
@@ -84,4 +110,7 @@ var catalog = []ModelEntry{
 	{ID: "qwen.qwen3-30b-a3b-instruct-2507", Label: "Qwen3 30B A3B Instruct", Vendor: "Qwen", Route: RouteOpenRouter, UpstreamSlug: "qwen/qwen3-30b-a3b-instruct-2507", Tags: lowCost, Description: "Compact, fast Qwen3 model."},
 	{ID: "mistral.mistral-medium-3.1", Label: "Mistral Medium 3.1", Vendor: "Mistral", Route: RouteOpenRouter, UpstreamSlug: "mistralai/mistral-medium-3.1", Description: "Mid-size Mistral model for general conversations."},
 	{ID: "mistral.mistral-small-3.2-24b-instruct", Label: "Mistral Small 3.2 24B Instruct", Vendor: "Mistral", Route: RouteOpenRouter, UpstreamSlug: "mistralai/mistral-small-3.2-24b-instruct", Tags: lowCost, Description: "Small, fast and low-cost Mistral model."},
+
+	// customer-keyed OpenRouter entry (the customer types the model ID)
+	{ID: "custom.openrouter", Label: "OpenRouter model (your OpenRouter key)", Vendor: "OpenRouter", Route: RouteCustomOpenRouter, CustomPrefix: EngineModelPrefixCustomOpenRouter, Description: "Enter any model supported by OpenRouter."},
 }

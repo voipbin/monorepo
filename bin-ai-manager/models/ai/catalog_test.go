@@ -2,6 +2,7 @@ package ai
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -27,8 +28,17 @@ func Test_CatalogInvariants(t *testing.T) {
 		if e.Route == RouteDirect && e.UpstreamSlug != "" {
 			t.Errorf("%s: direct entry must not carry a slug", e.ID)
 		}
-		if e.Route != RouteDirect && e.Route != RouteOpenRouter {
+		if e.Route != RouteDirect && e.Route != RouteOpenRouter && e.Route != RouteCustomOpenRouter {
 			t.Errorf("%s: unknown route %q", e.ID, e.Route)
+		}
+		if e.Route == RouteCustomOpenRouter && (e.UpstreamSlug != "" || e.CustomPrefix != "openrouter.") {
+			t.Errorf("%s: custom entry needs no slug and the openrouter. prefix: %q, %q", e.ID, e.UpstreamSlug, e.CustomPrefix)
+		}
+		if e.Route != RouteCustomOpenRouter && e.CustomPrefix != "" {
+			t.Errorf("%s: only the custom entry may carry a custom prefix", e.ID)
+		}
+		if strings.HasPrefix(string(e.ID), "openrouter.") {
+			t.Errorf("%s: no catalog id may start with the custom prefix", e.ID)
 		}
 		for _, tag := range e.Tags {
 			if tag != TagLowCost {
@@ -36,16 +46,101 @@ func Test_CatalogInvariants(t *testing.T) {
 			}
 		}
 	}
+
+	custom := 0
+	for _, e := range catalog {
+		if e.Route == RouteCustomOpenRouter {
+			custom++
+		}
+	}
+	if custom != 1 {
+		t.Errorf("exactly one custom entry is expected. got: %d", custom)
+	}
 }
+
+// customOpenRouterAllowedFields are the only fields of the custom entry that may mention "openrouter".
+var customOpenRouterAllowedFields = map[string]bool{"id": true, "label": true, "vendor": true, "description": true, "model_id_prefix": true}
 
 func Test_CatalogPublicViewHidesInternals(t *testing.T) {
 	b, err := json.Marshal(CatalogView())
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, banned := range []string{"slug", "route", "openrouter", "meta-llama/"} {
-		if strings.Contains(strings.ToLower(string(b)), banned) {
-			t.Errorf("public catalog leaks %q", banned)
+	var items []map[string]any
+	if err := json.Unmarshal(b, &items); err != nil {
+		t.Fatal(err)
+	}
+
+	prefixed := 0
+	for _, item := range items {
+		if _, ok := item["model_id_prefix"]; ok {
+			prefixed++
+		}
+
+		if item["key_mode"] != KeyModeOwnRequired {
+			// Regular entries keep the full banned-token check.
+			raw, _ := json.Marshal(item)
+			for _, banned := range []string{"slug", "route", "openrouter", "meta-llama/"} {
+				if strings.Contains(strings.ToLower(string(raw)), banned) {
+					t.Errorf("%v: public catalog leaks %q", item["id"], banned)
+				}
+			}
+			continue
+		}
+
+		// The custom entry is checked by key name, because its id, label and prefix
+		// legitimately contain "openrouter" (which itself contains "route").
+		wantKeys := []string{"id", "label", "vendor", "recommended", "tags", "description", "platform_managed", "key_mode", "model_id_prefix"}
+		if len(item) != len(wantKeys) {
+			t.Errorf("custom entry keys. expect: %v, got: %v", wantKeys, item)
+		}
+		for _, k := range wantKeys {
+			if _, ok := item[k]; !ok {
+				t.Errorf("custom entry misses key %s", k)
+			}
+		}
+		for k, v := range item {
+			lower := strings.ToLower(fmt.Sprint(v))
+			if strings.Contains(lower, "slug") || strings.Contains(lower, "meta-llama/") {
+				t.Errorf("custom entry field %s leaks internals: %v", k, v)
+			}
+			if !customOpenRouterAllowedFields[k] && strings.Contains(lower, "openrouter") {
+				t.Errorf("custom entry field %s must not mention openrouter: %v", k, v)
+			}
+		}
+	}
+	if prefixed != 1 {
+		t.Errorf("exactly one entry must carry model_id_prefix. got: %d", prefixed)
+	}
+}
+
+func Test_CatalogKeyModeMatchesRoute(t *testing.T) {
+	view := CatalogView()
+	b, err := json.Marshal(view)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded []map[string]any
+	if err := json.Unmarshal(b, &decoded); err != nil {
+		t.Fatal(err)
+	}
+
+	expects := map[Route]string{
+		RouteDirect:           KeyModeOwnOrDefault,
+		RouteOpenRouter:       KeyModePlatform,
+		RouteCustomOpenRouter: KeyModeOwnRequired,
+	}
+	for i, e := range catalog {
+		if view[i].KeyMode != expects[e.Route] {
+			t.Errorf("%s: key_mode. expect: %s, got: %s", e.ID, expects[e.Route], view[i].KeyMode)
+		}
+		if _, ok := decoded[i]["key_mode"]; !ok {
+			t.Errorf("%s: key_mode must always be present", e.ID)
+		}
+
+		_, hasPrefix := decoded[i]["model_id_prefix"]
+		if hasPrefix != (e.Route == RouteCustomOpenRouter) {
+			t.Errorf("%s: model_id_prefix presence. route: %s, got: %v", e.ID, e.Route, hasPrefix)
 		}
 	}
 }
@@ -155,6 +250,9 @@ func Test_CatalogCustomerFacingTextHasNoBannedTerms(t *testing.T) {
 		for field, text := range map[string]string{"label": e.Label, "description": e.Description} {
 			lower := strings.ToLower(text)
 			for _, b := range banned {
+				if b == "openrouter" && e.Route == RouteCustomOpenRouter {
+					continue
+				}
 				if strings.Contains(lower, b) {
 					t.Errorf("%s: %s contains banned term %q: %q", e.ID, field, b, text)
 				}
