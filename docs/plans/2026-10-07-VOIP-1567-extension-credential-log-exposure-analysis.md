@@ -1,19 +1,20 @@
 # VOIP-1567 extension 자격 증명 로그 노출 이슈 분석
 
-- 상태: Draft (이슈 분석 리뷰 2회차 대기, 1회차 반영)
+- 상태: Draft (이슈 분석 리뷰 3회차 대기, 2회차 반영)
 - 티켓: VOIP-1567 (원 제목의 [registrar-manager] 는 오기, 실제 대상은 api-manager 와 call-manager)
 - 기준 코드: origin/main 163952de1
 
 ## 1. 결론 요약
 
-- 이슈는 유효하다. 가능성 확인이 아니라 실재하는 노출이다. 자격 증명 필드를 가진 객체를 통째로 로그에 남기는 곳이 세 유형으로 있고, 모두 평문으로 JSON 로그에 출력된다.
-  - 유형 1: extension 과 trunk 객체(`password`, `direct_hash`). 5곳.
-  - 유형 2: 인증된 요청의 `*auth.AuthIdentity`(안의 agent `direct_hash`, direct scope `hash_fingerprint`). api-manager 에서 약 270회, 거의 모든 인증된 API 핸들러가 시작부에서 기록한다.
-  - 유형 3: `*amagent.Agent` 직접 로그(`direct_hash`). 13곳(api-manager 2, agent-manager 7, call-manager 4).
+- 이슈는 유효하다. 가능성 확인이 아니라 실재하는 노출이다. 자격 증명 필드를 가진 객체를 통째로 로그에 남기는 곳이 있고, 평문으로 JSON 로그에 출력된다. 확인된 노출은 네 유형이다.
+  - 유형 1: extension 과 trunk 객체(`password`, `direct_hash`). 5곳. 이번 범위.
+  - 유형 2: 인증된 요청의 `*auth.AuthIdentity`(안의 agent `direct_hash`). api-manager 에서 약 420회, 거의 모든 인증된 API 핸들러가 시작부에서 기록한다. 이번 범위.
+  - 유형 3: `*amagent.Agent` 직접 로그(`direct_hash`). 14곳(api-manager 3, agent-manager 7, call-manager 4). 범위 밖(대표님 결정).
+  - 유형 4: `Direct` 객체와 hash 문자열 로그(`hash`, 공개 링크 비밀 값). 약 27곳, 9개 서비스. 범위 밖(대표님 결정).
 - 운영에서 Debug 로그가 켜져 있다. api-manager(`internal/config/main.go:253`)와 call-manager(`internal/config/main.go:124`)가 로그 레벨을 조건 없이 `DebugLevel` 로 고정한다.
-- 지금 진행하는 것이 타당하다. 수정이 작고 위험이 낮으며, 코드 변경 없이는 노출이 계속 쌓인다. 특히 call-manager 는 해당 extension 으로 오는 통화마다, api-manager 는 인증된 요청마다 기록한다.
-- 우선순위는 티켓의 "중간"에서 P2 로 상향한다. 티켓이 정한 상향 조건(password 가 로그에 남는 경우)을 충족한다. `direct_hash` 는 VOIP-1566 에서 `password` 와 같은 급의 자격 증명 노출로 다룬 값이라 같은 기준을 적용한다.
-- 정정: 이 문서의 이전 판은 agent 객체 로그를 "약 14곳, 영향 작음, 산발적" 으로 적었으나 사실과 달랐다. 유형 3(13곳)만 센 것이고, 더 큰 유형 2(`AuthIdentity` 약 270회)를 놓쳤다. 리뷰 1회차의 지적으로 정정했다.
+- 지금 진행하는 것이 타당하다. 수정이 작고 위험이 낮으며, 코드 변경 없이는 노출이 계속 쌓인다. 유형 1 은 call-manager 가 해당 extension 이나 trunk 로 오는 통화마다, 유형 2 는 api-manager 가 인증된 요청마다 기록한다.
+- 우선순위는 티켓의 "중간"에서 P2 로 상향한다. 티켓이 정한 상향 조건(password 가 로그에 남는 경우)을 충족한다. `direct_hash` 는 VOIP-1566 에서 `password` 와 같은 급의 자격 증명 노출로 다룬 값이다.
+- 정정: 이 문서의 이전 판은 agent 객체 로그를 "약 14곳, 영향 작음, 산발적" 으로 적었으나 사실과 달랐다. 그 수치는 유형 3 에 해당하고, 더 큰 유형 2 와 유형 4 를 놓쳤다. 리뷰의 지적으로 정정했다.
 
 ## 2. 코드 근거 (origin/main 기준 직접 확인)
 
@@ -33,13 +34,14 @@
 - registrar-manager 자체는 이미 막혀 있다. `pkg/redacthandler`(민감 키 password, secret, token, credential 과 `*hash` 접미사)와 listenhandler 의 요청, 응답 로그 redaction 이 있다. 따라서 구멍은 RPC 응답을 역직렬화해 통째로 기록하는 호출자 쪽에만 있다.
 - `redacthandler` 는 registrar-manager 의 `pkg/` 안에 있어 다른 서비스가 쓰는 공용 도구가 아니다. 키 기반 맵 redaction 이라 구조체를 그대로 받는 이 5곳에는 맞지 않는다.
 
-유형 2 와 유형 3 의 근거(리뷰 1회차 지적 후 실코드로 확인).
+유형 2, 3, 4 의 근거(리뷰 지적 후 실코드로 확인).
 
-- 유형 2: api-manager 의 인증된 핸들러 시작부가 `log = log.WithField("agent", a)` 로 `*auth.AuthIdentity` 를 기록한다(예: `server/extensions.go:26`). 인자 이름이 `a` 인 호출이 `WithField` 형태 127회, `WithFields` 맵 형태 141회다. `AuthIdentity`(`models/auth/auth.go:24`)의 필드에는 json 태그가 없고 `Agent`, `Accesskey`, `DirectScope`, `DelegateScope` 를 포인터로 품는다.
+- 유형 2: api-manager 의 인증된 핸들러 시작부가 `log = log.WithField("agent", a)` 로 `*auth.AuthIdentity` 를 기록한다(예: `server/extensions.go:26`). 로그 키는 `agent`, `auth`, `auth_identity` 로 나뉘고, `WithField` 형태와 `WithFields` 맵 형태를 합쳐 약 420회다. `AuthIdentity`(`models/auth/auth.go:24`)의 필드에는 json 태그가 없고 `Agent`, `Accesskey`, `DirectScope`, `DelegateScope` 를 포인터로 품는다. 예외로 `pkg/servicehandler/auth.go:29` 의 `a` 는 `*amagent.Agent`(유형 3), `auth.go:82` 는 로그가 아니라 JWT 클레임 맵이다.
 - 재현으로 확인했다. `NewAgentIdentity(&Agent{DirectHash:"direct.AGENTHASH789", PasswordHash:"..."})` 를 `l.WithField("agent", a).Debug(...)` 로 기록하자 출력에 `"direct_hash":"direct.AGENTHASH789"` 가 그대로 나왔고 `password_hash` 는 나오지 않았다(임시 테스트, 확인 후 삭제).
-- 유형 3: `WithField("agent", <*amagent.Agent>)` 직접 호출. api-manager `servicehandler/agent.go:32,73`, agent-manager `agenthandler`(event.go:54,87,131, agent.go:147,428, direct_hash.go:27, db.go:150), call-manager(`groupcallhandler/dial.go:237`, `start_incoming_domain_type_sip.go:313`, `start_incoming_domain_type_registrar.go:101`, `outgoing_call.go:493`). 합계 13곳.
-- 이전 판의 수치(약 14곳)는 유형 3 에 해당하고, 유형 2 는 인자 이름 `a` 패턴이라 검색에서 빠져 있었다.
-
+- `AuthIdentity` 는 어디에서도 JSON 직렬화, 캐시, gob 에 쓰이지 않고, 테스트에도 JSON 스냅샷 비교가 없으며, 다른 서비스가 이 타입을 import 하지 않는다(실코드 확인). 따라서 `json.Marshaler` 구현이 안전하다. `lib/service/unregister.go:110,190` 은 키 이름이 `auth_identity` 이고 같은 타입이라 함께 닫힌다.
+- 유형 3: `WithField("agent", <*amagent.Agent>)` 직접 호출. 14곳. 범위 밖이므로 목록은 설계 문서에 두지 않는다.
+- 유형 4: `*direct.Direct`(`bin-direct-manager/models/direct/direct.go:30` 의 `Hash string json:"hash"`) 객체와 `hash: %s` 메시지. agent-manager, ai-manager, api-manager, call-manager, conference-manager, direct-manager, flow-manager, queue-manager, webchat-manager 에 약 27곳. 범위 밖.
+- `HashFingerprint`(DirectScope)는 `boot.go:29-32` 에서 키 기반 MAC 으로 파생된 값이라 원문 hash 는 아니다.
 
 ## 3. 영향 평가
 
@@ -51,29 +53,30 @@
 
 ## 4. 범위
 
-수정 대상(같은 종류의 결함이며, 미병합 PR 진행 중인 같은 티켓이므로 한 PR 에서 완결한다).
+대표님 결정(2026-10-07): 유형 1 과 유형 2 만 이번 PR 에서 처리하고, 유형 3 과 4 는 처리하지 않는다. 별도 티켓도 만들지 않는다. 이 결정은 확정이며 리뷰에서 재론하지 않는다.
+
+수정 대상.
 
 - 유형 1 (5곳): 객체 통째 로그를 비밀이 없는 필드만 명시한 로그로 바꾼다.
-- 유형 3 (13곳): 같은 방식으로 id 등 비밀이 없는 필드만 남긴다.
-- 유형 2 (약 270회): 호출 지점을 하나씩 고치지 않고 `AuthIdentity` 의 JSON 출력을 한 곳에서 비밀 필드 없이 만든다. 이 타입은 어디에서도 JSON 직렬화되지 않는다(`json.Marshal`, redis, 캐시, gob 사용처 없음, 실코드 확인). 따라서 호출 지점 변경이 0 이다.
+- 유형 2 (약 420회): 호출 지점을 하나씩 고치지 않고 `AuthIdentity` 의 JSON 출력을 한 곳에서 비밀 필드 없이 만든다. 호출 지점 변경은 0 이다.
 
 범위 밖(이번에 하지 않음).
 
-- 일반적 로그 redaction 훅이나 CI 게이트. 같은 종류의 실수가 세 유형에 걸쳐 반복됐다는 사실은 확인됐다. 그러나 이번 수정이 유형 1, 2, 3 을 모두 닫으므로 새 훅이나 게이트는 만들지 않는다. 같은 실수가 다시 나타나는 신호가 생기면 그때 설계한다(과잉 설계 방지).
+- 유형 3(Agent 직접 로그 14곳)과 유형 4(Direct 객체와 hash 문자열 로그 약 27곳). 대표님 결정으로 처리하지 않는다. 이로 인해 유형 3, 4 의 `direct_hash` 와 공개 링크 `hash` 가 이벤트성 로그(생성, 재생성, 조회)에 계속 남는다는 점을 수용 위험으로 기록한다.
+- 일반적 로그 redaction 훅이나 CI 게이트, 공용 redaction 도구 신설. 이번 수정이 가장 위험한 유형(SIP password)과 가장 빈번한 유형(요청 로그)을 닫으므로 새 도구는 만들지 않는다.
 - 로그의 `Debug` 고정 자체(운영 로그 레벨 정책). 별개 주제다.
 
 ## 5. 해결 방향 (설계 단계에서 확정할 사항)
 
-- 유형 1, 3: 방안 A (권장). 객체 통째 로그를 비밀이 없는 필드만 명시한 로그로 바꾼다. 메시지에는 이미 id 가 있으므로, extension 은 `extension_id`, `customer_id`, extension 번호, trunk 는 `trunk_id`, `domain_name`, agent 는 `agent_id`, `customer_id` 정도로 한정한다. 새 공용 도구가 필요 없다. 방안 B(로그 호출 제거)는 디버깅 단서가 줄어 기각한다.
-- 유형 2: `*auth.AuthIdentity` 에 `json.Marshaler` 를 구현해 비밀 필드를 뺀 출력을 만든다. 출력은 Type, CustomerID, agent 는 id, 상담사 식별에 쓰는 비밀이 아닌 필드, accesskey 는 id 와 prefix, direct scope 는 hash_fingerprint 를 뺀 필드로 한정한다. 상세 필드 목록은 설계 단계에서 확정한다.
-- 공용 redaction 도구 신설은 기각한다. 위 방안으로 충분하다(구조체를 그대로 받는 곳은 명시 필드로, `AuthIdentity` 는 한 지점으로 닫힌다).
-- 재발 방지 테스트: 유형 2 는 마샬 결과에 비밀 값이 없고 허용 필드가 유지되는지 단위 테스트로 검증할 수 있다. 유형 1, 3 은 로그 호출이라 단위 테스트가 어렵다. 로그 출력을 가로채 비밀 값 유무를 확인하는 테스트가 비용 대비 가치가 있는지는 설계 단계에서 판단한다.
+- 유형 1: 방안 A. 객체 통째 로그를 비밀이 없는 필드만 명시한 로그로 바꾼다. 메시지에는 이미 id 가 있으므로, extension 은 `extension_id`, `customer_id`, extension 번호, trunk 는 `trunk_id`, `domain_name` 정도로 한정한다. 로그 호출 제거는 디버깅 단서가 줄어 기각한다.
+- 유형 2: `*auth.AuthIdentity` 에 `json.Marshaler` 를 구현해 비밀 필드를 뺀 출력을 만든다. 출력은 Type, CustomerID, agent 는 id 등 비밀이 아닌 식별 필드, accesskey 는 id 와 prefix, direct scope 는 `hash_fingerprint` 를 뺀 필드로 한정한다. 상세 필드 목록은 설계 단계에서 확정한다.
+- 재발 방지 테스트: 유형 2 는 마샬 결과에 비밀 값이 없고 허용 필드가 유지되는지 단위 테스트로 검증할 수 있다. 유형 1 은 로그 호출이라 단위 테스트가 어렵다. 로그 출력을 가로채 비밀 값 유무를 확인하는 테스트가 비용 대비 가치가 있는지는 설계 단계에서 판단한다.
 
-## 6. 대표님 결정이 필요한 사항 (코드 범위 밖)
+## 6. 대표님 결정 사항 (기록)
 
-- 이미 로그에 남은 password 와 direct_hash 의 처리. 코드 수정으로는 과거 로그가 사라지지 않는다. 로그 보존 기간을 확인하고, 필요하면 extension 과 trunk password 교체, agent 와 extension 의 direct_hash 재생성(재생성이 곧 폐기 수단) 여부를 정해야 한다. 이번 PR 에 포함하지 않는다.
+- 범위: 유형 1 과 2 만 처리, 유형 3 과 4 는 처리하지 않음(위 4절).
+- 이미 로그에 남은 password 와 direct_hash: 코드 수정으로 과거 로그는 사라지지 않는다. 로그 보존 기간과 잔존 건수는 확인하지 않기로 했고, extension 과 trunk password 교체, direct_hash 재생성 여부는 대표님이 별도로 판단한다. 이번 PR 에 포함하지 않는다.
 
 ## 7. 진행 판단
 
-- 진행하는 것이 타당하다. 유효성은 세 유형 모두 재현 또는 코드로 확인됐다. 수정은 호출 지점 18곳(유형 1, 3)과 `AuthIdentity` 한 지점(유형 2)으로 작고, 되돌리기 쉽다. 외부 의존성이 없다.
-- 부분 해결(extension 만 먼저)은 채택하지 않는다. 같은 `direct_hash` 노출이 남기 때문이다.
+- 진행하는 것이 타당하다. 유효성은 유형 1, 2 모두 재현 또는 코드로 확인됐다. 수정은 호출 지점 5곳(유형 1)과 `AuthIdentity` 한 지점(유형 2)으로 작고, 되돌리기 쉽다. 외부 의존성이 없다.
