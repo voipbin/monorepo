@@ -257,7 +257,7 @@ func (h *aicallHandler) startReferenceTypeCall(
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeCall",
-		"ai":            a,
+		"ai_id":         a.ID,
 		"activeflow_id": activeflowID,
 	})
 	log.Debugf("Starting a new aicall")
@@ -299,7 +299,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeConversation",
-		"ai":            a,
+		"ai_id":         a.ID,
 		"activeflow_id": activeflowID,
 		"reference_id":  referenceID,
 	})
@@ -483,7 +483,7 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeContactCase",
-		"ai":            a,
+		"ai_id":         a.ID,
 		"activeflow_id": activeflowID,
 		"reference_id":  referenceID,
 	})
@@ -723,7 +723,7 @@ func (h *aicallHandler) startReferenceTypeNone(
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "startReferenceTypeNone",
-		"ai":            c,
+		"ai_id":         c.ID,
 		"activeflow_id": activeflowID,
 	})
 

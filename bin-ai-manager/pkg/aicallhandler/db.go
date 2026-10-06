@@ -35,8 +35,8 @@ func (h *aicallHandler) Create(
 	metadata map[string]any,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "Create",
-		"ai":   c,
+		"func":  "Create",
+		"ai_id": c.ID,
 	})
 
 	// A caller-specified id means the row must land on exactly that key; the
@@ -115,8 +115,8 @@ func (h *aicallHandler) CreateByMessaging(
 	metadata map[string]any,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "CreateByMessaging",
-		"ai":   c,
+		"func":  "CreateByMessaging",
+		"ai_id": c.ID,
 	})
 
 	// A caller-specified id means the row must land on exactly that key; the

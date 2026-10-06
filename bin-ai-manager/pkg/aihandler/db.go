@@ -147,7 +147,7 @@ func (h *aiHandler) Delete(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get ai for delete")
 	}
-	log.WithField("ai", a).Debugf("Retrieved ai info. ai_id: %s", a.ID)
+	log.WithField("ai_id", a.ID).Debugf("Retrieved ai info. ai_id: %s", a.ID)
 
 	// delete direct hash via direct-manager (best-effort, don't block ai deletion)
 	if a.DirectID != uuid.Nil {
