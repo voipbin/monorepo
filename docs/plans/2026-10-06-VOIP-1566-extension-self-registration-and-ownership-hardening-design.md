@@ -1,6 +1,6 @@
 # VOIP-1566 extension 자기 등록 차단과 소유 판정 강화 (설계 + 구현 계획)
 
-- 상태: Draft (Design Review 5회차 대기)
+- 상태: Draft (Design Review 6회차 대기)
 - 작성일: 2026-10-06
 - 티켓: VOIP-1566
 - 기준 코드: origin/main bc68e3c32
@@ -71,7 +71,7 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 ### 7.3 문서와 생성물
 - `bin-api-manager/docsdev/source/service_agent_overview.rst`(me/addresses 설명, "AI Implementation Hint" PUT 교체형 문구 포함)
 - `bin-openapi-manager/openapi/paths/service_agents/me_addresses.yaml`(description 갱신, `components/responses/PermissionDenied` 403 추가)
-- `bin-api-manager/docsdev/source/agent_overview.rst`: 207행(extension 을 "numeric characters only" 로 안내하는 서술을 "extension 의 UUID, 관리자 경로로만 등록" 으로 정정, tel 숫자 포함 규칙 명시), 480행(상담사 역할의 "Can update own status and addresses" 에 extension 은 제외임을 명시)
+- `bin-api-manager/docsdev/source/agent_overview.rst`: 207행(extension 을 "numeric characters only" 로 안내하는 서술을 "extension 의 UUID, 관리자 경로로만 등록" 으로 정정, tel 숫자 포함 규칙 명시), 480행(상담사 역할의 "Can update own status and addresses" 에 extension 은 제외임을 명시), 198행(type 표)과 215~217행(Address Uniqueness 예시)의 extension 표현을 "extension (UUID)" 로 맞춤
 - `bin-api-manager/docsdev/source/agent_tutorial.rst`: 13행(extension numeric-only 서술 정정), 181행(PUT 교체 의미와 extension 변경 제약, tel 숫자 포함 규칙)
 - `bin-openapi-manager/openapi/paths/agents/id_addresses.yaml`: description 에 extension target 은 canonical UUID 로 저장됨과 tel 숫자 포함 규칙을 반영(400 응답 설명 포함)
 - 생성물: `bin-openapi-manager/openapi/openapi.yaml`(번들 변경 시), `bin-api-manager/gens/openapi_server/gen.go`, `bin-api-manager/gens/openapi_redoc/openapi.json`, `api.html`, `bin-api-manager/docsdev/build` 중 실제 변경 파일만 커밋.
