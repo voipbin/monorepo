@@ -54,7 +54,7 @@ post:
               description: Data associated with the ai's engine, can be dynamic and vary based on the engine type.
             engine_key:
               type: string
-              description: API key or credential for the AI engine.
+              description: "API key or credential for the AI engine. Required when engine_model starts with openrouter. (400 ENGINE_KEY_REQUIRED if empty)."
             rag_id:
               type: string
               description: "The knowledge base ID (UUID) for the search_knowledge tool. Returned from the `id` field of the `GET /rags` response. Send empty string or omit to clear."

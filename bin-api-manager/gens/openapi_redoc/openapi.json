@@ -2121,7 +2121,7 @@
                   },
                   "engine_key": {
                     "type": "string",
-                    "description": "API key or credential for the AI engine."
+                    "description": "API key or credential for the AI engine. Required when engine_model starts with openrouter. (400 ENGINE_KEY_REQUIRED if empty)."
                   },
                   "rag_id": {
                     "type": "string",
@@ -2585,7 +2585,7 @@
                   },
                   "engine_key": {
                     "type": "string",
-                    "description": "API key or credential for the AI engine."
+                    "description": "API key or credential for the AI engine. Required when engine_model starts with openrouter. (400 ENGINE_KEY_REQUIRED if empty)."
                   },
                   "rag_id": {
                     "type": "string",
@@ -2679,7 +2679,7 @@
     "/ai_models": {
       "get": {
         "summary": "Gets the list of available AI engine models.",
-        "description": "Returns the catalog of engine models that can be set in the `engine_model` field of an AI.\nThe whole catalog is returned in a single page, so `page_size` and `page_token` are not used.\nModels with `platform_managed` set to true do not need an `engine_key`.\n",
+        "description": "Returns the catalog of engine models that can be set in the `engine_model` field of an AI.\nThe whole catalog is returned in a single page, so `page_size` and `page_token` are not used.\nEach model has a `key_mode`: `platform` means the platform supplies access and `engine_key` is ignored, `own_or_default` means your `engine_key` is used or the platform default key when empty, and `own_required` means `engine_key` is mandatory.\n",
         "tags": [
           "AI"
         ],
@@ -27218,7 +27218,7 @@
       },
       "AIManagerAIEngineModel": {
         "type": "string",
-        "description": "Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.",
+        "description": "Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`. A value in the form `openrouter.<author>/<slug>` is also accepted (custom OpenRouter model, see `model_id_prefix` in `GET /ai_models`); in that case `engine_key` is required.",
         "example": "openai.gpt-5"
       },
       "AIManagerAIModel": {
@@ -27231,7 +27231,8 @@
           "recommended",
           "tags",
           "description",
-          "platform_managed"
+          "platform_managed",
+          "key_mode"
         ],
         "properties": {
           "id": {
@@ -27273,6 +27274,21 @@
             "type": "boolean",
             "description": "If true, the platform supplies the credentials and `engine_key` is not needed.",
             "example": false
+          },
+          "key_mode": {
+            "type": "string",
+            "enum": [
+              "platform",
+              "own_or_default",
+              "own_required"
+            ],
+            "description": "How the engine key is handled. platform: the platform supplies access and engine_key is ignored. own_or_default: your engine_key is used, or the platform default key when empty. own_required: engine_key is mandatory.",
+            "example": "own_or_default"
+          },
+          "model_id_prefix": {
+            "type": "string",
+            "description": "Present only for entries where you type the model ID yourself. Send engine_model as this prefix followed by the model ID.",
+            "example": "openrouter."
           }
         }
       },
