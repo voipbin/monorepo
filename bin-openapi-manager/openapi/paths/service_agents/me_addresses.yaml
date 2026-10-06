@@ -5,7 +5,7 @@ put:
     The list replaces the stored addresses. The `tel` and `sip` addresses can be freely added, changed and removed.
     The `extension` addresses can only be kept or removed. An `extension` address that is not already stored on the
     agent is rejected with `403` (`EXTENSION_ADDRESS_ADMIN_ONLY`) regardless of the caller's role, because
-    the `extension` addresses are assigned by an administrator through `PUT /agents/{id}/addresses`.
+    the `extension` addresses are assigned by an administrator through `PUT /agents/{id}/addresses` or `POST /agents`.
     To keep a stored `extension`, send it back unchanged as returned by `GET /service_agents/me`.
     A `tel` address must contain at least one digit.
   tags:

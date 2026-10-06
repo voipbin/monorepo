@@ -178,7 +178,7 @@ Update agent's addresses.
 
 .. note:: **AI Implementation Hint**
 
-   The ``PUT /agents/{id}/addresses`` endpoint replaces all addresses for the agent. To add a new address while keeping existing ones, first retrieve the current addresses via ``GET /agents/{id}``, then include all desired addresses in the update request. Phone numbers in ``tel`` type addresses must be in E.164 format (e.g., ``+15559876543``) and contain at least one digit. The ``extension`` target is the extension id (UUID), stored in the canonical form (lowercase, hyphenated). This endpoint is the only way to assign an ``extension`` to an agent.
+   The ``PUT /agents/{id}/addresses`` endpoint replaces all addresses for the agent. To add a new address while keeping existing ones, first retrieve the current addresses via ``GET /agents/{id}``, then include all desired addresses in the update request. Phone numbers in ``tel`` type addresses must be in E.164 format (e.g., ``+15559876543``) and contain at least one digit. The ``extension`` target is the extension id (UUID), stored in the canonical form (lowercase, hyphenated). An ``extension`` can only be assigned by a customer admin or manager, through this endpoint or when creating the agent with ``POST /agents``. An agent cannot add or change its own ``extension`` through ``PUT /service_agents/me/addresses``.
 
 .. code::
 
