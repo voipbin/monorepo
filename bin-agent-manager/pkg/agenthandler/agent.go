@@ -368,7 +368,6 @@ func (h *agentHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []
 	return res, nil
 }
 
-// UpdateAddresses updates the agent's addresses.
 // errTelNoDigit is returned when a tel address target does not contain any digit (e.g. "anonymous").
 var errTelNoDigit = stderrors.New("tel address must contain at least one digit")
 
@@ -411,6 +410,7 @@ func normalizeAddressTargets(addresses []commonaddress.Address) error {
 	return nil
 }
 
+// UpdateAddresses updates the agent's addresses.
 func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "UpdateAddresses",

@@ -436,6 +436,21 @@ func Test_ServiceAgentMeUpdateAddresses_extension(t *testing.T) {
 			expectLookup: true,
 		},
 		{
+			name:         "a stored sip address does not make the same value an owned extension",
+			agent:        newAgent(amagent.PermissionCustomerAgent),
+			addresses:    []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: ownExtID, TargetName: "1001"}},
+			stored:       []commonaddress.Address{{Type: commonaddress.TypeSIP, Target: ownExtID, TargetName: "1001"}},
+			expectLookup: true,
+		},
+		{
+			name:         "the same stored extension submitted twice is forwarded and left to the unique constraint",
+			agent:        newAgent(amagent.PermissionCustomerAgent),
+			addresses:    []commonaddress.Address{ownExt, ownExt},
+			stored:       []commonaddress.Address{ownExt},
+			expectLookup: true,
+			expectUpdate: true,
+		},
+		{
 			name:         "a variant form of a stored canonical extension is rejected",
 			agent:        newAgent(amagent.PermissionCustomerAgent),
 			addresses:    []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: strings.ToUpper(ownExtID), TargetName: "1001"}},
