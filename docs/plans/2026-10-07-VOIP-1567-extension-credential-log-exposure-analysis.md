@@ -1,6 +1,6 @@
 # VOIP-1567 extension 자격 증명 로그 노출 이슈 분석
 
-- 상태: Draft (이슈 분석 리뷰 4회차 대기, 3회차 반영)
+- 상태: APPROVED (이슈 분석 리뷰 5회차, 4-5회차 연속 승인)
 - 티켓: VOIP-1567 (원 제목의 [registrar-manager] 는 오기, 실제 대상은 api-manager 와 call-manager)
 - 기준 코드: origin/main 163952de1
 
