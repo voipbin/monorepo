@@ -76,7 +76,7 @@ Asterisk audio (via Go WebSocket)
 
 LLM providers supported (configured by bin-ai-manager at session start):
 - The selectable model list is the catalog in `bin-ai-manager/models/ai/catalog.go` (direct OpenAI, Gemini and Grok models, plus platform-managed OpenRouter models). See bin-ai-manager `docs/domain.md`, Engine Model Catalog.
-- Session start calls `resolveSessionLLM` (`pkg/pipecatcallhandler/llmresolve.go`), which uses `ResolveEngine`: a rejected model fails the session; OpenRouter models get the internal runner type `platform_openrouter.<upstream slug>` and a blank key (the customer `engine_key` is never forwarded); direct and passthrough models use the customer key.
+- `Start()` runs a keyless pre-check, `classifySessionLLM` (`pkg/pipecatcallhandler/llmresolve.go`), that only rejects unselectable models. The session itself resolves through `resolveSessionLLM`, which uses `ResolveEngine`: a rejected model fails the session (the error does not echo a value that starts with `openrouter.`); OpenRouter models get the internal runner type `platform_openrouter.<upstream slug>` and a blank key (the customer `engine_key` is never forwarded); custom `openrouter.<author>/<slug>` models require the customer key (an empty key fails the session) and forward only the trimmed key; direct and passthrough models use the customer key.
 
 STT providers: Deepgram, Whisper
 TTS providers: Cartesia, ElevenLabs, Google

@@ -11,7 +11,7 @@ Before using AI features, you need:
 * A valid authentication token (String). Obtain via ``POST /auth/login`` or use an accesskey from ``GET /accesskeys``.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Obtain one owned by your account via ``GET /numbers``.
 * A destination phone number in E.164 format or an internal extension.
-* An LLM provider API key (String). Obtain from your provider's dashboard (e.g., OpenAI, Google Gemini, xAI). Models marked ``platform_managed`` in ``GET /ai_models`` need no provider key.
+* An LLM provider API key (String). Obtain from your provider's dashboard (e.g., OpenAI, Google Gemini, xAI). Models whose ``key_mode`` in ``GET /ai_models`` is ``platform`` need no provider key. Custom OpenRouter models need your OpenRouter key.
 * (Optional) A pre-created AI configuration (UUID). Create one via ``POST /ais`` or use inline action settings.
 * (Optional) A flow ID (UUID). Create one via ``POST /flows`` or obtain from ``GET /flows``.
 
@@ -434,7 +434,7 @@ Troubleshooting
 ---------------
 
 * **400 Bad Request:**
-    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``: the value must be returned by ``GET /ai_models`` or use an allowed provider prefix ``openai``, ``gemini``, ``grok``) or missing required action fields.
+    * **Cause:** Invalid ``engine_model`` (reason ``INVALID_ENGINE_MODEL``: the value must be returned by ``GET /ai_models``, use an allowed provider prefix ``openai``, ``gemini``, ``grok``, or be a valid ``openrouter.<author>/<slug>`` custom model), ``ENGINE_KEY_REQUIRED`` (a custom OpenRouter model needs an ``engine_key``), or missing required action fields.
     * **Fix:** Verify ``engine_model`` is a value returned by ``GET /ai_models`` or uses an allowed provider prefix in ``<provider>.<model>`` format (e.g., ``openai.gpt-5-mini``). List the selectable models with ``GET /ai_models``. Ensure ``initial_prompt`` is provided.
 
 * **402 Payment Required:**

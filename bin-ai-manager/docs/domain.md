@@ -110,24 +110,25 @@ The routing keys above are pinned by the golden table in `models/ai/routingkey_g
 
 ## Engine Model Catalog
 
-`models/ai/catalog.go` holds `catalog`, the curated allow-list of selectable engine models. Each `ModelEntry` has `ID` (the `EngineModel`), `Label`, `Vendor`, `Route`, `UpstreamSlug`, `Recommended`, `Tags` and `Description`.
+`models/ai/catalog.go` holds `catalog`, the curated allow-list of selectable engine models. Each `ModelEntry` has `ID` (the `EngineModel`), `Label`, `Vendor`, `Route`, `UpstreamSlug`, `Recommended`, `Tags`, `Description` and `CustomPrefix`.
 
-- `Route` is `direct` (the customer supplies the provider key; runner type is the model id itself) or `openrouter` (platform-managed, no customer key needed). `Route` and `UpstreamSlug` are internal and never leave the platform.
+- `Route` is `direct` (the customer supplies the provider key; runner type is the model id itself) `openrouter` (platform-managed, no customer key needed) or `custom_openrouter` (the single `custom.openrouter` entry: the customer types a model ID after the `openrouter.` prefix and must supply their own OpenRouter key). `Route`, `UpstreamSlug` and `CustomPrefix` are internal; only the prefix is exposed, as `model_id_prefix`.
 - Direct entries: Gemini (2.5 Flash, 2.5 Pro, 2.0 Flash, Pro latest), OpenAI (GPT-5.2, 5.1, 5, 5 mini, 5 nano), xAI (Grok 3, Grok 3 mini).
 - OpenRouter entries (`anthropic.claude-haiku-4.5`, `anthropic.claude-sonnet-4.5`, `meta.llama-3.3-70b-instruct`, `meta.llama-4-maverick`, `deepseek.deepseek-v3.2`, `qwen.qwen3-235b-a22b-2507`, `qwen.qwen3-30b-a3b-instruct-2507`, `mistral.mistral-medium-3.1`, `mistral.mistral-small-3.2-24b-instruct`) map to an upstream slug such as `anthropic/claude-haiku-4.5`.
-- `CatalogView()` returns the customer-facing `ModelInfo` list served by `GET /v1/ai_models` (`GET /ai_models` on the public API): `id`, `label`, `vendor`, `recommended`, `tags` (never null), `description`, `platform_managed` (true for `openrouter` routes). Tags currently include `low-cost`.
+- `CatalogView()` returns the customer-facing `ModelInfo` list served by `GET /v1/ai_models` (`GET /ai_models` on the public API): `id`, `label`, `vendor`, `recommended`, `tags` (never null), `description`, `platform_managed` (true for `openrouter` routes), `key_mode` and `model_id_prefix` (custom entry only). `key_mode` is derived from the route: `direct` gives `own_or_default`, `openrouter` gives `platform`, `custom_openrouter` gives `own_required`. Tags currently include `low-cost`.
 
 ### ResolveEngine
 
-`ResolveEngine(EngineModel)` (`models/ai/resolve.go`) is fail-closed and returns a `Resolved` (`Entry`, `RunnerType`, `BlankKey`) plus an `Outcome`:
+`ResolveEngine(EngineModel)` (`models/ai/resolve.go`) is fail-closed and returns a `Resolved` (`Entry`, `RunnerType`, `BlankKey`, `RequireKey`) plus an `Outcome`:
 
 | Outcome | When | Result |
 |---------|------|--------|
 | `OutcomeCatalog` | The model id exactly matches a catalog entry | Direct route: `RunnerType` is the model id. OpenRouter route: `RunnerType` is `platform_openrouter.<upstream slug>` and `BlankKey` is true, so the customer `engine_key` is never forwarded |
 | `OutcomeDirectPassthrough` | Not in the catalog, but the id is `<prefix>.<non-empty rest>` with prefix `openai`, `gemini` or `grok` | `RunnerType` is the model id, `Entry` is nil, the customer key is used. Keeps existing AIs with older direct model names working |
+| `OutcomeCustomOpenRouter` | The id starts with `openrouter.` (case sensitive) and the rest passes `ValidateCustomModelID` (`<author>/<slug>`, exactly one slash, letters, digits, `.`, `_`, `-`, author is not `openrouter`, total length within 255) | `RunnerType` is the model id, `Entry` is nil, `RequireKey` is true and `BlankKey` is false: the customer key is mandatory and the platform key is never used. The platform `platform_openrouter.` prefix is never produced for this outcome |
 | `OutcomeRejected` | Anything else (unknown prefix, empty rest, no dot, e.g. `dialogflow.cx`) | Zero `Resolved`; create/update fails with an invalid engine model error and a session start fails |
 
-`IsValidEngineModel` returns true for every outcome except `OutcomeRejected`. Create always validates; update validates only when `engine_model` changed, so an unchanged legacy value keeps saving. bin-pipecat-manager calls `ResolveEngine` at session start (`resolveSessionLLM`), so a rejected model cannot bypass validation.
+`IsValidEngineModel` returns true for every outcome except `OutcomeRejected`. Create always validates; update validates only when `engine_model` changed, so an unchanged legacy value keeps saving. `ValidateEngine(model, key, modelChanged)` checks the final state: a changed model that resolves to `OutcomeRejected` returns `ErrInvalidEngineModel`, and any `openrouter.` model with an empty (or whitespace) key returns `ErrEngineKeyRequired`, on create and on every update. `aihandler` maps these to `INVALID_ENGINE_MODEL` and `ENGINE_KEY_REQUIRED` without echoing the customer-typed model ID. bin-pipecat-manager calls `ResolveEngine` at session start (`resolveSessionLLM`), so a rejected model cannot bypass validation.
 
 ## LLM Engine Providers
 
