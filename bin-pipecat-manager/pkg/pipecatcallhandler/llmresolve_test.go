@@ -82,6 +82,8 @@ func Test_resolveSessionLLM_errorTextDoesNotEchoCustomInput(t *testing.T) {
 	}{
 		{"malformed custom id is not echoed", "openrouter.dummy-key-not-real", "dummy-new-key", "engine model is not available", "dummy-key-not-real"},
 		{"upper case custom prefix is not echoed", "OpenRouter.dummy-key-not-real", "dummy-new-key", "engine model is not available", "dummy-key-not-real"},
+		{"leading space custom prefix is not echoed", " openrouter.dummy-key-not-real", "dummy-new-key", "engine model is not available", "dummy-key-not-real"},
+		{"leading tab custom prefix is not echoed", "\topenrouter.dummy-key-not-real", "dummy-new-key", "engine model is not available", "dummy-key-not-real"},
 		{"empty custom key error has no model id", "openrouter.vendor/model-a", "", "custom engine key is empty", "vendor/model-a"},
 		{"other rejected input keeps the existing text", "unknown.x", "", "engine model is not available: unknown.x", ""},
 	}

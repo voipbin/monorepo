@@ -415,7 +415,7 @@ func engineCheckError(engineModel ai.EngineModel, err error) error {
 	case errors.Is(err, ai.ErrEngineKeyRequired):
 		return fmt.Errorf("an API key is required for custom OpenRouter models")
 	case errors.Is(err, ai.ErrInvalidEngineModel):
-		if strings.HasPrefix(strings.ToLower(string(engineModel)), ai.EngineModelPrefixCustomOpenRouter) {
+		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(engineModel))), ai.EngineModelPrefixCustomOpenRouter) {
 			return fmt.Errorf("invalid engine model: the OpenRouter model ID is not valid")
 		}
 		return fmt.Errorf("invalid engine model: %s", engineModel)

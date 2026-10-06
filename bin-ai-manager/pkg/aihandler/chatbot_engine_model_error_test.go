@@ -225,3 +225,36 @@ func Test_Update_customModelErrors(t *testing.T) {
 		})
 	}
 }
+
+// Test_engineValidationError_customPrefixWithWhitespaceIsNotEchoed pins that an engine model with
+// leading whitespace before the custom prefix is treated as a custom value and never echoed.
+func Test_engineValidationError_customPrefixWithWhitespaceIsNotEchoed(t *testing.T) {
+	tests := []struct {
+		name  string
+		model ai.EngineModel
+	}{
+		{"leading space", " openrouter.dummy-key-not-real"},
+		{"leading tab", "\topenrouter.dummy-key-not-real"},
+		{"leading space and upper case", "  OpenRouter.dummy-key-not-real"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := engineValidationError(tt.model, ai.ErrInvalidEngineModel)
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+			if strings.Contains(err.Error(), "dummy-key-not-real") {
+				t.Errorf("error echoes the input: %v", err)
+			}
+
+			var ve *cerrors.VoipbinError
+			if !stderrors.As(err, &ve) {
+				t.Fatalf("expected *cerrors.VoipbinError, got %T", err)
+			}
+			if strings.Contains(ve.Message, "dummy-key-not-real") {
+				t.Errorf("message echoes the input: %s", ve.Message)
+			}
+		})
+	}
+}

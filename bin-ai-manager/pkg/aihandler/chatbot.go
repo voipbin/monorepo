@@ -52,7 +52,7 @@ func engineValidationError(engineModel ai.EngineModel, err error) error {
 	case errors.Is(err, ai.ErrEngineKeyRequired):
 		return errEngineKeyRequired()
 	case errors.Is(err, ai.ErrInvalidEngineModel):
-		if strings.HasPrefix(strings.ToLower(string(engineModel)), ai.EngineModelPrefixCustomOpenRouter) {
+		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(engineModel))), ai.EngineModelPrefixCustomOpenRouter) {
 			return errInvalidCustomModelID()
 		}
 		return errInvalidEngineModel(engineModel)

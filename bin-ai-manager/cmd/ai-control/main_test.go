@@ -40,6 +40,8 @@ func Test_validateEngineModelCreate(t *testing.T) {
 		{"custom_blank_key_fails", "openrouter.vendor/model-a", "  ", true, "an API key is required for custom OpenRouter models", ""},
 		{"custom_bad_id_fails_without_echo", "openrouter.dummy-key-not-real", "dummy-new-key", true, "invalid engine model: the OpenRouter model ID is not valid", "dummy-key-not-real"},
 		{"custom_upper_prefix_bad_id_fails_without_echo", "OpenRouter.dummy-key-not-real", "dummy-new-key", true, "invalid engine model: the OpenRouter model ID is not valid", "dummy-key-not-real"},
+		{"custom_leading_space_bad_id_fails_without_echo", " openrouter.dummy-key-not-real", "dummy-new-key", true, "invalid engine model: the OpenRouter model ID is not valid", "dummy-key-not-real"},
+		{"custom_leading_tab_bad_id_fails_without_echo", "\topenrouter.dummy-key-not-real", "dummy-new-key", true, "invalid engine model: the OpenRouter model ID is not valid", "dummy-key-not-real"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -14,7 +14,7 @@ import (
 // prefix is customer free text (it may even be a pasted key), so it is never
 // echoed back or logged.
 func errEngineModelNotAvailable(llmType pipecatcall.LLMType) error {
-	if strings.HasPrefix(strings.ToLower(string(llmType)), amai.EngineModelPrefixCustomOpenRouter) {
+	if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(llmType))), amai.EngineModelPrefixCustomOpenRouter) {
 		return errors.New("engine model is not available")
 	}
 	return fmt.Errorf("engine model is not available: %s", llmType)
