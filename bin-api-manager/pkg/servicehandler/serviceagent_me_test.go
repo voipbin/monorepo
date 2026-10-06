@@ -436,6 +436,20 @@ func Test_ServiceAgentMeUpdateAddresses_extension(t *testing.T) {
 			expectLookup: true,
 		},
 		{
+			name:         "an unowned extension after a tel is rejected (every element is checked)",
+			agent:        newAgent(amagent.PermissionCustomerAgent),
+			addresses:    []commonaddress.Address{tel, {Type: commonaddress.TypeExtension, Target: otherExtID, TargetName: "1002"}},
+			stored:       []commonaddress.Address{},
+			expectLookup: true,
+		},
+		{
+			name:         "an unowned extension after a stored extension and a tel is rejected",
+			agent:        newAgent(amagent.PermissionCustomerAgent),
+			addresses:    []commonaddress.Address{ownExt, tel, {Type: commonaddress.TypeExtension, Target: otherExtID, TargetName: "1002"}},
+			stored:       []commonaddress.Address{ownExt},
+			expectLookup: true,
+		},
+		{
 			name:         "a stored sip address does not make the same value an owned extension",
 			agent:        newAgent(amagent.PermissionCustomerAgent),
 			addresses:    []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: ownExtID, TargetName: "1001"}},

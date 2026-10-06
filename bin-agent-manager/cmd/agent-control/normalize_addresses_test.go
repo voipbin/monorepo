@@ -169,6 +169,32 @@ func Test_normalizeAddresses_extensionVariants(t *testing.T) {
 	}
 }
 
+// A variant that is not the first element must be detected as well, otherwise the agent is skipped by the backfill.
+func Test_addressesDiffer_variantAfterOtherAddresses(t *testing.T) {
+	tel := commonaddress.Address{Type: commonaddress.TypeTel, Target: mustNorm(commonaddress.TypeTel, "+1-555-0100")}
+	canonicalExt := commonaddress.Address{Type: commonaddress.TypeExtension, Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71"}
+	variantExt := commonaddress.Address{Type: commonaddress.TypeExtension, Target: "49B41028-2D8D-11EF-B38D-27DD55F2BB71"}
+
+	tests := []struct {
+		name          string
+		input         []commonaddress.Address
+		expectChanged bool
+	}{
+		{"variant is the second element", []commonaddress.Address{tel, variantExt}, true},
+		{"variant is the third element", []commonaddress.Address{tel, canonicalExt, {Type: commonaddress.TypeExtension, Target: "{49b41028-2d8d-11ef-b38d-27dd55f2bb72}"}}, true},
+		{"all canonical stays unchanged", []commonaddress.Address{tel, canonicalExt}, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := normalizeAddresses(tt.input)
+			if addressesDiffer(tt.input, got) != tt.expectChanged {
+				t.Errorf("Wrong match. expect changed: %v", tt.expectChanged)
+			}
+		})
+	}
+}
+
 // A variant row and the canonical row of another agent must collide, because that is the trace of the
 // registration of an extension that another agent already owns.
 func Test_collisionKey_extensionVariantCollidesWithCanonical(t *testing.T) {
