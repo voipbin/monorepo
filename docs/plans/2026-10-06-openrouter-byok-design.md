@@ -611,6 +611,8 @@ elif service_name == "openrouter" and "." in type:
 
 ## 4. 보안 분석: 플랫폼 키 경로 차단 증명 항목
 
+> 정오표(코드 리뷰 3회차): 이 문서가 별도 이슈로 서술한 이벤트 버스 `engine_key` 제거(4절 잔존 위험, 8.1 항목 3)는 이 PR에서 이미 구현되었다. `bin-ai-manager/pkg/aihandler/publish_event.go`의 `publishAIEvent`가 키를 비운 복사본만 발행하므로 이벤트 버스, ClickHouse, ai 웹훅 페이로드에서 `engine_key`가 빠진다. 본문은 작성 당시 그대로 둔다.
+
 각 항목은 구현 시 독립 테스트로 고정한다. 번호는 분석서 R1과 같다.
 
 | # | 경로 | 방어 | 증명 방법 |

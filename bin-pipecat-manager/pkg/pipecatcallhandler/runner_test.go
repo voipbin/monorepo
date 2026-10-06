@@ -6,8 +6,13 @@ import (
 	"sync"
 	"testing"
 
+	amai "monorepo/bin-ai-manager/models/ai"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amteam "monorepo/bin-ai-manager/models/team"
+	aitool "monorepo/bin-ai-manager/models/tool"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-pipecat-manager/models/message"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
@@ -397,4 +402,68 @@ func Test_runnerStartScript_llmRunnerType(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	})
+}
+
+func Test_runnerStartScript_teamSendsNoTopLevelKey(t *testing.T) {
+	teamID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-0000000000a1")
+	memberID := uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-0000000000a1")
+	aiID := uuid.FromStringOrNil("dddddddd-0000-0000-0000-0000000000a1")
+	aicallID := uuid.FromStringOrNil("eeeeeeee-0000-0000-0000-0000000000a1")
+
+	tests := []struct {
+		name         string
+		assistance   amaicall.AssistanceType
+		expectKey    string
+		expectMember bool
+	}{
+		{"team session sends an empty top-level key", amaicall.AssistanceTypeTeam, "", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockTool := toolhandler.NewMockToolHandler(mc)
+			mockPython := NewMockPythonRunner(mc)
+			h := &pipecatcallHandler{requestHandler: mockReq, toolHandler: mockTool, pythonRunner: mockPython}
+
+			pc := &pipecatcall.Pipecatcall{
+				Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("7e1f0a52-1111-2222-3333-4444555566aa")},
+				ReferenceType: pipecatcall.ReferenceTypeAICall,
+				ReferenceID:   aicallID,
+			}
+			se := &pipecatcall.Session{Ctx: context.Background(), LLMRunnerType: "openai.gpt-5", LLMKey: "dummy-old-key"}
+
+			mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(&amaicall.AIcall{
+				AssistanceType: tt.assistance, AssistanceID: teamID,
+			}, nil)
+			mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amteam.Team{
+				Identity:      commonidentity.Identity{ID: teamID},
+				StartMemberID: memberID,
+				Members:       []amteam.Member{{ID: memberID, Name: "one", AIID: aiID}},
+			}, nil)
+			mockReq.EXPECT().AIV1AIGet(gomock.Any(), aiID).Return(&amai.AI{
+				Identity: commonidentity.Identity{ID: aiID}, EngineModel: "openai.gpt-5", EngineKey: "dummy-member-key",
+			}, nil)
+			mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{}).AnyTimes()
+
+			mockPython.EXPECT().Start(
+				gomock.Any(), pc.ID, "openai.gpt-5", tt.expectKey,
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).DoAndReturn(func(_ context.Context, _ uuid.UUID, _ string, _ string, _ any, _, _, _, _, _ string,
+				_ any, team *resolvedTeamData, _ any, _ bool) error {
+				if (team != nil) != tt.expectMember {
+					t.Errorf("resolved team presence = %v, want %v", team != nil, tt.expectMember)
+				}
+				return nil
+			})
+
+			if err := h.runnerStartScript(pc, se); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		})
+	}
 }

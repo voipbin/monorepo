@@ -197,6 +197,7 @@ T0(착수 점검)
 | 19s | sidebar | 19d와 같음 | **`keyLoad==='loading'`인 동안**(캐시 히트 + 재조회 지연) 타이핑하고 `CUSTOM`으로 전환, 재조회 완료 | 동일 기대, `savedEngineModel` 기준선 |
 | 20 | | 저장 (`OPENAI`, `dummy-old-key`) | `GEMINI`로 전환 후 `dummy-gemini-typed-key` 타이핑, `CUSTOM`으로 전환 | 가드가 true인 채 그룹이 바뀌므로 입력란 비움. body에 `dummy-gemini-typed-key`, `dummy-old-key` 없음. 이후 입력한 `dummy-new-key`는 유지. `OPENAI`로 복귀하면 저장 키 상태로 복원 |
 | 21 | | own_required(`CUSTOM`), `dummy-old-key` | `PLATFORM`으로 전환 후 다시 `CUSTOM`(같은 ID)으로 복귀 | 두 번째 전이가 true -> false이므로 **복원**: detail 입력란 `dummy-old-key`, sidebar는 `savedEngineKey` 유지. 입력 없이 저장 가능(같은 그룹, 같은 접두), body는 저장 키 |
+| 22 | | 저장 (점 없는 `openrouter`, `dummy-old-key`) | `CUSTOM`(`openrouter.a/b`)으로 전환, 입력 없음 | 저장값은 접두 `openrouter.`로 시작하지 않아 `computeKeyMode`가 `own_or_default`로 폴백하므로 그룹이 다르다(`servicePrefixOf`는 둘 다 `openrouter`로 같음). 가드 적용, 입력란 비움, 저장 불가, 새 키 `dummy-new-key` 입력 후 저장 가능하고 body에 `dummy-old-key` 없음 |
 
 정리 사유: 디자인 행 14의 "Custom ID 타이핑"은 행 9와, 행 20의 "저장 키 없는 Custom에서 OpenAI"는 행 18b와 중복이라 제거했다. 행 19는 detail의 로딩 게이트(카탈로그)와 sidebar의 로딩 게이트(`keyLoad`)가 달라 `only`로 분리했다.
 
@@ -713,6 +714,8 @@ grep -rn "dummy-" --include=*.go --include=*.py --include=*.js . | grep -v "_tes
 ---
 
 ## 6. 분기 조건 있는 태스크 (대표님 결정 또는 허용 대기)
+
+> 정오표(코드 리뷰 3회차): T26-a가 "별도 이슈"로 둔 이벤트 버스 `engine_key` 제거는 이 PR에서 이미 구현되었다(`publishAIEvent`, 호출부 8곳, 가드 테스트 `Test_aiEventsPublishOnlyThroughHelper`). T26-a의 "이 PR의 코드는 변하지 않음"은 더 이상 사실이 아니다. 남는 확인은 이미 쌓인 ClickHouse 행 조회뿐이다.
 
 | ID | 조건 | 기본 분기(권장) | 대안 분기와 영향 |
 |---|---|---|---|

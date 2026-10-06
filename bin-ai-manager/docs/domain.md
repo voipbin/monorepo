@@ -102,6 +102,8 @@ Since VOIP-1405 every event is also published to the global topic exchange `bin-
 | `summary.EventTypeCreated` / `Updated` / `Deleted` | `*summary.Summary` | own id | `ai-manager.summary.<summary-id>.created` / `.updated` / `.deleted` |
 | `team.EventTypeCreated` / `Updated` / `Deleted` | `*team.Team` | own id | `ai-manager.team.<team-id>.created` / `.updated` / `.deleted` |
 
+`ai.*` events are published through `publishAIEvent` (`pkg/aihandler/publish_event.go`), which sends a copy with `EngineKey` cleared. The customer's engine key therefore never appears in the topic exchange, the archived event store, webhook payloads, or websocket events. `Test_aiEventsPublishOnlyThroughHelper` fails if any `ai.EventType*` publish bypasses the helper.
+
 `Message` and `IntermediateWebhookMessage` implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `AIcallID`. `Message` has a stable persisted id, but that id first reaches a subscriber inside the `aimessage_created` event itself, so it cannot be pre-bound; `IntermediateWebhookMessage` is a non-persisted streaming fragment whose id changes per delta (ordered by `sequence`), so its own id is not an address at all. Both therefore address the parent AIcall, which means one conversation is followed with `ai-manager.aicall.<aicall-id>.#` plus `ai-manager.aimessage.<aicall-id>.#`. Single-message retrieval stays available over RPC.
 
 `AI`, `AIcall`, `Summary`, and `Team` need no override — their own ids already are the subscription addresses.
