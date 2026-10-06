@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	logtest "github.com/sirupsen/logrus/hooks/test"
 	gomock "go.uber.org/mock/gomock"
 
 	apiwebhook "monorepo/bin-api-manager/models/webhook"
@@ -751,5 +754,78 @@ func Test_processEventWebhookManagerRoutingKeyedEvent_WrongEventTypeFormat(t *te
 	err := h.processEventWebhookManagerRoutingKeyedEvent(context.Background(), event)
 	if err == nil {
 		t.Error("Expected an error for a malformed event type, got nil")
+	}
+}
+
+// Test_processEvent_DoesNotLogEventPayload pins that the event receive path never writes the event
+// body to the log. ai_created and ai_updated webhooks carry the internal engine_key, so the full
+// event, and the marshaled data, must stay out of every log entry on both webhook-manager paths.
+func Test_processEvent_DoesNotLogEventPayload(t *testing.T) {
+	hook := logtest.NewGlobal()
+	defer hook.Reset()
+	prevLevel := logrus.GetLevel()
+	logrus.SetLevel(logrus.DebugLevel)
+	defer logrus.SetLevel(prevLevel)
+
+	const sentinel = "dummy-engine-key-sentinel"
+
+	resource := fmt.Sprintf(
+		`{"id":"%s","customer_id":"%s","engine_key":"%s"}`,
+		"d499c4f4-2f07-488b-a5f7-4b49c00e9a2a", "5e4a0680-804e-11ec-8477-2fea5968d85b", sentinel,
+	)
+
+	tests := []struct {
+		name  string
+		event *sock.Event
+	}{
+		{
+			name: "routing keyed path",
+			event: &sock.Event{
+				Type:      "ai_created",
+				Publisher: "webhook-manager",
+				DataType:  "application/json",
+				Data:      json.RawMessage(resource),
+			},
+		},
+		{
+			name: "wrapped fanout path",
+			event: &sock.Event{
+				Type:      "webhook_published",
+				Publisher: "webhook-manager",
+				DataType:  "application/json",
+				Data: json.RawMessage(fmt.Sprintf(
+					`{"customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","data":{"type":"ai_created","data":%s}}`,
+					resource,
+				)),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hook.Reset()
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockPub := pubsubhandler.NewMockPubHandler(mc)
+			mockPub.EXPECT().Publish(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			h := &subscribeHandler{pubHandler: mockPub}
+
+			h.processEvent(tt.event)
+
+			if len(hook.AllEntries()) == 0 {
+				t.Fatalf("expected log entries to be captured")
+			}
+			for _, e := range hook.AllEntries() {
+				line := e.Message
+				for k, v := range e.Data {
+					line += fmt.Sprintf(" %s=%v", k, v)
+				}
+				if strings.Contains(line, sentinel) {
+					t.Errorf("log entry leaked the event payload: %s", line)
+				}
+			}
+		})
 	}
 }

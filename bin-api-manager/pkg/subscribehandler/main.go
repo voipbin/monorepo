@@ -118,7 +118,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	log := logrus.WithFields(
 		logrus.Fields{
-			"message": m,
+			"publisher": m.Publisher,
+			"type":      m.Type,
+			"data_len":  len(m.Data),
 		},
 	)
 	log.Debugf("Received subscribed event. publisher: %s, type: %s", m.Publisher, m.Type)
