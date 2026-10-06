@@ -1,6 +1,6 @@
 # VOIP-1566 extension 자기 등록 차단과 소유 판정 강화 (설계 + 구현 계획)
 
-- 상태: Draft (Design Review 2회차 대기, 1회차 반영)
+- 상태: Draft (Design Review 3회차 대기)
 - 작성일: 2026-10-06
 - 티켓: VOIP-1566
 - 기준 코드: origin/main bc68e3c32
@@ -102,11 +102,12 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 
 ## 11. 정리 runbook와 롤백 (D4)
 
+0. 선행: 이 PR 에서 갱신된 `agent-control` 바이너리(이미지)를 사용한다. 1번 검토는 읽기 전용이므로 agent-manager 배포 전에 미리 수행해 취약 창의 수동 검토 시간을 없앤다.
 1. 전수 목록 검토: `SELECT agent_id, customer_id, type, target, target_name FROM agent_addresses WHERE type='extension'` 결과를 관리자가 검토해 각 보유 관계가 의도된 것인지 확인한다. 의도되지 않은 건(취약 기간 자기 등록 의심)은 `PUT /agents/{id}/addresses`(관리자 경로, square-admin)로 해당 agent 의 주소에서 제거한다.
 2. `agent-control normalize-addresses --dry-run` 으로 변경과 충돌을 확인한다. 충돌(변형 row 가 타 agent 의 canonical row 와 같은 UUID)은 우회 흔적이므로 해당 변형 row 를 1번과 같이 관리자 경로로 제거한 뒤 dry-run 을 다시 실행한다.
 3. `agent_addresses` 를 백업(`mysqldump` 또는 테이블 복사)하고 소비자(agent-manager, call-manager RPC)를 멈춘 뒤 `--dry-run=false` 로 적용한다. 정지 시간은 기존 도구와 같으며 변경 건수에 비례한다.
 4. 롤백: 적용 결과가 잘못되면 백업 테이블에서 `agent_addresses` 를 복원한다. canonical row 는 이전 코드(agent-manager, api-manager)에서도 정상 동작하므로 코드만 이전 버전으로 되돌려도 안전하다.
-5. 취약 창: agent-manager 배포(2단계)부터 api-manager 배포(4단계)까지는 방어선 2 와 1 이 아직 없으므로 변형 우회와 자기 등록이 가능하다. 정리와 배포를 한 유지보수 시간 안에 이어서 수행해 창을 줄인다.
+5. 취약 창: agent-manager 배포(2단계) 후에는 신규 변형 저장이 D3 로 막히지만, api-manager 배포(4단계) 전까지는 방어선 2 와 1 이 없으므로 기존 변형 row 의 소유 판정 우회와 canonical 형식 자기 등록이 남는다. 정리와 배포를 한 유지보수 시간 안에 이어서 수행해 창을 줄인다.
 
 ## 12. 수용한 위험 (대표님 결정)
 
