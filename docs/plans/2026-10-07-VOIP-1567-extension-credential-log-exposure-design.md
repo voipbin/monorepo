@@ -1,6 +1,6 @@
 # VOIP-1567 extension 자격 증명 로그 노출 설계
 
-- 상태: Draft (설계 리뷰 대기)
+- 상태: Draft (설계 리뷰 2회차 대기, 1회차 반영)
 - 티켓: VOIP-1567
 - 선행 문서: docs/plans/2026-10-07-VOIP-1567-extension-credential-log-exposure-analysis.md (이슈 분석, 범위와 결정 확정)
 - 범위: 분석 문서 4절의 유형 1(extension, trunk 객체 5곳)과 유형 2(`AuthIdentity` 단일 지점). 유형 3, 4 는 대표님 결정으로 처리하지 않는다.
@@ -26,13 +26,13 @@
 
 | 위치 | 현재 | 변경 |
 |---|---|---|
-| bin-api-manager/pkg/servicehandler/extension.go:52 (`extensionGet`) | `log.WithField("tag", res).Debug("Received result.")` | `log.WithFields(logrus.Fields{"extension_id": res.ID, "customer_id": res.CustomerID, "extension": res.Extension}).Debug("Received result.")` |
+| bin-api-manager/pkg/servicehandler/extension.go:52 (`extensionGet`) | `log.WithField("tag", res).Debug("Received result.")` | `log.WithFields(logrus.Fields{"customer_id": res.CustomerID, "extension": res.Extension}).Debug("Received result.")` (이 함수의 `log` 에는 이미 요청 `id` 로 `extension_id` 키가 있으므로 다시 넣지 않는다) |
 | bin-call-manager/pkg/callhandler/start_incoming_domain_type_sip.go:134 | `log.WithField("extension", ext).Debugf(...)` | extension 은 위와 같은 세 필드 |
 | bin-call-manager/pkg/callhandler/start_incoming_domain_type_registrar.go:355 (`tmp`), :383 (`ext`) | `log.WithField("extension", ...).Debugf(...)` | 위와 같은 세 필드 |
 | bin-call-manager/pkg/callhandler/start_incoming_domain_type_trunk.go:44 | `log.WithField("trunk", trunk).Debugf(...)` | `trunk_id`, `customer_id`, `domain_name` |
 
 - `extension.go:52` 의 키 `"tag"` 는 tag 핸들러에서 복사된 잔재다. 객체를 더 이상 넘기지 않으므로 키를 사용하지 않고 위 필드로 대체한다.
-- 모든 호출은 이미 `res`, `ext`, `tmp`, `trunk` 의 `.ID` 를 메시지나 앞 줄에서 참조하므로 nil 위험이 늘지 않는다. 오류 반환 뒤에서만 객체를 읽는다.
+- 5곳 모두 오류 반환 처리 뒤에서만 객체를 읽는다. 기존 코드도 같은 위치에서 객체를 로그에 넘기거나 `.ID` 를 참조하므로 nil 위험이 늘지 않는다. `extension.go:52` 의 메시지는 `.ID` 를 참조하지 않지만, 오류가 없으면 RPC 응답은 non-nil 이다.
 - 디버깅 손실: 메시지에 이미 id 가 있고, extension 번호와 도메인을 남기므로 손실이 작다. realm, username 등 비밀이 아닌 필드는 필요하면 DB 와 registrar 조회로 얻는다.
 - 로그 호출 제거(방안 B)는 채택하지 않는다.
 
@@ -60,7 +60,7 @@
   - `password_hash` 가 계속 출력에 없다.
   - logrus 로그 포매터(joonix)로 `WithField("agent", identity)` 를 기록한 결과에도 같은 속성이 성립한다.
 - `extension_test.go`: `extensionGet` 에 대해 logrus test hook(`logrus/hooks/test`)으로 항목을 수집한다. 항목의 `Data` 값 중 `*Extension` 이 없고, JSON 포매팅한 결과에 비밀 값이 없다.
-- call-manager 4곳: 각 함수의 기존 테스트에 같은 hook 단언을 추가한다. 기존 테스트가 해당 로그 줄에 도달하지 않으면 도달하는 케이스를 추가한다.
+- call-manager 4곳: 각 함수의 기존 테스트에 같은 hook 단언을 추가한다. 기존 테스트가 해당 로그 줄에 도달하지 않으면 도달하는 케이스를 추가한다. 케이스를 새로 만들 정도로 무거우면 그 곳의 단언은 생략하고 PR 본문에 사유를 적는다(변경이 로그 호출 한 줄이라 리뷰와 변이 시험 결과로 갈음한다).
 - 변이 시험: 수정 전 코드로 되돌렸을 때 위 테스트가 모두 실패해야 한다. 구현 단계에서 5곳과 Marshaler 각각을 되돌려 확인하고 PR 에 결과를 적는다.
 
 ### D4. 배포와 호환
@@ -85,5 +85,6 @@
 ## 4. 위험
 
 - Marshaler 가 향후 `AuthIdentity` 를 다른 목적으로 직렬화하려는 코드와 충돌할 수 있다. 완화: 타입 주석에 "JSON 출력은 로그용 요약이며 역직렬화용이 아니다"를 명시한다. 현재 그런 코드는 없다.
+- logrus `TextFormatter` 는 필드 값에 `MarshalJSON` 을 호출하지 않고 `%v` 로 출력한다. 운영은 JSON 포매터(joonix, `internal/config/main.go` 의 `initLog`)이므로 영향이 없다. 로컬에서 텍스트 포매터로 실행하면 구조체가 기존처럼 출력될 수 있다.
 - 새 필드가 `AuthIdentity` 에 추가될 때 Marshaler 를 갱신하지 않으면 새 필드는 로그에 나오지 않는다. 비밀을 가리는 방향으로 안전한 실패(허용 목록 방식)이므로 수용한다.
 - 같은 종류의 실수가 다른 곳에서 반복될 위험은 유형 3, 4 와 함께 수용 위험으로 남는다. 새 도구는 만들지 않는다.
