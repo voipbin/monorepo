@@ -1,6 +1,6 @@
 # VOIP-1566 extension 자기 등록 차단과 소유 판정 강화 (설계 + 구현 계획)
 
-- 상태: Draft (Design Review 3회차 대기)
+- 상태: Draft (Design Review 4회차 대기)
 - 작성일: 2026-10-06
 - 티켓: VOIP-1566
 - 기준 코드: origin/main bc68e3c32
@@ -45,7 +45,7 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 | D4 | 기존 DB 정리. `cmd/agent-control normalize-addresses` 의 `normalizeAddresses` 에 extension UUID canonical 화를 추가한다(도구 내부 로컬 함수, 공유 `NormalizeTarget` 불변). 기존 도구의 충돌 hard-fail 은 유지한다. 변형 row 가 타 agent 의 canonical row 와 충돌하면 우회 흔적이므로 hard-fail 이 탐지 신호가 된다. 자동 변환은 취약 기간에 자기 등록된 canonical row 를 정당화하지 않으며(DB 에 등록 주체 기록이 없음), 실행 전 관리자가 extension 보유 agent 전수 목록을 검토하는 절차를 runbook 으로 둔다(11절). 롤백 절차는 11절 | 분석 8회차 |
 | D5 | 운영 DB collation 확인은 배포 선행 항목이다(`SHOW FULL COLUMNS FROM agent_addresses`). 코드 결정에는 영향이 없다(canonical 이 소문자 하이픈형이라 저장과 조회가 일치) | 대문자 조건부 우회 |
 | D6 | 방어선 1 구현. `serviceAgentOwnedExtensionIDs` 에서 `id != uuid.Nil && id.String() == address.Target` 일 때만 owned. 호출처(List, Get)는 마스킹 전용이라 정상 canonical row 영향 없음. 비-canonical row 소유자는 마스킹된다(fail-closed) | 분석 방어선 1 |
-| D7 | 방어선 4. agent-manager `UpdateAddresses` 와 `Create` 의 tel 처리에서 `NormalizeTarget(TypeTel, target)` 이 `ErrNotNormalizable`(숫자 없음)을 반환하면 거부한다. 기준은 숫자 포함 여부이며 E.164 엄격 검증은 사용하지 않는다(내선형 짧은 번호 등 기존 입력 보호). sip 는 변경 없음. 거부 오류는 기존 `UpdateAddresses` 오류 패턴(`errors.Errorf`)을 따르며 agent-manager `listenhandler` 가 `simpleResponse(400)` 으로 응답하고 api-manager 가 400 으로 변환한다(기존 invalid target 거부와 동일, 실코드 확인). 이미 저장된 숫자 없는 tel row(예: anonymous)는 `PUT` 에서 그대로 재제출해도 거부되어 제거만 가능하다. 기존 row 허용 예외는 두지 않는다(드문 케이스, 정리 대상, 오버엔지니어링 지양) | 소형, anonymous 귀속 차단 |
+| D7 | 방어선 4. agent-manager `UpdateAddresses` 와 `Create` 의 tel 처리에서 `NormalizeTarget(TypeTel, target)` 이 `ErrNotNormalizable`(숫자 없음)을 반환하면 거부한다. 기준은 숫자 포함 여부이며 E.164 엄격 검증은 사용하지 않는다(내선형 짧은 번호 등 기존 입력 보호). sip 는 변경 없음. 거부 오류는 경로별로 다르다. `UpdateAddresses` 는 기존 오류 패턴(`errors.Errorf`)을 따르며 `listenhandler` 가 모든 오류를 `simpleResponse(400)` 으로 응답하고 api-manager 가 400 으로 변환한다(기존 invalid target 거부와 동일). `Create` 는 `listenhandler` 가 `errorResponse` 를 쓰므로 untyped 오류는 500 이 된다(`main.go` errorResponse: typed `VoipbinError` 외에는 404 또는 500). 따라서 `Create` 의 tel 거부는 같은 파일의 기존 패턴대로 `cerrors.InvalidArgument(ServiceNameAgentManager, "INVALID_ADDRESS_TARGET", "tel address must contain at least one digit")` 으로 반환해 400 이 되게 한다(실코드 확인). 이미 저장된 숫자 없는 tel row(예: anonymous)는 `PUT` 에서 그대로 재제출해도 거부되어 제거만 가능하다. 기존 row 허용 예외는 두지 않는다(드문 케이스, 정리 대상, 오버엔지니어링 지양) | 소형, anonymous 귀속 차단 |
 | D8 | 문서 갱신. 7.3 의 파일 목록. PUT 전체 교체 의미(tel 만 보내면 기존 extension 이 제거됨)와 extension 추가, 변경 불가, 비-canonical row 는 제거만 가능함을 문서와 PR 본문에 명시한다 | 영향 고지 |
 
 ## 6. 배포 순서
@@ -77,7 +77,7 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 - `bin-api-manager/pkg/servicehandler/serviceagent_me_test.go`: D1 전수. 추가, Target 변경, TargetName 변경, 변형 재제출(32hex, 중괄호, urn, 대문자, 공백), 저장 canonical 정상 유지, 제거, extension 없는 요청, 다건 혼합, 동일 extension 중복 제출, Name 또는 Detail 만 변경(허용), tel 만 요청(`agentGet` 호출 없음), 재조회 실패(fail closed, 쓰기 안 함), 비-canonical 저장 row 재제출 거부.
 - `bin-api-manager/server/service_agents_me_test.go`: 거부 오류가 403 `EXTENSION_ADDRESS_ADMIN_ONLY` 로 매핑.
 - `bin-api-manager/pkg/servicehandler/serviceagent_extension_test.go`: D6. List 와 Get 에서 canonical, 변형 형식(32hex, 중괄호, urn, 대문자), Nil, 변형 row 소유자가 마스킹됨.
-- `bin-agent-manager/pkg/agenthandler/agent_test.go` 계열: D3. `UpdateAddresses` 변형이 canonical 로 저장, 타 agent canonical 소유 시 중복 거부, `Create` 변형이 canonical 로 저장, 비-UUID 는 기존 동작 유지. D7. tel `anonymous` 거부(UpdateAddresses, Create), 숫자 포함 허용, sip 무영향.
+- `bin-agent-manager/pkg/agenthandler/agent_test.go` 계열: D3. `UpdateAddresses` 변형이 canonical 로 저장, 타 agent canonical 소유 시 중복 거부, `Create` 변형이 canonical 로 저장, 비-UUID 는 기존 동작 유지. D7. tel `anonymous` 거부: `UpdateAddresses` 는 오류 반환, `Create` 는 `cerrors.InvalidArgument` 반환(400 매핑 단언). 숫자 포함 허용, sip 무영향. `UpdateAddresses` 에 동일 extension 중복 제출 시 canonical 화 후 UNIQUE 위반이 400 으로 응답됨을 확인.
 - `bin-agent-manager/cmd/agent-control/normalize_addresses_test.go`: D4. 순수 함수 단위: `normalizeAddresses` 후 `addressesDiffer` 가 extension 변형을 변경으로 판정, canonical 은 불변, 변형과 타 agent canonical 의 `collisionKey` 충돌. (`scanAgents` 는 DB 의존이라 단위 범위 밖.)
 - 변이 시험 목록: 방어선 1(canonical 비교 제거), 방어선 2(튜플 비교의 Target 또는 TargetName 항 제거, 비-canonical 허용, 재조회 생략), D3(canonical 화 제거), D7(검사 제거). 각 변이에서 대응 테스트가 실패해야 한다.
 
@@ -104,10 +104,11 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 
 0. 선행: 이 PR 에서 갱신된 `agent-control` 바이너리(이미지)를 사용한다. 1번 검토는 읽기 전용이므로 agent-manager 배포 전에 미리 수행해 취약 창의 수동 검토 시간을 없앤다.
 1. 전수 목록 검토: `SELECT agent_id, customer_id, type, target, target_name FROM agent_addresses WHERE type='extension'` 결과를 관리자가 검토해 각 보유 관계가 의도된 것인지 확인한다. 의도되지 않은 건(취약 기간 자기 등록 의심)은 `PUT /agents/{id}/addresses`(관리자 경로, square-admin)로 해당 agent 의 주소에서 제거한다.
-2. `agent-control normalize-addresses --dry-run` 으로 변경과 충돌을 확인한다. 충돌(변형 row 가 타 agent 의 canonical row 와 같은 UUID)은 우회 흔적이므로 해당 변형 row 를 1번과 같이 관리자 경로로 제거한 뒤 dry-run 을 다시 실행한다.
-3. `agent_addresses` 를 백업(`mysqldump` 또는 테이블 복사)하고 소비자(agent-manager, call-manager RPC)를 멈춘 뒤 `--dry-run=false` 로 적용한다. 정지 시간은 기존 도구와 같으며 변경 건수에 비례한다.
-4. 롤백: 적용 결과가 잘못되면 백업 테이블에서 `agent_addresses` 를 복원한다. canonical row 는 이전 코드(agent-manager, api-manager)에서도 정상 동작하므로 코드만 이전 버전으로 되돌려도 안전하다.
-5. 취약 창: agent-manager 배포(2단계) 후에는 신규 변형 저장이 D3 로 막히지만, api-manager 배포(4단계) 전까지는 방어선 2 와 1 이 없으므로 기존 변형 row 의 소유 판정 우회와 canonical 형식 자기 등록이 남는다. 정리와 배포를 한 유지보수 시간 안에 이어서 수행해 창을 줄인다.
+2. 같은 agent 가 같은 UUID 의 변형 row 와 canonical row 를 동시에 가진 경우는 도구의 충돌 탐지에 잡히지 않고 apply 중 UNIQUE 위반으로 해당 agent 에서 실패할 수 있으므로, 1번 목록에서 같은 agent 의 같은 UUID 중복(대소문자, 하이픈 제거 후 비교)을 미리 찾아 변형 row 를 관리자 경로로 제거한다. 관리자 경로 PUT 은 agent 의 나머지 주소를 재제출하므로 숫자 없는 tel 이 있으면 D7 로 거부되며 그 row 도 함께 제외한다.
+3. `agent-control normalize-addresses --dry-run` 으로 변경과 충돌을 확인한다. 충돌(변형 row 가 타 agent 의 canonical row 와 같은 UUID)은 우회 흔적이므로 해당 변형 row 를 1번과 같이 관리자 경로로 제거한 뒤 dry-run 을 다시 실행한다.
+4. `agent_addresses` 를 백업(`mysqldump` 또는 테이블 복사)하고 소비자(agent-manager, call-manager RPC)를 멈춘 뒤 `--dry-run=false` 로 적용한다. 정지 시간은 기존 도구와 같으며 변경 건수에 비례한다.
+5. 롤백: 적용 결과가 잘못되면 백업 테이블에서 `agent_addresses` 를 복원한다. canonical row 는 이전 코드(agent-manager, api-manager)에서도 정상 동작하므로 코드만 이전 버전으로 되돌려도 안전하다.
+6. 취약 창: agent-manager 배포(2단계) 후에는 신규 변형 저장이 D3 로 막히지만, api-manager 배포(4단계) 전까지는 방어선 2 와 1 이 없으므로 기존 변형 row 의 소유 판정 우회와 canonical 형식 자기 등록이 남는다. 정리와 배포를 한 유지보수 시간 안에 이어서 수행해 창을 줄인다.
 
 ## 12. 수용한 위험 (대표님 결정)
 
