@@ -16,6 +16,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -452,4 +453,40 @@ func Test_GetServiceAgentsMe_ServiceError(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND")
+}
+
+// The rejection of the extension address update must be mapped to 403 EXTENSION_ADDRESS_ADMIN_ONLY.
+func Test_meAddressesPUT_extension_rejected(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodPut, "/service_agents/me/addresses", bytes.NewBufferString(`{"addresses":[{"type":"extension","target":"49b41028-2d8d-11ef-b38d-27dd55f2bb71"}]}`))
+	mockSvc.EXPECT().ServiceAgentMeUpdateAddresses(gomock.Any(), agent, []commonaddress.Address{
+		{Type: commonaddress.TypeExtension, Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71"},
+	}).Return(nil, cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "EXTENSION_ADDRESS_ADMIN_ONLY", "denied"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusPermissionDenied, "EXTENSION_ADDRESS_ADMIN_ONLY")
 }

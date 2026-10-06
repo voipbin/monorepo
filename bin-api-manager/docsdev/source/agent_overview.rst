@@ -195,7 +195,7 @@ Each agent can have multiple contact addresses - these are the endpoints where c
 +------------+----------------------------------------------------------------+
 | Type       | Description                                                    |
 +============+================================================================+
-| extension  | Internal extension number (must be registered with VoIPBin)    |
+| extension  | Extension (UUID) registered with VoIPBin, assigned by an admin |
 +------------+----------------------------------------------------------------+
 | tel        | External phone number in E.164 format (+15551234567)           |
 +------------+----------------------------------------------------------------+
@@ -204,7 +204,7 @@ Each agent can have multiple contact addresses - these are the endpoints where c
 
 .. note:: **AI Implementation Hint**
 
-   When setting agent addresses of type ``tel``, the number must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces (e.g., ``+15551234567``). For ``extension`` type, use only numeric characters without special characters.
+   When setting agent addresses of type ``tel``, the number must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces (e.g., ``+15551234567``). A ``tel`` address must contain at least one digit. For ``extension`` type, use the extension id (UUID). It is stored in the canonical form (lowercase, hyphenated). The ``extension`` addresses can only be assigned by a customer admin or manager, through ``PUT /agents/{id}/addresses`` or when creating the agent with ``POST /agents``. An agent cannot add or change an ``extension`` address of its own.
 
 **Address Uniqueness**
 
@@ -212,9 +212,9 @@ Each address can only belong to one agent per customer:
 
 ::
 
-    ✓ Agent A has extension 1001 in Customer X
-    ✓ Agent B has extension 1001 in Customer Y  (different customer, OK)
-    ✗ Agent B has extension 1001 in Customer X  (same customer, CONFLICT)
+    ✓ Agent A has extension (UUID) E1 in Customer X
+    ✓ Agent B has extension (UUID) E1 in Customer Y  (different customer, OK)
+    ✗ Agent B has extension (UUID) E1 in Customer X  (same customer, CONFLICT)
 
 
 Call to agent
@@ -477,7 +477,7 @@ In the VoIPBin ecosystem, permissions play a crucial role in governing the actio
     +-----------------------------------------------------------------------------+
     |                    CUSTOMER AGENT (0x0010 / 16)                          |
     |  o Basic agent-level access                                             |
-    |  o Can update own status and addresses                                  |
+    |  o Can update own status and tel/sip addresses (not extensions)          |
     |  o Cannot manage other agents or customer-wide resources                |
     +-----------------------------------------------------------------------------+
 

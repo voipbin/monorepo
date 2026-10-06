@@ -121,7 +121,7 @@ The ``me`` endpoints let an agent manage its own profile without knowing (or nee
      - Update ``name``, ``detail``, ``ring_method``.
    * - PUT
      - ``/service_agents/me/addresses``
-     - Replace the agent's own contact addresses.
+     - Replace the agent's own contact addresses. ``extension`` addresses can only be kept or removed, not added or changed.
    * - PUT
      - ``/service_agents/me/password``
      - Change the agent's own login password.
@@ -174,7 +174,7 @@ Every ``me`` response is the same :ref:`Agent <agent-struct-agent-agent>` object
 
 .. note:: **AI Implementation Hint**
 
-   ``PUT /service_agents/me/addresses`` replaces the agent's entire address list -- it is not additive. Fetch the current list via ``GET /service_agents/me`` first if you only need to add or remove one address.
+   ``PUT /service_agents/me/addresses`` replaces the agent's entire address list -- it is not additive. Fetch the current list via ``GET /service_agents/me`` first if you only need to add or remove one address. ``tel`` and ``sip`` addresses can be freely added, changed and removed, and a ``tel`` address must contain at least one digit. An ``extension`` address can only be kept (send it back unchanged) or removed, so sending only the ``tel`` addresses removes the stored ``extension``. Adding or changing an ``extension`` is rejected with ``403`` (``EXTENSION_ADDRESS_ADMIN_ONLY``) regardless of the caller's role, because it is assigned by an admin through ``PUT /agents/{id}/addresses`` or ``POST /agents``. An extension that is stored in a non-canonical form can only be removed. Ask an admin to correct it.
 
 
 Discovering and Joining Public Channels

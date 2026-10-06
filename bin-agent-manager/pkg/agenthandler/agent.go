@@ -115,8 +115,9 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 
 	// normalize the stored addresses so they are canonical at rest (loss-proof +
 	// idempotent), keeping store == normalized(lookup key) for the exact-match join
-	for i := range addresses {
-		addresses[i].Target, _ = commonaddress.NormalizeTarget(addresses[i].Type, addresses[i].Target)
+	if err := normalizeAddressTargets(addresses); err != nil {
+		log.Errorf("Could not normalize the addresses. err: %v", err)
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAgentManager, "INVALID_ADDRESS_TARGET", err.Error())
 	}
 
 	// check resource limit
@@ -367,6 +368,48 @@ func (h *agentHandler) UpdateTagIDs(ctx context.Context, id uuid.UUID, tagIDs []
 	return res, nil
 }
 
+// errTelNoDigit is returned when a tel address target does not contain any digit (e.g. "anonymous").
+var errTelNoDigit = stderrors.New("tel address must contain at least one digit")
+
+// canonicalExtensionTarget returns the canonical form (lowercase, hyphenated) of an extension address target.
+//
+// NormalizeTarget treats the extension target as an opaque identifier, so the other textual forms that
+// uuid.FromString accepts (32 hex digits, braces, urn:uuid:, upper case) would otherwise be stored as they are
+// and slip past the exact-match duplicate check.
+func canonicalExtensionTarget(target string) (string, error) {
+	id, err := uuid.FromString(target)
+	if err != nil {
+		return "", err
+	}
+
+	return id.String(), nil
+}
+
+// normalizeAddressTargets normalizes the targets of the given addresses in place.
+//
+// The extension targets are canonicalized when they are parseable (the validation of the unparseable ones is left to
+// the caller), and a tel target without any digit is rejected with errTelNoDigit.
+func normalizeAddressTargets(addresses []commonaddress.Address) error {
+	for i := range addresses {
+		target, err := commonaddress.NormalizeTarget(addresses[i].Type, addresses[i].Target)
+		addresses[i].Target = target
+
+		switch addresses[i].Type {
+		case commonaddress.TypeExtension:
+			if canonical, errCanonical := canonicalExtensionTarget(target); errCanonical == nil {
+				addresses[i].Target = canonical
+			}
+
+		case commonaddress.TypeTel:
+			if stderrors.Is(err, commonaddress.ErrNotNormalizable) {
+				return errTelNoDigit
+			}
+		}
+	}
+
+	return nil
+}
+
 // UpdateAddresses updates the agent's addresses.
 func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) (*agent.Agent, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -386,9 +429,11 @@ func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addres
 
 	// normalize the addresses up front (loss-proof + idempotent) so the
 	// validation/dup-check loop below and the persisted values are all canonical,
-	// keeping store == normalized(lookup key) for the exact-match join
-	for i := range addresses {
-		addresses[i].Target, _ = commonaddress.NormalizeTarget(addresses[i].Type, addresses[i].Target)
+	// keeping store == normalized(lookup key) for the exact-match join.
+	// the extension targets are canonicalized and a tel target without a digit is rejected.
+	if err := normalizeAddressTargets(addresses); err != nil {
+		log.Errorf("Could not normalize the addresses. err: %v", err)
+		return nil, err
 	}
 
 	// validate the addresses

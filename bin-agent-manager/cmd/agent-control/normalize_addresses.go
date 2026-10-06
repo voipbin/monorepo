@@ -50,8 +50,9 @@ func cmdNormalizeAddresses() *cobra.Command {
 		Use:   "normalize-addresses",
 		Short: "One-time backfill: rewrite every agent's stored addresses to canonical form",
 		Long: "Scans all non-deleted agents, normalizes each address target via the shared " +
-			"commonaddress.NormalizeTarget (the same function the store/lookup paths use, so there " +
-			"is zero drift), and rewrites the agents whose stored values are not yet canonical.\n\n" +
+			"commonaddress.NormalizeTarget (the same function the store/lookup paths use) plus the " +
+			"extension id canonicalization (lowercase, hyphenated uuid, the same form the agent handler " +
+			"stores), and rewrites the agents whose stored values are not yet canonical.\n\n" +
 			"MUST be run inside a maintenance window with the agent-manager and call-manager RPC " +
 			"consumers stopped (see the design doc): the backfill assumes no concurrent agent " +
 			"mutation or by-address lookup.\n\n" +
@@ -248,6 +249,14 @@ func normalizeAddresses(addresses []commonaddress.Address) []commonaddress.Addre
 	copy(out, addresses)
 	for i := range out {
 		out[i].Target, _ = commonaddress.NormalizeTarget(out[i].Type, out[i].Target)
+
+		// the shared NormalizeTarget keeps the extension target as it is, so the extension ids
+		// are canonicalized here (lowercase, hyphenated) when parseable.
+		if out[i].Type == commonaddress.TypeExtension {
+			if id, err := uuid.FromString(out[i].Target); err == nil {
+				out[i].Target = id.String()
+			}
+		}
 	}
 	return out
 }

@@ -792,7 +792,7 @@
 </tr>
 <tr class="row-even"><td><p>PUT</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/me/addresses</span></code></p></td>
-<td><p>Replace the agent’s own contact addresses.</p></td>
+<td><p>Replace the agent’s own contact addresses. <code class="docutils literal notranslate"><span class="pre">extension</span></code> addresses can only be kept or removed, not added or changed.</p></td>
 </tr>
 <tr class="row-odd"><td><p>PUT</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/service_agents/me/password</span></code></p></td>
@@ -842,7 +842,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/service_agents/me/addresses</span></code> replaces the agent’s entire address list – it is not additive. Fetch the current list via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/me</span></code> first if you only need to add or remove one address.</p>
+<p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/service_agents/me/addresses</span></code> replaces the agent’s entire address list – it is not additive. Fetch the current list via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/me</span></code> first if you only need to add or remove one address. <code class="docutils literal notranslate"><span class="pre">tel</span></code> and <code class="docutils literal notranslate"><span class="pre">sip</span></code> addresses can be freely added, changed and removed, and a <code class="docutils literal notranslate"><span class="pre">tel</span></code> address must contain at least one digit. An <code class="docutils literal notranslate"><span class="pre">extension</span></code> address can only be kept (send it back unchanged) or removed, so sending only the <code class="docutils literal notranslate"><span class="pre">tel</span></code> addresses removes the stored <code class="docutils literal notranslate"><span class="pre">extension</span></code>. Adding or changing an <code class="docutils literal notranslate"><span class="pre">extension</span></code> is rejected with <code class="docutils literal notranslate"><span class="pre">403</span></code> (<code class="docutils literal notranslate"><span class="pre">EXTENSION_ADDRESS_ADMIN_ONLY</span></code>) regardless of the caller’s role, because it is assigned by an admin through <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/addresses</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents</span></code>. An extension that is stored in a non-canonical form can only be removed. Ask an admin to correct it.</p>
 </div>
 </section>
 <section id="discovering-and-joining-public-channels">

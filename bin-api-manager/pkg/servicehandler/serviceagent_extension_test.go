@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -382,6 +383,49 @@ func Test_ServiceAgentExtensionGet(t *testing.T) {
 			agent:             newTestSAExtAgent(amagent.PermissionCustomerAgent, []commonaddress.Address{newTestSAExtAddress(testSAExtOwnID)}),
 			extensionID:       testSAExtOwnID,
 			responseExtension: &deletedOwnExt,
+		},
+		{
+			name:              "an owned extension stored in a non-canonical form is masked (32 hex digits)",
+			agent:             newTestSAExtAgent(amagent.PermissionCustomerAgent, nil),
+			extensionID:       testSAExtOwnID,
+			responseExtension: &ownExt,
+			responseAgent:     &amagent.Agent{Addresses: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: strings.ReplaceAll(testSAExtOwnID.String(), "-", "")}}},
+			expectRes:         newTestSAExtMasked(ownExt),
+		},
+		{
+			name:              "an owned extension stored in a non-canonical form is masked (braces)",
+			agent:             newTestSAExtAgent(amagent.PermissionCustomerAgent, nil),
+			extensionID:       testSAExtOwnID,
+			responseExtension: &ownExt,
+			responseAgent:     &amagent.Agent{Addresses: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "{" + testSAExtOwnID.String() + "}"}}},
+			expectRes:         newTestSAExtMasked(ownExt),
+		},
+		{
+			name:              "an owned extension stored in a non-canonical form is masked (urn)",
+			agent:             newTestSAExtAgent(amagent.PermissionCustomerAgent, nil),
+			extensionID:       testSAExtOwnID,
+			responseExtension: &ownExt,
+			responseAgent:     &amagent.Agent{Addresses: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "urn:uuid:" + testSAExtOwnID.String()}}},
+			expectRes:         newTestSAExtMasked(ownExt),
+		},
+		{
+			name:              "an owned extension stored in upper case is masked",
+			agent:             newTestSAExtAgent(amagent.PermissionCustomerAgent, nil),
+			extensionID:       testSAExtOwnID,
+			responseExtension: &ownExt,
+			responseAgent:     &amagent.Agent{Addresses: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: strings.ToUpper(testSAExtOwnID.String())}}},
+			expectRes:         newTestSAExtMasked(ownExt),
+		},
+		{
+			name:              "a canonical owned extension stays readable next to a non-canonical one",
+			agent:             newTestSAExtAgent(amagent.PermissionCustomerAgent, nil),
+			extensionID:       testSAExtOwnID,
+			responseExtension: &ownExt,
+			responseAgent: &amagent.Agent{Addresses: []commonaddress.Address{
+				{Type: commonaddress.TypeExtension, Target: strings.ToUpper(testSAExtOtherID.String())},
+				newTestSAExtAddress(testSAExtOwnID),
+			}},
+			expectRes: ownExt.ConvertWebhookMessage(),
 		},
 	}
 
