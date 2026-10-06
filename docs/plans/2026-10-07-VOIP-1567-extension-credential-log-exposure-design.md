@@ -1,6 +1,6 @@
 # VOIP-1567 extension 자격 증명 로그 노출 설계
 
-- 상태: Draft (설계 리뷰 3회차 대기, 2회차 반영)
+- 상태: Draft (설계 리뷰 4회차 대기, 3회차 반영)
 - 티켓: VOIP-1567
 - 선행 문서: docs/plans/2026-10-07-VOIP-1567-extension-credential-log-exposure-analysis.md (이슈 분석, 범위와 결정 확정)
 - 범위: 분석 문서 4절의 유형 1(extension, trunk 객체 5곳)과 유형 2(`AuthIdentity` 단일 지점). 유형 3, 4 는 대표님 결정으로 처리하지 않는다.
@@ -66,10 +66,11 @@
 | `extensionGet` (`extension.go:52`) | `bin-api-manager/pkg/servicehandler/extension_test.go` `Test_ExtensionGet` 의 normal 케이스 | `Extension` 의 `Password`, `DirectHash` | 항목의 `Data` 에 `*Extension` 이 다시 들어가 실패 |
 | `start_incoming_domain_type_sip.go:134` | `Test_startIncomingDomainTypeSIP_directExtension` | `Extension` 의 `Password`, `DirectHash` | 같음 |
 | `start_incoming_domain_type_registrar.go:355` (uuid 분기) | `Test_parseAddressTypeExtension` 의 "normal - address has correct uuid target" 케이스 | 같음 | 같음 |
-| `start_incoming_domain_type_registrar.go:383` (목록 분기) | `Test_parseAddressTypeExtension` 의 "normal - address has invalid uuid target" 케이스 | 같음 | 같음 |
+| `start_incoming_domain_type_registrar.go:383` (if/else 뒤의 공통 줄) | `Test_parseAddressTypeExtension` 의 두 케이스("normal - address has correct uuid target", "normal - address has invalid uuid target") | 두 케이스 모두 센티널 필요. uuid 케이스는 `responseExtension`, invalid uuid 케이스는 `responseExtensions[0]` | 두 케이스 모두 실패 |
 | `start_incoming_domain_type_trunk.go:44` | `Test_startIncomingDomainTypeTrunk` | `Trunk` 의 `Password` | 같음 |
 
-- 355 와 383 은 서로 다른 분기라 각각의 케이스가 해당 줄의 변이만 잡는다.
+- 355 는 uuid 분기 안의 줄이라 되돌리면 uuid 케이스만 실패한다. 383 은 if/else 뒤의 공통 줄이라 되돌리면 두 케이스가 모두 실패한다. 구현에서 두 줄의 변이 시험 결과를 이 기준으로 PR 에 적는다.
+- `Test_ExtensionGet` 은 입력 `Extension` 에 센티널을 넣으면 `ConvertWebhookMessage` 결과에도 `Password`, `DirectHash` 가 실리므로 `expectRes` 에도 같은 센티널을 넣는다.
 - hook 사용 절차는 저장소의 기존 선례를 따른다(`bin-registrar-manager/pkg/listenhandler/redact_regression_test.go`, `bin-registrar-manager/pkg/trunkhandler/redact_regression_test.go`). 호출은 `logrus.Debug` 이므로 표준 logger 의 기본 레벨(Info)에서는 수집되지 않는다. 따라서 테스트 안에서 `logrus.SetLevel(logrus.DebugLevel)` 후 `defer logrus.SetLevel(logrus.InfoLevel)` 로 복원하고, `logrustest.NewLocal(logrus.StandardLogger())` 로 hook 을 붙이며 `defer logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))` 로 정리한다.
 - 공허 통과 방지: 대상 메시지를 가진 수집 항목이 1건 이상임을 먼저 단언한 뒤, 모든 항목의 `Data` 를 JSON 으로 마샬한 문자열(운영 포매터와 같은 방식)과 `%v` 문자열 모두에 센티널 값이 없음을 단언한다.
 - 변이 시험: 구현 단계에서 5곳과 Marshaler 각각을 수정 전 코드로 되돌려, 위 표의 테스트가 실패하는지 확인하고 결과를 PR 에 적는다.
