@@ -121,7 +121,7 @@ The ``me`` endpoints let an agent manage its own profile without knowing (or nee
      - Update ``name``, ``detail``, ``ring_method``.
    * - PUT
      - ``/service_agents/me/addresses``
-     - Replace the agent's own contact addresses.
+     - Replace the agent's own contact addresses. ``extension`` addresses can only be kept or removed, not added or changed.
    * - PUT
      - ``/service_agents/me/password``
      - Change the agent's own login password.

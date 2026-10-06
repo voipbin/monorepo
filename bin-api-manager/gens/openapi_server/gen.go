@@ -53336,6 +53336,20 @@ func (response PutServiceAgentsMeAddresses401JSONResponse) VisitPutServiceAgents
 	return err
 }
 
+type PutServiceAgentsMeAddresses403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutServiceAgentsMeAddresses403JSONResponse) VisitPutServiceAgentsMeAddressesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PutServiceAgentsMeAddresses500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PutServiceAgentsMeAddresses500JSONResponse) VisitPutServiceAgentsMeAddressesResponse(w http.ResponseWriter) error {

@@ -1,6 +1,10 @@
 put:
   summary: Update an agent's addresses
-  description: Update an agent's addresses and return updated details.
+  description: |
+    Update an agent's addresses and return updated details. The list replaces the stored addresses.
+    The `extension` target is the extension id (UUID) and it is stored in the canonical form (lowercase, hyphenated).
+    A `tel` address must contain at least one digit. This is the only way to assign an `extension` to an agent,
+    and it requires the customer admin or manager permission.
   tags:
     - Agent
   parameters:

@@ -2,12 +2,14 @@ package agenthandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"reflect"
 	"testing"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -187,6 +189,62 @@ func Test_Create(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
 				},
 				Username:     "test-norm@voipbin.net",
+				PasswordHash: "hash_string",
+				Name:         "test norm name",
+				Detail:       "test norm detail",
+				RingMethod:   agent.RingMethodRingAll,
+				Status:       agent.StatusOffline,
+				Permission:   agent.PermissionNone,
+				TagIDs:       []uuid.UUID{},
+				// tel canonicalized (punctuation stripped); extension UUID kept verbatim
+				Addresses: []commonaddress.Address{
+					{Type: commonaddress.TypeTel, Target: mustNormalize(commonaddress.TypeTel, "+1-555-0100")},
+					{Type: commonaddress.TypeExtension, Target: "ac810dc4-298c-11ee-984c-ebb7811c4114"},
+				},
+				DirectID:   uuid.FromStringOrNil("d1e2f3a4-b5c6-7890-abcd-ef1234567890"),
+				DirectHash: "direct_hash_value",
+			},
+			expectedRes: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+				},
+			},
+		},
+		{
+			name: "a variant extension id is stored in the canonical form",
+
+			customerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+			username:   "test-variant@voipbin.net",
+			password:   "test1password",
+			agentName:  "test norm name",
+			detail:     "test norm detail",
+			ringMethod: agent.RingMethodRingAll,
+			permission: agent.PermissionNone,
+			tags:       []uuid.UUID{},
+			addresses: []commonaddress.Address{
+				{Type: commonaddress.TypeTel, Target: "+1-555-0100"},
+				{Type: commonaddress.TypeExtension, Target: "{AC810DC4298C11EE984CEBB7811C4114}"},
+			},
+
+			responseUUID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+			responseHash: "hash_string",
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1e2f3a4-b5c6-7890-abcd-ef1234567890"),
+				},
+				Hash: "direct_hash_value",
+			},
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+				},
+			},
+			expectedAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				},
+				Username:     "test-variant@voipbin.net",
 				PasswordHash: "hash_string",
 				Name:         "test norm name",
 				Detail:       "test norm detail",
@@ -947,6 +1005,134 @@ func Test_UpdateAddresses(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "extension variant (32 hex digits) is canonicalized before the dup-check and persist",
+
+			id: uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+			addresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "49b410282d8d11efb38d27dd55f2bb71",
+				},
+			},
+
+			// extension is opaque: unchanged by normalization
+			expectedAddresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71",
+				},
+			},
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+			responseExtension: &rmextension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+		},
+		{
+			name: "extension variant (braces) is canonicalized before the dup-check and persist",
+
+			id: uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+			addresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "{49b41028-2d8d-11ef-b38d-27dd55f2bb71}",
+				},
+			},
+
+			// extension is opaque: unchanged by normalization
+			expectedAddresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71",
+				},
+			},
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+			responseExtension: &rmextension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+		},
+		{
+			name: "extension variant (urn) is canonicalized before the dup-check and persist",
+
+			id: uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+			addresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "urn:uuid:49b41028-2d8d-11ef-b38d-27dd55f2bb71",
+				},
+			},
+
+			// extension is opaque: unchanged by normalization
+			expectedAddresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71",
+				},
+			},
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+			responseExtension: &rmextension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+		},
+		{
+			name: "extension variant (upper case) is canonicalized before the dup-check and persist",
+
+			id: uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+			addresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "49B41028-2D8D-11EF-B38D-27DD55F2BB71",
+				},
+			},
+
+			// extension is opaque: unchanged by normalization
+			expectedAddresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71",
+				},
+			},
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+			responseExtension: &rmextension.Extension{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -986,6 +1172,145 @@ func Test_UpdateAddresses(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.responseAgent) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", res, tt.responseAgent)
+			}
+		})
+	}
+}
+
+func Test_UpdateAddresses_rejections(t *testing.T) {
+
+	agentID := uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6")
+	otherAgentID := uuid.FromStringOrNil("8a0f4bb2-2d8d-11ef-9c5a-1b2c3d4e5f60")
+	customerID := uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9")
+	extensionID := uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71")
+
+	tests := []struct {
+		name string
+
+		addresses []commonaddress.Address
+
+		// the address that the dup-check is expected to receive, nil if the request is rejected before the dup-check
+		expectDupCheck *commonaddress.Address
+	}{
+		{
+			name: "a tel address without any digit is rejected",
+			addresses: []commonaddress.Address{
+				{Type: commonaddress.TypeTel, Target: "anonymous"},
+			},
+		},
+		{
+			name: "an empty tel address is rejected",
+			addresses: []commonaddress.Address{
+				{Type: commonaddress.TypeTel, Target: ""},
+			},
+		},
+		{
+			name: "a variant of an extension owned by the other agent is detected as the duplicate",
+			addresses: []commonaddress.Address{
+				{Type: commonaddress.TypeExtension, Target: "49b410282d8d11efb38d27dd55f2bb71"},
+			},
+			expectDupCheck: &commonaddress.Address{Type: commonaddress.TypeExtension, Target: extensionID.String()},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &agentHandler{
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			responseAgent := &agent.Agent{
+				Identity: commonidentity.Identity{ID: agentID, CustomerID: customerID},
+			}
+			mockDB.EXPECT().AgentGet(ctx, agentID).Return(responseAgent, nil)
+
+			if tt.expectDupCheck != nil {
+				mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, extensionID).Return(&rmextension.Extension{
+					Identity: commonidentity.Identity{ID: extensionID, CustomerID: customerID},
+				}, nil)
+				mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, customerID, tt.expectDupCheck).Return(&agent.Agent{
+					Identity: commonidentity.Identity{ID: otherAgentID, CustomerID: customerID},
+				}, nil)
+			}
+			// AgentSetAddresses must not be called: no expectation is registered.
+
+			res, err := h.UpdateAddresses(ctx, agentID, tt.addresses)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: %v", res)
+			}
+		})
+	}
+}
+
+func Test_Create_tel_without_digit(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &agentHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	// no mock expectation: the request must be rejected before any rpc or db access.
+	_, err := h.Create(ctx, uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"), "test1@voipbin.net", "pw", "name", "detail",
+		agent.RingMethodRingAll, agent.PermissionNone, []uuid.UUID{},
+		[]commonaddress.Address{{Type: commonaddress.TypeTel, Target: "anonymous"}})
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error, got: nil")
+	}
+
+	// it must be a typed invalid argument error so that the listen handler responds 400, not 500.
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("Wrong match. expect: *VoipbinError, got: %T", err)
+	}
+	if ve.Reason != "INVALID_ADDRESS_TARGET" {
+		t.Errorf("Wrong match. expect: INVALID_ADDRESS_TARGET, got: %s", ve.Reason)
+	}
+}
+
+func Test_canonicalExtensionTarget(t *testing.T) {
+	canonical := "49b41028-2d8d-11ef-b38d-27dd55f2bb71"
+
+	tests := []struct {
+		name   string
+		target string
+		ok     bool
+	}{
+		{"canonical", canonical, true},
+		{"32 hex digits", "49b410282d8d11efb38d27dd55f2bb71", true},
+		{"braces", "{" + canonical + "}", true},
+		{"urn", "urn:uuid:" + canonical, true},
+		{"upper case", "49B41028-2D8D-11EF-B38D-27DD55F2BB71", true},
+		{"not a uuid", "not-a-uuid", false},
+		{"empty", "", false},
+		{"surrounding space", " " + canonical, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := canonicalExtensionTarget(tt.target)
+			if (err == nil) != tt.ok {
+				t.Fatalf("Wrong match. expect ok: %v, got err: %v", tt.ok, err)
+			}
+			if tt.ok && res != canonical {
+				t.Errorf("Wrong match. expect: %s, got: %s", canonical, res)
 			}
 		})
 	}

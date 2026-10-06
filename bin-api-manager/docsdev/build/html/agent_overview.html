@@ -839,7 +839,7 @@ queue calls?</p></th>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>extension</p></td>
-<td><p>Internal extension number (must be registered with VoIPBin)</p></td>
+<td><p>Extension (UUID) registered with VoIPBin, assigned by an admin</p></td>
 </tr>
 <tr class="row-odd"><td><p>tel</p></td>
 <td><p>External phone number in E.164 format (+15551234567)</p></td>
@@ -853,13 +853,13 @@ queue calls?</p></th>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>When setting agent addresses of type <code class="docutils literal notranslate"><span class="pre">tel</span></code>, the number must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). For <code class="docutils literal notranslate"><span class="pre">extension</span></code> type, use only numeric characters without special characters.</p>
+<p>When setting agent addresses of type <code class="docutils literal notranslate"><span class="pre">tel</span></code>, the number must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). A <code class="docutils literal notranslate"><span class="pre">tel</span></code> address must contain at least one digit. For <code class="docutils literal notranslate"><span class="pre">extension</span></code> type, use the extension id (UUID). It is stored in the canonical form (lowercase, hyphenated). The <code class="docutils literal notranslate"><span class="pre">extension</span></code> addresses can only be assigned through <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}/addresses</span></code> by a customer admin or manager. An agent cannot add or change an <code class="docutils literal notranslate"><span class="pre">extension</span></code> address of its own.</p>
 </div>
 <p><strong>Address Uniqueness</strong></p>
 <p>Each address can only belong to one agent per customer:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>✓ Agent A has extension 1001 in Customer X
-✓ Agent B has extension 1001 in Customer Y  (different customer, OK)
-✗ Agent B has extension 1001 in Customer X  (same customer, CONFLICT)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>✓ Agent A has extension (UUID) E1 in Customer X
+✓ Agent B has extension (UUID) E1 in Customer Y  (different customer, OK)
+✗ Agent B has extension (UUID) E1 in Customer X  (same customer, CONFLICT)
 </pre></div>
 </div>
 </section>
@@ -1100,7 +1100,7 @@ Queue finds Agent Smith (available)
 <span class="o">+-----------------------------------------------------------------------------+</span>
 <span class="o">|</span>                    <span class="n">CUSTOMER</span> <span class="n">AGENT</span> <span class="p">(</span><span class="mh">0x0010</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="n">o</span> <span class="n">Basic</span> <span class="n">agent</span><span class="o">-</span><span class="n">level</span> <span class="n">access</span>                                             <span class="o">|</span>
-<span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">update</span> <span class="n">own</span> <span class="n">status</span> <span class="ow">and</span> <span class="n">addresses</span>                                  <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Can</span> <span class="n">update</span> <span class="n">own</span> <span class="n">status</span> <span class="ow">and</span> <span class="n">tel</span><span class="o">/</span><span class="n">sip</span> <span class="n">addresses</span> <span class="p">(</span><span class="ow">not</span> <span class="n">extensions</span><span class="p">)</span>          <span class="o">|</span>
 <span class="o">|</span>  <span class="n">o</span> <span class="n">Cannot</span> <span class="n">manage</span> <span class="n">other</span> <span class="n">agents</span> <span class="ow">or</span> <span class="n">customer</span><span class="o">-</span><span class="n">wide</span> <span class="n">resources</span>                <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------------+</span>
 </pre></div>

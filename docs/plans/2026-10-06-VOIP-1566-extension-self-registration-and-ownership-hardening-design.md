@@ -1,6 +1,6 @@
 # VOIP-1566 extension 자기 등록 차단과 소유 판정 강화 (설계 + 구현 계획)
 
-- 상태: Draft (Design Review 6회차 대기)
+- 상태: APPROVED (Design Review 6회차, 5-6회차 연속 승인)
 - 작성일: 2026-10-06
 - 티켓: VOIP-1566
 - 기준 코드: origin/main bc68e3c32

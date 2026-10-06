@@ -24,10 +24,23 @@ func newExtensionNotFound() error {
 	return cerrors.NotFound(commonoutline.ServiceNameRegistrarManager, "EXTENSION_NOT_FOUND", "The extension was not found.")
 }
 
+// isCanonicalExtensionTarget returns true if the given extension address target is a UUID in the canonical form
+// (lowercase, hyphenated).
+//
+// uuid.FromStringOrNil also accepts the other textual forms (32 hex digits, braces, urn:uuid:, upper case) which
+// bypass the exact-match duplicate check of the address assignment, so only the canonical form is trusted.
+func isCanonicalExtensionTarget(target string) bool {
+	id := uuid.FromStringOrNil(target)
+	return id != uuid.Nil && id.String() == target
+}
+
 // serviceAgentOwnedExtensionIDs returns the set of the extension ids assigned to the calling agent.
 //
 // The set is resolved from the up-to-date agent record, the same source as GET /service_agents/me,
 // not from the addresses snapshotted in the agent's token.
+//
+// Only the addresses stored in the canonical form count as owned. The ownership of an address stored in any other
+// form is not recognized (fail closed), the password of the extension stays masked.
 func (h *serviceHandler) serviceAgentOwnedExtensionIDs(ctx context.Context, a *auth.AuthIdentity) (map[uuid.UUID]bool, error) {
 	ag, err := h.agentGet(ctx, a.AgentID())
 	if err != nil {
@@ -40,8 +53,8 @@ func (h *serviceHandler) serviceAgentOwnedExtensionIDs(ctx context.Context, a *a
 			continue
 		}
 
-		if id := uuid.FromStringOrNil(address.Target); id != uuid.Nil {
-			res[id] = true
+		if isCanonicalExtensionTarget(address.Target) {
+			res[uuid.FromStringOrNil(address.Target)] = true
 		}
 	}
 

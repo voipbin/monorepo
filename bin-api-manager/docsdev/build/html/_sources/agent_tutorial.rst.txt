@@ -10,7 +10,7 @@ Before managing agents, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
 * (For tag assignment) Tag IDs (UUIDs). Create tags via ``POST /tags`` or obtain existing ones via ``GET /tags``.
-* (For address assignment) Contact addresses in the correct format: E.164 for ``tel`` type (e.g., ``+15559876543``), numeric-only for ``extension`` type, or ``user@domain`` for ``sip`` type.
+* (For address assignment) Contact addresses in the correct format: E.164 for ``tel`` type (e.g., ``+15559876543``), the extension id (UUID) for ``extension`` type (assigned by an admin), or ``user@domain`` for ``sip`` type.
 
 .. note:: **AI Implementation Hint**
 
@@ -178,7 +178,7 @@ Update agent's addresses.
 
 .. note:: **AI Implementation Hint**
 
-   The ``PUT /agents/{id}/addresses`` endpoint replaces all addresses for the agent. To add a new address while keeping existing ones, first retrieve the current addresses via ``GET /agents/{id}``, then include all desired addresses in the update request. Phone numbers in ``tel`` type addresses must be in E.164 format (e.g., ``+15559876543``).
+   The ``PUT /agents/{id}/addresses`` endpoint replaces all addresses for the agent. To add a new address while keeping existing ones, first retrieve the current addresses via ``GET /agents/{id}``, then include all desired addresses in the update request. Phone numbers in ``tel`` type addresses must be in E.164 format (e.g., ``+15559876543``) and contain at least one digit. The ``extension`` target is the extension id (UUID), stored in the canonical form (lowercase, hyphenated). This endpoint is the only way to assign an ``extension`` to an agent.
 
 .. code::
 

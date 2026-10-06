@@ -135,3 +135,50 @@ func mustNorm(addressType commonaddress.Type, target string) string {
 	res, _ := commonaddress.NormalizeTarget(addressType, target)
 	return res
 }
+
+func Test_normalizeAddresses_extensionVariants(t *testing.T) {
+	canonical := "49b41028-2d8d-11ef-b38d-27dd55f2bb71"
+
+	tests := []struct {
+		name   string
+		target string
+
+		expectTarget  string
+		expectChanged bool
+	}{
+		{"canonical is unchanged", canonical, canonical, false},
+		{"32 hex digits", "49b410282d8d11efb38d27dd55f2bb71", canonical, true},
+		{"braces", "{" + canonical + "}", canonical, true},
+		{"urn", "urn:uuid:" + canonical, canonical, true},
+		{"upper case", "49B41028-2D8D-11EF-B38D-27DD55F2BB71", canonical, true},
+		{"not a uuid is kept as it is", "not-a-uuid", "not-a-uuid", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			input := []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: tt.target}}
+
+			got := normalizeAddresses(input)
+			if got[0].Target != tt.expectTarget {
+				t.Errorf("Wrong match. expect: %q, got: %q", tt.expectTarget, got[0].Target)
+			}
+			if addressesDiffer(input, got) != tt.expectChanged {
+				t.Errorf("Wrong match. expect changed: %v", tt.expectChanged)
+			}
+		})
+	}
+}
+
+// A variant row and the canonical row of another agent must collide, because that is the trace of the
+// registration of an extension that another agent already owns.
+func Test_collisionKey_extensionVariantCollidesWithCanonical(t *testing.T) {
+	customerID := uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc")
+	canonical := "49b41028-2d8d-11ef-b38d-27dd55f2bb71"
+
+	variant := normalizeAddresses([]commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "49b410282d8d11efb38d27dd55f2bb71"}})[0]
+	other := commonaddress.Address{Type: commonaddress.TypeExtension, Target: canonical}
+
+	if collisionKey(customerID, variant) != collisionKey(customerID, other) {
+		t.Errorf("Wrong match. the collision keys must be equal: %q != %q", collisionKey(customerID, variant), collisionKey(customerID, other))
+	}
+}
