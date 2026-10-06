@@ -2012,7 +2012,7 @@ components:
 #########################################
     AIManagerAIEngineModel:
       type: string
-      description: "Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`."
+      description: "Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`. A value in the form `openrouter.<author>/<slug>` is also accepted (custom OpenRouter model, see `model_id_prefix` in `GET /ai_models`); in that case `engine_key` is required."
       example: "openai.gpt-5"
 
     AIManagerAIModel:
@@ -2026,6 +2026,7 @@ components:
         - tags
         - description
         - platform_managed
+        - key_mode
       properties:
         id:
           type: string
@@ -2057,6 +2058,18 @@ components:
           type: boolean
           description: "If true, the platform supplies the credentials and `engine_key` is not needed."
           example: false
+        key_mode:
+          type: string
+          enum:
+            - platform
+            - own_or_default
+            - own_required
+          description: "How the engine key is handled. platform: the platform supplies access and engine_key is ignored. own_or_default: your engine_key is used, or the platform default key when empty. own_required: engine_key is mandatory."
+          example: own_or_default
+        model_id_prefix:
+          type: string
+          description: "Present only for entries where you type the model ID yourself. Send engine_model as this prefix followed by the model ID."
+          example: "openrouter."
 
     AIManagerVADConfig:
       type: object

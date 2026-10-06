@@ -111,7 +111,7 @@ func Test_AIV1AIModelList(t *testing.T) {
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   ContentTypeJSON,
-				Data:       []byte(`[{"id":"gemini.gemini-2.5-flash","label":"Gemini 2.5 Flash","vendor":"Google","recommended":true,"tags":["low-cost"],"description":"fast","platform_managed":false}]`),
+				Data:       []byte(`[{"id":"gemini.gemini-2.5-flash","label":"Gemini 2.5 Flash","vendor":"Google","recommended":true,"tags":["low-cost"],"description":"fast","platform_managed":false,"key_mode":"own_or_default"},{"id":"custom.openrouter","label":"OpenRouter model (your OpenRouter key)","vendor":"OpenRouter","recommended":false,"tags":[],"description":"Enter any model supported by OpenRouter.","platform_managed":false,"key_mode":"own_required","model_id_prefix":"openrouter."}]`),
 			},
 
 			expectTarget: string(outline.QueueNameAIRequest),
@@ -128,6 +128,16 @@ func Test_AIV1AIModelList(t *testing.T) {
 					Tags:            []string{"low-cost"},
 					Description:     "fast",
 					PlatformManaged: false,
+					KeyMode:         "own_or_default",
+				},
+				{
+					ID:            "custom.openrouter",
+					Label:         "OpenRouter model (your OpenRouter key)",
+					Vendor:        "OpenRouter",
+					Tags:          []string{},
+					Description:   "Enter any model supported by OpenRouter.",
+					KeyMode:       "own_required",
+					ModelIDPrefix: "openrouter.",
 				},
 			},
 		},

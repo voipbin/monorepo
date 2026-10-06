@@ -20,6 +20,11 @@ import (
 // The real aihandler error must come out of errorResponse as 400 + INVALID_ENGINE_MODEL.
 func assertEngineModel400(t *testing.T, err error) {
 	t.Helper()
+	assertEngine400Reason(t, err, "INVALID_ENGINE_MODEL")
+}
+
+func assertEngine400Reason(t *testing.T, err error, reason string) {
+	t.Helper()
 
 	if err == nil {
 		t.Fatal("expected error")
@@ -31,7 +36,7 @@ func assertEngineModel400(t *testing.T, err error) {
 	if resp.DataType != cerrors.DataTypeVoipbinError {
 		t.Errorf("data type = %q, want %q", resp.DataType, cerrors.DataTypeVoipbinError)
 	}
-	if !containsStr(string(resp.Data), "INVALID_ENGINE_MODEL") {
+	if !containsStr(string(resp.Data), reason) {
 		t.Errorf("body missing reason: %s", resp.Data)
 	}
 }
@@ -65,5 +70,12 @@ func Test_errorResponse_invalidEngineModel(t *testing.T) {
 			ai.EngineModel("unknown.invalid"), nil, "", uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
 			[]tool.ToolName{}, nil, false, false)
 		assertEngineModel400(t, err)
+	})
+
+	t.Run("create custom model without key", func(t *testing.T) {
+		_, err := h.Create(context.Background(), uuid.Must(uuid.NewV4()), "n", "d", ai.TypeNormal,
+			ai.EngineModel("openrouter.vendor/model-a"), nil, "", uuid.Nil, "", ai.TTSTypeNone, "", ai.STTTypeNone, "",
+			[]tool.ToolName{}, nil, false, false)
+		assertEngine400Reason(t, err, "ENGINE_KEY_REQUIRED")
 	})
 }

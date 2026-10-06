@@ -645,7 +645,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Always read the model <code class="docutils literal notranslate"><span class="pre">id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> response rather than hard-coding it. The catalog can change over time. An <code class="docutils literal notranslate"><span class="pre">id</span></code> that is not in the list (and does not use the <code class="docutils literal notranslate"><span class="pre">openai.</span></code>, <code class="docutils literal notranslate"><span class="pre">gemini.</span></code>, or <code class="docutils literal notranslate"><span class="pre">grok.</span></code> prefix) is rejected with <code class="docutils literal notranslate"><span class="pre">HTTP</span> <span class="pre">400</span> <span class="pre">INVALID_ENGINE_MODEL</span></code> when you create or update an AI.</p>
+<p>Always read the model <code class="docutils literal notranslate"><span class="pre">id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ai_models</span></code> response rather than hard-coding it. The catalog can change over time. An <code class="docutils literal notranslate"><span class="pre">id</span></code> that is not in the list (and does not use the <code class="docutils literal notranslate"><span class="pre">openai.</span></code>, <code class="docutils literal notranslate"><span class="pre">gemini.</span></code>, or <code class="docutils literal notranslate"><span class="pre">grok.</span></code> prefix, or the <code class="docutils literal notranslate"><span class="pre">openrouter.&lt;author&gt;/&lt;slug&gt;</span></code> custom form) is rejected with <code class="docutils literal notranslate"><span class="pre">HTTP</span> <span class="pre">400</span> <span class="pre">INVALID_ENGINE_MODEL</span></code> when you create or update an AI. A custom OpenRouter model without an <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> is rejected with <code class="docutils literal notranslate"><span class="pre">HTTP</span> <span class="pre">400</span> <span class="pre">ENGINE_KEY_REQUIRED</span></code>.</p>
 </div>
 <section id="get-the-model-list">
 <span id="ai-models-get"></span><h2>Get the model list<a class="headerlink" href="#get-the-model-list" title="Link to this heading">¶</a></h2>
@@ -664,7 +664,8 @@
             <span class="s2">&quot;recommended&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
             <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;low-cost&quot;</span><span class="p">],</span>
             <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Fast, balanced model for most voice conversations.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;platform_managed&quot;</span><span class="p">:</span> <span class="n">false</span>
+            <span class="s2">&quot;platform_managed&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+            <span class="s2">&quot;key_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;own_or_default&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
             <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;anthropic.claude-sonnet-4.5&quot;</span><span class="p">,</span>
@@ -673,7 +674,19 @@
             <span class="s2">&quot;recommended&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
             <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[],</span>
             <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Balanced Claude model with strong instruction following.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;platform_managed&quot;</span><span class="p">:</span> <span class="n">true</span>
+            <span class="s2">&quot;platform_managed&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;key_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;platform&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;custom.openrouter&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenRouter model (your OpenRouter key)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;vendor&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenRouter&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;recommended&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+            <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Enter any model supported by OpenRouter.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;platform_managed&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+            <span class="s2">&quot;key_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;own_required&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;model_id_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;openrouter.&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
     <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
@@ -690,7 +703,9 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">recommended</span></code> (Boolean): <code class="docutils literal notranslate"><span class="pre">true</span></code> when the platform recommends this model as a starting point.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tags</span></code> (Array of String): Model tags. Currently <code class="docutils literal notranslate"><span class="pre">low-cost</span></code> is the only tag.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (String): A short description of the model.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> (Boolean): <code class="docutils literal notranslate"><span class="pre">true</span></code> when the platform supplies the credentials for this model. The <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> of the AI is not needed: send an empty string and any value you send is ignored. <code class="docutils literal notranslate"><span class="pre">false</span></code> means you must provide your own provider key in <code class="docutils literal notranslate"><span class="pre">engine_key</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">platform_managed</span></code> (Boolean): <code class="docutils literal notranslate"><span class="pre">true</span></code> when the platform supplies the credentials for this model. The <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> of the AI is not needed: send an empty string and any value you send is ignored. <code class="docutils literal notranslate"><span class="pre">false</span></code> means you must provide your own provider key in <code class="docutils literal notranslate"><span class="pre">engine_key</span></code>. Prefer <code class="docutils literal notranslate"><span class="pre">key_mode</span></code>, which is more precise.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_mode</span></code> (String): How <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> is handled. <code class="docutils literal notranslate"><span class="pre">platform</span></code>: the platform supplies access and <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> is ignored. <code class="docutils literal notranslate"><span class="pre">own_or_default</span></code>: your <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> is used, or the platform default key when it is empty. <code class="docutils literal notranslate"><span class="pre">own_required</span></code>: <code class="docutils literal notranslate"><span class="pre">engine_key</span></code> is mandatory.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model_id_prefix</span></code> (String, Optional): Present only for the entry where you type the model ID yourself (the custom OpenRouter entry, prefix <code class="docutils literal notranslate"><span class="pre">openrouter.</span></code>). Send <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> as this prefix followed by the model ID, for example <code class="docutils literal notranslate"><span class="pre">openrouter.mistralai/mistral-large-2411</span></code>. The <code class="docutils literal notranslate"><span class="pre">id</span></code> of this entry (<code class="docutils literal notranslate"><span class="pre">custom.openrouter</span></code>) cannot be used as <code class="docutils literal notranslate"><span class="pre">engine_model</span></code> directly.</p></li>
 </ul>
 <p>See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-engine-model"><span class="std std-ref">Engine Model</span></a> for the provider prefixes and validation rules.</p>
 </section>

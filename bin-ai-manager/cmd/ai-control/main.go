@@ -210,7 +210,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate engine model
-	if err := validateEngineModelCreate(engineModel); err != nil {
+	if err := validateEngineModelCreate(engineModel, engineKey); err != nil {
 		return err
 	}
 
@@ -334,7 +334,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	// Validate engine model if provided (only when it differs from the stored value)
-	if err := validateEngineModelUpdate(context.Background(), handler, targetID, engineModel); err != nil {
+	if err := validateEngineModelUpdate(context.Background(), handler, targetID, engineModel, engineKey); err != nil {
 		return err
 	}
 
@@ -408,17 +408,38 @@ type aiGetter interface {
 	Get(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 }
 
-// validateEngineModelCreate validates a non-empty engine model on create.
-func validateEngineModelCreate(engineModel ai.EngineModel) error {
-	if engineModel != "" && !ai.IsValidEngineModel(engineModel) {
+// engineCheckError converts an ai.ValidateEngine error to a CLI message.
+// A rejected openrouter. value is never echoed: a pasted key must not be reflected back.
+func engineCheckError(engineModel ai.EngineModel, err error) error {
+	switch {
+	case errors.Is(err, ai.ErrEngineKeyRequired):
+		return fmt.Errorf("an API key is required for custom OpenRouter models")
+	case errors.Is(err, ai.ErrInvalidEngineModel):
+		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(engineModel))), ai.EngineModelPrefixCustomOpenRouter) {
+			return fmt.Errorf("invalid engine model: the OpenRouter model ID is not valid")
+		}
 		return fmt.Errorf("invalid engine model: %s", engineModel)
+	}
+
+	return err
+}
+
+// validateEngineModelCreate validates a non-empty engine model and its key on create.
+func validateEngineModelCreate(engineModel ai.EngineModel, engineKey string) error {
+	if engineModel == "" {
+		return nil
+	}
+
+	if err := ai.ValidateEngine(engineModel, engineKey, true); err != nil {
+		return engineCheckError(engineModel, err)
 	}
 	return nil
 }
 
-// validateEngineModelUpdate validates a non-empty engine model on update only when it
-// differs from the stored value, so an unchanged legacy value keeps saving.
-func validateEngineModelUpdate(ctx context.Context, getter aiGetter, id uuid.UUID, engineModel ai.EngineModel) error {
+// validateEngineModelUpdate validates a non-empty engine model and its key on update. The model
+// is checked for validity only when it differs from the stored value, so an unchanged legacy
+// value keeps saving.
+func validateEngineModelUpdate(ctx context.Context, getter aiGetter, id uuid.UUID, engineModel ai.EngineModel, engineKey string) error {
 	if engineModel == "" {
 		return nil
 	}
@@ -428,8 +449,8 @@ func validateEngineModelUpdate(ctx context.Context, getter aiGetter, id uuid.UUI
 		return errors.Wrap(err, "could not get the current AI")
 	}
 
-	if engineModel != stored.EngineModel && !ai.IsValidEngineModel(engineModel) {
-		return fmt.Errorf("invalid engine model: %s", engineModel)
+	if err := ai.ValidateEngine(engineModel, engineKey, engineModel != stored.EngineModel); err != nil {
+		return engineCheckError(engineModel, err)
 	}
 	return nil
 }

@@ -30,7 +30,7 @@ func Test_GetAiModels(t *testing.T) {
 		expectedRes  string
 	}{
 		{
-			name: "1 item",
+			name: "2 items, own_or_default and custom",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
@@ -46,11 +46,21 @@ func Test_GetAiModels(t *testing.T) {
 					Tags:            []string{"low-cost"},
 					Description:     "fast",
 					PlatformManaged: false,
+					KeyMode:         "own_or_default",
+				},
+				{
+					ID:            "custom.openrouter",
+					Label:         "OpenRouter model (your OpenRouter key)",
+					Vendor:        "OpenRouter",
+					Tags:          []string{},
+					Description:   "Enter any model supported by OpenRouter.",
+					KeyMode:       "own_required",
+					ModelIDPrefix: "openrouter.",
 				},
 			},
 
 			expectedCode: http.StatusOK,
-			expectedRes:  `{"result":[{"id":"gemini.gemini-2.5-flash","label":"Gemini 2.5 Flash","vendor":"Google","recommended":true,"tags":["low-cost"],"description":"fast","platform_managed":false}],"next_page_token":""}`,
+			expectedRes:  `{"result":[{"id":"gemini.gemini-2.5-flash","label":"Gemini 2.5 Flash","vendor":"Google","recommended":true,"tags":["low-cost"],"description":"fast","platform_managed":false,"key_mode":"own_or_default"},{"id":"custom.openrouter","label":"OpenRouter model (your OpenRouter key)","vendor":"OpenRouter","recommended":false,"tags":[],"description":"Enter any model supported by OpenRouter.","platform_managed":false,"key_mode":"own_required","model_id_prefix":"openrouter."}],"next_page_token":""}`,
 		},
 		{
 			name: "empty list serializes as an empty array",

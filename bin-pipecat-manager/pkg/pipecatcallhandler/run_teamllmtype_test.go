@@ -36,6 +36,8 @@ func Test_resolveTeamForPython_llmType(t *testing.T) {
 
 		model1 amai.EngineModel // current member
 		model2 amai.EngineModel // non-current member
+		key1   string           // stored engine key override for member 1 (default secretKey)
+		key2   string           // stored engine key override for member 2 (default secretKey, "keep-empty" = "")
 
 		expect1LLMType string
 		expect1Key     string
@@ -56,8 +58,29 @@ func Test_resolveTeamForPython_llmType(t *testing.T) {
 			expect2LLMType: "openai.gpt-4o", expect2Key: secretKey,
 		},
 		{
+			name:   "custom member keeps its model id and gets the trimmed customer key",
+			model1: "openrouter.vendor/model-a", model2: "openai.gpt-5",
+			key1:           "  dummy-typed-key  ",
+			expect1LLMType: "openrouter.vendor/model-a", expect1Key: "dummy-typed-key",
+			expect2LLMType: "openai.gpt-5", expect2Key: secretKey,
+		},
+		{
+			name:   "custom member with an empty key is rejected with an operator error log",
+			model1: "openai.gpt-5", model2: "openrouter.vendor/model-a",
+			key2:           "keep-empty",
+			expect1LLMType: "openai.gpt-5", expect1Key: secretKey,
+			expect2LLMType: "", expect2Key: "",
+			expectErrorLog: []uuid.UUID{member2ID},
+		},
+		{
+			name:   "mixed team of direct, openrouter catalog and custom members",
+			model1: "anthropic.claude-haiku-4.5", model2: "openrouter.vendor/model-b",
+			expect1LLMType: "platform_openrouter.anthropic/claude-haiku-4.5", expect1Key: "",
+			expect2LLMType: "openrouter.vendor/model-b", expect2Key: secretKey,
+		},
+		{
 			name:   "rejected non-current member gets empty llm_type and an operator error log",
-			model1: "openai.gpt-5", model2: "openrouter.meta-llama/llama-3-70b",
+			model1: "openai.gpt-5", model2: "openrouter.openrouter/auto",
 			expect1LLMType: "openai.gpt-5", expect1Key: secretKey,
 			expect2LLMType: "", expect2Key: "",
 			expectErrorLog: []uuid.UUID{member2ID},
@@ -94,11 +117,20 @@ func Test_resolveTeamForPython_llmType(t *testing.T) {
 					{ID: member2ID, Name: "two", AIID: ai2ID},
 				},
 			}, nil)
+			storedKey1, storedKey2 := secretKey, secretKey
+			if tt.key1 != "" {
+				storedKey1 = tt.key1
+			}
+			if tt.key2 == "keep-empty" {
+				storedKey2 = ""
+			} else if tt.key2 != "" {
+				storedKey2 = tt.key2
+			}
 			mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai1ID).Return(&amai.AI{
-				Identity: commonidentity.Identity{ID: ai1ID, CustomerID: customerID}, EngineModel: tt.model1, EngineKey: secretKey,
+				Identity: commonidentity.Identity{ID: ai1ID, CustomerID: customerID}, EngineModel: tt.model1, EngineKey: storedKey1,
 			}, nil)
 			mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai2ID).Return(&amai.AI{
-				Identity: commonidentity.Identity{ID: ai2ID, CustomerID: customerID}, EngineModel: tt.model2, EngineKey: secretKey,
+				Identity: commonidentity.Identity{ID: ai2ID, CustomerID: customerID}, EngineModel: tt.model2, EngineKey: storedKey2,
 			}, nil)
 			mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{}).AnyTimes()
 

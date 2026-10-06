@@ -51,7 +51,7 @@ AI
 * ``is_insight_active`` (Boolean): Whether this is the customer's **active** Insight AI (the one the Case Insight Assistant panel auto-attaches to a Case). Only meaningful when ``type`` is ``insight``; always ``false`` for ``type=normal`` AIs. A customer may keep any number of Insight AIs (e.g. to prepare a new prompt or model before switching to it), but at most one may be active at a time. Newly created Insight AIs are always inactive. Activate one with ``POST /ais/{id}/activate_insight``. When a customer has no active Insight AI, the most recently created one is used. See :ref:`Insight AI activation <ai-struct-ai-is_insight_active>`.
 * ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-5-mini``, ``gemini.gemini-2.5-flash``). Use an ``id`` returned by ``GET /ai_models``. See :ref:`Engine Models <ai-struct-ai-engine_model>` and :ref:`AI Models <ai-models>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as ``{}``.
-* ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard. For models whose ``platform_managed`` field in ``GET /ai_models`` is ``true``, the platform supplies the credentials: send an empty string, and any value you send is ignored.
+* ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard. For models whose ``platform_managed`` field in ``GET /ai_models`` is ``true``, the platform supplies the credentials: send an empty string, and any value you send is ignored. For a custom OpenRouter model (``engine_model`` starts with ``openrouter.``), your OpenRouter API key is required: an empty value is rejected with ``400 ENGINE_KEY_REQUIRED``. ``PUT /ais/{id}`` replaces the whole configuration, so omitting ``engine_key`` is treated as an empty value. When you update an ``openrouter.<model-id>`` AI, send the key again even if you do not want to change it.
 * ``rag_id`` (UUID, Optional): The knowledge base ID for the ``search_knowledge`` tool. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/rags``. When set, the AI assistant can search this knowledge base during voice calls. Set to ``00000000-0000-0000-0000-000000000000`` or omit to disable.
 * ``init_prompt`` (String, Required): The system prompt that defines the AI's behavior, persona, and instructions. No enforced length limit.
 * ``current_prompt_history_id`` (string/UUID): UUID of the most-recent ``ai_ai_prompt_histories``
@@ -177,7 +177,8 @@ No Insight AI is active                     The Case panel falls back to the mos
 Status / reason                         Cause
 ======================================= ============================================================
 ``400 AI_NOT_INSIGHT_TYPE``             The target AI is not ``type=insight``. Only Insight AIs can be activated.
-``400 INVALID_ENGINE_MODEL``            The ``engine_model`` is not returned by ``GET /ai_models`` and does not use an allowed provider prefix (``openai``, ``gemini``, ``grok``). Returned on create and update.
+``400 INVALID_ENGINE_MODEL``            The ``engine_model`` is not returned by ``GET /ai_models``, does not use an allowed provider prefix (``openai``, ``gemini``, ``grok``), and is not a valid ``openrouter.<author>/<slug>`` custom model. The OpenRouter model ID must have exactly one ``/`` and use only letters, digits, ``.``, ``_`` and ``-``. Variant suffixes such as ``:free`` and router IDs such as ``openrouter/auto`` are not supported. Returned on create and update.
+``400 ENGINE_KEY_REQUIRED``             The ``engine_model`` is a custom OpenRouter model and ``engine_key`` is empty. Returned on create and update, including an update that does not change the model.
 ``404 AI_NOT_FOUND``                    The target AI does not exist or has been deleted.
 ``409 AI_INSIGHT_ACTIVATION_CONFLICT``  Another activation for the same customer was in flight. Retry the request.
 ======================================= ============================================================
@@ -205,13 +206,21 @@ Qwen                     ``qwen.<model>``                 qwen.qwen3-235b-a22b-2
 Mistral                  ``mistral.<model>``              mistral.mistral-small-3.2-24b-instruct     Not required
 ======================== ================================ ========================================== ==========================
 
-Models listed as "Not required" are managed by the platform (``platform_managed`` is ``true`` in ``GET /ai_models``). Send an empty ``engine_key`` for them.
+Models listed as "Not required" are managed by the platform (``key_mode`` is ``platform`` in ``GET /ai_models``). Send an empty ``engine_key`` for them.
+
+**Custom OpenRouter models**
+
+To use any other model offered by OpenRouter, set ``engine_model`` to ``openrouter.<author>/<slug>`` (for example ``openrouter.mistralai/mistral-large-2411``) and set ``engine_key`` to your own OpenRouter API key. The key is required. ``GET /ai_models`` lists one entry for this option, with ``key_mode`` ``own_required`` and ``model_id_prefix`` ``openrouter.``. That entry's ``id`` cannot be used as ``engine_model`` directly: combine ``model_id_prefix`` with the model ID.
+
+* Calls use your key and are billed to your OpenRouter account. The platform key is never used.
+* Zero data retention (ZDR) routing is enforced on every request. If no ZDR provider supports the model, the call fails.
+* For voice calls, a model without a ZDR provider can make the call silent, because the LLM request fails and this failure is not reported with a dedicated message. Before you connect a custom model to a call, check the model page on OpenRouter for a ZDR provider, or try the model in a text chat first.
 
 **Validation**
 
-* On ``POST /ais``, ``engine_model`` must be an ``id`` from ``GET /ai_models``. Models that use the ``openai.``, ``gemini.``, or ``grok.`` prefix and are not in the list are also accepted and run with your own ``engine_key``.
+* On ``POST /ais``, ``engine_model`` must be an ``id`` from ``GET /ai_models``. Models that use the ``openai.``, ``gemini.``, or ``grok.`` prefix and are not in the list are also accepted and run with your own ``engine_key``. A value in the form ``openrouter.<author>/<slug>`` is also accepted and requires your OpenRouter ``engine_key``.
 * Any other value (for example an ``anthropic.`` model that is not in the list) is rejected.
-* On ``PUT /ais/{id}``, the check runs only when ``engine_model`` changes, so an existing AI that already stores an older value can still be updated without touching the model.
+* On ``PUT /ais/{id}``, the model check runs only when ``engine_model`` changes, so an existing AI that already stores an older value can still be updated without touching the model. The ``engine_key`` requirement for custom OpenRouter models is checked on every update.
 
 .. _ai-struct-ai-tts_type:
 

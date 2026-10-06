@@ -41,8 +41,10 @@ func (h *subscribeHandler) getServiceNamespace(publisher string) string {
 // processEventWebhookManagerWebhookPublished handles the webhook-manager's webhook_published event.
 func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventWebhookManagerWebhookPublished",
-		"event": m,
+		"func":      "processEventWebhookManagerWebhookPublished",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received event. event: %s", m.Type)
 
@@ -82,7 +84,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 		log.Errorf("Could not marshal the data. err: %v", err)
 		return err
 	}
-	log.Debugf("Created data. data: %s", string(data))
+	log.Debugf("Created data. data_len: %d", len(data))
 
 	topics, err := h.createTopics(ctx, whData.Type, d, whData.Data, m.Publisher)
 	if err != nil {
@@ -111,8 +113,10 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 // exactly as they did via the old fanout path -- see this file's createTopics for the format.
 func (h *subscribeHandler) processEventWebhookManagerRoutingKeyedEvent(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":  "processEventWebhookManagerRoutingKeyedEvent",
-		"event": m,
+		"func":      "processEventWebhookManagerRoutingKeyedEvent",
+		"publisher": m.Publisher,
+		"type":      m.Type,
+		"data_len":  len(m.Data),
 	})
 	log.Debugf("Received routing-keyed event. type: %s", m.Type)
 

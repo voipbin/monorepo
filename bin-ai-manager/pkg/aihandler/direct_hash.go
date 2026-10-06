@@ -25,7 +25,7 @@ func (h *aiHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai
 		log.Errorf("Could not get ai. err: %v", err)
 		return nil, fmt.Errorf("could not get ai: %w", err)
 	}
-	log.WithField("ai", a).Debugf("Retrieved ai info. ai_id: %s", a.ID)
+	log.WithField("ai_id", a.ID).Debugf("Retrieved ai info. ai_id: %s", a.ID)
 
 	// regenerate or create direct
 	var d *dmdirect.Direct

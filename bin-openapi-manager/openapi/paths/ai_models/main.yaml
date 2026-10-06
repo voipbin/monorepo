@@ -3,7 +3,7 @@ get:
   description: |
     Returns the catalog of engine models that can be set in the `engine_model` field of an AI.
     The whole catalog is returned in a single page, so `page_size` and `page_token` are not used.
-    Models with `platform_managed` set to true do not need an `engine_key`.
+    Each model has a `key_mode`: `platform` means the platform supplies access and `engine_key` is ignored, `own_or_default` means your `engine_key` is used or the platform default key when empty, and `own_required` means `engine_key` is mandatory.
   tags:
     - AI
   responses:

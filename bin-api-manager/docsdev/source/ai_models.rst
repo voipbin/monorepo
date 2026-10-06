@@ -7,7 +7,7 @@ The AI Models endpoint returns the catalog of LLM models that can be used as the
 
 .. note:: **AI Implementation Hint**
 
-   Always read the model ``id`` from ``GET /ai_models`` response rather than hard-coding it. The catalog can change over time. An ``id`` that is not in the list (and does not use the ``openai.``, ``gemini.``, or ``grok.`` prefix) is rejected with ``HTTP 400 INVALID_ENGINE_MODEL`` when you create or update an AI.
+   Always read the model ``id`` from ``GET /ai_models`` response rather than hard-coding it. The catalog can change over time. An ``id`` that is not in the list (and does not use the ``openai.``, ``gemini.``, or ``grok.`` prefix, or the ``openrouter.<author>/<slug>`` custom form) is rejected with ``HTTP 400 INVALID_ENGINE_MODEL`` when you create or update an AI. A custom OpenRouter model without an ``engine_key`` is rejected with ``HTTP 400 ENGINE_KEY_REQUIRED``.
 
 .. _ai-models-get:
 
@@ -35,7 +35,8 @@ Response:
                 "recommended": true,
                 "tags": ["low-cost"],
                 "description": "Fast, balanced model for most voice conversations.",
-                "platform_managed": false
+                "platform_managed": false,
+                "key_mode": "own_or_default"
             },
             {
                 "id": "anthropic.claude-sonnet-4.5",
@@ -44,7 +45,19 @@ Response:
                 "recommended": false,
                 "tags": [],
                 "description": "Balanced Claude model with strong instruction following.",
-                "platform_managed": true
+                "platform_managed": true,
+                "key_mode": "platform"
+            },
+            {
+                "id": "custom.openrouter",
+                "label": "OpenRouter model (your OpenRouter key)",
+                "vendor": "OpenRouter",
+                "recommended": false,
+                "tags": [],
+                "description": "Enter any model supported by OpenRouter.",
+                "platform_managed": false,
+                "key_mode": "own_required",
+                "model_id_prefix": "openrouter."
             }
         ],
         "next_page_token": ""
@@ -61,6 +74,8 @@ Model
 * ``recommended`` (Boolean): ``true`` when the platform recommends this model as a starting point.
 * ``tags`` (Array of String): Model tags. Currently ``low-cost`` is the only tag.
 * ``description`` (String): A short description of the model.
-* ``platform_managed`` (Boolean): ``true`` when the platform supplies the credentials for this model. The ``engine_key`` of the AI is not needed: send an empty string and any value you send is ignored. ``false`` means you must provide your own provider key in ``engine_key``.
+* ``platform_managed`` (Boolean): ``true`` when the platform supplies the credentials for this model. The ``engine_key`` of the AI is not needed: send an empty string and any value you send is ignored. ``false`` means you must provide your own provider key in ``engine_key``. Prefer ``key_mode``, which is more precise.
+* ``key_mode`` (String): How ``engine_key`` is handled. ``platform``: the platform supplies access and ``engine_key`` is ignored. ``own_or_default``: your ``engine_key`` is used, or the platform default key when it is empty. ``own_required``: ``engine_key`` is mandatory.
+* ``model_id_prefix`` (String, Optional): Present only for the entry where you type the model ID yourself (the custom OpenRouter entry, prefix ``openrouter.``). Send ``engine_model`` as this prefix followed by the model ID, for example ``openrouter.mistralai/mistral-large-2411``. The ``id`` of this entry (``custom.openrouter``) cannot be used as ``engine_model`` directly.
 
 See :ref:`Engine Model <ai-struct-ai-engine_model>` for the provider prefixes and validation rules.

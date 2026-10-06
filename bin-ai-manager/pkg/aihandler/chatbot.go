@@ -27,6 +27,40 @@ func errInvalidEngineModel(engineModel ai.EngineModel) error {
 	)
 }
 
+// errEngineKeyRequired returns the typed ENGINE_KEY_REQUIRED error (HTTP 400).
+func errEngineKeyRequired() error {
+	return cerrors.InvalidArgument(
+		commonoutline.ServiceNameAIManager,
+		"ENGINE_KEY_REQUIRED",
+		"An API key is required for custom OpenRouter models.",
+	)
+}
+
+// errInvalidCustomModelID returns INVALID_ENGINE_MODEL for a malformed custom model ID.
+// The input is deliberately not echoed: a pasted key must never be reflected back.
+func errInvalidCustomModelID() error {
+	return cerrors.InvalidArgument(
+		commonoutline.ServiceNameAIManager,
+		"INVALID_ENGINE_MODEL",
+		"invalid engine_model: the OpenRouter model ID is not valid. Use the vendor/model-name form with letters, digits, '.', '_' and '-' only. Variant suffixes such as ':free' and router IDs such as 'openrouter/auto' are not supported.",
+	)
+}
+
+// engineValidationError converts an ai.ValidateEngine error to the typed customer-facing error.
+func engineValidationError(engineModel ai.EngineModel, err error) error {
+	switch {
+	case errors.Is(err, ai.ErrEngineKeyRequired):
+		return errEngineKeyRequired()
+	case errors.Is(err, ai.ErrInvalidEngineModel):
+		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(engineModel))), ai.EngineModelPrefixCustomOpenRouter) {
+			return errInvalidCustomModelID()
+		}
+		return errInvalidEngineModel(engineModel)
+	}
+
+	return err
+}
+
 func (h *aiHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -48,8 +82,8 @@ func (h *aiHandler) Create(
 	autoAICallAuditEnabled bool,
 ) (*ai.AI, error) {
 
-	if !ai.IsValidEngineModel(engineModel) {
-		return nil, errInvalidEngineModel(engineModel)
+	if err := ai.ValidateEngine(engineModel, engineKey, true); err != nil {
+		return nil, engineValidationError(engineModel, err)
 	}
 
 	if aiType == ai.TypeNone {
@@ -144,9 +178,10 @@ func (h *aiHandler) Update(
 		return nil, errors.Wrapf(errGet, "could not get current ai for update")
 	}
 
-	// Only a changed engine model is validated, so an unchanged legacy value keeps saving.
-	if engineModel != preUpdateAI.EngineModel && !ai.IsValidEngineModel(engineModel) {
-		return nil, errInvalidEngineModel(engineModel)
+	// Only a changed engine model is validated for validity, so an unchanged legacy value keeps saving.
+	// The final key state is always checked: a custom model with an empty key is rejected.
+	if err := ai.ValidateEngine(engineModel, engineKey, engineModel != preUpdateAI.EngineModel); err != nil {
+		return nil, engineValidationError(engineModel, err)
 	}
 
 	// A caller omitting the type field (aiType == TypeNone) means "leave it
@@ -183,7 +218,7 @@ func (h *aiHandler) Update(
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not get updated ai")
 		}
-		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+		h.publishAIEvent(ctx, ai.EventTypeUpdated, res)
 		if errHistory := h.db.AIPromptHistoryCreate(ctx, &aiprompthistory.AIPromptHistory{
 			Identity: identity.Identity{
 				ID:         historyID,
@@ -207,7 +242,7 @@ func (h *aiHandler) Update(
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not get updated ai")
 		}
-		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+		h.publishAIEvent(ctx, ai.EventTypeUpdated, res)
 		return res, nil
 
 	default: // prompt unchanged

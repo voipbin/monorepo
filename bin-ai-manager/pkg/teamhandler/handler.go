@@ -241,7 +241,7 @@ func (h *teamHandler) validateNoInsightMembers(ctx context.Context, members []te
 		if err != nil {
 			return errors.Wrapf(err, "member %s references non-existent ai %s", m.ID, m.AIID)
 		}
-		log.WithField("ai", a).Debugf("Retrieved ai info. ai_id: %s", a.ID)
+		log.WithField("ai_id", a.ID).Debugf("Retrieved ai info. ai_id: %s", a.ID)
 
 		if a.Type == ai.TypeInsight {
 			return fmt.Errorf("member %s references ai %s of type %q, which cannot be used as a team member", m.ID, m.AIID, a.Type)

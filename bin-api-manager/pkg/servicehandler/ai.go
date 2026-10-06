@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amai "monorepo/bin-ai-manager/models/ai"
@@ -61,9 +62,8 @@ func (h *serviceHandler) AICreate(
 		"customer_id":  a.CustomerID,
 		"name":         name,
 		"detail":       detail,
-		"engine_model": engineModel,
+		"engine_model": loggableEngineModel(engineModel),
 		"parameter":    parameter,
-		"engine_key":   engineKey,
 		"rag_id":       ragID,
 		"init_prompt":  initPrompt,
 		"tts_type":     ttsType,
@@ -118,7 +118,7 @@ func (h *serviceHandler) AICreate(
 		log.Errorf("Could not create a new ai. err: %v", err)
 		return nil, err
 	}
-	log.WithField("ai", tmp).Debug("Created a new ai.")
+	log.WithField("ai_id", tmp.ID).Debug("Created a new ai.")
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
@@ -398,9 +398,8 @@ func (h *serviceHandler) AIUpdate(
 		"id":           id,
 		"name":         name,
 		"detail":       detail,
-		"engine_model": engineModel,
+		"engine_model": loggableEngineModel(engineModel),
 		"parameter":    parameter,
-		"engine_key":   engineKey,
 		"rag_id":       ragID,
 		"init_prompt":  initPrompt,
 		"tts_type":     ttsType,
@@ -462,8 +461,17 @@ func (h *serviceHandler) AIUpdate(
 		log.Errorf("Could not update the ai. err: %v", err)
 		return nil, err
 	}
-	log.WithField("ai", tmp).Debugf("Updated ai info. ai_id: %s", tmp.ID)
+	log.WithField("ai_id", tmp.ID).Debugf("Updated ai info. ai_id: %s", tmp.ID)
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// loggableEngineModel hides the model ID of custom OpenRouter models, which is
+// free-form customer input, so it is never written to logs.
+func loggableEngineModel(m amai.EngineModel) string {
+	if strings.HasPrefix(strings.ToLower(strings.TrimSpace(string(m))), "openrouter.") {
+		return "openrouter.<redacted>"
+	}
+	return string(m)
 }

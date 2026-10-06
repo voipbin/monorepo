@@ -76,6 +76,27 @@ func (e AIManagerAIBuilderMessageRole) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerAIModelKeyMode.
+const (
+	OwnOrDefault AIManagerAIModelKeyMode = "own_or_default"
+	OwnRequired  AIManagerAIModelKeyMode = "own_required"
+	Platform     AIManagerAIModelKeyMode = "platform"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerAIModelKeyMode enum.
+func (e AIManagerAIModelKeyMode) Valid() bool {
+	switch e {
+	case OwnOrDefault:
+		return true
+	case OwnRequired:
+		return true
+	case Platform:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerAIPromptProposalStatus.
 const (
 	AIManagerAIPromptProposalStatusAccepted    AIManagerAIPromptProposalStatus = "accepted"
@@ -3813,7 +3834,7 @@ type AIManagerAI struct {
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
 	EngineKey *string `json:"engine_key,omitempty"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`. A value in the form `openrouter.<author>/<slug>` is also accepted (custom OpenRouter model, see `model_id_prefix` in `GET /ai_models`); in that case `engine_key` is required.
 	EngineModel *AIManagerAIEngineModel `json:"engine_model,omitempty"`
 
 	// Id The unique identifier of the AI.
@@ -3985,7 +4006,7 @@ type AIManagerAIBuilderStatusResponse struct {
 	MaxMessages int `json:"max_messages"`
 }
 
-// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
+// AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`. A value in the form `openrouter.<author>/<slug>` is also accepted (custom OpenRouter model, see `model_id_prefix` in `GET /ai_models`); in that case `engine_key` is required.
 type AIManagerAIEngineModel = string
 
 // AIManagerAIModel An AI engine model that can be selected for an AI.
@@ -3996,8 +4017,14 @@ type AIManagerAIModel struct {
 	// Id The model identifier to use as `engine_model`. Returned from the `id` field of the `GET /ai_models` response.
 	Id string `json:"id"`
 
+	// KeyMode How the engine key is handled. platform: the platform supplies access and engine_key is ignored. own_or_default: your engine_key is used, or the platform default key when empty. own_required: engine_key is mandatory.
+	KeyMode AIManagerAIModelKeyMode `json:"key_mode"`
+
 	// Label Human-readable model name.
 	Label string `json:"label"`
+
+	// ModelIdPrefix Present only for entries where you type the model ID yourself. Send engine_model as this prefix followed by the model ID.
+	ModelIdPrefix *string `json:"model_id_prefix,omitempty"`
 
 	// PlatformManaged If true, the platform supplies the credentials and `engine_key` is not needed.
 	PlatformManaged bool `json:"platform_managed"`
@@ -4011,6 +4038,9 @@ type AIManagerAIModel struct {
 	// Vendor Model vendor used to group models.
 	Vendor string `json:"vendor"`
 }
+
+// AIManagerAIModelKeyMode How the engine key is handled. platform: the platform supplies access and engine_key is ignored. own_or_default: your engine_key is used, or the platform default key when empty. own_required: engine_key is mandatory.
+type AIManagerAIModelKeyMode string
 
 // AIManagerAIPromptHistory defines model for AIManagerAIPromptHistory.
 type AIManagerAIPromptHistory struct {
@@ -4089,7 +4119,7 @@ type AIManagerAIcall struct {
 	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
 	ActiveflowId *string `json:"activeflow_id,omitempty"`
 
-	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
+	// AiEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`. A value in the form `openrouter.<author>/<slug>` is also accepted (custom OpenRouter model, see `model_id_prefix` in `GET /ai_models`); in that case `engine_key` is required.
 	AiEngineModel *AIManagerAIEngineModel `json:"ai_engine_model,omitempty"`
 
 	// AiSmartTurnEnabled Smart turn detection setting frozen from the AI configuration at call start.
@@ -8337,10 +8367,10 @@ type PostAisJSONBody struct {
 	AutoAicallAuditEnabled *bool  `json:"auto_aicall_audit_enabled,omitempty"`
 	Detail                 string `json:"detail"`
 
-	// EngineKey API key or credential for the AI engine.
+	// EngineKey API key or credential for the AI engine. Required when engine_model starts with openrouter. (400 ENGINE_KEY_REQUIRED if empty).
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`. A value in the form `openrouter.<author>/<slug>` is also accepted (custom OpenRouter model, see `model_id_prefix` in `GET /ai_models`); in that case `engine_key` is required.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
 
@@ -8385,10 +8415,10 @@ type PutAisIdJSONBody struct {
 	AutoAicallAuditEnabled *bool  `json:"auto_aicall_audit_enabled,omitempty"`
 	Detail                 string `json:"detail"`
 
-	// EngineKey API key or credential for the AI engine.
+	// EngineKey API key or credential for the AI engine. Required when engine_model starts with openrouter. (400 ENGINE_KEY_REQUIRED if empty).
 	EngineKey string `json:"engine_key"`
 
-	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`.
+	// EngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot. The list of selectable models is returned by `GET /ai_models`. A value in the form `openrouter.<author>/<slug>` is also accepted (custom OpenRouter model, see `model_id_prefix` in `GET /ai_models`); in that case `engine_key` is required.
 	EngineModel AIManagerAIEngineModel `json:"engine_model"`
 	InitPrompt  string                 `json:"init_prompt"`
 

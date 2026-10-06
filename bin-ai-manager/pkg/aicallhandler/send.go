@@ -167,7 +167,7 @@ func (h *aicallHandler) resolveTeamMemberForSend(ctx context.Context, c *aicall.
 	if err != nil {
 		return errors.Wrapf(err, "could not resolve team member AI")
 	}
-	log.WithField("ai", a).Debugf("Resolved team member AI. member_id: %s, ai_engine_model: %s", resolvedMemberID, a.EngineModel)
+	log.WithField("ai_id", a.ID).Debugf("Resolved team member AI. member_id: %s", resolvedMemberID)
 
 	// override engine model in-memory for this pipecat session
 	c.AIEngineModel = a.EngineModel

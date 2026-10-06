@@ -210,11 +210,18 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 	}
 	log.WithField("tool_count", len(tools)).Debugf("Retrieved tools for pipecat call")
 
+	// A team session builds every member's LLM from resolvedTeam, so the runner
+	// never reads the top-level key. Do not send it.
+	llmKey := string(se.LLMKey)
+	if resolvedTeam != nil {
+		llmKey = ""
+	}
+
 	if errStart := h.pythonRunner.Start(
 		se.Ctx,
 		pc.ID,
 		se.LLMRunnerType,
-		string(se.LLMKey),
+		llmKey,
 		pc.LLMMessages,
 		string(pc.STTType),
 		string(pc.STTLanguage),

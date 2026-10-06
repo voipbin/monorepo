@@ -588,6 +588,22 @@ def _member_llm_type(ai: dict) -> str:
     return resolved
 
 
+# Shared by the platform and custom OpenRouter branches so one cannot lose it.
+# Sent in extra_body: the OpenAI client merges settings.extra into the top-level
+# kwargs of chat.completions.create() and rejects an unknown `provider` kwarg.
+_OPENROUTER_PROVIDER = {"zdr": True, "data_collection": "deny", "require_parameters": True}
+
+
+def _build_openrouter_llm(api_key: str, model_name: str):
+    return OpenRouterLLMService(
+        api_key=api_key,
+        settings=OpenRouterLLMService.Settings(
+            model=model_name,
+            extra={"extra_body": {"provider": dict(_OPENROUTER_PROVIDER)}},
+        ),
+    )
+
+
 def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], pipeline_id: str = "", **options):
     valid_messages = filter_valid_messages(messages)
 
@@ -657,26 +673,28 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
 
     elif service_name == "platform_openrouter":
         # Internal service name emitted only by the Go resolver
-        # (platform_openrouter.<slug>). The raw "openrouter" service is
-        # intentionally NOT supported. The key argument is intentionally
-        # ignored: customers never supply it.
+        # (platform_openrouter.<slug>). The key argument is intentionally
+        # ignored: the platform key comes from the environment only.
         api_key = os.getenv("OPENROUTER_API_KEY", "")
         if not api_key:
             raise ValueError("OpenRouter is not configured")
-        # The OpenAI client merges settings.extra into the top-level kwargs of
-        # chat.completions.create(), and the SDK rejects an unknown top-level
-        # `provider` kwarg; it must travel inside `extra_body`.
-        llm = OpenRouterLLMService(
-            api_key=api_key,
-            settings=OpenRouterLLMService.Settings(
-                model=model_name,
-                extra={"extra_body": {"provider": {
-                    "zdr": True,
-                    "data_collection": "deny",
-                    "require_parameters": True,
-                }}},
-            ),
-        )
+        llm = _build_openrouter_llm(api_key, model_name)
+
+        standard_tools = _openai_tools_to_standard(tools)
+        tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
+        ctx = LLMContext(messages=valid_messages, tools=tools_schema)
+        aggregator = _make_aggregator(ctx)
+
+        return llm, aggregator
+
+    elif service_name == "openrouter" and "." in type:
+        # Custom (BYOK) OpenRouter: the customer's key only. This branch must never
+        # read os.environ, and must never hand None or "" to the SDK: the OpenAI
+        # client falls back to OPENAI_API_KEY when api_key is None.
+        api_key = (key or "").strip()
+        if not api_key:
+            raise ValueError("An API key is required for custom OpenRouter models.")
+        llm = _build_openrouter_llm(api_key, model_name)
 
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN

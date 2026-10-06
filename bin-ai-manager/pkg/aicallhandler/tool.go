@@ -1075,7 +1075,7 @@ func (h *aicallHandler) toolHandleSearchKnowledge(ctx context.Context, c *aicall
 		fillFailed(res, fmt.Errorf("could not retrieve AI configuration"))
 		return res
 	}
-	log.WithField("ai", tmpAI).Debugf("Retrieved AI info. ai_id: %s", tmpAI.ID)
+	log.WithField("ai_id", tmpAI.ID).Debugf("Retrieved AI info. ai_id: %s", tmpAI.ID)
 
 	if tmpAI.RagID == uuid.Nil {
 		fillFailed(res, fmt.Errorf("no knowledge base is configured for this assistant"))

@@ -242,10 +242,12 @@ func Test_AIModelList(t *testing.T) {
 			response: []amai.ModelInfo{
 				{ID: "openai.gpt-5", Label: "GPT-5", Vendor: "OpenAI", Tags: []string{}},
 				{ID: "gemini.gemini-2.5-flash", Label: "Gemini 2.5 Flash", Vendor: "Google", Recommended: true, Tags: []string{"low-cost"}},
+				{ID: "custom.openrouter", Label: "OpenRouter model (your OpenRouter key)", Vendor: "OpenRouter", Tags: []string{}, KeyMode: "own_required", ModelIDPrefix: "openrouter."},
 			},
 			expectRes: []*amai.ModelInfo{
 				{ID: "openai.gpt-5", Label: "GPT-5", Vendor: "OpenAI", Tags: []string{}},
 				{ID: "gemini.gemini-2.5-flash", Label: "Gemini 2.5 Flash", Vendor: "Google", Recommended: true, Tags: []string{"low-cost"}},
+				{ID: "custom.openrouter", Label: "OpenRouter model (your OpenRouter key)", Vendor: "OpenRouter", Tags: []string{}, KeyMode: "own_required", ModelIDPrefix: "openrouter."},
 			},
 		},
 		{
@@ -439,6 +441,32 @@ func Test_AIDelete(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_loggableEngineModel(t *testing.T) {
+	tests := []struct {
+		name  string
+		model amai.EngineModel
+
+		expectRes string
+	}{
+		{"custom", "openrouter.a/b", "openrouter.<redacted>"},
+		{"upper case prefix", "OpenRouter.x", "openrouter.<redacted>"},
+		{"pasted key shaped value", "OPENROUTER.dummy-key-not-real", "openrouter.<redacted>"},
+		{"leading space", " openrouter.x", "openrouter.<redacted>"},
+		{"prefix only", "openrouter.", "openrouter.<redacted>"},
+		{"direct model", "openai.gpt-5", "openai.gpt-5"},
+		{"empty", "", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := loggableEngineModel(tt.model)
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}

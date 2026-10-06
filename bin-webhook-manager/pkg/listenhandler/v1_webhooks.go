@@ -15,8 +15,10 @@ import (
 // processV1WebhooksPost handles POST /v1/webhooks request
 func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1WebhooksPost",
-		"request": m,
+		"func":       "processV1WebhooksPost",
+		"uri":        m.URI,
+		"method":     m.Method,
+		"request_id": m.RequestID,
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -26,13 +28,13 @@ func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *sock.Reque
 
 	var req request.V1DataWebhooksPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
 	d, err := json.Marshal(req.Data)
 	if err != nil {
-		log.Errorf("Could not marshal the message. message: %v, err: %v", req.Data, err)
+		log.Errorf("Could not marshal the message. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
@@ -52,8 +54,10 @@ func (h *listenHandler) processV1WebhooksPost(ctx context.Context, m *sock.Reque
 // processV1WebhookDestinationsPost handles POST /v1/webhook_destinations request
 func (h *listenHandler) processV1WebhookDestinationsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processV1WebhookDestinationsPost",
-		"request": m,
+		"func":       "processV1WebhookDestinationsPost",
+		"uri":        m.URI,
+		"method":     m.Method,
+		"request_id": m.RequestID,
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -63,13 +67,13 @@ func (h *listenHandler) processV1WebhookDestinationsPost(ctx context.Context, m 
 
 	var req request.V1DataWebhookDestinationsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Errorf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return simpleResponse(400), nil
 	}
 
 	d, err := json.Marshal(req.Data)
 	if err != nil {
-		log.Errorf("Could not marshal the message. message: %v, err: %v", req.Data, err)
+		log.Errorf("Could not marshal the message. err: %v", err)
 		return simpleResponse(400), nil
 	}
 

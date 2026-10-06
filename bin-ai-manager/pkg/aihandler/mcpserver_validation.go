@@ -119,7 +119,7 @@ func (h *aiHandler) UpdateMcpServerIDs(ctx context.Context, id uuid.UUID, mcpSer
 		return nil, errors.Wrapf(err, "could not get updated ai")
 	}
 
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+	h.publishAIEvent(ctx, ai.EventTypeUpdated, res)
 
 	return res, nil
 }

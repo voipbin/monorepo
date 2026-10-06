@@ -940,8 +940,10 @@ class TestCreateSTTService:
 class TestPlatformOpenRouter:
     """platform_openrouter.<slug>: platform-held key, ZDR provider routing.
 
-    The customer key argument is ignored by design; the raw `openrouter`
-    service is NOT supported (it must stay "Unsupported LLM service").
+    The customer key argument is ignored by design, and the platform key comes
+    from OPENROUTER_API_KEY only (never from OPENAI_API_KEY). The customer-keyed
+    `openrouter.<id>` form is covered by TestCustomOpenRouter; the colon form
+    `openrouter:<id>` must stay "Unsupported LLM service".
     """
 
     EXPECTED_PROVIDER = {
@@ -1013,6 +1015,8 @@ class TestPlatformOpenRouter:
         environ = {k: v for k, v in os.environ.items() if k != "OPENROUTER_API_KEY"}
         if env is not None:
             environ["OPENROUTER_API_KEY"] = env
+        # OPENAI_API_KEY must not rescue a missing platform key either.
+        environ["OPENAI_API_KEY"] = "dummy-openai-env-not-real"
         with patch.dict(os.environ, environ, clear=True):
             with pytest.raises(ValueError, match="OpenRouter is not configured"):
                 # A customer key must NOT rescue a missing platform key.
@@ -1022,7 +1026,7 @@ class TestPlatformOpenRouter:
                 )
         mock_service.assert_not_called()
 
-    @pytest.mark.parametrize("llm_type", ["openrouter.meta-llama/llama-3-70b", "OpenRouter:x/y"])
+    @pytest.mark.parametrize("llm_type", ["OpenRouter:x/y"])
     @patch("run.OpenRouterLLMService")
     def test_raw_openrouter_is_unsupported(self, mock_service, llm_type):
         from run import create_llm_service
@@ -1044,6 +1048,128 @@ class TestPlatformOpenRouter:
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "env-or-key"}):
             create_llm_service(type="platform_openrouter:a/b", key="", messages=[], tools=[])
         assert mock_service.Settings.call_args.kwargs["model"] == "a/b"
+
+
+class TestCustomOpenRouter:
+    """openrouter.<author>/<slug>: the customer's own key only, ZDR provider routing.
+
+    The branch must never read the environment and must never hand None or an
+    empty key to the SDK (the OpenAI client falls back to OPENAI_API_KEY when
+    api_key is None). Model IDs are validated once, in the Go resolver
+    (ValidateCustomModelID); this layer intentionally does not re-validate them,
+    so the two layers cannot disagree.
+    """
+
+    # Literal on purpose: comparing with run._OPENROUTER_PROVIDER would pass even
+    # if the shared constant lost a field.
+    EXPECTED_PROVIDER = {
+        "zdr": True,
+        "data_collection": "deny",
+        "require_parameters": True,
+    }
+
+    ENV = {
+        "OPENROUTER_API_KEY": "dummy-or-env-not-real",
+        "OPENAI_API_KEY": "dummy-openai-env-not-real",
+    }
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_uses_trimmed_customer_key_not_env(self, mock_service, mock_context, mock_pair):
+        from run import create_llm_service
+
+        with patch.dict(os.environ, self.ENV):
+            llm, aggregator = create_llm_service(
+                type="openrouter.vendor/model-a",
+                key="  dummy-typed-key  ",
+                messages=[{"role": "user", "content": "hello"}],
+                tools=[],
+            )
+
+        assert mock_service.call_count == 1
+        assert mock_service.call_args.kwargs["api_key"] == "dummy-typed-key"
+        assert "dummy-or-env-not-real" not in repr(mock_service.call_args)
+        assert "dummy-openai-env-not-real" not in repr(mock_service.call_args)
+        assert llm is mock_service.return_value
+        assert aggregator is mock_pair.return_value
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_provider_extra_body_matches_literal(self, mock_service, mock_context, mock_pair):
+        from run import create_llm_service
+
+        create_llm_service(type="openrouter.vendor/model-a", key="dummy-typed-key", messages=[], tools=[])
+
+        settings_cls = mock_service.Settings
+        assert settings_cls.call_count == 1
+        kwargs = settings_cls.call_args.kwargs
+        assert kwargs["extra"] == {"extra_body": {"provider": self.EXPECTED_PROVIDER}}
+        assert mock_service.call_args.kwargs["settings"] is settings_cls.return_value
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_provider_dict_is_a_copy(self, mock_service, mock_context, mock_pair):
+        """Mutating one built service's options must not change the shared constant."""
+        import run
+        from run import create_llm_service
+
+        create_llm_service(type="openrouter.vendor/model-a", key="dummy-typed-key", messages=[], tools=[])
+        provider = mock_service.Settings.call_args.kwargs["extra"]["extra_body"]["provider"]
+        provider["zdr"] = False
+
+        assert run._OPENROUTER_PROVIDER == self.EXPECTED_PROVIDER
+
+    @pytest.mark.parametrize("model_id", [
+        "mistralai/mistral-medium-3.1",
+        "meta-llama/llama-3.3-70b-instruct",
+        "vendor/model:free",
+        "vendor/model:nitro",
+        "vendor/model:online",
+    ])
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_model_id_is_kept_verbatim(self, mock_service, mock_context, mock_pair, model_id):
+        from run import create_llm_service
+
+        create_llm_service(type="openrouter." + model_id, key="dummy-typed-key", messages=[], tools=[])
+
+        # Split on the first "." only. Variant suffixes are rejected by the Go
+        # resolver, not here.
+        assert mock_service.Settings.call_args.kwargs["model"] == model_id
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenRouterLLMService")
+    def test_service_name_is_case_insensitive(self, mock_service, mock_context, mock_pair):
+        from run import create_llm_service
+
+        create_llm_service(type="OpenRouter.a/b", key="dummy-typed-key", messages=[], tools=[])
+
+        assert mock_service.call_args.kwargs["api_key"] == "dummy-typed-key"
+        assert mock_service.Settings.call_args.kwargs["model"] == "a/b"
+
+    @pytest.mark.parametrize("key", [None, "", "  ", "\n", " \t\n "])
+    @patch("run.OpenRouterLLMService")
+    def test_missing_or_blank_key_raises_even_with_env_keys(self, mock_service, key):
+        from run import create_llm_service
+
+        with patch.dict(os.environ, self.ENV):
+            with pytest.raises(ValueError, match="An API key is required for custom OpenRouter models"):
+                create_llm_service(type="openrouter.vendor/model-a", key=key, messages=[], tools=[])
+        mock_service.assert_not_called()
+
+    @patch("run.OpenRouterLLMService")
+    def test_colon_form_is_unsupported(self, mock_service):
+        from run import create_llm_service
+
+        with patch.dict(os.environ, self.ENV):
+            with pytest.raises(ValueError, match="Unsupported LLM service"):
+                create_llm_service(type="OpenRouter:x/y", key="dummy-typed-key", messages=[], tools=[])
+        mock_service.assert_not_called()
 
 
 def _real_openrouter_probe_script():
