@@ -218,7 +218,7 @@ func (h *aiHandler) Update(
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not get updated ai")
 		}
-		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+		h.publishAIEvent(ctx, ai.EventTypeUpdated, res)
 		if errHistory := h.db.AIPromptHistoryCreate(ctx, &aiprompthistory.AIPromptHistory{
 			Identity: identity.Identity{
 				ID:         historyID,
@@ -242,7 +242,7 @@ func (h *aiHandler) Update(
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not get updated ai")
 		}
-		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+		h.publishAIEvent(ctx, ai.EventTypeUpdated, res)
 		return res, nil
 
 	default: // prompt unchanged

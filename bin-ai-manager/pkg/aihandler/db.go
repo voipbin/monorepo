@@ -104,7 +104,7 @@ func (h *aiHandler) dbCreate(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get created ai")
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeCreated, res)
+	h.publishAIEvent(ctx, ai.EventTypeCreated, res)
 
 	return res, nil
 }
@@ -164,7 +164,7 @@ func (h *aiHandler) Delete(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get deleted ai")
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeDeleted, res)
+	h.publishAIEvent(ctx, ai.EventTypeDeleted, res)
 
 	return res, nil
 }
@@ -201,7 +201,7 @@ func (h *aiHandler) dbUpdate(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated ai")
 	}
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+	h.publishAIEvent(ctx, ai.EventTypeUpdated, res)
 
 	return res, nil
 }
@@ -245,10 +245,10 @@ func (h *aiHandler) ActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, 
 	// keep a stale is_insight_active=true for it forever. Published first so
 	// subscribers never observe two active Insight AIs.
 	if previous != nil {
-		h.notifyHandler.PublishWebhookEvent(ctx, previous.CustomerID, ai.EventTypeUpdated, previous)
+		h.publishAIEvent(ctx, ai.EventTypeUpdated, previous)
 	}
 
-	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+	h.publishAIEvent(ctx, ai.EventTypeUpdated, res)
 
 	return res, nil
 }
