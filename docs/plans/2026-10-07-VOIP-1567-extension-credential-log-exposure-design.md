@@ -1,6 +1,6 @@
 # VOIP-1567 extension 자격 증명 로그 노출 설계
 
-- 상태: Draft (설계 리뷰 4회차 대기, 3회차 반영)
+- 상태: Draft (설계 리뷰 5회차 대기, 4회차 반영)
 - 티켓: VOIP-1567
 - 선행 문서: docs/plans/2026-10-07-VOIP-1567-extension-credential-log-exposure-analysis.md (이슈 분석, 범위와 결정 확정)
 - 범위: 분석 문서 4절의 유형 1(extension, trunk 객체 5곳)과 유형 2(`AuthIdentity` 단일 지점). 유형 3, 4 는 대표님 결정으로 처리하지 않는다.
@@ -11,7 +11,7 @@
 
 - extension, trunk 의 `password`, `direct_hash` 가 로그에 나오지 않게 한다(유형 1).
 - 인증된 요청 로그에 agent `direct_hash` 와 direct scope `hash_fingerprint` 가 나오지 않게 한다(유형 2).
-- 로그의 키 구조는 가능한 한 그대로 유지해, 로그를 읽는 쪽(수동 조회, 외부 대시보드)의 변화를 최소화한다.
+- 유형 2 는 로그의 키 구조를 그대로 유지한다. 유형 1 은 객체 키를 요약 키로 바꾸는 예외다(D4 에 열거).
 
 비목표.
 
@@ -27,8 +27,8 @@
 | 위치 | 현재 | 변경 |
 |---|---|---|
 | bin-api-manager/pkg/servicehandler/extension.go:52 (`extensionGet`) | `log.WithField("tag", res).Debug("Received result.")` | `log.WithFields(logrus.Fields{"customer_id": res.CustomerID, "extension": res.Extension}).Debug("Received result.")` (이 함수의 `log` 에는 이미 요청 `id` 로 `extension_id` 키가 있으므로 다시 넣지 않는다) |
-| bin-call-manager/pkg/callhandler/start_incoming_domain_type_sip.go:134 | `log.WithField("extension", ext).Debugf(...)` | extension 은 위와 같은 세 필드 |
-| bin-call-manager/pkg/callhandler/start_incoming_domain_type_registrar.go:355 (`tmp`), :383 (`ext`) | `log.WithField("extension", ...).Debugf(...)` | 위와 같은 세 필드 |
+| bin-call-manager/pkg/callhandler/start_incoming_domain_type_sip.go:134 | `log.WithField("extension", ext).Debugf(...)` | `extension_id`(`ext.ID`), `customer_id`, `extension`(번호). 이 함수의 `log` 에는 `extension_id` 키가 없고 메시지에만 id 가 있으므로 필드로 넣는다 |
+| bin-call-manager/pkg/callhandler/start_incoming_domain_type_registrar.go:355 (`tmp`), :383 (`ext`) | `log.WithField("extension", ...).Debugf(...)` | 위와 같은 세 키(`extension_id`, `customer_id`, `extension`). 355 는 `tmp`, 383 은 `ext` 기준. 이 함수의 `log` 에는 `func`, `customer_id`, `address` 만 있으므로 `customer_id` 키는 같은 값으로 덮어쓰기가 되어 무해하다 |
 | bin-call-manager/pkg/callhandler/start_incoming_domain_type_trunk.go:44 | `log.WithField("trunk", trunk).Debugf(...)` | `trunk_id`, `customer_id`, `domain_name` |
 
 - `extension.go:52` 의 키 `"tag"` 는 tag 핸들러에서 복사된 잔재다. 객체를 더 이상 넘기지 않으므로 키를 사용하지 않고 위 필드로 대체한다.
@@ -79,7 +79,8 @@
 
 - 배포 순서 제약이 없다. api-manager 와 call-manager 를 각각 배포하면 된다.
 - 외부 계약(API, 이벤트, DB) 변경이 없다.
-- 로그 출력 형태 변경: 유형 1 은 `tag`, `extension`, `trunk` 필드의 내용이 객체에서 id, 번호 요약으로 줄어든다. 유형 2 는 `agent`, `auth`, `auth_identity` 필드 안에서 위 제외 필드가 사라진다. 저장소 안에는 이 필드를 파싱하는 알림이나 대시보드가 없다(확인함). 저장소 밖의 Grafana 쿼리에 대해서는 확인하지 못했으므로 위험으로 기록한다.
+- 로그 출력 형태 변경(유형 1): 키 제거는 `tag`(`extension.go:52`)와 `trunk`(`trunk.go:44`)이고, 신설은 `customer_id`, `extension`(문자열), `trunk_id`, `domain_name`, `extension_id`(call-manager 3곳)다. `extension` 키는 객체에서 문자열(번호)로 타입이 바뀐다. 필드 타입을 고정해 색인하는 쪽이 있으면 충돌할 수 있으나 저장소 안에는 없고, 저장소 밖은 확인하지 못해 위험으로 기록한다.
+- 로그 출력 형태 변경(유형 2): `agent`, `auth`, `auth_identity` 필드 안에서 위 제외 필드가 사라진다. 저장소 안에는 이 필드를 파싱하는 알림이나 대시보드가 없다(확인함). 저장소 밖의 Grafana 쿼리에 대해서는 확인하지 못했으므로 위험으로 기록한다.
 
 ### D5. 이미 기록된 값과 수용 위험
 
