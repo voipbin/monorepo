@@ -10,6 +10,7 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amteam "monorepo/bin-ai-manager/models/team"
 	aitool "monorepo/bin-ai-manager/models/tool"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -501,5 +502,142 @@ func Test_startReferenceTypeAIcall_runnerHandoff(t *testing.T) {
 			}
 			se.Cancel()
 		})
+	}
+}
+
+// Test_teamSession_skipsLiveVendorCheck: a team pipeline uses the per-member values from
+// resolveTeamForPython. pc.LLMType is the start member's model while the key comes from
+// the current member, so a vendor mismatch between members is a normal hand-off.
+func Test_teamSession_skipsLiveVendorCheck(t *testing.T) {
+	teamID := uuid.FromStringOrNil("aaaaaaaa-1111-0000-0000-000000000001")
+	m1ID := uuid.FromStringOrNil("bbbbbbbb-1111-0000-0000-000000000001")
+	m2ID := uuid.FromStringOrNil("bbbbbbbb-1111-0000-0000-000000000002")
+	ai1ID := uuid.FromStringOrNil("dddddddd-1111-0000-0000-000000000001")
+	ai2ID := uuid.FromStringOrNil("dddddddd-1111-0000-0000-000000000002")
+	aicallID := uuid.FromStringOrNil("11111111-bbbb-2222-3333-444455556666")
+	pcID := uuid.FromStringOrNil("33333333-bbbb-2222-3333-444455556666")
+
+	tests := []struct {
+		name string
+
+		startModel   amai.EngineModel // member 1, the pipecatcall llm_type
+		currentModel amai.EngineModel // member 2, the current member whose key is read
+
+		expectRunnerType string
+		expectKey        string
+	}{
+		{name: "members with different direct vendors", startModel: "openai.gpt-5", currentModel: "anthropic.claude-haiku-4.5", expectRunnerType: "openai.gpt-5", expectKey: "dummy-key"},
+		{name: "start openai and current member custom openrouter", startModel: "openai.gpt-5", currentModel: "openrouter.vendor/model-a", expectRunnerType: "openai.gpt-5", expectKey: "dummy-key"},
+		{name: "start custom openrouter and current member openai", startModel: "openrouter.vendor/model-a", currentModel: "openai.gpt-5", expectRunnerType: "openrouter.vendor/model-a", expectKey: "dummy-key"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockTool := toolhandler.NewMockToolHandler(mc)
+			mockPython := NewMockPythonRunner(mc)
+			h := &pipecatcallHandler{
+				requestHandler:        mockReq,
+				toolHandler:           mockTool,
+				pythonRunner:          mockPython,
+				mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
+			}
+
+			ac := &amaicall.AIcall{
+				Identity:        commonidentity.Identity{ID: aicallID},
+				ReferenceType:   amaicall.ReferenceTypeTask,
+				AssistanceType:  amaicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: m2ID,
+			}
+			mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil).AnyTimes()
+			mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amteam.Team{
+				Identity:      commonidentity.Identity{ID: teamID},
+				StartMemberID: m1ID,
+				Members: []amteam.Member{
+					{ID: m1ID, Name: "one", AIID: ai1ID},
+					{ID: m2ID, Name: "two", AIID: ai2ID},
+				},
+			}, nil).AnyTimes()
+			mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai1ID).Return(&amai.AI{EngineModel: tt.startModel, EngineKey: "dummy-key"}, nil).AnyTimes()
+			mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai2ID).Return(&amai.AI{EngineModel: tt.currentModel, EngineKey: "dummy-key"}, nil).AnyTimes()
+			mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{}).AnyTimes()
+			mockReq.EXPECT().AIV1AIcallToolList(gomock.Any(), aicallID).Return(nil, nil).AnyTimes()
+
+			pc := &pipecatcall.Pipecatcall{
+				Identity:      commonidentity.Identity{ID: pcID},
+				ReferenceType: pipecatcall.ReferenceTypeAICall,
+				ReferenceID:   aicallID,
+				LLMType:       pipecatcall.LLMType(tt.startModel),
+			}
+
+			// runGetLLMKey path
+			runnerType, key, err := h.runGetLLMKey(context.Background(), pc)
+			if err != nil {
+				t.Fatalf("runGetLLMKey: unexpected error: %v", err)
+			}
+			if runnerType != tt.expectRunnerType || key != tt.expectKey {
+				t.Errorf("runGetLLMKey got (%q, %q), want (%q, %q)", runnerType, key, tt.expectRunnerType, tt.expectKey)
+			}
+
+			// start path
+			started := make(chan struct{}, 1)
+			mockPython.EXPECT().Start(
+				gomock.Any(), pcID, gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).DoAndReturn(func(
+				_ context.Context, _ uuid.UUID, _ string, _ string, _ any,
+				_ string, _ string, _ string, _ string, _ string,
+				_ []aitool.Tool, _ any, _ any, _ bool,
+			) error {
+				started <- struct{}{}
+				return nil
+			}).Times(1)
+
+			if errStart := h.startReferenceTypeAIcall(context.Background(), pc); errStart != nil {
+				t.Fatalf("startReferenceTypeAIcall: unexpected error: %v", errStart)
+			}
+			select {
+			case <-started:
+			case <-time.After(3 * time.Second):
+				t.Fatal("python runner was never started")
+			}
+			if se, errSe := h.SessionGet(pcID); errSe == nil {
+				se.Cancel()
+			}
+		})
+	}
+}
+
+func Test_engineVendor(t *testing.T) {
+	tests := []struct {
+		name   string
+		model  string
+		expect string
+	}{
+		{"lower case", "openai.gpt-5", "openai"},
+		{"upper case", "OpenAI.gpt-5", "openai"},
+		{"leading and trailing whitespace", "  openai.gpt-5  ", "openai"},
+		{"custom openrouter upper case with whitespace", " OpenRouter.vendor/model ", "openrouter"},
+		{"no dot", "openai", "openai"},
+		{"empty", "", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := engineVendor(tt.model); got != tt.expect {
+				t.Errorf("engineVendor(%q) = %q, want %q", tt.model, got, tt.expect)
+			}
+		})
+	}
+}
+
+func Test_checkLiveEngineVendor_caseAndWhitespace(t *testing.T) {
+	live := &amai.AI{EngineModel: "OpenAI.gpt-5"}
+	if err := checkLiveEngineVendor(" openai.gpt-4o ", live, "dummy-key"); err != nil {
+		t.Errorf("same vendor differing only in case and whitespace must pass, got %v", err)
 	}
 }

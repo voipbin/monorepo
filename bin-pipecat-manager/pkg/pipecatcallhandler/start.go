@@ -209,8 +209,13 @@ func (h *pipecatcallHandler) startReferenceTypeAIcall(ctx context.Context, pc *p
 	if err != nil {
 		return errors.Wrapf(err, "could not resolve llm type")
 	}
-	if errCheck := checkLiveEngineVendor(pc.LLMType, ai, llmKey); errCheck != nil {
-		return errors.Wrapf(errCheck, "could not resolve llm type")
+	// Team sessions are skipped: the runner resolves each member's own model and key
+	// (resolveTeamForPython), and pc.LLMType is the start member's model, not the
+	// current member's.
+	if c.AssistanceType != amaicall.AssistanceTypeTeam {
+		if errCheck := checkLiveEngineVendor(pc.LLMType, ai, llmKey); errCheck != nil {
+			return errors.Wrapf(errCheck, "could not resolve llm type")
+		}
 	}
 
 	switch c.ReferenceType {

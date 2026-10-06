@@ -137,7 +137,12 @@ func (h *pipecatcallHandler) runGetLLMKey(ctx context.Context, pc *pipecatcall.P
 		}
 
 		aiKey = a.EngineKey
-		liveAI = a
+		// Team sessions are skipped: the runner resolves each member's own model and
+		// key (resolveTeamForPython), and pc.LLMType is the start member's model, not
+		// the current member's, so comparing vendors here would reject valid hand-offs.
+		if c.AssistanceType != amaicall.AssistanceTypeTeam {
+			liveAI = a
+		}
 	}
 
 	runnerType, runnerKey, err := resolveSessionLLM(pc.LLMType, aiKey)
