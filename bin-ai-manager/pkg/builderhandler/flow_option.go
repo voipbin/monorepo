@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"sort"
+	"strings"
 
 	"monorepo/bin-ai-manager/models/flowbuilder"
 	"monorepo/bin-ai-manager/pkg/actioncatalog"
@@ -23,15 +24,20 @@ import (
 // labelToID, warning on anything it cannot resolve. Fields with no ref tag
 // pass through untouched.
 func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID, removed map[string]bool) (map[string]any, []string) {
-	opt := make(map[string]any, len(n.Option))
-	for k, v := range n.Option {
-		opt[k] = v
-	}
+	// encoding/json matches keys case-insensitively, and flow-manager decodes
+	// an action's option with it, so "Queue_ID" would fill queue_id there.
+	// Every later step matches keys exactly, so keep only exact keys first:
+	// a variant could otherwise carry a resource id or an unresolved action
+	// reference past the clearing and resolution below.
+	opt, droppedKeys := exactOptionKeys(fmaction.Type(n.Type), n.Option)
 
 	fields := fmaction.RefFieldsOf(fmaction.Type(n.Type))
 	required := actioncatalog.RequiredFields(fmaction.Type(n.Type))
 
 	var warnings []string
+	for _, k := range droppedKeys {
+		warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+n.Label+"."+k)
+	}
 
 	// Step 4 (first half): clear every ref:"resource" field before
 	// touching ref:"action" fields, so an LLM-supplied non-UUID string in
@@ -135,4 +141,44 @@ func dropInvalidOptionKeys(n flowbuilder.SymbolicNode, opt map[string]any) (map[
 		out[k] = opt[k]
 	}
 	return out, warnings
+}
+
+// optionFieldNames returns the exact top-level json names of the action's
+// option struct, and false when the type has no known option struct.
+func optionFieldNames(t fmaction.Type) (map[string]bool, bool) {
+	optAny, ok := fmaction.OptionStructByType[t]
+	if !ok {
+		return nil, false
+	}
+	rt := reflect.TypeOf(optAny)
+	if rt.Kind() != reflect.Struct {
+		return map[string]bool{}, true
+	}
+	names := make(map[string]bool, rt.NumField())
+	for i := 0; i < rt.NumField(); i++ {
+		name := strings.Split(rt.Field(i).Tag.Get("json"), ",")[0]
+		if name != "" && name != "-" {
+			names[name] = true
+		}
+	}
+	return names, true
+}
+
+// exactOptionKeys returns a copy of opt with only the keys that equal a json
+// field name of the action's option struct exactly (case included), plus the
+// sorted list of keys it dropped. A type with no known option struct is
+// returned unchanged: the type filter removes such a node anyway.
+func exactOptionKeys(t fmaction.Type, opt map[string]any) (map[string]any, []string) {
+	names, known := optionFieldNames(t)
+	out := make(map[string]any, len(opt))
+	var dropped []string
+	for k, v := range opt {
+		if known && !names[k] {
+			dropped = append(dropped, k)
+			continue
+		}
+		out[k] = v
+	}
+	sort.Strings(dropped)
+	return out, dropped
 }

@@ -1,6 +1,7 @@
 package builderhandler
 
 import (
+	"encoding/json"
 	"reflect"
 	"strings"
 	"testing"
@@ -390,5 +391,52 @@ func Test_computeLayout(t *testing.T) {
 
 	if got := computeLayout(nil); got != nil {
 		t.Errorf("Wrong match. expect: nil for no actions, got: %v", got)
+	}
+}
+
+// encoding/json matches keys case-insensitively and flow-manager decodes an
+// option with it, so a case variant of a resource or reference key must not
+// get past the clearing and resolution (review round 2, H1).
+func Test_AssembleFlowDraft_caseVariantKeysCannotCarryReferences(t *testing.T) {
+	const foreign = "11111111-2222-4333-8444-555555555555"
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "q", Type: string(fmaction.TypeQueueJoin), Option: map[string]any{"Queue_ID": foreign, "QUEUE_ID": foreign}},
+		{Label: "b", Type: string(fmaction.TypeBranch), Option: map[string]any{
+			"Variable":          "v",
+			"Target_IDs":        map[string]any{"1": foreign},
+			"DEFAULT_TARGET_ID": foreign,
+		}},
+	}}
+	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeQueueJoin, fmaction.TypeBranch))
+
+	raw, _ := json.Marshal(draft)
+	if strings.Contains(string(raw), foreign) {
+		t.Errorf("Wrong match. a foreign id reached the draft: %s", raw)
+	}
+	for _, key := range []string{"q.Queue_ID", "q.QUEUE_ID", "b.Variable", "b.Target_IDs", "b.DEFAULT_TARGET_ID"} {
+		if !containsExact(warnings, flowbuilder.WarningInvalidOption+": "+key) {
+			t.Errorf("Wrong match. expect invalid_option for %s in %v", key, warnings)
+		}
+	}
+	if !containsPrefix(warnings, flowbuilder.WarningSelectResource) {
+		t.Errorf("Wrong match. expect select_resource in %v", warnings)
+	}
+}
+
+func Test_ReconstructGraph_caseVariantKeysAreNotShownToTheModel(t *testing.T) {
+	draft := &flowbuilder.Draft{Actions: []map[string]any{
+		{"id": "6c73ff34-7f4c-11ec-b4d5-5b94d40e4071", "type": "queue_join", "option": map[string]any{"Queue_ID": "11111111-2222-4333-8444-555555555555"}},
+	}}
+	g := ReconstructGraph(draft)
+	raw, _ := json.Marshal(g)
+	if strings.Contains(string(raw), "11111111") {
+		t.Errorf("Wrong match. a resource id reached the model graph: %s", raw)
+	}
+}
+
+func Test_FlowParse_labelWithControlCharactersIsSkipped(t *testing.T) {
+	got, err := FlowParse(`{"message":"hi","draft":{"nodes":[{"label":"a\u0000b","type":"stop"},{"label":"ok","type":"stop"}]}}`)
+	if err != nil || got.Graph == nil || len(got.Graph.Nodes) != 1 || got.Graph.Nodes[0].Label != "ok" {
+		t.Errorf("Wrong match. expect: only ok, got: %+v %v", got, err)
 	}
 }

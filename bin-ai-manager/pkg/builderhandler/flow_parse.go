@@ -3,6 +3,7 @@ package builderhandler
 import (
 	"encoding/json"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"monorepo/bin-ai-manager/models/flowbuilder"
@@ -79,7 +80,7 @@ func decodeFlowDraft(raw json.RawMessage) (*flowbuilder.SymbolicGraph, []string)
 		_ = json.Unmarshal(nf["label"], &n.Label)
 		_ = json.Unmarshal(nf["type"], &n.Type)
 		n.Label = strings.TrimSpace(n.Label)
-		if n.Label == "" || n.Type == "" || utf8.RuneCountInString(n.Label) > flowbuilder.MaxLabelRunes {
+		if n.Label == "" || n.Type == "" || utf8.RuneCountInString(n.Label) > flowbuilder.MaxLabelRunes || strings.IndexFunc(n.Label, unicode.IsControl) >= 0 {
 			continue // a node without a usable address cannot be referenced or placed
 		}
 

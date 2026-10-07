@@ -81,10 +81,9 @@ func ReconstructGraph(draft *flowbuilder.Draft) *flowbuilder.SymbolicGraph {
 	for _, a := range actions {
 		n := flowbuilder.SymbolicNode{Label: idToLabel[a.ID.String()], Type: string(a.Type)}
 
-		opt := make(map[string]any, len(a.Option))
-		for k, v := range a.Option {
-			opt[k] = v
-		}
+		// Only exact option keys: a case variant such as "Queue_ID" would
+		// slip past the resource hiding below (see exactOptionKeys).
+		opt, _ := exactOptionKeys(a.Type, a.Option)
 		for _, f := range fmaction.RefFieldsOf(a.Type) {
 			switch f.Kind {
 			case fmaction.RefKindResource:
