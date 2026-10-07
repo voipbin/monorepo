@@ -1,6 +1,6 @@
 # VOIP-1569 transcribe 참조 리소스 조회 실패 시 nil 역참조 수정 설계
 
-- 상태: Draft (설계 리뷰 4회차 대기, 3회차 반영)
+- 상태: Draft (설계 리뷰 5회차 대기, 4회차 반영)
 - 티켓: VOIP-1569
 - 선행 문서: docs/plans/2026-10-07-VOIP-1569-transcribe-nil-dereference-analysis.md (이슈 분석, 범위와 사실 확정)
 - 범위: 모노레포 PR 하나(서버 수정과 테스트)와 monorepo-monitoring PR 하나(api-validator 허용 코드). 저장소가 달라 PR 이 둘이다.
@@ -84,8 +84,12 @@
 - 주석 문구는 파일별로 정한다. `test_stt_api.py` 의 3곳은 기존 "API may return 400, 422, or 500 for validation errors" 를 "API may return 400, 404, 422, or 500 (404 when the referenced resource does not exist, 500 on servers before the lookup fix)" 로 바꾼다. `test_stt_languages.py` 의 2곳은 기존 "Should reject with error - 500 is also acceptable" 를 "Should reject with error - 404 (reference not found) or 500 (servers before the lookup fix) are also acceptable" 로 바꾼다.
 - 변경하지 않는 테스트(같은 `[400, 422, 500]` 형태이지만 영향이 없음): `test_stt_api.py::test_create_transcribe_requires_reference_type`(101행), `test_stt_languages.py::test_invalid_reference_type_rejected`(232행), `test_stt_api.py::test_create_with_empty_body_returns_error`(허용 `[400, 401, 422, 500]`). 이 셋은 reference_type 이 비었거나 잘못된 값이라 조회 이전에 400 으로 끝난다(분석 문서 5절).
 - 500 은 제거하지 않는다. 서버 수정 배포와 검증기 배포 순서에 관계없이, 그리고 서버 롤백 시에도 검증기가 빨갛게 되지 않게 하기 위해서다. 500 제거는 서버 수정이 운영에 반영된 뒤 별도로 판단할 일이며 이번 범위가 아니다(오버엔지니어링 지양).
-- 이 변경은 검증기가 서버 버그를 허용하도록 하는 것이 아니라, 이미 허용 중인 500 에 올바른 응답(404)을 추가하는 것이다. 이 저장소의 `stt` 테스트 중 일부(`test_stt_api.py` 2건, `test_stt_events.py` 5건, `test_stt_languages.py` 5건)는 이미 `404, 500` 을 함께 허용하는 형태를 쓰고 있어 일관적이다.
-- PR 운영: monorepo-monitoring 의 CLAUDE.md 에는 브랜치와 PR 규칙이 없으므로 전역 규칙을 따른다. 작업은 해당 저장소의 worktree 에서 하고(저장소에 `.worktrees` 가 아직 없으면 `git worktree add` 로 만든다), 브랜치는 `VOIP-1569-Allow-404-in-transcribe-validator-tests`, PR 제목은 브랜치명과 같게, 본문은 서술 한 문단과 `api-validator:` 접두 불릿(마크다운 헤더, Test plan, AI 속성 없음), 커밋 작성자는 pchero21@gmail.com 으로 한다. main 에 직접 푸시하지 않는다.
+- 이 변경은 검증기가 서버 버그를 허용하도록 하는 것이 아니라, 이미 허용 중인 500 에 올바른 응답(404)을 추가하는 것이다. 이 저장소의 `stt` 테스트 중 여럿(`test_stt_api.py`, `test_stt_events.py`, `test_stt_languages.py`)은 이미 404 와 500 을 함께 허용하는 형태를 쓰고 있어 일관적이다.
+- PR 운영: monorepo-monitoring 의 CLAUDE.md("Git Workflow Preferences", 285-311행)에는 두 가지 규칙이 있다. (a) 브랜치 형식 `NOJIRA-Underscored_change`(밑줄)와 브랜치 생성 전 사용자 확인, (b) 항상 worktree 에서 작업. 실제 운영과의 관계는 다음과 같이 정한다.
+  - 브랜치 형식: 이 저장소의 기존 브랜치(`ETC-11-conversation-account-400-tolerance`, `NOJIRA-Add-contact-addresses-cases-test-coverage` 등)는 모두 대시 형식이라 CLAUDE.md 의 밑줄 서술은 실제 관례와 어긋난 오래된 문구다. 전역 규칙과 같은 대시 형식을 쓴다: `VOIP-1569-Allow-404-in-transcribe-validator-tests`. 티켓이 VOIP 프로젝트에 있으므로 접두는 `VOIP-1569` 로 한다.
+  - 브랜치 생성 전 확인: 대표님의 전역 지침은 "브랜치 확인을 묻지 않고 즉시 생성"이다. 이 저장소의 CLAUDE.md 가 반대로 확인을 요구하므로, 이번 작업은 대표님이 워크플로우를 지시하신 것으로 보고 즉시 생성하되 PR 보고에 이 충돌과 처리 방식을 한 줄 적는다.
+  - worktree: 저장소 루트의 `.worktrees` 디렉터리가 이미 있고 비어 있다. `git worktree add .worktrees/VOIP-1569-Allow-404-in-transcribe-validator-tests -b VOIP-1569-Allow-404-in-transcribe-validator-tests origin/main` 형태로 만든다. 기본 저장소는 main 에 둔다.
+  - PR 제목은 브랜치명과 같게, 본문은 서술 한 문단과 `api-validator:` 접두 불릿(마크다운 헤더, Test plan, AI 속성 없음), 커밋 작성자는 pchero21@gmail.com 으로 한다. main 에 직접 푸시하지 않는다.
 
 ### D4. OpenAPI 와 문서
 
