@@ -75,7 +75,8 @@
 
 범위 밖(제안, 대표님 확인 필요).
 
-- 부모 리소스(agent, ai, team, flow, queue, conference, extension, widget)가 `DirectHash` 필드를 가진 채 통째로 로그되는 경우. VOIP-1567 분석의 "유형 3" 과 같은 계열이며 해당 PR 에서 대표님이 처리하지 않기로 결정한 항목이다. 이번 티켓이 닫혀도 이 경로로 hash 가 계속 남는다는 점을 수용 위험으로 기록한다. 규모는 서비스별 `WithField("<리소스>", <구조체>)` 형태가 conference 12, ai 7, agent 6, queue 6, flow 3, webchat 1 이상(개략치, 서비스별 `WithField("<리소스명>", <변수>)` grep). api-manager 는 단일 문자 변수 패턴이 `AuthIdentity` 와 섞여 정확한 수를 내지 못해 제외했고, 호출 형태가 다양해 정밀 감사는 하지 않았다이다. 처리하려면 별도 설계가 필요하다.
+- 부모 리소스(agent, ai, team, flow, queue, conference, extension, widget)가 `DirectHash` 필드를 가진 채 통째로 로그되는 경우. VOIP-1567 분석의 "유형 3" 과 같은 계열이며 해당 PR 에서 대표님이 처리하지 않기로 결정한 항목이다. 이번 티켓이 닫혀도 이 경로로 hash 가 계속 남는다는 점을 수용 위험으로 기록한다. 규모는 서비스별 `WithField("<리소스>", <구조체>)` 형태가 conference 12, ai 7, agent 6, queue 6, flow 3, webchat 1 이상(개략치, 서비스별 `WithField("<리소스명>", <변수>)` grep). api-manager 는 단일 문자 변수 패턴이 `AuthIdentity` 와 섞여 정확한 수를 내지 못해 제외했고, 호출 형태가 다양해 정밀 감사는 하지 않았다. 처리하려면 별도 설계가 필요하다.
+- 유형 5: call-manager 의 `channel.Channel` 객체 로그(2.2.1). 수용 위험으로 기록한다.
 - 일반 로그 redaction 훅이나 CI 게이트 신설. 오버엔지니어링 회피 원칙에 따라 하지 않는다.
 - 로그 레벨 Debug 고정 정책.
 - 이미 로그에 남은 hash 의 재생성(rotate) 여부. 대표님이 판단할 사안이며 이번 PR 에 포함하지 않는다.
