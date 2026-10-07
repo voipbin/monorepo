@@ -1,6 +1,6 @@
 # VOIP-1569 transcribe 참조 리소스 조회 실패 시 nil 역참조 수정 설계
 
-- 상태: Draft (설계 리뷰 대기)
+- 상태: Draft (설계 리뷰 2회차 대기, 1회차 반영)
 - 티켓: VOIP-1569
 - 선행 문서: docs/plans/2026-10-07-VOIP-1569-transcribe-nil-dereference-analysis.md (이슈 분석, 범위와 사실 확정)
 - 범위: 모노레포 PR 하나(서버 수정과 테스트)와 monorepo-monitoring PR 하나(api-validator 허용 코드). 저장소가 달라 PR 이 둘이다.
@@ -52,12 +52,12 @@
 | conference RPC 에러 | `ConferenceV1ConferenceGet(ctx, id)` 가 `(nil, errFake)` 반환 | 에러 반환, `errors.Is(err, errFake)` 참, 결과 nil |
 | recording RPC 에러 | `CallV1RecordingGet(ctx, id)` 가 `(nil, errFake)` 반환 | 같음 |
 | recording 삭제됨 | `CallV1RecordingGet` 이 `TMDelete` 가 설정된 recording 반환 | 에러 반환, `errors.Is(err, serviceerrors.ErrNotFound)` 참 |
-| recording typed 에러 | `CallV1RecordingGet` 이 `cerrors.NotFound(...)` 반환 | `errors.As(err, &*cerrors.VoipbinError)` 참(래핑 뒤에도 typed 에러 유지) |
+| recording typed 에러 | `CallV1RecordingGet` 이 `cerrors.NotFound(...)` 반환 | `var ve *cerrors.VoipbinError` 를 선언해 `errors.As(err, &ve)` 가 참(래핑 뒤에도 typed 에러 유지) |
 
 - 모든 케이스에서 `TranscribeV1TranscribeStart` 의 기대를 설정하지 않는다. gomock 은 예상 밖 호출을 실패시키므로, 조회 실패 후 transcribe 요청이 나가지 않음을 별도 단언 없이 보장한다.
 - 에이전트 신원은 해당 함수의 권한 검사를 통과하는 값을 쓴다(`TranscribeStart` 는 `PermissionCustomerAdmin`, `ServiceAgentTranscribeStart` 는 `PermissionCustomerAgent`, 기존 테스트와 같은 값).
 - 패닉 검증: 수정 전 코드에서는 nil 역참조 패닉으로 테스트가 실패한다. 별도의 `recover` 를 두지 않는다(패닉이 곧 실패이며 원인이 로그에 그대로 보인다).
-- 변이 시험(구현 단계에서 수행하고 PR 본문에 결과를 적는다): 4곳의 `break` 를 각각 제거해, 해당 함수의 해당 분기를 다루는 케이스가 실패하는지 확인한다. 기대 매핑은 다음과 같다. `transcribeGetResourceInfo` conference 는 conference 케이스, recording 은 recording 의 RPC 에러와 삭제됨 케이스가 잡고, 상담사용 함수도 같은 구조다.
+- 변이 시험(구현 단계에서 수행하고 PR 본문에 결과를 적는다): 4곳의 `break` 를 각각 제거해, 해당 함수의 해당 분기를 다루는 케이스가 실패하는지 확인한다. 기대 매핑은 다음과 같다. `transcribeGetResourceInfo` conference 는 conference 케이스, recording 은 recording 의 RPC 에러, 삭제됨, typed 에러 세 케이스가 모두 잡고(세 케이스는 변이 검출 관점에서는 서로 중복이며, 삭제됨과 typed 는 반환 에러의 종류를 확인하는 역할이다), 상담사용 함수도 같은 구조다. 패닉은 테스트 바이너리 전체를 중단시키므로 변이 시험은 케이스별로 `-run` 을 지정해 개별 확인하고, 결과를 PR 본문에 적는다.
 - HTTP 상태코드로의 매핑(`translateToVoipbinError`)은 기존 서버 에러 변환 테스트가 다루는 영역이라 이 PR 에서 다시 테스트하지 않는다. 대신 위 typed 에러 케이스가 래핑 뒤에도 타입이 유지됨을 보장한다.
 
 ### D3. api-validator 수정 (monorepo-monitoring 별도 PR)
@@ -66,6 +66,7 @@
 
 - `tests/scenarios/stt/test_stt_api.py`: `test_create_transcribe_requires_reference_id`, `test_create_transcribe_requires_language`, `test_create_transcribe_requires_direction`
 - `tests/scenarios/stt/test_stt_languages.py`: `test_empty_language_rejected`, `test_invalid_direction_rejected`
+- PR 운영: monorepo-monitoring 의 CLAUDE.md 에는 브랜치와 PR 규칙이 없으므로 전역 규칙을 따른다. 작업은 해당 저장소의 worktree 에서 하고, 브랜치는 `VOIP-1569-Allow-404-in-transcribe-validator-tests`, PR 제목은 브랜치명과 같게, 본문은 서술 한 문단과 `api-validator:` 접두 불릿(마크다운 헤더, Test plan, AI 속성 없음), 커밋 작성자는 pchero21@gmail.com 으로 한다. main 에 직접 푸시하지 않는다.
 - 허용 목록은 `[400, 404, 422, 500]` 로 한다. 주석은 "조회 실패는 404, 검증 실패는 400, 서버 수정 이전의 구버전은 500" 이라는 사실에 맞게 한 줄로 갱신한다.
 - 500 을 남기는 이유: 서버 수정 배포와 검증기 배포 순서에 관계없이 검증기가 빨갛게 되지 않게 한다. 500 의 제거는 서버 수정이 운영에 반영된 뒤 별도로 판단할 일이며 이번 범위가 아니다(오버엔지니어링 지양).
 - 이 변경은 검증기가 서버 버그를 허용하도록 하는 것이 아니라 이미 허용 중인 500 에 올바른 응답을 추가하는 것이다. 이 저장소에는 `stt` 테스트 전반이 `[... 404, 500]` 형태를 이미 쓰고 있어 일관적이다.
