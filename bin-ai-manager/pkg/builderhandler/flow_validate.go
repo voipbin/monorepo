@@ -7,89 +7,114 @@ package builderhandler
 // and the flow-manager metadata registries.
 
 import (
-	"bytes"
-	"encoding/json"
-	"reflect"
+	"sort"
 
 	"monorepo/bin-ai-manager/models/flowbuilder"
 	"monorepo/bin-ai-manager/pkg/actioncatalog"
 	fmaction "monorepo/bin-flow-manager/models/action"
 )
 
-// ValidateDraft returns every warning §3.3 defines for actions, which must
-// already be in the order AssembleFlowDraft produces (start first, open
-// ends last).
-func ValidateDraft(actions []fmaction.Action) []string {
+// ValidateDraft returns every warning design doc 3.3 defines for actions,
+// which must already be in the order AssembleFlowDraft produces (start
+// first, open ends last). labels maps action id to label and is used only to
+// make warning details readable; a missing entry falls back to the id.
+// invalid_option is not reported here: it is produced while transcoding,
+// where the offending key is dropped.
+func ValidateDraft(actions []fmaction.Action, labels map[string]string) []string {
 	var warnings []string
 
-	warnings = append(warnings, checkRequiredFields(actions)...)
-	warnings = append(warnings, checkInvalidOptions(actions)...)
-	warnings = append(warnings, checkOpenEnds(actions)...)
-	warnings = append(warnings, checkUnreachable(actions)...)
+	warnings = append(warnings, checkEmptyActionRefs(actions, labels)...)
+	warnings = append(warnings, checkRequiredFields(actions, labels)...)
+	warnings = append(warnings, checkOpenEnds(actions, labels)...)
+	warnings = append(warnings, checkUnreachable(actions, labels)...)
 	warnings = append(warnings, checkMediaMixed(actions)...)
 
 	return warnings
 }
 
-// checkRequiredFields flags any action whose option is missing a field
-// actioncatalog.RequiredFields marks Required (this is the catalog's own
-// Required value, not a second builder-owned tag; see RequiredFields' doc
-// comment). A ref:"resource" field already warns select_resource in
-// resolveOption when required and absent; this check also covers
-// non-ref required fields (e.g. talk's "text").
-func checkRequiredFields(actions []fmaction.Action) []string {
+func labelOf(a fmaction.Action, labels map[string]string) string {
+	if l, ok := labels[a.ID.String()]; ok && l != "" {
+		return l
+	}
+	return a.ID.String()
+}
+
+// checkEmptyActionRefs flags every ref:"action" field that has no target
+// (design doc 3.3 item 1). A scalar field warns when empty. A map field
+// (branch.target_ids) warns only when the map is empty AND the node has no
+// non-empty scalar action ref (branch.default_target_id covers the miss).
+func checkEmptyActionRefs(actions []fmaction.Action, labels map[string]string) []string {
 	var warnings []string
 	for _, a := range actions {
+		var scalarSet bool
+		var scalarFields, mapFields []fmaction.RefField
+		for _, f := range fmaction.RefFieldsOf(a.Type) {
+			if f.Kind != fmaction.RefKindAction {
+				continue
+			}
+			if f.IsMap {
+				mapFields = append(mapFields, f)
+			} else {
+				scalarFields = append(scalarFields, f)
+			}
+		}
+		for _, f := range scalarFields {
+			if len(extractActionRefTargets(a.Option, f)) > 0 {
+				scalarSet = true
+				continue
+			}
+			warnings = append(warnings, flowbuilder.WarningEmptyActionRef+": "+labelOf(a, labels)+"."+f.JSONName)
+		}
+		for _, f := range mapFields {
+			if len(extractActionRefTargets(a.Option, f)) > 0 || scalarSet {
+				continue
+			}
+			warnings = append(warnings, flowbuilder.WarningEmptyActionRef+": "+labelOf(a, labels)+"."+f.JSONName)
+		}
+	}
+	return warnings
+}
+
+// checkRequiredFields flags any action whose option is missing a field
+// actioncatalog.RequiredFields marks Required, except ref-tagged fields:
+// those are reported as select_resource (resource) or empty_action_ref
+// (action), never twice. The Required value is the catalog's own; the
+// builder has no second "required" source.
+func checkRequiredFields(actions []fmaction.Action, labels map[string]string) []string {
+	var warnings []string
+	for _, a := range actions {
+		refNames := map[string]bool{}
+		for _, f := range fmaction.RefFieldsOf(a.Type) {
+			refNames[f.JSONName] = true
+		}
+		fields := make([]string, 0)
 		for field := range actioncatalog.RequiredFields(a.Type) {
+			if !refNames[field] {
+				fields = append(fields, field)
+			}
+		}
+		sort.Strings(fields)
+		for _, field := range fields {
 			v, ok := a.Option[field]
 			if !ok || v == nil || v == "" {
-				warnings = append(warnings, flowbuilder.WarningMissingRequired+": "+a.ID.String()+"."+field)
+				warnings = append(warnings, flowbuilder.WarningMissingRequired+": "+labelOf(a, labels)+"."+field)
 			}
 		}
 	}
 	return warnings
 }
 
-// checkInvalidOptions strict-decodes each action's option map into its real
-// OptionXxx struct (DisallowUnknownFields), catching a key the LLM invented
-// that does not exist on the type, or a value of the wrong shape (e.g. a
-// string where a number is expected). A disallowed/malformed option is
-// still left in the draft (so the user can see and fix it in the editor);
-// this only adds a warning.
-func checkInvalidOptions(actions []fmaction.Action) []string {
-	var warnings []string
-	for _, a := range actions {
-		optAny, ok := fmaction.OptionStructByType[a.Type]
-		if !ok {
-			continue
-		}
-		b, err := json.Marshal(a.Option)
-		if err != nil {
-			warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+a.ID.String())
-			continue
-		}
-		dec := json.NewDecoder(bytes.NewReader(b))
-		dec.DisallowUnknownFields()
-		target := reflect.New(reflect.TypeOf(optAny)).Interface()
-		if err := dec.Decode(target); err != nil {
-			warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+a.ID.String())
-		}
-	}
-	return warnings
-}
-
 // checkOpenEnds flags every FlowKindContinue action with no outgoing
-// next_id that is not the last element of the array (design doc §3.3,
-// round-7 fix: the last element is always allowed to be open; the flow
-// simply finishes there).
-func checkOpenEnds(actions []fmaction.Action) []string {
+// next_id that is not the last element of the array (design doc 3.2 step 6;
+// the last element is a normal finish).
+func checkOpenEnds(actions []fmaction.Action, labels map[string]string) []string {
 	var warnings []string
 	for i, a := range actions {
 		if i == len(actions)-1 {
 			continue
 		}
 		if isOpenEnd(a) {
-			warnings = append(warnings, flowbuilder.WarningOpenEnd+": "+a.ID.String())
+			warnings = append(warnings, flowbuilder.WarningOpenEnd+": "+labelOf(a, labels))
 		}
 	}
 	return warnings
@@ -99,7 +124,7 @@ func checkOpenEnds(actions []fmaction.Action) []string {
 // field) reaches from actions[0], using the same edge definition as the
 // layout BFS (computeLayout), so "unreachable" and "placed in the
 // rightmost layout column" always agree.
-func checkUnreachable(actions []fmaction.Action) []string {
+func checkUnreachable(actions []fmaction.Action, labels map[string]string) []string {
 	if len(actions) == 0 {
 		return nil
 	}
@@ -134,7 +159,7 @@ func checkUnreachable(actions []fmaction.Action) []string {
 	var warnings []string
 	for i, a := range actions {
 		if !reached[i] {
-			warnings = append(warnings, flowbuilder.WarningUnreachable+": "+a.ID.String())
+			warnings = append(warnings, flowbuilder.WarningUnreachable+": "+labelOf(a, labels))
 		}
 	}
 	return warnings

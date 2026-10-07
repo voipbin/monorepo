@@ -21,7 +21,7 @@ import (
 // A field added later with no tag, or a new nested-UUID shape on a type that
 // is not excluded, fails this test — see the design doc for why the
 // transcoder only walks scalar and map-value uuid.UUID fields.
-func TestEveryUUIDFieldIsTagged(t *testing.T) {
+func Test_EveryUUIDFieldIsTagged(t *testing.T) {
 	uuidType := reflect.TypeOf(uuid.UUID{})
 	mapUUIDType := reflect.TypeOf(map[string]uuid.UUID{})
 

@@ -150,6 +150,21 @@ func (mr *MockCacheHandlerMockRecorder) BuilderChatCountIncr(ctx, customerID, tt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuilderChatCountIncr", reflect.TypeOf((*MockCacheHandler)(nil).BuilderChatCountIncr), ctx, customerID, ttl)
 }
 
+// BuilderFlowChatCountIncr mocks base method.
+func (m *MockCacheHandler) BuilderFlowChatCountIncr(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuilderFlowChatCountIncr", ctx, customerID, ttl)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BuilderFlowChatCountIncr indicates an expected call of BuilderFlowChatCountIncr.
+func (mr *MockCacheHandlerMockRecorder) BuilderFlowChatCountIncr(ctx, customerID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuilderFlowChatCountIncr", reflect.TypeOf((*MockCacheHandler)(nil).BuilderFlowChatCountIncr), ctx, customerID, ttl)
+}
+
 // Connect mocks base method.
 func (m *MockCacheHandler) Connect() error {
 	m.ctrl.T.Helper()

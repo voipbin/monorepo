@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/builder"
+	"monorepo/bin-ai-manager/models/flowbuilder"
 	"monorepo/bin-ai-manager/pkg/builderhandler"
 	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -15,7 +16,9 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 )
 
-// isBuilderRoute reports whether m is for the Assistant Builder.
+// isBuilderRoute reports whether m is for the Assistant Builder or the Flow
+// Builder (VOIP-1573). Both share this routing so the "route before the log
+// entry exists" guarantee covers both.
 //
 // It compares the URI exactly (no query string, no suffix) and ignores the
 // method. The method is ignored on purpose: a wrong method must be answered by
@@ -24,7 +27,7 @@ import (
 // comparison, not a regular expression, because it runs for every request the
 // service receives.
 func isBuilderRoute(m *sock.Request) bool {
-	return m.URI == builder.URIChat || m.URI == builder.URIStatus
+	return m.URI == builder.URIChat || m.URI == builder.URIStatus || m.URI == flowbuilder.URIChat
 }
 
 // processBuilder handles the Builder routes. processRequest calls it BEFORE it
@@ -50,7 +53,13 @@ func (h *listenHandler) processBuilder(m *sock.Request) (response *sock.Response
 		if r := recover(); r != nil {
 			// r is deliberately not logged or formatted.
 			logrus.WithField("func", "processBuilder").Error("A builder request panicked.")
-			builderhandler.RecordPanic()
+			// Each builder counts its own panics, so the Flow Builder never
+			// shows up in the Assistant Builder's series.
+			if m.URI == flowbuilder.URIChat {
+				builderhandler.RecordFlowPanic()
+			} else {
+				builderhandler.RecordPanic()
+			}
 			response = simpleResponse(http.StatusInternalServerError)
 			err = nil
 		}
@@ -61,6 +70,9 @@ func (h *listenHandler) processBuilder(m *sock.Request) (response *sock.Response
 	switch {
 	case m.URI == builder.URIChat && m.Method == sock.RequestMethodPost:
 		return h.processBuilderChatPost(ctx, m), nil
+
+	case m.URI == flowbuilder.URIChat && m.Method == sock.RequestMethodPost:
+		return h.processFlowBuilderChatPost(ctx, m), nil
 
 	case m.URI == builder.URIStatus && m.Method == sock.RequestMethodGet:
 		return h.processBuilderStatusGet(), nil

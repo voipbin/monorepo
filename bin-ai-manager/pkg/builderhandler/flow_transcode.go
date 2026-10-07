@@ -7,8 +7,8 @@ package builderhandler
 // the LLM client or any RPC; it is unit-tested directly.
 
 import (
-	fmaction "monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-ai-manager/models/flowbuilder"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
 )
@@ -34,10 +34,10 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 	// Step 2: type filter. Remove nodes whose type is not in
 	// allowedTypes, rewiring any reference to the removed node onto its
 	// own `next` (bypass chain, cycle-safe).
-	nodes, w = filterUnsupportedTypes(nodes, allowedTypes)
+	nodes, removed, w, startOK := filterUnsupportedTypes(nodes, allowedTypes)
 	warnings = append(warnings, w...)
 
-	if len(nodes) == 0 {
+	if len(nodes) == 0 || !startOK {
 		return nil, append(warnings, flowbuilder.WarningEmptyDraft)
 	}
 
@@ -55,7 +55,7 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 		id := labelToID[n.Label]
 		idToLabel[id.String()] = n.Label
 
-		opt, w := resolveOption(n, labelToID)
+		opt, w := resolveOption(n, labelToID, removed)
 		warnings = append(warnings, w...)
 
 		var nextID uuid.UUID
@@ -72,7 +72,9 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 			nextID = target
 		} else {
 			nextID = fmaction.IDEmpty
-			warnings = append(warnings, flowbuilder.WarningInvalidLabelRef+": "+n.Label)
+			if !removed[*n.Next] {
+				warnings = append(warnings, flowbuilder.WarningInvalidLabelRef+": "+n.Label)
+			}
 		}
 
 		actions = append(actions, fmaction.Action{
@@ -113,6 +115,8 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 		draft.Labels[a.ID.String()] = idToLabel[a.ID.String()]
 	}
 
+	warnings = append(warnings, ValidateDraft(actions, draft.Labels)...)
+
 	return draft, warnings
 }
 
@@ -146,62 +150,56 @@ func dedupeLabels(nodes []flowbuilder.SymbolicNode) ([]flowbuilder.SymbolicNode,
 }
 
 // filterUnsupportedTypes removes every node whose type is not in
-// allowedTypes, rewiring next/ref:"action" references that pointed at a
-// removed node onto the removed node's own `next`, following the chain with
-// a visited set so a cycle of removed nodes degrades to "no target" instead
-// of looping. If the removed node's own chain also runs out before hitting
-// a surviving node, the reference is cleared.
+// allowedTypes (design doc 3.2 step 2). References that pointed at a removed
+// node are NOT stitched to the removed node's successor: they are cleared by
+// the later steps (resolveOption / next handling) and surface as open_end or
+// empty_action_ref, because LLM output outside the catalog is rare and
+// stitching is deferred until measured.
 //
-// If a removed node happened to be the symbolic "start" (nodes[0] before
-// filtering), the new start is whichever surviving node its own `next`
-// chain resolves to; if that chain never reaches a surviving node, the
-// result is the same as removing everything (step 8's empty-draft case).
-func filterUnsupportedTypes(nodes []flowbuilder.SymbolicNode, allowedTypes map[fmaction.Type]bool) ([]flowbuilder.SymbolicNode, []string) {
-	byLabel := make(map[string]flowbuilder.SymbolicNode, len(nodes))
+// The one exception is the start node. If the first node was removed, the
+// node its next pointed at becomes the new start (moved to index 0). If that
+// cannot be determined (no next, or next also removed), startOK is false and
+// the caller returns an empty draft: a graph without a start is meaningless.
+//
+// removed is the set of labels dropped here, so later steps can clear
+// references to them silently instead of reporting invalid_label_ref.
+func filterUnsupportedTypes(nodes []flowbuilder.SymbolicNode, allowedTypes map[fmaction.Type]bool) (out []flowbuilder.SymbolicNode, removed map[string]bool, warnings []string, startOK bool) {
+	removed = make(map[string]bool)
+	out = make([]flowbuilder.SymbolicNode, 0, len(nodes))
 	for _, n := range nodes {
-		byLabel[n.Label] = n
-	}
-
-	survives := make(map[string]bool, len(nodes))
-	for _, n := range nodes {
-		if allowedTypes[fmaction.Type(n.Type)] {
-			survives[n.Label] = true
-		}
-	}
-
-	// resolve(label) walks the removed-node chain to the first surviving
-	// label (or "" if none), guarding against cycles.
-	resolve := func(label *string) *string {
-		if label == nil {
-			return nil
-		}
-		visited := make(map[string]bool)
-		cur := *label
-		for {
-			if survives[cur] {
-				return &cur
-			}
-			if visited[cur] {
-				return nil // cycle of removed nodes
-			}
-			visited[cur] = true
-			n, ok := byLabel[cur]
-			if !ok || n.Next == nil {
-				return nil
-			}
-			cur = *n.Next
-		}
-	}
-
-	var warnings []string
-	out := make([]flowbuilder.SymbolicNode, 0, len(nodes))
-	for _, n := range nodes {
-		if !survives[n.Label] {
+		if !allowedTypes[fmaction.Type(n.Type)] {
+			removed[n.Label] = true
 			warnings = append(warnings, flowbuilder.WarningUnsupportedAction+": "+n.Label)
 			continue
 		}
-		n.Next = resolve(n.Next)
 		out = append(out, n)
 	}
-	return out, warnings
+	if len(out) == 0 {
+		return out, removed, warnings, false
+	}
+	if len(nodes) > 0 && removed[nodes[0].Label] {
+		if nodes[0].Next == nil {
+			return out, removed, warnings, false
+		}
+		idx := -1
+		for i, n := range out {
+			if n.Label == *nodes[0].Next {
+				idx = i
+				break
+			}
+		}
+		if idx < 0 {
+			return out, removed, warnings, false
+		}
+		start := out[idx]
+		rest := make([]flowbuilder.SymbolicNode, 0, len(out))
+		rest = append(rest, start)
+		for i, n := range out {
+			if i != idx {
+				rest = append(rest, n)
+			}
+		}
+		out = rest
+	}
+	return out, removed, warnings, true
 }

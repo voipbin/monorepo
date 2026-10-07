@@ -19,7 +19,7 @@ func allAllowed(types ...fmaction.Type) map[fmaction.Type]bool {
 	return m
 }
 
-func TestAssembleFlowDraft_LinearHappyPath(t *testing.T) {
+func Test_AssembleFlowDraft_LinearHappyPath(t *testing.T) {
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "greet", Type: string(fmaction.TypeAnswer), Next: strp("talk1")},
 		{Label: "talk1", Type: string(fmaction.TypeTalk), Option: map[string]any{"text": "hello"}, Next: strp("end")},
@@ -40,7 +40,7 @@ func TestAssembleFlowDraft_LinearHappyPath(t *testing.T) {
 	}
 }
 
-func TestAssembleFlowDraft_DuplicateLabelKeepsFirst(t *testing.T) {
+func Test_AssembleFlowDraft_DuplicateLabelKeepsFirst(t *testing.T) {
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "a", Type: string(fmaction.TypeAnswer)},
 		{Label: "a", Type: string(fmaction.TypeHangup)},
@@ -57,29 +57,82 @@ func TestAssembleFlowDraft_DuplicateLabelKeepsFirst(t *testing.T) {
 	}
 }
 
-func TestAssembleFlowDraft_UnsupportedTypeRewiresChain(t *testing.T) {
-	// a -> (unsupported b) -> c. b must be dropped and a's next rewired to c.
+func Test_AssembleFlowDraft_UnsupportedTypeClearsReferenceWithoutStitching(t *testing.T) {
+	// a -> (unsupported b) -> c. b is dropped, a.next is cleared (no
+	// stitching to c), and c becomes unreachable.
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "a", Type: string(fmaction.TypeAnswer), Next: strp("b")},
-		{Label: "b", Type: string(fmaction.TypeCall), Next: strp("c")}, // call: structurally excluded
+		{Label: "b", Type: string(fmaction.TypeCall), Next: strp("c")},
 		{Label: "c", Type: string(fmaction.TypeHangup)},
 	}}
 	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeAnswer, fmaction.TypeHangup))
 	if len(draft.Actions) != 2 {
 		t.Fatalf("len(Actions) = %d, want 2 (b dropped)", len(draft.Actions))
 	}
-	aID := draft.Actions[0]["id"].(string)
-	cID := draft.Actions[1]["id"].(string)
-	if draft.Actions[0]["next_id"] != cID {
-		t.Errorf("a.next_id = %v, want it rewired to c (%s)", draft.Actions[0]["next_id"], cID)
+	if nid, _ := draft.Actions[0]["next_id"].(string); nid != "" && nid != fmaction.IDEmpty.String() {
+		t.Errorf("a.next_id = %v, want cleared", nid)
 	}
-	_ = aID
-	if !containsPrefix(warnings, flowbuilder.WarningUnsupportedAction) {
-		t.Errorf("warnings = %v, want a %s warning", warnings, flowbuilder.WarningUnsupportedAction)
+	for _, want := range []string{flowbuilder.WarningUnsupportedAction, flowbuilder.WarningUnreachable} {
+		if !containsPrefix(warnings, want) {
+			t.Errorf("warnings = %v, want a %s warning", warnings, want)
+		}
+	}
+	if containsPrefix(warnings, flowbuilder.WarningInvalidLabelRef) {
+		t.Errorf("warnings = %v, a reference to a removed node must not be reported as invalid_label_ref", warnings)
 	}
 }
 
-func TestAssembleFlowDraft_AllUnsupportedIsEmptyDraft(t *testing.T) {
+func Test_AssembleFlowDraft_RemovedStartUsesItsNext(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "s", Type: string(fmaction.TypeCall), Next: strp("t")},
+		{Label: "x", Type: string(fmaction.TypeHangup)},
+		{Label: "t", Type: string(fmaction.TypeAnswer), Next: strp("x")},
+	}}
+	draft, _ := AssembleFlowDraft(graph, allAllowed(fmaction.TypeAnswer, fmaction.TypeHangup))
+	if draft == nil || draft.Actions[0]["type"] != string(fmaction.TypeAnswer) {
+		t.Fatalf("draft = %+v, want answer (t) as the new start", draft)
+	}
+}
+
+func Test_AssembleFlowDraft_RemovedStartWithoutUsableNextIsEmpty(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "s", Type: string(fmaction.TypeCall)},
+		{Label: "x", Type: string(fmaction.TypeHangup)},
+	}}
+	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeHangup))
+	if draft != nil || !containsExact(warnings, flowbuilder.WarningEmptyDraft) {
+		t.Errorf("draft = %+v warnings = %v, want empty draft", draft, warnings)
+	}
+}
+
+func Test_AssembleFlowDraft_UnknownOptionKeyDroppedAndReported(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "t", Type: string(fmaction.TypeTalk), Option: map[string]any{"text": "hi", "bogus": 1}},
+	}}
+	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeTalk))
+	opt := draft.Actions[0]["option"].(map[string]any)
+	if _, ok := opt["bogus"]; ok {
+		t.Errorf("option = %v, want bogus dropped", opt)
+	}
+	if opt["text"] != "hi" {
+		t.Errorf("option = %v, want text kept", opt)
+	}
+	if !containsExact(warnings, flowbuilder.WarningInvalidOption+": t.bogus") {
+		t.Errorf("warnings = %v, want invalid_option: t.bogus", warnings)
+	}
+}
+
+func Test_AssembleFlowDraft_BranchWithoutDefaultReportsEmptyActionRef(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "b", Type: string(fmaction.TypeBranch), Option: map[string]any{"variable": "v"}},
+	}}
+	_, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeBranch))
+	if !containsPrefix(warnings, flowbuilder.WarningEmptyActionRef) {
+		t.Errorf("warnings = %v, want empty_action_ref", warnings)
+	}
+}
+
+func Test_AssembleFlowDraft_AllUnsupportedIsEmptyDraft(t *testing.T) {
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "a", Type: string(fmaction.TypeCall)},
 	}}
@@ -92,7 +145,7 @@ func TestAssembleFlowDraft_AllUnsupportedIsEmptyDraft(t *testing.T) {
 	}
 }
 
-func TestAssembleFlowDraft_ResourceFieldAlwaysClearedEvenIfSupplied(t *testing.T) {
+func Test_AssembleFlowDraft_ResourceFieldAlwaysClearedEvenIfSupplied(t *testing.T) {
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "q", Type: string(fmaction.TypeQueueJoin), Option: map[string]any{
 			"queue_id": "11111111-1111-1111-1111-111111111111", // the LLM must never supply a real resource id
@@ -108,7 +161,7 @@ func TestAssembleFlowDraft_ResourceFieldAlwaysClearedEvenIfSupplied(t *testing.T
 	}
 }
 
-func TestAssembleFlowDraft_ActionRefResolvesLabelToUUID(t *testing.T) {
+func Test_AssembleFlowDraft_ActionRefResolvesLabelToUUID(t *testing.T) {
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "g", Type: string(fmaction.TypeGoto), Option: map[string]any{
 			"target_id":  "g", // self-loop by label
@@ -126,7 +179,7 @@ func TestAssembleFlowDraft_ActionRefResolvesLabelToUUID(t *testing.T) {
 	}
 }
 
-func TestAssembleFlowDraft_InvalidLabelRefClearsAndWarns(t *testing.T) {
+func Test_AssembleFlowDraft_InvalidLabelRefClearsAndWarns(t *testing.T) {
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "g", Type: string(fmaction.TypeGoto), Option: map[string]any{
 			"target_id": "does_not_exist",
@@ -142,7 +195,7 @@ func TestAssembleFlowDraft_InvalidLabelRefClearsAndWarns(t *testing.T) {
 	}
 }
 
-func TestAssembleFlowDraft_JumpTypeIgnoresNext(t *testing.T) {
+func Test_AssembleFlowDraft_JumpTypeIgnoresNext(t *testing.T) {
 	// branch is FlowKindJump: `next` must be ignored (and warned if set),
 	// not transcoded to next_id (round-2/3 review findings).
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
@@ -173,7 +226,7 @@ func TestAssembleFlowDraft_JumpTypeIgnoresNext(t *testing.T) {
 	}
 }
 
-func TestAssembleFlowDraft_OpenEndsMoveToBackExceptStart(t *testing.T) {
+func Test_AssembleFlowDraft_OpenEndsMoveToBackExceptStart(t *testing.T) {
 	// start has no next (open end) but must stay first; a true mid-chain
 	// open end must move to the back.
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
@@ -190,27 +243,27 @@ func TestAssembleFlowDraft_OpenEndsMoveToBackExceptStart(t *testing.T) {
 	}
 }
 
-func TestValidateDraft_MissingRequiredField(t *testing.T) {
+func Test_ValidateDraft_MissingRequiredField(t *testing.T) {
 	a := fmaction.Action{ID: fmaction.IDEmpty, Type: fmaction.TypeTalk, Option: map[string]any{}}
-	warnings := ValidateDraft([]fmaction.Action{a})
+	warnings := ValidateDraft([]fmaction.Action{a}, nil)
 	if !containsPrefix(warnings, flowbuilder.WarningMissingRequired) {
 		t.Errorf("warnings = %v, want a %s warning (talk.text is required)", warnings, flowbuilder.WarningMissingRequired)
 	}
 }
 
-func TestValidateDraft_OpenEndExceptLast(t *testing.T) {
+func Test_ValidateDraft_OpenEndExceptLast(t *testing.T) {
 	first := fmaction.Action{ID: mustID(t, "1"), Type: fmaction.TypeAnswer, NextID: fmaction.IDEmpty}
 	last := fmaction.Action{ID: mustID(t, "2"), Type: fmaction.TypeHangup}
-	warnings := ValidateDraft([]fmaction.Action{first, last})
+	warnings := ValidateDraft([]fmaction.Action{first, last}, nil)
 	if !containsPrefix(warnings, flowbuilder.WarningOpenEnd) {
 		t.Errorf("warnings = %v, want a %s warning for the non-last open end", warnings, flowbuilder.WarningOpenEnd)
 	}
 }
 
-func TestValidateDraft_MediaMixed(t *testing.T) {
+func Test_ValidateDraft_MediaMixed(t *testing.T) {
 	talk := fmaction.Action{ID: mustID(t, "1"), Type: fmaction.TypeTalk, Option: map[string]any{"text": "hi"}}
 	aitask := fmaction.Action{ID: mustID(t, "2"), Type: fmaction.TypeAITask, Option: map[string]any{}}
-	warnings := ValidateDraft([]fmaction.Action{talk, aitask})
+	warnings := ValidateDraft([]fmaction.Action{talk, aitask}, nil)
 	if !containsExact(warnings, flowbuilder.WarningMediaMixed) {
 		t.Errorf("warnings = %v, want %s (talk is RTC-only, ai_task is non-RTC-only)", warnings, flowbuilder.WarningMediaMixed)
 	}
@@ -236,9 +289,13 @@ func containsExact(warnings []string, want string) bool {
 
 func mustID(t *testing.T, seed string) uuid.UUID {
 	t.Helper()
-	id, err := uuid.NewV4()
-	if err != nil {
-		t.Fatalf("uuid.NewV4() error = %v", err)
+	ids := map[string]string{
+		"1": "6c73ff34-7f4c-11ec-b4d5-5b94d40e4071",
+		"2": "841c5fa2-f0c2-11ee-834f-53b2b00ec88d",
+	}
+	id := uuid.FromStringOrNil(ids[seed])
+	if id == uuid.Nil {
+		t.Fatalf("no fixed uuid for seed %q", seed)
 	}
 	return id
 }

@@ -78,6 +78,7 @@ type CacheHandler interface {
 
 	// Assistant Builder daily turn counter (see builder.go).
 	BuilderChatCountIncr(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (int64, error)
+	BuilderFlowChatCountIncr(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (int64, error)
 }
 
 // NewHandler creates DBHandler

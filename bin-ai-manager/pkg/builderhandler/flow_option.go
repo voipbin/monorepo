@@ -6,6 +6,11 @@ package builderhandler
 // do with a field; it only reads RefKind.
 
 import (
+	"bytes"
+	"encoding/json"
+	"reflect"
+	"sort"
+
 	"monorepo/bin-ai-manager/models/flowbuilder"
 	"monorepo/bin-ai-manager/pkg/actioncatalog"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -17,7 +22,7 @@ import (
 // LLM put there), then resolves every ref:"action" field's label(s) against
 // labelToID, warning on anything it cannot resolve. Fields with no ref tag
 // pass through untouched.
-func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID) (map[string]any, []string) {
+func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID, removed map[string]bool) (map[string]any, []string) {
 	opt := make(map[string]any, len(n.Option))
 	for k, v := range n.Option {
 		opt[k] = v
@@ -60,7 +65,9 @@ func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID) (
 				}
 				id, ok := labelToID[label]
 				if !ok {
-					warnings = append(warnings, flowbuilder.WarningInvalidLabelRef+": "+n.Label+"."+f.JSONName+"."+key)
+					if !removed[label] {
+						warnings = append(warnings, flowbuilder.WarningInvalidLabelRef+": "+n.Label+"."+f.JSONName+"."+key)
+					}
 					continue // drop the key; branch falls through to its default
 				}
 				resolved[key] = id.String()
@@ -81,11 +88,51 @@ func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID) (
 		id, ok := labelToID[label]
 		if !ok {
 			delete(opt, f.JSONName)
-			warnings = append(warnings, flowbuilder.WarningInvalidLabelRef+": "+n.Label+"."+f.JSONName)
+			if !removed[label] {
+				warnings = append(warnings, flowbuilder.WarningInvalidLabelRef+": "+n.Label+"."+f.JSONName)
+			}
 			continue
 		}
 		opt[f.JSONName] = id.String()
 	}
 
+	// Strict decode (design doc 3.2 step 4): drop keys the option struct
+	// does not know or whose value has the wrong shape, and report each as
+	// invalid_option. Done last so ref fields are already UUID strings.
+	opt, w := dropInvalidOptionKeys(n, opt)
+	warnings = append(warnings, w...)
+
 	return opt, warnings
+}
+
+// dropInvalidOptionKeys keeps only the keys that decode into the action's
+// real OptionXxx struct. It tests each key on its own so one bad key does
+// not discard the others.
+func dropInvalidOptionKeys(n flowbuilder.SymbolicNode, opt map[string]any) (map[string]any, []string) {
+	optAny, ok := fmaction.OptionStructByType[fmaction.Type(n.Type)]
+	if !ok {
+		return opt, nil
+	}
+	keys := make([]string, 0, len(opt))
+	for k := range opt {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	out := make(map[string]any, len(opt))
+	var warnings []string
+	for _, k := range keys {
+		b, err := json.Marshal(map[string]any{k: opt[k]})
+		if err == nil {
+			dec := json.NewDecoder(bytes.NewReader(b))
+			dec.DisallowUnknownFields()
+			err = dec.Decode(reflect.New(reflect.TypeOf(optAny)).Interface())
+		}
+		if err != nil {
+			warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+n.Label+"."+k)
+			continue
+		}
+		out[k] = opt[k]
+	}
+	return out, warnings
 }

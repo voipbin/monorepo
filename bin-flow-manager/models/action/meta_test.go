@@ -6,7 +6,7 @@ import "testing"
 // the flow engine knows about must have a Flow AI Builder Meta declaration,
 // and MetaByType must not carry a stale entry for a type that no longer
 // exists. See VOIP-1573 design doc Appendix B.
-func TestMetaCoversAllTypes(t *testing.T) {
+func Test_MetaCoversAllTypes(t *testing.T) {
 	want := make(map[Type]bool, len(TypeListAll))
 	for _, ty := range TypeListAll {
 		want[ty] = true
@@ -26,7 +26,7 @@ func TestMetaCoversAllTypes(t *testing.T) {
 // a nested []Action, which would make exclusion unnecessary, or a new type
 // gaining a nested []Action/[]Attachment without being added here) is
 // visible instead of silently mis-including/excluding a type.
-func TestBuilderExcludedTypesAreInTypeListAll(t *testing.T) {
+func Test_BuilderExcludedTypesAreInTypeListAll(t *testing.T) {
 	want := map[Type]bool{
 		TypeCall:      true,
 		TypeEmailSend: true,
@@ -51,7 +51,7 @@ func TestBuilderExcludedTypesAreInTypeListAll(t *testing.T) {
 	}
 }
 
-func TestIsBuilderExposable(t *testing.T) {
+func Test_IsBuilderExposable(t *testing.T) {
 	tests := []struct {
 		name string
 		ty   Type

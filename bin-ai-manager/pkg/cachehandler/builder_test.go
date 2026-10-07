@@ -144,3 +144,42 @@ func Test_BuilderChatCountIncr_zeroTTLDoesNotDeleteTheCounter(t *testing.T) {
 		}
 	}
 }
+
+// The Flow Builder counter has its own key, so the two builders never spend
+// each other's daily allowance, and the Assistant key is unchanged.
+func Test_builderFlowChatCountKey(t *testing.T) {
+	customerID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+
+	got := builderFlowChatCountKey(customerID)
+	if got != "ai:flow_builder:chat:count:11111111-2222-3333-4444-555555555555" {
+		t.Errorf("key mismatch. got: %s", got)
+	}
+	if got == builderChatCountKey(customerID) {
+		t.Errorf("the flow builder counter must not share the assistant builder key")
+	}
+}
+
+func Test_BuilderFlowChatCountIncr_isIndependentOfTheAssistantCounter(t *testing.T) {
+	customerID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+
+	h, mr := setupListenTestHandler(t)
+	defer mr.Close()
+
+	ctx := context.Background()
+	for i := 0; i < 3; i++ {
+		if _, err := h.BuilderChatCountIncr(ctx, customerID, time.Hour); err != nil {
+			t.Fatalf("unexpected error. err: %v", err)
+		}
+	}
+
+	got, err := h.BuilderFlowChatCountIncr(ctx, customerID, time.Hour)
+	if err != nil {
+		t.Fatalf("unexpected error. err: %v", err)
+	}
+	if got != 1 {
+		t.Errorf("the flow counter must start at 1 regardless of the assistant counter. got: %d", got)
+	}
+	if ttl := mr.TTL(builderFlowChatCountKey(customerID)); ttl != time.Hour {
+		t.Errorf("the first increment must arm the TTL. expected: %s, got: %s", time.Hour, ttl)
+	}
+}

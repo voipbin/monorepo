@@ -19,16 +19,14 @@ import (
 const (
 	URIChat = "/v1/flow_builder/chat"
 	// No separate status URI: the Flow Builder reuses builder.URIStatus
-	// (design doc §5, Open Question — resolved: avoids a second cache
-	// instance/RPC/OpenAPI surface for an identical availability check).
+	// (design doc 5.1: avoids a second cache instance, RPC and OpenAPI
+	// surface for an identical availability check).
 )
 
-// Message roles accepted from the client. Shared shape with the Assistant
-// Builder's builder.Message, duplicated here (not imported) because the two
-// are independent wire contracts that happen to share a shape today.
+// Message roles accepted from the client, shared with the Assistant Builder.
 const (
-	RoleUser      = "user"
-	RoleAssistant = "assistant"
+	RoleUser      = builder.RoleUser
+	RoleAssistant = builder.RoleAssistant
 )
 
 // Draft-only input limits, in runes/bytes. The conversation-side limits
@@ -36,7 +34,9 @@ const (
 // are builder.MaxMessages etc; see design doc §5.
 const (
 	MaxFlowNodes          = 60   // nodes per draft, initial value, not measured
-	MaxOptionRunes        = 4000 // per-node option, serialized, initial value
+	MaxOptionBytes        = 4096 // per-node option, serialized, initial value
+	MaxOptionDepth        = 8    // option nesting depth
+	MaxDraftBytes         = 240 * 1024
 	MaxLabelRunes         = 64
 	MaxSupportedTypes     = 100
 	MaxSupportedTypeRunes = 64
@@ -73,12 +73,9 @@ const (
 	WarningEmptyDraft        = "empty_draft"
 )
 
-// Message is one chat turn. Assistant entries are the plain-text "message"
-// of an earlier response.
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
+// Message is one chat turn. It is the Assistant Builder's message type so the
+// conversation-side validation (builder.ValidateRequest) is shared as is.
+type Message = builder.Message
 
 // SymbolicNode is one node of the label-addressed graph the LLM produces
 // (design doc §3.1). The builder never asks the model for a UUID or a
@@ -110,10 +107,9 @@ type Position struct {
 // server can deterministically reconstruct the symbolic graph on the next
 // turn without storing anything (design doc §3.2 step 9, §5).
 //
-// Actions is typed as []any (not []action.Action) to keep this package free
-// of a bin-flow-manager import cycle risk and because the wire shape is
-// exactly action.Action's JSON encoding; callers decode/encode through
-// action.Action directly. See builderhandler for the typed conversion.
+// Actions is typed as []map[string]any (not []action.Action): the wire shape
+// is exactly action.Action's JSON encoding, and the client sends back what it
+// received. builderhandler does the typed conversion.
 type Draft struct {
 	Actions   []map[string]any    `json:"actions"`
 	Positions map[string]Position `json:"positions"`
