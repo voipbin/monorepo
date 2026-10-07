@@ -1,6 +1,6 @@
 # VOIP-1569 transcribe 참조 리소스 조회 실패 시 nil 역참조 수정 설계
 
-- 상태: Draft (설계 리뷰 3회차 대기, 2회차 반영)
+- 상태: Draft (설계 리뷰 4회차 대기, 3회차 반영)
 - 티켓: VOIP-1569
 - 선행 문서: docs/plans/2026-10-07-VOIP-1569-transcribe-nil-dereference-analysis.md (이슈 분석, 범위와 사실 확정)
 - 범위: 모노레포 PR 하나(서버 수정과 테스트)와 monorepo-monitoring PR 하나(api-validator 허용 코드). 저장소가 달라 PR 이 둘이다.
@@ -54,6 +54,14 @@
 | recording 삭제됨 | `CallV1RecordingGet` 이 `TMDelete` 가 설정된 recording 반환 | 에러 반환, `errors.Is(err, serviceerrors.ErrNotFound)` 참 |
 | recording typed 에러 | `CallV1RecordingGet` 이 `cerrors.NotFound(...)` 반환 | `var ve *cerrors.VoipbinError` 를 선언해 `errors.As(err, &ve)` 가 참(래핑 뒤에도 typed 에러 유지) |
 
+구현 결정(해석 차이를 없애기 위한 확정 사항).
+
+- 테이블 구조체는 실패 전용으로 새로 정의한다(기존 정상 케이스 테이블과 섞지 않는다). 필드: `name`, `agent`(`*auth.AuthIdentity`), `referenceType`(`conference` 또는 `recording`), `referenceID`, `responseRecording`(`*cmrecording.Recording`, 삭제됨 케이스용), `responseErr`(`error`, RPC 가 반환할 에러), `expectErrIs`(`error`, `errors.Is` 로 확인할 대상, 없으면 nil), `expectTypedErr`(`bool`, typed 에러 케이스 여부).
+- 목 반환값은 케이스에 따라 `(nil, responseErr)` 또는 `(responseRecording, nil)` 으로 설정한다. conference 케이스는 `ConferenceV1ConferenceGet(ctx, referenceID).Return(nil, tt.responseErr)`, recording 케이스는 `CallV1RecordingGet(ctx, referenceID)` 를 쓴다.
+- `errFake` 는 테스트 함수 안의 지역 변수 `errors.New("fake lookup error")` 로 둔다. typed 에러는 `cerrors.NotFound(commonoutline.ServiceNameCallManager, "RECORDING_NOT_FOUND", "recording not found")` 로 만든다(call-manager 가 실제로 반환하는 reason 과 같다).
+- 두 테스트 파일에 같은 케이스를 각각 정의한다. 공용 헬퍼는 두지 않는다(두 파일의 기존 테스트도 서로 독립 정의이며, 헬퍼는 오버엔지니어링).
+- 필요한 import: `errors`, `cerrors`(`monorepo/bin-common-handler/models/errors`), `commonoutline`, `serviceerrors`, `cmrecording`. 파일별로 이미 있는 import 는 중복 추가하지 않는다.
+
 - 모든 케이스에서 `TranscribeV1TranscribeStart` 의 기대를 설정하지 않는다. gomock 은 예상 밖 호출을 실패시키므로, 조회 실패 후 transcribe 요청이 나가지 않음을 별도 단언 없이 보장한다.
 - 에이전트 신원은 해당 함수의 권한 검사를 통과하는 값을 쓴다(`TranscribeStart` 는 `PermissionCustomerAdmin`, `ServiceAgentTranscribeStart` 는 `PermissionCustomerAgent`, 기존 테스트와 같은 값).
 - 패닉 검증: 수정 전 코드에서는 nil 역참조 패닉으로 테스트가 실패한다. 별도의 `recover` 를 두지 않는다(패닉이 곧 실패이며 원인이 로그에 그대로 보인다).
@@ -62,14 +70,22 @@
 
 ### D3. api-validator 수정 (monorepo-monitoring 별도 PR)
 
-분석 문서 5절의 5개 테스트의 허용 코드에 404 를 추가한다. 500 은 제거하지 않는다.
+대상은 아래 5개 테스트의 허용 코드 한 줄과 바로 위 주석이다. 파일과 줄은 검증기 저장소 a8d5bb0 기준이다.
 
-- `tests/scenarios/stt/test_stt_api.py`: `test_create_transcribe_requires_reference_id`, `test_create_transcribe_requires_language`, `test_create_transcribe_requires_direction`
-- `tests/scenarios/stt/test_stt_languages.py`: `test_empty_language_rejected`, `test_invalid_direction_rejected`
-- PR 운영: monorepo-monitoring 의 CLAUDE.md 에는 브랜치와 PR 규칙이 없으므로 전역 규칙을 따른다. 작업은 해당 저장소의 worktree 에서 하고, 브랜치는 `VOIP-1569-Allow-404-in-transcribe-validator-tests`, PR 제목은 브랜치명과 같게, 본문은 서술 한 문단과 `api-validator:` 접두 불릿(마크다운 헤더, Test plan, AI 속성 없음), 커밋 작성자는 pchero21@gmail.com 으로 한다. main 에 직접 푸시하지 않는다.
-- 허용 목록은 `[400, 404, 422, 500]` 로 한다. 주석은 "조회 실패는 404, 검증 실패는 400, 서버 수정 이전의 구버전은 500" 이라는 사실에 맞게 한 줄로 갱신한다.
-- 500 을 남기는 이유: 서버 수정 배포와 검증기 배포 순서에 관계없이 검증기가 빨갛게 되지 않게 한다. 500 의 제거는 서버 수정이 운영에 반영된 뒤 별도로 판단할 일이며 이번 범위가 아니다(오버엔지니어링 지양).
-- 이 변경은 검증기가 서버 버그를 허용하도록 하는 것이 아니라 이미 허용 중인 500 에 올바른 응답을 추가하는 것이다. 이 저장소에는 `stt` 테스트 전반이 `[... 404, 500]` 형태를 이미 쓰고 있어 일관적이다.
+| 파일 | 테스트 | assert 줄 | 갱신할 주석 줄 |
+|---|---|---|---|
+| tests/scenarios/stt/test_stt_api.py | `test_create_transcribe_requires_reference_id` | 117 | 116 |
+| 같은 파일 | `test_create_transcribe_requires_language` | 139 | 132 (133행의 "Retry on transient 401" 주석은 그대로 둔다) |
+| 같은 파일 | `test_create_transcribe_requires_direction` | 155 | 154 |
+| tests/scenarios/stt/test_stt_languages.py | `test_empty_language_rejected` | 114 | 113 |
+| 같은 파일 | `test_invalid_direction_rejected` | 183 | 182 |
+
+- 변경 내용: assert 의 `[400, 422, 500]` 을 `[400, 404, 422, 500]` 으로 바꾼다. 그 외 줄(에러 메시지 문자열 포함)은 바꾸지 않는다.
+- 주석 문구는 파일별로 정한다. `test_stt_api.py` 의 3곳은 기존 "API may return 400, 422, or 500 for validation errors" 를 "API may return 400, 404, 422, or 500 (404 when the referenced resource does not exist, 500 on servers before the lookup fix)" 로 바꾼다. `test_stt_languages.py` 의 2곳은 기존 "Should reject with error - 500 is also acceptable" 를 "Should reject with error - 404 (reference not found) or 500 (servers before the lookup fix) are also acceptable" 로 바꾼다.
+- 변경하지 않는 테스트(같은 `[400, 422, 500]` 형태이지만 영향이 없음): `test_stt_api.py::test_create_transcribe_requires_reference_type`(101행), `test_stt_languages.py::test_invalid_reference_type_rejected`(232행), `test_stt_api.py::test_create_with_empty_body_returns_error`(허용 `[400, 401, 422, 500]`). 이 셋은 reference_type 이 비었거나 잘못된 값이라 조회 이전에 400 으로 끝난다(분석 문서 5절).
+- 500 은 제거하지 않는다. 서버 수정 배포와 검증기 배포 순서에 관계없이, 그리고 서버 롤백 시에도 검증기가 빨갛게 되지 않게 하기 위해서다. 500 제거는 서버 수정이 운영에 반영된 뒤 별도로 판단할 일이며 이번 범위가 아니다(오버엔지니어링 지양).
+- 이 변경은 검증기가 서버 버그를 허용하도록 하는 것이 아니라, 이미 허용 중인 500 에 올바른 응답(404)을 추가하는 것이다. 이 저장소의 `stt` 테스트 중 일부(`test_stt_api.py` 2건, `test_stt_events.py` 5건, `test_stt_languages.py` 5건)는 이미 `404, 500` 을 함께 허용하는 형태를 쓰고 있어 일관적이다.
+- PR 운영: monorepo-monitoring 의 CLAUDE.md 에는 브랜치와 PR 규칙이 없으므로 전역 규칙을 따른다. 작업은 해당 저장소의 worktree 에서 하고(저장소에 `.worktrees` 가 아직 없으면 `git worktree add` 로 만든다), 브랜치는 `VOIP-1569-Allow-404-in-transcribe-validator-tests`, PR 제목은 브랜치명과 같게, 본문은 서술 한 문단과 `api-validator:` 접두 불릿(마크다운 헤더, Test plan, AI 속성 없음), 커밋 작성자는 pchero21@gmail.com 으로 한다. main 에 직접 푸시하지 않는다.
 
 ### D4. OpenAPI 와 문서
 
@@ -79,9 +95,10 @@
 ### D5. 배포와 호환
 
 - 모노레포 PR 은 api-manager 한 서비스의 동작 변경이다. API 계약, 이벤트, DB 변경이 없다.
-- 동작 변화: 존재하지 않는 recording, conference id 와 삭제된 recording 으로의 POST /transcribes 가 500(패닉)에서 조회 실패 상태코드(typed 에러는 404 등, 일시 장애는 503 계열)로 바뀐다.
-- 배포 순서: 제약이 없다. 검증기 PR 이 먼저 나가면 허용 목록이 넓어질 뿐이라 안전하다. 서버 수정이 먼저 나가면 검증기 5개 테스트가 반환 코드를 404 로 받아 실패하므로, 검증기 PR 을 먼저 머지하거나 같은 시점에 배포한다(권고 순서).
+- 동작 변화: 존재하지 않는 recording, conference id 와 삭제된 recording 으로의 POST /transcribes 가 500(패닉)에서 조회 에러에 대응하는 상태코드로 바뀐다. `translateToVoipbinError` 기준으로 typed 에러는 자신의 상태코드(예: RECORDING_NOT_FOUND 는 404), `ErrNotFound` 는 404, `ErrServiceUnavailable` 과 context 취소, 타임아웃은 503, sentinel 이 없는 일반 에러는 `INTERNAL`(500)이다.
+- 배포 순서의 영향: 서버 수정이 검증기 PR 보다 먼저 나가면 검증기 5개 테스트가 404 를 받아 실패(적색)한다. 검증기 PR 이 먼저 나가면 허용 목록에 500 과 404 가 모두 있어 안전하다. 따라서 검증기 PR 을 먼저 머지한다.
 - 롤백: 서버 수정을 되돌려도 허용 목록에 500 이 남아 있어 검증기가 영향을 받지 않는다.
+- PR 연결: 검증기 PR 을 먼저 만들어 번호를 확보한 뒤 모노레포 PR 을 만든다. 모노레포 PR 본문에는 `api-validator: <검증기 PR URL>, merge before this PR` 형태의 불릿으로 연결과 머지 순서를 적는다(헤더와 Test plan 은 쓰지 않는다). 머지는 대표님이 각각 지시한다.
 
 ## 3. 변경 파일 목록
 
@@ -101,6 +118,6 @@ monorepo-monitoring.
 
 ## 4. 위험
 
-- 검증기가 반환 코드를 404 로 받는다는 전제: 분석 문서 5절에서 call-manager 의 recording 조회 경로를 추적해 nil UUID 와 무작위 UUID 모두 typed `RECORDING_NOT_FOUND`(404)가 됨을 확인했다. 일시 장애 시 503 이 나올 수 있으나 검증기 목록에 503 은 없다. 이는 장애 시에만 발생하며 이번 변경 이전의 500 과 같은 성격이라 수용한다.
+- 검증기가 반환 코드를 404 로 받는다는 전제: 분석 문서 5절에서 call-manager 의 recording 조회 경로를 추적해 nil UUID 와 무작위 UUID 모두 typed `RECORDING_NOT_FOUND`(404)가 됨을 확인했다. 허용 목록에 500 이 남아 있어 이 전제가 어긋나도 검증기는 실패하지 않는다. 다만 call-manager 가 일시적으로 응답하지 않아 타임아웃이나 `ErrServiceUnavailable` 로 503 이 반환되면 검증기 5개 테스트는 새로 실패할 수 있다(기존에는 이 상황이 500 으로 허용되었다). 이는 인프라 장애 시에만 발생하며 해당 시점에는 검증기 전체가 이미 영향을 받으므로 수용한다.
 - 모노레포 PR 본문에 `break` 4곳 변이 시험 결과를 적는다.
 - 검증기 저장소의 skip 마커 무효화(재대입) 문제는 이번 범위가 아니며 발견만 기록한다.
