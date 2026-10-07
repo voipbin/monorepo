@@ -68,7 +68,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "reference_id", Type: "uuid", Required: true, Description: "Id of the resource to summarize."},
 		{Name: "language", Type: "string", Required: false, Description: "Output language (IETF locale, e.g. en-US)."},
 	}},
-	{Type: fmaction.TypeAITalk, Summary: "Start an AI voice conversation on the call.", Options: []actionOptionField{
+	{Type: fmaction.TypeAITalk, Summary: "Start an AI conversation on the call or in a chat conversation. Any other trigger (API, campaign) makes the flow stop with an error.", Options: []actionOptionField{
 		{Name: "ai_id", Type: "uuid", Required: false, Description: "Deprecated; use assistance_type + assistance_id."},
 		{Name: "assistance_type", Type: "string", Required: true, Description: "\"ai\" or \"team\"."},
 		{Name: "assistance_id", Type: "uuid", Required: true, Description: "Id of the AI or team to converse with."},
@@ -82,11 +82,11 @@ var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeBeep, Summary: "Play a beep tone on the call.", Options: nil},
 	{Type: fmaction.TypeBlock, Summary: "Internal grouping/block action.", Options: nil},
 	{Type: fmaction.TypeBranch, Summary: "Branch the flow to different actions based on a variable / received DTMF.", Options: []actionOptionField{
-		{Name: "variable", Type: "string", Required: false, Description: "Variable to branch on (defaults to received digits)."},
+		{Name: "variable", Type: "string", Required: false, Description: "Variable to branch on (defaults to received digits). The variable is cleared after the branch reads it, so a later node cannot read it again."},
 		{Name: "default_target_id", Type: "uuid", Required: false, Description: "Action id to go to when no target matches. Left out, an unmatched value (including no input at all) stops the flow."},
 		{Name: "target_ids", Type: "object (map of value -> action id)", Required: true, Description: "Map of matched value to the action id to jump to."},
 	}},
-	{Type: fmaction.TypeCaseCreate, Summary: "Create a new CRM case for the current call/conversation's contact. No-op if the reference type is not call/conversation, the peer is not CRM-eligible, or a case already exists for this activeflow.", Options: []actionOptionField{
+	{Type: fmaction.TypeCaseCreate, Summary: "Create a new CRM case for the current call/conversation's contact. No-op if the reference type is not call/conversation, the peer is not CRM-eligible, or an open case already exists for the same customer (caller). In that last case nothing is created and name, detail and note are dropped without an error.", Options: []actionOptionField{
 		{Name: "name", Type: "string", Required: false, Description: "Short case title."},
 		{Name: "detail", Type: "string", Required: false, Description: "Longer free-text description of the issue."},
 		{Name: "note", Type: "string", Required: false, Description: "An initial internal note for the agent (not shown to the customer)."},
@@ -235,7 +235,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "direction", Type: "string", Required: false, Description: "in|out|both (default both)."},
 	}},
 	{Type: fmaction.TypeTranscribeStop, Summary: "Stop live transcription.", Options: nil},
-	{Type: fmaction.TypeTranscribeRecording, Summary: "Transcribe all recordings of the current call. It cannot pick one recording and does nothing outside a phone call.", Options: []actionOptionField{
+	{Type: fmaction.TypeTranscribeRecording, Summary: "Transcribe the finished, stored recordings of the current call. It cannot pick one recording and does nothing outside a phone call. A recording that is still running or was just stopped has no stored file yet, so nothing is transcribed and no error is raised: use transcribe_start for live transcription during the call.", Options: []actionOptionField{
 		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. ko-KR. Left out it is en-US, so set it for any other language."},
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when transcription ends."},
 		{Name: "provider", Type: "string", Required: false, Description: "Not applied by the executor today: the default provider is used."},
@@ -249,7 +249,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait until the request is queued. The flow never waits for the remote server's answer and cannot use it."},
 		{Name: "uri", Type: "string", Required: true, Description: "Target URL."},
 		{Name: "method", Type: "string (POST|GET|PUT|DELETE)", Required: false, Description: "HTTP method. Empty means GET."},
-		{Name: "data_type", Type: "string", Required: false, Description: "Content type, e.g. application/json."},
+		{Name: "data_type", Type: "string", Required: false, Description: "Content type. Set application/json for a JSON body: left empty, no Content-Type header is sent."},
 		{Name: "data", Type: "string", Required: true, Description: "Request body as JSON text, for example {\"event\":\"done\"}. It must be valid JSON: an empty or plain-text body is rejected and nothing is sent."},
 	}},
 }

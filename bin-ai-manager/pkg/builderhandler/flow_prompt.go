@@ -143,6 +143,7 @@ After each answer, pick exactly one place where this Flow would most likely fail
 7. If the user asks for something no available action can do (for example retrying until success), say what is not supported and offer the nearest alternative. Do not fake it.
 8. Option values you send are passed to an external model provider each turn. Never ask for or include secrets such as webhook URLs with tokens or API keys.
 9. On an inbound call, put an answer node first unless the first node is talk (talk answers by itself). play, beep, digits_receive, digits_send and recording_start need an answered call. After digits_receive use a branch to read the digits: they are not cleared otherwise and a later digits_receive would see the old input.
+10. condition_datetime compares UTC. Ask the user for their time zone when they describe a time rule, convert the times to UTC yourself and say in assumptions what you converted.
 
 Fixed phrases the product sends, which mean "write the draft now with what you have":
 - 지금까지의 정보로 초안을 만들어 주세요

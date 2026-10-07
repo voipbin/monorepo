@@ -846,3 +846,30 @@ func Test_FlowSystemPrompt_tellsToAnswerAnInboundCallFirst(t *testing.T) {
 		}
 	}
 }
+
+// Review round 10 (S): facts about case_create and transcribe_recording that
+// differ from what their names suggest (contact-manager casehandler create.go
+// swallows AlreadyExists; transcripthandler recording.go lists stored files).
+func Test_FlowCatalog_statesWhatTheThirdAuditFound(t *testing.T) {
+	tests := []struct {
+		ty   fmaction.Type
+		want []string
+	}{
+		{fmaction.TypeCaseCreate, []string{"open case already exists for the same customer", "dropped without an error"}},
+		{fmaction.TypeTranscribeRecording, []string{"finished, stored recordings", "use transcribe_start"}},
+		{fmaction.TypeAITalk, []string{"Any other trigger"}},
+		{fmaction.TypeBranch, []string{"cleared after the branch reads it"}},
+		{fmaction.TypeWebhookSend, []string{"no Content-Type header is sent"}},
+	}
+	for _, tt := range tests {
+		cat := FlowCatalog([]fmaction.Type{tt.ty})
+		for _, w := range tt.want {
+			if !strings.Contains(cat, w) {
+				t.Errorf("Wrong match. expect %q in the %s catalog:\n%s", w, tt.ty, cat)
+			}
+		}
+	}
+	if p := FlowSystemPrompt([]fmaction.Type{fmaction.TypeConditionDatetime}); !strings.Contains(p, "Ask the user for their time zone") {
+		t.Errorf("Wrong match. expect the time zone rule in the system prompt")
+	}
+}
