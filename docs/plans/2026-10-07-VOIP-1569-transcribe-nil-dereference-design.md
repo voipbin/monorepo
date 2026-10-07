@@ -1,6 +1,6 @@
 # VOIP-1569 transcribe 참조 리소스 조회 실패 시 nil 역참조 수정 설계
 
-- 상태: Draft (설계 리뷰 6회차 대기, 5회차 반영)
+- 상태: Draft (설계 리뷰 7회차 대기, 6회차 반영)
 - 티켓: VOIP-1569
 - 선행 문서: docs/plans/2026-10-07-VOIP-1569-transcribe-nil-dereference-analysis.md (이슈 분석, 범위와 사실 확정)
 - 범위: 모노레포 PR 하나(서버 수정과 테스트)와 monorepo-monitoring PR 하나(api-validator 허용 코드). 저장소가 달라 PR 이 둘이다.
@@ -58,7 +58,7 @@
 
 - 테이블 구조체는 실패 전용으로 새로 정의한다(기존 정상 케이스 테이블과 섞지 않는다). 필드: `name`, `agent`(`*auth.AuthIdentity`), `referenceType`(`conference` 또는 `recording`), `referenceID`, `responseRecording`(`*cmrecording.Recording`, 삭제됨 케이스용), `responseErr`(`error`, RPC 가 반환할 에러), `expectErrIs`(`error`, `errors.Is` 로 확인할 대상, 없으면 nil), `expectTypedErr`(`bool`, typed 에러 케이스 여부).
 - 목 반환값은 케이스에 따라 `(nil, responseErr)` 또는 `(responseRecording, nil)` 으로 설정한다. conference 케이스는 `ConferenceV1ConferenceGet(ctx, referenceID).Return(nil, tt.responseErr)`, recording 케이스는 `CallV1RecordingGet(ctx, referenceID)` 를 쓴다.
-- `errFake` 는 테스트 함수 안의 지역 변수 `errors.New("fake lookup error")` 로 둔다. typed 에러는 `cerrors.NotFound(commonoutline.ServiceNameCallManager, "RECORDING_NOT_FOUND", "recording not found")` 로 만든다(call-manager 가 실제로 반환하는 reason 과 같다).
+- `errFake` 는 테스트 함수 안의 지역 변수 `errors.New("fake lookup error")` 로 둔다. typed 에러는 `cerrors.NotFound(commonoutline.ServiceNameCallManager, "RECORDING_NOT_FOUND", "The recording was not found.")` 로 만든다(call-manager 가 실제로 반환하는 reason 과 같다).
 - 두 테스트 파일에 같은 케이스를 각각 정의한다. 공용 헬퍼는 두지 않는다(두 파일의 기존 테스트도 서로 독립 정의이며, 헬퍼는 오버엔지니어링).
 - 필요한 import: `errors`, `cerrors`(`monorepo/bin-common-handler/models/errors`), `commonoutline`, `serviceerrors`, `cmrecording`. 파일별로 이미 있는 import 는 중복 추가하지 않는다.
 
@@ -83,7 +83,7 @@
 - 변경 내용: assert 의 `[400, 422, 500]` 을 `[400, 404, 422, 500]` 으로 바꾼다. 그 외 줄(에러 메시지 문자열 포함)은 바꾸지 않는다.
 - 주석 문구는 파일별로 정한다. `test_stt_api.py` 의 3곳은 기존 "API may return 400, 422, or 500 for validation errors" 를 "API may return 400, 404, 422, or 500 (404 when the referenced resource does not exist, 500 on servers before the lookup fix)" 로 바꾼다. `test_stt_languages.py` 의 2곳은 기존 "Should reject with error - 500 is also acceptable" 를 "Should reject with error - 404 (reference not found) or 500 (servers before the lookup fix) are also acceptable" 로 바꾼다.
 - 변경하지 않는 테스트(같은 `[400, 422, 500]` 형태이지만 영향이 없음): `test_stt_api.py::test_create_transcribe_requires_reference_type`(101행), `test_stt_languages.py::test_invalid_reference_type_rejected`(232행), `test_stt_api.py::test_create_with_empty_body_returns_error`(허용 `[400, 401, 422, 500]`). 이 셋은 reference_type 이 비었거나 잘못된 값이라 조회 이전에 400 으로 끝난다(분석 문서 5절).
-- 500 은 제거하지 않는다. 서버 수정 배포와 검증기 배포 순서에 관계없이, 그리고 서버 롤백 시에도 검증기가 빨갛게 되지 않게 하기 위해서다. 500 제거는 서버 수정이 운영에 반영된 뒤 별도로 판단할 일이며 이번 범위가 아니다(오버엔지니어링 지양).
+- 500 은 제거하지 않는다. 검증기가 먼저 배포된 상태에서 서버 수정이 나가기 전후, 그리고 서버 롤백 시에도 검증기가 빨갛게 되지 않게 하기 위해서다(서버가 검증기 재배포보다 먼저 나가는 경우는 D5 에서 다룬다). 500 제거는 서버 수정이 운영에 반영된 뒤 별도로 판단할 일이며 이번 범위가 아니다(오버엔지니어링 지양).
 - 이 변경은 검증기가 서버 버그를 허용하도록 하는 것이 아니라, 이미 허용 중인 500 에 올바른 응답(404)을 추가하는 것이다. 이 저장소의 `stt` 테스트 중 여럿(`test_stt_api.py`, `test_stt_events.py`, `test_stt_languages.py`)은 이미 404 와 500 을 함께 허용하는 형태를 쓰고 있어 일관적이다.
 - PR 운영: monorepo-monitoring 의 CLAUDE.md("Git Workflow Preferences", 291-313행)에는 두 가지 규칙이 있다. (a) 브랜치 형식 `NOJIRA-Underscored_change`(밑줄)와 브랜치 생성 전 사용자 확인, (b) 항상 worktree 에서 작업. 실제 운영과의 관계는 다음과 같이 정한다.
   - 브랜치 형식: 이 저장소의 로컬 브랜치는 모두 대시 형식이고(`ETC-11-conversation-account-400-tolerance`, `NOJIRA-Add-contact-addresses-cases-test-coverage` 등), 원격 브랜치는 대시가 다수이며 밑줄 형식(`VOIP-1400_Fix_sip_watchdog_stale_domain` 등)이 일부 남아 있다. 최근 관례와 전역 지침이 대시이므로 대시 형식을 쓴다: `VOIP-1569-Allow-404-in-transcribe-validator-tests`.
