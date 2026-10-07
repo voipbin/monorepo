@@ -36,6 +36,7 @@ graph TD
 | `pkg/streamhandler/` | Audio streaming | Audiosocket protocol handler for AI/Pipecat audio path |
 | `pkg/pubsubhandler/` | In-process pub/sub | Broker + per-WebSocket subscribers; prefix-matched event fan-out from subscribehandler to WebSocket connections |
 | `lib/middleware/` | HTTP middleware | Per-IP rate limiting, JWT/accesskey authentication, customer frozen check |
+| `lib/logmask/` | Log credential masking | Masks `accesskey` and `token` (query and cookies) in the gin access log and panic recovery dump |
 | `gens/openapi_server/` | Generated code | oapi-codegen output from `bin-openapi-manager/openapi/openapi.yaml` |
 
 ### Code Generation
