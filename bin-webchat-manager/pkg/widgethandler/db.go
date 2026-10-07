@@ -130,7 +130,7 @@ func (h *widgetHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) 
 		log.Errorf("Could not regenerate direct hash. err: %v", err)
 		return nil, err
 	}
-	log.WithField("direct", d).Debugf("Direct hash regenerated. direct_id: %s", d.ID)
+	log.WithFields(d.LogFields()).Debugf("Direct hash regenerated. direct_id: %s", d.ID)
 
 	// persist the newly regenerated hash string onto the widget --
 	// direct-manager owns the value, but the widget keeps a

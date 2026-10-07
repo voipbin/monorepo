@@ -78,9 +78,9 @@ func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "startIncomingDomainTypeSIPDirect",
 		"channel_id": cn.ID,
-		"hash":       hash,
+		"hash":       dmdirect.MaskHash(hash),
 	})
-	log.Debugf("Starting direct call handler. hash: %s", hash)
+	log.Debugf("Starting direct call handler. hash: %s", dmdirect.MaskHash(hash))
 
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeTel)
 
@@ -91,7 +91,7 @@ func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination)
 		return nil
 	}
-	log.WithField("direct", d).Debugf("Retrieved direct info. direct_id: %s, resource_type: %s, resource_id: %s", d.ID, d.ResourceType, d.ResourceID)
+	log.WithFields(d.LogFields()).Debugf("Retrieved direct info. direct_id: %s, resource_type: %s, resource_id: %s", d.ID, d.ResourceType, d.ResourceID)
 
 	// dispatch by resource type
 	switch d.ResourceType {

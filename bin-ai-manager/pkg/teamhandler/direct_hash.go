@@ -42,7 +42,7 @@ func (h *teamHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*
 			return nil, fmt.Errorf("could not create direct hash: %w", err)
 		}
 	}
-	log.WithField("direct", d).Debugf("Direct hash regenerated. direct_id: %s, hash: %s", d.ID, d.Hash)
+	log.WithFields(d.LogFields()).Debugf("Direct hash regenerated. direct_id: %s", d.ID)
 
 	// update team with new direct info
 	fields := map[team.Field]any{

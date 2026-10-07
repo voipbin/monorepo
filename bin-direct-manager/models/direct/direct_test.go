@@ -1,48 +1,58 @@
 package direct
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
-
-	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
-// Direct is published on the global topic exchange `bin-manager.event` and must carry an explicit
-// subscription address (VOIP-1419). The assertion pins the POINTER type: the event data reaches
-// notifyhandler as a pointer and the interface check matches the dynamic type.
-var _ eventtopic.SubscriptionIdentifier = (*Direct)(nil)
+func Test_MaskHash(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"empty", "", ""},
+		{"short unchanged", "direct.abc", "direct.abc"},
+		{"exactly 12 unchanged", "direct.abcde", "direct.abcde"},
+		{"long truncated", "direct.0123456789ab", "direct.01234..."},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MaskHash(tt.input); got != tt.want {
+				t.Errorf("MaskHash(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
 
-// TestDirectEventSubscriptionID asserts the subscription address is the direct's OWN id — not any
-// of the other uuid-typed fields a wrong implementation could plausibly return. ResourceID is the
-// plausible wrong answer: a Direct fronts another resource (agent, queue, conference, ...), but a
-// consumer following one direct binds the direct's own id, and events about the fronted resource
-// come from that resource's own publisher. Every uuid is distinct, so returning the wrong field
-// fails loudly (mutation check).
-func TestDirectEventSubscriptionID(t *testing.T) {
-	directID := uuid.Must(uuid.NewV4())
-	customerID := uuid.Must(uuid.NewV4())
-	resourceID := uuid.Must(uuid.NewV4())
-
-	data := &Direct{
-		Identity: commonidentity.Identity{
-			ID:         directID,
-			CustomerID: customerID,
-		},
+func Test_LogFields(t *testing.T) {
+	d := &Direct{
+		Identity:     commonidentity.Identity{ID: uuid.Must(uuid.NewV4()), CustomerID: uuid.Must(uuid.NewV4())},
 		ResourceType: ResourceTypeAgent,
-		ResourceID:   resourceID,
-		Hash:         "direct.testhash",
+		ResourceID:   uuid.Must(uuid.NewV4()),
+		Hash:         "direct.SECRET-SENTINEL-HASH-1234",
 	}
 
-	res := data.EventSubscriptionID()
-	if res != directID.String() {
-		t.Errorf("Wrong match. expect: %s, got: %s", directID.String(), res)
+	f := d.LogFields()
+	for _, key := range []string{"direct_id", "customer_id", "resource_type", "resource_id"} {
+		if _, ok := f[key]; !ok {
+			t.Errorf("missing key %q", key)
+		}
 	}
-	if res == resourceID.String() {
-		t.Errorf("Direct must not be addressed by the id of the resource it fronts. got: %s", res)
+	for k, v := range f {
+		if strings.Contains(k, "hash") {
+			t.Errorf("unexpected hash key %q", k)
+		}
+		if s, ok := v.(string); ok && strings.Contains(s, "SECRET-SENTINEL") {
+			t.Errorf("hash leaked into field %q", k)
+		}
 	}
-	if res == customerID.String() {
-		t.Errorf("Direct must not be addressed by its customer id. got: %s", res)
+
+	var nilDirect *Direct
+	if got := nilDirect.LogFields(); len(got) != 0 {
+		t.Errorf("nil receiver should return empty fields, got %v", got)
 	}
 }

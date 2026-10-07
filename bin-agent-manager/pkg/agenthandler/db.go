@@ -95,7 +95,7 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 		return nil, fmt.Errorf("could not create direct hash: %w", err)
 	}
 	metricshandler.RPCCallTotal.WithLabelValues("direct-manager", "DirectCreate", "success").Inc()
-	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+	log.WithFields(d.LogFields()).Debugf("Created direct hash. direct_id: %s", d.ID)
 
 	a := &agent.Agent{
 		Identity: commonidentity.Identity{

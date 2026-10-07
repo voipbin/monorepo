@@ -148,11 +148,8 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	var response *sock.Response
 
 	ctx := context.Background()
-	log := logrus.WithFields(
-		logrus.Fields{
-			"request": m,
-		})
-	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
+	log := logrus.WithFields(requestLogFields(m))
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, maskURI(m.URI))
 
 	start := time.Now()
 	switch {
@@ -197,7 +194,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, m.URI)
+		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, maskURI(m.URI))
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"
@@ -208,7 +205,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// default error handler — typed errors and ErrNotFound flow through
 	// errorResponse; other errors keep legacy 400.
 	if err != nil {
-		log.Errorf("Could not handle the message correctly. method: %s, uri: %s, err: %v", m.Method, m.URI, err)
+		log.Errorf("Could not handle the message correctly. method: %s, uri: %s, err: %v", m.Method, maskURI(m.URI), err)
 		var ve *cerrors.VoipbinError
 		switch {
 		case stderrors.As(err, &ve):
@@ -220,11 +217,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		}
 		err = nil
 	} else {
-		log.WithFields(
-			logrus.Fields{
-				"response": response,
-			},
-		).Debugf("Sending response. method: %s, uri: %s", m.Method, m.URI)
+		log.WithFields(responseLogFields(response)).Debugf("Sending response. method: %s, uri: %s", m.Method, maskURI(m.URI))
 	}
 
 	return response, err

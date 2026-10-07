@@ -115,7 +115,7 @@ func (h *flowHandler) Create(
 			log.Errorf("Could not create direct hash. err: %v", errDirect)
 			// best-effort: flow is created without direct hash, can be regenerated later
 		} else {
-			log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+			log.WithFields(d.LogFields()).Debugf("Created direct hash. direct_id: %s", d.ID)
 			directID = d.ID
 			directHash = d.Hash
 		}

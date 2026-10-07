@@ -35,7 +35,7 @@ func (h *listenHandler) processV1DirectsGet(ctx context.Context, req *sock.Reque
 		"size":  pageSize,
 		"token": pageToken,
 	})
-	log.WithField("request", req).Debug("Received request.")
+	log.WithFields(requestLogFields(req)).Debug("Received request.")
 
 	// get filters from request body
 	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(req.Data)
@@ -59,7 +59,7 @@ func (h *listenHandler) processV1DirectsGet(ctx context.Context, req *sock.Reque
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -85,7 +85,7 @@ func (h *listenHandler) processV1DirectsIDGet(ctx context.Context, m *sock.Reque
 			"func":      "processV1DirectsIDGet",
 			"direct_id": id,
 		})
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(requestLogFields(m)).Debug("Received request.")
 
 	tmp, err := h.directHandler.Get(ctx, id)
 	if err != nil {
@@ -97,7 +97,7 @@ func (h *listenHandler) processV1DirectsIDGet(ctx context.Context, m *sock.Reque
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -121,9 +121,9 @@ func (h *listenHandler) processV1DirectsByHashGet(ctx context.Context, m *sock.R
 	log := logrus.WithFields(
 		logrus.Fields{
 			"func": "processV1DirectsByHashGet",
-			"hash": hash,
+			"hash": direct.MaskHash(hash),
 		})
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(requestLogFields(m)).Debug("Received request.")
 
 	tmp, err := h.directHandler.GetByHash(ctx, hash)
 	if err != nil {
@@ -135,7 +135,7 @@ func (h *listenHandler) processV1DirectsByHashGet(ctx context.Context, m *sock.R
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -154,7 +154,7 @@ func (h *listenHandler) processV1DirectsPost(ctx context.Context, m *sock.Reques
 		logrus.Fields{
 			"func": "processV1DirectsPost",
 		})
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(requestLogFields(m)).Debug("Received request.")
 
 	var reqData request.V1DataDirectsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
@@ -179,7 +179,7 @@ func (h *listenHandler) processV1DirectsPost(ctx context.Context, m *sock.Reques
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -205,7 +205,7 @@ func (h *listenHandler) processV1DirectsIDDelete(ctx context.Context, m *sock.Re
 			"func":      "processV1DirectsIDDelete",
 			"direct_id": id,
 		})
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(requestLogFields(m)).Debug("Received request.")
 
 	tmp, err := h.directHandler.Delete(ctx, id)
 	if err != nil {
@@ -215,7 +215,7 @@ func (h *listenHandler) processV1DirectsIDDelete(ctx context.Context, m *sock.Re
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -241,7 +241,7 @@ func (h *listenHandler) processV1DirectsIDRegenerate(ctx context.Context, m *soc
 			"func":      "processV1DirectsIDRegenerate",
 			"direct_id": id,
 		})
-	log.WithField("request", m).Debug("Received request.")
+	log.WithFields(requestLogFields(m)).Debug("Received request.")
 
 	tmp, err := h.directHandler.Regenerate(ctx, id)
 	if err != nil {
@@ -251,7 +251,7 @@ func (h *listenHandler) processV1DirectsIDRegenerate(ctx context.Context, m *soc
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 

@@ -35,7 +35,7 @@ func (h *queueHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (
 			log.Errorf("Could not regenerate direct hash. err: %v", err)
 			return nil, fmt.Errorf("could not regenerate direct hash: %w", err)
 		}
-		log.WithField("direct", d).Debugf("Direct hash regenerated. direct_id: %s, hash: %s", d.ID, d.Hash)
+		log.WithFields(d.LogFields()).Debugf("Direct hash regenerated. direct_id: %s", d.ID)
 		directID = d.ID
 		directHash = d.Hash
 	} else {
@@ -44,7 +44,7 @@ func (h *queueHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (
 			log.Errorf("Could not create direct hash. err: %v", err)
 			return nil, fmt.Errorf("could not create direct hash: %w", err)
 		}
-		log.WithField("direct", d).Debugf("Direct hash created. direct_id: %s, hash: %s", d.ID, d.Hash)
+		log.WithFields(d.LogFields()).Debugf("Direct hash created. direct_id: %s", d.ID)
 		directID = d.ID
 		directHash = d.Hash
 	}

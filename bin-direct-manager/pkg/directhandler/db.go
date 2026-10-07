@@ -2,6 +2,7 @@ package directhandler
 
 import (
 	"context"
+	"sort"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -13,7 +14,7 @@ import (
 func (h *directHandler) dbList(ctx context.Context, size uint64, token string, filters map[direct.Field]any) ([]*direct.Direct, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "dbList",
-		"filters": filters,
+		"filters": logFilters(filters),
 		"size":    size,
 		"token":   token,
 	})
@@ -47,7 +48,7 @@ func (h *directHandler) dbGet(ctx context.Context, id uuid.UUID) (*direct.Direct
 func (h *directHandler) dbGetByHash(ctx context.Context, hash string) (*direct.Direct, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "dbGetByHash",
-		"hash": hash,
+		"hash": direct.MaskHash(hash),
 	})
 
 	res, err := h.db.DirectGetByHash(ctx, hash)
@@ -62,9 +63,8 @@ func (h *directHandler) dbGetByHash(ctx context.Context, hash string) (*direct.D
 // dbCreate creates a new direct.
 func (h *directHandler) dbCreate(ctx context.Context, d *direct.Direct) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "dbCreate",
-		"direct": d,
-	})
+		"func": "dbCreate",
+	}).WithFields(d.LogFields())
 
 	if err := h.db.DirectCreate(ctx, d); err != nil {
 		log.Errorf("Could not create a new direct. err: %v", err)
@@ -92,9 +92,9 @@ func (h *directHandler) dbDelete(ctx context.Context, id uuid.UUID) error {
 // dbUpdate updates the direct info.
 func (h *directHandler) dbUpdate(ctx context.Context, id uuid.UUID, fields map[direct.Field]any) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "dbUpdate",
-		"direct_id": id,
-		"fields":    fields,
+		"func":       "dbUpdate",
+		"direct_id":  id,
+		"field_keys": fieldKeys(fields),
 	})
 
 	if err := h.db.DirectUpdate(ctx, id, fields); err != nil {
@@ -103,4 +103,30 @@ func (h *directHandler) dbUpdate(ctx context.Context, id uuid.UUID, fields map[d
 	}
 
 	return nil
+}
+
+// fieldKeys returns the field names of an update map. The values are not
+// logged because a hash regeneration carries the new hash in FieldHash.
+func fieldKeys(fields map[direct.Field]any) []string {
+	res := make([]string, 0, len(fields))
+	for k := range fields {
+		res = append(res, string(k))
+	}
+	sort.Strings(res)
+	return res
+}
+
+// logFilters returns a log-safe copy of the list filters, with a FieldHash
+// value masked.
+func logFilters(filters map[direct.Field]any) map[direct.Field]any {
+	res := make(map[direct.Field]any, len(filters))
+	for k, v := range filters {
+		if k == direct.FieldHash {
+			if s, ok := v.(string); ok {
+				v = direct.MaskHash(s)
+			}
+		}
+		res[k] = v
+	}
+	return res
 }
