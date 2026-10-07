@@ -1,6 +1,6 @@
 # VOIP-1508 direct hash 로그 노출 이슈 분석
 
-- 상태: DRAFT rev3 (리뷰 1, 2회차 Request Changes 반영, 재리뷰 대기). 진행은 4절의 대표님 확인을 조건으로 한다
+- 상태: DRAFT rev4 (리뷰 1~3회차 Request Changes 반영, 재리뷰 대기). 진행은 4절의 대표님 확인을 조건으로 한다
 - 티켓: VOIP-1508 (원 제목은 api-manager AuthBoot 과 agent-manager 두 곳이나, 실제 범위는 그보다 넓다)
 - 기준 코드: origin/main 49ec4a06d
 - 관련: VOIP-1567 (같은 날 머지). VOIP-1567 분석 문서의 "유형 4"(Direct 객체와 hash 문자열 로그, 약 27곳, 9개 서비스)가 이 티켓과 동일한 대상이며, 그 PR 에서 대표님 결정으로 범위 밖 처리되었다("처리하지 않는다, 별도 티켓도 만들지 않는다, 재론하지 않는다").
@@ -10,7 +10,7 @@
 - 이슈는 유효하다. 티켓 설명이 가리킨 코드는 현재 main 에서도 그대로 있다. 다만 줄 번호는 이동했다(`boot.go:146` 은 현재 `boot.go:144`).
 - 티켓이 지목한 2곳(api-manager `AuthBoot`, agent-manager `direct_hash.go`)은 일부일 뿐이다. `*direct.Direct`(필드 `Hash`, 태그 `json:"hash"`)를 `WithField("direct", d)` 로 통째로 기록하는 곳이 9개 서비스에 걸쳐 있다.
 - 티켓의 "다른 bin-*-manager 감사" 항목이 바로 이 확장이다. 감사 결과 범위는 아래 2절이다.
-- 운영에서 Debug 로그가 켜져 있다는 전제는 VOIP-1567 분석에서 확인되었다(api-manager `internal/config/main.go:253`, call-manager `internal/config/main.go:124` 의 무조건 DebugLevel).
+- 운영에서 Debug 로그가 켜져 있다는 전제는 대상 전 서비스에서 확인된다. `SetLevel(DebugLevel)` 이 무조건 호출된다: api-manager `internal/config/main.go:253`, call-manager `:124`, agent `:104`, ai `:329`, flow `:100`, queue `config.go:33`, webchat `config.go:33`, conference `config.go:158`, direct `cmd/direct-manager/main.go:59`.
 - 진행하는 것이 타당하다. 수정은 로그 호출 지점의 필드 축소이고 되돌리기 쉽다. API, 이벤트, DB 계약 변경이 없다.
 
 ## 2. 코드 근거 (origin/main 기준 직접 확인)
@@ -36,22 +36,25 @@
 ### 2.2 hash 가 필드 값, 메시지, URI, 응답 본문으로 찍히는 곳 (객체 로그가 아님)
 
 - bin-call-manager `pkg/callhandler/start_incoming_domain_type_sip.go:81,83`: base logger 에 `"hash": hash` 를 묶고 `Debugf("Starting direct call handler. hash: %s", hash)` 로 원문을 찍는다. direct 통화마다 발생하는 가장 빈번한 경로다(VOIP-1567 분석 문서가 유형 4 의 대표 사례로 든 지점).
-- bin-direct-manager `pkg/directhandler/handler.go:109-110`(`GetByHash`), `db.go:49-50`(`dbGetByHash`): base logger 에 `"hash": hash` 를 묶어 해당 함수의 모든 로그(Error 포함)에 원문이 실린다.
-- bin-direct-manager `pkg/listenhandler/v1_directs.go:120-126`(`processV1DirectsByHashGet`): `"hash": hash` 필드와 `WithField("request", m)`(URI `/v1/directs/by-hash/<hash>` 포함).
-- bin-direct-manager `pkg/listenhandler/main.go:153-155`: 모든 요청에 대해 `"request": m` 필드와 `Received request. ... uri: %s` 를 기록한다. by-hash 조회의 URI 에 hash 가 남는다.
+- bin-direct-manager `pkg/directhandler/handler.go:108-110`(`GetByHash`), `db.go:49-50`(`dbGetByHash`): base logger 에 `"hash": hash` 를 묶어 해당 함수의 모든 로그(Error 포함)에 원문이 실린다.
+- bin-direct-manager `pkg/listenhandler/v1_directs.go:121-126`(`processV1DirectsByHashGet`): `"hash": hash` 필드와 `WithField("request", m)`(URI `/v1/directs/by-hash/<hash>` 포함).
+- bin-direct-manager `pkg/listenhandler/main.go:151-155`: 모든 요청에 대해 `"request": m` 필드와 `Received request. ... uri: %s` 를 기록한다. by-hash 조회의 URI 에 hash 가 남는다.
 - bin-direct-manager `pkg/listenhandler/main.go:222-227`: `"response": response` 필드를 `Sending response` 와 함께 기록한다. `sock.Response.Data` 는 `json.RawMessage`(`bin-common-handler/models/sock/message.go:25`)이고 create, get, by-hash, regenerate, list 응답 본문에 `Direct` JSON(hash 포함)이 들어간다. 따라서 URI 마스킹만으로는 부족하고 요청과 응답 로그 필드까지 다뤄야 한다.
-- bin-direct-manager `pkg/listenhandler/v1_directs.go:62,100,138`: 마샬 실패 경로의 `Debugf("... message: %v", tmp)` 가 `*direct.Direct` 를 `%v` 로 찍는다(드문 경로). `:38,88,126,157` 의 `WithField("request", m)` 중 hash 를 담는 것은 by-hash 인 `:126` 뿐이고, 나머지는 ID URI 다.
+- bin-direct-manager `pkg/listenhandler/v1_directs.go:62,100,138,182,218,254`: 마샬 실패 경로의 `Debugf("... message: %v", tmp)` 가 `*direct.Direct` 를 `%v` 로 찍는다(드문 경로). `:38,88,126,157` 의 `WithField("request", m)` 중 hash 를 담는 것은 by-hash 인 `:126` 뿐이고, 나머지는 ID URI 다.
+- 에러 문자열로 전파되는 URI: `bin-common-handler/pkg/requesthandler/send_request.go:45,53,62` 의 `errors.Wrapf(... "uri: %s", uri)` 는 `DirectV1DirectGetByHash`(`direct_directs.go:73`)의 `/v1/directs/by-hash/<hash>` 를 그대로 담는다. 전송 실패(서킷브레이커, 타임아웃 등) 때만 발생한다. 이 에러가 호출자 로그에 찍히는 지점은 api-manager `boot.go:141`(`Infof`, 로그 레벨과 무관), call-manager `start_incoming_domain_type_sip.go:90`(`Errorf`), direct-manager `handler.go:123`, `db.go:55`(`Errorf`)다. 실패 경로 한정이라 빈도는 낮다. 수정 대상에 포함할지는 설계 단계에서 정한다(포함 시 `DirectV1DirectGetByHash` 에서 에러를 hash 없는 문구로 감싸는 안).
 - bin-api-manager 는 이미 잘라서 쓴다(`boot.go:130` 사용, `truncateHash` 정의 `boot.go:242-247`, `lib/service/boot.go:36-41`). 변경 불필요. 단 `truncateHash` 는 앞 12자 + `...` 이고 hash 는 `direct.` + hex 이므로 hex 는 일부(5자 안팎)만 남는다. 이 수준을 허용 기준으로 삼는다.
 
 ### 2.2.1 hash 가 다른 객체에 내장되어 나가는 경로 (call-manager channel, 유형 5)
 
 - direct 통화에서는 `cn.DestinationNumber` 가 `direct.<hash>` 다(`start_incoming_domain_type_sip.go:31-32`). `channel.Channel.DestinationNumber` 는 `json:"destination_number"`(`bin-call-manager/models/channel/main.go:62`)이고 redaction 이 없다.
 - 따라서 `WithField("channel", cn)` 류의 객체 로그가 같은 통화마다 hash 를 남긴다. 확인된 지점: `channelhandler/db.go:69`, `arieventhandler/ari_channel.go:44`, `arieventhandler/ari_stasis.go:29,36`, `callhandler/hangup.go:192`. call-manager 전체의 `WithField("channel", ...)` 는 14건이며 direct 통화가 아닌 경우 `DestinationNumber` 는 일반 번호다. `ari_channel.go:166` 의 ARI 이벤트(`Dialplan.Exten` 포함 가능)는 미검증이다.
+- 같은 값은 base logger 형태(`logrus.WithFields(... "channel": cn ...)`)로도 묶여 그 함수의 모든 로그 줄에 실린다. 확인된 지점: callhandler `start.go:617`, `arievent.go:91,204`, `hangup.go:22,218`, `bridge.go:19`, `digit.go:24`, `start_incoming_domain_type_trunk.go:24`, channelhandler `variable.go:45`, `arievent.go:95`, confbridgehandler `start.go:18`, `ari_event.go:18`, `leaved.go:21`. 위 "14건" 은 `WithField("channel", ...)` 직접 호출만 센 것이고 유형 5 전체는 대략 25곳 이상이다. 최초 노출 지점은 `ari_channel.go:36`(`e.Channel.Dialplan.Exten` 이 `DestinationNumber` 로 들어감)에 이어지는 `:44` 의 `Created a channel info` 다.
+- ARI 이벤트 객체 로그(`WithField("event", e)`: `ari_channel.go:166`(Error 경로, 이벤트 전체 기록), `ari_stasis.go:20,65`, `ari_channel.go:20,55,89,111`, `channelhandler/arievent.go:17,84` 등)는 이벤트에 `Dialplan.Exten` 이 담기면 hash 가 실리는 잠재 경로이며 개별 확인하지 않았다.
 - 이 경로는 hash 를 담은 값이 일반 전화번호 필드와 같은 칸에 들어 있어 "hash 필드를 제거" 방식으로 고칠 수 없고, channel 로그 전체 재설계가 필요하다. 이번 범위에서 제외한다(4절).
 
 ### 2.3 이미 안전한 곳 (음성 확인 포함)
 
-- `bin-common-handler` 의 requesthandler(`direct_directs.go`, `send_request.go`), sockhandler, notifyhandler(`publish.go`, event data 미기록)에는 hash 로그가 없다. direct-manager 이벤트(`direct_created` 등)를 구독하는 서비스는 없는 것으로 보이나 별도 grep 은 하지 않았다. registrar-manager 는 `WithField("direct_id", d.ID)` 만 쓴다.
+- `bin-common-handler` 의 requesthandler, sockhandler, notifyhandler(`publish.go`, event data 미기록)는 hash 를 직접 로그로 찍지 않는다(단 requesthandler 는 2.2 의 에러 문자열 전파 경로가 있다). direct-manager 이벤트(`direct_created` 등)를 구독하는 서비스는 없는 것으로 보이나 별도 grep 은 하지 않았다. registrar-manager 는 `WithField("direct_id", d.ID)` 만 쓴다.
 
 - `DirectScope.HashFingerprint` 는 JWT 서명 키로 키잉한 HMAC 파생값이라 원문이 아니다(VOIP-1501, `boot.go:183` 의 `"direct": scope`).
 
@@ -65,7 +68,7 @@
 
 결정 이력과의 관계. VOIP-1567 분석 문서 4절은 "유형 3과 4는 처리하지 않는다. 별도 티켓도 만들지 않는다. 확정이며 재론하지 않는다"고 기록했다. 유형 4 가 바로 이 티켓의 대상이다. VOIP-1508 은 그보다 이전부터 있던 티켓이라 결정 당시 함께 고려되었는지는 불확실하다(1567 문서에 1508 언급 없음). 따라서 이번 PR 은 사실상 그 결정을 다시 여는 것이며, **대표님의 명시적 재승인이 필요하다.** 승인 전에는 설계 이후 단계로 진행하지 않는다. 유형 3 은 1567 결정 그대로 범위 밖이다.
 
-실효 평가. 유형 3(부모 리소스 객체 로그)이 남으면 `direct_hash` 는 로그인과 통화 경로에서 계속 쌓인다. 그러므로 이번 수정은 "hash 가 로그에서 완전히 사라진다"를 보장하지 않으며, 로그 열람자가 hash 를 수집할 가능성(3절의 위험)도 해소하지 못한다. 이번 PR 의 가치는 direct 모델과 hash 문자열 경로의 직접 노출 제거에 한정된다. 유형 5(call-manager channel 객체, 2.2.1)도 같은 이유로 남는다. 대표님 판단 재료로 제시한다. 이번 수정이 닫는 것은 direct 모델과 hash 문자열 경로(요청마다, 통화마다, direct-manager 전 경로)이고, 이 중 call-manager `:81,83` 과 direct-manager 요청, 응답 로그를 포함하지 않으면 실효가 더 낮아지므로 반드시 함께 닫는다. 단 같은 direct 통화의 channel 객체 로그(유형 5)는 남는다.
+실효 평가. 유형 3(부모 리소스 객체 로그)이 남으면 `direct_hash` 는 로그인과 통화 경로에서 계속 쌓인다. 그러므로 이번 수정은 "hash 가 로그에서 완전히 사라진다"를 보장하지 않으며, 로그 열람자가 hash 를 수집할 가능성(3절의 위험)도 해소하지 못한다. 특히 direct 통화마다 channel 객체 로그(유형 5)로 hash 가 남으므로, 이번 수정 후에도 direct 통화당 hash 노출은 0이 되지 않는다. 이번 PR 의 가치는 direct 모델과 hash 문자열 경로의 직접 노출 제거에 한정된다. 유형 5(call-manager channel 객체, 2.2.1)도 같은 이유로 남는다. 대표님 판단 재료로 제시한다. 이번 수정이 닫는 것은 direct 모델과 hash 문자열 경로(요청마다, 통화마다, direct-manager 전 경로)이고, 이 경로 중 call-manager `:81,83` 과 direct-manager 요청, 응답 로그는 함께 닫는다.
 
 이번 수정 대상(제안).
 
