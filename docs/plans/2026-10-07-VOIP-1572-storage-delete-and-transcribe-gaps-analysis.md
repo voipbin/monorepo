@@ -1,6 +1,6 @@
 # VOIP-1572 이슈 분석: storage 삭제 에러 삼킴, transcribes API 문서·테스트 공백, -count 반복 테스트 실패
 
-- 상태: Draft (이슈 분석 리뷰 대기)
+- 상태: Draft (이슈 분석 리뷰 2회차 대기, 1회차 반영)
 - 티켓: VOIP-1572 (Bug, 2026-10-07 생성, In Progress)
 - 기준: origin/main 754296f72
 - 출처: VOIP-1569 코드 리뷰 중 발견한 네 건을 대표님이 한 티켓, 한 PR 로 묶어 처리하도록 지시하셨다.
@@ -43,7 +43,7 @@ return res, nil
 - `paths/service_agents/transcribes.yaml` 의 POST, GET 도 같은 상태코드만 정의한다.
 - 같은 디렉터리의 `paths/transcribes/id.yaml` 은 이미 403(`PermissionDenied`), 404(`NotFound`)를 정의한다. 공통 컴포넌트 `PermissionDenied`, `NotFound` 가 `openapi.yaml` 의 `components/responses` 에 있다.
 - 실제 동작: POST 는 권한 거부 시 `ErrPermissionDenied`(403), 참조 리소스가 없으면 404(VOIP-1569 수정 이후 recording, conference 조회 실패가 404 로 내려간다)를 반환한다. 서버 코드 근거는 `servicehandler/transcribe.go` 의 `hasPermission` 검사와 `transcribeGetResourceInfo`, `serviceagent_transcribe.go` 의 동일 구조다. GET 목록도 권한 거부 시 403 을 반환한다.
-- OpenAPI 를 바꾸면 `bin-openapi-manager/gens/models/gen.go` 와 `bin-api-manager/gens/openapi_server/gen.go`, `gens/openapi_redoc/{openapi.json,api.html}` 이 재생성 대상이다. 응답 코드 추가만으로는 생성되는 Go 타입이 바뀌지 않아야 하며, 재생성 후 diff 가 redoc 산출물에 한정되는지 확인한다.
+- OpenAPI 를 바꾸면 `bin-openapi-manager/gens/models/gen.go` 와 `bin-api-manager/gens/openapi_server/gen.go`, `gens/openapi_redoc/{openapi.json,api.html}` 이 재생성 대상이다. 생성 범위는 실험으로 확인했다(임시 worktree, 두 yaml 의 GET, POST 에 403, 404 추가 후 `go generate`). `bin-openapi-manager/gens/models/gen.go` 는 변하지 않는다. `bin-api-manager` 의 서버 생성 설정이 `strict-server: true`(`openapi/config_server/config.generate.yaml`)라서 `gens/openapi_server/gen.go` 에 상태코드별 응답 타입(`GetTranscribes403JSONResponse`, `GetTranscribes404JSONResponse`, `PostTranscribes403JSONResponse`, `PostTranscribes404JSONResponse`, 같은 이름의 `ServiceAgentsTranscribes` 계열)이 약 112줄 추가된다. 기존 타입은 바뀌지 않는 순수 추가이며 호환성 문제는 없다. redoc 산출물(`gens/openapi_redoc/{openapi.json,api.html}`)은 구현 단계에서 재생성해 확인한다.
 
 ### 2.3 Test_TranscribeStart 커버리지 공백
 
@@ -51,7 +51,7 @@ return res, nil
 - VOIP-1569 코드 리뷰 2회차 변이 시험에서 다음 변이가 기존·신규 테스트에 잡히지 않고 생존했다.
   - call 분기의 `break` 제거(call 조회 실패 후 nil 역참조 패닉이 다시 생겨도 테스트가 통과한다).
   - 조회 전 권한 검사(`hasPermission`) 제거 또는 순서 변경.
-- 서버 코드의 권한 거부 경로는 두 곳이다. (1) 조회 전 호출자 권한 검사: `TranscribeStart` 는 관리자, 매니저 권한이 아니면 `ErrPermissionDenied`(`transcribe.go:155`), `ServiceAgentTranscribeStart` 는 에이전트가 아니면 `ErrAuthenticationRequired`, 권한 검사 실패 시 `ErrPermissionDenied`(`serviceagent_transcribe.go:113`). (2) 조회 후 참조 리소스의 소유 고객 검사(`transcribe.go:245`, `serviceagent_transcribe.go:209`).
+- 서버 코드의 권한 거부 경로는 두 곳이다. (1) 조회 전 호출자 권한 검사: `TranscribeStart` 는 관리자, 매니저 권한이 아니면 `ErrPermissionDenied`(`transcribe.go:155`), `ServiceAgentTranscribeStart` 는 에이전트가 아니면 `ErrAuthenticationRequired`, `PermissionAll` 권한 검사 실패 시 `ErrPermissionDenied`(`serviceagent_transcribe.go:113`). (2) 조회 후 참조 리소스의 소유 고객 검사(`transcribe.go:245`, `serviceagent_transcribe.go:209`).
 
 ### 2.4 `-count>1` 반복 실행 실패
 
@@ -76,8 +76,9 @@ panic: pattern "/test-metrics" ... conflicts with pattern "/test-metrics"
 ## 3. 진행 타당성
 
 - 네 건 모두 현재 main 에서 유효하다. 이미 해결된 것은 없다.
-- 위험: 1번은 운영 동작 변경(삭제 실패가 에러 응답으로 바뀜)이다. 이 변화는 의도된 수정이며 프런트엔드가 이 엔드포인트의 실패 응답을 처리하는지는 별도로 확인할 필요가 있다(분석 단계 확인 항목, 설계에서 결정).
+- 위험: 1번은 운영 동작 변경(삭제 실패가 에러 응답으로 바뀜)이다. 호출자 영향은 `~/gitvoipbin` 하위 저장소에서 확인했다. `monorepo-javascript`(square-admin 등)에는 이 엔드포인트를 호출하는 코드가 없고 타입 정의뿐이다. `cli`(`internal/commands/storage_accounts.go:143`)는 비 2xx 응답을 에러로 처리하며, 현재는 삭제가 실패해도 "deleted" 를 출력하지만 수정 후에는 `could not delete storage account` 로 올바르게 실패를 알린다. OpenAPI `paths/storage_accounts/id.yaml` 의 DELETE 는 이미 400, 401, 403, 404, 500 을 정의하므로 스펙 변경이나 코드 생성은 필요 없다. 따라서 호환성 영향은 없다.
 - 2번은 코드 생성 산출물 변경을 동반하므로 main 이 이동하면 생성 파일 충돌이 날 수 있다. 충돌 시 손으로 병합하지 않고 재생성한다.
 - 의존성: 네 건은 서로 의존하지 않는다. VOIP-1569 PR(#1370, #158)은 모두 머지되어 이 작업과 파일 충돌이 없다.
 - 대안: 네 건을 별개 PR 로 나누는 안은 대표님이 한 티켓, 한 PR 로 처리하도록 명시하셨으므로 채택하지 않는다.
-- 범위 밖으로 남기는 것: `Test_TranscribeStart` 의 `ReferenceTypeConfbridge` 라벨 변이 생존(정상 케이스 추가가 필요하며 이번 항목의 call 조회 실패와 권한 거부와는 별개), `/transcribes` 외 다른 엔드포인트의 403, 404 문서 공백, `TestRateLimit_MetricsIncrement` 외 다른 전역 prometheus 의존 테스트(`-count=2` 로 전수 확인했고 위 둘 외에는 실패하지 않았다).
+- 4b 는 대표님이 지정한 네 건 밖의 추가 항목이다. 4번과 같은 부류(프로세스 전역 상태 때문에 `-count>1` 에서 실패)이고 수정이 테스트 파일에 한정되어 함께 처리하며, PR 본문과 보고에 추가 항목임을 명시한다.
+- 범위 밖으로 남기는 것: `Test_TranscribeStart` 의 `ReferenceTypeConfbridge` 라벨 변이 생존(정상 케이스 추가가 필요하며 이번 항목의 call 조회 실패와 권한 거부와는 별개), `/transcribes` 외 다른 엔드포인트의 403, 404 문서 공백, `TestRateLimit_MetricsIncrement` 외 다른 전역 prometheus 의존 테스트(`bin-api-manager` 범위에서 `-count=2` 로 전수 확인했고 위 둘 외에는 실패하지 않았다. 다른 서비스의 같은 문제는 확인 범위 밖이다).
