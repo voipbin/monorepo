@@ -68,6 +68,12 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 			nextID = fmaction.IDEmpty
 		} else if n.Next == nil {
 			nextID = fmaction.IDEmpty
+		} else if *n.Next == n.Label {
+			// A node that continues into itself repeats until the executor's
+			// loop limit (1000), which for a message or webhook node is up to
+			// 1000 sends. Nobody means it, so it is treated as no next step and
+			// the user is told about the open end.
+			nextID = fmaction.IDEmpty
 		} else if target, ok := labelToID[*n.Next]; ok {
 			nextID = target
 		} else {

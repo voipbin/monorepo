@@ -663,3 +663,36 @@ func Test_ValidateDraft_addressHintSurvivesTheNextTurn(t *testing.T) {
 		t.Errorf("Wrong match. expect select_resource in %v", got)
 	}
 }
+
+func Test_AssembleFlowDraft_nextPointingAtItselfIsDropped(t *testing.T) {
+	b := "b"
+	a := "a"
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "a", Type: string(fmaction.TypeAnswer), Next: &b},
+		{Label: "b", Type: string(fmaction.TypeAnswer), Next: &b},
+	}}
+	draft, _ := AssembleFlowDraft(graph, allAllowed(fmaction.TypeAnswer))
+
+	byLabel := map[string]map[string]any{}
+	for _, act := range draft.Actions {
+		byLabel[draft.Labels[act["id"].(string)]] = act
+	}
+	if v, ok := byLabel["b"]["next_id"]; ok && v != "" && v != fmaction.IDEmpty.String() {
+		t.Errorf("Wrong match. expect no next_id for the self reference, got %v", v)
+	}
+	if byLabel["a"]["next_id"] == nil {
+		t.Errorf("Wrong match. a keeps its next step to b")
+	}
+
+	// A loop through two nodes is kept: the executor bounds it (design OQ9).
+	graph = flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "a", Type: string(fmaction.TypeAnswer), Next: &b},
+		{Label: "b", Type: string(fmaction.TypeAnswer), Next: &a},
+	}}
+	draft, _ = AssembleFlowDraft(graph, allAllowed(fmaction.TypeAnswer))
+	for _, act := range draft.Actions {
+		if act["next_id"] == nil {
+			t.Errorf("Wrong match. a two-node loop keeps both next steps, got %v", draft.Actions)
+		}
+	}
+}
