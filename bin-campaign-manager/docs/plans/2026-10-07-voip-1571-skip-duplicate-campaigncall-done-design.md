@@ -1,8 +1,10 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 2
+Status: Draft, revision 3 (design review round 2 approved by both reviewers; MINOR/NIT items applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
+Revision 3 (from design review round 2, MINOR/NIT only): the docs target is fixed (`domain.md`, Campaigncall Lifecycle); explicit cases for a stored dialing and progressing campaigncall; the subscriber test needs per-case expectations; the subscriber uses `_, err :=` since `newCC` is no longer used; the first table row reads "any state other than done".
+
 Revision 2 (from design review round 1): the error path of the subscriber no longer returns early; it keeps the original intent (log the error, still run the campaign-level handler) using the `CampaignID` of the campaigncall the subscriber already loaded, so a stop signal is not lost; the current nil dereference is a process crash (the event runs in a goroutine without `recover`); the consumer wording is corrected; the late-success exception side effect is stated as an accepted limit; the test plan asserts return values and tightens case 6.
 
 Issue analysis (approved, revision 6, review rounds 4 and 5): `~/agent-hermes/notes/tracks/VOIP-1571-analysis.md`. This document restates only what the design needs; the evidence (callers, event ordering, production numbers, counterexamples) lives there.
@@ -47,7 +49,7 @@ Behavior table (stored state, new result):
 
 | Stored | New | Action | Why |
 |---|---|---|---|
-| dialing or progressing | any | `Done` | normal hangup |
+| any state other than done (normally dialing or progressing) | any | `Done` | normal hangup |
 | done, fail | fail | skip | the duplicate this ticket removes (Fail then Fail) |
 | done, fail | success | `Done(Success)` | late success: the call was answered, the target must become `done`, not `idle` (redial risk) |
 | done, success | success | skip | duplicate |
@@ -66,6 +68,7 @@ The result mapping error path (`calcCampaigncallResultByCallHangupReason` fails 
 
 - Existing defect: when `EventHandleReferenceCallHungup` returns an error, `newCC` is nil and the next statement dereferences `newCC.CampaignID`. The event runs as `go h.processEvent(m)` with no `recover` anywhere in the service (`subscribehandler/main.go`, grep of `recover()` finds none), so this is a process crash, not a recovered panic. The original intent is visible in the code: the error branch only logs and has no `return`, so the campaign-level handler is meant to run even when the campaigncall handling failed (it matters because `Done` writes the campaigncall as done before its outdial request, so after a failed outdial request the campaigncall is done and the campaign still needs its stop check).
 - The fix keeps that intent: the subscriber uses the `CampaignID` of the campaigncall it already loaded (`cc.CampaignID`, from `GetByReferenceID`) for the campaign-level call, so it no longer depends on the returned value. On an error it logs and continues. No retry, no early return.
+- After the change `newCC` is not used by the subscriber, so the call becomes `_, err := h.campaigncallHandler.EventHandleReferenceCallHungup(...)` (a leftover `newCC` would not compile).
 - On a skip (section 3.1) the campaign-level `EventHandleReferenceCallHungup(ctx, cc.CampaignID)` also runs. It is idempotent: it acts only when `isStoppable` is true (execute stopped and no `dialing` or `progressing` campaigncall), and `campaignStopNow` returns early without a webhook when the campaign is already `stop` (`pkg/campaignhandler/status_stop.go`). So a duplicate event cannot publish a second campaign webhook, and a stop that depends on this event is not lost.
 - Event consumer facts: `processEventRun` always returns nil after starting the goroutine, and the result of `processEvent` is only logged (`subscribehandler/main.go`), so nothing is redelivered whatever the handler does.
 - The wrong comment above the function ("confbridge_leaved") is corrected to the real event name (`call_hangup`).
@@ -76,12 +79,13 @@ No new retry loops. A skip is a normal return. A failed `GetByReferenceID` retur
 
 ### 3.4 Docs
 
-If `bin-campaign-manager/docs` has a section that describes the campaigncall lifecycle or the hangup event, add two sentences there (an already done campaigncall is not completed again, except a late success after a failure). Otherwise no doc change. The implementation step checks the files (`domain.md`, `operations.md`) and reports which one was edited.
+`bin-campaign-manager/docs/domain.md`, section "Campaigncall Lifecycle" (line 102 at the base commit): add two sentences (a campaigncall that is already done is not completed again by a later call hangup, except a late success after a recorded failure, which corrects the result and the outdial target). No other doc change.
 
 ## 4. Tests (written with the implementation, not before)
 
 `pkg/campaigncallhandler/eventhandle_test.go`, `Test_EventHandleReferenceCallHungup`. The existing eight reason cases stay unchanged (their campaigncall has no status, so the guard passes). The existing test discards the returned campaigncall and every case sets the same `Done` expectations, so the new cases go into a separate test function (for example `Test_EventHandleReferenceCallHungup_alreadyDone`) with a per-case choice of the `Done` expectation set and an assertion on the returned value (`(cc, nil)` on skip). New cases, with strict gomock expectations so any unexpected `Done` call fails the test:
 
+0. stored dialing and stored progressing, normal hangup (one case each): `Done(Success)` runs. This pins the first table row, because the existing eight cases carry no status (a value production never has).
 1. done + fail stored, failed hangup: no `Done` call (no database write, no webhook, no outdial request), returns the stored campaigncall.
 2. done + fail stored, hangup `busy` (fail): same skip.
 3. done + success stored, normal hangup: skip.
@@ -90,7 +94,7 @@ If `bin-campaign-manager/docs` has a section that describes the campaigncall lif
 6. done with an empty result stored: skip, once with a normal hangup and once with a failed hangup (so a loosened exception such as "stored is not success" is caught).
 7. unknown reason: unchanged error and `nil` result.
 
-`pkg/subscribehandler/callmanager_test.go`, `Test_processEventCMCallHangup` (today one case):
+`pkg/subscribehandler/callmanager_test.go`, `Test_processEventCMCallHangup` (today one case with fixed expectations; the new cases need per-case expectations, so they use a `func` field or a separate test function):
 
 8. `GetByReferenceID` fails: returns nil, no handler call.
 9. `EventHandleReferenceCallHungup` returns an error: no panic, the campaign handler is still called with `cc.CampaignID`, returns nil.
