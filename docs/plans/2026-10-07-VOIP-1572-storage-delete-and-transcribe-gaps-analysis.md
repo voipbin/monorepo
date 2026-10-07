@@ -1,6 +1,6 @@
 # VOIP-1572 이슈 분석: storage 삭제 에러 삼킴, transcribes API 문서·테스트 공백, -count 반복 테스트 실패
 
-- 상태: Draft (이슈 분석 리뷰 3회차 대기, 2회차 비차단 반영)
+- 상태: APPROVED (이슈 분석 리뷰 2-3회차 연속 승인)
 - 티켓: VOIP-1572 (Bug, 2026-10-07 생성, In Progress)
 - 기준: origin/main 754296f72
 - 출처: VOIP-1569 코드 리뷰 중 발견한 네 건을 대표님이 한 티켓, 한 PR 로 묶어 처리하도록 지시하셨다.
@@ -77,6 +77,7 @@ panic: pattern "/test-metrics" ... conflicts with pattern "/test-metrics"
 
 - 네 건 모두 현재 main 에서 유효하다. 이미 해결된 것은 없다.
 - 위험: 1번은 운영 동작 변경(삭제 실패가 에러 응답으로 바뀜)이다. 호출자 영향은 `~/gitvoipbin` 하위 저장소에서 확인했다. `monorepo-javascript`(square-admin 등)에는 이 엔드포인트를 호출하는 코드가 없고 타입 정의뿐이다. `cli`(`internal/commands/storage_accounts.go:143`)는 비 2xx 응답을 에러로 처리하며, 현재는 삭제가 실패해도 "deleted" 를 출력하지만 수정 후에는 `could not delete storage account` 로 올바르게 실패를 알린다. OpenAPI `paths/storage_accounts/id.yaml` 의 DELETE 는 이미 400, 401, 403, 404, 500 을 정의하므로 스펙 변경이나 코드 생성은 필요 없다. 따라서 호환성 영향은 없다.
+- 테스트 컨벤션 게이트(`scripts/check-test-conventions.sh`, CI 무조건 게이트)는 커밋의 추가된 줄만 검사하며 `func Test…` 이름이 `Test_` 로 시작하는지, testify 를 쓰지 않는지, gomock 컨트롤러 이름이 `mc` 인지를 본다. 4, 4b 의 대상 테스트(`TestRateLimit_MetricsIncrement`, `TestPostBootstrap`)는 이름이 `Test_` 로 시작하지 않으므로 `func` 선언 줄을 건드리지 않고 본문만 수정해야 새 위반이 걸리지 않는다. 설계에서 이 제약을 따른다.
 - 2번은 코드 생성 산출물 변경을 동반하므로 main 이 이동하면 생성 파일 충돌이 날 수 있다. 충돌 시 손으로 병합하지 않고 재생성한다.
 - 의존성: 네 건은 서로 의존하지 않는다. VOIP-1569 PR(#1370, #158)은 모두 머지되어 이 작업과 파일 충돌이 없다.
 - 대안: 네 건을 별개 PR 로 나누는 안은 대표님이 한 티켓, 한 PR 로 처리하도록 명시하셨으므로 채택하지 않는다.
