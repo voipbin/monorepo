@@ -1,10 +1,11 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 7 (design review round 6: one approval, one change request for a missing PR plan and verification section, applied)
+Status: Draft, revision 8 (design review round 7 approved by both reviewers; MINOR/NIT items applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
 Revision history (newest first):
 
+- Revision 8 (from design review round 7, MINOR/NIT only): the subscriber tests that assert the return value call `processEventCMCallHungup` directly (`processEvent` returns nothing); the optional verification names a reproducible failure and the wait; the same-PR statement rests on the one-PR rule; repository rules and CI conditions are listed separately.
 - Revision 7 (from design review round 6): sections 8 (PR plan with the repository rules and the files expected in the diff) and 9 (verification after deploy, stating that production has no running campaign) added; an optional case for a stored dialing campaigncall with a failed hangup added.
 - Revision 6 (from design review round 5, MINOR/NIT only): the accepted limit states that this change removes the incidental repair of a partial `Done` by a duplicate hangup; the unchanged interface (no mock regeneration) is stated; the lint note moved out of the code block; the outdial file path is complete; the duplicate no-impact sentence is removed; revision 3 wording corrected.
 - Revision 5 (from design review round 4): the guard is written in the De Morgan form that passes the CI lint (QF1001 rejected the negated conjunction); the log sketch has real arguments; two mutations added; the customer-visible result change is stated.
@@ -114,7 +115,7 @@ No new retry loops. A skip is a normal return. A failed `GetByReferenceID` retur
 9. `EventHandleReferenceCallHungup` returns an error: no panic, the campaign handler is still called with `cc.CampaignID`, returns nil.
 10. skip result (returns the stored campaigncall): the campaign handler is called with `cc.CampaignID`.
 
-The subscriber test calls `processEvent` synchronously, so a panic from the nil dereference fails the test.
+The subscriber cases that assert the return value (8 and 9) call `processEventCMCallHungup(ctx, m)` directly, because `processEvent` returns nothing (`subscribehandler/main.go:141`); the existing `Test_processEventCMCallHangup` goes through `processEvent`. Both run synchronously, so a panic from the nil dereference fails the test.
 
 Mutation checks (each must fail at least one test), run in an isolated `git archive` copy:
 
@@ -142,7 +143,7 @@ Existing tests are not weakened (cases and expectations stay as they are).
 
 ## 8. PR plan
 
-One PR for the whole change (branch and worktree `VOIP-1571-Skip-duplicate-campaigncall-done`; the design document ships in the same PR, as the repository workflow requires).
+One PR for the whole change (branch and worktree `VOIP-1571-Skip-duplicate-campaigncall-done`; the design document ships in the same PR, following the one-PR-per-task rule).
 
 Files expected in the diff (all under `bin-campaign-manager`):
 
@@ -156,11 +157,15 @@ No generated file changes: `CampaigncallHandler` keeps its method set, so no moc
 
 Repository rules that apply (root `CLAUDE.md`; `bin-campaign-manager/CLAUDE.md` adds nothing that conflicts, its rules are about the execute loop and the `stopping` state, which this change does not touch):
 
+(The next items are stated by the root `CLAUDE.md`, except where marked as CI or environment conditions.)
+
 - Verification before the commit, in `bin-campaign-manager`: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`, plus `scripts/check-test-conventions.sh` from the repository root. The generate step must leave no diff.
+- CI condition: `scripts/check-test-conventions.sh` runs as a CircleCI job and checks the added lines (test names start with `Test_`, no testify, the gomock controller variable is `mc`); the planned tests follow it.
+- Environment condition: commits use the configured repository author.
 - Commit and PR title: `VOIP-1571-Skip-duplicate-campaigncall-done`. The PR body is a narrative paragraph followed by `bin-campaign-manager:` bullets; no headers, no test plan section, no AI attribution; the author is the CEO identity configured for the repository.
 - Before the PR and before any merge: fetch `origin/main` and check for conflicts. The merge happens only on the CEO's instruction, as a squash merge.
 - The PR states the zero production impact (section 1) and the accepted limits of section 6.
 
 ## 9. Verification after deploy
 
-Production has no running campaign (section 1), so there is nothing to observe in production after the deploy: the verification is the test evidence (the planned cases and the mutation results, run before the PR) and the CI result. After the deploy it is enough to check that campaign-manager starts and stays up. For a self-hosted or sandbox environment that does run campaigns, an optional check is to make a campaign call fail at creation and confirm exactly one `campaigncall_updated` webhook and one `Done` metric increment for it, and the log line "The campaigncall is already done. Skipping." for the late hangup. This optional check is not a gate.
+Production has no running campaign (section 1), so there is nothing to observe in production after the deploy: the verification is the test evidence (the planned cases and the mutation results, run before the PR) and the CI result. After the deploy it is enough to check that campaign-manager starts and stays up. For a self-hosted or sandbox environment that does run campaigns, an optional check is to make the campaign call fail AFTER the call row exists (a channel creation failure such as `setVariablesCall` or `createChannelOutgoing`; a failure before the call row is created, for example a customer or balance check, produces no `call_hangup` and cannot show the guard) and, about 40 s later when the failed hangup arrives, to confirm exactly one `campaigncall_updated` webhook and one `Done` metric increment for it, and the log line "The campaigncall is already done. Skipping." for the late hangup. This optional check is not a gate.
