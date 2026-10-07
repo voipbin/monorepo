@@ -6,7 +6,7 @@ package action
 //
 // SYNC NOTE (read before editing TypeListAll):
 //   - Adding a new action Type requires adding it to MetaByType, or
-//     TestMetaCoversAllTypes (in this package) will fail.
+//     Test_MetaCoversAllTypes (in this package) will fail.
 //   - Meta.Exposure and Meta.Flow are confirmed by reading the action's
 //     real execution path in bin-flow-manager/pkg/activeflowhandler before
 //     merge; see docs/plans/2026-10-07-flow-ai-builder-design.md Appendix B

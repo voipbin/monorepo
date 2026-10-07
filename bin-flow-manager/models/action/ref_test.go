@@ -9,7 +9,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
-// TestEveryUUIDFieldIsTagged is the drift-lock for the Flow AI Builder's
+// Test_EveryUUIDFieldIsTagged is the drift-lock for the Flow AI Builder's
 // `ref` struct tag scheme (VOIP-1573 design doc §2.3). It walks every
 // OptionStructByType entry and requires:
 //

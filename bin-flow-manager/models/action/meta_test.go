@@ -2,7 +2,7 @@ package action
 
 import "testing"
 
-// TestMetaCoversAllTypes locks MetaByType to TypeListAll: every action Type
+// Test_MetaCoversAllTypes locks MetaByType to TypeListAll: every action Type
 // the flow engine knows about must have a Flow AI Builder Meta declaration,
 // and MetaByType must not carry a stale entry for a type that no longer
 // exists. See VOIP-1573 design doc Appendix B.
