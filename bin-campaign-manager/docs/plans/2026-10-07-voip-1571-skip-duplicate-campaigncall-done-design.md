@@ -1,10 +1,11 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 8 (design review round 7 approved by both reviewers; MINOR/NIT items applied)
+Status: Draft, revision 9 (design review round 8: one approval, one change request on rule sources in section 8, applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
 Revision history (newest first):
 
+- Revision 9 (from design review round 8): section 8 groups the rules by their real source (root `CLAUDE.md`, the user-level `/home/pchero/CLAUDE.md`, CI, environment) and no longer attributes everything to the root file; the new test function names are fixed.
 - Revision 8 (from design review round 7, MINOR/NIT only): the subscriber tests that assert the return value call `processEventCMCallHungup` directly (`processEvent` returns nothing); the optional verification names a reproducible failure and the wait; the same-PR statement rests on the one-PR rule; repository rules and CI conditions are listed separately.
 - Revision 7 (from design review round 6): sections 8 (PR plan with the repository rules and the files expected in the diff) and 9 (verification after deploy, stating that production has no running campaign) added; an optional case for a stored dialing campaigncall with a failed hangup added.
 - Revision 6 (from design review round 5, MINOR/NIT only): the accepted limit states that this change removes the incidental repair of a partial `Done` by a duplicate hangup; the unchanged interface (no mock regeneration) is stated; the lint note moved out of the code block; the outdial file path is complete; the duplicate no-impact sentence is removed; revision 3 wording corrected.
@@ -98,7 +99,7 @@ No new retry loops. A skip is a normal return. A failed `GetByReferenceID` retur
 
 ## 4. Tests (written with the implementation, not before)
 
-`pkg/campaigncallhandler/eventhandle_test.go`, `Test_EventHandleReferenceCallHungup`. The existing eight reason cases stay unchanged (their campaigncall has no status, so the guard passes). The existing test discards the returned campaigncall and every case sets the same `Done` expectations, so the new cases go into a separate test function (for example `Test_EventHandleReferenceCallHungup_alreadyDone`) with a per-case choice of the `Done` expectation set and an assertion on the returned value (`(cc, nil)` on skip). New cases, with strict gomock expectations so any unexpected `Done` call fails the test:
+`pkg/campaigncallhandler/eventhandle_test.go`, `Test_EventHandleReferenceCallHungup`. The existing eight reason cases stay unchanged (their campaigncall has no status, so the guard passes). The existing test discards the returned campaigncall and every case sets the same `Done` expectations, so the new cases go into a separate test function named `Test_EventHandleReferenceCallHungup_alreadyDone` with a per-case choice of the `Done` expectation set and an assertion on the returned value (`(cc, nil)` on skip). New cases, with strict gomock expectations so any unexpected `Done` call fails the test:
 
 0. stored dialing and stored progressing, normal hangup (one case each), plus stored dialing with a failed hangup: `Done` runs with the mapped result. This pins the first table row, because the existing eight cases carry no status (a value production never has).
 1. done + fail stored, failed hangup: no `Done` call (no database write, no webhook, no outdial request), returns the stored campaigncall.
@@ -109,7 +110,7 @@ No new retry loops. A skip is a normal return. A failed `GetByReferenceID` retur
 6. done with an empty result stored: skip, once with a normal hangup and once with a failed hangup (so a loosened exception such as "stored is not success" is caught).
 7. unknown reason: unchanged error and `nil` result.
 
-`pkg/subscribehandler/callmanager_test.go`, `Test_processEventCMCallHangup` (today one case with fixed expectations; the new cases need per-case expectations, so they use a `func` field or a separate test function):
+`pkg/subscribehandler/callmanager_test.go`, `Test_processEventCMCallHangup` (today one case with fixed expectations; the new cases need per-case expectations, so they go into a separate test function named `Test_processEventCMCallHangup_errorAndSkip`):
 
 8. `GetByReferenceID` fails: returns nil, no handler call.
 9. `EventHandleReferenceCallHungup` returns an error: no panic, the campaign handler is still called with `cc.CampaignID`, returns nil.
@@ -155,16 +156,15 @@ Files expected in the diff (all under `bin-campaign-manager`):
 
 No generated file changes: `CampaigncallHandler` keeps its method set, so no mock is regenerated.
 
-Repository rules that apply (root `CLAUDE.md`; `bin-campaign-manager/CLAUDE.md` adds nothing that conflicts, its rules are about the execute loop and the `stopping` state, which this change does not touch):
+Rules that apply, by source:
 
-(The next items are stated by the root `CLAUDE.md`, except where marked as CI or environment conditions.)
+- Root `CLAUDE.md` (monorepo): the verification workflow before a commit, run in `bin-campaign-manager`: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m` (the generate step must leave no diff); work only in a worktree; the PR title equals the branch name; no AI attribution; fetch `origin/main` and check for conflicts before the PR and before any merge; squash merge only.
+- User-level `/home/pchero/CLAUDE.md` (the CEO's instructions): one PR per task; the PR body is a narrative paragraph followed by `bin-campaign-manager:` bullets, with no headers and no test plan section; no merge without the CEO's explicit instruction.
+- `bin-campaign-manager/CLAUDE.md` adds nothing that conflicts (its rules are about the self-scheduling execute loop and the `stopping` state, which this change does not touch).
+- CI: `scripts/check-test-conventions.sh` runs as a CircleCI job on the added lines (test names start with `Test_`, no testify, the gomock controller variable is `mc`). It is not part of the root `CLAUDE.md` workflow, so it is run in addition to it, from the repository root, and the planned tests follow it.
+- Environment: commits use the configured repository author.
 
-- Verification before the commit, in `bin-campaign-manager`: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`, plus `scripts/check-test-conventions.sh` from the repository root. The generate step must leave no diff.
-- CI condition: `scripts/check-test-conventions.sh` runs as a CircleCI job and checks the added lines (test names start with `Test_`, no testify, the gomock controller variable is `mc`); the planned tests follow it.
-- Environment condition: commits use the configured repository author.
-- Commit and PR title: `VOIP-1571-Skip-duplicate-campaigncall-done`. The PR body is a narrative paragraph followed by `bin-campaign-manager:` bullets; no headers, no test plan section, no AI attribution; the author is the CEO identity configured for the repository.
-- Before the PR and before any merge: fetch `origin/main` and check for conflicts. The merge happens only on the CEO's instruction, as a squash merge.
-- The PR states the zero production impact (section 1) and the accepted limits of section 6.
+Branch, commit and PR title: `VOIP-1571-Skip-duplicate-campaigncall-done`. The PR text states the zero production impact (section 1) and the accepted limits of section 6.
 
 ## 9. Verification after deploy
 
