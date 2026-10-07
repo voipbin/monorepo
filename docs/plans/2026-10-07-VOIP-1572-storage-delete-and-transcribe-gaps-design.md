@@ -1,6 +1,6 @@
 # VOIP-1572 설계: storage 삭제 에러 반환, transcribes API 문서와 테스트 공백, -count 반복 테스트 안정화
 
-- 상태: Draft (설계 리뷰 2회차 대기, 1회차 반영)
+- 상태: Draft (설계 리뷰 3회차 대기, 2회차 비차단 반영)
 - 티켓: VOIP-1572
 - 선행 문서: docs/plans/2026-10-07-VOIP-1572-storage-delete-and-transcribe-gaps-analysis.md (이슈 분석 리뷰 2, 3회차 연속 승인)
 - 기준: origin/main 754296f72
@@ -52,8 +52,9 @@ return res, nil
   3. `go.mod`, `go.sum` 변경이 생기면 되돌린다(`oapi-codegen` 도구 의존 잡음).
 - 기대 diff(분석 문서 2.2절 실험 기준): yaml 2개, `bin-api-manager/gens/openapi_server/gen.go`(strict-server 응답 타입 순수 추가), `gens/openapi_redoc/{openapi.json,api.html}`. `bin-openapi-manager/gens/models/gen.go` 는 변하지 않아야 한다. 이 외 파일이 바뀌면 원인을 확인한다. redoc 산출물은 이미 추적 파일이면 그대로 add 하고, 추적되지 않으면 `git add -f` 한다.
 - redoc 재생성은 `npx` 로 `@redocly/cli` 를 실행한다. 도구 버전 차이로 `api.html` 에 이번 변경과 무관한 대량 diff 가 생기면 원인을 확인하고, 응답 코드 추가분 외의 변경이 크면 보고한다.
+- `config_redoc/generate.go` 는 `npx` 가 없으면 조용히 건너뛰므로, 재생성 후 redoc 두 파일이 실제로 바뀌었는지 `git diff --stat` 으로 확인한다. `bin-api-manager` 의 `go generate` 는 mock 도 재생성하므로 mock 파일에 불필요한 diff 가 생기면 원인을 확인하고 이번 변경과 무관하면 되돌린다.
 - 검증: `go build ./...` 와 `go test ./...` 를 `bin-api-manager` 에서 실행하고, `gen.go` diff 에 기존 타입 수정이 없고 추가만 있는지 확인한다. 응답 타입 이름이 분석 문서의 목록과 같은지 grep 한다.
-- RST 문서(`docsdev`)에는 transcribes 의 상태코드 표가 없어(`docsdev/source/transcribe*.rst` 에 403, 404 언급 없음) 변경하지 않는다. 구현 시 한 번 더 grep 으로 확인한다.
+- RST 문서(`bin-api-manager/docsdev/source/transcribe*.rst`)에는 transcribes 의 상태코드 표가 없어(403, 404 언급 없음) 변경하지 않는다. 구현 시 한 번 더 grep 으로 확인한다.
 - 충돌 대응: main 이 이동해 생성 산출물이 충돌하면 손으로 병합하지 않고 위 절차로 재생성한다.
 
 ### D3. Test_TranscribeStart 커버리지
@@ -73,9 +74,10 @@ return res, nil
 - `Test_ServiceAgentTranscribeStart_permissionDenied`: 두 케이스.
   - 에이전트가 아닌 신원(`auth.NewAccesskeyIdentity(...)`): 기대 `ErrAuthenticationRequired`, `reqHandler` 기대 없음. `a.IsAgent()` 검사(`serviceagent_transcribe.go:95`) 제거 시 실패한다.
   - 조회 후 소유 고객 불일치: 고객 A 의 `PermissionCustomerAgent` 에이전트, 고객 B 의 call. 기대 `ErrPermissionDenied`, `TranscribeV1TranscribeStart` 미호출(`:207`). 소유 검사 제거 시 실패한다.
-  - 조회 전 `PermissionAll` 권한 검사(`:111`)는 테스트하지 않는다. `Agent.HasPermission` 이 `PermissionAll` 요청에 대해 무조건 `true` 를 반환하고(`bin-agent-manager/models/agent/agent.go:46-48`) 고객 비교 대상이 `a.CustomerID` 자기 자신이라, 에이전트 신원으로는 이 검사가 거부할 수 없다(동치 변이, 도달 불가 방어 코드). 이 검사를 제거해도 관측 가능한 동작이 바뀌지 않으므로 테스트 대상에서 제외한다. 코드 정리는 이번 범위가 아니다.
+  - 조회 전 `PermissionAll` 권한 검사(`:111`)는 테스트하지 않는다. `Agent.HasPermission` 이 `PermissionAll` 요청에 대해 무조건 `true` 를 반환하고(`bin-agent-manager/models/agent/agent.go:46-48`) 고객 비교 대상이 `a.CustomerID` 자기 자신이라, 에이전트 신원으로는 이 검사가 거부할 수 없다(프로덕션 경로상 도달 불가인 방어 코드이며, 이 검사를 제거해도 `NewAgentIdentity` 로 만든 모든 신원에서 관측 가능한 동작이 바뀌지 않는 동치 변이). 이 검사를 제거해도 관측 가능한 동작이 바뀌지 않으므로 테스트 대상에서 제외한다. 코드 정리는 이번 범위가 아니다.
 
 공통 구현 결정
+- 추가 import: `serviceagent_transcribe_test.go` 는 `NewAccesskeyIdentity` 용으로 `csaccesskey "monorepo/bin-customer-manager/models/accesskey"` 가 필요하다. `storage_account_test.go`(D1)는 `errors`, `cerrors`(`monorepo/bin-common-handler/models/errors`), `commonoutline` 이 필요하다. 컴파일러가 알려주므로 구현 시 맞춘다.
 - VOIP-1569 에서 추가한 `*_referenceLookupFailure` 와 같은 구조(함수 지역 `errFake`, 테이블 구조체, 파일마다 독립 정의, 공용 헬퍼 없음)를 쓴다. 기존 import 외에 필요한 것은 `errors`, `serviceerrors`, `amagent` 로, 해당 파일에 이미 있으면 중복 추가하지 않는다.
 - call 응답 객체는 기존 정상 케이스처럼 `cmcall.Call{Identity: ..., Status: cmcall.StatusProgressing}` 를 쓴다.
 - 변이 시험(구현 단계에서 수행하고 PR 본문에 기록)
