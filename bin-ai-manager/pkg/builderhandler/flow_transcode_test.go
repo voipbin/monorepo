@@ -719,3 +719,47 @@ func Test_AssembleFlowDraft_nonObjectAddressItemIsReported(t *testing.T) {
 		t.Errorf("Wrong match. expect invalid_option for the dropped item in %v", warnings)
 	}
 }
+
+// Review round 7 (N): facts the catalog states about options whose names
+// mislead. Each one was read from the executor; a change here is a decision.
+func Test_FlowCatalog_statesWhatMisleadingOptionsReallyDo(t *testing.T) {
+	tests := []struct {
+		ty   fmaction.Type
+		want []string
+	}{
+		{fmaction.TypeConditionVariable, []string{`"${name}"`, "literal text"}},                      // actionHandleConditionVariable compares the string, ${} is substituted first
+		{fmaction.TypeDigitsReceive, []string{"part of the resulting variable", "moves on at once"}}, // digit.go appends then checks the key; duration 0 sends the timeout at once
+		{fmaction.TypeBranch, []string{"stops the flow"}},                                            // an unmatched value with no default_target_id aborts the activeflow
+		{fmaction.TypeAITalk, []string{"Not applied by the executor"}},                               // OptionAITalk.Duration is never read
+		{fmaction.TypeHangup, []string{"noanswer"}},
+	}
+	for _, tt := range tests {
+		cat := FlowCatalog([]fmaction.Type{tt.ty})
+		for _, w := range tt.want {
+			if !strings.Contains(cat, w) {
+				t.Errorf("Wrong match. expect %q in the %s catalog:\n%s", w, tt.ty, cat)
+			}
+		}
+	}
+}
+
+// A message without a source panics the message sender's goroutine (the
+// providers read source.Target), so a draft that lacks one must say so.
+func Test_AssembleFlowDraft_messageSendWithoutSourceIsReported(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{{Label: "m", Type: string(fmaction.TypeMessageSend), Option: map[string]any{
+		"text":         "hi",
+		"destinations": []any{map[string]any{"type": "tel", "target": "+15550100200"}},
+	}}}}
+	_, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeMessageSend))
+	if !containsExact(warnings, flowbuilder.WarningMissingRequired+": m.source") {
+		t.Errorf("Wrong match. expect missing_required for m.source in %v", warnings)
+	}
+}
+
+func Test_AssembleFlowDraft_digitsReceiveWithoutDurationIsReported(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{{Label: "d", Type: string(fmaction.TypeDigitsReceive), Option: map[string]any{"length": 1}}}}
+	_, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeDigitsReceive))
+	if !containsExact(warnings, flowbuilder.WarningMissingRequired+": d.duration") {
+		t.Errorf("Wrong match. expect missing_required for d.duration in %v", warnings)
+	}
+}

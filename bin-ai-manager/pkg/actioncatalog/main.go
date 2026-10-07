@@ -72,7 +72,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "ai_id", Type: "uuid", Required: false, Description: "Deprecated; use assistance_type + assistance_id."},
 		{Name: "assistance_type", Type: "string", Required: true, Description: "\"ai\" or \"team\"."},
 		{Name: "assistance_id", Type: "uuid", Required: true, Description: "Id of the AI or team to converse with."},
-		{Name: "duration", Type: "int (seconds)", Required: false, Description: "Maximum AI talk duration in seconds."},
+		{Name: "duration", Type: "int (seconds)", Required: false, Description: "Not applied by the executor today: do not promise the user a time limit."},
 	}},
 	{Type: fmaction.TypeAITask, Summary: "Run an AI task (non-conversational) on the call.", Options: []actionOptionField{
 		{Name: "ai_id", Type: "uuid", Required: false, Description: "Deprecated; use assistance_type + assistance_id."},
@@ -83,14 +83,14 @@ var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeBlock, Summary: "Internal grouping/block action.", Options: nil},
 	{Type: fmaction.TypeBranch, Summary: "Branch the flow to different actions based on a variable / received DTMF.", Options: []actionOptionField{
 		{Name: "variable", Type: "string", Required: false, Description: "Variable to branch on (defaults to received digits)."},
-		{Name: "default_target_id", Type: "uuid", Required: false, Description: "Action id to go to when no target matches."},
+		{Name: "default_target_id", Type: "uuid", Required: false, Description: "Action id to go to when no target matches. Left out, an unmatched value (including no input at all) stops the flow."},
 		{Name: "target_ids", Type: "object (map of value -> action id)", Required: true, Description: "Map of matched value to the action id to jump to."},
 	}},
 	{Type: fmaction.TypeCaseCreate, Summary: "Create a new CRM case for the current call/conversation's contact. No-op if the reference type is not call/conversation, the peer is not CRM-eligible, or a case already exists for this activeflow.", Options: []actionOptionField{
 		{Name: "name", Type: "string", Required: false, Description: "Short case title."},
 		{Name: "detail", Type: "string", Required: false, Description: "Longer free-text description of the issue."},
 		{Name: "note", Type: "string", Required: false, Description: "An initial internal note for the agent (not shown to the customer)."},
-		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait for the case-create RPC to complete before continuing (matches conversation_send/email_send's sync/async toggle)."},
+		{Name: "sync", Type: "bool", Required: false, Description: "Not applied by the executor today: the action always waits for the result."},
 	}},
 	{Type: fmaction.TypeCall, Summary: "Originate one or more new outbound calls (each runs its own flow or actions).", Options: []actionOptionField{
 		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id. type is one of tel, sip, extension, agent."},
@@ -121,7 +121,7 @@ var actionCatalog = []actionCatalogEntry{
 	}},
 	{Type: fmaction.TypeConditionVariable, Summary: "Branch to a false target unless a flow variable matches the condition.", Options: []actionOptionField{
 		{Name: "condition", Type: "string (==|!=|>|>=|<|<=)", Required: true, Description: "Comparison operator."},
-		{Name: "variable", Type: "string", Required: true, Description: "Variable name to test."},
+		{Name: "variable", Type: "string", Required: true, Description: "The variable written as a reference, \"${name}\" (for example \"${voipbin.call.digits}\"). The reference is substituted before the compare. A bare name is compared as literal text, so it never matches the variable. Unlike branch, whose variable is the bare name."},
 		{Name: "value_type", Type: "string (string|number|length)", Required: true, Description: "Type of the value to compare."},
 		{Name: "value_string", Type: "string", Required: false, Description: "String value to compare against."},
 		{Name: "value_number", Type: "number", Required: false, Description: "Numeric value to compare against."},
@@ -147,8 +147,8 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "sync", Type: "bool", Required: false, Description: "Whether to send synchronously."},
 	}},
 	{Type: fmaction.TypeDigitsReceive, Summary: "Receive DTMF digits from the caller.", Options: []actionOptionField{
-		{Name: "duration", Type: "int (ms)", Required: false, Description: "DTMF receiving duration in milliseconds."},
-		{Name: "key", Type: "string", Required: false, Description: "Finishing key; not included in the resulting variable. If unset, no key finishes."},
+		{Name: "duration", Type: "int (ms)", Required: true, Description: "How long to wait for digits, in milliseconds. Left out, the action does not wait and the flow moves on at once."},
+		{Name: "key", Type: "string", Required: false, Description: "Finishing key characters; the first one received ends the input. The key is part of the resulting variable (for example \"123#\"), so a branch on it needs the key in its match values, or leave key unset and use length. If unset, no key finishes."},
 		{Name: "length", Type: "int", Required: false, Description: "Max number of DTMF events to gather before continuing."},
 	}},
 	{Type: fmaction.TypeDigitsSend, Summary: "Send DTMF tones on the call.", Options: []actionOptionField{
@@ -189,11 +189,11 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "loop_count", Type: "int", Required: false, Description: "Number of times to loop."},
 	}},
 	{Type: fmaction.TypeHangup, Summary: "Hang up the call.", Options: []actionOptionField{
-		{Name: "reason", Type: "string", Required: false, Description: "Hangup reason code."},
+		{Name: "reason", Type: "string (normal|failed|busy|cancel|timeout|noanswer|dialout|amd)", Required: false, Description: "Hangup reason code. Empty means normal."},
 		{Name: "reference_id", Type: "uuid", Required: false, Description: "Hang up with the same reason as this referenced call id (overrides reason)."},
 	}},
 	{Type: fmaction.TypeMessageSend, Summary: "Send an SMS text message.", Options: []actionOptionField{
-		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source phone number. type is tel."},
+		{Name: "source", Type: "address object {type,target,target_name}", Required: true, Description: "Source phone number the message is sent from. type is tel. Required: the sender cannot work without it."},
 		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destination phone numbers. type is tel."},
 		{Name: "text", Type: "string", Required: true, Description: "Message text."},
 	}},

@@ -183,5 +183,5 @@ const flowExampleA = `{"message":"Here is the Flow.","draft":{"nodes":[` +
 	`{"label":"bye","type":"hangup","option":{}}]},"assumptions":["The sales queue is chosen by the user in the editor."]}`
 
 const flowExampleB = `{"message":"Here is the Flow.","draft":{"nodes":[` +
-	`{"label":"reply","type":"message_send","option":{"text":"Thanks, we received your request.","destinations":[{"type":"tel","target":"+15551234567"}]},"next":"done"},` +
-	`{"label":"done","type":"stop","option":{}}]},"assumptions":["The destination number is a placeholder the user replaces."]}`
+	`{"label":"reply","type":"message_send","option":{"text":"Thanks, we received your request.","source":{"type":"tel","target":"+15550100200"},"destinations":[{"type":"tel","target":"+15551234567"}]},"next":"done"},` +
+	`{"label":"done","type":"stop","option":{}}]},"assumptions":["The source and destination numbers are placeholders the user replaces."]}`
