@@ -282,13 +282,13 @@ The line carries counts, sizes, durations, flags, configured constants and fixed
 | `invalid_kind` | Only for `invalid_response`: `nil_response`, `no_choices` or `unparsable` |
 | `elapsed_ms` | The provider call alone |
 | `build_ms` | Building the prompt, schema and messages |
-| `pre_call_ms` | Request validation and the Redis counter, before the model call |
+| `pre_call_ms` | Request validation, the non-blocking concurrency check and the Redis counter, before the model call |
 | `chat_ms` | The whole turn up to this line |
-| `finish_reason` | `stop`, `length`, `content_filter`, `tool_calls`, `function_call`, `other`, or `none` when no answer arrived |
+| `finish_reason` | `stop`, `length`, `content_filter`, `tool_calls`, `function_call`, `other`, or `none` when the finish reason is empty (no answer arrived, or the provider sent none) |
 | `prompt_tokens`, `completion_tokens` | Usage, 0 when the provider did not answer |
 | `response_chars`, `system_chars`, `request_chars`, `schema_bytes` | Sizes (runes, bytes for the schema). `request_chars` includes the system prompt, the history and the current draft block |
 | `allowed_types`, `user_turns`, `history_messages`, `current_draft_present` | Shape of the request |
 | `has_draft`, `draft_discarded`, `empty_draft` | Only for `ok`: a draft was returned; the draft could not be decoded; a draft was decoded but no node (or no start node) survived the type filter |
 | `model`, `reasoning_effort`, `max_tokens`, `llm_timeout_ms`, `json_mode` | The settings in force |
 
-How to read the timeout case: `outcome=timeout` with `completion_tokens=0` means no answer arrived before the deadline, which cannot tell a provider that is not answering from a long generation. A `truncated` line with `completion_tokens` near `max_tokens` points to a runaway completion; `llm_rate_limit` and `llm_provider_5xx` point to the provider. If the timeout case stays ambiguous, raise `AI_BUILDER_LLM_TIMEOUT_SECONDS` (at most 50) as a temporary experiment and read `completion_tokens` of the calls that then finish. The setting is not in `komodo/docker-compose.yml`, so it takes a compose change and a deploy (both replicas are recreated together).
+How to read the timeout case: `outcome=timeout` with `completion_tokens=0` means no answer arrived before the deadline, which cannot tell a provider that is not answering from a long generation. A `truncated` line with `completion_tokens` near `max_tokens` points to a runaway completion; `llm_rate_limit` and `llm_provider_5xx` point to the provider. If the timeout case stays ambiguous, raise `AI_BUILDER_LLM_TIMEOUT_SECONDS` (at most 50) as a temporary experiment and read `completion_tokens` of the calls that then finish. The setting is not in `komodo/docker-compose.yml`, so it takes a compose change and a deploy (a non-Swarm Compose deploy has no rolling update, so both replicas are recreated together; see `docs/workflows/manager-replica-scaling.md`).

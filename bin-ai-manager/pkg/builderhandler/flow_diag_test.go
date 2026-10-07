@@ -471,3 +471,135 @@ func Test_RunFlowTurn_diag(t *testing.T) {
 		}
 	})
 }
+
+// recordSender records the request and answers with a fixed reply.
+type recordSender struct {
+	req   *openai.ChatCompletionRequest
+	reply string
+}
+
+func (s *recordSender) SendOnce(_ context.Context, r *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+	s.req = r
+	return &openai.ChatCompletionResponse{
+		Choices: []openai.ChatCompletionChoice{{Message: openai.ChatCompletionMessage{Content: s.reply}, FinishReason: openai.FinishReasonStop}},
+	}, nil
+}
+
+// The sizes are counted in runes, not bytes, and the turn count only counts
+// user messages. Korean text makes a byte count differ from a rune count.
+func Test_RunFlowTurn_diag_countsRunesAndUserTurns(t *testing.T) {
+	reply := `{"message":"안녕하세요 무엇을 도와드릴까요"}`
+	s := &recordSender{reply: reply}
+	req := &flowbuilder.ChatRequest{
+		Messages: []flowbuilder.Message{
+			{Role: flowbuilder.RoleUser, Content: "인사 플로우를 만들어 주세요"},
+			{Role: flowbuilder.RoleAssistant, Content: "어떤 채널인가요"},
+			{Role: flowbuilder.RoleUser, Content: "전화입니다"},
+		},
+		SupportedActionTypes: []string{"talk", "hangup"},
+	}
+
+	res, err := RunFlowTurn(context.Background(), s, FlowConfig(testCfg()), req, FlowAllowedTypes(req.SupportedActionTypes))
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	wantRequest := 0
+	for _, m := range s.req.Messages {
+		wantRequest += len([]rune(m.Content))
+	}
+	if res.Diag.RequestChars != wantRequest {
+		t.Errorf("Wrong match. expect: %d runes, got: %d", wantRequest, res.Diag.RequestChars)
+	}
+	if want := len([]rune(s.req.Messages[0].Content)); res.Diag.SystemChars != want {
+		t.Errorf("Wrong match. expect: %d, got: %d", want, res.Diag.SystemChars)
+	}
+	if want := len([]rune(reply)); res.Diag.ResponseChars != want || want == len(reply) {
+		t.Errorf("Wrong match. expect: %d runes (not %d bytes), got: %d", want, len(reply), res.Diag.ResponseChars)
+	}
+	if res.Diag.UserTurns != 2 || res.Diag.HistoryMessages != 3 {
+		t.Errorf("Wrong match. expect: 2 user turns of 3 messages, got: %d of %d", res.Diag.UserTurns, res.Diag.HistoryMessages)
+	}
+}
+
+// The mode name, the schema build condition and the request format always
+// agree with each other.
+func Test_flowJSONMode_agreesWithRequestFormat(t *testing.T) {
+	tests := []struct {
+		name       string
+		mode       JSONMode
+		wantName   string
+		wantSchema bool
+	}{
+		{"none", JSONModeNone, "none", false},
+		{"object", JSONModeObject, "object", false},
+		{"schema", JSONModeSchema, "schema", true},
+		{"empty falls to schema as before", JSONMode(""), "schema", true},
+		{"unknown falls to schema as before", JSONMode("x"), "schema", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := flowJSONModeName(tt.mode); got != tt.wantName {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.wantName, got)
+			}
+			if got := flowUsesSchema(tt.mode); got != tt.wantSchema {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.wantSchema, got)
+			}
+			sent := flowResponseFormat(tt.mode, "{}")
+			if sentSchema := sent != nil && sent.Type == openai.ChatCompletionResponseFormatTypeJSONSchema; sentSchema != tt.wantSchema {
+				t.Errorf("Wrong match. expect: schema sent %v, got: %v", tt.wantSchema, sentSchema)
+			}
+
+			cfg := FlowConfig(testCfg())
+			cfg.JSONMode = tt.mode
+			res, err := RunFlowTurn(context.Background(), &recordSender{reply: `{"message":"m"}`}, cfg, flowChatReq(), FlowAllowedTypes(flowChatReq().SupportedActionTypes))
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if (res.Diag.SchemaBytes > 0) != tt.wantSchema {
+				t.Errorf("Wrong match. expect: schema built %v, got: %d bytes", tt.wantSchema, res.Diag.SchemaBytes)
+			}
+		})
+	}
+}
+
+// The timing and settings fields carry the values they are defined to carry.
+func Test_logModelCall_values(t *testing.T) {
+	hook, restore := captureLogs()
+	defer restore()
+
+	h, _, _ := newFlowTestHandler(t, &chatSender{}, 200, 3, true)
+	fh := h.(*flowBuilderHandler)
+	fh.cfg.Model = "model-x"
+	fh.cfg.ReasoningEffort = "low"
+	fh.cfg.MaxOutputTokens = 1234
+	fh.cfg.LLMTimeout = 7 * time.Second
+	fh.cfg.JSONMode = JSONModeObject
+
+	now := time.Now()
+	start := now.Add(-300 * time.Millisecond)
+	callStart := now.Add(-100 * time.Millisecond)
+	res := &FlowTurnResult{Diag: FlowTurnDiag{Elapsed: 11 * time.Millisecond, BuildElapsed: 7 * time.Millisecond}}
+	fh.logModelCall(logrus.NewEntry(logrus.StandardLogger()), res, nil, start, callStart, nil)
+
+	lines := diagEntries(hook)
+	if len(lines) != 1 {
+		t.Fatalf("Wrong match. expect: 1 line, got: %d", len(lines))
+	}
+	d := lines[0].Data
+	if d["elapsed_ms"] != int64(11) || d["build_ms"] != int64(7) {
+		t.Errorf("Wrong match. expect: 11 and 7, got: %v and %v", d["elapsed_ms"], d["build_ms"])
+	}
+	if pre, _ := d["pre_call_ms"].(int64); pre < 195 || pre > 205 {
+		t.Errorf("Wrong match. expect: about 200, got: %v", d["pre_call_ms"])
+	}
+	if chat, _ := d["chat_ms"].(int64); chat < 295 || chat > 400 {
+		t.Errorf("Wrong match. expect: about 300, got: %v", d["chat_ms"])
+	}
+	if d["model"] != "model-x" || d["reasoning_effort"] != "low" || d["max_tokens"] != 1234 || d["llm_timeout_ms"] != int64(7000) || d["json_mode"] != "object" {
+		t.Errorf("Wrong match. expect: the settings in force, got: %v", d)
+	}
+	if d["finish_reason"] != "none" {
+		t.Errorf("Wrong match. expect: none, got: %v", d["finish_reason"])
+	}
+}
