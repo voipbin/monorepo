@@ -800,7 +800,7 @@ func Test_FlowCatalog_statesWhatTheSecondAuditFound(t *testing.T) {
 		{fmaction.TypeTalk, []string{"Always set it"}},
 		{fmaction.TypeConnect, []string{"conference is not supported", "phone number the customer owns"}},
 		{fmaction.TypeAITask, []string{"skipped on a call"}},
-		{fmaction.TypeTranscribeRecording, []string{"all recordings of the current call"}},
+		{fmaction.TypeTranscribeRecording, []string{"recordings of the current call"}},
 	}
 	for _, tt := range tests {
 		cat := FlowCatalog([]fmaction.Type{tt.ty})
