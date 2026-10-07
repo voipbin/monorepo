@@ -1,6 +1,6 @@
 # VOIP-1508 direct hash 로그 노출 수정 설계
 
-- 상태: DRAFT rev2 (디자인 리뷰 1회차: Approve 1, Request Changes 1 반영, 재리뷰 대기)
+- 상태: APPROVED rev3 (디자인 리뷰 2회차 2명 모두 Approve, MINOR 반영)
 - 근거 문서: `2026-10-07-VOIP-1508-direct-hash-log-exposure-analysis.md` (APPROVED rev5)
 - 대표님 결정(2026-10-07): VOIP-1567 의 "유형 4 범위 밖" 결정을 재승인하여 유형 4 를 이번에 처리한다. 범위는 분석 문서 2.1, 2.2 의 전 지점과 direct-manager 요청, 응답 로그다. 유형 3(부모 리소스), 유형 5(call-manager channel)는 범위 밖이며 처리 후에도 direct 통화당 hash 노출은 0이 되지 않는다.
 
@@ -54,9 +54,14 @@ func (d *Direct) LogFields() logrus.Fields
 ### 3.4 범위 밖(수용 위험으로 기록)
 
 - 에러 문자열로 전파되는 URI(`requesthandler/send_request.go:45,53,62`). 전송 실패 때만 발생하고, 막으려면 `DirectV1DirectGetByHash` 에 에러 재포장이 필요하다. 트리거 조건: 운영에서 by-hash 전송 실패 로그에 hash 가 실제로 확인되면 별도 설계. 이번에는 하지 않는다.
+- DB 에러 문자열 경로: hash 컬럼 UNIQUE 인덱스 충돌 시 MySQL `Duplicate entry '<hash>'` 문구가 `err: %v` 로 `db.go:70,101`, `handler.go:65,217` 에 찍힐 수 있다. 48비트 난수 충돌이라 확률이 극히 낮고 수정 비용이 커 수용한다.
 - 유형 3, 유형 5, 로그 레벨 정책, redaction 훅 신설.
 
 ## 4. 테스트
+
+- 센티널 hash 는 13자 이상이어야 하고(`MaskHash` 가 12자 이하는 원문 반환), api-manager `AuthBoot` 용은 `direct.` 접두사가 필요하다(없으면 로그 지점 전에 반환). 검사는 전체 센티널 문자열로 하며, 마스킹값에는 접두 12자가 남으므로 12자 이후 구간을 센티널의 고유 부분으로 둔다.
+- `db.go:66` 처럼 `func` 키가 있는 base logger 는 `d.LogFields()` 를 병합하되 `func` 를 유지한다.
+- `maskURI` 단위 테스트에 쿼리스트링(`?` 이후)과 hash 가 없는 URI 케이스를 포함한다. `v1_directs.go` 의 `WithField("request", ...)` 는 `:38,88,126,157,167,208,244` 를 점검하며 `:167` 은 생성 본문이라 hash 가 없어 변경하지 않는다.
 
 - `models/direct`: `MaskHash`(빈 값, 12자 이하, 초과)와 `LogFields`(hash 미포함, nil 수신자) 단위 테스트.
 - direct-manager `listenhandler`: `maskURI` 단위 테스트, 요청 및 응답 로그 훅 테스트(센티널 hash 가 모든 수집 항목의 필드와 메시지에 없고, 수집 건수 1 이상을 요구해 공허한 통과를 막는다).
