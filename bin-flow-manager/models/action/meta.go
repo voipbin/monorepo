@@ -104,7 +104,7 @@ var MetaByType = map[Type]Meta{
 	TypeEmailSend:           {Exposure: ExposureSensitive, Flow: FlowKindContinue}, // structurally excluded (nested []Attachment); Meta value still declared
 	TypeExternalMediaStart:  {Exposure: ExposureInternal, Flow: FlowKindContinue},
 	TypeExternalMediaStop:   {Exposure: ExposureInternal, Flow: FlowKindContinue},
-	TypeFetch:               {Exposure: ExposureInternal, Flow: FlowKindContinue},  // fetches actions from an arbitrary URL with a plain http.Client (pkg/actionhandler ActionFetchGet): no SSRF guard, so the builder does not place it (VOIP-1573 OQ8). Revisit when the executor validates the URL
+	TypeFetch:               {Exposure: ExposureInternal, Flow: FlowKindContinue}, // fetches actions from an arbitrary URL with a plain http.Client (pkg/actionhandler ActionFetchGet): no SSRF guard, so the builder does not place it (VOIP-1573 OQ8). Revisit when the executor validates the URL
 	TypeFetchFlow:           {Exposure: ExposureCore, Flow: FlowKindContinue},
 	TypeGoto:                {Exposure: ExposureInternal, Flow: FlowKindContinue}, // outside the FlowKind model, see doc comment above
 	TypeHangup:              {Exposure: ExposureCore, Flow: FlowKindTerminate},

@@ -67,7 +67,7 @@ func fieldContainsUUID(t reflect.Type) bool {
 	switch t.Kind() {
 	case reflect.Slice, reflect.Array:
 		return fieldContainsUUID(t.Elem())
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return fieldContainsUUID(t.Elem())
 	case reflect.Struct:
 		uuidType := reflect.TypeOf(uuid.UUID{})
