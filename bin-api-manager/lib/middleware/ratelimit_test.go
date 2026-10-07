@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -12,6 +14,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"golang.org/x/time/rate"
 )
+
+// metricsIncrementRuns makes the tier label of TestRateLimit_MetricsIncrement
+// unique for every run, because the prometheus counters are process-global and
+// would otherwise carry values over when the test runs with -count greater than 1.
+var metricsIncrementRuns atomic.Int64
 
 func TestRateLimit_AllowsNormalTraffic(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -223,22 +230,23 @@ func TestRateLimit_PositiveInfNormalized(t *testing.T) {
 // construction time (present at 0 before any request is served).
 func TestRateLimit_MetricsIncrement(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	tier := fmt.Sprintf("test_metrics_increment_%d", metricsIncrementRuns.Add(1))
 	r := gin.New()
-	handler := RateLimit("test_metrics_increment", 1, 1)
+	handler := RateLimit(tier, 1, 1)
 	r.Use(handler)
 	r.GET("/", func(c *gin.Context) { c.Status(200) })
 
 	// Pre-initialized zero-value series must be readable immediately,
 	// before any request is served.
-	if v := testutil.ToFloat64(promRateLimitAllowedTotal.WithLabelValues("test_metrics_increment")); v != 0 {
+	if v := testutil.ToFloat64(promRateLimitAllowedTotal.WithLabelValues(tier)); v != 0 {
 		t.Errorf("expected pre-initialized allowed series at 0, got %v", v)
 	}
-	if v := testutil.ToFloat64(promRateLimitRejectedTotal.WithLabelValues("test_metrics_increment")); v != 0 {
+	if v := testutil.ToFloat64(promRateLimitRejectedTotal.WithLabelValues(tier)); v != 0 {
 		t.Errorf("expected pre-initialized rejected series at 0, got %v", v)
 	}
 
-	allowedBefore := testutil.ToFloat64(promRateLimitAllowedTotal.WithLabelValues("test_metrics_increment"))
-	rejectedBefore := testutil.ToFloat64(promRateLimitRejectedTotal.WithLabelValues("test_metrics_increment"))
+	allowedBefore := testutil.ToFloat64(promRateLimitAllowedTotal.WithLabelValues(tier))
+	rejectedBefore := testutil.ToFloat64(promRateLimitRejectedTotal.WithLabelValues(tier))
 
 	// First request consumes the sole burst token — allowed.
 	w1 := httptest.NewRecorder()
@@ -252,8 +260,8 @@ func TestRateLimit_MetricsIncrement(t *testing.T) {
 	req2.RemoteAddr = "9.9.9.9:1234"
 	r.ServeHTTP(w2, req2)
 
-	allowedAfter := testutil.ToFloat64(promRateLimitAllowedTotal.WithLabelValues("test_metrics_increment"))
-	rejectedAfter := testutil.ToFloat64(promRateLimitRejectedTotal.WithLabelValues("test_metrics_increment"))
+	allowedAfter := testutil.ToFloat64(promRateLimitAllowedTotal.WithLabelValues(tier))
+	rejectedAfter := testutil.ToFloat64(promRateLimitRejectedTotal.WithLabelValues(tier))
 
 	if allowedAfter-allowedBefore != 1 {
 		t.Errorf("expected allowed counter to increment by 1, got %v", allowedAfter-allowedBefore)
