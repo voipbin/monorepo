@@ -42,6 +42,14 @@ func (h *campaigncallHandler) EventHandleReferenceCallHungup(ctx context.Context
 		return nil, err
 	}
 
+	// the campaigncall is already done. a second Done would repeat the webhook, the metric and the outdial target update.
+	// the only legitimate second Done is a late success after a recorded failure (the create request errored although the
+	// call was created and answered): it corrects the result and the outdial target.
+	if cc.Status == campaigncall.StatusDone && (cc.Result != campaigncall.ResultFail || result != campaigncall.ResultSuccess) {
+		log.Infof("The campaigncall is already done. Skipping. campaigncall_id: %s, stored_result: %s, new_result: %s", cc.ID, cc.Result, result)
+		return cc, nil
+	}
+
 	// update campaigncall to done.
 	res, err := h.Done(ctx, cc.ID, result)
 	if err != nil {
