@@ -129,7 +129,7 @@ var MetaByType = map[Type]Meta{
 // regardless of Exposure, because their option carries a nested []Action or
 // []Attachment the ref-tag scheme in option.go does not reach
 // (OptionCall.Actions, OptionEmailSend.Attachments[].ReferenceID).
-// TestBuilderExcludedTypes pins this list so a future change is visible.
+// Test_BuilderExcludedTypesAreInTypeListAll pins this list so a future change is visible.
 var BuilderExcludedTypes = map[Type]bool{
 	TypeCall:      true,
 	TypeEmailSend: true,
