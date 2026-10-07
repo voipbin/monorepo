@@ -141,7 +141,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 		log.Infof("Could not get direct by hash. err: %v", err)
 		return nil, fmt.Errorf("%w: direct hash not found", serviceerrors.ErrNotFound)
 	}
-	log.WithField("direct", d).Debugf("Retrieved direct info. direct_id: %s", d.ID)
+	log.WithFields(d.LogFields()).Debugf("Retrieved direct info. direct_id: %s", d.ID)
 
 	// validate customer is active
 	cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, d.CustomerID)

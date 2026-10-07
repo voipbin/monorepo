@@ -90,7 +90,7 @@ func (h *conferenceHandler) Create(
 		log.Errorf("Could not create direct hash. err: %v", errDirect)
 		return nil, fmt.Errorf("could not create direct hash: %w", errDirect)
 	}
-	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+	log.WithFields(d.LogFields()).Debugf("Created direct hash. direct_id: %s", d.ID)
 
 	// create a conference struct
 	tmp := &conference.Conference{

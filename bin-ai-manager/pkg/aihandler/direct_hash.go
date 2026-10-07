@@ -42,7 +42,7 @@ func (h *aiHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai
 			return nil, fmt.Errorf("could not create direct hash: %w", err)
 		}
 	}
-	log.WithField("direct", d).Debugf("Direct hash regenerated. direct_id: %s, hash: %s", d.ID, d.Hash)
+	log.WithFields(d.LogFields()).Debugf("Direct hash regenerated. direct_id: %s", d.ID)
 
 	// update AI with new direct info
 	fields := map[ai.Field]any{

@@ -73,7 +73,7 @@ func (h *directHandler) Create(ctx context.Context, customerID uuid.UUID, resour
 		}
 
 		h.publishEvent(ctx, direct.EventTypeDirectCreated, res)
-		log.WithField("direct", res).Debug("Created a new direct.")
+		log.WithFields(res.LogFields()).Debug("Created a new direct.")
 		return res, nil
 	}
 
@@ -107,13 +107,13 @@ func (h *directHandler) Get(ctx context.Context, id uuid.UUID) (*direct.Direct, 
 func (h *directHandler) GetByHash(ctx context.Context, hash string) (*direct.Direct, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "GetByHash",
-		"hash": hash,
+		"hash": direct.MaskHash(hash),
 	})
 
 	// try cache first
 	res, err := h.cache.DirectGetByHash(ctx, hash)
 	if err == nil {
-		log.WithField("direct", res).Debug("Retrieved direct from cache.")
+		log.WithFields(res.LogFields()).Debug("Retrieved direct from cache.")
 		return res, nil
 	}
 
@@ -134,7 +134,7 @@ func (h *directHandler) GetByHash(ctx context.Context, hash string) (*direct.Dir
 	// populate cache
 	_ = h.cache.DirectSetByHash(ctx, hash, res)
 
-	log.WithField("direct", res).Debug("Retrieved direct from DB and cached.")
+	log.WithFields(res.LogFields()).Debug("Retrieved direct from DB and cached.")
 	return res, nil
 }
 
@@ -142,7 +142,7 @@ func (h *directHandler) GetByHash(ctx context.Context, hash string) (*direct.Dir
 func (h *directHandler) Gets(ctx context.Context, size uint64, token string, filters map[direct.Field]any) ([]*direct.Direct, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "Gets",
-		"filters": filters,
+		"filters": logFilters(filters),
 		"size":    size,
 		"token":   token,
 	})
@@ -237,7 +237,7 @@ func (h *directHandler) Regenerate(ctx context.Context, id uuid.UUID) (*direct.D
 	}
 
 	h.publishEvent(ctx, direct.EventTypeDirectRegenerated, res)
-	log.WithField("direct", res).Debug("Regenerated the direct hash.")
+	log.WithFields(res.LogFields()).Debug("Regenerated the direct hash.")
 
 	return res, nil
 }
@@ -268,7 +268,7 @@ func (h *directHandler) EventCustomerDeleted(ctx context.Context, customerID uui
 			continue
 		}
 
-		log.WithField("direct", tmp).Debugf("Deleted direct. direct_id: %s", tmp.ID)
+		log.WithFields(tmp.LogFields()).Debugf("Deleted direct. direct_id: %s", tmp.ID)
 	}
 
 	return nil

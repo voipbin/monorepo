@@ -47,7 +47,7 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 		log.Errorf("Could not create direct hash. err: %v", err)
 		return nil, fmt.Errorf("could not create direct hash: %w", err)
 	}
-	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+	log.WithFields(d.LogFields()).Debugf("Created direct hash. direct_id: %s", d.ID)
 
 	t := &team.Team{
 		Identity: identity.Identity{
