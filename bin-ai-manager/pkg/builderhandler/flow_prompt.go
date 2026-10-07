@@ -77,15 +77,16 @@ func FlowCatalog(allowed []fmaction.Type) string {
 
 		var actionRefs, resourceRefs, addressRefs []string
 		for _, f := range fmaction.RefFieldsOf(t) {
-			if f.Kind == fmaction.RefKindAction {
+			switch f.Kind {
+			case fmaction.RefKindAction:
 				name := f.JSONName
 				if f.IsMap {
 					name += " (object: key to label)"
 				}
 				actionRefs = append(actionRefs, name)
-			} else if f.Kind == fmaction.RefKindAddress {
+			case fmaction.RefKindAddress:
 				addressRefs = append(addressRefs, f.JSONName)
-			} else {
+			default:
 				resourceRefs = append(resourceRefs, f.JSONName)
 			}
 		}
