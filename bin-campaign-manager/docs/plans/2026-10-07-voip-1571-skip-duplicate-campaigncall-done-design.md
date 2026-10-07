@@ -3,11 +3,12 @@
 Status: Draft, revision 4 (design review round 3 requested one change, applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
-Revision 4 (from design review round 3): the subscriber assignment is `_, err = ...` (`err` is already declared at `callmanager.go:27`, so `:=` does not compile); the evidence the design depends on is summarized in section 1 so the document can be read without the analysis note; the revision history is a list.
+Revision history (newest first):
 
-Revision 3 (from design review round 2, MINOR/NIT only): the docs target is fixed (`domain.md`, Campaigncall Lifecycle); explicit cases for a stored dialing and progressing campaigncall; the subscriber test needs per-case expectations; the subscriber assignment is written as `_, err =` (see revision 4); the first table row reads "any state other than done".
-
-Revision 2 (from design review round 1): the error path of the subscriber no longer returns early; it keeps the original intent (log the error, still run the campaign-level handler) using the `CampaignID` of the campaigncall the subscriber already loaded, so a stop signal is not lost; the current nil dereference is a process crash (the event runs in a goroutine without `recover`); the consumer wording is corrected; the late-success exception side effect is stated as an accepted limit; the test plan asserts return values and tightens case 6.
+- Revision 5 (from design review round 4): the guard is written in the De Morgan form that passes the CI lint (QF1001 rejected the negated conjunction); the log sketch has real arguments; two mutations added; the customer-visible result change is stated.
+- Revision 4 (from design review round 3): the subscriber assignment is `_, err = ...` (`err` is already declared at `callmanager.go:27`, so `:=` does not compile); the evidence the design depends on is summarized in section 1 so the document can be read without the analysis note; the revision history is a list.
+- Revision 3 (from design review round 2, MINOR/NIT only): the docs target is fixed (`domain.md`, Campaigncall Lifecycle); explicit cases for a stored dialing and progressing campaigncall; the subscriber test needs per-case expectations; the subscriber assignment is written as `_, err =` (see revision 4); the first table row reads "any state other than done".
+- Revision 2 (from design review round 1): the error path of the subscriber no longer returns early; it keeps the original intent (log the error, still run the campaign-level handler) using the `CampaignID` of the campaigncall the subscriber already loaded, so a stop signal is not lost; the current nil dereference is a process crash (the event runs in a goroutine without `recover`); the consumer wording is corrected; the late-success exception side effect is stated as an accepted limit; the test plan asserts return values and tightens case 6.
 
 Issue analysis (approved, revision 6, review rounds 4 and 5): `~/agent-hermes/notes/tracks/VOIP-1571-analysis.md`. This document restates only what the design needs; the evidence (callers, event ordering, production numbers, counterexamples) lives there.
 
@@ -21,7 +22,7 @@ Evidence the design relies on (all code-verified; details in the analysis note, 
 
 - `Done` has no already-done check and its effects are the campaigncall write with the `campaigncall_updated` webhook, the done metric, and an unconditional outdial target status write (`status.go:16-49`, `outdialtargethandler/outdialtarget.go:209-233`).
 - The only unguarded duplicate source is the call-hangup path; `pkg/subscribehandler/flowmanager.go:35` already guards the activeflow path.
-- Retry counting reads the outdial target `TryCount`, not campaigncall rows, and nothing else in the repository reads `campaigncall.Result`, so correcting a late Fail to Success only changes the target state.
+- Retry counting reads the outdial target `TryCount`, not campaigncall rows, and nothing else in the repository reads `campaigncall.Result`, so correcting a late Fail to Success changes the outdial target state and the result that customers see through the API and the `campaigncall_updated` webhook (the second webhook is accepted, section 3.1).
 - `campaignStopNow` returns early (no webhook) when the campaign is already stopped, so the campaign-level step is idempotent.
 - Production has no running campaign (9325 campaigns all stopped; 14 campaigncalls ever, the last in 2022).
 
@@ -49,8 +50,9 @@ Rule (i) of the analysis: a campaigncall that is already `done` is left alone, w
 // the campaigncall is already done. a second Done would repeat the webhook, the metric and the outdial target update.
 // the only legitimate second Done is a late success after a recorded failure (the create request errored although the
 // call was created and answered): it corrects the result and the outdial target.
-if cc.Status == campaigncall.StatusDone && !(cc.Result == campaigncall.ResultFail && result == campaigncall.ResultSuccess) {
-    log.WithFields(...).Infof("The campaigncall is already done. Skipping. campaigncall_id: %s, stored_result: %s, new_result: %s", ...)
+// (written in the De Morgan form because the repository lint, staticcheck QF1001, rejects the negated conjunction)
+if cc.Status == campaigncall.StatusDone && (cc.Result != campaigncall.ResultFail || result != campaigncall.ResultSuccess) {
+    log.Infof("The campaigncall is already done. Skipping. campaigncall_id: %s, stored_result: %s, new_result: %s", cc.ID, cc.Result, result)
     return cc, nil
 }
 ```
@@ -114,7 +116,7 @@ The subscriber test calls `processEvent` synchronously, so a panic from the nil 
 
 Mutation checks (each must fail at least one test), run in an isolated `git archive` copy:
 
-- remove the whole guard; drop the `Status == done` term; drop the exception term (late success blocked); invert the exception (`Fail` to `Success`); change `ResultFail` in the exception to `ResultSuccess`; loosen the exception to `stored != success`; return `nil, nil` instead of `cc, nil` on skip (killed by the return assertion); in the subscriber: use `newCC.CampaignID` again (case 9), return early on an error (case 9), drop the campaign-level call (case 10), pass an empty id (cases 9 and 10).
+- remove the whole guard; drop the `Status == done` term; drop the exception term (late success blocked); invert the exception (`Fail` to `Success`); change `ResultFail` in the exception to `ResultSuccess`; loosen the exception to `stored != success`; swap `||` for `&&` in the guard; change `Status == done` to `Status != done`; return `nil, nil` instead of `cc, nil` on skip (killed by the return assertion); in the subscriber: use `newCC.CampaignID` again (case 9), return early on an error (case 9), drop the campaign-level call (case 10), pass an empty id (cases 9 and 10).
 
 Existing tests are not weakened (cases and expectations stay as they are).
 
