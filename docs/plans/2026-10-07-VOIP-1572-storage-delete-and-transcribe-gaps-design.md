@@ -1,6 +1,6 @@
 # VOIP-1572 설계: storage 삭제 에러 반환, transcribes API 문서와 테스트 공백, -count 반복 테스트 안정화
 
-- 상태: Draft (설계 리뷰 2-3회차 연속 승인, 구현 시작)
+- 상태: APPROVED (설계 리뷰 2-3회차 연속 승인, 구현 완료)
 - 티켓: VOIP-1572
 - 선행 문서: docs/plans/2026-10-07-VOIP-1572-storage-delete-and-transcribe-gaps-analysis.md (이슈 분석 리뷰 2, 3회차 연속 승인)
 - 기준: origin/main 754296f72
