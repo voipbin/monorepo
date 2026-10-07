@@ -1,8 +1,8 @@
-# VOIP-1573 Flow AI Builder 디자인 (v7)
+# VOIP-1573 Flow AI Builder 디자인 (v8)
 
-Jira: VOIP-1573. 상태: **디자인 리뷰 루프 진행 중.** 이력: 1~4회차 모두 REQUEST_CHANGES. 5회차: G APPROVE, H REQUEST_CHANGES(High 1). 6회차: I APPROVE(Critical/High 0, Medium 1), J REQUEST_CHANGES(Critical/High 0, Medium 3). J의 Medium은 문서 정합성과 근거 누락이며 v7에서 모두 반영했다. 연속 APPROVE 0(J로 리셋). 회차가 갈수록 지적 심각도와 건수가 줄고 있다(1회차 Critical 2 → 4회차 Critical 0).
+Jira: VOIP-1573. 상태: **디자인 리뷰 루프 진행 중.** 이력: 1~4회차 모두 REQUEST_CHANGES. 5회차: G APPROVE, H REQUEST_CHANGES(High 1). 6회차: I APPROVE(Critical/High 0, Medium 1), J REQUEST_CHANGES(Critical/High 0, Medium 3). J의 Medium은 문서 정합성과 근거 누락이며 v7에서 모두 반영했다. 7회차: K APPROVE(Medium 1), L APPROVE(Low 3) = 전원 APPROVE, 연속 APPROVE 1. 8회차 리뷰어의 Medium 이하 지적은 v8에서 문서 정정으로 반영했다(리셋하지 않음). 회차가 갈수록 지적 심각도와 건수가 줄고 있다(1회차 Critical 2 → 4회차 Critical 0).
 
-v7은 6회차 지적을 반영했다(부록 A). 핵심 변경: 기존 `MapRequiredMediasByType`(액션별 적용 미디어) 활용, `ref`의 `optional`/`<kind>` 제거(경고는 `actioncatalog.Required`와 `ref` 종류의 교집합으로 계산), `/flow_builder/status` 폐기(기존 status 재사용), 43개 타입 분류 초안(부록 B). 처리 내역은 부록 A.
+v8은 7회차의 Medium/Low 지적을 반영했다(부록 A). 핵심 변경: 기존 `MapRequiredMediasByType`(액션별 적용 미디어) 활용, `ref`의 `optional`/`<kind>` 제거(경고는 `actioncatalog.Required`와 `ref` 종류의 교집합으로 계산), `/flow_builder/status` 폐기(기존 status 재사용), 43개 타입 분류 초안(부록 B). 처리 내역은 부록 A.
 
 ## 1. 문제와 확정 결정
 
@@ -113,18 +113,18 @@ few-shot에 쓰는 타입 상수가 `TypeListAll`에 있고 `core`이며 프런�
 ### 3.2 코드가 확정하는 변환 (서버, 순서 고정)
 
 1. **label 정규화**: 중복 label은 첫 노드를 유지하고 이후 노드를 제거하며 `duplicate_label` 경고를 기록한다(이후 참조는 첫 노드로 해석). 클라이언트가 보낸 `labels`(5절)는 신뢰하지 않는다. 중복, 존재하지 않는 id, 자동 부여 label(`n1...`)과의 충돌은 버리고 재부여한다.
-2. **타입 필터**: 노출 집합에 없는 타입의 노드를 삭제하고 `unsupported_action: <label>` 경고를 기록한다. 삭제 노드를 가리키던 참조(`next`, `ref:"action"` 값)는 비운다(`IDEmpty`). 비워진 `ref:"action"`은 3.3에서 `empty_action_ref`로, 후속이 끊긴 노드는 열린 끝으로 자연히 잡힌다. 후속 체인 이어 붙이기는 하지 않는다(카탈로그에 없는 타입을 LLM이 내는 경우는 드물 것이므로 실측 후 확장한다). `actions[0]`이 삭제되면 삭제 노드가 가리키던 `next` 노드를 새 시작으로 쓴다. 새 시작을 정할 수 없으면(후속이 없음) 남은 노드가 있어도 초안을 비우고 `empty_draft`로 응답한다(시작 없는 그래프는 의미가 없다).
+2. **타입 필터**: 노출 집합에 없는 타입의 노드를 삭제하고 `unsupported_action: <label>` 경고를 기록한다. 삭제 노드를 가리키던 참조(`next`, `ref:"action"` 값)는 비운다(`IDEmpty`). 비워진 `ref:"action"`은 3.3에서 `empty_action_ref`로, 후속이 끊긴 노드는 열린 끝으로 자연히 잡힌다. 후속 체인 이어 붙이기는 하지 않는다(카탈로그에 없는 타입을 LLM이 내는 경우는 드물 것이므로 실측 후 확장한다). `actions[0]`이 삭제되면 삭제 노드가 가리키던 `next` 노드를 새 시작으로 쓴다. 새 시작을 정할 수 없으면(후속이 없거나 후속도 삭제된 경우 포함) 남은 노드가 있어도 초안을 비우고 `empty_draft`로 응답한다(시작 없는 그래프는 의미가 없다).
 3. 남은 노드에 새 UUID를 1:1 부여한다.
 4. **먼저 모든 `ref:"resource"` 필드 값을 `IDEmpty`로 비운다**(LLM이 이름 문자열 등 UUID가 아닌 값을 넣어도 `invalid_option`과 `select_resource`가 중복 보고되지 않게). 이어서 `next` → `next_id`(없으면 `IDEmpty`). FlowKind가 `continue`가 아닌 노드의 `next`는 무시하고 `next_ignored: <label>`을 기록한다. `ref:"action"` 값(스칼라, 맵 값)과 `next`의 label을 UUID로 치환한다. **알 수 없는 label**은 `IDEmpty`로 비우고 `invalid_label_ref: <label>`을 기록한다(노드는 유지. 에디터에서 보완 가능). 이어서 `option`을 `OptionStructByType`의 구조체로 엄격 디코딩해 알 수 없는 키나 형 불일치는 버리고 `invalid_option: <label>.<key>`를 기록한다(LLM이 틀린 옵션을 내도 저장 시점에야 발견되지 않게 한다).
 5. `ref:"resource"`는 `IDEmpty`로 두고, 2.3의 경고 규칙에 따라 `select_resource: <label>.<field>`를 기록한다. null/생략은 모두 `IDEmpty`.
 6. **배열 순서**: 시작 노드는 항상 `actions[0]`이다(`IDStart`는 `Actions[0]`을 반환하므로 다른 규칙보다 우선한다). 나머지는 BFS 순으로 배열하되 **"열린 끝"(FlowKind가 `continue`이고 후속이 없는 노드)을 배열 뒤쪽으로 미룬다**(낙하가 곧 종료가 되도록 마지막 원소로 보낸다). 변환기는 후속이 있는 `continue` 노드의 `next_id`를 **항상 명시**하고 배열 인접 낙하에 의존하지 않는다. 낙하에 의존하는 것은 열린 끝뿐이다. **배열의 마지막 원소가 아닌 열린 끝은 항상** `open_end: <label>`을 기록한다(시작 노드가 열린 끝이고 고아 노드가 뒤에 놓인 경우, 열린 끝이 둘 이상인 경우 포함. 낙하로 다음 노드가 실행되므로 사용자가 에디터에서 연결을 완성해야 한다). 마지막 원소인 열린 끝은 정상 종료이며 경고하지 않는다. 사용자가 에디터에서 노드를 추가하면 `nodes[]` 끝에 붙어 마지막 열린 끝이 그 노드로 낙하할 수 있다. 이는 사람이 만든 Flow에도 동일한 에디터 특성이며 수용한다. 이 단계는 2~5가 끝난 최종 그래프를 기준으로 한다.
 7. **레이아웃**: 시작 `x=0, y=100`, 깊이마다 `y`를 500 증가, 같은 깊이는 `x`를 450 간격(템플릿과 같은 간격). 도달 불가 노드는 맨 오른쪽 열. 가상 `start` 좌표는 건드리지 않는다.
-8. 필터 후 노드가 0개이거나 새 시작을 정할 수 없으면 `draft`를 생략하고 `message`에 이유를 쓰며 `empty_draft`를 기록한다.
+8. 필터 후 노드가 0개이거나(2번의 새 시작을 정할 수 없는 경우 포함) `draft`를 생략하고 `message`에 이유를 쓰며 `empty_draft`를 기록한다.
 9. 출력: `actions`(`[]Action`, `actions[0]`이 시작), `positions`, `labels`(`{id: label}`). `actions`와 `positions`는 에디터의 `setInitialActions`/`setInitialPositions`에 변환 없이 들어간다.
 
 ### 3.3 그래프 구조 검증기 (v1 범위)
 
-`builderhandler`의 검증기는 타입 이름을 모른다. 입력은 `[]Action`과 메타(`FlowKind`, `ref`)와 `actioncatalog`의 `Required`뿐이다. 후속 참조의 정의는 FlowKind별로 다르다: continue = `next_id`가 있으면 그 노드, **`next_id`가 비었을 때만** 배열 인접 원소(+ `ref:"action"` 값), terminate = 없음, jump = `ref:"action"` 값만. 모든 결과는 경고다(초안은 항상 응답한다).
+`builderhandler`의 검증기는 타입 이름을 모른다. 입력은 `[]Action`과 메타(`FlowKind`, `ref`), `actioncatalog`의 `Required`, 기존 `MapRequiredMediasByType`뿐이다. 후속 참조의 정의는 FlowKind별로 다르다: continue = `next_id`가 있으면 그 노드, **`next_id`가 비었을 때만** 배열 인접 원소(+ `ref:"action"` 값), terminate = 없음, jump = `ref:"action"` 값만. 모든 결과는 경고다(초안은 항상 응답한다).
 
 v1 검사 항목(기계적이고 비용이 낮은 것만). 끊어진 참조는 서버가 매 턴 그래프를 재구성하고 3.2의 4번이 알 수 없는 label을 비우므로 변환 후에는 발생하지 않아 별도 검사를 두지 않는다.
 1. 비어 있는 `ref:"action"` 필드(`branch`, 조건 액션 모두 대상이 비면 실행 시 `GetAction` 오류로 흐름이 중단) → `empty_action_ref`(조건 액션은 false 경로에서만 실행 오류가 나지만 대상이 비면 항상 경고한다). `branch.target_ids`가 빈 맵인 경우는 `default_target_id`가 있으면 경고하지 않는다.
@@ -156,18 +156,18 @@ Assistant Builder의 구성(역할, 핵심 차원, 인터뷰 행동 규칙, few-
 - `draft_warnings`는 기존 Assistant Builder 패턴을 따른다: `key` 또는 `key: detail` 형식의 영어 키 문자열 배열이며 클라이언트가 키로 문구를 고른다. 키 목록: `duplicate_label`, `unsupported_action`, `invalid_label_ref`, `invalid_option`, `select_resource`, `open_end`, `empty_action_ref`, `unreachable`, `next_ignored`, `missing_required`, `media_mixed`, `empty_draft`.
 - `sensitive_nodes`: 노출된 `sensitive` 노드의 id 배열(신규 응답 필드, `omitempty`, OpenAPI `ChatResponse`에 추가). 프런트가 노드를 강조한다.
 - label 연속성은 보장되지 않는다(best effort). 저장 전이라 영향이 없다.
-- **와이어 상한**: 노드 수 `MaxFlowNodes = 60`(초기값, 미측정), `current_draft.actions` 개수 <= 60, `positions`/`labels` 항목 수는 `actions` 이하, 노드당 `option`은 직렬화 크기 상한(구현 시 정하고 `ValidateRequest`에 포함), `option` 중첩 깊이 상한. 메시지 수/길이는 Assistant Builder 상수를 공유한다. `ValidateRequest`는 대화용 한도와 **초안용 한도를 분리**한다. 대화용: Assistant와 같은 상수(`MaxMessages` 40, `MaxMessageRunes` 2000, `MaxTotalRunes` 40000)가 **메시지 텍스트만** 합산한다(요청에는 `assumptions`가 없다). 초안용: 노드당 `option` 직렬화 4KiB, `MaxFlowNodes` 60, 초안 전체 직렬화 약 240KiB, `labels` 항목은 `actions` 수 이하이며 label 길이 상한 64자(모두 미측정 초기값). 대화 이력은 최대 약 120KiB(40,000룬 x 3바이트이며 JSON `\uXXXX` 이스케이프 시 6바이트가 되어 한도 미만에서도 거절될 수 있음을 기존 코드와 같이 수용한다. `option`에 한글이 많을 때도 같다), `positions`/`labels` 약 20KiB, 합계 약 380KiB이므로 본문 상한 초기값은 512KiB로 둔다(평가 하네스 실측 후 조정하며 **앞단 ingress의 본문 크기 제한과 충돌하지 않는지 구현 시 확인**한다). Flow 전용 메시지 한도는 두지 않고 Assistant 상수를 공유하므로(기존 status 재사용의 전제) 한도를 따로 정하려면 status도 함께 바꿔야 한다. **요청 본문 상한은 Assistant의 160KiB를 그대로 쓰지 않는다.**
+- **와이어 상한**: 노드 수 `MaxFlowNodes = 60`(초기값, 미측정), `current_draft.actions` 개수 <= 60, `positions`/`labels` 항목 수는 `actions` 이하, 노드당 `option`은 직렬화 크기 상한(구현 시 정하고 `ValidateRequest`에 포함), `option` 중첩 깊이 상한. 메시지 수/길이는 Assistant Builder 상수를 공유한다. `ValidateRequest`는 대화용 한도와 **초안용 한도를 분리**한다. 대화용: Assistant와 같은 상수(`MaxMessages` 40, `MaxMessageRunes` 2000, `MaxTotalRunes` 40000)가 **메시지 텍스트만** 합산한다(요청에는 `assumptions`가 없다). 초안용: 노드당 `option` 직렬화 4KiB, `MaxFlowNodes` 60, 초안 전체 직렬화(`actions` 합계) 약 240KiB(`positions`와 `labels`는 아래에서 따로 센다), `labels` 항목은 `actions` 수 이하이며 label 길이 상한 64자(모두 미측정 초기값). 대화 이력은 최대 약 120KiB(40,000룬 x 3바이트이며 JSON `\uXXXX` 이스케이프 시 6바이트가 되어 한도 미만에서도 거절될 수 있음을 기존 코드와 같이 수용한다. `option`에 한글이 많을 때도 같다), `positions`/`labels` 약 20KiB, 합계 약 380KiB이므로 본문 상한 초기값은 512KiB로 둔다(평가 하네스 실측 후 조정하며 **앞단 ingress의 본문 크기 제한과 충돌하지 않는지 구현 시 확인**한다). Flow 전용 메시지 한도는 두지 않고 Assistant 상수를 공유하므로(기존 status 재사용의 전제) 한도를 따로 정하려면 status도 함께 바꿔야 한다. **요청 본문 상한은 Assistant의 160KiB를 그대로 쓰지 않는다.**
 
 ### 5.1 횡단 관심사 (실제 ai_builder 구현을 읽고 확인한 항목)
 
 - **RBAC**: `canUseBuilder`와 같은 규칙(로그인한 Agent + customer admin 또는 manager). 상태 조회는 기존 `GET /ai_builder/status`를 **재사용**한다(가용성은 같은 키 설정에 달려 있고 한도도 같으므로 별도 status를 만들면 RPC, 캐시 인스턴스, OpenAPI, 테스트가 불필요하게 늘어난다). 권한이 없으면 200과 `available:false`. Flow 생성 권한(`servicehandler/flow.go`: Admin|Manager)과 일치한다.
 - **처리 순서**: key → ValidateRequest → semaphore → 일일 한도 → LLM. 파싱 실패도 한도를 소비한다(Assistant와 동일).
 - **일일 한도 카운터**: `cachehandler.BuilderChatCountIncr`는 현재 고정 키(`ai:builder:chat:count:%s`) 하나다. 결정(Open Question 7)에 따라 두 안이 있다. (공유) 키를 그대로 쓰고 오류 문구만 일반화한다. 한쪽 사용이 다른 쪽 한도를 소진한다. (분리) **Assistant의 키 문자열은 그대로 두고 Flow 키만 추가**한다(배포 시 진행 중인 일일 카운트가 초기화되지 않게). `CacheHandler` 인터페이스, mock, `cachehandler/builder_test.go`를 함께 갱신한다. 한도 값은 같은 기본값.
-- **세마포어와 설정**: `sem`과 `DailyLimit`은 `builderHandler` 인스턴스 필드(`builderhandler/main.go`)다. **세마포어는 공유한다**: LLM 동시 호출 상한은 플랫폼의 LLM 제공자 부하를 막는 하나의 자원 한도이므로 Assistant와 Flow가 같은 풀을 쓴다(Flow 턴이 더 오래 점유해 서로 `BUILDER_BUSY`를 유발할 수 있음을 수용한다). Flow 핸들러를 같은 인스턴스에 두거나 `sem`을 주입한다. 일일 카운터의 공유/분리(OQ7)는 별개 결정이다(고객당 사용량 한도). `cmd/ai-manager/builder_wiring.go`, config(`ai_builder_*`)를 **그대로 공유**하며 새 플래그를 만들지 않는다.
-- **출력 토큰**: `MaxOutputTokens` 기본 4096은 60노드 JSON 초안에 부족할 수 있다. Flow용 값은 `builderhandler.Options`의 필드(코드 상수 기본값, 새 설정 플래그나 config 변경 없음)로 두고 평가 하네스 실측으로 정한다. LLM 타임아웃(40초, 검증 <= 50)도 실측 후 재확인한다.
+- **세마포어와 설정**: `sem`과 `DailyLimit`은 `builderHandler` 인스턴스 필드(`builderhandler/main.go`)다. **세마포어는 공유한다**: LLM 동시 호출 상한은 플랫폼의 LLM 제공자 부하를 막는 하나의 자원 한도이므로 Assistant와 Flow가 같은 풀을 쓴다(Flow 턴이 더 오래 점유해 서로 `BUILDER_BUSY`를 유발할 수 있음을 수용한다). Flow 핸들러는 `sem`을 **주입**받는 별도 구현으로 둔다(같은 인스턴스를 쓰면 기존 `fail()`/`result`가 `ai_manager_builder_*` 메트릭을 직접 증가시켜 `flow_builder_*`와 분리 집계할 수 없다). 일일 카운터의 공유/분리(OQ7)는 별개 결정이다(고객당 사용량 한도). `cmd/ai-manager/builder_wiring.go`, config(`ai_builder_*`)를 **그대로 공유**하며 새 플래그를 만들지 않는다.
+- **출력 토큰**: `MaxOutputTokens` 기본 4096은 60노드 JSON 초안에 부족할 수 있다. Flow용 값은 `builderhandler.Config`(`MaxOutputTokens`, `LLMTimeout`, `SystemPrompt`, `JSONMode`는 `Options`가 아니라 `Config`에 있다)의 Flow 전용 인스턴스에 코드 상수 기본값으로 두고(새 설정 플래그나 환경 설정 변경 없음) 평가 하네스 실측으로 정한다. LLM 타임아웃(40초, 검증 <= 50)도 실측 후 재확인한다.
 - **로깅 금지**: 본문, `current_draft`, 파싱 오류, 실패 오류 텍스트를 로그에 남기지 않는다(`option`에 민감값이 올 수 있다). 요청 로거 이전 라우팅, 오류를 응답으로만 변환, panic 복구 시 본문 제외를 Assistant와 같은 방식으로 적용한다. **`listenhandler`의 `isBuilderRoute`는 URI 완전 일치**이므로 Flow URI를 반드시 추가해야 이 보장이 적용된다. 센티널 문자열 테스트로 검증한다.
 - **타임아웃 순서**: LLM < RPC < 클라이언트. `BUILDER_TIMEOUT` 등 오류 reason 매핑은 재사용한다. 서버 쪽 오류 문구(`mapBuilderRPCError`, ai-manager의 "assistant builder" 문자열)와 프런트 `ERROR_COPY`에서 "assistant" 고정 표현을 일반화하거나 kind별로 분리한다.
-- **메트릭, 서킷브레이커**: 기존 Assistant 메트릭(`ai_manager_builder_chat_total{result}`, `builder_chat_duration_seconds`, `builder_tokens_total`, `api_manager_builder_timeout_total`, `api_manager_builder_circuit_open_total`)의 이름과 라벨은 **바꾸지 않는다**(라벨을 추가하면 집계 없는 기존 쿼리와 알림이 시리즈 분리로 깨질 수 있고 이 저장소 밖의 대시보드는 확인할 수 없다). Flow는 `flow_builder_` 접두 별도 메트릭을 같은 형태로 추가한다. **서킷브레이커는 RPC 큐 단위**(`send_request.go`의 `r.cb.Allow(string(queue))`)이고 `sendDirectRequest`의 모든 오류(타임아웃 포함)가 `RecordFailure(queue)`로 집계되며 연속 실패 임계값은 5회(`circuitbreakerhandler/option.go`)다. 따라서 Flow 턴은 큐를 공유하는 다른 ai-manager RPC와 브레이커를 공유하며 분리할 수 없다(분리하려면 `requesthandler` 공통 코드를 바꿔야 하며 이 설계의 범위가 아니다). **결합을 수용한다**: Assistant Builder도 이미 같은 결합이고, Flow 턴은 LLM 40초와 출력 토큰 증가로 타임아웃 확률이 더 높을 수 있으나 브레이커는 연속 5회 실패가 있어야 열린다. 완화는 평가에서 Flow 턴의 타임아웃 비율을 실측해 높으면 빌더 타임아웃을 집계에서 제외하는 `requesthandler` 변경을 후속으로 설계한다(Open Question 10). `"ai/flow_builder/chat"`은 소요 시간 메트릭의 `resource` 라벨이다. 
+- **메트릭, 서킷브레이커**: 기존 Assistant 메트릭(`ai_manager_builder_chat_total{result}`, `builder_chat_duration_seconds`, `builder_tokens_total`, `api_manager_builder_timeout_total`, `api_manager_builder_circuit_open_total`)의 이름과 라벨은 **바꾸지 않는다**(라벨을 추가하면 집계 없는 기존 쿼리와 알림이 시리즈 분리로 깨질 수 있고 이 저장소 밖의 대시보드는 확인할 수 없다). Flow는 `flow_builder_` 접두 별도 메트릭을 같은 형태로 추가한다. **서킷브레이커는 RPC 큐 단위**(`send_request.go`의 `r.cb.Allow(string(queue))`)이고 `sendDirectRequest`의 모든 오류(타임아웃 포함)가 `RecordFailure(queue)`로 집계되며 연속 실패 임계값은 5회(`circuitbreakerhandler/option.go`)다. 따라서 Flow 턴은 큐를 공유하는 다른 ai-manager RPC와 브레이커를 공유하며 분리할 수 없다(분리하려면 `requesthandler` 공통 코드를 바꿔야 하며 이 설계의 범위가 아니다). **결합을 수용한다**: Assistant Builder도 이미 같은 결합이고, Flow 턴은 LLM 40초와 출력 토큰 증가로 타임아웃 확률이 더 높을 수 있으나 브레이커는 연속 5회 실패가 있어야 열리고, 열리면 같은 큐의 다른 ai-manager RPC도 기본 30초간(`defaultOpenDuration`) 차단된다. 완화는 평가에서 Flow 턴의 타임아웃 비율을 실측해 높으면 빌더 타임아웃을 집계에서 제외하는 `requesthandler` 변경을 후속으로 설계한다(Open Question 10). `"ai/flow_builder/chat"`은 소요 시간 메트릭의 `resource` 라벨이다. 
 - **문서/인터페이스**: `bin-api-manager/docs/routing.md`, `bin-ai-manager/docs/operations.md`, `servicehandler/main.go` 인터페이스와 mock 갱신.
 
 ## 6. 프런트엔드 통합
@@ -193,7 +193,7 @@ v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노
 | 서비스 | 변경 |
 |---|---|
 | bin-flow-manager | `models/action`: `Meta`/`MetaByType`, `ref` 태그, drift-lock 테스트 3종(`TestMetaCoversAllTypes`, `TestEveryUUIDFieldIsTagged`, `TestBuilderExcludedTypes`) |
-| bin-ai-manager | `pkg/builderhandler`에 flow 전용 chat 핸들러, 변환기, 검증기, 프롬프트. `models`에 flow builder 요청/응답/검증. `listenhandler` 라우트와 `isBuilderRoute`, `cachehandler`(Flow 카운터 키 추가, Assistant 키 유지) + mock + `builder_test.go`, `flow_builder_` 메트릭 추가, `cmd/ai-manager/builder_wiring.go`, 평가 하네스, `docs/operations.md` |
+| bin-ai-manager | `pkg/builderhandler`에 flow 전용 chat 핸들러, 변환기, 검증기, 프롬프트. `models`에 flow builder 요청/응답/검증. `listenhandler` 라우트와 `isBuilderRoute`, `cachehandler`(Flow 카운터 키 추가, Assistant 키 유지) + mock + `builder_test.go`, `flow_builder_` 메트릭 추가, `cmd/ai-manager/builder_wiring.go`, 평가 하네스, `docs/operations.md`, "the assistant builder" 고정 문구 5곳 이상(`chat.go` 등)의 일반화 |
 | bin-common-handler | `requesthandler`에 flow builder RPC(`ai_builder.go` 패턴, 소요 시간 `resource` 라벨만 Flow용) |
 | bin-api-manager | `server/flow_builder.go`, `servicehandler/flow_builder.go`, `servicehandler/main.go` 인터페이스와 mock, 기존 `builderStatusCache` 재사용, `flow_builder_` 메트릭, `gens/openapi_server/gen.go` 재생성, `docs/routing.md` |
 | bin-openapi-manager | `paths/flow_builder/chat.yaml`, `openapi.yaml` 라우트 등록, `gen.go` 재생성. 응답 스키마에 `sensitive_nodes`와 Flow 경고 키 목록 설명 추가. OpenAPI 설명의 "not released / no on-off setting" 문구는 Assistant Builder의 현재 문구 정책을 그대로 따른다 |
@@ -204,7 +204,7 @@ v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노
 Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 교체한다.
 1. 모호한 요청 → 트리거 채널과 실패 처리를 좁히는 질문.
 2. 전문가가 분기 조건을 모두 제공 → 열린 갈림길이 없으면 한 턴 초안.
-3. **결정론 검사(LLM 판정 불필요)**: 끊어진 참조 0, 도달 불가 0, `open_end` 경고와 실제 열린 끝 1:1, `select_resource` 경고와 비어 있는 리소스 필드 1:1.
+3. **결정론 검사(LLM 판정 불필요)**: 끊어진 참조 0, 도달 불가 0, `open_end` 경고와 "배열 마지막 원소를 제외한 열린 끝" 1:1, `select_resource` 경고와 비어 있는 리소스 필드 1:1.
 4. **메타데이터 변이 테스트**: `TypeListAll`에 새 타입을 추가하고 `MetaByType`/태그를 빼면 CI가 실패하는지 확인한다.
 5. 프런트 분기 계열 왕복 단위 테스트(2.5).
 6. v1 범위 밖 확인: 재시도 루프(`goto` 기반) 시나리오는 빌더가 만들 수 없으며(2.2) 평가 시나리오에서 제외하고 "지원 범위 밖" 응답을 확인한다.
@@ -241,6 +241,19 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 5. 평가 실행(9절) → 코드 리뷰 루프.
 
 ## 부록 A. 처리 내역
+
+### 7회차 (K APPROVE, L APPROVE), 코드 재검증
+| 지적 | 재검증 | 처리 |
+|---|---|---|
+| K-M1 9절 3번이 `open_end` 정의와 충돌(n개 열린 끝에 경고 n-1개) | **사실.** 3.2의 6번은 마지막 원소를 경고하지 않음 | 9절 3번 정정 |
+| K-L1 3.3 입력 목록에 `MapRequiredMediasByType` 누락 | 타당 | 3.3 |
+| K-L2 열림 지속 시간 | **사실.** `defaultOpenDuration` 30초 | 5.1 |
+| K-L3, L4 `actions[0]` 삭제 연쇄, 8번 중복 | 타당 | 3.2의 2번, 8번 |
+| K-Nit 헤더 "4회차 Critical 0" 근거 | 4회차 리뷰어 E, F의 판정에 Critical 없음(보고 원문 기준) | 헤더 유지, 추적은 보고에 있음 |
+| L-L1 `MaxOutputTokens`는 `Config`에 있음 | **사실.** `Options`는 `KeyConfigured`, `DailyLimit`, `MaxConcurrent` | 5.1 |
+| L-L2 `positions`/`labels` 포함 여부 | 타당 | 5절 |
+| L-L3 `fail()`이 Assistant 메트릭을 직접 증가 | **사실.** | 5.1: 세마포어 주입 방식 |
+| L-Nit 서버 문구 일반화 대상 | 타당 | 8절 |
 
 ### 6회차 (I APPROVE, J REQUEST_CHANGES), 코드 재검증
 | 지적 | 재검증 | 처리 |
