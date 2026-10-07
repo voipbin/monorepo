@@ -32,6 +32,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/internal/config"
 	"monorepo/bin-api-manager/internal/nethandler"
+	"monorepo/bin-api-manager/lib/logmask"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/lib/service"
 	"monorepo/bin-api-manager/models/common"
@@ -221,17 +222,20 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 		"func": "runListenHTTP",
 	})
 
-	// Equivalent to gin.Default() (Logger + Recovery), except the access
-	// logger skips the provisioning paths: their token query parameter is a
-	// short-lived SIP credential-fetch secret and must never reach stdout.
-	// gin.Default() is Logger() + Recovery(), and Logger() is
-	// LoggerWithConfig(LoggerConfig{}), so an empty config plus SkipPaths
-	// keeps the exact same log format for every other route.
+	// Same log format as gin.Default() (Logger + Recovery) via
+	// logmask.Middlewares, except the access logger skips the provisioning
+	// paths: their token query parameter is a short-lived SIP credential-fetch
+	// secret and must never reach stdout. Both sinks also mask accesskey and
+	// token values (see below).
 	// The public handler (lib/service.GetProvisioningExtension) emits its own
 	// structured log line to preserve observability for the skipped paths.
 	app := gin.New()
-	app.Use(gin.LoggerWithConfig(gin.LoggerConfig{
-		SkipPaths: []string{
+	// The access logger and the recovery dump print the raw request query and
+	// the Cookie header, which can carry the accesskey or the JWT
+	// (lib/middleware/authenticate.go reads both from the query and cookies).
+	// logmask masks their values in both sinks (VOIP-1568).
+	app.Use(logmask.Middlewares(
+		[]string{
 			"/provisioning/extension", "/v1.0/provisioning/extension",
 			// MCP server OAuth vendor callback relay: the query string
 			// carries the vendor's one-time authorization `code` and
@@ -244,8 +248,8 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 			"/mcpservers/oauth/callback", "/v1.0/mcpservers/oauth/callback",
 			"/v1.0/mcpservers/oauth/start", "/v1.0/mcpservers/oauth/complete",
 		},
-	}))
-	app.Use(gin.Recovery())
+		nil, nil,
+	)...)
 	app.Use(middleware.RequestID()) // NEW — tag every request with a correlation ID first.
 	app.NoRoute(server.NoRoute())   // Emit the canonical error envelope for unrouted paths.
 
