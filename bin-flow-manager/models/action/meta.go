@@ -70,7 +70,7 @@ type Meta struct {
 }
 
 // MetaByType declares Exposure and FlowKind for every action Type in
-// TypeListAll. TestMetaCoversAllTypes enforces completeness.
+// TypeListAll. Test_MetaCoversAllTypes enforces completeness.
 //
 // goto is deliberately absent from the FlowKind model (it is a conditional
 // jump: loop_count<=0 continues, otherwise it jumps) and from the editor's
