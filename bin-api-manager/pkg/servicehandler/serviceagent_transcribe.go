@@ -180,6 +180,7 @@ func (h *serviceHandler) transcribeGetResourceInfoForAgent(ctx context.Context, 
 		tmpResource, tmpErr := h.conferenceGet(ctx, referenceID)
 		if tmpErr != nil {
 			err = tmpErr
+			break
 		}
 		tmpCustomerID = tmpResource.CustomerID
 		resReferenceType = tmtranscribe.ReferenceTypeConfbridge
@@ -189,6 +190,7 @@ func (h *serviceHandler) transcribeGetResourceInfoForAgent(ctx context.Context, 
 		tmpResource, tmpErr := h.recordingGet(ctx, referenceID)
 		if tmpErr != nil {
 			err = tmpErr
+			break
 		}
 		tmpCustomerID = tmpResource.CustomerID
 		resReferenceType = tmtranscribe.ReferenceTypeRecording
