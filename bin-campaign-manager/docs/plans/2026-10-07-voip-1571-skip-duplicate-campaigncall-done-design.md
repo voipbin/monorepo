@@ -1,13 +1,14 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 5 (design review round 4: one approval, one change request on the lint form of the guard, applied)
+Status: Draft, revision 6 (design review round 5 approved by both reviewers; MINOR/NIT items applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
 Revision history (newest first):
 
+- Revision 6 (from design review round 5, MINOR/NIT only): the accepted limit states that this change removes the incidental repair of a partial `Done` by a duplicate hangup; the unchanged interface (no mock regeneration) is stated; the lint note moved out of the code block; the outdial file path is complete; the duplicate no-impact sentence is removed; revision 3 wording corrected.
 - Revision 5 (from design review round 4): the guard is written in the De Morgan form that passes the CI lint (QF1001 rejected the negated conjunction); the log sketch has real arguments; two mutations added; the customer-visible result change is stated.
 - Revision 4 (from design review round 3): the subscriber assignment is `_, err = ...` (`err` is already declared at `callmanager.go:27`, so `:=` does not compile); the evidence the design depends on is summarized in section 1 so the document can be read without the analysis note; the revision history is a list.
-- Revision 3 (from design review round 2, MINOR/NIT only): the docs target is fixed (`domain.md`, Campaigncall Lifecycle); explicit cases for a stored dialing and progressing campaigncall; the subscriber test needs per-case expectations; the subscriber assignment is written as `_, err =` (see revision 4); the first table row reads "any state other than done".
+- Revision 3 (from design review round 2, MINOR/NIT only): the docs target is fixed (`domain.md`, Campaigncall Lifecycle); explicit cases for a stored dialing and progressing campaigncall; the subscriber test needs per-case expectations; the assignment form of the subscriber call is specified in revision 4; the first table row reads "any state other than done".
 - Revision 2 (from design review round 1): the error path of the subscriber no longer returns early; it keeps the original intent (log the error, still run the campaign-level handler) using the `CampaignID` of the campaigncall the subscriber already loaded, so a stop signal is not lost; the current nil dereference is a process crash (the event runs in a goroutine without `recover`); the consumer wording is corrected; the late-success exception side effect is stated as an accepted limit; the test plan asserts return values and tightens case 6.
 
 Issue analysis (approved, revision 6, review rounds 4 and 5): `~/agent-hermes/notes/tracks/VOIP-1571-analysis.md`. This document restates only what the design needs; the evidence (callers, event ordering, production numbers, counterexamples) lives there.
@@ -20,11 +21,10 @@ Trigger: `executeCall` marks the campaigncall `Fail` when `CallV1CallCreateWithI
 
 Evidence the design relies on (all code-verified; details in the analysis note, which lives outside the repository):
 
-- `Done` has no already-done check and its effects are the campaigncall write with the `campaigncall_updated` webhook, the done metric, and an unconditional outdial target status write (`status.go:16-49`, `outdialtargethandler/outdialtarget.go:209-233`).
+- `Done` has no already-done check and its effects are the campaigncall write with the `campaigncall_updated` webhook, the done metric, and an unconditional outdial target status write (`status.go:16-49`, `bin-outdial-manager/pkg/outdialtargethandler/outdialtarget.go:209-233`).
 - The only unguarded duplicate source is the call-hangup path; `pkg/subscribehandler/flowmanager.go:35` already guards the activeflow path.
 - Retry counting reads the outdial target `TryCount`, not campaigncall rows, and nothing else in the repository reads `campaigncall.Result`, so correcting a late Fail to Success changes the outdial target state and the result that customers see through the API and the `campaigncall_updated` webhook (the second webhook is accepted, section 3.1).
 - `campaignStopNow` returns early (no webhook) when the campaign is already stopped, so the campaign-level step is idempotent.
-- Production has no running campaign (9325 campaigns all stopped; 14 campaigncalls ever, the last in 2022).
 
 Production impact today: none (all 9325 campaigns stopped, 14 campaigncalls ever, the last in 2022). It affects self-hosted installations that run campaigns.
 
@@ -50,7 +50,6 @@ Rule (i) of the analysis: a campaigncall that is already `done` is left alone, w
 // the campaigncall is already done. a second Done would repeat the webhook, the metric and the outdial target update.
 // the only legitimate second Done is a late success after a recorded failure (the create request errored although the
 // call was created and answered): it corrects the result and the outdial target.
-// (written in the De Morgan form because the repository lint, staticcheck QF1001, rejects the negated conjunction)
 if cc.Status == campaigncall.StatusDone && (cc.Result != campaigncall.ResultFail || result != campaigncall.ResultSuccess) {
     log.Infof("The campaigncall is already done. Skipping. campaigncall_id: %s, stored_result: %s, new_result: %s", cc.ID, cc.Result, result)
     return cc, nil
@@ -67,6 +66,8 @@ Behavior table (stored state, new result):
 | done, success | success | skip | duplicate |
 | done, success | fail | skip | a `done` target must not flip back to `idle`; practically excluded order |
 | done, none | any | skip | `Done` always writes Success or Fail, so this is not expected; skipping is the safe default |
+
+The guard is written in the De Morgan form (`Status == done && (Result != fail || result != success)`) because the repository lint (staticcheck QF1001) rejects the negated conjunction `!(a && b)`; the two forms are logically identical. `CampaigncallHandler` keeps its method set and signatures, so no mock is regenerated.
 
 Return value on skip: `(cc, nil)`, the stored campaigncall, a natural "current state" result (the subscriber does not depend on it, section 3.2).
 
@@ -128,7 +129,7 @@ Existing tests are not weakened (cases and expectations stay as they are).
 
 ## 6. Risks and accepted limits
 
-- A skipped duplicate cannot repair a partial `Done` (the outdial request failed inside the first `Done`, so the target stays `progressing`). This is a theoretical edge case: no reaper exists today, so such a target would stay `progressing` regardless of this change except through this late hangup. Accepted (analysis section 5, question 2). Revisit trigger: an outdial target stuck in `progressing` with a done campaigncall is seen in production.
+- A skipped duplicate cannot repair a partial `Done` (the outdial request failed inside the first `Done`, so the target stays `progressing`). This is a theoretical edge case: no reaper exists today. Before this change a duplicate hangup incidentally re-sent the outdial request and could repair such a target; this change removes that incidental repair (the same-result duplicate is now skipped). Accepted (analysis section 5, question 2). Revisit trigger: an outdial target stuck in `progressing` with a done campaigncall is seen in production.
 - The late `idle` overwrite of a target redialed by a newer campaigncall is removed for the hangup path only. The `execute.go:270` order (hangup first) is not covered (non-goal).
 - The late-success exception (`Done(Success)` after a recorded failure) writes the target `done` unconditionally (`UpdateStatus` has no guard). If the target was redialed by a newer campaigncall in the meantime, it is overwritten with `done` and the newer campaigncall's own `Done` decides the final state again. This is accepted: the number was answered, and the effect is smaller than the redial of an answered number that plain skip would cause. Code-derived, not reproduced.
 - The rule adds one condition to a handler that already contains the result mapping. No new state, no new field.
