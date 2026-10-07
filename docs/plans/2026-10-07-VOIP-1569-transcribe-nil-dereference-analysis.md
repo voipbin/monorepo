@@ -1,6 +1,6 @@
 # VOIP-1569 transcribe 참조 리소스 조회 실패 시 nil 역참조 패닉 이슈 분석
 
-- 상태: Draft (이슈 분석 리뷰 3회차 대기, 2회차 반영)
+- 상태: Draft (이슈 분석 리뷰 4회차 대기, 3회차 반영)
 - 티켓: VOIP-1569
 - 기준: origin/main 49ec4a06d
 - 단계: 이슈 확인과 분석 (코드 변경 없음)
@@ -41,7 +41,7 @@
 
 - bm-nyc-01 api-manager 컨테이너 로그: `panic recovered` 스택이 `transcribe.go:228`, `transcribe.go:159`, `server/transcribes.go:73` 을 가리킨다. 2026-10-06 22:49 UTC 부터 약 20초 동안 레플리카당 약 25회(api-validator 실행 중).
 - 같은 컨테이너 로그에 `RECORDING_NOT_FOUND` 에러가 있다. 시각 대조는 하지 않았으므로 관련성은 추정이다.
-- 호출 주체: api-validator 로 보인다. `monorepo-monitoring/api-validator/tests/scenarios/stt/test_stt_api.py` 등 stt 모듈 3개는 파일 앞부분에 `pytestmark = pytest.mark.skip(...)` 가 있으나 같은 파일 아래에서 `pytestmark = [pytest.mark.stt, ...]` 로 다시 대입되어 skip 이 무효이고 실제로 실행된다. 실제로 skip 되는 것은 `generated/test_transcribes_generated.py` 하나뿐이다. 실행되는 테스트 중 존재하지 않는 recording id(무작위 uuid 또는 nil uuid)로 POST /transcribes 를 보내는 테스트가 이 패닉 경로를 탄다(5절의 목록). 22:49 UTC 의 패닉 시각이 검증기 실행과 부합하는 정황이나 시각 대조는 하지 않았다.
+- 호출 주체: api-validator 로 보인다. `monorepo-monitoring/api-validator/tests/scenarios/stt/test_stt_api.py` 등 `stt/` 의 모듈 4개(`test_stt_accuracy.py`, `test_stt_api.py`, `test_stt_events.py`, `test_stt_languages.py`)는 파일 앞부분에 `pytestmark = pytest.mark.skip(...)` 가 있으나 같은 파일 아래에서 `pytestmark = [pytest.mark.stt, ...]` 로 다시 대입되어 skip 이 무효이고 실제로 실행된다. 실제로 skip 되는 것은 `generated/test_transcribes_generated.py` 하나뿐이다. 실행되는 테스트 중 존재하지 않는 recording id(무작위 uuid 또는 nil uuid)로 POST /transcribes 를 보내는 테스트가 이 패닉 경로를 탄다(5절의 목록). 22:49 UTC 의 패닉 시각이 검증기 실행과 부합하는 정황이나 시각 대조는 하지 않았다.
 
 ### 2.5 기존 테스트 현황
 
@@ -54,7 +54,7 @@
 
 - `transcribeGetResourceInfo`, `transcribeGetResourceInfoForAgent` 의 conference, recording 분기 4곳에 조회 실패 시 `break` 추가.
 - 조회 실패 케이스 테스트 추가(두 함수, conference 와 recording 각각).
-- api-validator(monorepo-monitoring) 의 위 4개 테스트 허용 코드에 404 추가. 저장소가 달라 별도 PR 이다(구조적으로 필요한 분리).
+- api-validator(monorepo-monitoring) 의 위 5개 테스트 허용 코드에 404 추가(5절의 목록). 저장소가 달라 별도 PR 이다(구조적으로 필요한 분리).
 
 제외.
 
@@ -71,11 +71,12 @@
 ## 5. 위험과 수용 사항
 
 - 동작 변화: 실패 조회가 500(패닉)에서 4xx 로 바뀐다. 이 변화는 의도한 것이며 클라이언트가 500 에 의존할 이유가 없다.
-- api-validator 영향(확인함, 이번 수정이 검증기를 빨갛게 만든다): 아래 4개 테스트는 존재하지 않는 recording 으로 POST /transcribes 를 보내고 허용 코드가 `[400, 422, 500]` 이다. 현재는 이 버그의 500 으로 통과하고 있다. 수정 후에는 조회 실패 상태코드(call-manager 의 typed 에러면 404)가 반환되어 실패한다.
+- api-validator 영향(확인함, 이번 수정이 검증기를 빨갛게 만든다): 아래 5개 테스트는 존재하지 않는 recording 으로 POST /transcribes 를 보내고 허용 코드가 `[400, 422, 500]` 이다. 현재는 이 버그의 500 으로 통과하고 있다. 수정 후에는 조회 실패 상태코드(call-manager 의 typed 에러면 404)가 반환되어 실패한다.
   - `stt/test_stt_api.py`: `test_create_transcribe_requires_reference_id`, `test_create_transcribe_requires_language`, `test_create_transcribe_requires_direction`. 본문 검증이 `c.BindJSON` 이라 누락 필드가 요청을 거부하지 않고 빈 값이나 기본값으로 서비스까지 도달한다(direction 은 handler 가 `both` 로 기본 보정). 그 뒤 참조 조회에서 패닉이 난다.
-  - `stt/test_stt_languages.py`: `test_empty_language_rejected`.
+  - `stt/test_stt_languages.py`: `test_empty_language_rejected`, `test_invalid_direction_rejected`. 후자는 잘못된 direction 을 handler 가 거부하지 않고 `Normalize()` 로 `both` 로 보정해 계속 진행하므로 조회 단계에 도달한다(참조: `server/transcribes.go` 의 direction 처리).
+  - 확정 방법: 검증기 저장소의 `tests/` 전체에서 `post("/transcribes"` 를 호출하는 함수를 AST 로 모두 추출해 허용 코드 목록을 대조했다. 404 를 허용하지 않고 500 을 허용하는 8개 중 3개(`test_create_transcribe_requires_reference_type`, `test_create_with_empty_body_returns_error`, `test_invalid_reference_type_rejected`)는 reference_type 이 비었거나 잘못된 값이라 `default` 분기의 `ErrInvalidArgument`(400)로 끝나 영향이 없고, 나머지 5개가 위 목록이다.
   - 나머지 테스트는 404 를 허용하거나(예: `test_create_transcribe_with_invalid_reference_returns_error`, `test_invalid_language_code_rejected`) 200 이면 정리하는 형태라 영향이 없다. `test_create_transcribe_requires_reference_type` 은 빈 reference_type 이 `default` 분기의 `ErrInvalidArgument`(400)로 처리되어 영향이 없다.
-  - 따라서 api-validator 저장소(monorepo-monitoring)의 위 4개 테스트 허용 코드에 404 를 추가하는 변경이 필요하다. 저장소가 달라 별도 PR 이며, 서버 수정 배포 전후로 검증기가 빨갛게 되지 않도록 두 PR 의 순서를 조정한다(검증기 PR 을 먼저 머지해도 500 과 404 를 모두 허용하므로 안전하다).
+  - 따라서 api-validator 저장소(monorepo-monitoring)의 위 5개 테스트 허용 코드에 404 를 추가하는 변경이 필요하다. 저장소가 달라 별도 PR 이며, 서버 수정 배포 전후로 검증기가 빨갛게 되지 않도록 두 PR 의 순서를 조정한다(검증기 PR 을 먼저 머지해도 500 과 404 를 모두 허용하므로 안전하다).
 - 다른 서비스 영향 없음: api-manager 한 곳의 변경이며 API 계약, 이벤트, DB 변경이 없다.
 
 ## 6. 설계 단계로 넘길 사항
