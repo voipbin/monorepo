@@ -65,12 +65,14 @@ func (h *flowBuilderHandler) Chat(ctx context.Context, customerID uuid.UUID, req
 		return nil, h.fail(log, resultDailyLimit, cerrors.ResourceExhausted(commonoutline.ServiceNameAIManager, builder.ReasonDailyLimit, "the daily limit of the flow builder has been reached"))
 	}
 
+	callStart := time.Now()
 	res, errTurn := RunFlowTurn(ctx, h.sender, h.cfg, req, allowed)
 	if res != nil {
 		promFlowBuilderTokensTotal.WithLabelValues("prompt").Add(float64(res.Usage.PromptTokens))
 		promFlowBuilderTokensTotal.WithLabelValues("completion").Add(float64(res.Usage.CompletionTokens))
 	}
 	if errTurn != nil {
+		h.logModelCall(log, res, errTurn, start, callStart, nil)
 		return nil, h.mapTurnError(log, errTurn)
 	}
 
@@ -91,6 +93,7 @@ func (h *flowBuilderHandler) Chat(ctx context.Context, customerID uuid.UUID, req
 	}
 
 	promFlowBuilderChatTotal.WithLabelValues(resultOK).Inc()
+	h.logModelCall(log, res, nil, start, callStart, flowDraftFactsOf(res.Parsed, out))
 	log.Debug("Finished the flow builder turn.")
 	return out, nil
 }

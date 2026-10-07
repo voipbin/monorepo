@@ -7,6 +7,8 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"time"
+	"unicode/utf8"
 
 	"github.com/sashabaranov/go-openai"
 
@@ -39,6 +41,35 @@ type FlowTurnResult struct {
 	Parsed       *FlowParsed
 	Usage        openai.Usage
 	FinishReason string
+
+	// Diag holds sizes and timings for the diagnostic log line. It carries
+	// counts, durations and fixed classes only, never any text (VOIP-1576).
+	Diag FlowTurnDiag
+}
+
+// The fixed values of FlowTurnDiag.InvalidKind, one per place that returns
+// ErrInvalidResponse.
+const (
+	invalidKindNilResponse = "nil_response"
+	invalidKindNoChoices   = "no_choices"
+	invalidKindUnparsable  = "unparsable"
+)
+
+// FlowTurnDiag is what RunFlowTurn measured about one model call. Every field
+// is a count, a size, a duration, a flag or a fixed class; none holds the
+// customer's text, the model's answer, the prompt or the schema.
+type FlowTurnDiag struct {
+	Elapsed             time.Duration // the SendOnce call only
+	BuildElapsed        time.Duration // prompt, schema and message building
+	SystemChars         int           // runes of the system prompt
+	RequestChars        int           // runes of all message contents sent
+	SchemaBytes         int           // bytes of the JSON schema text, 0 unless the schema mode is used
+	ResponseChars       int           // runes of the answer content, 0 when none
+	UserTurns           int
+	HistoryMessages     int
+	AllowedTypes        int
+	CurrentDraftPresent bool
+	InvalidKind         string // set only where ErrInvalidResponse is returned
 }
 
 // RunFlowTurn performs exactly one model call and parses the answer. It
@@ -52,9 +83,18 @@ func RunFlowTurn(ctx context.Context, sender Sender, cfg Config, req *flowbuilde
 		return nil, errors.New("flow builder: request is nil")
 	}
 
+	buildStart := time.Now()
+
 	system := cfg.SystemPrompt
 	if system == "" {
 		system = FlowSystemPrompt(allowed)
+	}
+
+	// The schema text is built once and only for the mode that sends it, so
+	// SchemaBytes matches what goes out.
+	schema := ""
+	if flowUsesSchema(cfg.JSONMode) {
+		schema = FlowResponseSchema(allowed)
 	}
 
 	chatReq := &openai.ChatCompletionRequest{
@@ -65,7 +105,19 @@ func RunFlowTurn(ctx context.Context, sender Sender, cfg Config, req *flowbuilde
 	if cfg.ReasoningEffort != "" {
 		chatReq.ReasoningEffort = cfg.ReasoningEffort
 	}
-	chatReq.ResponseFormat = flowResponseFormat(cfg.JSONMode, allowed)
+	chatReq.ResponseFormat = flowResponseFormat(cfg.JSONMode, schema)
+
+	res := &FlowTurnResult{Diag: FlowTurnDiag{
+		SystemChars:         utf8.RuneCountInString(system),
+		SchemaBytes:         len(schema),
+		UserTurns:           flowUserTurns(req),
+		HistoryMessages:     len(req.Messages),
+		AllowedTypes:        len(allowed),
+		CurrentDraftPresent: req.CurrentDraft != nil,
+	}}
+	for _, m := range chatReq.Messages {
+		res.Diag.RequestChars += utf8.RuneCountInString(m.Content)
+	}
 
 	callCtx := ctx
 	if cfg.LLMTimeout > 0 {
@@ -74,35 +126,73 @@ func RunFlowTurn(ctx context.Context, sender Sender, cfg Config, req *flowbuilde
 		defer cancel()
 	}
 
+	callStart := time.Now()
+	res.Diag.BuildElapsed = callStart.Sub(buildStart)
 	resp, err := sender.SendOnce(callCtx, chatReq)
+	res.Diag.Elapsed = time.Since(callStart)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == nil {
-			return nil, ErrTimeout
+			return res, ErrTimeout
 		}
-		return nil, &LLMError{Code: ClassifyLLMError(err)}
+		return res, &LLMError{Code: ClassifyLLMError(err)}
 	}
 	if resp == nil {
-		return &FlowTurnResult{}, ErrInvalidResponse
+		res.Diag.InvalidKind = invalidKindNilResponse
+		return res, ErrInvalidResponse
 	}
+	res.Usage = resp.Usage
 	if len(resp.Choices) == 0 {
-		return &FlowTurnResult{Usage: resp.Usage}, ErrInvalidResponse
+		res.Diag.InvalidKind = invalidKindNoChoices
+		return res, ErrInvalidResponse
 	}
 
 	choice := resp.Choices[0]
-	res := &FlowTurnResult{Usage: resp.Usage, FinishReason: string(choice.FinishReason)}
+	res.FinishReason = string(choice.FinishReason)
+	res.Diag.ResponseChars = utf8.RuneCountInString(choice.Message.Content)
 	if choice.FinishReason == openai.FinishReasonLength {
 		return res, ErrTruncated
 	}
 
 	parsed, err := FlowParse(choice.Message.Content)
 	if err != nil {
+		res.Diag.InvalidKind = invalidKindUnparsable
 		return res, err
 	}
 	res.Parsed = parsed
 	return res, nil
 }
 
-func flowResponseFormat(mode JSONMode, allowed []fmaction.Type) *openai.ChatCompletionResponseFormat {
+// flowUsesSchema reports whether the mode sends the JSON schema. It is the
+// complement of the two explicit cases in flowResponseFormat, so an empty or
+// unknown mode also sends the schema, exactly as before.
+func flowUsesSchema(mode JSONMode) bool {
+	return mode != JSONModeNone && mode != JSONModeObject
+}
+
+// flowJSONModeName maps the mode to a fixed string that matches what is sent.
+func flowJSONModeName(mode JSONMode) string {
+	switch mode {
+	case JSONModeNone:
+		return "none"
+	case JSONModeObject:
+		return "object"
+	default:
+		return "schema"
+	}
+}
+
+// flowUserTurns counts the user messages of the request.
+func flowUserTurns(req *flowbuilder.ChatRequest) int {
+	turns := 0
+	for _, m := range req.Messages {
+		if m.Role == flowbuilder.RoleUser {
+			turns++
+		}
+	}
+	return turns
+}
+
+func flowResponseFormat(mode JSONMode, schema string) *openai.ChatCompletionResponseFormat {
 	switch mode {
 	case JSONModeNone:
 		return nil
@@ -113,7 +203,7 @@ func flowResponseFormat(mode JSONMode, allowed []fmaction.Type) *openai.ChatComp
 			Type: openai.ChatCompletionResponseFormatTypeJSONSchema,
 			JSONSchema: &openai.ChatCompletionResponseFormatJSONSchema{
 				Name:   FlowResponseSchemaName,
-				Schema: json.RawMessage(FlowResponseSchema(allowed)),
+				Schema: json.RawMessage(schema),
 				Strict: false,
 			},
 		}
