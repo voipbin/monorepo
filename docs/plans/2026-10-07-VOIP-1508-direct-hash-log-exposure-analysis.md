@@ -1,6 +1,6 @@
 # VOIP-1508 direct hash 로그 노출 이슈 분석
 
-- 상태: DRAFT rev4 (리뷰 1~3회차 Request Changes 반영, 재리뷰 대기). 진행은 4절의 대표님 확인을 조건으로 한다
+- 상태: APPROVED rev5 (이슈 분석 리뷰 4회차 2명 모두 Approve, MINOR 반영). 진행은 4절의 대표님 재승인을 조건으로 한다. 진행은 4절의 대표님 확인을 조건으로 한다
 - 티켓: VOIP-1508 (원 제목은 api-manager AuthBoot 과 agent-manager 두 곳이나, 실제 범위는 그보다 넓다)
 - 기준 코드: origin/main 49ec4a06d
 - 관련: VOIP-1567 (같은 날 머지). VOIP-1567 분석 문서의 "유형 4"(Direct 객체와 hash 문자열 로그, 약 27곳, 9개 서비스)가 이 티켓과 동일한 대상이며, 그 PR 에서 대표님 결정으로 범위 밖 처리되었다("처리하지 않는다, 별도 티켓도 만들지 않는다, 재론하지 않는다").
@@ -41,7 +41,7 @@
 - bin-direct-manager `pkg/listenhandler/main.go:151-155`: 모든 요청에 대해 `"request": m` 필드와 `Received request. ... uri: %s` 를 기록한다. by-hash 조회의 URI 에 hash 가 남는다.
 - bin-direct-manager `pkg/listenhandler/main.go:222-227`: `"response": response` 필드를 `Sending response` 와 함께 기록한다. `sock.Response.Data` 는 `json.RawMessage`(`bin-common-handler/models/sock/message.go:25`)이고 create, get, by-hash, regenerate, list 응답 본문에 `Direct` JSON(hash 포함)이 들어간다. 따라서 URI 마스킹만으로는 부족하고 요청과 응답 로그 필드까지 다뤄야 한다.
 - bin-direct-manager `pkg/listenhandler/v1_directs.go:62,100,138,182,218,254`: 마샬 실패 경로의 `Debugf("... message: %v", tmp)` 가 `*direct.Direct` 를 `%v` 로 찍는다(드문 경로). `:38,88,126,157` 의 `WithField("request", m)` 중 hash 를 담는 것은 by-hash 인 `:126` 뿐이고, 나머지는 ID URI 다.
-- 에러 문자열로 전파되는 URI: `bin-common-handler/pkg/requesthandler/send_request.go:45,53,62` 의 `errors.Wrapf(... "uri: %s", uri)` 는 `DirectV1DirectGetByHash`(`direct_directs.go:73`)의 `/v1/directs/by-hash/<hash>` 를 그대로 담는다. 전송 실패(서킷브레이커, 타임아웃 등) 때만 발생한다. 이 에러가 호출자 로그에 찍히는 지점은 api-manager `boot.go:141`(`Infof`, 로그 레벨과 무관), call-manager `start_incoming_domain_type_sip.go:90`(`Errorf`), direct-manager `handler.go:123`, `db.go:55`(`Errorf`)다. 실패 경로 한정이라 빈도는 낮다. 수정 대상에 포함할지는 설계 단계에서 정한다(포함 시 `DirectV1DirectGetByHash` 에서 에러를 hash 없는 문구로 감싸는 안).
+- 에러 문자열로 전파되는 URI: `bin-common-handler/pkg/requesthandler/send_request.go:45,53,62` 의 `errors.Wrapf(... "uri: %s", uri)` 는 `DirectV1DirectGetByHash`(`direct_directs.go:73`)의 `/v1/directs/by-hash/<hash>` 를 그대로 담는다. 전송 실패(서킷브레이커, 타임아웃 등) 때만 발생한다. 이 에러가 호출자 로그에 찍히는 지점은 api-manager `boot.go:141`(`Infof`, 로그 레벨과 무관), call-manager `start_incoming_domain_type_sip.go:90`(`Errorf`)다. direct-manager `handler.go:123`, `db.go:55` 의 에러는 DB 계층에서 나와 hash 를 담지 않으므로 이 경로에 해당하지 않는다(해당 함수의 base logger `hash` 필드는 위에서 별도로 다룬다). 실패 경로 한정이라 빈도는 낮다. 수정 대상에 포함할지는 설계 단계에서 정한다(포함 시 `DirectV1DirectGetByHash` 에서 에러를 hash 없는 문구로 감싸는 안).
 - bin-api-manager 는 이미 잘라서 쓴다(`boot.go:130` 사용, `truncateHash` 정의 `boot.go:242-247`, `lib/service/boot.go:36-41`). 변경 불필요. 단 `truncateHash` 는 앞 12자 + `...` 이고 hash 는 `direct.` + hex 이므로 hex 는 일부(5자 안팎)만 남는다. 이 수준을 허용 기준으로 삼는다.
 
 ### 2.2.1 hash 가 다른 객체에 내장되어 나가는 경로 (call-manager channel, 유형 5)
@@ -78,7 +78,7 @@
 
 범위 밖(제안, 대표님 확인 필요).
 
-- 부모 리소스(agent, ai, team, flow, queue, conference, extension, widget)가 `DirectHash` 필드를 가진 채 통째로 로그되는 경우. VOIP-1567 분석의 "유형 3" 과 같은 계열이며 해당 PR 에서 대표님이 처리하지 않기로 결정한 항목이다. 이번 티켓이 닫혀도 이 경로로 hash 가 계속 남는다는 점을 수용 위험으로 기록한다. 규모는 서비스별 `WithField("<리소스>", <구조체>)` 형태가 conference 12, ai 7, agent 6, queue 6, flow 3, webchat 1 이상(개략치, 서비스별 `WithField("<리소스명>", <변수>)` grep). api-manager 는 단일 문자 변수 패턴이 `AuthIdentity` 와 섞여 정확한 수를 내지 못해 제외했고, 호출 형태가 다양해 정밀 감사는 하지 않았다. 처리하려면 별도 설계가 필요하다.
+- 부모 리소스(agent, ai, team, flow, queue, conference, widget. extension 은 `DirectHash` 필드를 가지나 로그 지점은 이번에 확인하지 않았다)가 `DirectHash` 필드를 가진 채 통째로 로그되는 경우. VOIP-1567 분석의 "유형 3" 과 같은 계열이며 해당 PR 에서 대표님이 처리하지 않기로 결정한 항목이다. 이번 티켓이 닫혀도 이 경로로 hash 가 계속 남는다는 점을 수용 위험으로 기록한다. 규모는 서비스별 `WithField("<리소스>", <구조체>)` 형태가 conference 12, ai 7, agent 6, queue 6, flow 3, webchat 1 이상(개략치, 서비스별 `WithField("<리소스명>", <변수>)` grep). api-manager 는 단일 문자 변수 패턴이 `AuthIdentity` 와 섞여 정확한 수를 내지 못해 제외했고, 호출 형태가 다양해 정밀 감사는 하지 않았다. 처리하려면 별도 설계가 필요하다.
 - 유형 5: call-manager 의 `channel.Channel` 객체 로그(2.2.1). 수용 위험으로 기록한다.
 - 일반 로그 redaction 훅이나 CI 게이트 신설. 오버엔지니어링 회피 원칙에 따라 하지 않는다.
 - 로그 레벨 Debug 고정 정책.
