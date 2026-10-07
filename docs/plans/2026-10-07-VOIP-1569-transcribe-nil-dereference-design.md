@@ -1,6 +1,6 @@
 # VOIP-1569 transcribe 참조 리소스 조회 실패 시 nil 역참조 수정 설계
 
-- 상태: Draft (설계 리뷰 2회차 대기, 1회차 반영)
+- 상태: Draft (설계 리뷰 3회차 대기, 2회차 반영)
 - 티켓: VOIP-1569
 - 선행 문서: docs/plans/2026-10-07-VOIP-1569-transcribe-nil-dereference-analysis.md (이슈 분석, 범위와 사실 확정)
 - 범위: 모노레포 PR 하나(서버 수정과 테스트)와 monorepo-monitoring PR 하나(api-validator 허용 코드). 저장소가 달라 PR 이 둘이다.
@@ -102,5 +102,5 @@ monorepo-monitoring.
 ## 4. 위험
 
 - 검증기가 반환 코드를 404 로 받는다는 전제: 분석 문서 5절에서 call-manager 의 recording 조회 경로를 추적해 nil UUID 와 무작위 UUID 모두 typed `RECORDING_NOT_FOUND`(404)가 됨을 확인했다. 일시 장애 시 503 이 나올 수 있으나 검증기 목록에 503 은 없다. 이는 장애 시에만 발생하며 이번 변경 이전의 500 과 같은 성격이라 수용한다.
-- 같은 PR 에서 5곳을 한 번에 확인할 수 있도록 PR 본문에 변이 시험 결과를 적는다.
+- 모노레포 PR 본문에 `break` 4곳 변이 시험 결과를 적는다.
 - 검증기 저장소의 skip 마커 무효화(재대입) 문제는 이번 범위가 아니며 발견만 기록한다.
