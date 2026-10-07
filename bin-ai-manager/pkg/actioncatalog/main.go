@@ -302,6 +302,26 @@ func sortedActionTypeList() string {
 	return strings.Join(out, ", ")
 }
 
+// RequiredFields returns the set of option field json-names marked Required
+// for the given action type. It is the single source of truth the Flow AI
+// Builder's graph validator (bin-ai-manager/pkg/builderhandler) reads for its
+// `missing_required` check (VOIP-1573 design doc §2.3). The builder does not
+// define its own "required" tag, to avoid a second source of truth that can
+// drift from this catalog. An unknown type returns a non-nil empty map.
+func RequiredFields(actionType fmaction.Type) map[string]bool {
+	entry, ok := catalogByType[actionType]
+	out := make(map[string]bool, len(entry.Options))
+	if !ok {
+		return out
+	}
+	for _, o := range entry.Options {
+		if o.Required {
+			out[o.Name] = true
+		}
+	}
+	return out
+}
+
 // DescribeAction returns the rendered option-field description for a flow action
 // type. On an unknown/empty type it returns an error wrapping ErrUnknownActionType
 // whose message echoes the received value and lists the valid types so the LLM
