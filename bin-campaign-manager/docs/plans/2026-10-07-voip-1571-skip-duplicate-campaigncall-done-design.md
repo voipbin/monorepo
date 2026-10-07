@@ -1,10 +1,11 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 6 (design review round 5 approved by both reviewers; MINOR/NIT items applied)
+Status: Draft, revision 7 (design review round 6: one approval, one change request for a missing PR plan and verification section, applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
 Revision history (newest first):
 
+- Revision 7 (from design review round 6): sections 8 (PR plan with the repository rules and the files expected in the diff) and 9 (verification after deploy, stating that production has no running campaign) added; an optional case for a stored dialing campaigncall with a failed hangup added.
 - Revision 6 (from design review round 5, MINOR/NIT only): the accepted limit states that this change removes the incidental repair of a partial `Done` by a duplicate hangup; the unchanged interface (no mock regeneration) is stated; the lint note moved out of the code block; the outdial file path is complete; the duplicate no-impact sentence is removed; revision 3 wording corrected.
 - Revision 5 (from design review round 4): the guard is written in the De Morgan form that passes the CI lint (QF1001 rejected the negated conjunction); the log sketch has real arguments; two mutations added; the customer-visible result change is stated.
 - Revision 4 (from design review round 3): the subscriber assignment is `_, err = ...` (`err` is already declared at `callmanager.go:27`, so `:=` does not compile); the evidence the design depends on is summarized in section 1 so the document can be read without the analysis note; the revision history is a list.
@@ -98,7 +99,7 @@ No new retry loops. A skip is a normal return. A failed `GetByReferenceID` retur
 
 `pkg/campaigncallhandler/eventhandle_test.go`, `Test_EventHandleReferenceCallHungup`. The existing eight reason cases stay unchanged (their campaigncall has no status, so the guard passes). The existing test discards the returned campaigncall and every case sets the same `Done` expectations, so the new cases go into a separate test function (for example `Test_EventHandleReferenceCallHungup_alreadyDone`) with a per-case choice of the `Done` expectation set and an assertion on the returned value (`(cc, nil)` on skip). New cases, with strict gomock expectations so any unexpected `Done` call fails the test:
 
-0. stored dialing and stored progressing, normal hangup (one case each): `Done(Success)` runs. This pins the first table row, because the existing eight cases carry no status (a value production never has).
+0. stored dialing and stored progressing, normal hangup (one case each), plus stored dialing with a failed hangup: `Done` runs with the mapped result. This pins the first table row, because the existing eight cases carry no status (a value production never has).
 1. done + fail stored, failed hangup: no `Done` call (no database write, no webhook, no outdial request), returns the stored campaigncall.
 2. done + fail stored, hangup `busy` (fail): same skip.
 3. done + success stored, normal hangup: skip.
@@ -138,3 +139,28 @@ Existing tests are not weakened (cases and expectations stay as they are).
 
 1. Is the single exception (late success after fail) worth its one extra condition, versus plain skip-if-done (option (ii))? The design says yes because the failure mode is a redial of an answered number.
 2. Resolved in revision 2: the subscriber uses `cc.CampaignID`, so the return value of the skip no longer matters to it.
+
+## 8. PR plan
+
+One PR for the whole change (branch and worktree `VOIP-1571-Skip-duplicate-campaigncall-done`; the design document ships in the same PR, as the repository workflow requires).
+
+Files expected in the diff (all under `bin-campaign-manager`):
+
+- `pkg/campaigncallhandler/eventhandle.go` (the guard)
+- `pkg/subscribehandler/callmanager.go` (use `cc.CampaignID`, log and continue, comment fix)
+- `pkg/campaigncallhandler/eventhandle_test.go` and `pkg/subscribehandler/callmanager_test.go` (tests, section 4)
+- `docs/domain.md` (two sentences in "Campaigncall Lifecycle")
+- `docs/plans/2026-10-07-voip-1571-skip-duplicate-campaigncall-done-design.md` (this document)
+
+No generated file changes: `CampaigncallHandler` keeps its method set, so no mock is regenerated.
+
+Repository rules that apply (root `CLAUDE.md`; `bin-campaign-manager/CLAUDE.md` adds nothing that conflicts, its rules are about the execute loop and the `stopping` state, which this change does not touch):
+
+- Verification before the commit, in `bin-campaign-manager`: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`, plus `scripts/check-test-conventions.sh` from the repository root. The generate step must leave no diff.
+- Commit and PR title: `VOIP-1571-Skip-duplicate-campaigncall-done`. The PR body is a narrative paragraph followed by `bin-campaign-manager:` bullets; no headers, no test plan section, no AI attribution; the author is the CEO identity configured for the repository.
+- Before the PR and before any merge: fetch `origin/main` and check for conflicts. The merge happens only on the CEO's instruction, as a squash merge.
+- The PR states the zero production impact (section 1) and the accepted limits of section 6.
+
+## 9. Verification after deploy
+
+Production has no running campaign (section 1), so there is nothing to observe in production after the deploy: the verification is the test evidence (the planned cases and the mutation results, run before the PR) and the CI result. After the deploy it is enough to check that campaign-manager starts and stays up. For a self-hosted or sandbox environment that does run campaigns, an optional check is to make a campaign call fail at creation and confirm exactly one `campaigncall_updated` webhook and one `Done` metric increment for it, and the log line "The campaigncall is already done. Skipping." for the late hangup. This optional check is not a gate.
