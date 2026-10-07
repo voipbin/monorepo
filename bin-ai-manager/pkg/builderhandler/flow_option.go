@@ -38,7 +38,7 @@ func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID, r
 
 	var warnings []string
 	for _, k := range droppedKeys {
-		warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+n.Label+"."+k)
+		warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+n.Label+"."+shortKey(k))
 	}
 
 	// Step 4 (first half): clear every ref:"resource" field before
@@ -73,7 +73,9 @@ func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID, r
 			sort.Strings(keys)
 			for _, key := range keys {
 				v := raw[key]
-				// A key is the value to match (a digit, a word), never an id.
+				// A key is the value to match (a digit, a word). Only an exact
+				// uuid-shaped key is dropped: this keeps an id out of the usual
+				// place, it does not promise that no key text can hold one.
 				if _, err := uuid.FromString(key); err == nil {
 					warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+n.Label+"."+f.JSONName)
 					continue
@@ -172,7 +174,7 @@ func sanitizeAddressField(opt map[string]any, f fmaction.RefField, label string,
 		for _, k := range keys {
 			if !addressKeys[k] {
 				if report {
-					warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+where+"."+k)
+					warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+where+"."+shortKey(k))
 				}
 				continue
 			}
@@ -283,7 +285,7 @@ func dropInvalidOptionKeys(n flowbuilder.SymbolicNode, opt map[string]any) (map[
 			err = dec.Decode(reflect.New(reflect.TypeOf(optAny)).Interface())
 		}
 		if err != nil {
-			warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+n.Label+"."+k)
+			warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+n.Label+"."+shortKey(k))
 			continue
 		}
 		out[k] = opt[k]
@@ -329,4 +331,14 @@ func exactOptionKeys(t fmaction.Type, opt map[string]any) (map[string]any, []str
 	}
 	sort.Strings(dropped)
 	return out, dropped
+}
+
+// shortKey bounds a model-supplied key echoed in a warning, so one long key
+// cannot grow the response.
+func shortKey(k string) string {
+	r := []rune(k)
+	if len(r) > 40 {
+		return string(r[:40]) + "..."
+	}
+	return k
 }

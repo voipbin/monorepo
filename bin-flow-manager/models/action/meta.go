@@ -7,7 +7,7 @@ package action
 // SYNC NOTE (read before editing TypeListAll):
 //   - Adding a new action Type requires adding it to MetaByType, or
 //     TestMetaCoversAllTypes (in this package) will fail.
-//   - Meta.Exposure and Meta.FlowKind are confirmed by reading the action's
+//   - Meta.Exposure and Meta.Flow are confirmed by reading the action's
 //     real execution path in bin-flow-manager/pkg/activeflowhandler before
 //     merge; see docs/plans/2026-10-07-flow-ai-builder-design.md Appendix B
 //     for the per-type reasoning recorded during design review.
@@ -21,7 +21,7 @@ const (
 	ExposureCore Exposure = "core"
 
 	// ExposureSensitive: incurs cost or sends data externally (outbound
-	// call, message, email, webhook, fetch, LLM calls). Offered, but the
+	// call, message, email, webhook, LLM calls). Offered, but the
 	// builder marks every node of this kind in ChatResponse.SensitiveNodes
 	// and the system prompt instructs the model to include it only when
 	// the user actually asked for that behavior.
@@ -59,7 +59,7 @@ const (
 	// FlowKindJump: the next action is decided only by the action's own
 	// ref:"action" option field(s); next_id/array-adjacency is never
 	// consulted, and an empty/invalid target aborts the activeflow at
-	// runtime. branch, and the false path of every condition_* type.
+	// runtime. branch and goto.
 	FlowKindJump FlowKind = "jump"
 )
 

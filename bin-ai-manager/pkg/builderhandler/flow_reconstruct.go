@@ -129,7 +129,7 @@ func labelizeActionRef(opt map[string]any, f fmaction.RefField, idToLabel map[st
 		out := make(map[string]any, len(raw))
 		for k, v := range raw {
 			if _, err := uuid.FromString(k); err == nil {
-				continue // a key is a value to match, never an id
+				continue // an exact uuid-shaped key is dropped, same as in resolveOption
 			}
 			if s, ok := v.(string); ok {
 				if l, ok := idToLabel[s]; ok {

@@ -397,10 +397,11 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 
 ## 부록 C. 구현 중 코드 리뷰로 확정된 보강 (VOIP-1573)
 
-- 옵션 키는 구조체 json 이름과 정확히 일치하는 것만 받는다. `encoding/json`은 키를 대소문자 무시로 매칭하고 flow-manager도 그렇게 읽으므로, 변형 키(`Queue_ID`)가 리소스 비우기와 라벨 해석을 우회할 수 있었다. 변환(`resolveOption`)과 모델용 그래프 복원(`ReconstructGraph`) 양쪽에 적용하고 `invalid_option`으로 보고한다.
+- 옵션 키는 구조체 json 이름과 정확히 일치하는 것만 받는다. `encoding/json`은 키를 대소문자 무시로 매칭하고 flow-manager도 그렇게 읽으므로, 변형 키(`Queue_ID`)가 리소스 비우기와 라벨 해석을 우회할 수 있었다. 변환(`resolveOption`)과 모델용 그래프 복원(`ReconstructGraph`) 양쪽에 적용한다. 응답에는 변환 단계만 `invalid_option`으로 보고하고(키는 40자로 줄여 싣는다), 복원은 모델용 그래프만 만들므로 조용히 버린다.
 - `ref:"address"` 태그를 추가했다(`connect`, `message_send`, `conversation_send`류의 `commonaddress.Address` 필드). 주소 타입이 `tel`, `sip`, `email`, `line`, `whatsapp`이면 사용자 자신의 값이므로 유지하고, 그 외(agent, ai, conference 등 플랫폼 리소스, 미지정, 이후 추가될 타입)는 `target`을 비우고 `select_resource`로 알린다. 허용 목록 방식이라 새 타입은 기본적으로 리소스로 취급된다(`address.IsExternalEndpoint`). 드리프트락 테스트가 주소 필드의 태그 누락을 막는다.
 - 맵형 참조(`branch.target_ids`)의 키가 UUID 형태이면 버린다. 키는 DTMF 같은 매칭 값이지 id가 아니다.
 - 노출 불가 타입(알 수 없음, internal, 제외 타입)의 option은 모델용 그래프에 싣지 않는다.
 - 조립 후 option이 요청 상한(4096B)을 넘으면(라벨이 36자 id로 치환되며 커질 수 있음) 맵 항목부터 잘라 `invalid_option`으로 알린다. 서버가 만든 초안이 다음 턴 검증에서 거부되는 일을 막는다.
 - `draft_warnings`는 100개로 제한한다. label에 제어문자가 있는 노드는 파싱 단계에서 건너뛴다.
 - 도달 판정 간선은 `next_id`, `ref:"action"` 값, 마지막이 아닌 열린 끝의 배열 인접 낙하이며 검증기와 레이아웃이 `successors`를 공유한다.
+- `draft_discarded`(파싱 단계, `FlowParse`)는 응답이 쓸 수 없어 이전 초안을 유지했다는 경고다. 5절의 키 목록에 더해 모두 13개이며 프런트가 같은 13개를 문구로 매핑한다.

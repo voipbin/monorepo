@@ -370,3 +370,17 @@ func Test_FlowAllowedTypes(t *testing.T) {
 		}
 	}
 }
+
+// The semaphore slot must be given back after every request, or the pool
+// leaks and every later request is refused as busy.
+func Test_FlowChat_releasesTheSemaphoreAfterEachRequest(t *testing.T) {
+	s := &chatSender{reply: flowGoodReply}
+	h, _, cache := newFlowTestHandler(t, s, 200, 1, true)
+	cache.EXPECT().BuilderFlowChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil).Times(3)
+
+	for i := 0; i < 3; i++ {
+		if _, err := h.Chat(context.Background(), customerID, flowChatReq()); err != nil {
+			t.Fatalf("Wrong match. request %d expect: ok, got: %v", i, err)
+		}
+	}
+}

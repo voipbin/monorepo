@@ -566,3 +566,27 @@ func Test_ReconstructGraph_optionOfAnUnusableTypeIsNotShownToTheModel(t *testing
 		t.Errorf("Wrong match. an id reached the model graph: %s", raw)
 	}
 }
+
+func Test_ReconstructGraph_unknownScalarActionRefIsNotShownToTheModel(t *testing.T) {
+	const stray = "11111111-2222-4333-8444-555555555555"
+	draft := &flowbuilder.Draft{Actions: []map[string]any{
+		{"id": "6c73ff34-7f4c-11ec-b4d5-5b94d40e4071", "type": "branch", "option": map[string]any{"variable": "v", "default_target_id": stray}},
+	}}
+	raw, _ := json.Marshal(ReconstructGraph(draft))
+	if strings.Contains(string(raw), stray) {
+		t.Errorf("Wrong match. an id that is not in the draft reached the model graph: %s", raw)
+	}
+}
+
+func Test_AssembleFlowDraft_longOptionKeyIsShortenedInTheWarning(t *testing.T) {
+	long := strings.Repeat("k", 4000)
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "a", Type: string(fmaction.TypeAnswer), Option: map[string]any{long: 1}},
+	}}
+	_, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeAnswer))
+	for _, w := range warnings {
+		if len(w) > 200 {
+			t.Errorf("Wrong match. expect a short warning, got %d bytes", len(w))
+		}
+	}
+}
