@@ -27,10 +27,16 @@ CEO request: let a user create a Flow in square-admin by conversation, like the 
 - Editor round-trip limit: the editor does not restore `next_id` for `goto`, so goto is excluded from v1 and the front round-trip test pins the remaining branch shapes.
 - Prompt injection: user text reaches the model, but the model output is never executed; it is parsed, validated and stripped of resource ids and unknown option keys in code, then shown to the user for review before any save.
 
+- Shared concurrency slots: the Flow builder shares the semaphore with the Assistant Builder, so heavy Flow traffic can make Assistant requests wait or be rejected. Accepted for v1 because both draw on the same model budget; revisit with the timeout metrics.
+- Exposure detail: 11 types are `internal` (ai_summary, block, confbridge_join, echo, external_media_start, external_media_stop, fetch, goto, mute, stream_echo, transcribe_stop) and `call` and `email_send` are excluded structurally (nested actions or attachments the ref tags cannot reach). 43 is `TypeListAll`; the constant `TypeEmpty` is not a real action.
+- Required-flag changes (for example digits_receive.duration, talk.language, recording_start.format, message_send.source) and directive wording such as 'DO NOT SET' for condition_datetime.weekdays also show in the Assistant's `describe_action` output and so can steer live AI calls; the wording states executor facts.
+
 ## 4. Decision
 
 Proceed. Alternatives considered and rejected: a separate service (duplicates infrastructure), a hand-written per-action prompt (violates the change-tolerance requirement), automatic save (violates the review-before-save requirement).
 
 ## 5. Out of scope
+
+Severity notes: the message-manager nil `source` is dereferenced inside a provider goroutine (`provider_telnyx.go`, `provider_messagebird.go`), so a flow with a nil source can crash the process unless a recover exists there (not verified); the builder avoids it by requiring `message_send.source`, existing flows are unchanged, so it needs its own ticket. The catalog also records options the executor does not read (`ai_talk.duration`, `recording_start.beep_start`, `case_create.sync`); they are follow-up candidates.
 
 Evaluation harness, multi-node loop detection, executor defects found on the way (mute and transcribe_stop have no handler, number-in-array substitution breaks condition_datetime.weekdays, fetch has no URL validation, message-manager nil source).
