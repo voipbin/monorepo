@@ -30,6 +30,7 @@ func Test_agentsGET(t *testing.T) {
 
 	tmFirstKST := time.Date(2026, 10, 5, 10, 0, 1, 0, time.FixedZone("KST", 9*3600))
 	tmLastKST := time.Date(2026, 10, 4, 18, 11, 12, 123456000, time.FixedZone("KST", 9*3600))
+	tmMiddleKST := time.Date(2026, 10, 4, 18, 11, 0, 987654000, time.FixedZone("KST", 9*3600))
 	tmSingleKST := time.Date(2026, 10, 3, 7, 8, 9, 654321000, time.FixedZone("KST", 9*3600))
 
 	identity := auth.NewAgentIdentity(&amagent.Agent{
@@ -148,6 +149,61 @@ func Test_agentsGET(t *testing.T) {
 					},
 				},
 			},
+
+			expectPageToken: "",
+			expectPageSize:  100,
+			expectNextToken: "",
+		},
+		{
+			name:  "three agents use the last tm_create for the token",
+			agent: identity,
+
+			reqQuery: "/service_agents/agents",
+
+			responseCalls: []*amagent.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2e0e4bc4-3fa1-11ef-956a-cfb5ea5ac8ef"),
+					},
+					TMCreate: &tmFirstKST,
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("2e6cb808-3fa1-11ef-a2c1-9b3188520125"),
+					},
+					TMCreate: &tmMiddleKST,
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("3f1c2b44-3fa1-11ef-8e51-0b5d9a7c1a10"),
+					},
+					TMCreate: &tmLastKST,
+				},
+			},
+
+			expectPageToken: "",
+			expectPageSize:  100,
+			expectNextToken: "2026-10-04T09:11:12.123456Z",
+		},
+		{
+			name:  "empty page gives an empty token",
+			agent: identity,
+
+			reqQuery: "/service_agents/agents",
+
+			responseCalls: []*amagent.WebhookMessage{},
+
+			expectPageToken: "",
+			expectPageSize:  100,
+			expectNextToken: "",
+		},
+		{
+			name:  "nil page gives an empty token",
+			agent: identity,
+
+			reqQuery: "/service_agents/agents",
+
+			responseCalls: nil,
 
 			expectPageToken: "",
 			expectPageSize:  100,
