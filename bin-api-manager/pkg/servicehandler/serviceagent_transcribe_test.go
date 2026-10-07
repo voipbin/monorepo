@@ -2,13 +2,17 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -20,6 +24,7 @@ import (
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 )
 
 func Test_ServiceAgentTranscribeList(t *testing.T) {
@@ -250,6 +255,113 @@ func Test_ServiceAgentTranscribeStart(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ServiceAgentTranscribeStart_referenceLookupFailure(t *testing.T) {
+
+	errFake := errors.New("fake lookup error")
+	errTyped := cerrors.NotFound(commonoutline.ServiceNameCallManager, "RECORDING_NOT_FOUND", "The recording was not found.")
+	deletedAt := time.Date(2026, 10, 7, 0, 0, 0, 0, time.UTC)
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	referenceID := uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39")
+
+	type test struct {
+		name string
+
+		referenceType string
+
+		responseRecording *cmrecording.Recording
+		responseErr       error
+
+		expectErrIs    error
+		expectTypedErr bool
+	}
+
+	tests := []test{
+		{
+			name:          "conference lookup rpc error",
+			referenceType: "conference",
+			responseErr:   errFake,
+			expectErrIs:   errFake,
+		},
+		{
+			name:          "recording lookup rpc error",
+			referenceType: "recording",
+			responseErr:   errFake,
+			expectErrIs:   errFake,
+		},
+		{
+			name:          "recording deleted",
+			referenceType: "recording",
+			responseRecording: &cmrecording.Recording{
+				Identity: commonidentity.Identity{
+					ID:         referenceID,
+					CustomerID: customerID,
+				},
+				TMDelete: &deletedAt,
+			},
+			expectErrIs: serviceerrors.ErrNotFound,
+		},
+		{
+			name:           "recording typed error is preserved",
+			referenceType:  "recording",
+			responseErr:    errTyped,
+			expectErrIs:    errTyped,
+			expectTypedErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			})
+
+			// No TranscribeV1TranscribeStart expectation is set on purpose.
+			// gomock fails the test if a start request is sent after a
+			// failed reference lookup.
+			switch tt.referenceType {
+			case "conference":
+				mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, referenceID).Return(nil, tt.responseErr)
+			case "recording":
+				mockReq.EXPECT().CallV1RecordingGet(ctx, referenceID).Return(tt.responseRecording, tt.responseErr)
+			}
+
+			res, err := h.ServiceAgentTranscribeStart(ctx, agent, uuid.Nil, tt.referenceType, referenceID, "en-US", tmtranscribe.DirectionBoth, uuid.Nil, tmtranscribe.ProviderGCP)
+			if err == nil {
+				t.Fatalf("Wrong match. expect: error, got: nil")
+			}
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil result, got: %v", res)
+			}
+			if !errors.Is(err, tt.expectErrIs) {
+				t.Errorf("Wrong match. expect: errors.Is(%v), got: %v", tt.expectErrIs, err)
+			}
+			if tt.expectTypedErr {
+				var ve *cerrors.VoipbinError
+				if !errors.As(err, &ve) {
+					t.Errorf("Wrong match. expect: typed VoipbinError preserved, got: %v", err)
+				}
 			}
 		})
 	}

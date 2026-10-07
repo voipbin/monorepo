@@ -1,6 +1,6 @@
 # VOIP-1569 transcribe 참조 리소스 조회 실패 시 nil 역참조 수정 설계
 
-- 상태: Draft (설계 리뷰 9회차 대기, 8회차 비차단 반영)
+- 상태: Draft (설계 리뷰 8-9회차 연속 승인, 종료)
 - 티켓: VOIP-1569
 - 선행 문서: docs/plans/2026-10-07-VOIP-1569-transcribe-nil-dereference-analysis.md (이슈 분석, 범위와 사실 확정)
 - 범위: 모노레포 PR 하나(서버 수정과 테스트)와 monorepo-monitoring PR 하나(api-validator 허용 코드). 저장소가 달라 PR 이 둘이다.
