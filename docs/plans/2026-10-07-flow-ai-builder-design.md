@@ -187,7 +187,7 @@ Assistant Builder의 구성(역할, 핵심 차원, 인터뷰 행동 규칙, few-
 
 v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노출하고, 초안에 포함되면 `sensitive_nodes`에 노드 id를 담는다(구조화 필드 하나만 둔다. 같은 사실을 경고 문자열로 중복하지 않으며, 패널이 `sensitive_nodes`가 비어 있지 않을 때 고정 영문 안내와 노드 강조를 표시한다). 프롬프트 규칙은 사용자가 말한 동작만 넣게 한다(LLM 준수 사항이며 코드가 보증하는 것은 표시까지다). 비노출로 정하면 콜백, 아웃바운드 캠페인처럼 핵심 시나리오를 만들 수 없으므로 노출을 권고한다. 결정은 대표님 몫이다(Open Question 1).
 
-실행 시점 게이트: 저장 전에는 Flow가 없으므로 초안은 실행되지 않는다. 저장된 Flow 실행 시 비용/권한 게이트는 하위 서비스 책임이다. `fetch`/`webhook_send`의 URL 검증은 구현 시작 전 코드를 읽고 결과를 PR 본문에 적는다(Open Question 8).
+실행 시점 게이트: 저장 전에는 Flow가 없으므로 초안은 실행되지 않는다. 저장된 Flow 실행 시 비용/권한 게이트는 하위 서비스 책임이다. `fetch`/`webhook_send`의 URL 검증은 구현 시작 시 코드를 읽고 확인했다(Open Question 8): `fetch`는 검증이 없어 v1 비노출(`internal`), `webhook_send`는 webhook-manager가 검증한다.
 
 ## 8. 영향 서비스
 
@@ -229,7 +229,7 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 | 5 | `ref` 태그를 `describe_action` 카탈로그에 반영 | 범위 밖 | 대표님 |
 | 6 | 노출 타입 집합 | 고정 목록 없이 `Exposure` ∩ 프런트 목록 ∩ 구조 제외 | 해결 |
 | 7 | 일일 한도 카운터를 Assistant와 분리할지 | 분리 권고(한쪽이 다른 쪽을 소진하지 않게). 공유는 추가 변경 없이 가능하나 서로 한도를 소진. 분리 시 cachehandler 인터페이스/mock/테스트 변경 | **확정(대표님, 2026-10-07): 분리**. |
-| 8 | `fetch`/`webhook_send` URL 검증 | 구현 전 코드 확인 후 PR에 기록 | CPO |
+| 8 | `fetch`/`webhook_send` URL 검증 | **확인 완료(구현 시작 시 코드 확인)**: `webhook_send`는 bin-webhook-manager의 SSRF 방어 클라이언트와 URL 검증(`urlvalidator.go`, 사설/예약 IP 거부)을 거친다. `fetch`(`ActionFetchGet`)는 일반 `http.Client{}`로 옵션의 URL을 그대로 호출하며 검증이 없다. 결정: `fetch`는 `Exposure=internal`로 두어 v1 빌더가 넣지 않는다(실행기가 URL을 검증하게 되면 재검토). `webhook_send`는 `sensitive`로 유지 | CPO 결정, 대표님 검토 |
 | 9 | 출구 없는 루프 탐지 | 평가에서 실제 문제 확인 시 후속 | 대표님 |
 | 10 | Flow 턴 타임아웃이 큐 서킷브레이커에 미치는 영향 | 수용, 평가 실측 후 필요 시 빌더 타임아웃 집계 제외를 후속 설계 | 대표님 |
 
@@ -374,7 +374,7 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 | email_send | sensitive | continue | ANY | 중첩 첨부로 빌더 카탈로그에서 구조 제외 |
 | external_media_start | internal | continue | RT | |
 | external_media_stop | internal | continue | RT | |
-| fetch | sensitive | continue | ANY | 외부 호출. 확인: 스택 푸시 후 복귀 |
+| fetch | internal | continue | ANY | 임의 URL을 SSRF 방어 없이 호출(OQ8). v1 비노출. 확인: 스택 푸시 후 복귀 |
 | fetch_flow | core | continue | ANY | 확인: 스택 푸시 후 복귀 |
 | goto | internal | (모델 밖) | ANY | 확인: 조건부 점프, 에디터 `next_id` 무시 |
 | hangup | core | terminate | RT | 확인 |

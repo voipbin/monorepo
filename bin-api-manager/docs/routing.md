@@ -336,6 +336,7 @@ Public endpoint — no authentication required. Redeems a token issued by `POST 
 | POST | `/ais/:id/direct-hash-regenerate` | bin-ai-manager | Regenerate direct hash |
 | POST | `/ai_builder/chat` | bin-ai-manager | One turn of the assistant builder conversation. Agent with customer admin or manager only. Not released, and no on/off setting: it answers wherever the platform key is configured. The server keeps no conversation |
 | GET | `/ai_builder/status` | bin-ai-manager | Whether the assistant builder is available. 200 with `available=false` for a caller who may not use it. Cached in the process for 30 seconds (5 on failure) |
+| POST | `/flow_builder/chat` | bin-ai-manager | One turn of the flow builder conversation. Agent with customer admin or manager only. The request carries the whole conversation, the current draft and the action types the editor supports; the reply carries the next message and a server-confirmed draft. Body cap 512 KiB. Availability is `GET /ai_builder/status` (the same platform key). Not released, and no on/off setting. The server keeps no conversation |
 | GET | `/aicalls` | bin-ai-manager | List AI call sessions |
 | POST | `/aicalls` | bin-ai-manager | Create AI call session |
 | GET | `/aicalls/:id` | bin-ai-manager | Get AI call session |

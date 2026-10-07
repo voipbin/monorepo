@@ -65,6 +65,8 @@ Metrics are exposed on the configured listen address (default `:2112/metrics`).
 | `api_manager_rate_limit_rejected_total` | Counter | `tier` | Requests rejected (429) by the rate limiter, by tier |
 | `api_manager_builder_timeout_total` | Counter | - | Assistant builder requests that ended with a deadline. Measured against the 55 second RPC wait, and it also counts the caller's own request context running out; a cancel is not counted. Does not match ai-manager's `llm_error` count, which is measured against `ai_builder_llm_timeout_seconds` |
 | `api_manager_builder_circuit_open_total` | Counter | - | Assistant builder chat requests refused because the circuit to ai-manager was open (chat only; a refused status check is shown as available=false and is not counted here) |
+| `api_manager_flow_builder_timeout_total` | Counter | - | Flow builder requests that ended with a deadline. Same measurement as `api_manager_builder_timeout_total` (the 55 second RPC wait; a cancel is not counted), kept as a separate series so the two builders can be told apart |
+| `api_manager_flow_builder_circuit_open_total` | Counter | - | Flow builder chat requests refused because the circuit to ai-manager was open. The circuit is per RPC queue, so it is shared with every other ai-manager RPC, the Assistant builder included |
 
 Note: an HTTP request-latency histogram and a WebSocket-connection-count gauge were previously (incorrectly) documented here; neither is registered anywhere in `bin-api-manager` and both have been removed from this table.
 

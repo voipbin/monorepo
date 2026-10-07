@@ -20,6 +20,7 @@ import (
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	analysis "monorepo/bin-ai-manager/models/analysis"
 	builder "monorepo/bin-ai-manager/models/builder"
+	flowbuilder "monorepo/bin-ai-manager/models/flowbuilder"
 	mcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
@@ -658,6 +659,21 @@ func (m *MockRequestHandler) AIV1BuilderStatus(ctx context.Context) (*builder.St
 func (mr *MockRequestHandlerMockRecorder) AIV1BuilderStatus(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1BuilderStatus", reflect.TypeOf((*MockRequestHandler)(nil).AIV1BuilderStatus), ctx)
+}
+
+// AIV1FlowBuilderChat mocks base method.
+func (m *MockRequestHandler) AIV1FlowBuilderChat(ctx context.Context, customerID uuid.UUID, req *flowbuilder.ChatRequest) (*flowbuilder.ChatResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1FlowBuilderChat", ctx, customerID, req)
+	ret0, _ := ret[0].(*flowbuilder.ChatResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1FlowBuilderChat indicates an expected call of AIV1FlowBuilderChat.
+func (mr *MockRequestHandlerMockRecorder) AIV1FlowBuilderChat(ctx, customerID, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1FlowBuilderChat", reflect.TypeOf((*MockRequestHandler)(nil).AIV1FlowBuilderChat), ctx, customerID, req)
 }
 
 // AIV1McpOAuthCallback mocks base method.
