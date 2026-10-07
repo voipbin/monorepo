@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// processEventCMCallHungup handles the call-manager's confbridge_leaved event.
+// processEventCMCallHungup handles the call-manager's call_hangup event.
 func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "processEventCMCallHungup",
@@ -31,13 +31,14 @@ func (h *subscribeHandler) processEventCMCallHungup(ctx context.Context, m *sock
 	}
 
 	// campaigncall handle
-	newCC, err := h.campaigncallHandler.EventHandleReferenceCallHungup(ctx, &c, cc)
-	if err != nil {
+	// the campaign handle below must run even if this fails (the campaigncall may already be done and the campaign
+	// may still need its stop check), so it uses the campaign id of the campaigncall loaded above.
+	if _, err = h.campaigncallHandler.EventHandleReferenceCallHungup(ctx, &c, cc); err != nil {
 		log.Errorf("Could not handle the event correctly. err: %v", err)
 	}
 
 	// campaign handle
-	if errEvent := h.campaignHandler.EventHandleReferenceCallHungup(ctx, newCC.CampaignID); errEvent != nil {
+	if errEvent := h.campaignHandler.EventHandleReferenceCallHungup(ctx, cc.CampaignID); errEvent != nil {
 		log.Errorf("Could not handle the cmcallhangup event correctly by campaign handler. err: %v", errEvent)
 	}
 
