@@ -17,6 +17,8 @@ Mask the values of `accesskey` and `token` in both log sinks. Option B (drop que
 
 ## 3. Design
 
+Note: where §3 and §5 differ from §8 (Revisions 2 and 3), §8 is authoritative (superseded: the escape-pair key pattern, the "package-private option" wording; implemented API is public `Middlewares` plus package-private `middlewares(..., mask bool)`; `;` is also accepted as a pair separator).
+
 Add a small `io.Writer` wrapper that masks credentials in each written chunk, and give it to both gin middlewares as their output.
 
 - New file `bin-api-manager/lib/logmask/logmask.go`, package `logmask`.

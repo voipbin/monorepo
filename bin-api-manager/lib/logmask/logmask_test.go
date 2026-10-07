@@ -32,6 +32,7 @@ func Test_Mask(t *testing.T) {
 		{"backslash before ampersand in raw dump (token)", "GET /x?a\\&token=SECRET HTTP/1.1\r\n", "GET /x?a\\&token=*** HTTP/1.1\r\n"},
 		{"backslash before ampersand in raw dump (accesskey)", "GET /x?a\\&accesskey=SECRET HTTP/1.1\r\n", "GET /x?a\\&accesskey=*** HTTP/1.1\r\n"},
 		{"backslash in quoted access log", `"/x?a\\&accesskey=SECRET"`, `"/x?a\\&accesskey=***"`},
+		{"semicolon separator", `"/x?a=1;accesskey=SECRET;b=2"`, `"/x?a=1;accesskey=***;b=2"`},
 		{"encoded quote value", `"/x?token=AB%22CD&a=b"`, `"/x?token=***&a=b"`},
 		{"access_token untouched", `"/x?access_token=V&xtoken=W"`, `"/x?access_token=V&xtoken=W"`},
 		{"other params untouched", `"/x?page_size=10&page_token=abc"`, `"/x?page_size=10&page_token=abc"`},
