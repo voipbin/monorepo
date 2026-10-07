@@ -54936,6 +54936,20 @@ func (response GetServiceAgentsTranscribes401JSONResponse) VisitGetServiceAgents
 	return err
 }
 
+type GetServiceAgentsTranscribes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsTranscribes403JSONResponse) VisitGetServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsTranscribes500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetServiceAgentsTranscribes500JSONResponse) VisitGetServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
@@ -54996,6 +55010,34 @@ func (response PostServiceAgentsTranscribes401JSONResponse) VisitPostServiceAgen
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsTranscribes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsTranscribes403JSONResponse) VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsTranscribes404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsTranscribes404JSONResponse) VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -58139,6 +58181,20 @@ func (response GetTranscribes401JSONResponse) VisitGetTranscribesResponse(w http
 	return err
 }
 
+type GetTranscribes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetTranscribes403JSONResponse) VisitGetTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetTranscribes500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetTranscribes500JSONResponse) VisitGetTranscribesResponse(w http.ResponseWriter) error {
@@ -58199,6 +58255,34 @@ func (response PostTranscribes401JSONResponse) VisitPostTranscribesResponse(w ht
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostTranscribes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostTranscribes403JSONResponse) VisitPostTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostTranscribes404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostTranscribes404JSONResponse) VisitPostTranscribesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
 	_, err := buf.WriteTo(w)
 	return err
 }

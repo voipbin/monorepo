@@ -128,6 +128,7 @@ func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *auth.AuthI
 	res, err := h.reqHandler.StorageV1AccountDelete(ctx, storageAccountID, 60000)
 	if err != nil {
 		log.Errorf("Could not delete storage account. err: %v", err)
+		return nil, err
 	}
 
 	return res, nil

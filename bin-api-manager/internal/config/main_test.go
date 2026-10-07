@@ -2,11 +2,18 @@ package config
 
 import (
 	"encoding/base64"
+	"fmt"
 	"os"
+	"sync/atomic"
 	"testing"
 
 	"github.com/spf13/cobra"
 )
+
+// postBootstrapRuns makes the prometheus endpoint of TestPostBootstrap unique for
+// every run, because PostBootstrap registers it on the process-global default
+// mux and a second registration of the same pattern panics with -count greater than 1.
+var postBootstrapRuns atomic.Int64
 
 func TestGet(t *testing.T) {
 	cfg := Get()
@@ -216,7 +223,7 @@ func TestPostBootstrap(t *testing.T) {
 
 	globalConfig.SSLCertBase64 = testCert
 	globalConfig.SSLPrivKeyBase64 = testKey
-	globalConfig.PrometheusEndpoint = "/test-metrics"
+	globalConfig.PrometheusEndpoint = fmt.Sprintf("/test-metrics-%d", postBootstrapRuns.Add(1))
 	globalConfig.PrometheusListenAddress = ":0" // Use port 0 to avoid conflicts
 
 	defer func() {

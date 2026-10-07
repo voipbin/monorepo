@@ -1,6 +1,6 @@
 # VOIP-1572 설계: storage 삭제 에러 반환, transcribes API 문서와 테스트 공백, -count 반복 테스트 안정화
 
-- 상태: Draft (설계 리뷰 3회차 대기, 2회차 비차단 반영)
+- 상태: Draft (설계 리뷰 2-3회차 연속 승인, 구현 시작)
 - 티켓: VOIP-1572
 - 선행 문서: docs/plans/2026-10-07-VOIP-1572-storage-delete-and-transcribe-gaps-analysis.md (이슈 분석 리뷰 2, 3회차 연속 승인)
 - 기준: origin/main 754296f72
@@ -43,7 +43,7 @@ return res, nil
 ### D2. OpenAPI 응답 추가와 재생성
 
 - `bin-openapi-manager/openapi/paths/transcribes/main.yaml` 과 `paths/service_agents/transcribes.yaml` 에서
-  - POST: 400 과 401 사이가 아니라 기존 정렬(숫자 오름차순)에 맞춰 `'403': $ref: '#/components/responses/PermissionDenied'` 와 `'404': $ref: '#/components/responses/NotFound'` 를 추가한다.
+  - POST: 응답 코드 오름차순 정렬에 맞춰 401 과 409 사이에 `'403': $ref: '#/components/responses/PermissionDenied'` 와 `'404': $ref: '#/components/responses/NotFound'` 를 추가한다.
   - GET 목록: `'403': $ref: '#/components/responses/PermissionDenied'` 를 추가한다(404 는 근거가 없어 추가하지 않는다).
 - 다른 필드, 설명, 파라미터는 바꾸지 않는다.
 - 재생성 절차(저장소 관례)

@@ -2,10 +2,13 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	smaccount "monorepo/bin-storage-manager/models/account"
 
@@ -135,6 +138,79 @@ func Test_StorageAccountDelete(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_StorageAccountDelete_deleteFailure(t *testing.T) {
+
+	errFake := errors.New("fake delete error")
+	errTyped := cerrors.NotFound(commonoutline.ServiceNameStorageManager, "STORAGE_ACCOUNT_NOT_FOUND", "The storage account was not found.")
+
+	customerID := uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2")
+	storageAccountID := uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5")
+
+	tests := []struct {
+		name string
+
+		responseErr error
+
+		expectTypedErr bool
+	}{
+		{
+			name:        "delete rpc error is returned",
+			responseErr: errFake,
+		},
+		{
+			name:           "delete rpc typed error is preserved",
+			responseErr:    errTyped,
+			expectTypedErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			})
+
+			mockReq.EXPECT().StorageV1AccountGet(ctx, storageAccountID).Return(&smaccount.Account{
+				ID:         storageAccountID,
+				CustomerID: customerID,
+			}, nil)
+			mockReq.EXPECT().StorageV1AccountDelete(ctx, storageAccountID, 60000).Return(nil, tt.responseErr)
+
+			res, err := h.StorageAccountDelete(ctx, agent, storageAccountID)
+			if err == nil {
+				t.Fatalf("Wrong match. expect: error, got: nil")
+			}
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil result, got: %v", res)
+			}
+			if !errors.Is(err, tt.responseErr) {
+				t.Errorf("Wrong match. expect: errors.Is(%v), got: %v", tt.responseErr, err)
+			}
+			if tt.expectTypedErr {
+				var ve *cerrors.VoipbinError
+				if !errors.As(err, &ve) {
+					t.Errorf("Wrong match. expect: typed VoipbinError preserved, got: %v", err)
+				}
 			}
 		})
 	}

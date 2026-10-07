@@ -589,3 +589,117 @@ func Test_TranscribeStart_referenceLookupFailure(t *testing.T) {
 		})
 	}
 }
+
+func Test_TranscribeStart_callLookupFailure(t *testing.T) {
+
+	errFake := errors.New("fake lookup error")
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	referenceID := uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+	ctx := context.Background()
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	// No TranscribeV1TranscribeStart expectation is set on purpose.
+	// gomock fails the test if a start request is sent after a failed
+	// reference lookup.
+	mockReq.EXPECT().CallV1CallGet(ctx, referenceID).Return(nil, errFake)
+
+	res, err := h.TranscribeStart(ctx, agent, uuid.Nil, "call", referenceID, "en-US", tmtranscribe.DirectionBoth, uuid.Nil, tmtranscribe.ProviderGCP)
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error, got: nil")
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil result, got: %v", res)
+	}
+	if !errors.Is(err, errFake) {
+		t.Errorf("Wrong match. expect: errors.Is(%v), got: %v", errFake, err)
+	}
+}
+
+func Test_TranscribeStart_permissionDenied(t *testing.T) {
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	otherCustomerID := uuid.FromStringOrNil("7a0fbc2e-8e60-11ee-b4cf-2f3e6e7f9d11")
+	referenceID := uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39")
+
+	tests := []struct {
+		name string
+
+		permission amagent.Permission
+
+		// responseCall is the call returned by the reference lookup. nil means
+		// the lookup must not happen because the permission check rejects the
+		// request before it.
+		responseCall *cmcall.Call
+	}{
+		{
+			name:       "permission check rejects the agent before the lookup",
+			permission: amagent.PermissionCustomerAgent,
+		},
+		{
+			name:       "reference owned by another customer is rejected after the lookup",
+			permission: amagent.PermissionCustomerAdmin,
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID:         referenceID,
+					CustomerID: otherCustomerID,
+				},
+				Status: cmcall.StatusProgressing,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: customerID,
+				},
+				Permission: tt.permission,
+			})
+
+			// No TranscribeV1TranscribeStart expectation is set on purpose, and
+			// the lookup is expected only when responseCall is set.
+			if tt.responseCall != nil {
+				mockReq.EXPECT().CallV1CallGet(ctx, referenceID).Return(tt.responseCall, nil)
+			}
+
+			res, err := h.TranscribeStart(ctx, agent, uuid.Nil, "call", referenceID, "en-US", tmtranscribe.DirectionBoth, uuid.Nil, tmtranscribe.ProviderGCP)
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil result, got: %v", res)
+			}
+			if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
+				t.Errorf("Wrong match. expect: errors.Is(%v), got: %v", serviceerrors.ErrPermissionDenied, err)
+			}
+		})
+	}
+}
