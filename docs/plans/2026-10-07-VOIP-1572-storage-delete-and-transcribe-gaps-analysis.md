@@ -51,7 +51,7 @@ return res, nil
 - VOIP-1569 코드 리뷰 2회차 변이 시험에서 다음 변이가 기존·신규 테스트에 잡히지 않고 생존했다.
   - call 분기의 `break` 제거(call 조회 실패 후 nil 역참조 패닉이 다시 생겨도 테스트가 통과한다).
   - 조회 전 권한 검사(`hasPermission`) 제거 또는 순서 변경.
-- 서버 코드의 권한 거부 경로는 두 곳이다. (1) 조회 전 호출자 권한 검사: `TranscribeStart` 는 관리자, 매니저 권한이 아니면 `ErrPermissionDenied`(`transcribe.go:155`), `ServiceAgentTranscribeStart` 는 에이전트가 아니면 `ErrAuthenticationRequired`, `PermissionAll` 권한 검사 실패 시 `ErrPermissionDenied`(`serviceagent_transcribe.go:113`). (2) 조회 후 참조 리소스의 소유 고객 검사(`transcribe.go:245`, `serviceagent_transcribe.go:209`).
+- 서버 코드의 권한 거부 경로는 두 곳이다. (1) 조회 전 호출자 권한 검사: `TranscribeStart` 는 관리자, 매니저 권한이 아니면 `ErrPermissionDenied`(`transcribe.go:153`), `ServiceAgentTranscribeStart` 는 에이전트가 아니면 `ErrAuthenticationRequired`(`serviceagent_transcribe.go:95`). `PermissionAll` 권한 검사(`:111`)는 형식상 있으나 `Agent.HasPermission` 이 `PermissionAll` 요청에 무조건 `true` 를 반환하고 고객 비교가 자기 자신이라 에이전트 신원으로는 거부할 수 없는 도달 불가 방어 코드다. (2) 조회 후 참조 리소스의 소유 고객 검사(`transcribe.go:243`, `serviceagent_transcribe.go:207`).
 
 ### 2.4 `-count>1` 반복 실행 실패
 
