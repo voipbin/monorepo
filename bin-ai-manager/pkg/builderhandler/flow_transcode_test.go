@@ -811,3 +811,38 @@ func Test_FlowCatalog_statesWhatTheSecondAuditFound(t *testing.T) {
 		}
 	}
 }
+
+// Review round 9 (Q): a weekdays list in condition_datetime fails at run time
+// (variablehandler substitute turns the numbers into text, the option then
+// does not parse). Until the executor is fixed the catalog must say so.
+func Test_FlowCatalog_warnsAboutWeekdaysAndTheOtherRound9Facts(t *testing.T) {
+	tests := []struct {
+		ty   fmaction.Type
+		want []string
+	}{
+		{fmaction.TypeConditionDatetime, []string{"DO NOT SET", "cannot be built yet"}},
+		{fmaction.TypeTranscribeRecording, []string{"both directions are always transcribed"}},
+		{fmaction.TypeAMD, []string{"cannot branch on the result"}},
+		{fmaction.TypeDigitsSend, []string{"moves on while the tones are still playing"}},
+		{fmaction.TypePlay, []string{"Never invent one"}},
+		{fmaction.TypeConditionCallDigits, []string{"OR, not AND"}},
+		{fmaction.TypeQueueJoin, []string{"continues with the next node"}},
+	}
+	for _, tt := range tests {
+		cat := FlowCatalog([]fmaction.Type{tt.ty})
+		for _, w := range tt.want {
+			if !strings.Contains(cat, w) {
+				t.Errorf("Wrong match. expect %q in the %s catalog:\n%s", w, tt.ty, cat)
+			}
+		}
+	}
+}
+
+func Test_FlowSystemPrompt_tellsToAnswerAnInboundCallFirst(t *testing.T) {
+	p := FlowSystemPrompt([]fmaction.Type{fmaction.TypeTalk})
+	for _, w := range []string{"put an answer node first unless the first node is talk", "use a branch to read the digits"} {
+		if !strings.Contains(p, w) {
+			t.Errorf("Wrong match. expect %q in the system prompt", w)
+		}
+	}
+}

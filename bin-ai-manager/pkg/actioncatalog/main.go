@@ -57,7 +57,7 @@ type actionCatalogEntry struct {
 //     action.OptionStructByType). Field TYPE/Description text is NOT machine
 //     checked; keep it in sync by hand when option.go changes.
 var actionCatalog = []actionCatalogEntry{
-	{Type: fmaction.TypeAMD, Summary: "Detect whether a human or an answering machine answered the call.", Options: []actionOptionField{
+	{Type: fmaction.TypeAMD, Summary: "Answering machine detection. It cannot branch on the result: with machine_handle hangup it ends the call when a machine answered, otherwise it only continues.", Options: []actionOptionField{
 		{Name: "machine_handle", Type: "string (hangup|continue)", Required: false, Description: "What to do if a machine answered: \"hangup\" or \"continue\"."},
 		{Name: "async", Type: "bool", Required: false, Description: "If false, the flow waits until AMD finishes before continuing."},
 	}},
@@ -102,8 +102,8 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "anonymous", Type: "string (yes|no|auto)", Required: false, Description: "Anonymous caller id on outbound PSTN."},
 	}},
 	{Type: fmaction.TypeConditionCallDigits, Summary: "Branch to a false target unless the call's received digits meet the condition.", Options: []actionOptionField{
-		{Name: "length", Type: "int", Required: false, Description: "Required digit length."},
-		{Name: "key", Type: "string", Required: false, Description: "Required finishing digit key."},
+		{Name: "length", Type: "int", Required: false, Description: "Passes when at least this many digits were received. Either length or key is enough (OR, not AND). With neither set the condition is always false."},
+		{Name: "key", Type: "string", Required: false, Description: "Passes when the received digits contain this key. Either length or key is enough (OR, not AND)."},
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
 	{Type: fmaction.TypeConditionCallStatus, Summary: "Branch to a false target unless the call's status matches.", Options: []actionOptionField{
@@ -116,7 +116,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "hour", Type: "int (0-23, or -1 to ignore)", Required: false, Description: "Hour component in UTC. Left out it is compared as 0, so send -1 when the hour must not matter."},
 		{Name: "day", Type: "int (1-31)", Required: false, Description: "Day of month in UTC. Left out or 0 it is ignored."},
 		{Name: "month", Type: "int (1-12)", Required: false, Description: "Month in UTC. Left out or 0 it is ignored."},
-		{Name: "weekdays", Type: "array of int (Sun=0..Sat=6)", Required: false, Description: "Allowed weekdays in UTC. Left out or empty it is ignored."},
+		{Name: "weekdays", Type: "array of int (Sun=0..Sat=6)", Required: false, Description: "DO NOT SET. A weekdays list makes the flow fail when it runs (the executor turns its numbers into text and cannot read them back). If the user wants a weekday rule, say it cannot be built yet."},
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
 	{Type: fmaction.TypeConditionVariable, Summary: "Branch to a false target unless a flow variable matches the condition.", Options: []actionOptionField{
@@ -153,8 +153,8 @@ var actionCatalog = []actionCatalogEntry{
 	}},
 	{Type: fmaction.TypeDigitsSend, Summary: "Send DTMF tones on the call.", Options: []actionOptionField{
 		{Name: "digits", Type: "string", Required: true, Description: "Keys to send (0-9, A-D, #, *; max 100)."},
-		{Name: "duration", Type: "int (ms)", Required: false, Description: "DTMF tone duration per key (100-1000)."},
-		{Name: "interval", Type: "int (ms)", Required: false, Description: "Interval between keys (0-5000)."},
+		{Name: "duration", Type: "int (ms)", Required: true, Description: "DTMF tone duration per key (100-1000). Always set it: the flow waits duration times the number of keys, and with 0 it moves on while the tones are still playing."},
+		{Name: "interval", Type: "int (ms)", Required: true, Description: "Interval between keys (0-5000). Set it together with duration."},
 	}},
 	{Type: fmaction.TypeEcho, Summary: "Echo the caller's audio back to them.", Options: []actionOptionField{
 		{Name: "duration", Type: "int", Required: false, Description: "Echo duration."},
@@ -199,9 +199,9 @@ var actionCatalog = []actionCatalogEntry{
 	}},
 	{Type: fmaction.TypeMute, Summary: "Mute audio on the call.", Options: nil},
 	{Type: fmaction.TypePlay, Summary: "Play audio from one or more media URLs.", Options: []actionOptionField{
-		{Name: "stream_urls", Type: "array of string", Required: true, Description: "Media URLs to play."},
+		{Name: "stream_urls", Type: "array of string", Required: true, Description: "Publicly reachable WAV or MP3 URLs, played in order. Use only URLs the user gave. Never invent one."},
 	}},
-	{Type: fmaction.TypeQueueJoin, Summary: "Place the call into a queue.", Options: []actionOptionField{
+	{Type: fmaction.TypeQueueJoin, Summary: "Place the call into a queue. When the wait ends without an agent (timeout or kick) the flow continues with the next node.", Options: []actionOptionField{
 		{Name: "queue_id", Type: "uuid", Required: true, Description: "Queue id to join."},
 	}},
 	{Type: fmaction.TypeRecordingStart, Summary: "Start recording the call.", Options: []actionOptionField{
@@ -238,8 +238,8 @@ var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeTranscribeRecording, Summary: "Transcribe all recordings of the current call. It cannot pick one recording and does nothing outside a phone call.", Options: []actionOptionField{
 		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. ko-KR. Left out it is en-US, so set it for any other language."},
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when transcription ends."},
-		{Name: "provider", Type: "string", Required: false, Description: "Transcribe provider (gcp/aws)."},
-		{Name: "direction", Type: "string", Required: false, Description: "in|out|both (default both)."},
+		{Name: "provider", Type: "string", Required: false, Description: "Not applied by the executor today: the default provider is used."},
+		{Name: "direction", Type: "string", Required: false, Description: "Not applied by the executor today: both directions are always transcribed."},
 	}},
 	{Type: fmaction.TypeVariableSet, Summary: "Set a flow variable.", Options: []actionOptionField{
 		{Name: "key", Type: "string", Required: true, Description: "Variable name."},

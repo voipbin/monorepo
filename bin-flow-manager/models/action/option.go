@@ -239,7 +239,7 @@ type OptionConversationSend struct {
 // OptionDigitsReceive defines action dtmf_receive's option.
 type OptionDigitsReceive struct {
 	Duration int    `json:"duration,omitempty"` // dtmf receiving duration. ms
-	Key      string `json:"key,omitempty"`      // If set, determines which DTMF triggers the next step. The end key is not included in the resulting variable. If not set, no key will trigger the next step.
+	Key      string `json:"key,omitempty"`      // If set, determines which DTMF triggers the next step. The end key is part of the resulting variable (for example "123#"). If not set, no key will trigger the next step.
 	Length   int    `json:"length,omitempty"`   // An optional limit to the number of DTMF events that should be gathered before continuing to the next step.
 }
 
