@@ -1,10 +1,11 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 10 (design review round 9 approved by both reviewers; NIT applied)
+Status: Approved, revision 11 (design review: 2 consecutive full-approval rounds, rounds 9 and 10; MINOR/NIT items applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
 Revision history (newest first):
 
+- Revision 11 (from design review round 10, MINOR/NIT only): all subscriber cases 8 to 10 call `processEventCMCallHungup` directly (a case that goes through `processEvent` needs the event `Publisher` set to `call-manager` to be dispatched); log content is not asserted.
 - Revision 10 (from design review round 9, NIT only): section 8 notes that the no-merge-without-instruction rule is stated by both the root and the user-level `CLAUDE.md`.
 - Revision 9 (from design review round 8): section 8 groups the rules by their real source (root `CLAUDE.md`, the user-level `/home/pchero/CLAUDE.md`, CI, environment) and no longer attributes everything to the root file; the new test function names are fixed.
 - Revision 8 (from design review round 7, MINOR/NIT only): the subscriber tests that assert the return value call `processEventCMCallHungup` directly (`processEvent` returns nothing); the optional verification names a reproducible failure and the wait; the same-PR statement rests on the one-PR rule; repository rules and CI conditions are listed separately.
@@ -117,7 +118,7 @@ No new retry loops. A skip is a normal return. A failed `GetByReferenceID` retur
 9. `EventHandleReferenceCallHungup` returns an error: no panic, the campaign handler is still called with `cc.CampaignID`, returns nil.
 10. skip result (returns the stored campaigncall): the campaign handler is called with `cc.CampaignID`.
 
-The subscriber cases that assert the return value (8 and 9) call `processEventCMCallHungup(ctx, m)` directly, because `processEvent` returns nothing (`subscribehandler/main.go:141`); the existing `Test_processEventCMCallHangup` goes through `processEvent`. Both run synchronously, so a panic from the nil dereference fails the test.
+The subscriber cases (8, 9 and 10) call `processEventCMCallHungup(ctx, m)` directly, because `processEvent` returns nothing (`subscribehandler/main.go:141`); the existing `Test_processEventCMCallHangup` goes through `processEvent`. Both run synchronously, so a panic from the nil dereference fails the test.
 
 Mutation checks (each must fail at least one test), run in an isolated `git archive` copy:
 
