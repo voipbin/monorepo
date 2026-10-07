@@ -873,3 +873,26 @@ func Test_FlowCatalog_statesWhatTheThirdAuditFound(t *testing.T) {
 		t.Errorf("Wrong match. expect the time zone rule in the system prompt")
 	}
 }
+
+func Test_FlowCatalog_statesWhatTheFourthAuditFound(t *testing.T) {
+	tests := []struct {
+		ty   fmaction.Type
+		want []string
+	}{
+		{fmaction.TypeBranch, []string{"written bare"}},
+		{fmaction.TypeRecordingStart, []string{"the flow still continues with no recording"}},
+		{fmaction.TypeConversationSend, []string{"only logged"}},
+		{fmaction.TypeWebhookSend, []string{"Only public http(s) URLs"}},
+	}
+	for _, tt := range tests {
+		cat := FlowCatalog([]fmaction.Type{tt.ty})
+		for _, w := range tt.want {
+			if !strings.Contains(cat, w) {
+				t.Errorf("Wrong match. expect %q in the %s catalog:\n%s", w, tt.ty, cat)
+			}
+		}
+	}
+	if p := FlowSystemPrompt([]fmaction.Type{fmaction.TypeConditionDatetime}); !strings.Contains(p, "crosses UTC midnight") {
+		t.Errorf("Wrong match. expect the midnight limit in the system prompt")
+	}
+}

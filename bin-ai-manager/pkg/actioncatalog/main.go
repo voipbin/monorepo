@@ -82,7 +82,7 @@ var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeBeep, Summary: "Play a beep tone on the call.", Options: nil},
 	{Type: fmaction.TypeBlock, Summary: "Internal grouping/block action.", Options: nil},
 	{Type: fmaction.TypeBranch, Summary: "Branch the flow to different actions based on a variable / received DTMF.", Options: []actionOptionField{
-		{Name: "variable", Type: "string", Required: false, Description: "Variable to branch on (defaults to received digits). The variable is cleared after the branch reads it, so a later node cannot read it again."},
+		{Name: "variable", Type: "string", Required: false, Description: "Variable name to branch on, written bare (never ${name}: it would be replaced by the value and the lookup would use the value as a name). Defaults to received digits. The variable is cleared after the branch reads it, so a later node cannot read it again."},
 		{Name: "default_target_id", Type: "uuid", Required: false, Description: "Action id to go to when no target matches. Left out, an unmatched value (including no input at all) stops the flow."},
 		{Name: "target_ids", Type: "object (map of value -> action id)", Required: true, Description: "Map of matched value to the action id to jump to."},
 	}},
@@ -144,7 +144,7 @@ var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeConversationSend, Summary: "Send a message into a conversation (chat/SNS).", Options: []actionOptionField{
 		{Name: "conversation_id", Type: "uuid", Required: true, Description: "Conversation id to send into."},
 		{Name: "text", Type: "string", Required: true, Description: "Message text."},
-		{Name: "sync", Type: "bool", Required: false, Description: "Whether to send synchronously."},
+		{Name: "sync", Type: "bool", Required: false, Description: "Whether to send synchronously. A failed send is only logged and the flow continues either way."},
 	}},
 	{Type: fmaction.TypeDigitsReceive, Summary: "Receive DTMF digits from the caller.", Options: []actionOptionField{
 		{Name: "duration", Type: "int (ms)", Required: true, Description: "How long to wait for digits, in milliseconds. Left out, the action does not wait and the flow moves on at once."},
@@ -204,7 +204,7 @@ var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeQueueJoin, Summary: "Place the call into a queue. When the wait ends without an agent (timeout or kick) the flow continues with the next node.", Options: []actionOptionField{
 		{Name: "queue_id", Type: "uuid", Required: true, Description: "Queue id to join."},
 	}},
-	{Type: fmaction.TypeRecordingStart, Summary: "Start recording the call.", Options: []actionOptionField{
+	{Type: fmaction.TypeRecordingStart, Summary: "Start recording the call. If it cannot start (already recording, no balance, call not answered yet) the flow still continues with no recording.", Options: []actionOptionField{
 		{Name: "format", Type: "string (wav|mp3|ogg)", Required: true, Description: "Recording file format. There is no default."},
 		{Name: "end_of_silence", Type: "int (seconds)", Required: false, Description: "Max silence duration; 0 for no limit."},
 		{Name: "end_of_key", Type: "string", Required: false, Description: "DTMF input to terminate recording: none, any, *, #."},
@@ -246,7 +246,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "value", Type: "string", Required: true, Description: "Variable value."},
 	}},
 	{Type: fmaction.TypeWebhookSend, Summary: "Send an HTTP webhook request.", Options: []actionOptionField{
-		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait until the request is queued. The flow never waits for the remote server's answer and cannot use it."},
+		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait until the request is queued. Only public http(s) URLs work: an internal or private address is refused without any error in the flow. The flow never waits for the remote server's answer and cannot use it."},
 		{Name: "uri", Type: "string", Required: true, Description: "Target URL."},
 		{Name: "method", Type: "string (POST|GET|PUT|DELETE)", Required: false, Description: "HTTP method. Empty means GET."},
 		{Name: "data_type", Type: "string", Required: false, Description: "Content type. Set application/json for a JSON body: left empty, no Content-Type header is sent."},
