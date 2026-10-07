@@ -1,6 +1,6 @@
 # VOIP-1572 이슈 분석: storage 삭제 에러 삼킴, transcribes API 문서·테스트 공백, -count 반복 테스트 실패
 
-- 상태: Draft (이슈 분석 리뷰 2회차 대기, 1회차 반영)
+- 상태: Draft (이슈 분석 리뷰 3회차 대기, 2회차 비차단 반영)
 - 티켓: VOIP-1572 (Bug, 2026-10-07 생성, In Progress)
 - 기준: origin/main 754296f72
 - 출처: VOIP-1569 코드 리뷰 중 발견한 네 건을 대표님이 한 티켓, 한 PR 로 묶어 처리하도록 지시하셨다.
@@ -42,8 +42,8 @@ return res, nil
 - `bin-openapi-manager/openapi/paths/transcribes/main.yaml` 의 POST 응답은 200, 400, 401, 409, 500 이다. GET 목록 응답은 200, 400, 401, 500 이다.
 - `paths/service_agents/transcribes.yaml` 의 POST, GET 도 같은 상태코드만 정의한다.
 - 같은 디렉터리의 `paths/transcribes/id.yaml` 은 이미 403(`PermissionDenied`), 404(`NotFound`)를 정의한다. 공통 컴포넌트 `PermissionDenied`, `NotFound` 가 `openapi.yaml` 의 `components/responses` 에 있다.
-- 실제 동작: POST 는 권한 거부 시 `ErrPermissionDenied`(403), 참조 리소스가 없으면 404(VOIP-1569 수정 이후 recording, conference 조회 실패가 404 로 내려간다)를 반환한다. 서버 코드 근거는 `servicehandler/transcribe.go` 의 `hasPermission` 검사와 `transcribeGetResourceInfo`, `serviceagent_transcribe.go` 의 동일 구조다. GET 목록도 권한 거부 시 403 을 반환한다.
-- OpenAPI 를 바꾸면 `bin-openapi-manager/gens/models/gen.go` 와 `bin-api-manager/gens/openapi_server/gen.go`, `gens/openapi_redoc/{openapi.json,api.html}` 이 재생성 대상이다. 생성 범위는 실험으로 확인했다(임시 worktree, 두 yaml 의 GET, POST 에 403, 404 추가 후 `go generate`). `bin-openapi-manager/gens/models/gen.go` 는 변하지 않는다. `bin-api-manager` 의 서버 생성 설정이 `strict-server: true`(`openapi/config_server/config.generate.yaml`)라서 `gens/openapi_server/gen.go` 에 상태코드별 응답 타입(`GetTranscribes403JSONResponse`, `GetTranscribes404JSONResponse`, `PostTranscribes403JSONResponse`, `PostTranscribes404JSONResponse`, 같은 이름의 `ServiceAgentsTranscribes` 계열)이 약 112줄 추가된다. 기존 타입은 바뀌지 않는 순수 추가이며 호환성 문제는 없다. redoc 산출물(`gens/openapi_redoc/{openapi.json,api.html}`)은 구현 단계에서 재생성해 확인한다.
+- 실제 동작: POST 는 권한 거부 시 `ErrPermissionDenied`(403), 참조 리소스가 없으면 404(VOIP-1569 수정 이후 recording, conference 조회 실패가 404 로 내려간다)를 반환한다. 서버 코드 근거는 `servicehandler/transcribe.go` 의 `hasPermission` 검사와 `transcribeGetResourceInfo`, `serviceagent_transcribe.go` 의 동일 구조다. GET 목록(`TranscribeList`)은 참조 리소스를 조회하지 않으므로 404 근거가 없고 권한 거부 시 403 만 반환한다. 따라서 응답 추가 대상은 POST 의 403, 404 와 GET 목록의 403 이다.
+- OpenAPI 를 바꾸면 `bin-openapi-manager/gens/models/gen.go` 와 `bin-api-manager/gens/openapi_server/gen.go`, `gens/openapi_redoc/{openapi.json,api.html}` 이 재생성 대상이다. 생성 범위는 실험으로 확인했다(임시 worktree, 두 yaml 의 GET, POST 에 403, 404 를 모두 추가한 경우로 `go generate`). `bin-openapi-manager/gens/models/gen.go` 는 변하지 않는다. `bin-api-manager` 의 서버 생성 설정이 `strict-server: true`(`openapi/config_server/config.generate.yaml`)라서 `gens/openapi_server/gen.go` 에 상태코드별 응답 타입(`GetTranscribes403JSONResponse`, `PostTranscribes403JSONResponse`, `PostTranscribes404JSONResponse`, 같은 이름의 `ServiceAgentsTranscribes` 계열)이 추가된다. 1회차 실험은 GET 에도 404 를 넣은 경우였고 그때 약 112줄이었으므로, GET 404 를 제외한 실제 추가량은 이보다 약간 적다. 기존 타입은 바뀌지 않는 순수 추가이며 호환성 문제는 없다. redoc 산출물(`gens/openapi_redoc/{openapi.json,api.html}`)은 구현 단계에서 재생성해 확인한다.
 
 ### 2.3 Test_TranscribeStart 커버리지 공백
 
