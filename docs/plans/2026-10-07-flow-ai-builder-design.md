@@ -1,8 +1,8 @@
-# VOIP-1573 Flow AI Builder 디자인 (v8)
+# VOIP-1573 Flow AI Builder 디자인 (v9)
 
-Jira: VOIP-1573. 상태: **디자인 리뷰 루프 진행 중.** 이력: 1~4회차 모두 REQUEST_CHANGES. 5회차: G APPROVE, H REQUEST_CHANGES(High 1). 6회차: I APPROVE(Critical/High 0, Medium 1), J REQUEST_CHANGES(Critical/High 0, Medium 3). J의 Medium은 문서 정합성과 근거 누락이며 v7에서 모두 반영했다. 7회차: K APPROVE(Medium 1), L APPROVE(Low 3) = 전원 APPROVE, 연속 APPROVE 1. 8회차 리뷰어의 Medium 이하 지적은 v8에서 문서 정정으로 반영했다(리셋하지 않음). 회차가 갈수록 지적 심각도와 건수가 줄고 있다(1회차 Critical 2 → 4회차 Critical 0).
+Jira: VOIP-1573. 상태: **디자인 리뷰 루프 종료(7회차 K, L 전원 APPROVE, 8회차 M, N 전원 APPROVE, 2회 연속).** 이력: 1~5회차는 REQUEST_CHANGES가 섞였고(Critical는 1~3회차에서 각각 해소), 6회차는 I APPROVE와 J REQUEST_CHANGES(리셋)였다. 8회차의 Low/Nit는 v9에서 문서 정정으로 반영했다(리셋하지 않음).
 
-v8은 7회차의 Medium/Low 지적을 반영했다(부록 A). 핵심 변경: 기존 `MapRequiredMediasByType`(액션별 적용 미디어) 활용, `ref`의 `optional`/`<kind>` 제거(경고는 `actioncatalog.Required`와 `ref` 종류의 교집합으로 계산), `/flow_builder/status` 폐기(기존 status 재사용), 43개 타입 분류 초안(부록 B). 처리 내역은 부록 A.
+v9는 8회차의 Low/Nit를 반영했다(부록 A). 이전 회차 변경 이력은 부록 A에 있다.
 
 ## 1. 문제와 확정 결정
 
@@ -112,14 +112,14 @@ few-shot에 쓰는 타입 상수가 `TypeListAll`에 있고 `core`이며 프런�
 
 ### 3.2 코드가 확정하는 변환 (서버, 순서 고정)
 
-1. **label 정규화**: 중복 label은 첫 노드를 유지하고 이후 노드를 제거하며 `duplicate_label` 경고를 기록한다(이후 참조는 첫 노드로 해석). 클라이언트가 보낸 `labels`(5절)는 신뢰하지 않는다. 중복, 존재하지 않는 id, 자동 부여 label(`n1...`)과의 충돌은 버리고 재부여한다.
+1. **label 정규화**: 중복 label은 첫 노드를 유지하고 이후 노드를 제거하며 `duplicate_label` 경고를 기록한다(이후 참조는 첫 노드로 해석). 클라이언트가 보낸 `current_draft`는 신뢰하지 않는다. `actions`의 `next_id`나 `ref:"action"` 값이 `actions` 안에 없는 id를 가리키면 `IDEmpty`로 비우고 `invalid_label_ref`로 기록한다. `labels`(5절)의 중복, 존재하지 않는 id, 자동 부여 label(`n1...`)과의 충돌은 버리고 재부여한다.
 2. **타입 필터**: 노출 집합에 없는 타입의 노드를 삭제하고 `unsupported_action: <label>` 경고를 기록한다. 삭제 노드를 가리키던 참조(`next`, `ref:"action"` 값)는 비운다(`IDEmpty`). 비워진 `ref:"action"`은 3.3에서 `empty_action_ref`로, 후속이 끊긴 노드는 열린 끝으로 자연히 잡힌다. 후속 체인 이어 붙이기는 하지 않는다(카탈로그에 없는 타입을 LLM이 내는 경우는 드물 것이므로 실측 후 확장한다). `actions[0]`이 삭제되면 삭제 노드가 가리키던 `next` 노드를 새 시작으로 쓴다. 새 시작을 정할 수 없으면(후속이 없거나 후속도 삭제된 경우 포함) 남은 노드가 있어도 초안을 비우고 `empty_draft`로 응답한다(시작 없는 그래프는 의미가 없다).
 3. 남은 노드에 새 UUID를 1:1 부여한다.
 4. **먼저 모든 `ref:"resource"` 필드 값을 `IDEmpty`로 비운다**(LLM이 이름 문자열 등 UUID가 아닌 값을 넣어도 `invalid_option`과 `select_resource`가 중복 보고되지 않게). 이어서 `next` → `next_id`(없으면 `IDEmpty`). FlowKind가 `continue`가 아닌 노드의 `next`는 무시하고 `next_ignored: <label>`을 기록한다. `ref:"action"` 값(스칼라, 맵 값)과 `next`의 label을 UUID로 치환한다. **알 수 없는 label**은 `IDEmpty`로 비우고 `invalid_label_ref: <label>`을 기록한다(노드는 유지. 에디터에서 보완 가능). 이어서 `option`을 `OptionStructByType`의 구조체로 엄격 디코딩해 알 수 없는 키나 형 불일치는 버리고 `invalid_option: <label>.<key>`를 기록한다(LLM이 틀린 옵션을 내도 저장 시점에야 발견되지 않게 한다).
 5. `ref:"resource"`는 `IDEmpty`로 두고, 2.3의 경고 규칙에 따라 `select_resource: <label>.<field>`를 기록한다. null/생략은 모두 `IDEmpty`.
 6. **배열 순서**: 시작 노드는 항상 `actions[0]`이다(`IDStart`는 `Actions[0]`을 반환하므로 다른 규칙보다 우선한다). 나머지는 BFS 순으로 배열하되 **"열린 끝"(FlowKind가 `continue`이고 후속이 없는 노드)을 배열 뒤쪽으로 미룬다**(낙하가 곧 종료가 되도록 마지막 원소로 보낸다). 변환기는 후속이 있는 `continue` 노드의 `next_id`를 **항상 명시**하고 배열 인접 낙하에 의존하지 않는다. 낙하에 의존하는 것은 열린 끝뿐이다. **배열의 마지막 원소가 아닌 열린 끝은 항상** `open_end: <label>`을 기록한다(시작 노드가 열린 끝이고 고아 노드가 뒤에 놓인 경우, 열린 끝이 둘 이상인 경우 포함. 낙하로 다음 노드가 실행되므로 사용자가 에디터에서 연결을 완성해야 한다). 마지막 원소인 열린 끝은 정상 종료이며 경고하지 않는다. 사용자가 에디터에서 노드를 추가하면 `nodes[]` 끝에 붙어 마지막 열린 끝이 그 노드로 낙하할 수 있다. 이는 사람이 만든 Flow에도 동일한 에디터 특성이며 수용한다. 이 단계는 2~5가 끝난 최종 그래프를 기준으로 한다.
 7. **레이아웃**: 시작 `x=0, y=100`, 깊이마다 `y`를 500 증가, 같은 깊이는 `x`를 450 간격(템플릿과 같은 간격). 도달 불가 노드는 맨 오른쪽 열. 가상 `start` 좌표는 건드리지 않는다.
-8. 필터 후 노드가 0개이거나(2번의 새 시작을 정할 수 없는 경우 포함) `draft`를 생략하고 `message`에 이유를 쓰며 `empty_draft`를 기록한다.
+8. 빈 결과(필터 후 노드 0개, 또는 2번에서 새 시작을 정할 수 없는 경우): `draft`를 생략하고 `message`에 이유를 쓰며 `empty_draft`를 기록한다.
 9. 출력: `actions`(`[]Action`, `actions[0]`이 시작), `positions`, `labels`(`{id: label}`). `actions`와 `positions`는 에디터의 `setInitialActions`/`setInitialPositions`에 변환 없이 들어간다.
 
 ### 3.3 그래프 구조 검증기 (v1 범위)
@@ -167,7 +167,7 @@ Assistant Builder의 구성(역할, 핵심 차원, 인터뷰 행동 규칙, few-
 - **출력 토큰**: `MaxOutputTokens` 기본 4096은 60노드 JSON 초안에 부족할 수 있다. Flow용 값은 `builderhandler.Config`(`MaxOutputTokens`, `LLMTimeout`, `SystemPrompt`, `JSONMode`는 `Options`가 아니라 `Config`에 있다)의 Flow 전용 인스턴스에 코드 상수 기본값으로 두고(새 설정 플래그나 환경 설정 변경 없음) 평가 하네스 실측으로 정한다. LLM 타임아웃(40초, 검증 <= 50)도 실측 후 재확인한다.
 - **로깅 금지**: 본문, `current_draft`, 파싱 오류, 실패 오류 텍스트를 로그에 남기지 않는다(`option`에 민감값이 올 수 있다). 요청 로거 이전 라우팅, 오류를 응답으로만 변환, panic 복구 시 본문 제외를 Assistant와 같은 방식으로 적용한다. **`listenhandler`의 `isBuilderRoute`는 URI 완전 일치**이므로 Flow URI를 반드시 추가해야 이 보장이 적용된다. 센티널 문자열 테스트로 검증한다.
 - **타임아웃 순서**: LLM < RPC < 클라이언트. `BUILDER_TIMEOUT` 등 오류 reason 매핑은 재사용한다. 서버 쪽 오류 문구(`mapBuilderRPCError`, ai-manager의 "assistant builder" 문자열)와 프런트 `ERROR_COPY`에서 "assistant" 고정 표현을 일반화하거나 kind별로 분리한다.
-- **메트릭, 서킷브레이커**: 기존 Assistant 메트릭(`ai_manager_builder_chat_total{result}`, `builder_chat_duration_seconds`, `builder_tokens_total`, `api_manager_builder_timeout_total`, `api_manager_builder_circuit_open_total`)의 이름과 라벨은 **바꾸지 않는다**(라벨을 추가하면 집계 없는 기존 쿼리와 알림이 시리즈 분리로 깨질 수 있고 이 저장소 밖의 대시보드는 확인할 수 없다). Flow는 `flow_builder_` 접두 별도 메트릭을 같은 형태로 추가한다. **서킷브레이커는 RPC 큐 단위**(`send_request.go`의 `r.cb.Allow(string(queue))`)이고 `sendDirectRequest`의 모든 오류(타임아웃 포함)가 `RecordFailure(queue)`로 집계되며 연속 실패 임계값은 5회(`circuitbreakerhandler/option.go`)다. 따라서 Flow 턴은 큐를 공유하는 다른 ai-manager RPC와 브레이커를 공유하며 분리할 수 없다(분리하려면 `requesthandler` 공통 코드를 바꿔야 하며 이 설계의 범위가 아니다). **결합을 수용한다**: Assistant Builder도 이미 같은 결합이고, Flow 턴은 LLM 40초와 출력 토큰 증가로 타임아웃 확률이 더 높을 수 있으나 브레이커는 연속 5회 실패가 있어야 열리고, 열리면 같은 큐의 다른 ai-manager RPC도 기본 30초간(`defaultOpenDuration`) 차단된다. 완화는 평가에서 Flow 턴의 타임아웃 비율을 실측해 높으면 빌더 타임아웃을 집계에서 제외하는 `requesthandler` 변경을 후속으로 설계한다(Open Question 10). `"ai/flow_builder/chat"`은 소요 시간 메트릭의 `resource` 라벨이다. 
+- **메트릭, 서킷브레이커**: 기존 Assistant 메트릭(`ai_manager_builder_chat_total{result}`, `builder_chat_duration_seconds`, `builder_tokens_total`, `api_manager_builder_timeout_total`, `api_manager_builder_circuit_open_total`)의 이름과 라벨은 **바꾸지 않는다**(라벨을 추가하면 집계 없는 기존 쿼리와 알림이 시리즈 분리로 깨질 수 있고 이 저장소 밖의 대시보드는 확인할 수 없다). Flow는 `flow_builder_` 접두 별도 메트릭을 같은 형태로 추가한다. 패닉 복구(`processBuilder`의 recover)는 `builderhandler.RecordPanic()`이 Assistant 시리즈(`ai_manager_builder_chat_total{result="internal"}`)를 증가시키므로 Flow 라우트용 패닉 기록을 별도로 두거나 라우트별로 분기한다. **서킷브레이커는 RPC 큐 단위**(`send_request.go`의 `r.cb.Allow(string(queue))`)이고 `sendDirectRequest`의 모든 오류(타임아웃 포함)가 `RecordFailure(queue)`로 집계되며 연속 실패 임계값은 5회(`circuitbreakerhandler/option.go`)다. 따라서 Flow 턴은 큐를 공유하는 다른 ai-manager RPC와 브레이커를 공유하며 분리할 수 없다(분리하려면 `requesthandler` 공통 코드를 바꿔야 하며 이 설계의 범위가 아니다). **결합을 수용한다**: Assistant Builder도 이미 같은 결합이고, Flow 턴은 LLM 40초와 출력 토큰 증가로 타임아웃 확률이 더 높을 수 있으나 브레이커는 연속 5회 실패가 있어야 열리고, 열리면 같은 큐의 다른 ai-manager RPC도 기본 30초간(`defaultOpenDuration`) 차단된다. 완화는 평가에서 Flow 턴의 타임아웃 비율을 실측해 높으면 빌더 타임아웃을 집계에서 제외하는 `requesthandler` 변경을 후속으로 설계한다(Open Question 10). `"ai/flow_builder/chat"`은 소요 시간 메트릭의 `resource` 라벨이다. 
 - **문서/인터페이스**: `bin-api-manager/docs/routing.md`, `bin-ai-manager/docs/operations.md`, `servicehandler/main.go` 인터페이스와 mock 갱신.
 
 ## 6. 프런트엔드 통합
@@ -179,6 +179,7 @@ Assistant Builder의 구성(역할, 핵심 차원, 인터뷰 행동 규칙, few-
   - 패널 안내문, `TOOLS_NOTE`, 초안 렌더를 슬롯으로 주입한다. 다이얼로그 너비도 전환 대상이다(`flows_create.js` 다이얼로그는 `sm:max-w-[500px]`, `ais_create.js`의 builder 모드는 `sm:max-w-[760px]`).
   - 두 대화가 서로 덮어쓰지 않도록 세션 키를 분리한다. sessionStorage에는 Assistant 초안(`init_prompt`)과 같은 수준으로 Flow 초안이 저장된다(안내문의 secrets 경고로 갈음).
   - 기존 `ais/builder/__tests__`의 이동과 회귀 검증을 포함한다(파일 단위 목록은 구현 착수 시 작성). 공용화가 과하다고 판단되면 Flow 전용 얇은 사본이 대안이며 착수 시 비용 비교를 제시한다.
+- **진입점 표시**: 기존 `GET /ai_builder/status`의 `available`을 패널 진입 시 읽어 `false`이면 진입점을 숨긴다(Assistant 생성 화면과 같은 방식). 데스크톱에서만 표시한다.
 - **초안 적용**: `setInitialActions(draft.actions)`, `setInitialPositions(draft.positions)`와 `setGraphKey(k => k + 1)`로 재마운트한다(`ActionGraph`는 `!isInitialized`일 때 한 번만 초기화). 이미 편집 중이면 덮어쓰기 전에 `ConfirmDialog`를 띄운다. "편집 중" 판정은 `graphRef.current?.getActionsData()`의 노드 수가 0보다 큰지로 하며 **try/catch로 감싼다**(`getActionsData`는 그래프가 초기화되기 전에는 예외를 던진다). ref가 null이거나 예외이면 편집 중이 아닌 것으로 본다. `initialActions.length`는 사용자가 에디터에서 직접 추가한 노드를 놓치므로 쓰지 않는다. dirty 추적은 새로 만들지 않는다. 데스크톱에서 편집한 뒤 창을 모바일 폭으로 줄여 요약 화면이 된 경우에도 같은 store를 읽으므로 판정이 동작한다(모바일에서는 진입점 자체를 숨기므로 이 경우는 덮어쓰기 확인 로직의 방어용이다). 이름/설명 입력은 건드리지 않는다.
 - **방어**: `actions`에 `nodeTypes`에 없는 타입이 있으면 주입을 중단하고 영문 안내를 표시한다(서버가 이어 붙이기를 담당하므로 프런트는 고치지 않고 거부).
 
@@ -193,9 +194,9 @@ v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노
 | 서비스 | 변경 |
 |---|---|
 | bin-flow-manager | `models/action`: `Meta`/`MetaByType`, `ref` 태그, drift-lock 테스트 3종(`TestMetaCoversAllTypes`, `TestEveryUUIDFieldIsTagged`, `TestBuilderExcludedTypes`) |
-| bin-ai-manager | `pkg/builderhandler`에 flow 전용 chat 핸들러, 변환기, 검증기, 프롬프트. `models`에 flow builder 요청/응답/검증. `listenhandler` 라우트와 `isBuilderRoute`, `cachehandler`(Flow 카운터 키 추가, Assistant 키 유지) + mock + `builder_test.go`, `flow_builder_` 메트릭 추가, `cmd/ai-manager/builder_wiring.go`, 평가 하네스, `docs/operations.md`, "the assistant builder" 고정 문구 5곳 이상(`chat.go` 등)의 일반화 |
+| bin-ai-manager | `pkg/builderhandler`에 flow 전용 chat 핸들러, 변환기, 검증기, 프롬프트. `models`에 flow builder 요청/응답/검증. `listenhandler` 라우트와 `isBuilderRoute`, `listenhandler/models/request/builder.go`에 Flow 요청 타입(기존 `V1DataBuilderChatPost`는 Assistant `Draft`를 쓴다), `listenHandler` 생성자의 Flow 핸들러 필드 추가, `cachehandler`(Flow 카운터 키 추가, Assistant 키 유지) + mock + `builder_test.go`, `flow_builder_` 메트릭 추가, `cmd/ai-manager/builder_wiring.go`, 평가 하네스, `docs/operations.md`, "the assistant builder" 고정 문구 5곳 이상(`chat.go` 등)의 일반화 |
 | bin-common-handler | `requesthandler`에 flow builder RPC(`ai_builder.go` 패턴, 소요 시간 `resource` 라벨만 Flow용) |
-| bin-api-manager | `server/flow_builder.go`, `servicehandler/flow_builder.go`, `servicehandler/main.go` 인터페이스와 mock, 기존 `builderStatusCache` 재사용, `flow_builder_` 메트릭, `gens/openapi_server/gen.go` 재생성, `docs/routing.md` |
+| bin-api-manager | `server/flow_builder.go`, `servicehandler/flow_builder.go`, `servicehandler/main.go` 인터페이스와 mock, 기존 `builderStatusCache` 재사용, `flow_builder_` 메트릭, `gens/openapi_server/gen.go` 재생성, `docs/routing.md`, `docs/operations.md`(`api_manager_builder_*` 행) |
 | bin-openapi-manager | `paths/flow_builder/chat.yaml`, `openapi.yaml` 라우트 등록, `gen.go` 재생성. 응답 스키마에 `sensitive_nodes`와 Flow 경고 키 목록 설명 추가. OpenAPI 설명의 "not released / no on-off setting" 문구는 Assistant Builder의 현재 문구 정책을 그대로 따른다 |
 | square-admin | 스토어 팩토리화, 패널 슬롯화, 테스트 이동, flows_create.js 진입점, 에디터 분기 계열 단위 테스트 |
 
@@ -224,7 +225,7 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 | 1 | `sensitive` 노출(코드 상수 결정) | 노출 + 구조화 표시와 경고. 비노출 시 아웃바운드 시나리오 불가 | 대표님 |
 | 2 | 리소스 ID 목록 주입 | v1 비움 + 경고, 주입은 후속 | 대표님 |
 | 3 | `ref` 태깅 범위 | 해결: UUID 필드를 가진 모든 타입에 태깅 | 확정 제안 |
-| 4 | 한도/오류코드 공유 | `models` 공유, 신규 flow builder 모델 패키지 | 대표님 |
+| 4 | 한도/오류코드 공유 | `Reason*` 코드와 대화용 한도 상수는 `models/builder`와 공유하고, 요청/응답/검증 타입은 신규 flow builder 모델 패키지로 둔다 | 대표님 |
 | 5 | `ref` 태그를 `describe_action` 카탈로그에 반영 | 범위 밖 | 대표님 |
 | 6 | 노출 타입 집합 | 고정 목록 없이 `Exposure` ∩ 프런트 목록 ∩ 구조 제외 | 해결 |
 | 7 | 일일 한도 카운터를 Assistant와 분리할지 | 분리 권고(한쪽이 다른 쪽을 소진하지 않게). 공유는 추가 변경 없이 가능하나 서로 한도를 소진. 분리 시 cachehandler 인터페이스/mock/테스트 변경 | 대표님 |
@@ -241,6 +242,18 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 5. 평가 실행(9절) → 코드 리뷰 루프.
 
 ## 부록 A. 처리 내역
+
+### 8회차 (M APPROVE, N APPROVE), 코드 재검증
+| 지적 | 재검증 | 처리 |
+|---|---|---|
+| M-L1, N-Nit1 머리말 불일치 | 타당 | 머리말 정정 |
+| M-L2 `current_draft` 위조 id | 타당 | 3.2의 1번 |
+| M-L3 프롬프트 한계와 평가 연결 | 3.3 알려진 한계에 이미 명시. 평가 시나리오 1에서 채널 확인 질문과 함께 확인 | 변경 없음 |
+| M-Nit 3.2의 8번 중복 | 타당 | 문구 정리 |
+| N-L1 `RecordPanic`이 Assistant 시리즈를 증가 | **사실.** `processBuilder` recover | 5.1 |
+| N-L2 8절 누락(request 타입, 생성자, operations.md) | 타당 | 8절 |
+| N-L3 진입점 표시 조건 | 타당 | 6절 |
+| N-Nit2 OQ4 모호 | 타당 | OQ4 문구 |
 
 ### 7회차 (K APPROVE, L APPROVE), 코드 재검증
 | 지적 | 재검증 | 처리 |
