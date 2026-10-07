@@ -1,9 +1,11 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 3 (design review round 2 approved by both reviewers; MINOR/NIT items applied)
+Status: Draft, revision 4 (design review round 3 requested one change, applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
-Revision 3 (from design review round 2, MINOR/NIT only): the docs target is fixed (`domain.md`, Campaigncall Lifecycle); explicit cases for a stored dialing and progressing campaigncall; the subscriber test needs per-case expectations; the subscriber uses `_, err :=` since `newCC` is no longer used; the first table row reads "any state other than done".
+Revision 4 (from design review round 3): the subscriber assignment is `_, err = ...` (`err` is already declared at `callmanager.go:27`, so `:=` does not compile); the evidence the design depends on is summarized in section 1 so the document can be read without the analysis note; the revision history is a list.
+
+Revision 3 (from design review round 2, MINOR/NIT only): the docs target is fixed (`domain.md`, Campaigncall Lifecycle); explicit cases for a stored dialing and progressing campaigncall; the subscriber test needs per-case expectations; the subscriber assignment is written as `_, err =` (see revision 4); the first table row reads "any state other than done".
 
 Revision 2 (from design review round 1): the error path of the subscriber no longer returns early; it keeps the original intent (log the error, still run the campaign-level handler) using the `CampaignID` of the campaigncall the subscriber already loaded, so a stop signal is not lost; the current nil dereference is a process crash (the event runs in a goroutine without `recover`); the consumer wording is corrected; the late-success exception side effect is stated as an accepted limit; the test plan asserts return values and tightens case 6.
 
@@ -14,6 +16,14 @@ Issue analysis (approved, revision 6, review rounds 4 and 5): `~/agent-hermes/no
 campaign-manager runs `campaigncallHandler.Done` a second time for a campaigncall that is already `done` when a late `call_hangup` arrives for the same call. `Done` (`pkg/campaigncallhandler/status.go:16-49`) has no already-done check, so every call writes the campaigncall again, publishes `campaigncall_updated`, counts `promCampaigncallDoneTotal`, and overwrites the outdial target status (`UpdateStatus` is an unconditional write).
 
 Trigger: `executeCall` marks the campaigncall `Fail` when `CallV1CallCreateWithID` returns an error (`pkg/campaignhandler/execute.go:270`). A `call_hangup` for the same call id can still follow: since VOIP-1562 a call whose channel row never appeared is finalized as `failed` about 40 s after creation, and a create RPC that errors while call-manager still creates the call could already do it before. `processEventCMCallHungup` (`pkg/subscribehandler/callmanager.go`) then calls `EventHandleReferenceCallHungup`, which calls `Done` again.
+
+Evidence the design relies on (all code-verified; details in the analysis note, which lives outside the repository):
+
+- `Done` has no already-done check and its effects are the campaigncall write with the `campaigncall_updated` webhook, the done metric, and an unconditional outdial target status write (`status.go:16-49`, `outdialtargethandler/outdialtarget.go:209-233`).
+- The only unguarded duplicate source is the call-hangup path; `pkg/subscribehandler/flowmanager.go:35` already guards the activeflow path.
+- Retry counting reads the outdial target `TryCount`, not campaigncall rows, and nothing else in the repository reads `campaigncall.Result`, so correcting a late Fail to Success only changes the target state.
+- `campaignStopNow` returns early (no webhook) when the campaign is already stopped, so the campaign-level step is idempotent.
+- Production has no running campaign (9325 campaigns all stopped; 14 campaigncalls ever, the last in 2022).
 
 Production impact today: none (all 9325 campaigns stopped, 14 campaigncalls ever, the last in 2022). It affects self-hosted installations that run campaigns.
 
@@ -68,7 +78,7 @@ The result mapping error path (`calcCampaigncallResultByCallHangupReason` fails 
 
 - Existing defect: when `EventHandleReferenceCallHungup` returns an error, `newCC` is nil and the next statement dereferences `newCC.CampaignID`. The event runs as `go h.processEvent(m)` with no `recover` anywhere in the service (`subscribehandler/main.go`, grep of `recover()` finds none), so this is a process crash, not a recovered panic. The original intent is visible in the code: the error branch only logs and has no `return`, so the campaign-level handler is meant to run even when the campaigncall handling failed (it matters because `Done` writes the campaigncall as done before its outdial request, so after a failed outdial request the campaigncall is done and the campaign still needs its stop check).
 - The fix keeps that intent: the subscriber uses the `CampaignID` of the campaigncall it already loaded (`cc.CampaignID`, from `GetByReferenceID`) for the campaign-level call, so it no longer depends on the returned value. On an error it logs and continues. No retry, no early return.
-- After the change `newCC` is not used by the subscriber, so the call becomes `_, err := h.campaigncallHandler.EventHandleReferenceCallHungup(...)` (a leftover `newCC` would not compile).
+- After the change `newCC` is not used by the subscriber, so the call becomes `_, err = h.campaigncallHandler.EventHandleReferenceCallHungup(...)` (plain assignment: `err` is already declared by `cc, err := ...GetByReferenceID` at `callmanager.go:27`, so `:=` would fail with "no new variables"; a leftover `newCC` would fail as unused).
 - On a skip (section 3.1) the campaign-level `EventHandleReferenceCallHungup(ctx, cc.CampaignID)` also runs. It is idempotent: it acts only when `isStoppable` is true (execute stopped and no `dialing` or `progressing` campaigncall), and `campaignStopNow` returns early without a webhook when the campaign is already `stop` (`pkg/campaignhandler/status_stop.go`). So a duplicate event cannot publish a second campaign webhook, and a stop that depends on this event is not lost.
 - Event consumer facts: `processEventRun` always returns nil after starting the goroutine, and the result of `processEvent` is only logged (`subscribehandler/main.go`), so nothing is redelivered whatever the handler does.
 - The wrong comment above the function ("confbridge_leaved") is corrected to the real event name (`call_hangup`).
