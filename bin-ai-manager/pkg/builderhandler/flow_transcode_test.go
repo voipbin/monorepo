@@ -1,6 +1,8 @@
 package builderhandler
 
 import (
+	"reflect"
+	"strings"
 	"testing"
 
 	"monorepo/bin-ai-manager/models/flowbuilder"
@@ -58,8 +60,10 @@ func Test_AssembleFlowDraft_DuplicateLabelKeepsFirst(t *testing.T) {
 }
 
 func Test_AssembleFlowDraft_UnsupportedTypeClearsReferenceWithoutStitching(t *testing.T) {
-	// a -> (unsupported b) -> c. b is dropped, a.next is cleared (no
-	// stitching to c), and c becomes unreachable.
+	// a -> (unsupported b) -> c. b is dropped and a.next is cleared (no
+	// stitching to c). a is then an open end that is not last, so the
+	// executor falls through to c: c is reachable, and the user is told
+	// about the open end instead.
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "a", Type: string(fmaction.TypeAnswer), Next: strp("b")},
 		{Label: "b", Type: string(fmaction.TypeCall), Next: strp("c")},
@@ -72,7 +76,7 @@ func Test_AssembleFlowDraft_UnsupportedTypeClearsReferenceWithoutStitching(t *te
 	if nid, _ := draft.Actions[0]["next_id"].(string); nid != "" && nid != fmaction.IDEmpty.String() {
 		t.Errorf("a.next_id = %v, want cleared", nid)
 	}
-	for _, want := range []string{flowbuilder.WarningUnsupportedAction, flowbuilder.WarningUnreachable} {
+	for _, want := range []string{flowbuilder.WarningUnsupportedAction, flowbuilder.WarningOpenEnd} {
 		if !containsPrefix(warnings, want) {
 			t.Errorf("warnings = %v, want a %s warning", warnings, want)
 		}
@@ -298,4 +302,93 @@ func mustID(t *testing.T, seed string) uuid.UUID {
 		t.Fatalf("no fixed uuid for seed %q", seed)
 	}
 	return id
+}
+
+func Test_ValidateDraft_unreachable(t *testing.T) {
+	idA := mustID(t, "1")
+	idB := mustID(t, "2")
+	idC := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+
+	tests := []struct {
+		name      string
+		actions   []fmaction.Action
+		wantUnrch []string
+	}{
+		{
+			name: "a node reached by next_id is reachable",
+			actions: []fmaction.Action{
+				{ID: idA, Type: fmaction.TypeAnswer, NextID: idB},
+				{ID: idB, Type: fmaction.TypeHangup},
+			},
+		},
+		{
+			name: "array fall-through of a non-last open end reaches the next element",
+			actions: []fmaction.Action{
+				{ID: idA, Type: fmaction.TypeAnswer},
+				{ID: idB, Type: fmaction.TypeHangup},
+			},
+		},
+		{
+			name: "a terminate node never falls through",
+			actions: []fmaction.Action{
+				{ID: idA, Type: fmaction.TypeStop},
+				{ID: idB, Type: fmaction.TypeHangup},
+			},
+			wantUnrch: []string{flowbuilder.WarningUnreachable + ": b"},
+		},
+		{
+			name: "a ref:action target is reachable and a node nothing points at is not",
+			actions: []fmaction.Action{
+				{ID: idA, Type: fmaction.TypeGoto, Option: map[string]any{"target_id": idB.String()}},
+				{ID: idB, Type: fmaction.TypeStop},
+				{ID: idC, Type: fmaction.TypeStop},
+			},
+			wantUnrch: []string{flowbuilder.WarningUnreachable + ": c"},
+		},
+	}
+	labels := map[string]string{idA.String(): "a", idB.String(): "b", idC.String(): "c"}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got []string
+			for _, w := range ValidateDraft(tt.actions, labels) {
+				if strings.HasPrefix(w, flowbuilder.WarningUnreachable) {
+					got = append(got, w)
+				}
+			}
+			if !reflect.DeepEqual(got, tt.wantUnrch) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.wantUnrch, got)
+			}
+		})
+	}
+}
+
+func Test_computeLayout(t *testing.T) {
+	idA := mustID(t, "1")
+	idB := mustID(t, "2")
+	idC := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+
+	// a (next b) -> b (branch: 1 -> c, default -> a) ; c unreachable? no: c is a branch target.
+	actions := []fmaction.Action{
+		{ID: idA, Type: fmaction.TypeAnswer, NextID: idB},
+		{ID: idB, Type: fmaction.TypeBranch, Option: map[string]any{
+			"target_ids":        map[string]any{"1": idC.String()},
+			"default_target_id": idA.String(),
+		}},
+		{ID: idC, Type: fmaction.TypeStop},
+		{ID: uuid.FromStringOrNil("99999999-9999-9999-9999-999999999999"), Type: fmaction.TypeStop},
+	}
+	got := computeLayout(actions)
+	want := []flowbuilder.Position{
+		{X: 0, Y: 100},  // start
+		{X: 0, Y: 600},  // depth 1
+		{X: 0, Y: 1100}, // depth 2 (branch target)
+		{X: 0, Y: 1600}, // unreachable: one row below the deepest
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", want, got)
+	}
+
+	if got := computeLayout(nil); got != nil {
+		t.Errorf("Wrong match. expect: nil for no actions, got: %v", got)
+	}
 }

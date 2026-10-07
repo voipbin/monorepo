@@ -72,17 +72,13 @@ const (
 	layoutColStepX   = 450
 )
 
-// computeLayout assigns a grid {x,y} per action: x by order-of-appearance
-// within a BFS depth from the start node, y by depth. Edges are next_id
-// (when set) plus every ref:"action" value (so a branch's targets land one
-// column further right, like the hand-built templates). Unreachable nodes
-// go in the rightmost column (design doc §3.2 step 7).
-func computeLayout(actions []fmaction.Action) []flowbuilder.Position {
-	if len(actions) == 0 {
-		return nil
-	}
-
-	byID := make(map[string]int, len(actions)) // action id string -> index
+// successors returns, per action index, the indexes the executor can reach
+// next: the next_id target, every ref:"action" target, and, for an open end
+// that is not the last element, the next array element (the executor's
+// array-adjacency fall-through, design doc 3.3). Layout and the unreachable
+// check share it so "unreachable" and "placed in the unreachable row" agree.
+func successors(actions []fmaction.Action) [][]int {
+	byID := make(map[string]int, len(actions))
 	for i, a := range actions {
 		byID[a.ID.String()] = i
 	}
@@ -104,7 +100,24 @@ func computeLayout(actions []fmaction.Action) []flowbuilder.Position {
 				}
 			}
 		}
+		if isOpenEnd(a) && i < len(actions)-1 {
+			adj[i] = append(adj[i], i+1)
+		}
 	}
+	return adj
+}
+
+// computeLayout assigns a grid {x,y} per action: x by order-of-appearance
+// within a BFS depth from the start node, y by depth. Edges are those of
+// successors (so a branch's targets land one row further down, like the
+// hand-built templates). Unreachable nodes go in one extra row below the
+// deepest reachable one (design doc 3.2 step 7).
+func computeLayout(actions []fmaction.Action) []flowbuilder.Position {
+	if len(actions) == 0 {
+		return nil
+	}
+
+	adj := successors(actions)
 
 	depth := make([]int, len(actions))
 	for i := range depth {

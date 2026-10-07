@@ -59,7 +59,7 @@ func Test_IsBuilderExposable(t *testing.T) {
 	}{
 		{"core type is exposable", TypeTalk, true},
 		{"sensitive type is exposable", TypeConnect, true},
-		{"internal type is not exposable", TypeExternalMediaStart, true == false},
+		{"internal type is not exposable", TypeExternalMediaStart, false},
 		{"goto is internal and not exposable", TypeGoto, false},
 		{"call is structurally excluded despite sensitive Exposure", TypeCall, false},
 		{"email_send is structurally excluded despite sensitive Exposure", TypeEmailSend, false},

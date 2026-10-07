@@ -32,8 +32,8 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 	warnings = append(warnings, w...)
 
 	// Step 2: type filter. Remove nodes whose type is not in
-	// allowedTypes, rewiring any reference to the removed node onto its
-	// own `next` (bypass chain, cycle-safe).
+	// allowedTypes. References to a removed node are cleared, not stitched
+	// to its successor (see filterUnsupportedTypes).
 	nodes, removed, w, startOK := filterUnsupportedTypes(nodes, allowedTypes)
 	warnings = append(warnings, w...)
 
@@ -85,8 +85,8 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 		})
 	}
 
-	// Step 6: order by BFS from the start node (first surviving node,
-	// §3.2 step 2 may have changed what that is), push every "open end"
+	// Step 6: keep the start node (first surviving node, step 2 may have
+	// changed what that is) at index 0 and push every "open end"
 	// (a FlowKindContinue node with no outgoing next_id) to the back so
 	// array-adjacency fall-through is a deliberate, late choice rather
 	// than an accident of input order. Every continuing node's next_id

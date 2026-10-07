@@ -249,6 +249,21 @@ func Test_ReconstructGraph(t *testing.T) {
 			},
 		},
 		{
+			name: "a self reference and a cycle are kept as is (the executor bounds loops, design OQ9) and do not hang",
+			draft: &flowbuilder.Draft{
+				Actions: []map[string]any{
+					{"id": idA, "type": "answer", "next_id": idA},
+					{"id": idB, "type": "talk", "next_id": idC},
+					{"id": idC, "type": "talk", "next_id": idB},
+				},
+			},
+			check: func(t *testing.T, g *flowbuilder.SymbolicGraph) {
+				if len(g.Nodes) != 3 || g.Nodes[0].Next == nil || *g.Nodes[0].Next != g.Nodes[0].Label {
+					t.Errorf("Wrong match. expect: 3 nodes, the first pointing at itself, got: %+v", g.Nodes)
+				}
+			},
+		},
+		{
 			name: "next_id pointing outside the draft is dropped",
 			draft: &flowbuilder.Draft{
 				Actions: []map[string]any{{"id": idA, "type": "answer", "next_id": "99999999-9999-9999-9999-999999999999"}},

@@ -120,36 +120,22 @@ func checkOpenEnds(actions []fmaction.Action, labels map[string]string) []string
 	return warnings
 }
 
-// checkUnreachable flags every action no edge (next_id or a ref:"action"
-// field) reaches from actions[0], using the same edge definition as the
-// layout BFS (computeLayout), so "unreachable" and "placed in the
-// rightmost layout column" always agree.
+// checkUnreachable flags every action the executor cannot reach from
+// actions[0], using the same edges as the layout (successors): next_id,
+// ref:"action" targets and the array fall-through of a non-last open end.
 func checkUnreachable(actions []fmaction.Action, labels map[string]string) []string {
 	if len(actions) == 0 {
 		return nil
 	}
+	adj := successors(actions)
 	reached := make([]bool, len(actions))
-	byID := make(map[string]int, len(actions))
-	for i, a := range actions {
-		byID[a.ID.String()] = i
-	}
 	reached[0] = true
 	queue := []int{0}
 	for len(queue) > 0 {
 		cur := queue[0]
 		queue = queue[1:]
-		a := actions[cur]
-		var targets []string
-		if a.NextID != fmaction.IDEmpty {
-			targets = append(targets, a.NextID.String())
-		}
-		for _, f := range fmaction.RefFieldsOf(a.Type) {
-			if f.Kind == fmaction.RefKindAction {
-				targets = append(targets, extractActionRefTargets(a.Option, f)...)
-			}
-		}
-		for _, t := range targets {
-			if j, ok := byID[t]; ok && !reached[j] {
+		for _, j := range adj[cur] {
+			if !reached[j] {
 				reached[j] = true
 				queue = append(queue, j)
 			}
