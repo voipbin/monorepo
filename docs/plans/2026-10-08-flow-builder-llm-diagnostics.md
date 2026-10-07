@@ -8,60 +8,83 @@ This document holds the issue analysis, the design and the implementation plan o
 
 - The Flow Builder draft step fails almost every time: 5 of 6 attempts that should produce a draft failed at about 40 seconds (`BUILDER_TIMEOUT` 4 times, `BUILDER_RESPONSE_INVALID` once). One attempt returned a message without a draft.
 - The question step of the same builder answers in 2 to 4 seconds. The Assistant Builder, with the same model settings, returns a draft in about 8 seconds (2 of 2).
-- Model, reasoning effort and timeout are the defaults (`gemini-3.8-flash`, `none`, 40 seconds) because no `AI_BUILDER_*` variable is set in production. The Flow output cap is the constant 8192.
-- 40 seconds is `AI_BUILDER_LLM_TIMEOUT_SECONDS`, so the model call is not answering in time.
+- Model, reasoning effort and timeout are the defaults (`gemini-3.8-flash`, `none`, 40 seconds) because no `AI_BUILDER_*` variable is set in production. The Flow output cap is the constant 8192 (`flowDefaultMaxOutputTokens`).
+- 40 seconds is `AI_BUILDER_LLM_TIMEOUT_SECONDS`, and `ErrTimeout` only comes from the handler's own `context.WithTimeout(cfg.LLMTimeout)` around `SendOnce` (`flow_turn.go`), so those four failures are the model call not answering within its own deadline. Redis counter wait is outside that deadline.
+- The one `BUILDER_RESPONSE_INVALID` came back at about 40.2 seconds, and the production log of that call carries `result=invalid_response` without an `llm_error` field. So it was `ErrTruncated` or `ErrInvalidResponse`, not a provider error class. A truncation at 40 seconds would mean the model reached `max_tokens` (8192) about when the deadline fell, which fits a runaway completion; this is a hint, not proof, because the sentinel is not logged.
+- The production log lines of the four timeouts show `result=llm_error` and no `llm_error` field, which is how `ErrTimeout` looks today.
 
-### Why the current logs cannot tell the cause
+### What the current logs and metrics tell, and what they cannot
 
-- `Chat` in `bin-ai-manager/pkg/builderhandler/flow_chat.go` logs only a result label through `fail()`. A timeout (`ErrTimeout`) and an unusable answer both reach `h.fail` with the label `llm_error` or `invalid_response`, and `mapTurnError` adds no detail for a timeout.
-- `RunFlowTurn` in `flow_turn.go` returns `nil` for the result when the call times out or the provider errors, so no elapsed time, finish reason or token usage exists on those paths.
-- `SendOnce` (`engine_openai_handler/send_once.go`) calls the provider exactly once without retry, so a hidden internal retry is not a cause.
-- Provider error text is intentionally never logged (it may hold the prompt). `ClassifyLLMError` already reduces it to a fixed code (`timeout`, `auth`, `rate_limit`, `provider_5xx`, `provider_4xx`, `other`), but `Chat` logs that code only for the `ErrLLM` branch.
+- Available today: `promFlowBuilderChatTotal{result}` and `promFlowBuilderChatDuration` (whole `Chat`, including semaphore, Redis counter and prompt build), and one `fail()` Info line with the result label. `llm_error=<code>` is logged only in the `ErrLLM` branch of `mapTurnError`. The API reasons `BUILDER_TIMEOUT` and `BUILDER_RESPONSE_INVALID` separate a timeout from an unusable answer.
+- Missing: which sentinel produced `invalid_response` (`ErrTruncated` or `ErrInvalidResponse`), `finish_reason`, token usage when the call failed (`RunFlowTurn` returns `nil` on the timeout and provider-error paths), the duration of the model call alone, and any size of the request.
+- `SendOnce` (`engine_openai_handler/send_once.go`) is non-streaming and calls the provider exactly once without retry, so a hidden retry is not a cause.
+- Provider error text is intentionally never logged (it may hold the prompt). `ClassifyLLMError` reduces it to a fixed code (`timeout`, `canceled`, `auth`, `rate_limit`, `provider_5xx`, `provider_4xx`, `other`).
 
-### Hypotheses the logs must separate
+### Hypotheses and what each diagnostic can show (honest limits)
 
-1. The provider hangs on the structured-output path that produces a draft (`json_schema` in `flowResponseFormat`).
-2. The provider answers with an error class (429, 5xx) that is surfaced as a timeout or an invalid answer.
-3. The output is large and does not finish in 40 seconds (long completion, visible in completion tokens and response length).
-4. The prompt or schema is large (visible in system prompt length and schema size).
+| Hypothesis | Visible in the new log | Limit |
+|---|---|---|
+| H1 The provider hangs on the structured-output (`json_schema`) path that produces a draft | `outcome=timeout`, `elapsed_ms` near the deadline, zero tokens | Looks identical to H3 on a timeout |
+| H2 The provider returns 429 or 5xx | `outcome=llm_rate_limit` or `llm_provider_5xx` | Cannot show a status when our own deadline fires first |
+| H3 The completion is very long (runaway output) | `outcome=truncated`, `finish_reason=length`, `completion_tokens` near 8192, large `response_chars`; or a late `ok` with large tokens | On a pure timeout there is no response, so H3 and H1 cannot be told apart from the log alone |
+| H4 The draft output structure (not the input size) is what the provider cannot finish | Supported by H1 or H3 evidence together with `has_draft` on the successful turns | The input is the same for the question step and the draft step apart from the conversation, so input size alone cannot explain it (system prompt and schema are constant for a given type set) |
+
+Because H1 and H3 are not separable on a timeout, the plan includes a controlled experiment after the first read of the logs (section 3, step 6).
 
 ### Is it still valid, and should we proceed
 
-Valid: the failure is reproducible in production, and the existing logs cannot discriminate between the hypotheses. The change is small, reversible, adds no new behavior and is a prerequisite of the fix. The CEO decided to add diagnostics and redeploy, and decided not to revert the front entry card.
+Valid: the failure is reproducible in production, and the existing logs cannot discriminate between most of the hypotheses. The change is small, reversible, adds no behavior and is a prerequisite of the fix. The CEO decided to add diagnostics and redeploy, and decided not to revert the front entry card.
 
-Alternatives considered: reproducing locally with the production key (needs the secret, needs CEO approval); a new metric with an outcome label (useful later for the OQ10 timeout ratio, deferred to avoid scope growth); raising the timeout blindly (guesses, and the limit is bounded by the 55 second RPC wait).
+Alternatives considered: reproducing locally with the production key or the existing `builderhandler/eval` harness (needs the secret and CEO approval, kept as a later step); a new histogram with an outcome label (useful later for the OQ10 timeout ratio, deferred to avoid scope growth); raising the timeout blindly (a guess, and the limit is bounded by the 55 second RPC wait, so at most 50 seconds, see `operations.md`).
 
 ## 2. Design
 
 ### Rule
 
-The diagnostics carry counts, sizes, durations and fixed classes only. They never carry the customer's messages, the model's answer, the system prompt text, the schema text or any provider error text.
+The diagnostics carry counts, sizes, durations, booleans, configured constants and fixed classes only. They never carry the customer's messages, the model's answer, the system prompt text, the schema text, the draft content or any provider error text.
 
 ### Changes
 
-1. `FlowTurnResult` (flow_turn.go) gets a `Diag` field (`FlowTurnDiag`): `Elapsed` (time.Duration of the model call), `SystemChars`, `SchemaBytes` (0 unless the JSON schema mode is used), `ResponseChars`, `HistoryMessages`, `UserTurns`, `HasCurrentDraft`, `AllowedTypes`.
-2. `RunFlowTurn` returns a non-nil result for every path after the request is built, including timeout and provider error, so `Diag` and the usage (zero when the provider did not answer) exist on failure. Its error return values and sentinels are unchanged.
-3. `Chat` writes exactly one Info line `The flow builder model call finished.` after `RunFlowTurn` with the fields: `outcome`, `elapsed_ms`, `finish_reason`, `prompt_tokens`, `completion_tokens`, `response_chars`, `system_chars`, `schema_bytes`, `allowed_types`, `user_turns`, `history_messages`, `has_current_draft`, `model`, `reasoning_effort`, `max_tokens`, `llm_timeout_ms`, `json_mode`. `outcome` is one of `ok`, `timeout`, `truncated`, `invalid_response`, `llm_<code>` (the `ClassifyLLMError` code), `error`.
-4. The existing result labels, metrics, error mapping, response shape and API are unchanged. The existing `fail()` line stays.
-5. The line is Info so it shows in production (the builder is a low-traffic admin feature, one line per model call).
+1. `FlowTurnResult` (flow_turn.go) gets a `Diag` field (`FlowTurnDiag`):
+   - `Elapsed` (duration of the `SendOnce` call only, measured around that call),
+   - `SystemChars` (runes of the system prompt), `RequestChars` (runes of all message contents sent, system prompt included, which also covers the current draft block and the history),
+   - `SchemaBytes` (bytes of the JSON schema text, 0 unless the schema mode is used; the schema string is built once and reused for the request),
+   - `ResponseChars` (runes of the answer content, 0 when none),
+   - `UserTurns`, `HistoryMessages`, `AllowedTypes` (count), `CurrentDraftPresent` (`req.CurrentDraft != nil`, not whether it rebuilds to a graph; its size is inside `RequestChars`).
+2. `RunFlowTurn` returns a non-nil result for every path after the request is built (timeout, provider error, nil response, no choices, truncated, unparsable), so `Diag` and the usage (zero when no answer arrived) exist on failure. Its error return values and sentinels are unchanged. The two guard returns before the request is built (nil sender, nil request) still return a nil result, so the logging helper must accept a nil result.
+3. `Chat` emits exactly one Info line `The flow builder model call finished.` for every call that reached the model, by a deferred function that runs at the end of `Chat` (so it can also carry what happened after the call), with the fields:
+   - `outcome`: `ok`, `timeout` (the handler's own deadline, `ErrTimeout`), `truncated`, `invalid_response`, `llm_<code>` using the `ClassifyLLMError` code (`llm_timeout` is the caller's context deadline and is a different thing from `timeout`; `llm_canceled`, `llm_auth`, `llm_rate_limit`, `llm_provider_5xx`, `llm_provider_4xx`, `llm_other`), `error` for a non-sentinel error. The two timeout kinds are not merged.
+   - `invalid_kind`: for `invalid_response` only, `nil_response`, `no_choices` or `unparsable`, so the three `ErrInvalidResponse` sources are separate.
+   - timing: `elapsed_ms` (the model call), `pre_call_ms` (from the start of `Chat` to the start of the model call, so semaphore, Redis counter and prompt build are visible), `chat_ms` (whole `Chat`).
+   - `finish_reason` normalized by an allowlist (`stop`, `length`, `content_filter`, `tool_calls`, `function_call`, anything else `other`, no answer `none`).
+   - `prompt_tokens`, `completion_tokens`, `response_chars`, `system_chars`, `request_chars`, `schema_bytes`, `allowed_types`, `user_turns`, `history_messages`, `current_draft_present`.
+   - `has_draft` and `draft_discarded` (true when the answer carried a graph that was dropped, from the existing `draft_discarded` warning) for the `ok` outcome, so "message only" and "draft dropped" are told apart.
+   - configuration: `model`, `reasoning_effort`, `max_tokens`, `llm_timeout_ms`, `json_mode`.
+4. The existing result labels, metrics, error mapping, response shape and API are unchanged. The existing `fail()` line stays, so a failed call logs two lines with the same `customer_id`.
+5. The line is Info so it shows in production. The builder is a low-traffic admin feature; one line per model call is acceptable.
 
 ### Failure behavior
 
-If a diagnostic value cannot be computed, it is logged as 0. Logging must never change the returned error or the response.
+If a diagnostic value is not available it is logged as 0 or `none`. A nil result is allowed. Logging never changes the returned error or the response.
 
 ### Tests
 
-- A table test drives `Chat` with a fake sender for each outcome (ok with a draft, ok without a draft, deadline exceeded, truncated by length, empty choices, unparsable content, provider 429, provider 500) and asserts the one diagnostic line, its `outcome`, and that the numeric fields exist.
-- A privacy test uses a sentinel string in the customer message, in the model answer and in the provider error text and asserts that no log entry of the call contains it.
+- A table test drives `Chat` through the existing fake sender for each outcome: ok with a draft, ok without a draft, ok with a discarded draft, `context.DeadlineExceeded` from the sender (`timeout`), finish reason length (`truncated`), unparsable content, nil response, no choices (a new fake sender is needed because the existing one always returns one choice), provider 429, provider 500, and the caller's context deadline (`llm_timeout`). It asserts the single diagnostic line, `outcome`, `invalid_kind`, and that numeric fields are present.
+- Privacy: the diagnostic line's field names are checked against an allowlist; every value is checked by `fmt.Sprint` against sentinel strings placed in the customer message, in the model answer (including inside the draft) and in the provider error text (429 and 500). It uses the existing log-capture style of `Test_FlowChat_logsNeverCarryCustomerInput`.
+- `finish_reason` normalization has a table test, including a hostile provider string.
 - Existing tests keep passing unchanged.
 
 ## 3. Implementation plan
 
-1. `bin-ai-manager/pkg/builderhandler/flow_turn.go`: add `FlowTurnDiag`, fill it in `RunFlowTurn`, return a non-nil result on the timeout and provider-error paths.
-2. `bin-ai-manager/pkg/builderhandler/flow_chat.go`: add a helper that classifies the outcome and logs the line; call it right after `RunFlowTurn`.
-3. Tests in `bin-ai-manager/pkg/builderhandler/flow_chat_test.go` (or a new `flow_diag_test.go`), named `Test_...` per `scripts/check-test-conventions.sh`.
-4. `bin-ai-manager/docs/operations.md`: describe the log line and how to read it for the timeout case.
-5. Verification: `go test ./bin-ai-manager/...`, `golangci-lint`, `bash scripts/check-test-conventions.sh`.
-6. Deploy order: ai-manager only. After the deploy, repeat the production scenario (admin test agent, draft step) and read the log line per replica.
+1. `bin-ai-manager/pkg/builderhandler/flow_turn.go`: add `FlowTurnDiag`, fill it in `RunFlowTurn` (build the schema string once, measure `SendOnce`), return a non-nil result on the timeout, provider-error, nil-response and no-choices paths.
+2. `bin-ai-manager/pkg/builderhandler/flow_chat.go`: add the outcome classifier, the `finish_reason` normalizer and the deferred logging helper; capture `pre_call_ms` and the config values. `RunFlowTurn` has one caller (`flow_chat.go`), no mock or eval harness uses it, and the interface in `flow_main.go` does not change, so no mock regeneration is needed.
+3. Tests in `bin-ai-manager/pkg/builderhandler/flow_chat_test.go` and a new `flow_diag_test.go`, named `Test_...` per `scripts/check-test-conventions.sh` (no testify, gomock controller named `mc`), reusing `newFlowTestHandler` and the existing sender fakes, plus one new fake sender returning no choices and one returning a nil response.
+4. `bin-ai-manager/docs/operations.md`: in the `Flow Builder (VOIP-1573)` section, describe the log line, its fields and how to read it (the timeout case, the truncated case); state that metrics are unchanged.
+5. Verification: `cd bin-ai-manager && go test ./... && golangci-lint run -v --timeout 5m`; from the repository root `git fetch origin main` and `bash scripts/check-test-conventions.sh`.
+6. After merge and deploy (ai-manager only, through CircleCI and Komodo, approval by the CEO): repeat the production scenario with an admin test agent (an extra admin must exist so the test agent can be deleted), read the line per replica, and decide with this table:
+   - `truncated` with `completion_tokens` near 8192, or a late `ok` with large tokens: H3 (runaway output).
+   - `llm_rate_limit` or `llm_provider_5xx`: H2.
+   - `timeout` with zero tokens: H1 or H3 cannot be separated yet. Then, with the CEO's approval, run the controlled experiment: set `AI_BUILDER_LLM_TIMEOUT_SECONDS=50` for the ai-manager stack and repeat; a draft that completes between 40 and 50 seconds with large tokens means H3, still timing out means H1.
+   - Compare with the Assistant Builder turn on the same agent for the same period.
 
-Rollback: revert the commit; no schema, config or API change.
+Rollback: revert the commit and redeploy (CircleCI build and Komodo deploy). No schema, config or API change.
