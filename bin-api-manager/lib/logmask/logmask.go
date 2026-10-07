@@ -29,9 +29,9 @@ var secretNames = map[string]struct{}{
 var (
 	// reQueryPair matches one "?key=value" or "&key=value" pair. The key may be
 	// percent-encoded (Go decodes query keys, so "%61ccesskey" authenticates).
-	// The value runs to the next "&" or whitespace. Backslash escapes are kept
-	// together so the Go-quoted (%#v) access log line is handled.
-	reQueryPair = regexp.MustCompile(`([?&])((?:[^=&\s"\\]|\\.)*)=([^&\s]*)`)
+	// The value runs to the next "&" or whitespace. Backslashes are plain
+	// characters: in the raw recovery dump "a\&accesskey=V" is two keys for Go.
+	reQueryPair = regexp.MustCompile(`([?&])([^=&\s]*)=([^&\s]*)`)
 
 	// reCookieLine matches a whole Cookie header line of the recovery dump.
 	reCookieLine = regexp.MustCompile(`(?m)^Cookie:[^\r\n]*`)

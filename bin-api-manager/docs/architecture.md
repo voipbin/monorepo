@@ -84,8 +84,8 @@ Public endpoints (no authentication required):
 - `GET /provisioning/extension` — SIP softphone (Linphone) remote-provisioning XML, redeemed by a
   short-lived token issued from `POST /v1.0/extensions/:id/provisioning-token`. Registered on the
   same shared engine as every other route, but `gin.Default()` was replaced with `gin.New()` +
-  `gin.LoggerWithConfig(SkipPaths: [...])` + `gin.Recovery()` so this path's `token` query parameter
-  is excluded from the access log; the handler emits its own token-free structured log line instead.
+  `logmask.Middlewares(SkipPaths: [...])` (gin Logger + Recovery with `accesskey`/`token` value
+  masking) so this path's `token` query parameter is excluded from the access log; the handler emits its own token-free structured log line instead.
   See [routing.md](routing.md#provisioning) and [operations.md](operations.md#rate-limiting)
   (`provisioning_public` tier).
 

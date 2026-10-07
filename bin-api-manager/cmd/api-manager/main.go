@@ -222,12 +222,11 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 		"func": "runListenHTTP",
 	})
 
-	// Equivalent to gin.Default() (Logger + Recovery), except the access
-	// logger skips the provisioning paths: their token query parameter is a
-	// short-lived SIP credential-fetch secret and must never reach stdout.
-	// gin.Default() is Logger() + Recovery(), and Logger() is
-	// LoggerWithConfig(LoggerConfig{}), so an empty config plus SkipPaths
-	// keeps the exact same log format for every other route.
+	// Same log format as gin.Default() (Logger + Recovery) via
+	// logmask.Middlewares, except the access logger skips the provisioning
+	// paths: their token query parameter is a short-lived SIP credential-fetch
+	// secret and must never reach stdout. Both sinks also mask accesskey and
+	// token values (see below).
 	// The public handler (lib/service.GetProvisioningExtension) emits its own
 	// structured log line to preserve observability for the skipped paths.
 	app := gin.New()

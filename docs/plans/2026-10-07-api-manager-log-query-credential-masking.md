@@ -80,3 +80,5 @@ Single PR in the monorepo, api-manager only, no schema or API change. Verify on 
 - The query rule applies to the whole written chunk, so `Referer: http://h/p?accesskey=..` in the dump is masked too (intended). The cookie rule applies only to the `Cookie:` line.
 - `Middlewares(skipPaths, out, errOut)` is the public API; the package-private `middlewares(..., mask bool)` is the negative-control seam used by tests.
 - Limits: panic values and `c.Errors` text are masked only when they contain the `?key=value` form.
+- Revision 3 (code review round 1): the query key pattern is `[^=&\s]*` (backslash is a plain character). In the raw recovery dump `?a\&accesskey=V` is two keys for Go, so an escape-pair rule hid the credential key. Tests cover it. Integration tests call the public `Middlewares`; only the negative control uses the unmasked seam.
+- Further limits: a lowercase `cookie:` header name is not masked (gin dumps the canonical `Cookie`); a `token=` inside an encoded value (`?x=%26token=V`) is not a credential key for Go and is left as is. Wrapping the sink disables gin's colored output on a local terminal (no effect in containers).

@@ -29,6 +29,9 @@ func Test_Mask(t *testing.T) {
 		{"escaped quote in value", `"/x?token=AB\"CD&a=b"`, `"/x?token=***&a=b"`},
 		{"escaped quote in value last", `"/x?token=AB\"CD"`, `"/x?token=***"`},
 		{"raw quote in recovery dump", "GET /x?token=AB\"CD&a=b HTTP/1.1\r\n", "GET /x?token=***&a=b HTTP/1.1\r\n"},
+		{"backslash before ampersand in raw dump (token)", "GET /x?a\\&token=SECRET HTTP/1.1\r\n", "GET /x?a\\&token=*** HTTP/1.1\r\n"},
+		{"backslash before ampersand in raw dump (accesskey)", "GET /x?a\\&accesskey=SECRET HTTP/1.1\r\n", "GET /x?a\\&accesskey=*** HTTP/1.1\r\n"},
+		{"backslash in quoted access log", `"/x?a\\&accesskey=SECRET"`, `"/x?a\\&accesskey=***"`},
 		{"encoded quote value", `"/x?token=AB%22CD&a=b"`, `"/x?token=***&a=b"`},
 		{"access_token untouched", `"/x?access_token=V&xtoken=W"`, `"/x?access_token=V&xtoken=W"`},
 		{"other params untouched", `"/x?page_size=10&page_token=abc"`, `"/x?page_size=10&page_token=abc"`},
@@ -93,13 +96,20 @@ func setDebugMode(t *testing.T) {
 
 // runRequest sends a request through an engine wired like production and
 // returns what the access logger and the recovery logger wrote.
+//
+// mask=true uses the public production entry point Middlewares; mask=false uses
+// the unmasked wiring as the negative control.
 func runRequest(t *testing.T, mask bool, target, cookie string, panicInHandler bool) (accessLog, recoveryLog string) {
 	t.Helper()
 	setDebugMode(t)
 
 	var out, errOut bytes.Buffer
 	app := gin.New()
-	app.Use(middlewares(nil, &out, &errOut, mask)...)
+	if mask {
+		app.Use(Middlewares(nil, &out, &errOut)...)
+	} else {
+		app.Use(middlewares(nil, &out, &errOut, false)...)
+	}
 	app.GET("/v1.0/x", func(c *gin.Context) {
 		if panicInHandler {
 			panic("boom")
@@ -135,7 +145,7 @@ func Test_Middlewares_Recovery(t *testing.T) {
 	if !strings.Contains(rec, "Cookie:") || !strings.Contains(rec, "/v1.0/x?token=***") {
 		t.Fatalf("recovery dump was not printed as expected: %q", rec)
 	}
-	if strings.Contains(rec, credA) {
+	if strings.Contains(rec, credA) || strings.Contains(rec, credB) {
 		t.Errorf("recovery dump leaks a credential: %q", rec)
 	}
 }
