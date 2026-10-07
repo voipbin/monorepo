@@ -1,9 +1,9 @@
 # VOIP-1508 direct hash 로그 노출 이슈 분석
 
-- 상태: DRAFT rev2 (이슈 분석 리뷰 1회차 Request Changes 2건 반영, 재리뷰 대기)
+- 상태: DRAFT rev3 (리뷰 1, 2회차 Request Changes 반영, 재리뷰 대기). 진행은 4절의 대표님 확인을 조건으로 한다
 - 티켓: VOIP-1508 (원 제목은 api-manager AuthBoot 과 agent-manager 두 곳이나, 실제 범위는 그보다 넓다)
 - 기준 코드: origin/main 49ec4a06d
-- 관련: VOIP-1567 (같은 날 머지). VOIP-1567 분석 문서의 "유형 4"(Direct 객체와 hash 문자열 로그, 약 27곳, 9개 서비스)가 이 티켓과 동일한 대상이며, 그 PR 에서 의도적으로 제외되었다.
+- 관련: VOIP-1567 (같은 날 머지). VOIP-1567 분석 문서의 "유형 4"(Direct 객체와 hash 문자열 로그, 약 27곳, 9개 서비스)가 이 티켓과 동일한 대상이며, 그 PR 에서 대표님 결정으로 범위 밖 처리되었다("처리하지 않는다, 별도 티켓도 만들지 않는다, 재론하지 않는다").
 
 ## 1. 결론 요약
 
@@ -27,7 +27,7 @@
 | bin-conference-manager | pkg/conferencehandler/direct_hash.go:45, conference.go:93 |
 | bin-flow-manager | pkg/flowhandler/direct_hash.go:37,46, db.go:118 |
 | bin-queue-manager | pkg/queuehandler/direct_hash.go:38,47, create.go:67 |
-| bin-webchat-manager | pkg/widgethandler/create.go:50, db.go:133 |
+| bin-webchat-manager | pkg/widgethandler/create.go:50, db.go:133 (객체 로그만, hash: %s 메시지 없음) |
 | bin-call-manager | pkg/callhandler/start_incoming_domain_type_sip.go:94 |
 | bin-direct-manager | pkg/directhandler/handler.go:76,116,137,240,271, db.go:66 (`"direct": d` 가 base logger 필드로 묶임) |
 
@@ -40,11 +40,18 @@
 - bin-direct-manager `pkg/listenhandler/v1_directs.go:120-126`(`processV1DirectsByHashGet`): `"hash": hash` 필드와 `WithField("request", m)`(URI `/v1/directs/by-hash/<hash>` 포함).
 - bin-direct-manager `pkg/listenhandler/main.go:153-155`: 모든 요청에 대해 `"request": m` 필드와 `Received request. ... uri: %s` 를 기록한다. by-hash 조회의 URI 에 hash 가 남는다.
 - bin-direct-manager `pkg/listenhandler/main.go:222-227`: `"response": response` 필드를 `Sending response` 와 함께 기록한다. `sock.Response.Data` 는 `json.RawMessage`(`bin-common-handler/models/sock/message.go:25`)이고 create, get, by-hash, regenerate, list 응답 본문에 `Direct` JSON(hash 포함)이 들어간다. 따라서 URI 마스킹만으로는 부족하고 요청과 응답 로그 필드까지 다뤄야 한다.
+- bin-direct-manager `pkg/listenhandler/v1_directs.go:62,100,138`: 마샬 실패 경로의 `Debugf("... message: %v", tmp)` 가 `*direct.Direct` 를 `%v` 로 찍는다(드문 경로). `:38,88,126,157` 의 `WithField("request", m)` 중 hash 를 담는 것은 by-hash 인 `:126` 뿐이고, 나머지는 ID URI 다.
 - bin-api-manager 는 이미 잘라서 쓴다(`boot.go:130` 사용, `truncateHash` 정의 `boot.go:242-247`, `lib/service/boot.go:36-41`). 변경 불필요. 단 `truncateHash` 는 앞 12자 + `...` 이고 hash 는 `direct.` + hex 이므로 hex 는 일부(5자 안팎)만 남는다. 이 수준을 허용 기준으로 삼는다.
+
+### 2.2.1 hash 가 다른 객체에 내장되어 나가는 경로 (call-manager channel, 유형 5)
+
+- direct 통화에서는 `cn.DestinationNumber` 가 `direct.<hash>` 다(`start_incoming_domain_type_sip.go:31-32`). `channel.Channel.DestinationNumber` 는 `json:"destination_number"`(`bin-call-manager/models/channel/main.go:62`)이고 redaction 이 없다.
+- 따라서 `WithField("channel", cn)` 류의 객체 로그가 같은 통화마다 hash 를 남긴다. 확인된 지점: `channelhandler/db.go:69`, `arieventhandler/ari_channel.go:44`, `arieventhandler/ari_stasis.go:29,36`, `callhandler/hangup.go:192`. call-manager 전체의 `WithField("channel", ...)` 는 14건이며 direct 통화가 아닌 경우 `DestinationNumber` 는 일반 번호다. `ari_channel.go:166` 의 ARI 이벤트(`Dialplan.Exten` 포함 가능)는 미검증이다.
+- 이 경로는 hash 를 담은 값이 일반 전화번호 필드와 같은 칸에 들어 있어 "hash 필드를 제거" 방식으로 고칠 수 없고, channel 로그 전체 재설계가 필요하다. 이번 범위에서 제외한다(4절).
 
 ### 2.3 이미 안전한 곳 (음성 확인 포함)
 
-- `bin-common-handler` 의 requesthandler(`direct_directs.go`, `send_request.go`), sockhandler, notifyhandler(`publish.go`, event data 미기록)에는 hash 로그가 없다. direct-manager 이벤트를 구독하는 서비스는 없다. registrar-manager 는 `WithField("direct_id", d.ID)` 만 쓴다.
+- `bin-common-handler` 의 requesthandler(`direct_directs.go`, `send_request.go`), sockhandler, notifyhandler(`publish.go`, event data 미기록)에는 hash 로그가 없다. direct-manager 이벤트(`direct_created` 등)를 구독하는 서비스는 없는 것으로 보이나 별도 grep 은 하지 않았다. registrar-manager 는 `WithField("direct_id", d.ID)` 만 쓴다.
 
 - `DirectScope.HashFingerprint` 는 JWT 서명 키로 키잉한 HMAC 파생값이라 원문이 아니다(VOIP-1501, `boot.go:183` 의 `"direct": scope`).
 
@@ -56,9 +63,9 @@
 
 ## 4. 범위 판단 (대표님 확인 필요 사항 포함)
 
-결정 이력과의 관계. VOIP-1567 분석 문서 4절은 "유형 3과 4는 처리하지 않는다. 별도 티켓도 만들지 않는다. 확정이며 재론하지 않는다"고 기록했다. 그러나 VOIP-1508 은 그 결정 이전부터 존재하던 티켓이고 유형 4 를 정면으로 다루며, 1567 의 "별도 티켓을 만들지 않는다"는 신규 티켓 생성에 대한 결정으로 읽힌다(추정). 따라서 이번 PR 이 유형 4 를 처리하는 것은 1567 결정과 충돌하지 않는다고 판단하나, 대표님 확인을 받는다. 유형 3 은 1567 결정 그대로 범위 밖이다.
+결정 이력과의 관계. VOIP-1567 분석 문서 4절은 "유형 3과 4는 처리하지 않는다. 별도 티켓도 만들지 않는다. 확정이며 재론하지 않는다"고 기록했다. 유형 4 가 바로 이 티켓의 대상이다. VOIP-1508 은 그보다 이전부터 있던 티켓이라 결정 당시 함께 고려되었는지는 불확실하다(1567 문서에 1508 언급 없음). 따라서 이번 PR 은 사실상 그 결정을 다시 여는 것이며, **대표님의 명시적 재승인이 필요하다.** 승인 전에는 설계 이후 단계로 진행하지 않는다. 유형 3 은 1567 결정 그대로 범위 밖이다.
 
-실효 평가. 유형 3(부모 리소스 객체 로그)이 남으면 `direct_hash` 는 로그인과 통화 경로에서 계속 쌓인다. 그러므로 이번 수정은 "hash 가 로그에서 완전히 사라진다"를 보장하지 않는다. 이번 수정이 닫는 것은 direct 모델과 hash 문자열 경로(요청마다, 통화마다, direct-manager 전 경로)이고, 이 중 가장 빈번한 call-manager `:81,83` 과 direct-manager 요청, 응답 로그를 포함하지 않으면 실효가 더 낮아지므로 반드시 함께 닫는다.
+실효 평가. 유형 3(부모 리소스 객체 로그)이 남으면 `direct_hash` 는 로그인과 통화 경로에서 계속 쌓인다. 그러므로 이번 수정은 "hash 가 로그에서 완전히 사라진다"를 보장하지 않으며, 로그 열람자가 hash 를 수집할 가능성(3절의 위험)도 해소하지 못한다. 이번 PR 의 가치는 direct 모델과 hash 문자열 경로의 직접 노출 제거에 한정된다. 유형 5(call-manager channel 객체, 2.2.1)도 같은 이유로 남는다. 대표님 판단 재료로 제시한다. 이번 수정이 닫는 것은 direct 모델과 hash 문자열 경로(요청마다, 통화마다, direct-manager 전 경로)이고, 이 중 call-manager `:81,83` 과 direct-manager 요청, 응답 로그를 포함하지 않으면 실효가 더 낮아지므로 반드시 함께 닫는다. 단 같은 direct 통화의 channel 객체 로그(유형 5)는 남는다.
 
 이번 수정 대상(제안).
 
@@ -68,7 +75,7 @@
 
 범위 밖(제안, 대표님 확인 필요).
 
-- 부모 리소스(agent, ai, team, flow, queue, conference, extension, widget)가 `DirectHash` 필드를 가진 채 통째로 로그되는 경우. VOIP-1567 분석의 "유형 3" 과 같은 계열이며 해당 PR 에서 대표님이 처리하지 않기로 결정한 항목이다. 이번 티켓이 닫혀도 이 경로로 hash 가 계속 남는다는 점을 수용 위험으로 기록한다. 규모는 서비스별 `WithField("<리소스>", <구조체>)` 형태가 api-manager 22, conference 12, ai 7, agent 6, queue 6, flow 3, webchat 1 이상(개략치. 근거 명령은 `grep -rnE 'WithField\("(agent|ai|flow|queue|conference|extension|widget|team|res|a|f|q|c|e|w|t)", [a-z]+\)'` 이며 정밀 감사는 하지 않음)이다. 처리하려면 별도 설계가 필요하다.
+- 부모 리소스(agent, ai, team, flow, queue, conference, extension, widget)가 `DirectHash` 필드를 가진 채 통째로 로그되는 경우. VOIP-1567 분석의 "유형 3" 과 같은 계열이며 해당 PR 에서 대표님이 처리하지 않기로 결정한 항목이다. 이번 티켓이 닫혀도 이 경로로 hash 가 계속 남는다는 점을 수용 위험으로 기록한다. 규모는 서비스별 `WithField("<리소스>", <구조체>)` 형태가 conference 12, ai 7, agent 6, queue 6, flow 3, webchat 1 이상(개략치, 서비스별 `WithField("<리소스명>", <변수>)` grep). api-manager 는 단일 문자 변수 패턴이 `AuthIdentity` 와 섞여 정확한 수를 내지 못해 제외했고, 호출 형태가 다양해 정밀 감사는 하지 않았다이다. 처리하려면 별도 설계가 필요하다.
 - 일반 로그 redaction 훅이나 CI 게이트 신설. 오버엔지니어링 회피 원칙에 따라 하지 않는다.
 - 로그 레벨 Debug 고정 정책.
 - 이미 로그에 남은 hash 의 재생성(rotate) 여부. 대표님이 판단할 사안이며 이번 PR 에 포함하지 않는다.
