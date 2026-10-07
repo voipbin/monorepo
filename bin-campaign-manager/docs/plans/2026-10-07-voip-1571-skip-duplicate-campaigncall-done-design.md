@@ -1,10 +1,11 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 9 (design review round 8: one approval, one change request on rule sources in section 8, applied)
+Status: Draft, revision 10 (design review round 9 approved by both reviewers; NIT applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
 Revision history (newest first):
 
+- Revision 10 (from design review round 9, NIT only): section 8 notes that the no-merge-without-instruction rule is stated by both the root and the user-level `CLAUDE.md`.
 - Revision 9 (from design review round 8): section 8 groups the rules by their real source (root `CLAUDE.md`, the user-level `/home/pchero/CLAUDE.md`, CI, environment) and no longer attributes everything to the root file; the new test function names are fixed.
 - Revision 8 (from design review round 7, MINOR/NIT only): the subscriber tests that assert the return value call `processEventCMCallHungup` directly (`processEvent` returns nothing); the optional verification names a reproducible failure and the wait; the same-PR statement rests on the one-PR rule; repository rules and CI conditions are listed separately.
 - Revision 7 (from design review round 6): sections 8 (PR plan with the repository rules and the files expected in the diff) and 9 (verification after deploy, stating that production has no running campaign) added; an optional case for a stored dialing campaigncall with a failed hangup added.
@@ -158,7 +159,7 @@ No generated file changes: `CampaigncallHandler` keeps its method set, so no moc
 
 Rules that apply, by source:
 
-- Root `CLAUDE.md` (monorepo): the verification workflow before a commit, run in `bin-campaign-manager`: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m` (the generate step must leave no diff); work only in a worktree; the PR title equals the branch name; no AI attribution; fetch `origin/main` and check for conflicts before the PR and before any merge; squash merge only.
+- Root `CLAUDE.md` (monorepo): the verification workflow before a commit, run in `bin-campaign-manager`: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m` (the generate step must leave no diff); work only in a worktree; the PR title equals the branch name; no AI attribution; fetch `origin/main` and check for conflicts before the PR and before any merge; squash merge only; no merge without the CEO's instruction (also stated at user level).
 - User-level `/home/pchero/CLAUDE.md` (the CEO's instructions): one PR per task; the PR body is a narrative paragraph followed by `bin-campaign-manager:` bullets, with no headers and no test plan section; no merge without the CEO's explicit instruction.
 - `bin-campaign-manager/CLAUDE.md` adds nothing that conflicts (its rules are about the self-scheduling execute loop and the `stopping` state, which this change does not touch).
 - CI: `scripts/check-test-conventions.sh` runs as a CircleCI job on the added lines (test names start with `Test_`, no testify, the gomock controller variable is `mc`). It is not part of the root `CLAUDE.md` workflow, so it is run in addition to it, from the repository root, and the planned tests follow it.
