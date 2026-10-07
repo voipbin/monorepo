@@ -1,6 +1,6 @@
 # VOIP-1571: Skip the duplicate Done for an already completed campaigncall on a late call hangup
 
-Status: Draft, revision 4 (design review round 3 requested one change, applied)
+Status: Draft, revision 5 (design review round 4: one approval, one change request on the lint form of the guard, applied)
 Date: 2026-10-07
 Ticket: VOIP-1571
 Revision history (newest first):
