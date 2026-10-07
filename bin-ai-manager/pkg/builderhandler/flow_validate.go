@@ -8,6 +8,7 @@ package builderhandler
 
 import (
 	"sort"
+	"strconv"
 
 	"monorepo/bin-ai-manager/models/flowbuilder"
 	"monorepo/bin-ai-manager/pkg/actioncatalog"
@@ -25,6 +26,7 @@ func ValidateDraft(actions []fmaction.Action, labels map[string]string) []string
 
 	warnings = append(warnings, checkEmptyActionRefs(actions, labels)...)
 	warnings = append(warnings, checkRequiredFields(actions, labels)...)
+	warnings = append(warnings, checkAddressFields(actions, labels)...)
 	warnings = append(warnings, checkOpenEnds(actions, labels)...)
 	warnings = append(warnings, checkUnreachable(actions, labels)...)
 	warnings = append(warnings, checkMediaMixed(actions)...)
@@ -178,4 +180,52 @@ func checkMediaMixed(actions []fmaction.Action) []string {
 		return []string{flowbuilder.WarningMediaMixed}
 	}
 	return nil
+}
+
+// checkAddressFields reports the address fields (ref:"address") the user still
+// has to fill: a required one that is absent or empty is missing_required, and
+// an address whose target is empty (cleared because it named a platform
+// resource such as an agent, or never given) is select_resource. Reporting it
+// here, not only when the target is cleared, keeps the hint on every later turn.
+func checkAddressFields(actions []fmaction.Action, labels map[string]string) []string {
+	var warnings []string
+	for _, a := range actions {
+		required := actioncatalog.RequiredFields(a.Type)
+		for _, f := range fmaction.RefFieldsOf(a.Type) {
+			if f.Kind != fmaction.RefKindAddress {
+				continue
+			}
+			where := labelOf(a, labels) + "." + f.JSONName
+			raw := a.Option[f.JSONName]
+
+			if !f.IsList {
+				obj, ok := raw.(map[string]any)
+				if !ok || len(obj) == 0 {
+					if required[f.JSONName] {
+						warnings = append(warnings, flowbuilder.WarningMissingRequired+": "+where)
+					}
+					continue
+				}
+				if t, _ := obj["target"].(string); t == "" {
+					warnings = append(warnings, flowbuilder.WarningSelectResource+": "+where)
+				}
+				continue
+			}
+
+			list, _ := raw.([]any)
+			if len(list) == 0 {
+				if required[f.JSONName] {
+					warnings = append(warnings, flowbuilder.WarningMissingRequired+": "+where)
+				}
+				continue
+			}
+			for i, item := range list {
+				obj, _ := item.(map[string]any)
+				if t, _ := obj["target"].(string); t == "" {
+					warnings = append(warnings, flowbuilder.WarningSelectResource+": "+where+"["+strconv.Itoa(i)+"]")
+				}
+			}
+		}
+	}
+	return warnings
 }

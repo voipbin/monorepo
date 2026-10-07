@@ -405,3 +405,4 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 - `draft_warnings`는 100개로 제한한다. label에 제어문자가 있는 노드는 파싱 단계에서 건너뛴다.
 - 도달 판정 간선은 `next_id`, `ref:"action"` 값, 마지막이 아닌 열린 끝의 배열 인접 낙하이며 검증기와 레이아웃이 `successors`를 공유한다.
 - `draft_discarded`(파싱 단계, `FlowParse`)는 응답이 쓸 수 없어 이전 초안을 유지했다는 경고다. 5절의 키 목록에 더해 모두 13개이며 프런트가 같은 13개를 문구로 매핑한다.
+- 주소 필드는 프롬프트 카탈로그에서 리소스 필드와 분리해 안내한다(전화번호, SIP, 이메일 등은 사용자가 말한 값 그대로, 그 외 타입은 target을 null). 주소 비움 경고(`select_resource`)와 필수 주소 누락(`missing_required`)은 변환이 아니라 `ValidateDraft`가 내므로, 클라이언트가 초안을 돌려보내는 이후 턴에도 유지된다. 주소 type은 공백과 대소문자를 정규화해 받는다.

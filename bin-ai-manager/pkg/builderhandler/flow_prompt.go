@@ -75,7 +75,7 @@ func FlowCatalog(allowed []fmaction.Type) string {
 			b.WriteString("  " + line + "\n")
 		}
 
-		var actionRefs, resourceRefs []string
+		var actionRefs, resourceRefs, addressRefs []string
 		for _, f := range fmaction.RefFieldsOf(t) {
 			if f.Kind == fmaction.RefKindAction {
 				name := f.JSONName
@@ -83,6 +83,8 @@ func FlowCatalog(allowed []fmaction.Type) string {
 					name += " (object: key to label)"
 				}
 				actionRefs = append(actionRefs, name)
+			} else if f.Kind == fmaction.RefKindAddress {
+				addressRefs = append(addressRefs, f.JSONName)
 			} else {
 				resourceRefs = append(resourceRefs, f.JSONName)
 			}
@@ -92,6 +94,9 @@ func FlowCatalog(allowed []fmaction.Type) string {
 		}
 		if len(resourceRefs) > 0 {
 			b.WriteString("  resource fields (always null, the user picks the resource later): " + strings.Join(resourceRefs, ", ") + "\n")
+		}
+		if len(addressRefs) > 0 {
+			b.WriteString("  address fields (" + strings.Join(addressRefs, ", ") + "): objects {type, target}. For type tel, sip, email, line or whatsapp, put the number or address exactly as the user gave it. For any other type (agent, ai, ai_team, conference, extension, webchat, web_session) set target to null, the user picks it later. Never invent a number.\n")
 		}
 	}
 	return b.String()
@@ -132,7 +137,7 @@ After each answer, pick exactly one place where this Flow would most likely fail
 2. Use an action marked sensitive only when the user said in this conversation that they want that behaviour. Never add one on your own.
 3. Every path ends with a node whose flow is terminate, or leaves exactly one open end (a node with no next) as the last node.
 4. A node whose flow is jump or terminate must not have next. Its outgoing paths are label fields in its option.
-5. Refer to nodes only by label. Never invent ids. Resource fields are always null.
+5. Refer to nodes only by label. Never invent ids. Resource fields are always null. An address holding a phone number, SIP or email value is the user's own value and is not null.
 6. Use the user's own values exactly as given (numbers, times, texts). Put anything you assumed in assumptions instead of leaving it blank or inventing it.
 7. If the user asks for something no available action can do (for example retrying until success), say what is not supported and offer the nearest alternative. Do not fake it.
 8. Option values you send are passed to an external model provider each turn. Never ask for or include secrets such as webhook URLs with tokens or API keys.

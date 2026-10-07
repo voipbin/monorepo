@@ -590,3 +590,76 @@ func Test_AssembleFlowDraft_longOptionKeyIsShortenedInTheWarning(t *testing.T) {
 		}
 	}
 }
+
+// Review round 5 (J): the catalog used to say the address fields are always
+// null, and a missing address raised no warning at all.
+func Test_FlowCatalog_addressFieldsAreNotTaughtAsAlwaysNull(t *testing.T) {
+	cat := FlowCatalog([]fmaction.Type{fmaction.TypeConnect})
+	if !strings.Contains(cat, "address fields (source, destinations)") {
+		t.Errorf("Wrong match. expect a separate address-fields line, got:\n%s", cat)
+	}
+	for _, line := range strings.Split(cat, "\n") {
+		if strings.Contains(line, "resource fields") && strings.Contains(line, "destinations") {
+			t.Errorf("Wrong match. destinations must not be listed as an always-null resource field: %s", line)
+		}
+	}
+}
+
+func Test_AssembleFlowDraft_missingOrClearedAddressIsAlwaysReported(t *testing.T) {
+	const victim = "11111111-2222-4333-8444-555555555555"
+	tests := []struct {
+		name   string
+		option map[string]any
+		want   string
+		absent []string
+	}{
+		{"no destinations", map[string]any{}, flowbuilder.WarningMissingRequired + ": c.destinations", nil},
+		{"null destinations", map[string]any{"destinations": nil}, flowbuilder.WarningMissingRequired + ": c.destinations", nil},
+		{"empty list", map[string]any{"destinations": []any{}}, flowbuilder.WarningMissingRequired + ": c.destinations", nil},
+		{"an address without a target", map[string]any{"destinations": []any{map[string]any{"type": "agent"}}}, flowbuilder.WarningSelectResource + ": c.destinations[0]", nil},
+		{"an agent target is cleared", map[string]any{"destinations": []any{map[string]any{"type": "agent", "target": victim}}}, flowbuilder.WarningSelectResource + ": c.destinations[0]", []string{victim}},
+		{"a phone number with no type is cleared and reported", map[string]any{"destinations": []any{map[string]any{"target": "+15551230000"}}}, flowbuilder.WarningSelectResource + ": c.destinations[0]", nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{{Label: "c", Type: string(fmaction.TypeConnect), Option: tt.option}}}
+			draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeConnect))
+			if !containsExact(warnings, tt.want) {
+				t.Errorf("Wrong match. expect %q in %v", tt.want, warnings)
+			}
+			raw, _ := json.Marshal(draft)
+			for _, a := range tt.absent {
+				if strings.Contains(string(raw), a) {
+					t.Errorf("Wrong match. %s stayed in the draft: %s", a, raw)
+				}
+			}
+		})
+	}
+}
+
+func Test_AssembleFlowDraft_addressTypeIsAcceptedInAnyCase(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{{Label: "c", Type: string(fmaction.TypeConnect), Option: map[string]any{
+		"destinations": []any{map[string]any{"type": " TEL ", "target": "+15551230000"}},
+	}}}}
+	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeConnect))
+	raw, _ := json.Marshal(draft)
+	if !strings.Contains(string(raw), `"type":"tel"`) || !strings.Contains(string(raw), "+15551230000") {
+		t.Errorf("Wrong match. expect the number kept with type tel, got %s", raw)
+	}
+	if containsPrefix(warnings, flowbuilder.WarningSelectResource) {
+		t.Errorf("Wrong match. unexpected select_resource in %v", warnings)
+	}
+}
+
+// The hint must not vanish on the second turn: the draft is rebuilt from the
+// client's current_draft, where the cleared target is simply absent.
+func Test_ValidateDraft_addressHintSurvivesTheNextTurn(t *testing.T) {
+	id := mustID(t, "1")
+	actions := []fmaction.Action{{ID: id, Type: fmaction.TypeConnect, Option: map[string]any{
+		"destinations": []any{map[string]any{"type": "agent"}},
+	}}}
+	got := ValidateDraft(actions, map[string]string{id.String(): "c"})
+	if !containsExact(got, flowbuilder.WarningSelectResource+": c.destinations[0]") {
+		t.Errorf("Wrong match. expect select_resource in %v", got)
+	}
+}

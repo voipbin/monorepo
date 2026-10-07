@@ -152,7 +152,7 @@ var addressKeys = map[string]bool{"type": true, "target": true, "target_name": t
 // would otherwise match "Target" case-insensitively), and the target of an
 // address that is not an external endpoint is cleared. report is false when
 // the caller only wants the sanitising (the model view), true to also get
-// invalid_option and select_resource warnings.
+// invalid_option warnings.
 func sanitizeAddressField(opt map[string]any, f fmaction.RefField, label string, report bool) (map[string]any, []string) {
 	raw, ok := opt[f.JSONName]
 	if !ok || raw == nil {
@@ -181,13 +181,17 @@ func sanitizeAddressField(opt map[string]any, f fmaction.RefField, label string,
 			out[k] = obj[k]
 		}
 		typ, _ := out["type"].(string)
+		// Types are lower case on the wire. A model that writes "TEL" or
+		// "tel " meant a phone number, so accept that and send the exact form.
+		typ = strings.ToLower(strings.TrimSpace(typ))
+		if _, has := out["type"]; has {
+			out["type"] = typ
+		}
 		if !commonaddress.IsExternalEndpoint(commonaddress.Type(typ)) {
-			if _, has := out["target"]; has {
-				delete(out, "target")
-				if report {
-					warnings = append(warnings, flowbuilder.WarningSelectResource+": "+where)
-				}
-			}
+			// A platform resource (agent, conference, ...) or a missing type:
+			// the target is not trusted. ValidateDraft reports the empty
+			// target as select_resource on every turn, not only this one.
+			delete(out, "target")
 		}
 		return out, true
 	}
