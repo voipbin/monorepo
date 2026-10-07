@@ -385,6 +385,13 @@ func Test_EventHandleReferenceCallHungup_alreadyDone(t *testing.T) {
 			hangupReason: cmcall.HangupReasonFailed,
 		},
 		{
+			name:         "done with success, unknown hangup reason still returns the mapping error",
+			storedStatus: campaigncall.StatusDone,
+			storedResult: campaigncall.ResultSuccess,
+			hangupReason: cmcall.HangupReason("unknown"),
+			expectErr:    true,
+		},
+		{
 			name:         "done with fail, unknown hangup reason still returns the mapping error",
 			storedStatus: campaigncall.StatusDone,
 			storedResult: campaigncall.ResultFail,
