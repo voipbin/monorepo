@@ -10,10 +10,12 @@ import (
 	"encoding/json"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
 	"monorepo/bin-ai-manager/models/flowbuilder"
 	"monorepo/bin-ai-manager/pkg/actioncatalog"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -64,7 +66,18 @@ func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID, r
 				continue // absent or not a map: nothing to resolve
 			}
 			resolved := make(map[string]any, len(raw))
-			for key, v := range raw {
+			keys := make([]string, 0, len(raw))
+			for key := range raw {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			for _, key := range keys {
+				v := raw[key]
+				// A key is the value to match (a digit, a word), never an id.
+				if _, err := uuid.FromString(key); err == nil {
+					warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+n.Label+"."+f.JSONName)
+					continue
+				}
 				label, ok := v.(string)
 				if !ok {
 					continue
@@ -102,12 +115,147 @@ func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID, r
 		opt[f.JSONName] = id.String()
 	}
 
+	// ref:"address" fields: an address whose type is a platform resource
+	// carries that resource's id in target, so the target is cleared and the
+	// user picks it in the editor; a phone number, SIP URI or email address
+	// is the user's own value and stays.
+	for _, f := range fields {
+		if f.Kind != fmaction.RefKindAddress {
+			continue
+		}
+		var w []string
+		opt, w = sanitizeAddressField(opt, f, n.Label, true)
+		warnings = append(warnings, w...)
+	}
+
 	// Strict decode (design doc 3.2 step 4): drop keys the option struct
 	// does not know or whose value has the wrong shape, and report each as
 	// invalid_option. Done last so ref fields are already UUID strings.
 	opt, w := dropInvalidOptionKeys(n, opt)
 	warnings = append(warnings, w...)
 
+	// The draft must fit the limit the next request is validated against.
+	// Substituting a label with a 36 character id can grow an option past it.
+	opt, w = fitOptionSize(n.Label, opt, fields)
+	warnings = append(warnings, w...)
+
+	return opt, warnings
+}
+
+// addressKeys are the exact json names of commonaddress.Address.
+var addressKeys = map[string]bool{"type": true, "target": true, "target_name": true, "name": true, "detail": true}
+
+// sanitizeAddressField rewrites one address (or list of addresses) field:
+// keys that are not an exact Address json name are dropped (encoding/json
+// would otherwise match "Target" case-insensitively), and the target of an
+// address that is not an external endpoint is cleared. report is false when
+// the caller only wants the sanitising (the model view), true to also get
+// invalid_option and select_resource warnings.
+func sanitizeAddressField(opt map[string]any, f fmaction.RefField, label string, report bool) (map[string]any, []string) {
+	raw, ok := opt[f.JSONName]
+	if !ok || raw == nil {
+		return opt, nil
+	}
+
+	var warnings []string
+	clean := func(item any, where string) (any, bool) {
+		obj, ok := item.(map[string]any)
+		if !ok {
+			return nil, false // wrong shape: dropped, the strict decode would reject it anyway
+		}
+		out := make(map[string]any, len(obj))
+		keys := make([]string, 0, len(obj))
+		for k := range obj {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			if !addressKeys[k] {
+				if report {
+					warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+where+"."+k)
+				}
+				continue
+			}
+			out[k] = obj[k]
+		}
+		typ, _ := out["type"].(string)
+		if !commonaddress.IsExternalEndpoint(commonaddress.Type(typ)) {
+			if _, has := out["target"]; has {
+				delete(out, "target")
+				if report {
+					warnings = append(warnings, flowbuilder.WarningSelectResource+": "+where)
+				}
+			}
+		}
+		return out, true
+	}
+
+	if f.IsList {
+		list, ok := raw.([]any)
+		if !ok {
+			delete(opt, f.JSONName)
+			return opt, nil
+		}
+		out := make([]any, 0, len(list))
+		for i, item := range list {
+			if c, ok := clean(item, label+"."+f.JSONName+"["+strconv.Itoa(i)+"]"); ok {
+				out = append(out, c)
+			}
+		}
+		opt[f.JSONName] = out
+		return opt, warnings
+	}
+
+	if c, ok := clean(raw, label+"."+f.JSONName); ok {
+		opt[f.JSONName] = c
+	} else {
+		delete(opt, f.JSONName)
+	}
+	return opt, warnings
+}
+
+// fitOptionSize keeps an option under flowbuilder.MaxOptionBytes once
+// serialized. It first drops entries of map ref fields (the part label
+// substitution grows), in key order, then, if that is not enough, the whole
+// option. Each cut is reported as invalid_option.
+func fitOptionSize(label string, opt map[string]any, fields []fmaction.RefField) (map[string]any, []string) {
+	size := func() int {
+		b, err := json.Marshal(opt)
+		if err != nil {
+			return flowbuilder.MaxOptionBytes + 1
+		}
+		return len(b)
+	}
+	if size() <= flowbuilder.MaxOptionBytes {
+		return opt, nil
+	}
+
+	var warnings []string
+	for _, f := range fields {
+		if !f.IsMap || f.Kind != fmaction.RefKindAction {
+			continue
+		}
+		m, ok := opt[f.JSONName].(map[string]any)
+		if !ok {
+			continue
+		}
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+		sort.Sort(sort.Reverse(sort.StringSlice(keys)))
+		for _, k := range keys {
+			if size() <= flowbuilder.MaxOptionBytes {
+				return opt, warnings
+			}
+			delete(m, k)
+			warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+label+"."+f.JSONName)
+		}
+	}
+	if size() > flowbuilder.MaxOptionBytes {
+		warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+label)
+		return map[string]any{}, warnings
+	}
 	return opt, warnings
 }
 

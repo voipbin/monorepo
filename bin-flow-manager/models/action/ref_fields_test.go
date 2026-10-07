@@ -49,6 +49,14 @@ func Test_RefFieldsOf(t *testing.T) {
 			want: []RefField{{JSONName: "reference_id", Kind: RefKindResource}},
 		},
 		{
+			name: "connect has an address and an address list",
+			ty:   TypeConnect,
+			want: []RefField{
+				{JSONName: "source", Kind: RefKindAddress},
+				{JSONName: "destinations", Kind: RefKindAddress, IsList: true},
+			},
+		},
+		{
 			name: "answer has no option fields at all",
 			ty:   TypeAnswer,
 			want: nil,

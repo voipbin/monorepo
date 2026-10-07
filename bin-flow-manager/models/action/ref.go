@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 // ref.go exposes the `ref` struct-tag metadata on OptionXxx structs (see
@@ -19,6 +21,11 @@ type RefKind string
 const (
 	RefKindAction   RefKind = "action"   // another action in the same Flow, by id
 	RefKindResource RefKind = "resource" // a customer-owned resource (queue, assistance, flow, ...)
+	// RefKindAddress marks a commonaddress.Address field (or a list of them).
+	// An address whose type is a platform resource (agent, conference, ...)
+	// carries that resource's id in target, so the builder clears it; a
+	// phone number or an email address is the user's own value and stays.
+	RefKindAddress RefKind = "address"
 )
 
 // RefField describes one top-level option field carrying a `ref` tag.
@@ -31,6 +38,8 @@ type RefField struct {
 	// OptionBranch.TargetIDs): the builder must resolve every value in
 	// the map, not the field itself.
 	IsMap bool
+	// IsList is true for a []Address field.
+	IsList bool
 }
 
 // RefFieldsOf returns every ref-tagged top-level option field for t, reading
@@ -48,6 +57,9 @@ func RefFieldsOf(t Type) []RefField {
 
 	uuidType := reflect.TypeOf(uuid.UUID{})
 	mapUUIDType := reflect.TypeOf(map[string]uuid.UUID{})
+	addrType := reflect.TypeOf(commonaddress.Address{})
+	addrPtrType := reflect.TypeOf(&commonaddress.Address{})
+	addrListType := reflect.TypeOf([]commonaddress.Address{})
 
 	var out []RefField
 	for i := 0; i < optType.NumField(); i++ {
@@ -63,6 +75,10 @@ func RefFieldsOf(t Type) []RefField {
 			out = append(out, RefField{JSONName: jsonName, Kind: kind})
 		case mapUUIDType:
 			out = append(out, RefField{JSONName: jsonName, Kind: kind, IsMap: true})
+		case addrType, addrPtrType:
+			out = append(out, RefField{JSONName: jsonName, Kind: kind})
+		case addrListType:
+			out = append(out, RefField{JSONName: jsonName, Kind: kind, IsList: true})
 		}
 	}
 	return out

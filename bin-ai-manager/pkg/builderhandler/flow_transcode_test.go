@@ -3,6 +3,7 @@ package builderhandler
 import (
 	"encoding/json"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -438,5 +439,130 @@ func Test_FlowParse_labelWithControlCharactersIsSkipped(t *testing.T) {
 	got, err := FlowParse(`{"message":"hi","draft":{"nodes":[{"label":"a\u0000b","type":"stop"},{"label":"ok","type":"stop"}]}}`)
 	if err != nil || got.Graph == nil || len(got.Graph.Nodes) != 1 || got.Graph.Nodes[0].Label != "ok" {
 		t.Errorf("Wrong match. expect: only ok, got: %+v %v", got, err)
+	}
+}
+
+// Review round 3 (F): a nested address carries a resource id in target when
+// its type is a platform resource. Only a value the user owns may stay.
+func Test_AssembleFlowDraft_addressTargetOfAResourceTypeIsCleared(t *testing.T) {
+	const victim = "11111111-2222-4333-8444-555555555555"
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "c", Type: string(fmaction.TypeConnect), Option: map[string]any{
+			"source": map[string]any{"type": "tel", "target": "+15551230000"},
+			"destinations": []any{
+				map[string]any{"type": "agent", "target": victim},
+				map[string]any{"type": "conference", "target": victim},
+				map[string]any{"type": "tel", "target": "+15551230001"},
+				map[string]any{"type": "Agent", "Target": victim},
+				map[string]any{"type": "a_type_added_later", "target": victim},
+			},
+		}},
+	}}
+	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeConnect))
+
+	raw, _ := json.Marshal(draft)
+	if strings.Contains(string(raw), victim) {
+		t.Errorf("Wrong match. a foreign id reached the draft: %s", raw)
+	}
+	for _, keep := range []string{"+15551230000", "+15551230001"} {
+		if !strings.Contains(string(raw), keep) {
+			t.Errorf("Wrong match. the user's own endpoint %s was lost: %s", keep, raw)
+		}
+	}
+	if !containsPrefix(warnings, flowbuilder.WarningSelectResource+": c.destinations[0]") {
+		t.Errorf("Wrong match. expect select_resource for destinations[0] in %v", warnings)
+	}
+}
+
+func Test_AssembleFlowDraft_uuidShapedMapKeyIsDropped(t *testing.T) {
+	const victim = "11111111-2222-4333-8444-555555555555"
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "b", Type: string(fmaction.TypeBranch), Option: map[string]any{
+			"variable":   "v",
+			"target_ids": map[string]any{victim: "e", "1": "e"},
+		}},
+		{Label: "e", Type: string(fmaction.TypeHangup)},
+	}}
+	draft, _ := AssembleFlowDraft(graph, allAllowed(fmaction.TypeBranch, fmaction.TypeHangup))
+	raw, _ := json.Marshal(draft)
+	if strings.Contains(string(raw), victim) {
+		t.Errorf("Wrong match. a uuid-shaped key reached the draft: %s", raw)
+	}
+	if !strings.Contains(string(raw), `"1"`) {
+		t.Errorf("Wrong match. the digit key was lost: %s", raw)
+	}
+}
+
+// A value of the wrong shape is dropped key by key and reported (this is the
+// behaviour dropInvalidOptionKeys exists for; review round 3 found no test).
+func Test_AssembleFlowDraft_wrongShapedOptionValueIsDroppedAndReported(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "w", Type: string(fmaction.TypeSleep), Option: map[string]any{"duration": "abc"}},
+		{Label: "e", Type: string(fmaction.TypeHangup)},
+	}}
+	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeSleep, fmaction.TypeHangup))
+	raw, _ := json.Marshal(draft)
+	if strings.Contains(string(raw), "abc") {
+		t.Errorf("Wrong match. the wrong-shaped value stayed: %s", raw)
+	}
+	if !containsExact(warnings, flowbuilder.WarningInvalidOption+": w.duration") {
+		t.Errorf("Wrong match. expect invalid_option for w.duration in %v", warnings)
+	}
+}
+
+// The draft the server returns must pass the validation of the next request.
+func Test_AssembleFlowDraft_optionStaysWithinTheRequestLimit(t *testing.T) {
+	targets := map[string]any{}
+	for i := 0; i < 400; i++ {
+		targets[strconv.Itoa(i)] = "b" // 400 * ~8B = fits 4096B as labels; 400 * ~45B as ids does not
+	}
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
+		{Label: "a", Type: string(fmaction.TypeBranch), Option: map[string]any{"variable": "v", "target_ids": targets}},
+		{Label: "b", Type: string(fmaction.TypeHangup)},
+	}}
+	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeBranch, fmaction.TypeHangup))
+
+	next := &flowbuilder.ChatRequest{
+		Messages:             []flowbuilder.Message{{Role: flowbuilder.RoleUser, Content: "go on"}},
+		SupportedActionTypes: []string{string(fmaction.TypeBranch)},
+		CurrentDraft:         draft,
+	}
+	if err := flowbuilder.ValidateRequest(next); err != nil {
+		t.Errorf("Wrong match. the draft does not pass the next request's validation: %v", err)
+	}
+	if !containsPrefix(warnings, flowbuilder.WarningInvalidOption) {
+		t.Errorf("Wrong match. expect invalid_option for the cut entries, got %v", warnings)
+	}
+}
+
+func Test_AssembleFlowDraft_warningsAreCapped(t *testing.T) {
+	var nodes []flowbuilder.SymbolicNode
+	for i := 0; i < 60; i++ {
+		opt := map[string]any{}
+		for k := 0; k < 100; k++ {
+			opt["bad"+strconv.Itoa(k)] = 1
+		}
+		nodes = append(nodes, flowbuilder.SymbolicNode{Label: "n" + strconv.Itoa(i) + "x", Type: string(fmaction.TypeAnswer), Option: opt})
+	}
+	_, warnings := AssembleFlowDraft(flowbuilder.SymbolicGraph{Nodes: nodes}, allAllowed(fmaction.TypeAnswer))
+	if len(warnings) > maxDraftWarnings {
+		t.Errorf("Wrong match. expect at most %d warnings, got %d", maxDraftWarnings, len(warnings))
+	}
+}
+
+// The model must not see ids of types it cannot use (unknown, internal,
+// excluded): their option is not sent.
+func Test_ReconstructGraph_optionOfAnUnusableTypeIsNotShownToTheModel(t *testing.T) {
+	const victim = "11111111-2222-4333-8444-555555555555"
+	draft := &flowbuilder.Draft{Actions: []map[string]any{
+		{"id": "6c73ff34-7f4c-11ec-b4d5-5b94d40e4071", "type": "bogus", "option": map[string]any{"queue_id": victim}},
+		{"id": "6c73ff34-7f4c-11ec-b4d5-5b94d40e4072", "type": "call", "option": map[string]any{"actions": []any{map[string]any{"id": victim}}}},
+		{"id": "6c73ff34-7f4c-11ec-b4d5-5b94d40e4073", "type": "connect", "option": map[string]any{
+			"destinations": []any{map[string]any{"type": "agent", "target": victim}},
+		}},
+	}}
+	raw, _ := json.Marshal(ReconstructGraph(draft))
+	if strings.Contains(string(raw), victim) {
+		t.Errorf("Wrong match. an id reached the model graph: %s", raw)
 	}
 }

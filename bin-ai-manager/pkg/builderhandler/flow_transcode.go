@@ -117,7 +117,7 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 
 	warnings = append(warnings, ValidateDraft(actions, draft.Labels)...)
 
-	return draft, warnings
+	return draft, capWarnings(warnings)
 }
 
 func mustNewV4() uuid.UUID {
@@ -202,4 +202,16 @@ func filterUnsupportedTypes(nodes []flowbuilder.SymbolicNode, allowedTypes map[f
 		out = rest
 	}
 	return out, removed, warnings, true
+}
+
+// maxDraftWarnings bounds draft_warnings: a draft of 60 nodes with many bad
+// option keys would otherwise multiply the response size. The first ones are
+// kept, in the order the steps produced them.
+const maxDraftWarnings = 100
+
+func capWarnings(w []string) []string {
+	if len(w) > maxDraftWarnings {
+		return w[:maxDraftWarnings]
+	}
+	return w
 }

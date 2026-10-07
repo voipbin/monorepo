@@ -136,8 +136,8 @@ type OptionBranch struct {
 
 // OptionCall defines action call's option.
 type OptionCall struct {
-	Source         *commonaddress.Address  `json:"source,omitempty"`
-	Destinations   []commonaddress.Address `json:"destinations,omitempty"`
+	Source         *commonaddress.Address  `json:"source,omitempty" ref:"address"`
+	Destinations   []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
 	FlowID         uuid.UUID               `json:"flow_id,omitempty" ref:"resource"`
 	Actions        []Action                `json:"actions,omitempty"`
 	Chained        bool                    `json:"chained,omitempty"`         // If it sets to true, the created calls will be hungup when the master call is hangup. Default false.
@@ -199,10 +199,10 @@ type OptionConferenceJoin struct {
 // OptionConnect defines action connect's optoin.
 type OptionConnect struct {
 	// source address.
-	Source commonaddress.Address `json:"source,omitempty"`
+	Source commonaddress.Address `json:"source,omitempty" ref:"address"`
 
 	// target destination addresses.
-	Destinations []commonaddress.Address `json:"destinations,omitempty"`
+	Destinations []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
 
 	// if it sets to true, the call will get early media from the destination.
 	EarlyMedia bool `json:"early_media,omitempty"`
@@ -257,7 +257,7 @@ type OptionEcho struct {
 
 // OptionEmailSend defines action email_send's option.
 type OptionEmailSend struct {
-	Destinations []commonaddress.Address `json:"destinations,omitempty"`
+	Destinations []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
 	Subject      string                  `json:"subject,omitempty"`
 	Content      string                  `json:"content,omitempty"`
 	Attachments  []ememail.Attachment    `json:"attachments,omitempty"`
@@ -310,8 +310,8 @@ type OptionHangup struct {
 
 // OptionMessageSend defines action message_send's option.
 type OptionMessageSend struct {
-	Source       *commonaddress.Address  `json:"source,omitempty"`
-	Destinations []commonaddress.Address `json:"destinations,omitempty"`
+	Source       *commonaddress.Address  `json:"source,omitempty" ref:"address"`
+	Destinations []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
 	Text         string                  `json:"text,omitempty"`
 }
 

@@ -12,7 +12,9 @@ import (
 	"regexp"
 	"unicode/utf8"
 
+	"github.com/gofrs/uuid"
 	"monorepo/bin-ai-manager/models/flowbuilder"
+
 	fmaction "monorepo/bin-flow-manager/models/action"
 )
 
@@ -84,12 +86,20 @@ func ReconstructGraph(draft *flowbuilder.Draft) *flowbuilder.SymbolicGraph {
 		// Only exact option keys: a case variant such as "Queue_ID" would
 		// slip past the resource hiding below (see exactOptionKeys).
 		opt, _ := exactOptionKeys(a.Type, a.Option)
+		if !fmaction.IsBuilderExposable(a.Type) {
+			// The model cannot use this type (unknown, internal or excluded
+			// like call), so its option is not sent to the provider either:
+			// it could carry ids the model must never see.
+			opt = map[string]any{}
+		}
 		for _, f := range fmaction.RefFieldsOf(a.Type) {
 			switch f.Kind {
 			case fmaction.RefKindResource:
 				delete(opt, f.JSONName) // resources are never shown to the model
 			case fmaction.RefKindAction:
 				opt = labelizeActionRef(opt, f, idToLabel)
+			case fmaction.RefKindAddress:
+				opt, _ = sanitizeAddressField(opt, f, "", false)
 			}
 		}
 		if len(opt) > 0 {
@@ -118,6 +128,9 @@ func labelizeActionRef(opt map[string]any, f fmaction.RefField, idToLabel map[st
 		}
 		out := make(map[string]any, len(raw))
 		for k, v := range raw {
+			if _, err := uuid.FromString(k); err == nil {
+				continue // a key is a value to match, never an id
+			}
 			if s, ok := v.(string); ok {
 				if l, ok := idToLabel[s]; ok {
 					out[k] = l

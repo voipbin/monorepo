@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 // TestEveryUUIDFieldIsTagged is the drift-lock for the Flow AI Builder's
@@ -24,6 +26,9 @@ import (
 func Test_EveryUUIDFieldIsTagged(t *testing.T) {
 	uuidType := reflect.TypeOf(uuid.UUID{})
 	mapUUIDType := reflect.TypeOf(map[string]uuid.UUID{})
+	addrType := reflect.TypeOf(commonaddress.Address{})
+	addrPtrType := reflect.TypeOf(&commonaddress.Address{})
+	addrListType := reflect.TypeOf([]commonaddress.Address{})
 
 	for ty, optAny := range OptionStructByType {
 		optType := reflect.TypeOf(optAny)
@@ -36,6 +41,11 @@ func Test_EveryUUIDFieldIsTagged(t *testing.T) {
 			f := optType.Field(i)
 
 			switch f.Type {
+			case addrType, addrPtrType, addrListType:
+				if tag := f.Tag.Get("ref"); tag != "address" {
+					t.Errorf("%s.%s is an address field with ref tag %q; want `ref:\"address\"` (VOIP-1573)", optType.Name(), f.Name, tag)
+				}
+				continue
 			case uuidType, mapUUIDType:
 				tag := f.Tag.Get("ref")
 				if tag != "action" && tag != "resource" {

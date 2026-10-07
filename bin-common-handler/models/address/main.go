@@ -28,3 +28,20 @@ const (
 	TypeWebSession Type = "web_session" // target is webchat-manager's Session.ID (the visitor's continuity token)
 	TypeWhatsApp   Type = "whatsapp"    // target is WhatsApp phone number
 )
+
+// IsExternalEndpoint reports whether a target of type t is a value the user
+// supplies (a phone number, a SIP URI, an email address, ...) and not the id
+// of a platform resource (an agent, an AI, a conference, ...).
+//
+// It is an allow-list on purpose: a type added later is treated as a
+// resource reference until someone decides otherwise. The Flow AI Builder
+// uses it to keep a model from putting an arbitrary id into an address
+// (VOIP-1573): a resource target is cleared and the user picks it in the
+// editor.
+func IsExternalEndpoint(t Type) bool {
+	switch t {
+	case TypeTel, TypeSIP, TypeEmail, TypeLine, TypeWhatsApp:
+		return true
+	}
+	return false
+}
