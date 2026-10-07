@@ -68,6 +68,7 @@ type listenHandler struct {
 	mcpServerHandler        mcpserverhandler.McpServerHandler
 	mcpOAuthHandler         mcpoauthhandler.McpOAuthHandler
 	builderHandler          builderhandler.BuilderHandler
+	flowBuilderHandler      builderhandler.FlowBuilderHandler
 }
 
 var (
@@ -224,6 +225,7 @@ func NewListenHandler(
 	mcpServerHandler mcpserverhandler.McpServerHandler,
 	mcpOAuthHandler mcpoauthhandler.McpOAuthHandler,
 	builderHandler builderhandler.BuilderHandler,
+	flowBuilderHandler builderhandler.FlowBuilderHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:   sockHandler,
@@ -246,6 +248,7 @@ func NewListenHandler(
 		mcpServerHandler:        mcpServerHandler,
 		mcpOAuthHandler:         mcpOAuthHandler,
 		builderHandler:          builderHandler,
+		flowBuilderHandler:      flowBuilderHandler,
 	}
 
 	return h

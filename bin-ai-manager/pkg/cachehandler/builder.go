@@ -35,3 +35,21 @@ func (h *handler) BuilderChatCountIncr(ctx context.Context, customerID uuid.UUID
 		listenTTLSeconds(ttl),
 	).Int64()
 }
+
+// builderFlowChatCountKey is the per-customer daily counter of Flow Builder
+// turns (VOIP-1573). It is separate from the Assistant Builder's key so one
+// builder's usage never spends the other's allowance, and the Assistant key
+// is left exactly as is so a deploy does not reset counts in progress.
+func builderFlowChatCountKey(customerID uuid.UUID) string {
+	return fmt.Sprintf("ai:flow_builder:chat:count:%s", customerID)
+}
+
+// BuilderFlowChatCountIncr counts one Flow Builder turn for the customer and
+// returns the new count. It uses the same fixed-window script as
+// BuilderChatCountIncr.
+func (h *handler) BuilderFlowChatCountIncr(ctx context.Context, customerID uuid.UUID, ttl time.Duration) (int64, error) {
+	return h.Cache.Eval(ctx, builderChatCountScript,
+		[]string{builderFlowChatCountKey(customerID)},
+		listenTTLSeconds(ttl),
+	).Int64()
+}

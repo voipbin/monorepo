@@ -116,6 +116,13 @@ func (h *serviceHandler) AIBuilderChat(ctx context.Context, a *auth.AuthIdentity
 // A typed error from ai-manager is passed through as it is: its reason is what
 // the client acts on. Nothing here puts the error text in a log line.
 func (h *serviceHandler) mapBuilderRPCError(log *logrus.Entry, err error) error {
+	return mapBuilderRPCError(log, err, metricBuilderTimeout, metricBuilderCircuitOpen, "assistant builder")
+}
+
+// mapBuilderRPCError is the shared body of the Assistant and Flow builders'
+// RPC error mapping. noun only fills the client-visible sentence ("the
+// assistant builder", "the flow builder"); the reasons are shared.
+func mapBuilderRPCError(log *logrus.Entry, err error, timeoutCounter, circuitOpenCounter prometheus.Counter, noun string) error {
 	var ve *cerrors.VoipbinError
 	if errors.As(err, &ve) {
 		log.WithField("reason", ve.Reason).Info("The builder turn did not succeed.")
@@ -124,12 +131,12 @@ func (h *serviceHandler) mapBuilderRPCError(log *logrus.Entry, err error) error 
 
 	switch {
 	case errors.Is(err, context.DeadlineExceeded):
-		metricBuilderTimeout.Inc()
+		timeoutCounter.Inc()
 		log.Info("The builder turn timed out.")
-		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, builder.ReasonTimeout, "The assistant builder took too long. Please try again.").Wrap(err)
+		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, builder.ReasonTimeout, "The "+noun+" took too long. Please try again.").Wrap(err)
 
 	case errors.Is(err, circuitbreakerhandler.ErrCircuitOpen):
-		metricBuilderCircuitOpen.Inc()
+		circuitOpenCounter.Inc()
 		log.Info("The builder circuit is open.")
 		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE", "An upstream service is temporarily unavailable.").Wrap(err)
 	}

@@ -207,7 +207,8 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	for _, m := range warns {
 		logrus.Warn(m)
 	}
-	builderHandler := builderhandler.NewBuilderHandler(analysisEngine, cache, builderConfig, builderOptions)
+	// The Assistant and Flow builders share one concurrency semaphore.
+	builderHandler, flowBuilderHandler := builderhandler.NewBuilderHandlers(analysisEngine, cache, builderConfig, builderOptions)
 
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
@@ -223,7 +224,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aipromptproposalHandler.SweepStaleProposals(context.Background())
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler, mcpOAuthHandler, builderHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler, mcpServerHandler, mcpOAuthHandler, builderHandler, flowBuilderHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -279,6 +280,7 @@ func runListen(
 	mcpServerHandler mcpserverhandler.McpServerHandler,
 	mcpOAuthHandler mcpoauthhandler.McpOAuthHandler,
 	builderHandler builderhandler.BuilderHandler,
+	flowBuilderHandler builderhandler.FlowBuilderHandler,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	toolHandler := toolhandler.NewToolHandler()
@@ -302,6 +304,7 @@ func runListen(
 		mcpServerHandler,
 		mcpOAuthHandler,
 		builderHandler,
+		flowBuilderHandler,
 	)
 
 	// run

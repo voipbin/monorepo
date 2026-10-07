@@ -57,7 +57,7 @@ type actionCatalogEntry struct {
 //     action.OptionStructByType). Field TYPE/Description text is NOT machine
 //     checked; keep it in sync by hand when option.go changes.
 var actionCatalog = []actionCatalogEntry{
-	{Type: fmaction.TypeAMD, Summary: "Detect whether a human or an answering machine answered the call.", Options: []actionOptionField{
+	{Type: fmaction.TypeAMD, Summary: "Answering machine detection. It cannot branch on the result: with machine_handle hangup it ends the call when a machine answered, otherwise it only continues.", Options: []actionOptionField{
 		{Name: "machine_handle", Type: "string (hangup|continue)", Required: false, Description: "What to do if a machine answered: \"hangup\" or \"continue\"."},
 		{Name: "async", Type: "bool", Required: false, Description: "If false, the flow waits until AMD finishes before continuing."},
 	}},
@@ -68,13 +68,13 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "reference_id", Type: "uuid", Required: true, Description: "Id of the resource to summarize."},
 		{Name: "language", Type: "string", Required: false, Description: "Output language (IETF locale, e.g. en-US)."},
 	}},
-	{Type: fmaction.TypeAITalk, Summary: "Start an AI voice conversation on the call.", Options: []actionOptionField{
+	{Type: fmaction.TypeAITalk, Summary: "Start an AI conversation on the call or in a chat conversation. Any other trigger (API, campaign) makes the flow stop with an error.", Options: []actionOptionField{
 		{Name: "ai_id", Type: "uuid", Required: false, Description: "Deprecated; use assistance_type + assistance_id."},
 		{Name: "assistance_type", Type: "string", Required: true, Description: "\"ai\" or \"team\"."},
 		{Name: "assistance_id", Type: "uuid", Required: true, Description: "Id of the AI or team to converse with."},
-		{Name: "duration", Type: "int (seconds)", Required: false, Description: "Maximum AI talk duration in seconds."},
+		{Name: "duration", Type: "int (seconds)", Required: false, Description: "Not applied by the executor today: do not promise the user a time limit."},
 	}},
-	{Type: fmaction.TypeAITask, Summary: "Run an AI task (non-conversational) on the call.", Options: []actionOptionField{
+	{Type: fmaction.TypeAITask, Summary: "Run an AI task (non-conversational). It runs in flows that are not a phone call and is skipped on a call.", Options: []actionOptionField{
 		{Name: "ai_id", Type: "uuid", Required: false, Description: "Deprecated; use assistance_type + assistance_id."},
 		{Name: "assistance_type", Type: "string", Required: true, Description: "\"ai\" or \"team\"."},
 		{Name: "assistance_id", Type: "uuid", Required: true, Description: "Id of the AI or team to run the task."},
@@ -82,19 +82,19 @@ var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeBeep, Summary: "Play a beep tone on the call.", Options: nil},
 	{Type: fmaction.TypeBlock, Summary: "Internal grouping/block action.", Options: nil},
 	{Type: fmaction.TypeBranch, Summary: "Branch the flow to different actions based on a variable / received DTMF.", Options: []actionOptionField{
-		{Name: "variable", Type: "string", Required: false, Description: "Variable to branch on (defaults to received digits)."},
-		{Name: "default_target_id", Type: "uuid", Required: false, Description: "Action id to go to when no target matches."},
+		{Name: "variable", Type: "string", Required: false, Description: "Variable name to branch on, written bare (never ${name}: it would be replaced by the value and the lookup would use the value as a name). Defaults to received digits. The variable is cleared after the branch reads it, so a later node cannot read it again."},
+		{Name: "default_target_id", Type: "uuid", Required: false, Description: "Action id to go to when no target matches. Left out, an unmatched value (including no input at all) stops the flow."},
 		{Name: "target_ids", Type: "object (map of value -> action id)", Required: true, Description: "Map of matched value to the action id to jump to."},
 	}},
-	{Type: fmaction.TypeCaseCreate, Summary: "Create a new CRM case for the current call/conversation's contact. No-op if the reference type is not call/conversation, the peer is not CRM-eligible, or a case already exists for this activeflow.", Options: []actionOptionField{
+	{Type: fmaction.TypeCaseCreate, Summary: "Create a new CRM case for the current call/conversation's contact. No-op if the reference type is not call/conversation, the peer is not CRM-eligible, or an open case already exists for the same customer (caller). In that last case nothing is created and name, detail and note are dropped without an error.", Options: []actionOptionField{
 		{Name: "name", Type: "string", Required: false, Description: "Short case title."},
 		{Name: "detail", Type: "string", Required: false, Description: "Longer free-text description of the issue."},
 		{Name: "note", Type: "string", Required: false, Description: "An initial internal note for the agent (not shown to the customer)."},
-		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait for the case-create RPC to complete before continuing (matches conversation_send/email_send's sync/async toggle)."},
+		{Name: "sync", Type: "bool", Required: false, Description: "Not applied by the executor today: the action always waits for the result."},
 	}},
 	{Type: fmaction.TypeCall, Summary: "Originate one or more new outbound calls (each runs its own flow or actions).", Options: []actionOptionField{
 		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id. type is one of tel, sip, extension, agent."},
-		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destinations to call. type is one of tel, sip, extension, agent, conference."},
+		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destinations to call. type is one of tel, sip, extension, agent. conference is not supported."},
 		{Name: "flow_id", Type: "uuid", Required: false, Description: "Pre-built flow the new call runs (use flow_id OR actions)."},
 		{Name: "actions", Type: "array of action objects", Required: false, Description: "Inline actions the new call runs (use flow_id OR actions)."},
 		{Name: "chained", Type: "bool", Required: false, Description: "If true, the created calls hang up when the master call hangs up."},
@@ -102,26 +102,26 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "anonymous", Type: "string (yes|no|auto)", Required: false, Description: "Anonymous caller id on outbound PSTN."},
 	}},
 	{Type: fmaction.TypeConditionCallDigits, Summary: "Branch to a false target unless the call's received digits meet the condition.", Options: []actionOptionField{
-		{Name: "length", Type: "int", Required: false, Description: "Required digit length."},
-		{Name: "key", Type: "string", Required: false, Description: "Required finishing digit key."},
+		{Name: "length", Type: "int", Required: false, Description: "Passes when at least this many digits were received. Either length or key is enough (OR, not AND). With neither set the condition is always false."},
+		{Name: "key", Type: "string", Required: false, Description: "Passes when the received digits contain this key. Either length or key is enough (OR, not AND)."},
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
 	{Type: fmaction.TypeConditionCallStatus, Summary: "Branch to a false target unless the call's status matches.", Options: []actionOptionField{
 		{Name: "status", Type: "string (dialing|ringing|progressing|terminating|canceling|hangup)", Required: true, Description: "Call status to test for."},
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
-	{Type: fmaction.TypeConditionDatetime, Summary: "Branch to a false target unless the current date/time matches the condition.", Options: []actionOptionField{
-		{Name: "condition", Type: "string (==|!=|>|>=|<|<=)", Required: true, Description: "Comparison operator."},
-		{Name: "minute", Type: "int (0-59)", Required: false, Description: "Minute component."},
-		{Name: "hour", Type: "int (0-23)", Required: false, Description: "Hour component."},
-		{Name: "day", Type: "int (1-31)", Required: false, Description: "Day of month."},
-		{Name: "month", Type: "int (1-12)", Required: false, Description: "Month."},
-		{Name: "weekdays", Type: "array of int (Sun=0..Sat=6)", Required: false, Description: "Allowed weekdays."},
+	{Type: fmaction.TypeConditionDatetime, Summary: "Branch to a false target unless the current date/time matches. The check runs in UTC. Each component given is compared on its own and all must hold, and the operator reads as: configured value <op> current value (so \">=\" with hour 9 is true until 09:xx UTC).", Options: []actionOptionField{
+		{Name: "condition", Type: "string (==|!=|>|>=|<|<=)", Required: true, Description: "Comparison operator, applied as: configured value <op> current value, for every component given."},
+		{Name: "minute", Type: "int (0-59, or -1 to ignore)", Required: false, Description: "Minute component in UTC. Left out it is compared as 0, so send -1 when the minute must not matter."},
+		{Name: "hour", Type: "int (0-23, or -1 to ignore)", Required: false, Description: "Hour component in UTC. Left out it is compared as 0, so send -1 when the hour must not matter."},
+		{Name: "day", Type: "int (1-31)", Required: false, Description: "Day of month in UTC. Left out or 0 it is ignored."},
+		{Name: "month", Type: "int (1-12)", Required: false, Description: "Month in UTC. Left out or 0 it is ignored."},
+		{Name: "weekdays", Type: "array of int (Sun=0..Sat=6)", Required: false, Description: "DO NOT SET. A weekdays list makes the flow fail when it runs (the executor turns its numbers into text and cannot read them back). If the user wants a weekday rule, say it cannot be built yet."},
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
 	{Type: fmaction.TypeConditionVariable, Summary: "Branch to a false target unless a flow variable matches the condition.", Options: []actionOptionField{
 		{Name: "condition", Type: "string (==|!=|>|>=|<|<=)", Required: true, Description: "Comparison operator."},
-		{Name: "variable", Type: "string", Required: true, Description: "Variable name to test."},
+		{Name: "variable", Type: "string", Required: true, Description: "The variable written as a reference, \"${name}\" (for example \"${voipbin.call.digits}\"). The reference is substituted before the compare. A bare name is compared as literal text, so it never matches the variable. Unlike branch, whose variable is the bare name."},
 		{Name: "value_type", Type: "string (string|number|length)", Required: true, Description: "Type of the value to compare."},
 		{Name: "value_string", Type: "string", Required: false, Description: "String value to compare against."},
 		{Name: "value_number", Type: "number", Required: false, Description: "Numeric value to compare against."},
@@ -135,8 +135,8 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "conference_id", Type: "uuid", Required: true, Description: "Conference id to join."},
 	}},
 	{Type: fmaction.TypeConnect, Summary: "Originate new call(s) and bridge them into the current call (transfer/connect).", Options: []actionOptionField{
-		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id. type is one of tel, sip, extension, agent."},
-		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Endpoints to connect to. type is one of tel, sip, extension, agent, conference."},
+		{Name: "source", Type: "address object {type,target,target_name}", Required: true, Description: "Caller id the new call is placed from. Use a phone number the customer owns (type tel). Without a usable one the connect fails and the flow stops."},
+		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Endpoints to connect to. type is one of tel, sip, extension, agent. conference is not supported."},
 		{Name: "early_media", Type: "bool", Required: false, Description: "If true, get early media from the destination."},
 		{Name: "relay_reason", Type: "bool", Required: false, Description: "If true, hang up the master call with the destination's hangup reason."},
 		{Name: "anonymous", Type: "string (yes|no|auto)", Required: false, Description: "Anonymous caller id on outbound PSTN."},
@@ -144,17 +144,17 @@ var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeConversationSend, Summary: "Send a message into a conversation (chat/SNS).", Options: []actionOptionField{
 		{Name: "conversation_id", Type: "uuid", Required: true, Description: "Conversation id to send into."},
 		{Name: "text", Type: "string", Required: true, Description: "Message text."},
-		{Name: "sync", Type: "bool", Required: false, Description: "Whether to send synchronously."},
+		{Name: "sync", Type: "bool", Required: false, Description: "Whether to send synchronously. A failed send is only logged and the flow continues either way."},
 	}},
 	{Type: fmaction.TypeDigitsReceive, Summary: "Receive DTMF digits from the caller.", Options: []actionOptionField{
-		{Name: "duration", Type: "int (ms)", Required: false, Description: "DTMF receiving duration in milliseconds."},
-		{Name: "key", Type: "string", Required: false, Description: "Finishing key; not included in the resulting variable. If unset, no key finishes."},
+		{Name: "duration", Type: "int (ms)", Required: true, Description: "How long to wait for digits, in milliseconds. Left out, the action does not wait and the flow moves on at once."},
+		{Name: "key", Type: "string", Required: false, Description: "Finishing key characters; the first one received ends the input. The key is part of the resulting variable (for example \"123#\"), so a branch on it needs the key in its match values, or leave key unset and use length. If unset, no key finishes."},
 		{Name: "length", Type: "int", Required: false, Description: "Max number of DTMF events to gather before continuing."},
 	}},
 	{Type: fmaction.TypeDigitsSend, Summary: "Send DTMF tones on the call.", Options: []actionOptionField{
 		{Name: "digits", Type: "string", Required: true, Description: "Keys to send (0-9, A-D, #, *; max 100)."},
-		{Name: "duration", Type: "int (ms)", Required: false, Description: "DTMF tone duration per key (100-1000)."},
-		{Name: "interval", Type: "int (ms)", Required: false, Description: "Interval between keys (0-5000)."},
+		{Name: "duration", Type: "int (ms)", Required: true, Description: "DTMF tone duration per key (100-1000). Always set it: the flow waits duration times the number of keys, and with 0 it moves on while the tones are still playing."},
+		{Name: "interval", Type: "int (ms)", Required: true, Description: "Interval between keys (0-5000). Set it together with duration."},
 	}},
 	{Type: fmaction.TypeEcho, Summary: "Echo the caller's audio back to them.", Options: []actionOptionField{
 		{Name: "duration", Type: "int", Required: false, Description: "Echo duration."},
@@ -189,27 +189,27 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "loop_count", Type: "int", Required: false, Description: "Number of times to loop."},
 	}},
 	{Type: fmaction.TypeHangup, Summary: "Hang up the call.", Options: []actionOptionField{
-		{Name: "reason", Type: "string", Required: false, Description: "Hangup reason code."},
+		{Name: "reason", Type: "string (normal|failed|busy|cancel|timeout|noanswer|dialout|amd)", Required: false, Description: "Hangup reason code. Empty means normal."},
 		{Name: "reference_id", Type: "uuid", Required: false, Description: "Hang up with the same reason as this referenced call id (overrides reason)."},
 	}},
 	{Type: fmaction.TypeMessageSend, Summary: "Send an SMS text message.", Options: []actionOptionField{
-		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source phone number. type is tel."},
+		{Name: "source", Type: "address object {type,target,target_name}", Required: true, Description: "Source phone number the message is sent from. type is tel. Required: the sender cannot work without it."},
 		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destination phone numbers. type is tel."},
 		{Name: "text", Type: "string", Required: true, Description: "Message text."},
 	}},
 	{Type: fmaction.TypeMute, Summary: "Mute audio on the call.", Options: nil},
 	{Type: fmaction.TypePlay, Summary: "Play audio from one or more media URLs.", Options: []actionOptionField{
-		{Name: "stream_urls", Type: "array of string", Required: true, Description: "Media URLs to play."},
+		{Name: "stream_urls", Type: "array of string", Required: true, Description: "Publicly reachable WAV or MP3 URLs, played in order. Use only URLs the user gave. Never invent one."},
 	}},
-	{Type: fmaction.TypeQueueJoin, Summary: "Place the call into a queue.", Options: []actionOptionField{
+	{Type: fmaction.TypeQueueJoin, Summary: "Place the call into a queue. When the wait ends without an agent (timeout or kick) the flow continues with the next node.", Options: []actionOptionField{
 		{Name: "queue_id", Type: "uuid", Required: true, Description: "Queue id to join."},
 	}},
-	{Type: fmaction.TypeRecordingStart, Summary: "Start recording the call.", Options: []actionOptionField{
-		{Name: "format", Type: "string", Required: false, Description: "Audio format: wav, mp3, ogg."},
+	{Type: fmaction.TypeRecordingStart, Summary: "Start recording the call. If it cannot start (already recording, no balance, call not answered yet) the flow still continues with no recording.", Options: []actionOptionField{
+		{Name: "format", Type: "string (wav|mp3|ogg)", Required: true, Description: "Recording file format. There is no default."},
 		{Name: "end_of_silence", Type: "int (seconds)", Required: false, Description: "Max silence duration; 0 for no limit."},
 		{Name: "end_of_key", Type: "string", Required: false, Description: "DTMF input to terminate recording: none, any, *, #."},
 		{Name: "duration", Type: "int (seconds)", Required: false, Description: "Max recording duration; 0 for no limit."},
-		{Name: "beep_start", Type: "bool", Required: false, Description: "Play a beep when recording begins."},
+		{Name: "beep_start", Type: "bool", Required: false, Description: "Not applied by the executor today: no beep is played."},
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when recording ends."},
 	}},
 	{Type: fmaction.TypeRecordingStop, Summary: "Stop the current recording.", Options: nil},
@@ -222,35 +222,35 @@ var actionCatalog = []actionCatalogEntry{
 	}},
 	{Type: fmaction.TypeTalk, Summary: "Speak text to the call using TTS (SSML or plain text).", Options: []actionOptionField{
 		{Name: "text", Type: "string", Required: true, Description: "Text to read (SSML or plain text)."},
-		{Name: "language", Type: "string", Required: false, Description: "IETF locale, e.g. ko-KR, en-US."},
+		{Name: "language", Type: "string", Required: true, Description: "IETF locale, e.g. ko-KR, en-US. Always set it: with no language and no voice_id speech synthesis can fail and the flow skips the message."},
 		{Name: "provider", Type: "string", Required: false, Description: "TTS provider (gcp/aws)."},
 		{Name: "voice_id", Type: "string", Required: false, Description: "Provider-specific voice ID."},
 		{Name: "digits_handle", Type: "string (next or empty)", Required: false, Description: "What to do when DTMF digits are received during talk: \"next\" moves to the next action; empty does nothing."},
 		{Name: "async", Type: "bool", Required: false, Description: "If true, the flow continues without waiting for talk to finish."},
 	}},
 	{Type: fmaction.TypeTranscribeStart, Summary: "Start live transcription of the call.", Options: []actionOptionField{
-		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. en-US."},
+		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. ko-KR. Left out it is en-US, so set it for any other language."},
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when transcription ends."},
 		{Name: "provider", Type: "string", Required: false, Description: "Transcribe provider (gcp/aws)."},
 		{Name: "direction", Type: "string", Required: false, Description: "in|out|both (default both)."},
 	}},
 	{Type: fmaction.TypeTranscribeStop, Summary: "Stop live transcription.", Options: nil},
-	{Type: fmaction.TypeTranscribeRecording, Summary: "Transcribe a recording.", Options: []actionOptionField{
-		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. en-US."},
+	{Type: fmaction.TypeTranscribeRecording, Summary: "Transcribe the finished, stored recordings of the current call. It cannot pick one recording and does nothing outside a phone call. A recording that is still running or was just stopped has no stored file yet, so nothing is transcribed and no error is raised: use transcribe_start for live transcription during the call.", Options: []actionOptionField{
+		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. ko-KR. Left out it is en-US, so set it for any other language."},
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when transcription ends."},
-		{Name: "provider", Type: "string", Required: false, Description: "Transcribe provider (gcp/aws)."},
-		{Name: "direction", Type: "string", Required: false, Description: "in|out|both (default both)."},
+		{Name: "provider", Type: "string", Required: false, Description: "Not applied by the executor today: the default provider is used."},
+		{Name: "direction", Type: "string", Required: false, Description: "Not applied by the executor today: both directions are always transcribed."},
 	}},
 	{Type: fmaction.TypeVariableSet, Summary: "Set a flow variable.", Options: []actionOptionField{
 		{Name: "key", Type: "string", Required: true, Description: "Variable name."},
 		{Name: "value", Type: "string", Required: true, Description: "Variable value."},
 	}},
 	{Type: fmaction.TypeWebhookSend, Summary: "Send an HTTP webhook request.", Options: []actionOptionField{
-		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait for the response."},
+		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait until the request is queued. Only public http(s) URLs work: an internal or private address is refused without any error in the flow. The flow never waits for the remote server's answer and cannot use it."},
 		{Name: "uri", Type: "string", Required: true, Description: "Target URL."},
-		{Name: "method", Type: "string", Required: false, Description: "POST/GET/PUT/DELETE."},
-		{Name: "data_type", Type: "string", Required: false, Description: "Content type, e.g. application/json."},
-		{Name: "data", Type: "string", Required: false, Description: "Request body."},
+		{Name: "method", Type: "string (POST|GET|PUT|DELETE)", Required: false, Description: "HTTP method. Empty means GET."},
+		{Name: "data_type", Type: "string", Required: false, Description: "Content type. Set application/json for a JSON body: left empty, no Content-Type header is sent."},
+		{Name: "data", Type: "string", Required: true, Description: "Request body as JSON text, for example {\"event\":\"done\"}. It must be valid JSON: an empty or plain-text body is rejected and nothing is sent."},
 	}},
 }
 
@@ -300,6 +300,26 @@ func sortedActionTypeList() string {
 	out := ActionTypeEnum()
 	sort.Strings(out)
 	return strings.Join(out, ", ")
+}
+
+// RequiredFields returns the set of option field json-names marked Required
+// for the given action type. It is the single source of truth the Flow AI
+// Builder's graph validator (bin-ai-manager/pkg/builderhandler) reads for its
+// `missing_required` check (VOIP-1573 design doc §2.3). The builder does not
+// define its own "required" tag, to avoid a second source of truth that can
+// drift from this catalog. An unknown type returns a non-nil empty map.
+func RequiredFields(actionType fmaction.Type) map[string]bool {
+	entry, ok := catalogByType[actionType]
+	out := make(map[string]bool, len(entry.Options))
+	if !ok {
+		return out
+	}
+	for _, o := range entry.Options {
+		if o.Required {
+			out[o.Name] = true
+		}
+	}
+	return out
 }
 
 // DescribeAction returns the rendered option-field description for a flow action

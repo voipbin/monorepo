@@ -117,6 +117,9 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `ai_manager_builder_chat_total` | Counter | `result` | Builder turns by result: `ok`, `invalid_argument`, `unavailable` (no key, or the counter is down), `busy`, `daily_limit`, `invalid_response` (truncated or unparseable answer), `llm_error`, `internal` (a panic that the listen handler recovered; the daily count may already have been taken). The label is a fixed set; no conversation text or customer id is ever a label. `llm_error` includes a model call that exceeded `ai_builder_llm_timeout_seconds`, so it does not match api-manager's `api_manager_builder_timeout_total`, which is measured against the 55 second RPC wait |
 | `ai_manager_builder_chat_duration_seconds` | Histogram | - | Builder turn latency, from entering `Chat` to returning |
 | `ai_manager_builder_tokens_total` | Counter | `kind` | Model tokens the platform paid for, by `kind` (`prompt`, `completion`). Recorded even when the answer was unusable |
+| `ai_manager_flow_builder_chat_total` | Counter | `result` | Flow Builder turns by result, with the same fixed labels as `ai_manager_builder_chat_total` (`internal` is a recovered panic on the flow route). Separate series: the Assistant Builder's are not touched by a Flow turn |
+| `ai_manager_flow_builder_chat_duration_seconds` | Histogram | - | Flow Builder turn latency |
+| `ai_manager_flow_builder_tokens_total` | Counter | `kind` | Model tokens the Flow Builder used, by `kind` (`prompt`, `completion`) |
 | `receive_request_process_time` | Histogram | `type`, `method` | RPC request latency |
 | `subscribe_event_process_time` | Histogram | `publisher`, `type` | Event processing latency |
 | `connect` | Gauge | — | Active connections |
@@ -256,3 +259,13 @@ script a no-op, so the rolling window grows unbounded on the transcript-intake
 hot path for the whole buffer TTL (a negative value trims from the wrong end,
 keeping the oldest lines), and `aicall_listen_max_turns_per_aicall` of `0` makes
 the very first turn exceed the cap, silently disabling listening turns.
+
+## Flow Builder (VOIP-1573)
+
+`POST /v1/flow_builder/chat` is the conversational Flow Builder. It reuses the Assistant Builder's configuration (`ai_builder_*`: key, model, reasoning effort, LLM timeout, daily limit, concurrency) and adds no setting. Differences to know:
+
+- The concurrency cap is **one pool** shared with the Assistant Builder (`ai_builder_max_concurrent`). A slow Flow turn can make an Assistant turn answer `BUILDER_BUSY` and the other way round.
+- The daily counter is **separate**: Redis key `ai:flow_builder:chat:count:<customer_id>` (Assistant: `ai:builder:chat:count:<customer_id>`), with the same limit value and the same 24 hour fixed window. A deploy does not reset the Assistant counter.
+- The output budget is a code constant, `8192` tokens (an Assistant turn uses `ai_builder_max_output_tokens`, default `4096`); both are not measured. Raise `ai_builder_max_output_tokens` above `8192` and the Flow Builder uses that value.
+- The circuit breaker in api-manager is per RPC queue (`bin-manager.ai-manager.request`), so Flow turns share it with every other ai-manager RPC. A Flow turn that times out counts toward the same five failures. Watch `ai_manager_flow_builder_chat_total{result="llm_error"}` against the total before relying on it.
+- Logs never carry the conversation, the draft or an option value; a draft option can hold anything the user typed.

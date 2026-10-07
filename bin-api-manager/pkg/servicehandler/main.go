@@ -36,6 +36,7 @@ import (
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	ambuilder "monorepo/bin-ai-manager/models/builder"
+	amflowbuilder "monorepo/bin-ai-manager/models/flowbuilder"
 	ammcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
@@ -311,6 +312,7 @@ type ServiceHandler interface {
 	AIDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error)
 	AIBuilderChat(ctx context.Context, a *auth.AuthIdentity, req *ambuilder.ChatRequest) (*ambuilder.ChatResponse, error)
 	AIBuilderStatus(ctx context.Context, a *auth.AuthIdentity) (*ambuilder.StatusResponse, error)
+	FlowBuilderChat(ctx context.Context, a *auth.AuthIdentity, req *amflowbuilder.ChatRequest) (*amflowbuilder.ChatResponse, error)
 	AIUpdate(
 		ctx context.Context,
 		a *auth.AuthIdentity,

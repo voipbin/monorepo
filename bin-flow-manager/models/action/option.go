@@ -67,17 +67,17 @@ func ValidateAnonymous(anonymous string) bool {
 
 // OptionAISummary defines action ai_summary's option.
 type OptionAISummary struct {
-	OnEndFlowID   uuid.UUID               `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
+	OnEndFlowID   uuid.UUID               `json:"on_end_flow_id,omitempty" ref:"resource"` // flow id for the end of recording.
 	ReferenceType amsummary.ReferenceType `json:"reference_type,omitempty"`
-	ReferenceID   uuid.UUID               `json:"reference_id,omitempty"`
+	ReferenceID   uuid.UUID               `json:"reference_id,omitempty" ref:"resource"`
 	Language      string                  `json:"language,omitempty"`
 }
 
 // OptionAITalk defines action ai_talk's option.
 type OptionAITalk struct {
-	AIID           uuid.UUID               `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
-	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"` // "ai" or "team"
-	AssistanceID   uuid.UUID               `json:"assistance_id,omitempty"`
+	AIID           uuid.UUID               `json:"ai_id,omitempty" ref:"resource"` // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
+	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"`      // "ai" or "team"
+	AssistanceID   uuid.UUID               `json:"assistance_id,omitempty" ref:"resource"`
 	Duration       int                     `json:"duration,omitempty"` // ai talk duration. seconds
 }
 
@@ -92,9 +92,9 @@ func (o *OptionAITalk) GetAssistanceTypeAndID() (amaicall.AssistanceType, uuid.U
 
 // OptionAITask defines action ai_task's option
 type OptionAITask struct {
-	AIID           uuid.UUID               `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
-	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"` // "ai" or "team"
-	AssistanceID   uuid.UUID               `json:"assistance_id,omitempty"`
+	AIID           uuid.UUID               `json:"ai_id,omitempty" ref:"resource"` // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
+	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"`      // "ai" or "team"
+	AssistanceID   uuid.UUID               `json:"assistance_id,omitempty" ref:"resource"`
 }
 
 // GetAssistanceTypeAndID returns the resolved assistance type and ID.
@@ -130,15 +130,15 @@ type OptionBlock struct {
 // OptionBranch defines action branch's option.
 type OptionBranch struct {
 	Variable        string               `json:"variable,omitempty"`
-	DefaultTargetID uuid.UUID            `json:"default_target_id,omitempty"` // default id for the input dtmf does not match any of branch targets.
-	TargetIDs       map[string]uuid.UUID `json:"target_ids,omitempty"`        // branch target ids.
+	DefaultTargetID uuid.UUID            `json:"default_target_id,omitempty" ref:"action"` // default id for the input dtmf does not match any of branch targets.
+	TargetIDs       map[string]uuid.UUID `json:"target_ids,omitempty" ref:"action"`        // branch target ids.
 }
 
 // OptionCall defines action call's option.
 type OptionCall struct {
-	Source         *commonaddress.Address  `json:"source,omitempty"`
-	Destinations   []commonaddress.Address `json:"destinations,omitempty"`
-	FlowID         uuid.UUID               `json:"flow_id,omitempty"`
+	Source         *commonaddress.Address  `json:"source,omitempty" ref:"address"`
+	Destinations   []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
+	FlowID         uuid.UUID               `json:"flow_id,omitempty" ref:"resource"`
 	Actions        []Action                `json:"actions,omitempty"`
 	Chained        bool                    `json:"chained,omitempty"`         // If it sets to true, the created calls will be hungup when the master call is hangup. Default false.
 	EarlyExecution bool                    `json:"early_execution,omitempty"` // if it sets to true, the created call executes the flow(activeflow) before call answer.
@@ -147,7 +147,7 @@ type OptionCall struct {
 
 // OptionConfbridgeJoin defines action confbridge_join's option.
 type OptionConfbridgeJoin struct {
-	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty"`
+	ConfbridgeID uuid.UUID `json:"confbridge_id,omitempty" ref:"resource"`
 }
 
 // OptionConditionCallDigits defines action condition_call_digits's option.
@@ -155,14 +155,14 @@ type OptionConditionCallDigits struct {
 	Length int    `json:"length,omitempty"` // digit length for finish
 	Key    string `json:"key,omitempty"`    // digit key for finish
 
-	FalseTargetID uuid.UUID `json:"false_target_id,omitempty"` // target id for false case.
+	FalseTargetID uuid.UUID `json:"false_target_id,omitempty" ref:"action"` // target id for false case.
 }
 
 // OptionConditionCallStatus defines action condition_call_status's option.
 type OptionConditionCallStatus struct {
 	Status OptionConditionCallStatusStatus `json:"status,omitempty"` // call's status
 
-	FalseTargetID uuid.UUID `json:"false_target_id,omitempty"` // target id for false case.
+	FalseTargetID uuid.UUID `json:"false_target_id,omitempty" ref:"action"` // target id for false case.
 }
 
 // OptionConditionDatetime defines action condition_datetime's option.
@@ -175,7 +175,7 @@ type OptionConditionDatetime struct {
 	Month    int   `json:"month,omitempty"`    // 1 - 12
 	Weekdays []int `json:"weekdays,omitempty"` // Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6
 
-	FalseTargetID uuid.UUID `json:"false_target_id,omitempty"` // target id for false case.
+	FalseTargetID uuid.UUID `json:"false_target_id,omitempty" ref:"action"` // target id for false case.
 }
 
 // OptionConditionVariable defines action condition_variable's option.
@@ -188,21 +188,21 @@ type OptionConditionVariable struct {
 	ValueNumber float32                          `json:"value_number,omitempty"`
 	ValueLength int                              `json:"value_length,omitempty"`
 
-	FalseTargetID uuid.UUID `json:"false_target_id,omitempty"` // target id for false case.
+	FalseTargetID uuid.UUID `json:"false_target_id,omitempty" ref:"action"` // target id for false case.
 }
 
 // OptionConferenceJoin defines action conference_join's option.
 type OptionConferenceJoin struct {
-	ConferenceID uuid.UUID `json:"conference_id,omitempty"`
+	ConferenceID uuid.UUID `json:"conference_id,omitempty" ref:"resource"`
 }
 
 // OptionConnect defines action connect's optoin.
 type OptionConnect struct {
 	// source address.
-	Source commonaddress.Address `json:"source,omitempty"`
+	Source commonaddress.Address `json:"source,omitempty" ref:"address"`
 
 	// target destination addresses.
-	Destinations []commonaddress.Address `json:"destinations,omitempty"`
+	Destinations []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
 
 	// if it sets to true, the call will get early media from the destination.
 	EarlyMedia bool `json:"early_media,omitempty"`
@@ -231,15 +231,15 @@ type OptionCaseCreate struct {
 
 // OptionConversationSend defines action conversation_send's optoin.
 type OptionConversationSend struct {
-	ConversationID uuid.UUID `json:"conversation_id,omitempty"` // conversation's id.
-	Text           string    `json:"text,omitempty"`            // message text.
+	ConversationID uuid.UUID `json:"conversation_id,omitempty" ref:"resource"` // conversation's id.
+	Text           string    `json:"text,omitempty"`                           // message text.
 	Sync           bool      `json:"sync,omitempty"`
 }
 
 // OptionDigitsReceive defines action dtmf_receive's option.
 type OptionDigitsReceive struct {
 	Duration int    `json:"duration,omitempty"` // dtmf receiving duration. ms
-	Key      string `json:"key,omitempty"`      // If set, determines which DTMF triggers the next step. The end key is not included in the resulting variable. If not set, no key will trigger the next step.
+	Key      string `json:"key,omitempty"`      // If set, determines which DTMF triggers the next step. The end key is part of the resulting variable (for example "123#"). If not set, no key will trigger the next step.
 	Length   int    `json:"length,omitempty"`   // An optional limit to the number of DTMF events that should be gathered before continuing to the next step.
 }
 
@@ -257,7 +257,7 @@ type OptionEcho struct {
 
 // OptionEmailSend defines action email_send's option.
 type OptionEmailSend struct {
-	Destinations []commonaddress.Address `json:"destinations,omitempty"`
+	Destinations []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
 	Subject      string                  `json:"subject,omitempty"`
 	Content      string                  `json:"content,omitempty"`
 	Attachments  []ememail.Attachment    `json:"attachments,omitempty"`
@@ -293,25 +293,25 @@ type OptionFetch struct {
 
 // OptionFetchFlow defines action fetch_flow's option.
 type OptionFetchFlow struct {
-	FlowID uuid.UUID `json:"flow_id,omitempty"`
+	FlowID uuid.UUID `json:"flow_id,omitempty" ref:"resource"`
 }
 
 // OptionGoto defines action goto's option
 type OptionGoto struct {
-	TargetID  uuid.UUID `json:"target_id,omitempty"`  // target's action id in the flow array for go to.
-	LoopCount int       `json:"loop_count,omitempty"` // loop count.
+	TargetID  uuid.UUID `json:"target_id,omitempty" ref:"action"` // target's action id in the flow array for go to.
+	LoopCount int       `json:"loop_count,omitempty"`             // loop count.
 }
 
 // OptionHangup defines action hangup's option.
 type OptionHangup struct {
-	Reason      string    `json:"reason,omitempty"`       // hangup reason code. See detail cmcall.HangupReason
-	ReferenceID uuid.UUID `json:"reference_id,omitempty"` // if it's set will hangup the call with the same reason of this referenced call id. This will overwrite the reason option.
+	Reason      string    `json:"reason,omitempty"`                      // hangup reason code. See detail cmcall.HangupReason
+	ReferenceID uuid.UUID `json:"reference_id,omitempty" ref:"resource"` // if it's set will hangup the call with the same reason of this referenced call id. This will overwrite the reason option.
 }
 
 // OptionMessageSend defines action message_send's option.
 type OptionMessageSend struct {
-	Source       *commonaddress.Address  `json:"source,omitempty"`
-	Destinations []commonaddress.Address `json:"destinations,omitempty"`
+	Source       *commonaddress.Address  `json:"source,omitempty" ref:"address"`
+	Destinations []commonaddress.Address `json:"destinations,omitempty" ref:"address"`
 	Text         string                  `json:"text,omitempty"`
 }
 
@@ -322,17 +322,17 @@ type OptionPlay struct {
 
 // OptionQueueJoin defines action queue_join's option.
 type OptionQueueJoin struct {
-	QueueID uuid.UUID `json:"queue_id,omitempty"` // queue's id.
+	QueueID uuid.UUID `json:"queue_id,omitempty" ref:"resource"` // queue's id.
 }
 
 // OptionRecordingStart defines action record's option.
 type OptionRecordingStart struct {
-	Format       string    `json:"format,omitempty"`         // Format to encode audio in. wav, mp3, ogg
-	EndOfSilence int       `json:"end_of_silence,omitempty"` // Maximum duration of silence, in seconds. 0 for no limit.
-	EndOfKey     string    `json:"end_of_key,omitempty"`     // DTMF input to terminate recording. none, any, *, #
-	Duration     int       `json:"duration,omitempty"`       // Maximum duration of the recording, in seconds. 0 for no limit.
-	BeepStart    bool      `json:"beep_start,omitempty"`     // Play beep when recording begins.
-	OnEndFlowID  uuid.UUID `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
+	Format       string    `json:"format,omitempty"`                        // Format to encode audio in. wav, mp3, ogg
+	EndOfSilence int       `json:"end_of_silence,omitempty"`                // Maximum duration of silence, in seconds. 0 for no limit.
+	EndOfKey     string    `json:"end_of_key,omitempty"`                    // DTMF input to terminate recording. none, any, *, #
+	Duration     int       `json:"duration,omitempty"`                      // Maximum duration of the recording, in seconds. 0 for no limit.
+	BeepStart    bool      `json:"beep_start,omitempty"`                    // Play beep when recording begins.
+	OnEndFlowID  uuid.UUID `json:"on_end_flow_id,omitempty" ref:"resource"` // flow id for the end of recording.
 }
 
 // OptionRecordingStop defines action record's option.
@@ -362,10 +362,10 @@ type OptionTalk struct {
 
 // OptionTranscribeStart defines action TypeTranscribeStart's option.
 type OptionTranscribeStart struct {
-	Language    string    `json:"language,omitempty"`       // BCP47 format. en-US
-	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
-	Provider    string    `json:"provider,omitempty"`       // transcribe provider(gcp/aws)
-	Direction   string    `json:"direction,omitempty"`      // in|out|both. default: both
+	Language    string    `json:"language,omitempty"`                      // BCP47 format. en-US
+	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty" ref:"resource"` // flow id for the end of recording.
+	Provider    string    `json:"provider,omitempty"`                      // transcribe provider(gcp/aws)
+	Direction   string    `json:"direction,omitempty"`                     // in|out|both. default: both
 }
 
 // OptionTranscribeStop defines action TypeTranscribeStop's option.
@@ -375,10 +375,10 @@ type OptionTranscribeStop struct {
 
 // OptionTranscribeRecording defines action TypeTranscribeRecording's option.
 type OptionTranscribeRecording struct {
-	Language    string    `json:"language,omitempty"`       // BCP47 format. en-US
-	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
-	Provider    string    `json:"provider,omitempty"`       // transcribe provider(gcp/aws)
-	Direction   string    `json:"direction,omitempty"`      // in|out|both. default: both
+	Language    string    `json:"language,omitempty"`                      // BCP47 format. en-US
+	OnEndFlowID uuid.UUID `json:"on_end_flow_id,omitempty" ref:"resource"` // flow id for the end of recording.
+	Provider    string    `json:"provider,omitempty"`                      // transcribe provider(gcp/aws)
+	Direction   string    `json:"direction,omitempty"`                     // in|out|both. default: both
 }
 
 // OptionVariableSet defines action TypeVariableSet's option.

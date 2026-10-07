@@ -20,6 +20,7 @@ import (
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	builder "monorepo/bin-ai-manager/models/builder"
+	flowbuilder "monorepo/bin-ai-manager/models/flowbuilder"
 	mcpserver "monorepo/bin-ai-manager/models/mcpserver"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
@@ -3087,6 +3088,21 @@ func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthId
 func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(ctx, a, id, name, detail, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionUpdate), ctx, a, id, name, detail, password)
+}
+
+// FlowBuilderChat mocks base method.
+func (m *MockServiceHandler) FlowBuilderChat(ctx context.Context, a *auth.AuthIdentity, req *flowbuilder.ChatRequest) (*flowbuilder.ChatResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FlowBuilderChat", ctx, a, req)
+	ret0, _ := ret[0].(*flowbuilder.ChatResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FlowBuilderChat indicates an expected call of FlowBuilderChat.
+func (mr *MockServiceHandlerMockRecorder) FlowBuilderChat(ctx, a, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowBuilderChat", reflect.TypeOf((*MockServiceHandler)(nil).FlowBuilderChat), ctx, a, req)
 }
 
 // FlowCreate mocks base method.
