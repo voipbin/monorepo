@@ -9,6 +9,7 @@ package builderhandler
 import (
 	"monorepo/bin-ai-manager/models/flowbuilder"
 	fmaction "monorepo/bin-flow-manager/models/action"
+	"strings"
 
 	"github.com/gofrs/uuid"
 )
@@ -211,13 +212,28 @@ func filterUnsupportedTypes(nodes []flowbuilder.SymbolicNode, allowedTypes map[f
 }
 
 // maxDraftWarnings bounds draft_warnings: a draft of 60 nodes with many bad
-// option keys would otherwise multiply the response size. The first ones are
-// kept, in the order the steps produced them.
+// option keys would otherwise multiply the response size.
 const maxDraftWarnings = 100
 
+// maxInvalidOptionWarnings bounds the invalid_option notes inside that budget.
+// They are the ones a model can produce in bulk, and the least actionable, so
+// they must not push out select_resource, missing_required or unreachable.
+const maxInvalidOptionWarnings = 30
+
 func capWarnings(w []string) []string {
-	if len(w) > maxDraftWarnings {
-		return w[:maxDraftWarnings]
+	kept := make([]string, 0, len(w))
+	invalid := 0
+	for _, x := range w {
+		if strings.HasPrefix(x, flowbuilder.WarningInvalidOption) {
+			invalid++
+			if invalid > maxInvalidOptionWarnings {
+				continue
+			}
+		}
+		kept = append(kept, x)
 	}
-	return w
+	if len(kept) > maxDraftWarnings {
+		kept = kept[:maxDraftWarnings]
+	}
+	return kept
 }

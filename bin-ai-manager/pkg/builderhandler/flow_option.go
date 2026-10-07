@@ -87,7 +87,7 @@ func resolveOption(n flowbuilder.SymbolicNode, labelToID map[string]uuid.UUID, r
 				id, ok := labelToID[label]
 				if !ok {
 					if !removed[label] {
-						warnings = append(warnings, flowbuilder.WarningInvalidLabelRef+": "+n.Label+"."+f.JSONName+"."+key)
+						warnings = append(warnings, flowbuilder.WarningInvalidLabelRef+": "+n.Label+"."+f.JSONName+"."+shortKey(key))
 					}
 					continue // drop the key; branch falls through to its default
 				}

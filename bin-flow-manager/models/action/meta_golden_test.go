@@ -42,7 +42,7 @@ func Test_MetaGolden(t *testing.T) {
 		{Type("goto"), ExposureInternal, FlowKindContinue},
 		{Type("hangup"), ExposureCore, FlowKindTerminate},
 		{Type("message_send"), ExposureSensitive, FlowKindContinue},
-		{Type("mute"), ExposureCore, FlowKindContinue},
+		{Type("mute"), ExposureInternal, FlowKindContinue},
 		{Type("play"), ExposureCore, FlowKindContinue},
 		{Type("queue_join"), ExposureCore, FlowKindContinue},
 		{Type("recording_start"), ExposureCore, FlowKindContinue},
@@ -53,7 +53,7 @@ func Test_MetaGolden(t *testing.T) {
 		{Type("talk"), ExposureCore, FlowKindContinue},
 		{Type("transcribe_recording"), ExposureSensitive, FlowKindContinue},
 		{Type("transcribe_start"), ExposureSensitive, FlowKindContinue},
-		{Type("transcribe_stop"), ExposureCore, FlowKindContinue},
+		{Type("transcribe_stop"), ExposureInternal, FlowKindContinue},
 		{Type("variable_set"), ExposureCore, FlowKindContinue},
 		{Type("webhook_send"), ExposureSensitive, FlowKindContinue},
 	}

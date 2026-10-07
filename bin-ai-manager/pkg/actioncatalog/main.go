@@ -74,7 +74,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "assistance_id", Type: "uuid", Required: true, Description: "Id of the AI or team to converse with."},
 		{Name: "duration", Type: "int (seconds)", Required: false, Description: "Not applied by the executor today: do not promise the user a time limit."},
 	}},
-	{Type: fmaction.TypeAITask, Summary: "Run an AI task (non-conversational) on the call.", Options: []actionOptionField{
+	{Type: fmaction.TypeAITask, Summary: "Run an AI task (non-conversational). It runs in flows that are not a phone call and is skipped on a call.", Options: []actionOptionField{
 		{Name: "ai_id", Type: "uuid", Required: false, Description: "Deprecated; use assistance_type + assistance_id."},
 		{Name: "assistance_type", Type: "string", Required: true, Description: "\"ai\" or \"team\"."},
 		{Name: "assistance_id", Type: "uuid", Required: true, Description: "Id of the AI or team to run the task."},
@@ -94,7 +94,7 @@ var actionCatalog = []actionCatalogEntry{
 	}},
 	{Type: fmaction.TypeCall, Summary: "Originate one or more new outbound calls (each runs its own flow or actions).", Options: []actionOptionField{
 		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id. type is one of tel, sip, extension, agent."},
-		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destinations to call. type is one of tel, sip, extension, agent, conference."},
+		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destinations to call. type is one of tel, sip, extension, agent. conference is not supported."},
 		{Name: "flow_id", Type: "uuid", Required: false, Description: "Pre-built flow the new call runs (use flow_id OR actions)."},
 		{Name: "actions", Type: "array of action objects", Required: false, Description: "Inline actions the new call runs (use flow_id OR actions)."},
 		{Name: "chained", Type: "bool", Required: false, Description: "If true, the created calls hang up when the master call hangs up."},
@@ -135,8 +135,8 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "conference_id", Type: "uuid", Required: true, Description: "Conference id to join."},
 	}},
 	{Type: fmaction.TypeConnect, Summary: "Originate new call(s) and bridge them into the current call (transfer/connect).", Options: []actionOptionField{
-		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id. type is one of tel, sip, extension, agent."},
-		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Endpoints to connect to. type is one of tel, sip, extension, agent, conference."},
+		{Name: "source", Type: "address object {type,target,target_name}", Required: true, Description: "Caller id the new call is placed from. Use a phone number the customer owns (type tel). Without a usable one the connect fails and the flow stops."},
+		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Endpoints to connect to. type is one of tel, sip, extension, agent. conference is not supported."},
 		{Name: "early_media", Type: "bool", Required: false, Description: "If true, get early media from the destination."},
 		{Name: "relay_reason", Type: "bool", Required: false, Description: "If true, hang up the master call with the destination's hangup reason."},
 		{Name: "anonymous", Type: "string (yes|no|auto)", Required: false, Description: "Anonymous caller id on outbound PSTN."},
@@ -205,11 +205,11 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "queue_id", Type: "uuid", Required: true, Description: "Queue id to join."},
 	}},
 	{Type: fmaction.TypeRecordingStart, Summary: "Start recording the call.", Options: []actionOptionField{
-		{Name: "format", Type: "string", Required: false, Description: "Audio format: wav, mp3, ogg."},
+		{Name: "format", Type: "string (wav|mp3|ogg)", Required: true, Description: "Recording file format. There is no default."},
 		{Name: "end_of_silence", Type: "int (seconds)", Required: false, Description: "Max silence duration; 0 for no limit."},
 		{Name: "end_of_key", Type: "string", Required: false, Description: "DTMF input to terminate recording: none, any, *, #."},
 		{Name: "duration", Type: "int (seconds)", Required: false, Description: "Max recording duration; 0 for no limit."},
-		{Name: "beep_start", Type: "bool", Required: false, Description: "Play a beep when recording begins."},
+		{Name: "beep_start", Type: "bool", Required: false, Description: "Not applied by the executor today: no beep is played."},
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when recording ends."},
 	}},
 	{Type: fmaction.TypeRecordingStop, Summary: "Stop the current recording.", Options: nil},
@@ -222,21 +222,21 @@ var actionCatalog = []actionCatalogEntry{
 	}},
 	{Type: fmaction.TypeTalk, Summary: "Speak text to the call using TTS (SSML or plain text).", Options: []actionOptionField{
 		{Name: "text", Type: "string", Required: true, Description: "Text to read (SSML or plain text)."},
-		{Name: "language", Type: "string", Required: false, Description: "IETF locale, e.g. ko-KR, en-US."},
+		{Name: "language", Type: "string", Required: true, Description: "IETF locale, e.g. ko-KR, en-US. Always set it: with no language and no voice_id speech synthesis can fail and the flow skips the message."},
 		{Name: "provider", Type: "string", Required: false, Description: "TTS provider (gcp/aws)."},
 		{Name: "voice_id", Type: "string", Required: false, Description: "Provider-specific voice ID."},
 		{Name: "digits_handle", Type: "string (next or empty)", Required: false, Description: "What to do when DTMF digits are received during talk: \"next\" moves to the next action; empty does nothing."},
 		{Name: "async", Type: "bool", Required: false, Description: "If true, the flow continues without waiting for talk to finish."},
 	}},
 	{Type: fmaction.TypeTranscribeStart, Summary: "Start live transcription of the call.", Options: []actionOptionField{
-		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. en-US."},
+		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. ko-KR. Left out it is en-US, so set it for any other language."},
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when transcription ends."},
 		{Name: "provider", Type: "string", Required: false, Description: "Transcribe provider (gcp/aws)."},
 		{Name: "direction", Type: "string", Required: false, Description: "in|out|both (default both)."},
 	}},
 	{Type: fmaction.TypeTranscribeStop, Summary: "Stop live transcription.", Options: nil},
-	{Type: fmaction.TypeTranscribeRecording, Summary: "Transcribe a recording.", Options: []actionOptionField{
-		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. en-US."},
+	{Type: fmaction.TypeTranscribeRecording, Summary: "Transcribe all recordings of the current call. It cannot pick one recording and does nothing outside a phone call.", Options: []actionOptionField{
+		{Name: "language", Type: "string", Required: false, Description: "BCP47 language, e.g. ko-KR. Left out it is en-US, so set it for any other language."},
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when transcription ends."},
 		{Name: "provider", Type: "string", Required: false, Description: "Transcribe provider (gcp/aws)."},
 		{Name: "direction", Type: "string", Required: false, Description: "in|out|both (default both)."},
@@ -246,11 +246,11 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "value", Type: "string", Required: true, Description: "Variable value."},
 	}},
 	{Type: fmaction.TypeWebhookSend, Summary: "Send an HTTP webhook request.", Options: []actionOptionField{
-		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait for the response."},
+		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait until the request is queued. The flow never waits for the remote server's answer and cannot use it."},
 		{Name: "uri", Type: "string", Required: true, Description: "Target URL."},
-		{Name: "method", Type: "string", Required: false, Description: "POST/GET/PUT/DELETE."},
+		{Name: "method", Type: "string (POST|GET|PUT|DELETE)", Required: false, Description: "HTTP method. Empty means GET."},
 		{Name: "data_type", Type: "string", Required: false, Description: "Content type, e.g. application/json."},
-		{Name: "data", Type: "string", Required: false, Description: "Request body."},
+		{Name: "data", Type: "string", Required: true, Description: "Request body as JSON text, for example {\"event\":\"done\"}. It must be valid JSON: an empty or plain-text body is rejected and nothing is sent."},
 	}},
 }
 

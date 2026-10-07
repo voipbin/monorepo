@@ -109,7 +109,7 @@ var MetaByType = map[Type]Meta{
 	TypeGoto:                {Exposure: ExposureInternal, Flow: FlowKindContinue}, // outside the FlowKind model, see doc comment above
 	TypeHangup:              {Exposure: ExposureCore, Flow: FlowKindTerminate},
 	TypeMessageSend:         {Exposure: ExposureSensitive, Flow: FlowKindContinue},
-	TypeMute:                {Exposure: ExposureCore, Flow: FlowKindContinue},
+	TypeMute:                {Exposure: ExposureInternal, Flow: FlowKindContinue}, // no executor: flow-manager forwards it to call-manager, which has no handler, so it does nothing (VOIP-1573 review 8). Revisit when it is implemented
 	TypePlay:                {Exposure: ExposureCore, Flow: FlowKindContinue},
 	TypeQueueJoin:           {Exposure: ExposureCore, Flow: FlowKindContinue},
 	TypeRecordingStart:      {Exposure: ExposureCore, Flow: FlowKindContinue},
@@ -119,7 +119,7 @@ var MetaByType = map[Type]Meta{
 	TypeStreamEcho:          {Exposure: ExposureInternal, Flow: FlowKindContinue}, // internal/test use
 	TypeTalk:                {Exposure: ExposureCore, Flow: FlowKindContinue},
 	TypeTranscribeStart:     {Exposure: ExposureSensitive, Flow: FlowKindContinue}, // STT cost
-	TypeTranscribeStop:      {Exposure: ExposureCore, Flow: FlowKindContinue},
+	TypeTranscribeStop:      {Exposure: ExposureInternal, Flow: FlowKindContinue},  // no executor, same as mute: live transcription is not stopped (VOIP-1573 review 8)
 	TypeTranscribeRecording: {Exposure: ExposureSensitive, Flow: FlowKindContinue}, // STT cost
 	TypeVariableSet:         {Exposure: ExposureCore, Flow: FlowKindContinue},
 	TypeWebhookSend:         {Exposure: ExposureSensitive, Flow: FlowKindContinue},

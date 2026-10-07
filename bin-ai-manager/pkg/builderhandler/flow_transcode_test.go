@@ -26,7 +26,7 @@ func allAllowed(types ...fmaction.Type) map[fmaction.Type]bool {
 func Test_AssembleFlowDraft_LinearHappyPath(t *testing.T) {
 	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{
 		{Label: "greet", Type: string(fmaction.TypeAnswer), Next: strp("talk1")},
-		{Label: "talk1", Type: string(fmaction.TypeTalk), Option: map[string]any{"text": "hello"}, Next: strp("end")},
+		{Label: "talk1", Type: string(fmaction.TypeTalk), Option: map[string]any{"text": "hello", "language": "en-US"}, Next: strp("end")},
 		{Label: "end", Type: string(fmaction.TypeHangup)},
 	}}
 	draft, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeAnswer, fmaction.TypeTalk, fmaction.TypeHangup))
@@ -761,5 +761,53 @@ func Test_AssembleFlowDraft_digitsReceiveWithoutDurationIsReported(t *testing.T)
 	_, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeDigitsReceive))
 	if !containsExact(warnings, flowbuilder.WarningMissingRequired+": d.duration") {
 		t.Errorf("Wrong match. expect missing_required for d.duration in %v", warnings)
+	}
+}
+
+// Review round 8 (P): when the cap cuts the list, the notes the user has to
+// act on (select_resource, missing_required) must stay.
+func Test_AssembleFlowDraft_capKeepsValidationWarnings(t *testing.T) {
+	var nodes []flowbuilder.SymbolicNode
+	for i := 0; i < 30; i++ {
+		nodes = append(nodes, flowbuilder.SymbolicNode{Label: "t" + strconv.Itoa(i) + "x", Type: string(fmaction.TypeAnswer), Option: map[string]any{"b1": 1, "b2": 1, "b3": 1, "b4": 1}})
+	}
+	nodes = append(nodes, flowbuilder.SymbolicNode{Label: "q", Type: string(fmaction.TypeQueueJoin), Option: map[string]any{}})
+	_, warnings := AssembleFlowDraft(flowbuilder.SymbolicGraph{Nodes: nodes}, allAllowed(fmaction.TypeAnswer, fmaction.TypeQueueJoin))
+	if len(warnings) > maxDraftWarnings {
+		t.Fatalf("Wrong match. expect at most %d warnings, got %d", maxDraftWarnings, len(warnings))
+	}
+	if !containsExact(warnings, flowbuilder.WarningSelectResource+": q.queue_id") {
+		t.Errorf("Wrong match. the cap dropped select_resource: %d warnings", len(warnings))
+	}
+}
+
+// Types the executor cannot run must not be offered: flow-manager forwards
+// mute and transcribe_stop to call-manager, which has no handler for them.
+func Test_FlowAllowedTypes_doesNotOfferTypesWithoutAnExecutor(t *testing.T) {
+	got := FlowAllowedTypes([]string{string(fmaction.TypeMute), string(fmaction.TypeTranscribeStop), string(fmaction.TypeAnswer)})
+	if len(got) != 1 || got[0] != fmaction.TypeAnswer {
+		t.Errorf("Wrong match. expect only answer, got %v", got)
+	}
+}
+
+func Test_FlowCatalog_statesWhatTheSecondAuditFound(t *testing.T) {
+	tests := []struct {
+		ty   fmaction.Type
+		want []string
+	}{
+		{fmaction.TypeWebhookSend, []string{"valid JSON", "never waits for the remote server"}},
+		{fmaction.TypeRecordingStart, []string{"no beep is played", "no default"}},
+		{fmaction.TypeTalk, []string{"Always set it"}},
+		{fmaction.TypeConnect, []string{"conference is not supported", "phone number the customer owns"}},
+		{fmaction.TypeAITask, []string{"skipped on a call"}},
+		{fmaction.TypeTranscribeRecording, []string{"all recordings of the current call"}},
+	}
+	for _, tt := range tests {
+		cat := FlowCatalog([]fmaction.Type{tt.ty})
+		for _, w := range tt.want {
+			if !strings.Contains(cat, w) {
+				t.Errorf("Wrong match. expect %q in the %s catalog:\n%s", w, tt.ty, cat)
+			}
+		}
 	}
 }
