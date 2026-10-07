@@ -163,7 +163,12 @@ func sanitizeAddressField(opt map[string]any, f fmaction.RefField, label string,
 	clean := func(item any, where string) (any, bool) {
 		obj, ok := item.(map[string]any)
 		if !ok {
-			return nil, false // wrong shape: dropped, the strict decode would reject it anyway
+			// Wrong shape: dropped and reported, so a destination does not
+			// vanish without a word.
+			if report {
+				warnings = append(warnings, flowbuilder.WarningInvalidOption+": "+where)
+			}
+			return nil, false
 		}
 		out := make(map[string]any, len(obj))
 		keys := make([]string, 0, len(obj))

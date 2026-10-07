@@ -407,3 +407,4 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 - `draft_discarded`(파싱 단계, `FlowParse`)는 응답이 쓸 수 없어 이전 초안을 유지했다는 경고다. 5절의 키 목록에 더해 모두 13개이며 프런트가 같은 13개를 문구로 매핑한다.
 - 주소 필드는 프롬프트 카탈로그에서 리소스 필드와 분리해 안내한다(전화번호, SIP, 이메일 등은 사용자가 말한 값 그대로, 그 외 타입은 target을 null). 주소 비움 경고(`select_resource`)와 필수 주소 누락(`missing_required`)은 변환이 아니라 `ValidateDraft`가 내므로, 클라이언트가 초안을 돌려보내는 이후 턴에도 유지된다. 주소 type은 공백과 대소문자를 정규화해 받는다.
 - 자기 자신을 가리키는 `next`는 버리고 열린 끝으로 처리한다. 실행기가 루프를 1000회에서 끊지만 `message_send`나 `webhook_send`는 그 횟수만큼 발송될 수 있고 의도한 사용이 없기 때문이다. 둘 이상의 노드를 도는 루프는 OQ9대로 v1에서 탐지하지 않는다.
+- `condition_datetime`의 실제 동작(UTC 기준, 생략한 hour와 minute는 0으로 비교, 연산자는 설정값 연산자 현재값 순서, 지정한 요소를 각각 AND)을 카탈로그에 명시한다. 이름만 보고 쓰면 경고 없이 틀리게 동작하는 유일한 노출 타입이어서 모델에게 사실을 알려야 한다. 근거 코드는 flow-manager `actionHandleConditionDatetime`이고 문구 변경은 테스트로 고정한다. 객체가 아닌 주소 항목이 버려지면 `invalid_option`으로 알린다.

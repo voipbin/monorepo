@@ -696,3 +696,26 @@ func Test_AssembleFlowDraft_nextPointingAtItselfIsDropped(t *testing.T) {
 		}
 	}
 }
+
+// condition_datetime does not behave the way its field names suggest, and a
+// draft that uses it as the names read is "valid" yet wrong at run time
+// (review round 6). The catalog must carry what the executor does, read from
+// bin-flow-manager activeflowhandler.actionHandleConditionDatetime.
+func Test_FlowCatalog_conditionDatetimeStatesWhatTheExecutorDoes(t *testing.T) {
+	cat := FlowCatalog([]fmaction.Type{fmaction.TypeConditionDatetime})
+	for _, want := range []string{"UTC", "-1", "configured value <op> current value"} {
+		if !strings.Contains(cat, want) {
+			t.Errorf("Wrong match. expect %q in the condition_datetime catalog:\n%s", want, cat)
+		}
+	}
+}
+
+func Test_AssembleFlowDraft_nonObjectAddressItemIsReported(t *testing.T) {
+	graph := flowbuilder.SymbolicGraph{Nodes: []flowbuilder.SymbolicNode{{Label: "c", Type: string(fmaction.TypeConnect), Option: map[string]any{
+		"destinations": []any{"zz", map[string]any{"type": "tel", "target": "+15551230000"}},
+	}}}}
+	_, warnings := AssembleFlowDraft(graph, allAllowed(fmaction.TypeConnect))
+	if !containsExact(warnings, flowbuilder.WarningInvalidOption+": c.destinations[0]") {
+		t.Errorf("Wrong match. expect invalid_option for the dropped item in %v", warnings)
+	}
+}

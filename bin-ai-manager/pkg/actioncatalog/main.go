@@ -110,13 +110,13 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "status", Type: "string (dialing|ringing|progressing|terminating|canceling|hangup)", Required: true, Description: "Call status to test for."},
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
-	{Type: fmaction.TypeConditionDatetime, Summary: "Branch to a false target unless the current date/time matches the condition.", Options: []actionOptionField{
-		{Name: "condition", Type: "string (==|!=|>|>=|<|<=)", Required: true, Description: "Comparison operator."},
-		{Name: "minute", Type: "int (0-59)", Required: false, Description: "Minute component."},
-		{Name: "hour", Type: "int (0-23)", Required: false, Description: "Hour component."},
-		{Name: "day", Type: "int (1-31)", Required: false, Description: "Day of month."},
-		{Name: "month", Type: "int (1-12)", Required: false, Description: "Month."},
-		{Name: "weekdays", Type: "array of int (Sun=0..Sat=6)", Required: false, Description: "Allowed weekdays."},
+	{Type: fmaction.TypeConditionDatetime, Summary: "Branch to a false target unless the current date/time matches. The check runs in UTC. Each component given is compared on its own and all must hold, and the operator reads as: configured value <op> current value (so \">=\" with hour 9 is true until 09:xx UTC).", Options: []actionOptionField{
+		{Name: "condition", Type: "string (==|!=|>|>=|<|<=)", Required: true, Description: "Comparison operator, applied as: configured value <op> current value, for every component given."},
+		{Name: "minute", Type: "int (0-59, or -1 to ignore)", Required: false, Description: "Minute component in UTC. Left out it is compared as 0, so send -1 when the minute must not matter."},
+		{Name: "hour", Type: "int (0-23, or -1 to ignore)", Required: false, Description: "Hour component in UTC. Left out it is compared as 0, so send -1 when the hour must not matter."},
+		{Name: "day", Type: "int (1-31)", Required: false, Description: "Day of month in UTC. Left out or 0 it is ignored."},
+		{Name: "month", Type: "int (1-12)", Required: false, Description: "Month in UTC. Left out or 0 it is ignored."},
+		{Name: "weekdays", Type: "array of int (Sun=0..Sat=6)", Required: false, Description: "Allowed weekdays in UTC. Left out or empty it is ignored."},
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
 	{Type: fmaction.TypeConditionVariable, Summary: "Branch to a false target unless a flow variable matches the condition.", Options: []actionOptionField{
