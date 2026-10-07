@@ -95,14 +95,13 @@ func Test_processEventCMCallHangup_errorAndSkip(t *testing.T) {
 
 		event *sock.Event
 
-		// the expectation setup of one case: the loaded campaigncall, and what the handlers return.
-		getErr           error
-		handleReturnsCC  bool
-		handleErr        error
-		expectCampaign   bool
-		campaignErr      error
-		expectErr        bool
-		expectHandleCall bool
+		// the expectation setup of one case. the campaigncall handler is called whenever the campaigncall is found,
+		// and returns the loaded campaigncall (a skipped duplicate returns the stored one) or handleErr.
+		getErr         error
+		handleErr      error
+		expectCampaign bool
+		campaignErr    error
+		expectErr      bool
 	}{
 		{
 			name:  "campaigncall lookup fails, nothing else is called",
@@ -114,26 +113,21 @@ func Test_processEventCMCallHangup_errorAndSkip(t *testing.T) {
 			name:  "campaigncall handler fails, the campaign handler still runs with the loaded campaign id",
 			event: event,
 
-			expectHandleCall: true,
-			handleErr:        fmt.Errorf("could not done"),
-			expectCampaign:   true,
+			handleErr:      fmt.Errorf("could not done"),
+			expectCampaign: true,
 		},
 		{
 			name:  "campaigncall is skipped as already done, the campaign handler still runs",
 			event: event,
 
-			expectHandleCall: true,
-			handleReturnsCC:  true,
-			expectCampaign:   true,
+			expectCampaign: true,
 		},
 		{
 			name:  "campaign handler fails, the event is still handled",
 			event: event,
 
-			expectHandleCall: true,
-			handleReturnsCC:  true,
-			expectCampaign:   true,
-			campaignErr:      fmt.Errorf("could not stop"),
+			expectCampaign: true,
+			campaignErr:    fmt.Errorf("could not stop"),
 		},
 		{
 			name: "the data is not valid json",
@@ -164,20 +158,22 @@ func Test_processEventCMCallHangup_errorAndSkip(t *testing.T) {
 			ctx := context.Background()
 			cc := newCampaigncall()
 
-			if tt.expectErr {
-				// the data is not valid: no handler is called.
-			} else if tt.getErr != nil {
-				mockCampaigncall.EXPECT().GetByReferenceID(ctx, callID).Return(nil, tt.getErr)
-			} else {
-				mockCampaigncall.EXPECT().GetByReferenceID(ctx, callID).Return(cc, nil)
-			}
+			// the call handed to the campaigncall handler must be the one of the event.
+			isEventCall := gomock.Cond(func(c *cmcall.Call) bool { return c != nil && c.ID == callID })
 
-			if tt.expectHandleCall {
-				var handleRes *campaigncall.Campaigncall
-				if tt.handleReturnsCC {
-					handleRes = cc
+			switch {
+			case tt.expectErr:
+				// the data is not valid: no handler is called.
+			case tt.getErr != nil:
+				mockCampaigncall.EXPECT().GetByReferenceID(ctx, callID).Return(nil, tt.getErr)
+			default:
+				mockCampaigncall.EXPECT().GetByReferenceID(ctx, callID).Return(cc, nil)
+
+				handleRes := cc
+				if tt.handleErr != nil {
+					handleRes = nil
 				}
-				mockCampaigncall.EXPECT().EventHandleReferenceCallHungup(ctx, gomock.Any(), cc).Return(handleRes, tt.handleErr)
+				mockCampaigncall.EXPECT().EventHandleReferenceCallHungup(ctx, isEventCall, cc).Return(handleRes, tt.handleErr)
 			}
 			if tt.expectCampaign {
 				mockCampaign.EXPECT().EventHandleReferenceCallHungup(ctx, campaignID).Return(tt.campaignErr)
