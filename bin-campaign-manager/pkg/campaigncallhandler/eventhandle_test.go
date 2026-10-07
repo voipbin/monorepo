@@ -439,6 +439,9 @@ func Test_EventHandleReferenceCallHungup_alreadyDone(t *testing.T) {
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, expectRes.CustomerID, campaigncall.EventTypeCampaigncallUpdated, expectRes)
 			}
 
+			// the stored campaigncall is used by the caller afterwards, so a skip must not change it.
+			snapshot := *stored
+
 			res, err := h.EventHandleReferenceCallHungup(ctx, call, stored)
 			if tt.expectErr {
 				if err == nil || res != nil {
@@ -458,9 +461,12 @@ func Test_EventHandleReferenceCallHungup_alreadyDone(t *testing.T) {
 				return
 			}
 
-			// a skipped campaigncall returns the stored one.
+			// a skipped campaigncall returns the stored one, unchanged.
 			if res != stored {
 				t.Errorf("Wrong match. expect: the stored campaigncall, got: %v", res)
+			}
+			if !reflect.DeepEqual(*stored, snapshot) {
+				t.Errorf("Wrong match. expect: the stored campaigncall is not changed, got: %v, before: %v", *stored, snapshot)
 			}
 		})
 	}

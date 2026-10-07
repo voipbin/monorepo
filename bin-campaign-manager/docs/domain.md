@@ -110,4 +110,4 @@ stateDiagram-v2
     progressing --> done : call ended
 ```
 
-A campaigncall that is already `done` is not completed again by a later call hangup, so a late failed hangup (for example the failed finish of a call whose creation request errored) does not repeat the `campaigncall_updated` webhook or the outdial target update. The one exception is a late successful hangup after a recorded failure: it corrects the result to success and sets the outdial target to `done`.
+A campaigncall that is already `done` is not completed again by a later call hangup, so a late failed hangup does not repeat the `campaigncall_updated` webhook or the outdial target update. The one exception is a late successful hangup after a recorded failure: it corrects the result to success and sets the outdial target to `done`.
