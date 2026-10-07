@@ -1,6 +1,6 @@
 # VOIP-1569 transcribe 참조 리소스 조회 실패 시 nil 역참조 패닉 이슈 분석
 
-- 상태: Draft (이슈 분석 리뷰 1회차 대기)
+- 상태: Draft (이슈 분석 리뷰 2회차 대기, 1회차 반영)
 - 티켓: VOIP-1569
 - 기준: origin/main 49ec4a06d
 - 단계: 이슈 확인과 분석 (코드 변경 없음)
@@ -28,19 +28,20 @@
 
 ### 2.2 패닉이 나는 조건
 
-- `conferenceGet` (`conference.go:23`) 은 RPC 에러 시 `return nil, err` 를 반환한다.
-- `recordingGet` (`recording.go:30`) 은 RPC 에러 시 `return nil, err`, 삭제된 recording(`TMDelete != nil`)이면 `return nil, serviceerrors.ErrNotFound` 를 반환한다(recording.go:44-47).
+- `conferenceGet` (`conference.go:23` 선언, 33행) 은 RPC 에러 시 `return nil, err` 를 반환한다.
+- `recordingGet` (`recording.go:30` 선언, 40행) 은 RPC 에러 시 `return nil, err`, 삭제된 recording(`TMDelete != nil`)이면 `return nil, serviceerrors.ErrNotFound` 를 반환한다(recording.go:44-47).
 - 즉 존재하지 않는 id 뿐 아니라 삭제된 recording id, backend 일시 장애에서도 `tmpResource` 가 nil 이 되어 역참조 패닉이 난다.
 
 ### 2.3 패닉이 호출자에게 주는 결과
 
 - gin Recovery 가 복구해 500 으로 응답한다(운영 로그에서 확인). 프로세스는 유지된다.
-- 수정 후 기대 응답: `transcribeGetResourceInfo` 는 에러를 `fmt.Errorf("could not pass the reference validation: %w", err)` 로 감싸 반환하고, `server/error_translate.go:41` 의 `translateToVoipbinError` 는 1단계에서 `errors.As` 로 `*cerrors.VoipbinError` 를 그대로 통과시킨다. 따라서 call-manager 가 보낸 typed 에러(예: RECORDING_NOT_FOUND)는 래핑되어도 원래 4xx 로 응답된다. 삭제된 recording 의 `serviceerrors.ErrNotFound` 는 같은 함수의 2단계에서 404 `RESOURCE_NOT_FOUND` 로 매핑된다. 에이전트용 함수는 래핑 없이 에러를 반환하며 같은 매핑을 거친다.
+- 수정 후 기대 응답(조회 실패의 종류에 따라 404 등 해당 상태코드이며 항상 404 는 아니다. 예: backend 일시 장애는 503 계열로 매핑될 수 있다): `transcribeGetResourceInfo` 는 에러를 `fmt.Errorf("could not pass the reference validation: %w", err)` 로 감싸 반환하고, `server/error_translate.go:41` 의 `translateToVoipbinError` 는 1단계에서 `errors.As` 로 `*cerrors.VoipbinError` 를 그대로 통과시킨다. 따라서 call-manager 가 보낸 typed 에러(예: RECORDING_NOT_FOUND)는 래핑되어도 원래 4xx 로 응답된다. 삭제된 recording 의 `serviceerrors.ErrNotFound` 는 같은 함수의 2단계에서 404 `RESOURCE_NOT_FOUND` 로 매핑된다. 에이전트용 함수는 래핑 없이 에러를 반환하며 같은 매핑을 거친다.
 
 ### 2.4 운영 증거
 
 - bm-nyc-01 api-manager 컨테이너 로그: `panic recovered` 스택이 `transcribe.go:228`, `transcribe.go:159`, `server/transcribes.go:73` 을 가리킨다. 2026-10-06 22:49 UTC 부터 약 20초 동안 레플리카당 약 25회(api-validator 실행 중).
 - 같은 컨테이너 로그에 `RECORDING_NOT_FOUND` 에러가 있다. 시각 대조는 하지 않았으므로 관련성은 추정이다.
+- 호출 주체는 확정하지 않았다. api-validator 의 transcribes 관련 테스트(`tests/scenarios/generated/test_transcribes_generated.py`, `stt/test_stt_events.py`, `stt/test_stt_languages.py`)는 "POST /transcribes returns 500 consistently" 사유로 모듈 단위 skip 상태이므로, 이 시점의 요청은 skip 되지 않은 다른 테스트나 다른 클라이언트에서 왔을 수 있다.
 
 ### 2.5 기존 테스트 현황
 
@@ -69,11 +70,11 @@
 ## 5. 위험과 수용 사항
 
 - 동작 변화: 실패 조회가 500(패닉)에서 4xx 로 바뀐다. 이 변화는 의도한 것이며 클라이언트가 500 에 의존할 이유가 없다.
-- api-validator 의 STT 관련 테스트가 이 500 을 기대하고 있을 가능성이 있으나 확인하지 못했다. 수정 후 검증기 결과를 구현 단계에서 확인한다.
+- api-validator 영향(확인함): transcribes 관련 모듈은 위 500 사유로 skip 상태라 이번 수정으로 깨지지 않는다. skip 되지 않은 `stt/test_stt_api.py` 의 검증은 `[400, 422, 500]` 등 4xx 를 허용하므로 4xx 로 바뀌어도 통과한다. skip 해제는 이번 범위 밖이다(VOIP-1410 과 함께 판단).
 - 다른 서비스 영향 없음: api-manager 한 곳의 변경이며 API 계약, 이벤트, DB 변경이 없다.
 
 ## 6. 설계 단계로 넘길 사항
 
 - 테스트 케이스 설계(두 함수 4분기의 실패 케이스, 패닉이 아니라 에러 반환임을 단언, `break` 제거 시 패닉으로 실패하는지).
 - 반환 에러가 상위(`TranscribeStart`, `ServiceAgentTranscribeStart`)에서 4xx 로 매핑되는지 확인하는 테스트의 수준.
-- OpenAPI 에 해당 응답 코드(404)가 이미 문서화되어 있는지 확인.
+- OpenAPI: `bin-openapi-manager/openapi/paths/transcribes/main.yaml` 의 POST 응답은 200/400/401/409/500 이고 403, 404 가 없다. `service_agents/transcribes.yaml` 도 200, 500 뿐이다. 기존 403 도 미문서화인 선재 공백이라 이번 PR 에서 응답 코드를 추가할지 설계 단계에서 결정한다.
