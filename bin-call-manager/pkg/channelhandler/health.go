@@ -65,8 +65,11 @@ func (h *channelHandler) publishFakeEventChannelDestoryed(ctx context.Context, c
 		"channel_id": channelID,
 	})
 
+	// the event type is required: the subscribe handler routes the event by its type and drops an untyped event.
 	tmp := &ari.ChannelDestroyed{
-		Event: ari.Event{},
+		Event: ari.Event{
+			Type: ari.EventTypeChannelDestroyed,
+		},
 		Channel: ari.Channel{
 			ID: channelID,
 		},
@@ -81,6 +84,7 @@ func (h *channelHandler) publishFakeEventChannelDestoryed(ctx context.Context, c
 	}
 
 	if errEvent := h.reqHandler.CallPublishEvent(ctx, string(ari.EventTypeChannelDestroyed), "asterisk-proxy", "application/json", m); errEvent != nil {
+		log.Errorf("Could not publish the fake channel destroyed event. err: %v", errEvent)
 		return
 	}
 }

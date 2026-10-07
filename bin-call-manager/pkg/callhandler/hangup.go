@@ -32,6 +32,15 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Ca
 	log = log.WithField("call", c)
 	log.Debugf("Hanging up the call. call_id: %s, channel_id: %s", c.ID, cn.ID)
 
+	// the hangup has been done already (the health check or the channel health deadline may finish a call before
+	// the real ChannelDestroyed event arrives). a second run would overwrite the hangup info and repeat the
+	// notifications. the check is tm_hangup, not the status: a call that was forced to the hangup status by
+	// call-control has no tm_hangup and still needs the cleanup below.
+	if c.TMHangup != nil {
+		log.Infof("The call has hungup already. Skipping. call_id: %s, channel_id: %s", c.ID, cn.ID)
+		return c, nil
+	}
+
 	// remove the call bridge
 	if errDestroy := h.bridgeHandler.Destroy(ctx, c.BridgeID); errDestroy != nil {
 		// we don't care the error here. just write the log.

@@ -10,8 +10,27 @@
 | `external-media` requests fail with Asterisk error | Asterisk snoop channel creation failed; Asterisk WebSocket port not reachable | Verify `asterisk_ws_port` configuration; check Asterisk logs for snoop channel errors; verify network connectivity between call-manager pod and Asterisk |
 | High call create latency | MySQL slow queries on `calls` table; Redis cache miss storm | Check `call_create_total` and `receive_request_process_time` metrics; run `EXPLAIN` on slow queries; verify Redis is reachable |
 | Confbridge does not terminate when last call leaves | `no_auto_leave` flag is set, or `conference` type (does not auto-terminate) | Check confbridge `flags` and `type`; send explicit `/terminate` if stuck in `progressing` |
-| Calls orphaned after an Asterisk container died | Calls left in `progressing` status with no Asterisk channels | Use `call-control call update-status` to force `hangup` status. Call recovery (`/v1/recovery`, automatic recovery on container death) is disabled by default (VOIP-1553); enabling it is a gated crash test approved by the CEO, production use after the drain (VOIP-1560) |
+| Calls orphaned after an Asterisk container died | Calls left in `progressing` status with no Asterisk channels | Call recovery (automatic on container death, or `/v1/recovery`) moves the calls it can. For the rest, the channel health check declares the channel dead about 30 to 40 s after the container dies and runs the hangup for it (fake `ChannelDestroyed`); the call health check finishes a call about 30 to 40 s after its channel ended. If a call is still stuck, see "Stale non-final calls"; as a last resort use `call-control call update-status` to force `hangup` status (the real destroy event still runs the full cleanup for it, because the call has no `tm_hangup`) |
 | Outbound call fails immediately | All dial routes exhausted; outbound config codec mismatch | Check `call_outbound_whitelist_rejected_total` metric; verify `outbound_config` has valid routes; check route-manager for routing entries |
+
+## Stale non-final calls
+
+A call must end in `hangup`. Two health checks make sure of it, one per call (`callhandler/health.go`) and one per channel (`channelhandler/health.go`). Each checks every 10 s and acts after more than 2 failed checks, so a stuck call is finished about 30 to 40 s after its channel ended, or about 40 s after its creation when its channel row never appeared.
+
+- A `canceling` or `terminating` call whose channel ended, but whose `ChannelDestroyed` event was dropped (for example the event arrived before `StasisStart` and the channel type was still empty), is finished through `Hangup`: hangup reason `cancel`, `hangup_by` `local`.
+- A `dialing` or `canceling` call that never got a channel row (the channel create request failed) is finished as `failed` (`hangup_by` `local`) with the activeflow stopped. The groupcall is not notified: the groupcall caller already updates its counters on the create error.
+- A channel that stops answering Asterisk is ended by a fake `ChannelDestroyed` event, which runs `Hangup` for the call channel. The check cannot tell a dead Asterisk from a failing ARI request, so an ARI request outage that lasts longer than about 40 s while the event WebSocket still works can end live calls in the database (the media may continue) and mark their channels deleted; real events that arrive later do not change the finished calls.
+- `Hangup` returns at once for a call that has `tm_hangup`, so a late real `ChannelDestroyed` event does not hang up a finished call a second time. A call forced to the `hangup` status with `call-control` has no `tm_hangup` and still gets the full cleanup.
+
+Log lines that show the mechanism: `Exceeded max call health check retry count`, `Exceeded max channel health check retry count`, `The call has no channel. Hanging up the call.`, `The call has hungup already. Skipping.`
+
+Detection query (read-only). After each bin-call-manager or Asterisk deploy, check for calls that are not final after 2 hours (the longest answered call seen in 90 days was 3599 s):
+
+```sql
+SELECT status, COUNT(*) FROM call_calls WHERE tm_hangup IS NULL AND status <> 'hangup' AND tm_create < NOW() - INTERVAL 2 HOUR GROUP BY status;
+```
+
+A non-zero result means a case the health checks do not cover (a call forced to `hangup` with `call-control` has no `tm_hangup` by design and is excluded by the status condition). There is no periodic job that cleans such rows and no alert; add one only if this query returns rows again after this behavior is deployed. This does not look at `call_groupcalls`, whose call count a failed group member can leave above zero (existing behavior).
 
 ## Debugging Guide
 
@@ -109,7 +128,7 @@ followed with 16 more services on the same pattern; the remaining
 | `homer_whitelist` | `HOMER_WHITELIST` | _(empty)_ | Comma-separated IPs whose capture rows Homer excludes from the recovery query (the Kamailio outer interface). Call recovery reconstructs the dialog from the remaining rows and fails closed when copies of the same message differ, so this must exclude the hops that rewrite Contact or Record-Route |
 | `asterisk_ws_port` | `ASTERISK_WS_PORT` | `8088` | Asterisk WebSocket port for ARI/external-media connections |
 
-Call recovery always runs (no on/off setting). A recovered call logs `Switched the call to the recovery channel`. Expected noise during a switch: the old channel's late destroy after a switch, and a recovery leg the remote refused, each log `Could not get the call info from the db` (error) followed by consumer retries, because no call is owned by that channel.
+Call recovery always runs (no on/off setting). A recovered call logs `Switched the call to the recovery channel`. Expected noise during a switch: the old channel's late destroy after a switch (real, or the fake destroy that the channel health check publishes for the old channel), and a recovery leg the remote refused, each log `Could not get the call info from the db` (error), because no call is owned by that channel. The event is not redelivered: the asterisk-proxy event consumer logs a handler error and moves on.
 
 ## Prometheus Metrics
 
