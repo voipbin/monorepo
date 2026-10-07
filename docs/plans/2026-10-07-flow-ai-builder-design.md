@@ -1,8 +1,8 @@
-# VOIP-1573 Flow AI Builder 디자인 (v4)
+# VOIP-1573 Flow AI Builder 디자인 (v5)
 
-Jira: VOIP-1573. 상태: **디자인 리뷰 루프 진행 중.** 이력: 1회차 REQUEST_CHANGES, 2회차(A, B) 모두 REQUEST_CHANGES, 3회차(C, D) 모두 REQUEST_CHANGES. 연속 APPROVE 0.
+Jira: VOIP-1573. 상태: **디자인 리뷰 루프 진행 중.** 이력: 1~4회차 모두 REQUEST_CHANGES(4회차는 신규 리뷰어 E, F, Critical 0, High 각 2). 연속 APPROVE 0. 회차가 갈수록 지적 심각도와 건수가 줄고 있다(1회차 Critical 2 → 4회차 Critical 0).
 
-v4는 3회차 지적을 코드로 재검증해 반영하면서, **메타데이터를 한 구조체로 통합하고 투기적 검증을 걷어내는 방향으로 단순화**했다(3회차에서 리뷰어도 메타데이터 4종이 과하다고 지적). 처리 내역은 부록 A.
+v5는 4회차 지적을 코드로 재검증해 반영했다. 핵심 변경: 기존 `MapRequiredMediasByType`(액션별 적용 미디어) 활용, `ref`의 `optional`/`<kind>` 제거(경고는 `actioncatalog.Required`와 `ref` 종류의 교집합으로 계산), `/flow_builder/status` 폐기(기존 status 재사용), 43개 타입 분류 초안(부록 B). 처리 내역은 부록 A.
 
 ## 1. 문제와 확정 결정
 
@@ -40,10 +40,14 @@ var MetaByType = map[Type]Meta{ ... } // option_registry.go 옆, 같은 패턴
 
 **FlowKind** (실행이 다음으로 이어지는 방식, 코드 확인 결과)
 - `continue`: `next_id`가 있으면 그 액션, 없으면 **배열의 다음 원소**, 배열 끝이면 종료(`stackmaphandler.GetNextAction`). 대부분의 타입. 조건 액션(`condition_*`)도 true는 이 경로를 따르고 false만 `FalseTargetID`로 간다.
-- `terminate`: 실행 뒤 흐름이 이어지지 않는다(`stop`은 `ActionFinish` 푸시, `hangup`은 통화 종료). `next_id`가 있어도 무시한다.
+- `terminate`: **해당 액션이 실행되는 미디어에서** 실행 뒤 흐름이 이어지지 않는다(`stop`은 `ActionFinish` 푸시, `hangup`은 통화 종료). `next_id`가 있어도 무시한다.
 - `jump`: 대상이 옵션의 `ref:"action"` 필드로만 정해지고 `next_id`나 배열 인접으로 낙하하지 않는다(`branch`는 `ForwardActionID`를 강제하고 대상이 비면 `GetAction` 오류로 흐름 중단).
 
-값은 구현 시 실행 핸들러를 읽어 확정한다. 후보 판정은 코드로 확인했다: `stop`, `hangup` = terminate / `branch` = jump / 그 외 확인한 타입(`connect`, `queue_join`, `ai_summary`, `fetch_flow`, `fetch`, `block`, `talk`, `ai_talk`) = continue.
+값은 구현 시 실행 핸들러를 읽어 확정하며 43개 타입의 분류 초안은 부록 B에 있다. 코드로 확인한 판정: `stop`, `hangup` = terminate / `branch` = jump / 조건 액션, `connect`, `queue_join`, `ai_summary`, `fetch_flow`, `fetch`, `block`(외부 해제까지 대기하지만 해제 후 이어짐), `talk`, `ai_talk` = continue.
+
+**모델 밖의 타입**: `goto`는 `loop_count > 0`이면 대상으로 점프하고 `<= 0`이면 다음으로 진행하는 조건부 점프라 세 종류 어디에도 맞지 않는다. 새 종류를 만들지 않고 v1에서 `internal`로 둔다(에디터도 `next_id`를 보존하지 못한다). 결과로 재시도 루프("실패하면 다시 묻기")는 v1 빌더로 만들 수 없다. 실측으로 필요성이 확인되면 새 FlowKind를 도입한다.
+
+**적용 미디어**: 실행기는 액션 타입이 activeflow의 미디어와 맞지 않으면 그 액션을 **건너뛴다**(`execute.go` `verifyActionType`, 기존 레지스트리 `action.MapRequiredMediasByType`: RT = 통화, NRT = AI/API/대화/캠페인/webchat 등, ANY). 예: `hangup`은 RT 전용이라 대화 흐름에서는 건너뛰고 낙하한다. 따라서 `terminate`, `continue` 판정은 적용 미디어에서만 성립한다. 새 필드를 만들지 않고 이 기존 레지스트리를 카탈로그에 그대로 노출한다(4절, 3.3).
 
 ### 2.3 옵션 필드 참조 태그 (`ref`)
 
@@ -51,12 +55,12 @@ var MetaByType = map[Type]Meta{ ... } // option_registry.go 옆, 같은 패턴
 
 | 필드 | 태그 |
 |---|---|
-| `OptionGoto.TargetID`, `OptionBranch.DefaultTargetID`, `OptionBranch.TargetIDs`(map 값), 조건 액션의 `FalseTargetID` | `ref:"action"` (`DefaultTargetID`는 `ref:"action,optional"`) |
-| `AssistanceID`, `AIID`(deprecated), `FlowID`, `OnEndFlowID`, `ConferenceID`, `ConfbridgeID`, `ConversationID` 등 | `ref:"resource:<kind>"` |
-| `ai_summary.reference_id`(`OptionAISummary`의 사용자 입력, `reference_type`과 쌍), `hangup.reference_id`("이 통화 id와 같은 사유로 끊는다") | `ref:"resource:<kind>,optional"` |
+| `OptionGoto.TargetID`, `OptionBranch.DefaultTargetID`, `OptionBranch.TargetIDs`(map 값), 조건 액션의 `FalseTargetID` | `ref:"action"` |
+| `AssistanceID`, `AIID`(deprecated), `FlowID`, `OnEndFlowID`(`ai_summary`, `recording_start`, `transcribe_start`, `transcribe_recording`), `ConferenceID`, `ConfbridgeID`, `ConversationID`, `QueueID`류 | `ref:"resource"` |
+| `ai_summary.reference_id`(사용자 입력, `reference_type`과 쌍), `hangup.reference_id`("이 통화 id와 같은 사유로 끊는다") | `ref:"resource"` |
 
-- 3종 구분 중 `runtime`은 **없다.** 3회차 코드 확인에서 `reference_id` 두 곳 모두 사용자 입력이라 `resource`가 맞았다(`actionHandleAISummary`가 옵션값을 그대로 전달).
-- `ref:"action"`은 변환기가 label→UUID로 치환한다. `ref:"resource:*"`는 `IDEmpty`로 두고, optional이 아니면 "select" 경고를 만든다. `<kind>`는 경고 문구용이다.
+- 태그 값은 **두 종류뿐이다**: `action`, `resource`. 3회차 코드 확인에서 `reference_id` 두 곳 모두 사용자 입력이라 `resource`가 맞았다. 이전 안의 `optional` 접미사와 `<kind>`는 폐기한다(필수 여부는 `actioncatalog.Required`가 이미 갖고 있어 진실 원천이 둘이 되고, 실측에서 서로 충돌했다. 예: `ai_summary.reference_id`는 카탈로그 `Required: true`, `hangup.reference_id`와 `on_end_flow_id`와 `ai_id`는 `Required: false`).
+- **경고 규칙**: 비어 있는 `ref:"action"` 필드는 항상 `empty_action_ref: <label>.<field>`(`branch`, 조건 액션은 대상이 비면 실행 시 `GetAction` 오류로 흐름이 중단된다). 비어 있는 `ref:"resource"` 필드는 `actioncatalog`의 `Required: true`일 때만 `select_resource: <label>.<field>`(`Required: false`는 경고하지 않는다. 예: `hangup.reference_id`, `on_end_flow_id`, 폐기 예정 `ai_id`). `ref` 필드는 `missing_required`로 중복 보고하지 않는다.
 - 순회 형태: 스칼라 `uuid.UUID`, `map[string]uuid.UUID`(값). `[]uuid.UUID`/`*uuid.UUID`는 현재 0건이나 같은 규칙으로 처리한다.
 - **중첩 구조체/슬라이스 안의 UUID**(`OptionCall.Actions []Action`, `OptionEmailSend.Attachments []Attachment`의 `ReferenceID`)는 v1에서 지원하지 않는다. 리플렉션으로 이를 가진 타입을 감지해 **카탈로그에서 구조적으로 제외**하고, 제외된 타입 목록을 `TestBuilderExcludedTypes`의 기대값(현재 `call`, `email_send`)으로 고정해 변경이 눈에 띄게 한다. 타입 이름은 코드가 아니라 테스트 기대값에만 있다.
 - 최상위 UUID 필드에 태그가 없으면 `TestEveryUUIDFieldIsTagged`가 실패한다.
@@ -72,7 +76,7 @@ few-shot에 쓰는 타입 상수가 `TypeListAll`에 있고 `core`이며 프런�
 
 - `ChatRequest.supported_action_types: []string`은 **필수**다(신규 엔드포인트라 구버전 클라이언트가 없다). 생략, 빈 배열, 항목 수 100 초과, 항목 길이 64 초과는 `INVALID_ARGUMENT`. 프런트는 `Object.keys(nodeTypes)`에서 `start`를 뺀 값을 그대로 보낸다(정적 목록이며 별도의 런타임 왕복 검사는 두지 않는다).
 - 서버는 `MetaByType`에 없는 값을 무시하고, **노출 가능(core, sensitive) ∩ 요청 집합 ∩ 중첩 UUID로 제외되지 않은 타입**만 LLM 카탈로그와 검증에 사용한다. 교집합이 비면 `INVALID_ARGUMENT`.
-- **에디터 충실도**(에디터가 저장 시 의미를 보존하는가)는 런타임 검사가 아니라 두 곳으로 관리한다: (가) 보존하지 못하는 타입은 `Exposure=internal`로 선언한다(2.2). (나) 에디터의 분기 계열(`branch`, `condition_datetime`)에 대해 `initNodes → initEdges → getActions` 순서(`initEdges`는 노드를 만들지 않으므로 `initNodes`가 선행되어야 한다)로 `ref:"action"` 필드와 `next_id`가 복원됨을 확인하는 **고정 단위 테스트**를 square-admin에 둔다. 현재 이런 타입이 둘뿐이므로 이 테스트는 손으로 쓴 픽스처로 충분하다. 새 분기 타입이 에디터에 추가되면 같은 테스트에 픽스처를 더한다(PR 체크리스트).
+- **에디터 충실도**(에디터가 저장 시 의미를 보존하는가)는 런타임 검사가 아니라 두 곳으로 관리한다: (가) 보존하지 못하는 타입은 `Exposure=internal`로 선언한다(2.2). (나) 에디터의 분기 계열(`branch`, `condition_datetime`)에 대해 `initNodes → initEdges → getActions` 순서(`initEdges`는 노드를 만들지 않으므로 `initNodes`가 선행되어야 한다)로 `ref:"action"` 필드와 `next_id`가 복원됨을 확인하는 **고정 단위 테스트**를 square-admin에 둔다. 현재 이런 타입이 둘뿐이므로 이 테스트는 손으로 쓴 픽스처로 충분하다. **기대값 주의**: `getActions`는 `branch`의 default 엣지 대상을 `next_id`로도 채우므로(`action.js`) 저장 후 `branch`의 `next_id`는 `DefaultTargetID`와 같아진다. 테스트는 "변환기가 `branch`에 `next_id`를 만들지 않았다"와 "에디터 저장 후 `next_id == default_target_id`"를 구분해 검증한다. 새 분기 타입이 에디터에 추가되면 같은 테스트에 픽스처를 더한다(PR 체크리스트).
 - 조건 액션의 true 경로는 `next_id`(없으면 배열 인접)이고 에디터가 `condition_datetime`의 `next_id`를 보존함을 코드로 확인했다(`store.js`).
 
 ## 3. 와이어 모델
@@ -103,7 +107,7 @@ few-shot에 쓰는 타입 상수가 `TypeListAll`에 있고 `core`이며 프런�
 
 (예시의 타입과 옵션 이름은 구현 시 `actioncatalog` 실제 옵션과 대조해 few-shot 상수로 고정한다.)
 
-- `next`는 후속 label이며 생략하면 후속 없음. `jump` 종류 타입(`branch`)은 `next`를 쓰지 않는다. 쓰면 변환기가 무시하고 `next_ignored` 경고를 기록한다(판정은 메타의 FlowKind이며 타입 이름이 아니다).
+- `next`는 후속 label이며 생략하면 후속 없음. FlowKind가 `continue`가 아닌 타입(`jump`인 `branch`, `terminate`인 `hangup`/`stop`)은 `next`를 쓰지 않는다. 쓰면 변환기가 무시하고 `next_ignored` 경고를 기록한다(판정은 메타의 FlowKind이며 타입 이름이 아니다). 실행기도 `terminate`의 `next_id`를 따르지 않으므로 에디터에 죽은 간선이 그려지지 않게 한다.
 - 분기 대상 등 `ref:"action"` 값은 label 문자열 또는 생략. `ref:"resource:*"`는 null.
 
 ### 3.2 코드가 확정하는 변환 (서버, 순서 고정)
@@ -112,8 +116,8 @@ few-shot에 쓰는 타입 상수가 `TypeListAll`에 있고 `core`이며 프런�
 2. **타입 필터**: 노출 집합에 없는 타입의 노드를 삭제하고 `unsupported_action: <label>` 경고를 기록한다. 삭제 노드를 가리키던 참조(`next`, `ref:"action"` 값)는 삭제 노드의 `next` 체인을 따라 이어 붙인다(방문 집합으로 순환 차단, 이을 후속이 없으면 비움). 삭제 노드가 분기였다면 의미가 사라지므로 경고에 어느 참조가 어떻게 바뀌었는지(`rewired: <참조 label> -> <새 대상 또는 none>`)를 포함한다. `actions[0]`이 삭제되면 그 후속이 새 시작이 된다.
 3. 남은 노드에 새 UUID를 1:1 부여한다.
 4. `next` → `next_id`(없으면 `IDEmpty`). `ref:"action"` 값(스칼라, 맵 값)을 label→UUID로 치환한다. 알 수 없는 label은 `IDEmpty`로 비우고 `invalid_label_ref: <label>`을 기록한다(노드는 유지. 에디터에서 보완 가능).
-5. `ref:"resource:*"`는 `IDEmpty`로 두고, optional이 아니면 `select_resource: <label>.<field>`를 기록한다. null/생략은 모두 `IDEmpty`.
-6. **배열 순서**: 시작 노드부터 BFS 순으로 배열하되 **"열린 끝"(FlowKind가 `continue`이고 후속이 없는 노드)을 배열의 뒤쪽으로 미룬다**(낙하가 곧 종료가 되도록 마지막 원소로 보낸다). 열린 끝이 둘 이상이면 마지막이 아닌 노드마다 `open_end: <label>`을 기록한다(낙하로 의도치 않은 노드가 이어지기 때문이며 사용자가 에디터에서 연결을 완성해야 한다). 이 단계는 2~5가 끝난 최종 그래프를 기준으로 한다.
+5. `ref:"resource"`는 `IDEmpty`로 두고, 2.3의 경고 규칙에 따라 `select_resource: <label>.<field>`를 기록한다. null/생략은 모두 `IDEmpty`.
+6. **배열 순서**: 시작 노드는 항상 `actions[0]`이다(`IDStart`는 `Actions[0]`을 반환하므로 다른 규칙보다 우선한다). 나머지는 BFS 순으로 배열하되 **"열린 끝"(FlowKind가 `continue`이고 후속이 없는 노드)을 배열 뒤쪽으로 미룬다**(낙하가 곧 종료가 되도록 마지막 원소로 보낸다. 시작 노드가 열린 끝이면 노드가 하나뿐인 경우이므로 문제없다). 변환기는 후속이 있는 `continue` 노드의 `next_id`를 **항상 명시**하고 배열 인접 낙하에 의존하지 않는다. 낙하에 의존하는 것은 열린 끝뿐이다. 열린 끝이 둘 이상이면 마지막이 아닌 노드마다 `open_end: <label>`을 기록한다(그 노드는 다음 열린 끝으로 이어져 순차 실행되므로 사용자가 에디터에서 연결을 완성해야 한다). 열린 끝이 하나이고 마지막 원소인 경우는 정상 종료이며 경고하지 않는다. 사용자가 에디터에서 노드를 추가하면 `nodes[]` 끝에 붙어 마지막 열린 끝이 그 노드로 낙하할 수 있다. 이는 사람이 만든 Flow에도 동일한 에디터 특성이며 수용한다. 이 단계는 2~5가 끝난 최종 그래프를 기준으로 한다.
 7. **레이아웃**: 시작 `x=0, y=100`, 깊이마다 `y`를 500 증가, 같은 깊이는 `x`를 450 간격(템플릿과 같은 간격). 도달 불가 노드는 맨 오른쪽 열. 가상 `start` 좌표는 건드리지 않는다.
 8. 필터 후 노드가 0개이면 `draft`를 생략하고 `message`에 이유를 쓰며 `empty_draft`를 기록한다.
 9. 출력: `actions`(`[]Action`, `actions[0]`이 시작), `positions`, `labels`(`{id: label}`). `actions`와 `positions`는 에디터의 `setInitialActions`/`setInitialPositions`에 변환 없이 들어간다.
@@ -124,10 +128,11 @@ few-shot에 쓰는 타입 상수가 `TypeListAll`에 있고 `core`이며 프런�
 
 v1 검사 항목(기계적이고 비용이 낮은 것만):
 1. 끊어진 참조(존재하지 않는 id).
-2. 비어 있는 비optional `ref:"action"` 필드(`branch`에서는 실행 시 흐름이 중단되는 오류 경로) → `empty_action_ref`.
+2. 비어 있는 `ref:"action"` 필드(`branch`, 조건 액션 모두 대상이 비면 실행 시 `GetAction` 오류로 흐름이 중단) → `empty_action_ref`.
 3. 도달 불가 노드(`actions[0]`에서 후속 참조를 따라 닿지 않음) → `unreachable: <label>`.
 4. 열린 끝 낙하(3.2의 6번)와 리소스 참조 비움 목록.
-5. 필수 옵션 누락(`actioncatalog`의 `Required`).
+5. 필수 옵션 누락(`actioncatalog`의 `Required`, `ref` 필드 제외) → `missing_required: <label>.<field>`.
+6. **미디어 혼용**: 카탈로그의 `MapRequiredMediasByType`에서 RT 전용 타입과 NRT 전용 타입이 한 초안에 함께 있으면 `media_mixed` 경고(실행 시 한쪽이 건너뛰어진다). 트리거 채널은 초안에 없으므로 이 이상의 판정은 하지 않는다.
 
 **출구 없는 루프(강연결 성분) 탐지는 v1에서 뺀다.** 실행기에 `maxNextActionLoopCount` 안전장치가 있고 평가에서 실제 문제가 확인된 뒤 추가한다(Open Question 9).
 
@@ -136,8 +141,8 @@ v1 검사 항목(기계적이고 비용이 낮은 것만):
 Assistant Builder의 구성(역할, 핵심 차원, 인터뷰 행동 규칙, few-shot, 응답 JSON)을 같은 방식으로 따른다. 차이만 적는다.
 
 1. 역할: VoIPBin Flow를 설계하는 인터뷰어이자 컨설턴트. 핵심 차원: 트리거 채널, 성공 기준, 분기 조건, 실패/예외 시 동작.
-2. **능력 카탈로그는 매 요청마다 코드가 생성한다**(2.5의 교집합 + 각 타입의 Exposure/FlowKind). 설명 문구는 `actioncatalog`의 `actionCatalogEntry`(설명 필드, 현재 이름은 구현 시 확인)를 가져온다.
-3. 행동 규칙(전역 플래그가 아니다): `sensitive` 타입은 사용자가 대화에서 해당 동작을 말했을 때만 초안에 넣는다. 모든 경로는 `terminate` 타입으로 끝내거나 열린 끝은 하나만 둔다. `jump` 타입에는 `next`를 쓰지 않는다. 이 규칙은 LLM이 지키는 것이므로 코드가 사실을 확정하는 것은 `sensitive_nodes`의 구조화 표시와 검증기 경고까지다.
+2. **능력 카탈로그는 매 요청마다 코드가 생성한다**(2.5의 교집합 + 각 타입의 Exposure/FlowKind + `MapRequiredMediasByType`의 적용 미디어: 통화 전용, 비통화(AI/API/대화/캠페인/webchat) 전용, 공통). 설명 문구는 `actioncatalog`의 `actionCatalogEntry`(설명 필드, 현재 이름은 구현 시 확인)를 가져온다.
+3. 행동 규칙(전역 플래그가 아니다): 한 Flow에는 같은 미디어에서 실행되는 타입만 쓴다(통화 전용과 비통화 전용을 섞지 않는다. 섞이면 코드가 `media_mixed`로 표시한다). `sensitive` 타입은 사용자가 대화에서 해당 동작을 말했을 때만 초안에 넣는다. 모든 경로는 `terminate` 타입으로 끝내거나 열린 끝은 하나만 둔다. `jump` 타입에는 `next`를 쓰지 않는다. 이 규칙은 LLM이 지키는 것이므로 코드가 사실을 확정하는 것은 `sensitive_nodes`의 구조화 표시와 검증기 경고까지다.
 4. few-shot 2개(2.4의 상수로 보호), 초안 형식은 3.1.
 5. `message`와 경고는 마크다운 없는 평문. 사용자 화면 문구는 영어.
 6. **초안(`current_draft`)의 `option` 값은 매 턴 외부 LLM으로 전송된다.** Flow 패널 안내문에도 Assistant용과 같은 "do not include secrets"(웹훅 URL/헤더 등) 문구를 둔다.
@@ -147,24 +152,23 @@ Assistant Builder의 구성(역할, 핵심 차원, 인터뷰 행동 규칙, few-
 | Method | Path | 설명 |
 |---|---|---|
 | POST | `/flow_builder/chat` | `ChatRequest{messages, current_draft, supported_action_types}` → `ChatResponse{message, draft, draft_warnings, sensitive_nodes, assumptions}` |
-| GET | `/flow_builder/status` | `{available, max_messages, max_message_chars}` |
 
 - `draft = {actions, positions, labels}`. 클라이언트는 `current_draft`로 그대로 되돌려 보내고, 서버는 `labels`와 `actions`로 기호 그래프를 매 턴 결정적으로 재구성한다(UUID는 LLM에 보이지 않는다). BuilderPanel은 에디터 진입 전 패널이므로 사용자가 에디터에서 고친 그래프를 되돌려 보내는 경로는 없다. `positions`는 매번 재계산된다.
-- `draft_warnings`는 기존 Assistant Builder 패턴을 따른다: `key` 또는 `key: detail` 형식의 영어 키 문자열 배열이며 클라이언트가 키로 문구를 고른다. 키 목록: `duplicate_label`, `unsupported_action`, `rewired`, `invalid_label_ref`, `select_resource`, `open_end`, `empty_action_ref`, `unreachable`, `next_ignored`, `missing_required`, `empty_draft`, `sensitive_included`.
+- `draft_warnings`는 기존 Assistant Builder 패턴을 따른다: `key` 또는 `key: detail` 형식의 영어 키 문자열 배열이며 클라이언트가 키로 문구를 고른다. 키 목록: `duplicate_label`, `unsupported_action`, `rewired`, `invalid_label_ref`, `select_resource`, `open_end`, `empty_action_ref`, `unreachable`, `next_ignored`, `missing_required`, `media_mixed`, `empty_draft`.
 - `sensitive_nodes`: 노출된 `sensitive` 노드의 id 배열(신규 응답 필드, `omitempty`, OpenAPI `ChatResponse`에 추가). 프런트가 노드를 강조한다.
 - label 연속성은 보장되지 않는다(best effort). 저장 전이라 영향이 없다.
-- **와이어 상한**: 노드 수 `MaxFlowNodes = 60`(초기값, 미측정), `current_draft.actions` 개수 <= 60, `positions`/`labels` 항목 수는 `actions` 이하, 노드당 `option`은 직렬화 크기 상한(구현 시 정하고 `ValidateRequest`에 포함), `option` 중첩 깊이 상한. 메시지 수/길이는 Assistant Builder 상수를 공유한다. 검증은 `bin-ai-manager/models` 아래 flow builder 모델 패키지에 두어 api-manager와 ai-manager가 같은 `ValidateRequest`를 쓴다(기존 `models/builder` 패턴). **요청 본문 상한은 Assistant의 160KiB를 그대로 쓰지 않고** 최악 크기(60노드 x 옵션 상한 + 대화 이력 한도)를 계산해 정한다.
+- **와이어 상한**: 노드 수 `MaxFlowNodes = 60`(초기값, 미측정), `current_draft.actions` 개수 <= 60, `positions`/`labels` 항목 수는 `actions` 이하, 노드당 `option`은 직렬화 크기 상한(구현 시 정하고 `ValidateRequest`에 포함), `option` 중첩 깊이 상한. 메시지 수/길이는 Assistant Builder 상수를 공유한다. `ValidateRequest`의 총 룬 수 계산은 `current_draft`의 `option` 직렬화 문자열을 **포함**한다(그렇지 않으면 `MaxTotalRunes`가 `option`으로 우회된다). 초기값(미측정): 노드당 `option` 4KiB, `MaxFlowNodes` 60 → 초안 최대 약 240KiB, 대화 이력 최대 약 120KiB(40,000룬 x 3바이트), `positions`/`labels` 약 20KiB, 합계 약 380KiB이므로 본문 상한 초기값은 512KiB로 둔다(평가 하네스 실측 후 조정). 검증은 `bin-ai-manager/models` 아래 flow builder 모델 패키지에 두어 api-manager와 ai-manager가 같은 `ValidateRequest`를 쓴다(기존 `models/builder` 패턴). **요청 본문 상한은 Assistant의 160KiB를 그대로 쓰지 않는다.**
 
 ### 5.1 횡단 관심사 (실제 ai_builder 구현을 읽고 확인한 항목)
 
-- **RBAC**: `canUseBuilder`와 같은 규칙(로그인한 Agent + customer admin 또는 manager). `status`는 권한이 없으면 200과 `available:false`. Flow 생성 권한(`servicehandler/flow.go`: Admin|Manager)과 일치한다.
+- **RBAC**: `canUseBuilder`와 같은 규칙(로그인한 Agent + customer admin 또는 manager). 상태 조회는 기존 `GET /ai_builder/status`를 **재사용**한다(가용성은 같은 키 설정에 달려 있고 한도도 같으므로 별도 status를 만들면 RPC, 캐시 인스턴스, OpenAPI, 테스트가 불필요하게 늘어난다). 권한이 없으면 200과 `available:false`. Flow 생성 권한(`servicehandler/flow.go`: Admin|Manager)과 일치한다.
 - **처리 순서**: key → ValidateRequest → semaphore → 일일 한도 → LLM. 파싱 실패도 한도를 소비한다(Assistant와 동일).
-- **일일 한도 카운터**: `cachehandler.BuilderChatCountIncr`는 현재 고정 키 하나다. Flow용을 분리하려면 `CacheHandler` 인터페이스와 mock에 메서드를 추가하거나 `kind` 인자를 도입해야 한다(8절에 반영). 한도 값은 같은 기본값. 분리가 필요한지는 Open Question 7이다.
+- **일일 한도 카운터**: `cachehandler.BuilderChatCountIncr`는 현재 고정 키(`ai:builder:chat:count:%s`) 하나다. Flow용을 분리하면(Open Question 7) **Assistant의 키 문자열은 그대로 두고 Flow 키만 추가**한다(배포 시 진행 중인 일일 카운트가 초기화되지 않게). `CacheHandler` 인터페이스, mock, `cachehandler/builder_test.go`를 함께 갱신한다. 한도 값은 같은 기본값.
 - **세마포어와 설정**: `sem`과 `DailyLimit`은 `builderHandler` 인스턴스 필드(`builderhandler/main.go`)다. Flow 핸들러를 같은 인스턴스에 두거나 `sem`을 주입한다. `cmd/ai-manager/builder_wiring.go`, config(`ai_builder_*`)를 **그대로 공유**하며 새 플래그를 만들지 않는다.
 - **출력 토큰**: `MaxOutputTokens` 기본 4096은 60노드 JSON 초안에 부족할 수 있다. Flow용 값은 `Options`의 매개변수(플래그가 아니다)로 두고 평가 하네스 실측으로 정한다. LLM 타임아웃(40초, 검증 <= 50)도 실측 후 재확인한다.
 - **로깅 금지**: 본문, `current_draft`, 파싱 오류, 실패 오류 텍스트를 로그에 남기지 않는다(`option`에 민감값이 올 수 있다). 요청 로거 이전 라우팅, 오류를 응답으로만 변환, panic 복구 시 본문 제외를 Assistant와 같은 방식으로 적용한다. **`listenhandler`의 `isBuilderRoute`는 URI 완전 일치**이므로 Flow URI를 반드시 추가해야 이 보장이 적용된다. 센티널 문자열 테스트로 검증한다.
-- **타임아웃 순서**: LLM < RPC < 클라이언트. `BUILDER_TIMEOUT` 등 오류 reason 매핑과 `ERROR_COPY`는 재사용하되 문구에서 "assistant" 고정 표현을 일반화한다.
-- **메트릭, 서킷브레이커**: 기존 `ai_manager_builder_chat_total{result}`, `api_manager_builder_timeout_total`에 `kind`(assistant, flow) 라벨을 추가해 두 기능이 대시보드에서 섞이지 않게 한다. 서킷브레이커 리소스 키는 Flow용(`ai/flow_builder/chat`)을 새로 둔다.
+- **타임아웃 순서**: LLM < RPC < 클라이언트. `BUILDER_TIMEOUT` 등 오류 reason 매핑은 재사용한다. 서버 쪽 오류 문구(`mapBuilderRPCError`, ai-manager의 "assistant builder" 문자열)와 프런트 `ERROR_COPY`에서 "assistant" 고정 표현을 일반화하거나 kind별로 분리한다.
+- **메트릭, 서킷브레이커**: Assistant 전용 이름인 `ai_manager_builder_chat_total{result}`, `builder_chat_duration_seconds`, `builder_tokens_total`, `RecordPanic`, 그리고 라벨 없는 plain Counter인 `api_manager_builder_timeout_total`, `api_manager_builder_circuit_open_total`에 `kind`(assistant, flow) 라벨을 추가한다(plain Counter는 Vec 전환 필요). 기존 대시보드와 알림 쿼리는 `kind` 미지정 시 합산되므로 호환되지만 두 문서(`bin-ai-manager/docs/operations.md`, `bin-api-manager/docs/operations.md`)의 지표 표를 갱신한다. 서킷브레이커 리소스 키는 Flow용(`ai/flow_builder/chat`)을 새로 둔다.
 - **문서/인터페이스**: `bin-api-manager/docs/routing.md`, `bin-ai-manager/docs/operations.md`, `servicehandler/main.go` 인터페이스와 mock 갱신.
 
 ## 6. 프런트엔드 통합
@@ -176,12 +180,12 @@ Assistant Builder의 구성(역할, 핵심 차원, 인터뷰 행동 규칙, few-
   - 패널 안내문, `TOOLS_NOTE`, 초안 렌더를 슬롯으로 주입한다.
   - 두 대화가 서로 덮어쓰지 않도록 세션 키를 분리한다. sessionStorage에는 Assistant 초안(`init_prompt`)과 같은 수준으로 Flow 초안이 저장된다(안내문의 secrets 경고로 갈음).
   - 기존 `ais/builder/__tests__`의 이동과 회귀 검증을 포함한다(8절에 파일 단위 목록으로 구현 시 작성). 공용화가 과하다고 판단되면 Flow 전용 얇은 사본이 대안이며 착수 시 비용 비교를 제시한다.
-- **초안 적용**: `setInitialActions(draft.actions)`, `setInitialPositions(draft.positions)`와 `setGraphKey(k => k + 1)`로 재마운트한다(`ActionGraph`는 `!isInitialized`일 때 한 번만 초기화). 이미 편집 중이면 덮어쓰기 전에 `ConfirmDialog`를 띄운다. "편집 중" 판정은 현재 그래프 노드 수가 0보다 크면 편집 중으로 본다(dirty 추적을 새로 만들지 않는다). 이름/설명 입력은 건드리지 않는다.
+- **초안 적용**: `setInitialActions(draft.actions)`, `setInitialPositions(draft.positions)`와 `setGraphKey(k => k + 1)`로 재마운트한다(`ActionGraph`는 `!isInitialized`일 때 한 번만 초기화). 이미 편집 중이면 덮어쓰기 전에 `ConfirmDialog`를 띄운다. "편집 중" 판정은 `graphRef.current?.getActionsData()`의 노드 수가 0보다 큰지로 하며 **try/catch로 감싼다**(`getActionsData`는 그래프가 초기화되기 전에는 예외를 던진다). ref가 null이거나 예외이면 편집 중이 아닌 것으로 본다. `initialActions.length`는 사용자가 에디터에서 직접 추가한 노드를 놓치므로 쓰지 않는다. dirty 추적은 새로 만들지 않는다. 모바일 요약 화면에서도 같은 store를 읽으므로 동작한다. 이름/설명 입력은 건드리지 않는다.
 - **방어**: `actions`에 `nodeTypes`에 없는 타입이 있으면 주입을 중단하고 영문 안내를 표시한다(서버가 이어 붙이기를 담당하므로 프런트는 고치지 않고 거부).
 
 ## 7. sensitive 노출 정책
 
-v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노출하고, 초안에 포함되면 `sensitive_nodes`에 노드 id를 담고 `draft_warnings`에 `sensitive_included: <label list>`를 추가한다. 프롬프트 규칙은 사용자가 말한 동작만 넣게 한다(LLM 준수 사항이며 코드가 보증하는 것은 표시까지다). 비노출로 정하면 콜백, 아웃바운드 캠페인처럼 핵심 시나리오를 만들 수 없으므로 노출을 권고한다. 결정은 대표님 몫이다(Open Question 1).
+v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노출하고, 초안에 포함되면 `sensitive_nodes`에 노드 id를 담는다(구조화 필드 하나만 둔다. 같은 사실을 경고 문자열로 중복하지 않으며, 패널이 `sensitive_nodes`가 비어 있지 않을 때 고정 영문 안내와 노드 강조를 표시한다). 프롬프트 규칙은 사용자가 말한 동작만 넣게 한다(LLM 준수 사항이며 코드가 보증하는 것은 표시까지다). 비노출로 정하면 콜백, 아웃바운드 캠페인처럼 핵심 시나리오를 만들 수 없으므로 노출을 권고한다. 결정은 대표님 몫이다(Open Question 1).
 
 실행 시점 게이트: 저장 전에는 Flow가 없으므로 초안은 실행되지 않는다. 저장된 Flow 실행 시 비용/권한 게이트는 하위 서비스 책임이다. `fetch`/`webhook_send`의 URL 검증은 구현 시작 전 코드를 읽고 결과를 PR 본문에 적는다(Open Question 8).
 
@@ -190,10 +194,10 @@ v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노
 | 서비스 | 변경 |
 |---|---|
 | bin-flow-manager | `models/action`: `Meta`/`MetaByType`, `ref` 태그, drift-lock 테스트 3종(`TestMetaCoversAllTypes`, `TestEveryUUIDFieldIsTagged`, `TestBuilderExcludedTypes`) |
-| bin-ai-manager | `pkg/builderhandler`에 flow 전용 chat 핸들러, 변환기, 검증기, 프롬프트. `models`에 flow builder 요청/응답/검증. `listenhandler` 라우트와 `isBuilderRoute`, `cachehandler`(카운터 kind) + mock, `cmd/ai-manager/builder_wiring.go`, 평가 하네스, `docs/operations.md` |
+| bin-ai-manager | `pkg/builderhandler`에 flow 전용 chat 핸들러, 변환기, 검증기, 프롬프트. `models`에 flow builder 요청/응답/검증. `listenhandler` 라우트와 `isBuilderRoute`, `cachehandler`(Flow 카운터 키 추가, Assistant 키 유지) + mock + `builder_test.go`, 메트릭 `kind` 라벨 전환, `cmd/ai-manager/builder_wiring.go`, 평가 하네스, `docs/operations.md` |
 | bin-common-handler | `requesthandler`에 flow builder RPC(`ai_builder.go` 패턴, 서킷 키 분리) |
 | bin-api-manager | `server/flow_builder.go`, `servicehandler/flow_builder.go`, `servicehandler/main.go` 인터페이스와 mock, 상태 캐시, 메트릭, `docs/routing.md` |
-| bin-openapi-manager | `paths/flow_builder/chat.yaml`, `status.yaml`, `openapi.yaml` 라우트 등록, `gen.go` 재생성 |
+| bin-openapi-manager | `paths/flow_builder/chat.yaml`, `openapi.yaml` 라우트 등록, `gen.go` 재생성. 응답 스키마에 `sensitive_nodes`와 Flow 경고 키 목록 설명 추가. OpenAPI 설명의 "not released / no on-off setting" 문구는 Assistant Builder의 현재 문구 정책을 그대로 따른다 |
 | square-admin | 스토어 팩토리화, 패널 슬롯화, 테스트 이동, flows_create.js 진입점, 에디터 분기 계열 단위 테스트 |
 
 ## 9. 평가 (수용 기준)
@@ -204,7 +208,8 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 3. **결정론 검사(LLM 판정 불필요)**: 끊어진 참조 0, 도달 불가 0, `open_end` 경고와 실제 열린 끝 1:1, `select_resource` 경고와 비어 있는 리소스 필드 1:1.
 4. **메타데이터 변이 테스트**: `TypeListAll`에 새 타입을 추가하고 `MetaByType`/태그를 빼면 CI가 실패하는지 확인한다.
 5. 프런트 분기 계열 왕복 단위 테스트(2.5).
-6. Flow 초안 크기 실측(출력 토큰, 본문 크기, 지연)을 5.1의 값 결정에 사용한다.
+6. v1 범위 밖 확인: 재시도 루프(`goto` 기반) 시나리오는 빌더가 만들 수 없으며(2.2) 평가 시나리오에서 제외하고 "지원 범위 밖" 응답을 확인한다.
+7. Flow 초안 크기 실측(출력 토큰, 본문 크기, 지연)을 5.1의 값 결정에 사용한다.
 
 ## 10. 보안 / 블라스트 레디어스
 
@@ -218,7 +223,7 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 |---|---|---|---|
 | 1 | `sensitive` 노출(코드 상수 결정) | 노출 + 구조화 표시와 경고. 비노출 시 아웃바운드 시나리오 불가 | 대표님 |
 | 2 | 리소스 ID 목록 주입 | v1 비움 + 경고, 주입은 후속 | 대표님 |
-| 3 | `ref` 태깅 범위 | 해결: 43개 전수 태깅 | 확정 제안 |
+| 3 | `ref` 태깅 범위 | 해결: UUID 필드를 가진 모든 타입에 태깅 | 확정 제안 |
 | 4 | 한도/오류코드 공유 | `models` 공유, 신규 flow builder 모델 패키지 | 대표님 |
 | 5 | `ref` 태그를 `describe_action` 카탈로그에 반영 | 범위 밖 | 대표님 |
 | 6 | 노출 타입 집합 | 고정 목록 없이 `Exposure` ∩ 프런트 목록 ∩ 구조 제외 | 해결 |
@@ -236,6 +241,24 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 
 ## 부록 A. 처리 내역
 
+### 4회차 (E, F 모두 REQUEST_CHANGES), 코드 재검증
+| 지적 | 재검증 | 처리 |
+|---|---|---|
+| E-H1 `verifyActionType`의 미디어 스킵(예: `hangup`은 RT 전용이라 대화 흐름에서 건너뜀), 기존 `MapRequiredMediasByType` 누락 | **사실.** `execute.go` `verifyActionType`과 `action.go`의 레지스트리 확인 | 2.2 적용 미디어, 4절 카탈로그, 3.3의 `media_mixed`. 새 메타 필드는 만들지 않음 |
+| E-H2 `optional` 태그와 `actioncatalog.Required` 충돌 | **사실.** 카탈로그: `ai_summary.reference_id` Required true, `hangup.reference_id`와 `on_end_flow_id`와 `ai_id` Required false | `optional`, `<kind>` 폐기. 경고는 `ref` 종류와 `Required`로 계산(2.3) |
+| E-M1 `goto`는 모델 밖 | **사실.** `loop_count <= 0`이면 진행 | 2.2에 명시, 재시도 루프 v1 제외, 9절에 기재 |
+| E-M2 terminate의 `next` 무시 | **사실.** | `next_ignored` 일반화(3.1) |
+| E-M3 시작 노드 고정 규칙, 열린 끝 연쇄 | 타당 | 3.2의 6번 |
+| E-M4 43개 타입 표 | 타당 | 부록 B |
+| E-L1, F-H2 `getActions`가 `branch`의 `next_id`를 채움, 낙하 의존 | **사실.** | 2.5 기대값 명시, 3.2의 6번에서 `next_id` 항상 명시하고 낙하 의존은 열린 끝뿐임을 밝히고 수용 |
+| F-H1 편집 중 판정 경로 | **사실.** `getActionsData`는 미초기화 시 예외 | 6절 try/catch |
+| F-M1 카운터 키 호환 | **사실.** | 5.1 |
+| F-M2 메트릭 전환 범위 | **사실.** plain Counter 2개 | 5.1 |
+| F-M3 `/flow_builder/status` 불필요 | 타당 | 폐기, 기존 status 재사용(5, 5.1, 8절) |
+| F-M4 `sensitive_nodes`와 경고 중복 | 타당 | 경고 제거, 구조화 필드만 유지(7절) |
+| F-M5 `ValidateRequest`의 룬 계산과 본문 산식 | 타당 | 5절 초기값과 산식 |
+| F-L2, L3 서버 오류 문구, OpenAPI 설명 정책 | 타당 | 5.1, 8절 |
+
 ### 3회차 (C, D 모두 REQUEST_CHANGES), 코드 재검증
 | 지적 | 재검증 | 처리 |
 |---|---|---|
@@ -244,7 +267,7 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 | C-H2 낙하 모델이 branch/goto/condition에서 틀림 | **사실.** `branch`는 낙하하지 않음, `goto`는 `loop_count <= 0`이면 다음으로 진행 | FlowKind 3종으로 모델링(2.2, 3.3), `goto` 제외 |
 | C-H3 `email_send` 첨부(`Attachments []Attachment`)의 `ReferenceID` 누락 | **사실.** `models/email/main.go`에 슬라이스 존재 | 중첩 UUID 타입은 구조적 제외 + 기대값 테스트(2.3) |
 | C-H4 `Terminates` 값 미확정 | 후보를 코드로 확정(`stop`, `hangup`) | 2.2에 후보 판정 기재, 구현 시 최종 확정 |
-| C-M1 `ai_summary.reference_id`를 runtime으로 분류한 근거 약함 | **사실.** 사용자 입력 옵션(`reference_type`과 쌍) | `runtime` 분류 삭제, `resource ... optional`(2.3) |
+| C-M1 `ai_summary.reference_id`를 runtime으로 분류한 근거 약함 | **사실.** 사용자 입력 옵션(`reference_type`과 쌍) | `runtime` 분류 삭제, `resource`로 분류(2.3) |
 | C-M2 3.2의 6번 대상 그래프 시점 | 타당 | 2~5 이후의 최종 그래프 기준 명시, 열린 끝은 뒤로 미룸 |
 | C-M4/D-M1/M2 메타 4종, required 전수 도입, 과함 | 타당 | `Meta` 단일 레지스트리, `required` 태그 폐기하고 `actioncatalog.Required` 재사용, 루프 탐지 v1 제외 |
 | C-L1 예시 변수명 | **사실.** 기본 변수는 `voipbin.call.digits` | 3.0, 3.1 수정 |
@@ -258,3 +281,53 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 
 ### 1, 2회차 요약
 평탄 `[]Action` + `positions` 와이어, `actions[0]` 시작 노드, 배열 낙하 반영, 프런트 실측 수치 39/43, graphKey 재마운트, 노드 수 상한, 횡단 관심사 보강 등을 v2, v3에서 반영했다. 상세 이력은 git 이력에 있다.
+
+## 부록 B. 43개 타입 분류 초안 (구현 1단계에서 각 실행 핸들러를 읽어 확정)
+
+적용 미디어는 `MapRequiredMediasByType`의 값이다(RT = 통화, NRT = 비통화, ANY = 공통). `확인`은 이번 설계 리뷰에서 핸들러를 읽어 확정한 항목이다. 나머지는 초안이며 구현 PR의 리뷰 대상이다. `TypeEmpty`는 `TypeListAll`에 없고 `MapRequiredMediasByType`에만 있으므로 `TestMetaCoversAllTypes`는 `TypeListAll`을 기준으로 한다.
+
+| 타입 | Exposure | FlowKind | 미디어 | 비고 |
+|---|---|---|---|---|
+| amd | core | continue | RT | |
+| answer | core | continue | RT | |
+| ai_summary | sensitive | continue | NRT | LLM 비용. 확인: 스택 푸시 후 복귀 |
+| ai_talk | sensitive | continue | ANY | LLM 비용 |
+| ai_task | sensitive | continue | NRT | LLM 비용 |
+| beep | core | continue | RT | |
+| block | core | continue | NRT | 확인: 외부 해제까지 대기 후 이어짐 |
+| branch | core | jump | ANY | 확인 |
+| call | (제외) | continue | ANY | 중첩 `[]Action`으로 구조 제외 |
+| case_create | core | continue | ANY | |
+| condition_call_digits | core | continue | RT | 확인: false는 `FalseTargetID` |
+| condition_call_status | core | continue | RT | 확인 |
+| condition_datetime | core | continue | ANY | 확인 |
+| condition_variable | core | continue | ANY | 확인 |
+| confbridge_join | core | continue | RT | |
+| conference_join | core | continue | RT | |
+| connect | sensitive | continue | RT | 확인: 아웃바운드 콜 생성, 복귀 |
+| conversation_send | sensitive | continue | ANY | 외부 전송 |
+| digits_receive | core | continue | RT | |
+| digits_send | core | continue | RT | |
+| echo | internal | continue | RT | 테스트용 |
+| email_send | (제외) | continue | ANY | 중첩 첨부로 구조 제외, sensitive |
+| external_media_start | internal | continue | RT | |
+| external_media_stop | internal | continue | RT | |
+| fetch | sensitive | continue | ANY | 외부 호출. 확인: 스택 푸시 후 복귀 |
+| fetch_flow | core | continue | ANY | 확인: 스택 푸시 후 복귀 |
+| goto | internal | (모델 밖) | ANY | 확인: 조건부 점프, 에디터 `next_id` 무시 |
+| hangup | core | terminate | RT | 확인 |
+| message_send | sensitive | continue | ANY | 외부 전송 |
+| mute | core | continue | RT | |
+| play | core | continue | RT | |
+| queue_join | core | continue | RT | 확인: 스택 푸시 후 복귀 |
+| recording_start | core | continue | RT | |
+| recording_stop | core | continue | RT | |
+| sleep | core | continue | RT | |
+| stop | core | terminate | ANY | 확인: `ActionFinish` 푸시 |
+| stream_echo | internal | continue | RT | 테스트용 |
+| talk | core | continue | RT | |
+| transcribe_start | sensitive | continue | RT | STT 비용 |
+| transcribe_stop | core | continue | RT | |
+| transcribe_recording | sensitive | continue | ANY | STT 비용 |
+| variable_set | core | continue | ANY | |
+| webhook_send | sensitive | continue | ANY | 외부 전송 |
