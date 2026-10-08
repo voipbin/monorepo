@@ -269,3 +269,26 @@ the very first turn exceed the cap, silently disabling listening turns.
 - The output budget is a code constant, `8192` tokens (an Assistant turn uses `ai_builder_max_output_tokens`, default `4096`); both are not measured. Raise `ai_builder_max_output_tokens` above `8192` and the Flow Builder uses that value.
 - The circuit breaker in api-manager is per RPC queue (`bin-manager.ai-manager.request`), so Flow turns share it with every other ai-manager RPC. A Flow turn that times out counts toward the same five failures. Watch `ai_manager_flow_builder_chat_total{result="llm_error"}` against the total before relying on it.
 - Logs never carry the conversation, the draft or an option value; a draft option can hold anything the user typed.
+
+### Reading a Flow Builder model call (VOIP-1576)
+
+Every Flow turn that reaches the model writes one Info line, `The flow builder model call finished.`, in addition to the existing `The flow builder turn did not succeed.` line on a failure (the two share the same `customer_id`). A request that was refused before the model (no key, invalid request, no usable type, busy, counter failure, daily limit) writes no such line. Metrics are unchanged.
+
+The line carries counts, sizes, durations, flags, configured constants and fixed classes only, never any conversation text, answer, draft content, prompt, schema or provider error text:
+
+| Field | Meaning |
+|---|---|
+| `outcome` | `ok`; `timeout` (the handler's own `ai_builder_llm_timeout_seconds` deadline); `llm_timeout` (the caller's context deadline, a different thing); `truncated` (finish reason length); `invalid_response`; `llm_<code>` (`canceled`, `auth`, `rate_limit`, `provider_5xx`, `provider_4xx`, `other`); `error` (defensive) |
+| `invalid_kind` | Only for `invalid_response`: `nil_response`, `no_choices` or `unparsable` |
+| `elapsed_ms` | The provider call alone |
+| `build_ms` | Building the prompt, schema and messages |
+| `pre_call_ms` | Request validation, the non-blocking concurrency check and the Redis counter, before the model call |
+| `chat_ms` | The whole turn up to this line |
+| `finish_reason` | `stop`, `length`, `content_filter`, `tool_calls`, `function_call`, `other`, or `none` when the finish reason is empty (no answer arrived, or the provider sent none) |
+| `prompt_tokens`, `completion_tokens` | Usage, 0 when the provider did not answer |
+| `response_chars`, `system_chars`, `request_chars`, `schema_bytes` | Sizes (runes, bytes for the schema). `request_chars` includes the system prompt, the history and the current draft block |
+| `allowed_types`, `user_turns`, `history_messages`, `current_draft_present` | Shape of the request. `current_draft_present` is true whenever the request carried a current draft, even an empty one |
+| `has_draft`, `draft_discarded`, `empty_draft` | Only for `ok`: a draft was returned; the draft was dropped (it was not an object, had no usable node, or had more nodes than the limit); a draft was decoded but no node (or no start node) survived the type filter |
+| `model`, `reasoning_effort`, `max_tokens`, `llm_timeout_ms`, `json_mode` | The settings in force |
+
+How to read the timeout case: `outcome=timeout` with `completion_tokens=0` means no answer arrived before the deadline, which cannot tell a provider that is not answering from a long generation. A `truncated` line with `completion_tokens` near `max_tokens` points to a runaway completion; `llm_rate_limit` and `llm_provider_5xx` point to the provider. If the timeout case stays ambiguous, raise `AI_BUILDER_LLM_TIMEOUT_SECONDS` (at most 50) as a temporary experiment and read `completion_tokens` of the calls that then finish. The setting is not in `bin-ai-manager/komodo/docker-compose.yml`, so it takes a compose change and a deploy (a non-Swarm Compose deploy has no rolling update, so both replicas are recreated together; see the repository's `docs/workflows/manager-replica-scaling.md`).
