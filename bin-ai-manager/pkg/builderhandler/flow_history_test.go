@@ -111,3 +111,64 @@ func Test_FlowChat_nextTurnOfADraftConversation(t *testing.T) {
 		t.Errorf("Wrong match. expect: the current draft in the facts block, got: %q", got[3].Content)
 	}
 }
+
+// A real follow-up has several assistant turns. Every one is wrapped, every
+// user turn is as typed, only the last user turn carries the facts block, and
+// the system prompt is not wrapped.
+func Test_FlowChat_everyAssistantTurnIsWrapped(t *testing.T) {
+	req := flowChatReq()
+	req.Messages = []flowbuilder.Message{
+		{Role: flowbuilder.RoleUser, Content: "  first  "},
+		{Role: flowbuilder.RoleAssistant, Content: "  question one \n"},
+		{Role: flowbuilder.RoleUser, Content: "second"},
+		{Role: flowbuilder.RoleAssistant, Content: "question two"},
+		{Role: flowbuilder.RoleUser, Content: "third"},
+	}
+	got := sentMessages(t, req)
+	if len(got) != 6 {
+		t.Fatalf("Wrong match. expect: 6 messages, got: %d", len(got))
+	}
+	if got[0].Role != openai.ChatMessageRoleSystem || strings.HasPrefix(got[0].Content, "{") {
+		t.Errorf("Wrong match. expect: the unwrapped system prompt, got: %.40q", got[0].Content)
+	}
+	if v := decodeMessageOnly(t, got[2].Content); v != "  question one \n" {
+		t.Errorf("Wrong match. expect: the text untouched, got: %q", v)
+	}
+	if v := decodeMessageOnly(t, got[4].Content); v != "question two" {
+		t.Errorf("Wrong match. expect: %q, got: %q", "question two", v)
+	}
+	for _, i := range []int{1, 3} {
+		if strings.Contains(got[i].Content, "User message:") {
+			t.Errorf("Wrong match. expect: the facts block only on the last user turn, got it on %d", i)
+		}
+	}
+	if got[1].Content != "  first  " || got[3].Content != "second" {
+		t.Errorf("Wrong match. expect: earlier user turns as typed, got: %q, %q", got[1].Content, got[3].Content)
+	}
+	if !strings.Contains(got[5].Content, "User message:\nthird") {
+		t.Errorf("Wrong match. expect: the facts block before the last turn, got: %q", got[5].Content)
+	}
+}
+
+// Characters that JSON escapes or that are not valid text.
+func Test_FlowAssistantTurn_characters(t *testing.T) {
+	tests := []struct {
+		name, in, wantDecoded, wantContains string
+	}{
+		{"tab and control", "a\tb\x01c", "a\tb\x01c", `\t`},
+		{"line separators", "a\u2028b\u2029c", "a\u2028b\u2029c", `\u2028`},
+		{"invalid utf-8 is replaced", "a\xffb", "a\ufffdb", ""},
+		{"html characters stay", "a&b<c>", "a&b<c>", "a&b<c>"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := flowAssistantTurn(tt.in)
+			if v := decodeMessageOnly(t, got); v != tt.wantDecoded {
+				t.Errorf("Wrong match. expect: %q, got: %q", tt.wantDecoded, v)
+			}
+			if !strings.Contains(got, tt.wantContains) || strings.HasSuffix(got, "\n") {
+				t.Errorf("Wrong match. expect: %q inside and no trailing newline, got: %q", tt.wantContains, got)
+			}
+		})
+	}
+}

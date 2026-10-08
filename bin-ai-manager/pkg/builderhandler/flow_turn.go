@@ -234,11 +234,11 @@ func flowAssistantTurn(message string) string {
 	return strings.TrimRight(raw.String(), "\n")
 }
 
-// flowMessages builds the model input: the system prompt, the history (assistant
-// turns as {"message": ...}), and a
-// data block prefixed to the last user message. The block carries facts the
-// code established (turn count, whether a draft exists, the current draft as
-// a label graph), stated as data and not instructions.
+// flowMessages builds the model input: the system prompt, the history
+// (assistant turns as {"message": ...}), and a data block prefixed to the last
+// user message. The block carries facts the code established (turn count,
+// whether a draft exists, the current draft as a label graph), stated as data
+// and not instructions.
 func flowMessages(system string, req *flowbuilder.ChatRequest) []openai.ChatCompletionMessage {
 	turns := 0
 	for _, m := range req.Messages {

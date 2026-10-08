@@ -71,7 +71,7 @@ So in all three triggers (fixed phrase, change request, approval of a summary) w
 ## 3. Implementation plan
 
 1. `bin-ai-manager/pkg/builderhandler/flow_turn.go`: in `flowMessages`, encode assistant history entries as `{"message": content}` (a small helper, HTML escaping off) and keep user entries as they are. Update the doc comment of `flowMessages`.
-2. Tests in `flow_diag_test.go` (or a new `flow_messages_test.go`), reached through the real `Chat` path with the recording sender so the request that is sent is what is checked:
+2. Tests in `flow_history_test.go`, reached through the real `Chat` path with the recording sender so the request that is sent is what is checked:
    - an assistant turn with Korean text, a double quote, a backslash, a newline, `&` and `<` is sent as a valid JSON object with exactly one key, `message`, whose value equals the original text (decoded and compared as values); user turns are sent as typed, also when the typed text itself looks like JSON; the last user turn keeps the session facts block;
    - an assistant turn that is already `{"message":"x"}` text is wrapped once more, so the model receives exactly the text the user saw, as a message (documented in the design: the client never stores a raw model answer);
    - a request with assistant turns and a `CurrentDraft` (the next turn of a draft conversation) is sent with wrapped assistant turns and the draft in the facts block;
