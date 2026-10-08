@@ -220,10 +220,25 @@ func flowResponseFormat(mode JSONMode, schema string) *openai.ChatCompletionResp
 	}
 }
 
-// flowMessages builds the model input: the system prompt, the history, and a
-// data block prefixed to the last user message. The block carries facts the
-// code established (turn count, whether a draft exists, the current draft as
-// a label graph), stated as data and not instructions.
+// flowAssistantTurn returns a visible assistant message in the form the prompt
+// asks the model to answer in, {"message": ...}. The client stores only the
+// visible text, and the Flow Builder sends json_object, which does not force
+// the shape: with plain text turns in the history the model copies that form
+// and its answer is rejected as unparsable (VOIP-1578). HTML escaping is off so
+// "&" stays "&", and the trailing newline of the encoder is removed.
+func flowAssistantTurn(message string) string {
+	var raw bytes.Buffer
+	enc := json.NewEncoder(&raw)
+	enc.SetEscapeHTML(false)
+	_ = enc.Encode(map[string]string{"message": message})
+	return strings.TrimRight(raw.String(), "\n")
+}
+
+// flowMessages builds the model input: the system prompt, the history
+// (assistant turns as {"message": ...}), and a data block prefixed to the last
+// user message. The block carries facts the code established (turn count,
+// whether a draft exists, the current draft as a label graph), stated as data
+// and not instructions.
 func flowMessages(system string, req *flowbuilder.ChatRequest) []openai.ChatCompletionMessage {
 	turns := 0
 	for _, m := range req.Messages {
@@ -252,7 +267,11 @@ func flowMessages(system string, req *flowbuilder.ChatRequest) []openai.ChatComp
 	msgs := make([]openai.ChatCompletionMessage, 0, len(req.Messages)+1)
 	msgs = append(msgs, openai.ChatCompletionMessage{Role: openai.ChatMessageRoleSystem, Content: system})
 	for _, m := range req.Messages {
-		msgs = append(msgs, openai.ChatCompletionMessage{Role: m.Role, Content: m.Content})
+		content := m.Content
+		if m.Role == openai.ChatMessageRoleAssistant {
+			content = flowAssistantTurn(content)
+		}
+		msgs = append(msgs, openai.ChatCompletionMessage{Role: m.Role, Content: content})
 	}
 	if n := len(msgs); n > 1 {
 		msgs[n-1].Content = b.String() + msgs[n-1].Content
