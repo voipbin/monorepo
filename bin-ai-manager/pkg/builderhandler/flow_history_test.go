@@ -164,15 +164,15 @@ func Test_FlowChat_everyAssistantTurnIsWrapped(t *testing.T) {
 // Characters that JSON escapes or that are not valid text.
 func Test_FlowAssistantTurn_characters(t *testing.T) {
 	tests := []struct {
-		name, in, wantDecoded, wantContains string
+		name, in, wantDecoded, wantContains, wantExact string
 	}{
-		{"empty", "", "", `{"message":""}`},
-		{"carriage return", "a\r\nb\rc", "a\r\nb\rc", `\r\n`},
-		{"exact form", "x", "x", `{"message":"x"}`},
-		{"tab and control", "a\tb\x01c", "a\tb\x01c", `\t`},
-		{"line separators", "a\u2028b\u2029c", "a\u2028b\u2029c", `\u2028`},
-		{"invalid utf-8 is replaced", "a\xffb", "a\ufffdb", ""},
-		{"html characters stay", "a&b<c>", "a&b<c>", "a&b<c>"},
+		{"empty", "", "", `{"message":""}`, ""},
+		{"carriage return", "a\r\nb\rc", "a\r\nb\rc", `\r\n`, ""},
+		{"exact form", "x", "x", `{"message":"x"}`, `{"message":"x"}`},
+		{"tab and control", "a\tb\x01c", "a\tb\x01c", `\t`, ""},
+		{"line separators", "a\u2028b\u2029c", "a\u2028b\u2029c", `\u2028`, ""},
+		{"invalid utf-8 is replaced", "a\xffb", "a\ufffdb", "", ""},
+		{"html characters stay", "a&b<c>", "a&b<c>", "a&b<c>", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -180,8 +180,8 @@ func Test_FlowAssistantTurn_characters(t *testing.T) {
 			if v := decodeMessageOnly(t, got); v != tt.wantDecoded {
 				t.Errorf("Wrong match. expect: %q, got: %q", tt.wantDecoded, v)
 			}
-			if tt.name == "exact form" && got != tt.wantContains {
-				t.Errorf("Wrong match. expect: %q, got: %q", tt.wantContains, got)
+			if tt.wantExact != "" && got != tt.wantExact {
+				t.Errorf("Wrong match. expect: %q, got: %q", tt.wantExact, got)
 			}
 			if !strings.Contains(got, tt.wantContains) || strings.HasSuffix(got, "\n") {
 				t.Errorf("Wrong match. expect: %q inside and no trailing newline, got: %q", tt.wantContains, got)
