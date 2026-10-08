@@ -37,11 +37,11 @@ A third run of the same probe (`/tmp/probe/wrap_probe2_test.go`, same settings, 
 
 | conversation | as sent today: parse ok / draft | wrapped: parse ok / draft |
 |---|---|---|
-| Korean, two questions, a summary from the assistant, "응, 그렇게 해줘." (draft expected) | 4/4, 4/4 | 4/4, 4/4 |
+| Korean, one question, a summary from the assistant, "응, 그렇게 해줘." (draft expected) | 4/4, 4/4 | 4/4, 4/4 |
 | English, same, "Yes, go ahead." | 4/4, 4/4 | 4/4, 4/4 |
-| Korean, four questions, a summary, "좋아 그렇게 만들어줘" (5 user turns, draft expected) | 4/4, 4/4 | 4/4, 4/4 |
+| Korean, three questions, a summary, "좋아 그렇게 만들어줘" (5 user turns, draft expected) | 4/4, 4/4 | 4/4, 4/4 |
 
-So in all three triggers (fixed phrase, change request, approval of a summary) wrapping does not make the model leave out the draft after earlier assistant turns (the draft cases are 4/4 in both forms), and it fixes the one case that failed (the plain answer to a question, which is the screenshot case). How often the unwrapped form fails depends on the wording of the conversation: the screenshot conversation failed 4 of 4 in the first table and a similar one 2 of 4 here. The 8 of 8 in the first table comes from `/tmp/probe/inv_probe_test.go`; the other tables come from the two `wrap_probe` files. The fixed phrase and the change request succeed even without wrapping because the user turn is explicit; the failure sits in the turns where the model has to continue a question dialogue.
+So in all three triggers (fixed phrase, change request, approval of a summary) wrapping does not make the model leave out the draft after earlier assistant turns (the draft cases are 4/4 in both forms), and it fixes the one case that failed (the plain answer to a question, which is the screenshot case). The rows of the first table other than the wrapped 8 of 8 come from an earlier version of the probe whose file was not kept; with 4 calls per cell they show a direction, and the production log (5 of 5 follow-up turns invalid) is the supporting evidence. How often the unwrapped form fails depends on the wording of the conversation: the screenshot conversation failed 4 of 4 in the first table and a similar one 2 of 4 here. The 8 of 8 in the first table comes from `/tmp/probe/inv_probe_test.go`; the other tables come from the two `wrap_probe` files. The fixed phrase and the change request succeed even without wrapping because the user turn is explicit; the failure sits in the turns where the model has to continue a question dialogue.
 
 ### Code facts
 
@@ -60,7 +60,7 @@ So in all three triggers (fixed phrase, change request, approval of a summary) w
 ## 2. Design
 
 - `flowMessages` sends each assistant history entry as the JSON object that the prompt asks the model to produce: `{"message": "<the text>"}`, encoded with HTML escaping off (so `&`, `<` stay as written) and non-ASCII text left as is. User entries and the session facts block are unchanged.
-- The encoder is `json.Encoder` with HTML escaping off, and its trailing newline is removed (the same `TrimRight` as the session facts block). `U+2028` and `U+2029` are written as `\u2028` and `\u2029`, and invalid UTF-8 is written as the escape `\ufffd`, which decodes to U+FFFD; both are valid JSON and the decoded meaning is the same. An empty message never reaches this code (`ValidateRequest` rejects it).
+- The encoder is `json.Encoder` with HTML escaping off, and its trailing newline is removed (the same `TrimRight` as the session facts block). `U+2028` and `U+2029` are written as `\u2028` and `\u2029`, and invalid UTF-8 is replaced by the character U+FFFD; the output is valid JSON, and a test on invalid UTF-8 must assert the replacement, not equality with the input. An empty message never reaches this code (`ValidateRequest` rejects it).
 - This is a server-side change. The client keeps sending the visible text, so the API, the OpenAPI spec and the frontend do not change.
 - An assistant entry that is already a JSON object with a `message` is not specially handled: the client only stores the visible message text, never the raw model answer.
 - No change to the parser, the prompt, the response format, error mapping, metrics or the Assistant Builder. The parser is not made lenient on purpose: accepting free text as a message would hide a real format failure; if invalid answers continue after this change, that is the next step to design.
