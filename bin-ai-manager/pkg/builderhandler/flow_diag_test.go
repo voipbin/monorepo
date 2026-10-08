@@ -409,6 +409,9 @@ func Test_hasWholeWarning(t *testing.T) {
 	if hasWholeWarning([]string{"invalid_option: draft_discarded"}, WarnDraftDiscarded) {
 		t.Errorf("Wrong match. expect: no match on a substring, got: match")
 	}
+	if hasWholeWarning([]string{WarnDraftDiscarded + ": x"}, WarnDraftDiscarded) {
+		t.Errorf("Wrong match. expect: no match on a prefix, got: match")
+	}
 	if !hasWholeWarning([]string{"a", WarnDraftDiscarded}, WarnDraftDiscarded) {
 		t.Errorf("Wrong match. expect: match on the whole entry, got: no match")
 	}
@@ -773,5 +776,21 @@ func Test_RunFlowTurn_diag_truncatedAndDraftPresent(t *testing.T) {
 	}
 	if res.FinishReason != "length" {
 		t.Errorf("Wrong match. expect: length, got: %s", res.FinishReason)
+	}
+}
+
+// allowed_types counts the types that are really offered, after the filter,
+// not the types the client asked for.
+func Test_RunFlowTurn_diag_allowedTypesIsAfterTheFilter(t *testing.T) {
+	req := flowChatReq()
+	req.SupportedActionTypes = []string{"talk", "hangup", "no_such_type"}
+	allowed := FlowAllowedTypes(req.SupportedActionTypes)
+
+	res, err := RunFlowTurn(context.Background(), &recordSender{reply: `{"message":"m"}`}, FlowConfig(testCfg()), req, allowed)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.Diag.AllowedTypes != len(allowed) || res.Diag.AllowedTypes >= len(req.SupportedActionTypes) {
+		t.Errorf("Wrong match. expect: the filtered count below %d, got: %d", len(req.SupportedActionTypes), res.Diag.AllowedTypes)
 	}
 }
