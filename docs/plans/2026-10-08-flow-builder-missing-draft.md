@@ -22,7 +22,7 @@ This document holds the issue analysis, the design and the implementation plan o
 
 In `json_object` mode every call ended with `finish_reason=stop` in 2.4 to 6.6 s.
 
-Second probe, for the product rules (same model and settings, 12 allowed types, `FlowConfig(DefaultConfig())`, 3 repetitions per cell, 30 calls per mode in total with the first probe's cells excluded):
+Second probe, for the product rules (same model and settings, 12 allowed types, `FlowConfig(DefaultConfig())`, 3 repetitions per cell, 15 calls per mode):
 
 | scenario | `json_schema` | `json_object` |
 |---|---|---|
