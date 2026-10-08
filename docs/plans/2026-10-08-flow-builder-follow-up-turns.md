@@ -17,7 +17,23 @@ This document holds the issue analysis, the design and the implementation plan o
 | none | 4 of 4 plain sentences, fails | not run |
 | `json_schema` (before VOIP-1577) | 4 of 4 JSON, accepted | not run |
 
+The table counts only whether `FlowParse` accepts the answer, not whether the answer carries a draft; that is measured below.
+
 So with `json_object` the provider does not force the answer shape and, on a later turn, the model copies the form of the previous assistant message in the history, which is plain text.
+
+### Second probe: does wrapping the history change when a draft is produced?
+
+The probe file is `/tmp/probe/wrap_probe_test.go` (build tag `flow_probe`, run in a throwaway worktree; not part of the change). It builds the real `flowMessages` output for five conversations with the production system prompt (30 allowed types), `json_object`, `gemini-3.8-flash`, reasoning none, 4 calls per cell, and runs each both as sent today and with the assistant turns wrapped. Wrapped and unwrapped runs are the only difference. The `CurrentDraft` of the change-request cases has two nodes. The history of the "draft then change" cases holds only the visible message of the draft turn, as the client sends it.
+
+| conversation | as sent today: parse ok / draft | wrapped: parse ok / draft |
+|---|---|---|
+| Korean, question, question, fixed phrase (draft expected) | 4/4, 4/4 | 4/4, 4/4 |
+| English, same | 4/4, 4/4 | 4/4, 4/4 |
+| Korean, draft turn then a change request with a current draft (draft expected) | 4/4, 4/4 | 4/4, 4/4 |
+| English, same | 4/4, 4/4 | 4/4, 4/4 |
+| Korean, question, question, a plain answer (no draft expected) | **2/4**, 0/4 | **4/4**, 0/4 |
+
+So wrapping does not make the model leave out the draft after earlier assistant turns (the draft cases are 4/4 in both forms), and it fixes the one case that failed (the plain answer to a question, which is the screenshot case). The fixed phrase and the change request succeed even without wrapping because the user turn is explicit; the failure sits in the turns where the model has to continue a question dialogue.
 
 ### Code facts
 
@@ -29,26 +45,30 @@ So with `json_object` the provider does not force the answer shape and, on a lat
 ### Conclusion and not known
 
 - Cause: plain-text assistant turns in the history make the model answer in plain text when no schema is enforced. Wrapping them in the JSON form that the prompt demands fixes the reproduction (8 of 8).
-- Not measured: conversations with more than 4 turns, a history that contains an assistant turn which came with a draft (only its message text is in the history), other models, and the production key. The post-deploy check repeats the screenshot scenario against production.
+- Not measured: conversations with more than 5 turns, other models, and the production key. Each cell has 4 calls, so the numbers show a direction, not a rate.
+- The earlier claim that VOIP-1577's checks left out the second question turn is an inference from its review record, which lists only the first turn, the fixed phrase and the change request; no multi-turn question case is named there. The post-deploy check repeats the screenshot scenario against production.
 - Proceed: yes. Every conversation with a follow-up question fails today, and the fix is small and reversible. A revert of VOIP-1577 is not better: it brings back the missing draft and the runaway generations.
 
 ## 2. Design
 
 - `flowMessages` sends each assistant history entry as the JSON object that the prompt asks the model to produce: `{"message": "<the text>"}`, encoded with HTML escaping off (so `&`, `<` stay as written) and non-ASCII text left as is. User entries and the session facts block are unchanged.
+- The encoder is `json.Encoder` with HTML escaping off, and its trailing newline is removed (the same `TrimRight` as the session facts block). `U+2028` and `U+2029` are written as `\u2028` and `\u2029`, invalid UTF-8 becomes U+FFFD; both are valid JSON and have no effect on the meaning. An empty message never reaches this code (`ValidateRequest` rejects it).
 - This is a server-side change. The client keeps sending the visible text, so the API, the OpenAPI spec and the frontend do not change.
 - An assistant entry that is already a JSON object with a `message` is not specially handled: the client only stores the visible message text, never the raw model answer.
 - No change to the parser, the prompt, the response format, error mapping, metrics or the Assistant Builder. The parser is not made lenient on purpose: accepting free text as a message would hide a real format failure; if invalid answers continue after this change, that is the next step to design.
 - Risk: the model now sees its own earlier turns in the JSON form, which is what the prompt describes, so no new behaviour is asked of it. Messages that contain quotes or newlines are escaped by the encoder.
+- Alternative not chosen: add "answer with a JSON object only" to the session facts block of the last user message. It leaves the plain-text history in place, so the model still copies the earlier form, and it adds prompt tokens to every call.
 - Rollback: revert the commit and redeploy ai-manager.
 
 ## 3. Implementation plan
 
 1. `bin-ai-manager/pkg/builderhandler/flow_turn.go`: in `flowMessages`, encode assistant history entries as `{"message": content}` (a small helper, HTML escaping off) and keep user entries as they are. Update the doc comment of `flowMessages`.
 2. Tests in `flow_diag_test.go` (or a new `flow_messages_test.go`), reached through the real `Chat` path with the recording sender so the request that is sent is what is checked:
-   - an assistant turn with Korean text, a double quote, a backslash, a newline, `&` and `<` is sent as a valid JSON object whose `message` equals the original text (decoded and compared as values), user turns are sent as typed, and the last user turn keeps the session facts block;
+   - an assistant turn with Korean text, a double quote, a backslash, a newline, `&` and `<` is sent as a valid JSON object with exactly one key, `message`, whose value equals the original text (decoded and compared as values); user turns are sent as typed, also when the typed text itself looks like JSON; the last user turn keeps the session facts block;
+   - a request with assistant turns and a `CurrentDraft` (the next turn of a draft conversation) is sent with wrapped assistant turns and the draft in the facts block;
    - a history without assistant turns is unchanged;
    - the first message of the request is still the system prompt.
-3. `bin-ai-manager/docs/operations.md`: one sentence in the Flow Builder section that history assistant turns are sent as JSON and why (VOIP-1578).
+3. `bin-ai-manager/docs/operations.md`: one sentence in the Flow Builder section that history assistant turns are sent as JSON and why (VOIP-1578), and that `request_chars` therefore counts the wrapping (about 14 characters plus escapes per assistant turn).
 4. Gates: `cd bin-ai-manager && go test ./... && golangci-lint run`; from the repository root, after committing and fetching `origin/main`, `bash scripts/check-test-conventions.sh`.
-5. Verification after deploy (read-only plus the minimum LLM calls, a temporary admin that is deleted afterwards, no calls, SMS, email or number purchases): repeat the screenshot conversation (turn 1, a question, turn 2, a question, then the fixed phrase) and the three product scenarios of VOIP-1577. Expected: no `invalid_response`, every turn `outcome=ok`, a draft on the fixed phrase and on a change request.
+5. Verification after deploy (read-only plus the minimum LLM calls, a temporary admin that is deleted afterwards, no calls, SMS, email or number purchases): repeat the screenshot conversation (turn 1, a question, turn 2, a question, then the fixed phrase) and the three product scenarios of VOIP-1577. Expected: no `invalid_response`, every turn `outcome=ok`, a draft on the fixed phrase and on a change request after earlier question turns and after a draft turn. Include a conversation of at least 6 turns.
 6. Only `bin-ai-manager/` changes, so CI builds and deploys only ai-manager; the release approval after merge belongs to the CEO.
