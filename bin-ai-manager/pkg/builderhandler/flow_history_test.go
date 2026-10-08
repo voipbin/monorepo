@@ -58,6 +58,12 @@ func Test_FlowChat_historyAssistantTurnsAreSentAsJSON(t *testing.T) {
 			if len(got) != 4 || got[0].Role != openai.ChatMessageRoleSystem {
 				t.Fatalf("Wrong match. expect: system plus 3 messages, got: %d", len(got))
 			}
+			wantRoles := []string{openai.ChatMessageRoleSystem, openai.ChatMessageRoleUser, openai.ChatMessageRoleAssistant, openai.ChatMessageRoleUser}
+			for i, want := range wantRoles {
+				if got[i].Role != want {
+					t.Errorf("Wrong match. message %d expect role: %s, got: %s", i, want, got[i].Role)
+				}
+			}
 			if v := decodeMessageOnly(t, got[2].Content); v != tt.assistant {
 				t.Errorf("Wrong match. expect: %q, got: %q", tt.assistant, v)
 			}
@@ -131,6 +137,11 @@ func Test_FlowChat_everyAssistantTurnIsWrapped(t *testing.T) {
 	if got[0].Role != openai.ChatMessageRoleSystem || strings.HasPrefix(got[0].Content, "{") {
 		t.Errorf("Wrong match. expect: the unwrapped system prompt, got: %.40q", got[0].Content)
 	}
+	for i, want := range []string{"system", "user", "assistant", "user", "assistant", "user"} {
+		if got[i].Role != want {
+			t.Errorf("Wrong match. message %d expect role: %s, got: %s", i, want, got[i].Role)
+		}
+	}
 	if v := decodeMessageOnly(t, got[2].Content); v != "  question one \n" {
 		t.Errorf("Wrong match. expect: the text untouched, got: %q", v)
 	}
@@ -155,6 +166,9 @@ func Test_FlowAssistantTurn_characters(t *testing.T) {
 	tests := []struct {
 		name, in, wantDecoded, wantContains string
 	}{
+		{"empty", "", "", `{"message":""}`},
+		{"carriage return", "a\r\nb\rc", "a\r\nb\rc", `\r\n`},
+		{"exact form", "x", "x", `{"message":"x"}`},
 		{"tab and control", "a\tb\x01c", "a\tb\x01c", `\t`},
 		{"line separators", "a\u2028b\u2029c", "a\u2028b\u2029c", `\u2028`},
 		{"invalid utf-8 is replaced", "a\xffb", "a\ufffdb", ""},
@@ -165,6 +179,9 @@ func Test_FlowAssistantTurn_characters(t *testing.T) {
 			got := flowAssistantTurn(tt.in)
 			if v := decodeMessageOnly(t, got); v != tt.wantDecoded {
 				t.Errorf("Wrong match. expect: %q, got: %q", tt.wantDecoded, v)
+			}
+			if tt.name == "exact form" && got != tt.wantContains {
+				t.Errorf("Wrong match. expect: %q, got: %q", tt.wantContains, got)
 			}
 			if !strings.Contains(got, tt.wantContains) || strings.HasSuffix(got, "\n") {
 				t.Errorf("Wrong match. expect: %q inside and no trailing newline, got: %q", tt.wantContains, got)
