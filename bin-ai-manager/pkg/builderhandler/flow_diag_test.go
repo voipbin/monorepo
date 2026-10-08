@@ -2,8 +2,10 @@ package builderhandler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gofrs/uuid"
 	"strings"
 	"testing"
 	"time"
@@ -601,5 +603,141 @@ func Test_logModelCall_values(t *testing.T) {
 	}
 	if d["finish_reason"] != "none" {
 		t.Errorf("Wrong match. expect: none, got: %v", d["finish_reason"])
+	}
+}
+
+// Every Diag value reaches its own log field. The values are all different so
+// a swapped or constant mapping cannot pass.
+func Test_logModelCall_mapsEveryDiagField(t *testing.T) {
+	hook, restore := captureLogs()
+	defer restore()
+
+	h, _, _ := newFlowTestHandler(t, &chatSender{}, 200, 3, true)
+	fh := h.(*flowBuilderHandler)
+
+	res := &FlowTurnResult{
+		FinishReason: "length",
+		Usage:        openai.Usage{PromptTokens: 101, CompletionTokens: 202},
+		Diag: FlowTurnDiag{
+			SystemChars: 11, RequestChars: 22, SchemaBytes: 33, ResponseChars: 44,
+			UserTurns: 3, HistoryMessages: 5, AllowedTypes: 7, CurrentDraftPresent: true,
+			InvalidKind: invalidKindNoChoices,
+		},
+	}
+	now := time.Now()
+	fh.logModelCall(logrus.NewEntry(logrus.StandardLogger()), res, ErrTruncated, now, now, nil)
+
+	lines := diagEntries(hook)
+	if len(lines) != 1 {
+		t.Fatalf("Wrong match. expect: 1 line, got: %d", len(lines))
+	}
+	d := lines[0].Data
+	want := map[string]any{
+		"system_chars": 11, "request_chars": 22, "schema_bytes": 33, "response_chars": 44,
+		"user_turns": 3, "history_messages": 5, "allowed_types": 7, "current_draft_present": true,
+		"prompt_tokens": 101, "completion_tokens": 202, "finish_reason": "length",
+		"outcome": outcomeTruncated, "invalid_kind": invalidKindNoChoices,
+	}
+	for k, v := range want {
+		if d[k] != v {
+			t.Errorf("Wrong match. field %s expect: %v, got: %v", k, v, d[k])
+		}
+	}
+}
+
+// A nil result means the model was never called: no line, no panic.
+func Test_logModelCall_nilResultWritesNothing(t *testing.T) {
+	hook, restore := captureLogs()
+	defer restore()
+
+	h, _, _ := newFlowTestHandler(t, &chatSender{}, 200, 3, true)
+	now := time.Now()
+	h.(*flowBuilderHandler).logModelCall(logrus.NewEntry(logrus.StandardLogger()), nil, errors.New("x"), now, now, nil)
+
+	if got := len(diagEntries(hook)); got != 0 {
+		t.Errorf("Wrong match. expect: no line, got: %d", got)
+	}
+}
+
+// pre_call_ms covers the work before the model call (here a slow counter), and
+// build_ms stays far below it.
+func Test_FlowChat_modelCallDiagnostic_preCallCoversTheCounter(t *testing.T) {
+	hook, restore := captureLogs()
+	defer restore()
+
+	h, _, cache := newFlowTestHandler(t, &chatSender{reply: flowGoodReply}, 200, 3, true)
+	cache.EXPECT().BuilderFlowChatCountIncr(gomock.Any(), customerID, gomock.Any()).
+		DoAndReturn(func(context.Context, uuid.UUID, time.Duration) (int64, error) {
+			time.Sleep(60 * time.Millisecond)
+			return 1, nil
+		})
+
+	if _, err := h.Chat(context.Background(), customerID, flowChatReq()); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	lines := diagEntries(hook)
+	if len(lines) != 1 {
+		t.Fatalf("Wrong match. expect: 1 line, got: %d", len(lines))
+	}
+	d := lines[0].Data
+	pre, _ := d["pre_call_ms"].(int64)
+	build, _ := d["build_ms"].(int64)
+	chat, _ := d["chat_ms"].(int64)
+	if pre < 60 || pre > 2000 || build >= 60 || chat < pre {
+		t.Errorf("Wrong match. expect: pre >= 60, build small, chat >= pre, got: pre=%d build=%d chat=%d", pre, build, chat)
+	}
+}
+
+// The request that goes out is the one the mode defines: nothing, a JSON
+// object, or the JSON schema built from the allowed types.
+func Test_RunFlowTurn_requestFormatPerMode(t *testing.T) {
+	allowed := FlowAllowedTypes(flowChatReq().SupportedActionTypes)
+
+	tests := []struct {
+		name     string
+		mode     JSONMode
+		wantType openai.ChatCompletionResponseFormatType
+	}{
+		{"none", JSONModeNone, ""},
+		{"object", JSONModeObject, openai.ChatCompletionResponseFormatTypeJSONObject},
+		{"schema", JSONModeSchema, openai.ChatCompletionResponseFormatTypeJSONSchema},
+		{"empty falls to schema", JSONMode(""), openai.ChatCompletionResponseFormatTypeJSONSchema},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &recordSender{reply: `{"message":"m"}`}
+			cfg := FlowConfig(testCfg())
+			cfg.JSONMode = tt.mode
+			if _, err := RunFlowTurn(context.Background(), s, cfg, flowChatReq(), allowed); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			got := s.req.ResponseFormat
+			if tt.wantType == "" {
+				if got != nil {
+					t.Errorf("Wrong match. expect: no response format, got: %+v", got)
+				}
+				return
+			}
+			if got == nil || got.Type != tt.wantType {
+				t.Fatalf("Wrong match. expect: %s, got: %+v", tt.wantType, got)
+			}
+			if tt.wantType == openai.ChatCompletionResponseFormatTypeJSONSchema {
+				if got.JSONSchema == nil || got.JSONSchema.Name != FlowResponseSchemaName || string(got.JSONSchema.Schema.(json.RawMessage)) != FlowResponseSchema(allowed) {
+					t.Errorf("Wrong match. expect: the schema built from the allowed types, got: %+v", got.JSONSchema)
+				}
+			}
+		})
+	}
+}
+
+// build_ms is the time before the call, not a leftover from a long wait.
+func Test_RunFlowTurn_diag_buildIsShort(t *testing.T) {
+	res, err := RunFlowTurn(context.Background(), sleepSender{d: 80 * time.Millisecond, reply: `{"message":"m"}`}, FlowConfig(testCfg()), flowChatReq(), FlowAllowedTypes(flowChatReq().SupportedActionTypes))
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.Diag.BuildElapsed >= 80*time.Millisecond {
+		t.Errorf("Wrong match. expect: build shorter than the call, got: %v", res.Diag.BuildElapsed)
 	}
 }
