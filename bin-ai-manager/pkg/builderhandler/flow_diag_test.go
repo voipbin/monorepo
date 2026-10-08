@@ -841,3 +841,41 @@ func Test_FlowConfig_ignoresTheSharedMode(t *testing.T) {
 		}
 	}
 }
+
+// The Assistant Builder, built by the same constructor as the Flow Builder,
+// keeps the shared config: the JSON schema format and its own output budget.
+func Test_Chat_assistantKeepsTheSchemaFormat(t *testing.T) {
+	s := &recordSender{reply: goodReply}
+	_, assistant, cache := newFlowTestHandler(t, s, 200, 3, true)
+	cache.EXPECT().BuilderChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
+
+	if _, err := assistant.Chat(context.Background(), customerID, chatReq()); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	got := s.req.ResponseFormat
+	if got == nil || got.Type != openai.ChatCompletionResponseFormatTypeJSONSchema || got.JSONSchema == nil {
+		t.Errorf("Wrong match. expect: json_schema for the Assistant Builder, got: %+v", got)
+	}
+	if s.req.MaxTokens != testCfg().MaxOutputTokens {
+		t.Errorf("Wrong match. expect: the shared output budget %d, got: %d", testCfg().MaxOutputTokens, s.req.MaxTokens)
+	}
+}
+
+// json_mode on the line comes from the handler's config, not from a constant.
+func Test_logModelCall_jsonModeFollowsTheConfig(t *testing.T) {
+	hook, restore := captureLogs()
+	defer restore()
+
+	h, _, _ := newFlowTestHandler(t, &chatSender{}, 200, 3, true)
+	fh := h.(*flowBuilderHandler)
+	fh.cfg.JSONMode = JSONModeSchema
+
+	now := time.Now()
+	fh.logModelCall(logrus.NewEntry(logrus.StandardLogger()), &FlowTurnResult{}, nil, now, now, nil)
+
+	lines := diagEntries(hook)
+	if len(lines) != 1 || lines[0].Data["json_mode"] != "schema" {
+		t.Errorf("Wrong match. expect: json_mode=schema, got: %v", lines)
+	}
+}
