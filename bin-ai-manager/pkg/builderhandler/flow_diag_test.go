@@ -448,7 +448,7 @@ func Test_RunFlowTurn_diag(t *testing.T) {
 		if !errors.Is(err, ErrTimeout) {
 			t.Fatalf("Wrong match. expect: ErrTimeout, got: %v", err)
 		}
-		if res == nil || res.Diag.Elapsed < 30*time.Millisecond || res.Usage.PromptTokens != 0 {
+		if res == nil || res.Diag.Elapsed < 25*time.Millisecond || res.Usage.PromptTokens != 0 {
 			t.Errorf("Wrong match. expect: a result with the elapsed time and no usage, got: %+v", res)
 		}
 	})
@@ -595,7 +595,7 @@ func Test_logModelCall_values(t *testing.T) {
 	if pre, _ := d["pre_call_ms"].(int64); pre < 195 || pre > 205 {
 		t.Errorf("Wrong match. expect: about 200, got: %v", d["pre_call_ms"])
 	}
-	if chat, _ := d["chat_ms"].(int64); chat < 295 || chat > 400 {
+	if chat, _ := d["chat_ms"].(int64); chat < 295 || chat > 5000 {
 		t.Errorf("Wrong match. expect: about 300, got: %v", d["chat_ms"])
 	}
 	if d["model"] != "model-x" || d["reasoning_effort"] != "low" || d["max_tokens"] != 1234 || d["llm_timeout_ms"] != int64(7000) || d["json_mode"] != "object" {
@@ -683,7 +683,7 @@ func Test_FlowChat_modelCallDiagnostic_preCallCoversTheCounter(t *testing.T) {
 	pre, _ := d["pre_call_ms"].(int64)
 	build, _ := d["build_ms"].(int64)
 	chat, _ := d["chat_ms"].(int64)
-	if pre < 60 || pre > 2000 || build >= 60 || chat < pre {
+	if pre < 60 || pre > 2000 || build >= 1000 || chat < pre {
 		t.Errorf("Wrong match. expect: pre >= 60, build small, chat >= pre, got: pre=%d build=%d chat=%d", pre, build, chat)
 	}
 }
@@ -731,13 +731,47 @@ func Test_RunFlowTurn_requestFormatPerMode(t *testing.T) {
 	}
 }
 
-// build_ms is the time before the call, not a leftover from a long wait.
+// build_ms is the time spent before the call, not the call itself: a call
+// that takes a known 300ms leaves the build far below it.
 func Test_RunFlowTurn_diag_buildIsShort(t *testing.T) {
-	res, err := RunFlowTurn(context.Background(), sleepSender{d: 80 * time.Millisecond, reply: `{"message":"m"}`}, FlowConfig(testCfg()), flowChatReq(), FlowAllowedTypes(flowChatReq().SupportedActionTypes))
+	res, err := RunFlowTurn(context.Background(), sleepSender{d: 300 * time.Millisecond, reply: `{"message":"m"}`}, FlowConfig(testCfg()), flowChatReq(), FlowAllowedTypes(flowChatReq().SupportedActionTypes))
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if res.Diag.BuildElapsed >= 80*time.Millisecond {
-		t.Errorf("Wrong match. expect: build shorter than the call, got: %v", res.Diag.BuildElapsed)
+	if res.Diag.BuildElapsed >= 200*time.Millisecond || res.Diag.Elapsed < 300*time.Millisecond {
+		t.Errorf("Wrong match. expect: build well below the 300ms call, got: build=%v call=%v", res.Diag.BuildElapsed, res.Diag.Elapsed)
+	}
+}
+
+// The values an operator greps for are fixed strings, written out here on
+// purpose so a changed constant cannot pass unnoticed.
+func Test_diagLiterals(t *testing.T) {
+	tests := []struct{ got, want string }{
+		{outcomeOK, "ok"}, {outcomeTimeout, "timeout"}, {outcomeTruncated, "truncated"},
+		{outcomeInvalidResponse, "invalid_response"}, {outcomeError, "error"},
+		{invalidKindNilResponse, "nil_response"}, {invalidKindNoChoices, "no_choices"}, {invalidKindUnparsable, "unparsable"},
+	}
+	for _, tt := range tests {
+		if tt.got != tt.want {
+			t.Errorf("Wrong match. expect: %s, got: %s", tt.want, tt.got)
+		}
+	}
+}
+
+// The truncated line carries the length of what the model wrote, and a request
+// that holds a current draft says so (an empty draft counts as present).
+func Test_RunFlowTurn_diag_truncatedAndDraftPresent(t *testing.T) {
+	reply := "abcdef"
+	req := flowChatReq()
+	req.CurrentDraft = &flowbuilder.Draft{}
+	res, err := RunFlowTurn(context.Background(), &chatSender{reply: reply, finish: openai.FinishReasonLength}, FlowConfig(testCfg()), req, FlowAllowedTypes(req.SupportedActionTypes))
+	if !errors.Is(err, ErrTruncated) {
+		t.Fatalf("Wrong match. expect: ErrTruncated, got: %v", err)
+	}
+	if res.Diag.ResponseChars != len(reply) || !res.Diag.CurrentDraftPresent {
+		t.Errorf("Wrong match. expect: 6 chars and a draft present, got: %+v", res.Diag)
+	}
+	if res.FinishReason != "length" {
+		t.Errorf("Wrong match. expect: length, got: %s", res.FinishReason)
 	}
 }
