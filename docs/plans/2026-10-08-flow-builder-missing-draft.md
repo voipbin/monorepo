@@ -32,6 +32,8 @@ Second probe, for the product rules (same model and settings, 12 allowed types, 
 | same with the Korean fixed phrase | draft 0 of 3 | draft 3 of 3, 6.2 to 6.6 s |
 | change request with a current draft | draft 0 of 3, 2 runaways at the cap (47 s, 60 s) | draft 3 of 3, 2.5 to 4.2 s |
 
+The second probe's raw output was quoted in the session and the probe file was not kept; the table is a summary of that output and could not be re-run by the reviewers. Its direction matches the first probe, and the post-deploy check (section 3, step 5) repeats the same three scenarios against production. Each cell has only 3 repetitions.
+
 So `json_object` keeps the rule that no draft is written on an ambiguous first turn (the early-draft rule at `flow_prompt.go:161` holds in both modes), and it returns drafts for the fixed phrases and for change requests, where `json_schema` returned none.
 
 ### Code facts
@@ -43,6 +45,8 @@ So `json_object` keeps the rule that no draft is written on an ambiguous first t
 ### Conclusion and what is not known
 
 - The cause in production is the `json_schema` response format of the Flow Builder: with it the provider returns no draft and, in a large share of calls, generates until the 8192 token cap, which takes 48 s or more and therefore hits the 40 s timeout (a plain timeout shows 0 tokens because no answer arrives). Without the schema (`json_object` or none) the same model, prompts, prompt text and parser give a draft every time.
+- A schema without the node `type` enum was not measured. The `length` endings rise with the allowed type count (3 of 12 with 10 types, 7 of 12 with 30), which hints at the enum, but rewriting the schema stays a guess and is not needed for the fix.
+- The production evidence (7 `ok` calls without a draft) comes from one session of nine calls.
 - Why the provider degrades under this schema (for example the large `enum` of node types, nesting, or its handling of non-strict schemas) is not established and does not need to be for the fix. The two local runs used a developer key; production showed the same symptoms with its own key, so it is the response format, not the key.
 - The probe prompts say "draft it now". The product prompt asks the model to draft only after approval or a fixed phrase (`flow_prompt.go:161`), so a message-only answer can be legitimate on a first turn. This does not explain the difference between modes (same prompts, 0 of 12 against 12 of 12), the runaway generations, or the timeouts.
 - Not covered by the measurement: longer conversations (more than 3 turns), the quality of the drafts (only presence, finish reason and time were measured), the other prompt rules, and the production key. The fix is validated by repeating the production scenario after deploy (section 3).

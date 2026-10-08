@@ -213,8 +213,8 @@ func Test_FlowChat_modelCallDiagnostic(t *testing.T) {
 					t.Errorf("Wrong match. expect: field %s on the line, got: missing", f)
 				}
 			}
-			if d["json_mode"] != "schema" {
-				t.Errorf("Wrong match. expect: schema, got: %v", d["json_mode"])
+			if d["json_mode"] != "object" || d["schema_bytes"] != 0 {
+				t.Errorf("Wrong match. expect: object and 0 schema bytes (the Flow Builder sends json_object), got: %v and %v", d["json_mode"], d["schema_bytes"])
 			}
 			if d["allowed_types"] != 7 || d["user_turns"] != 1 || d["history_messages"] != 1 || d["current_draft_present"] != false {
 				t.Errorf("Wrong match. expect: 7 types, 1 turn, 1 message, no draft, got: %v", d)
@@ -427,8 +427,11 @@ func Test_RunFlowTurn_diag(t *testing.T) {
 		if res.Diag.Elapsed < 30*time.Millisecond || res.Diag.Elapsed > 5*time.Second {
 			t.Errorf("Wrong match. expect: about 30ms, got: %v", res.Diag.Elapsed)
 		}
-		if res.Diag.BuildElapsed < 0 || res.Diag.SystemChars <= 0 || res.Diag.RequestChars <= res.Diag.SystemChars || res.Diag.SchemaBytes <= 0 {
+		if res.Diag.BuildElapsed < 0 || res.Diag.SystemChars <= 0 || res.Diag.RequestChars <= res.Diag.SystemChars {
 			t.Errorf("Wrong match. expect: positive sizes and a request larger than the prompt, got: %+v", res.Diag)
+		}
+		if res.Diag.SchemaBytes != 0 {
+			t.Errorf("Wrong match. expect: no schema on the default Flow path, got: %d bytes", res.Diag.SchemaBytes)
 		}
 		if res.Diag.ResponseChars != len(`{"message":"m"}`) || res.Diag.UserTurns != 1 || res.Diag.HistoryMessages != 1 || res.Diag.InvalidKind != "" {
 			t.Errorf("Wrong match. expect: response 15 chars, 1 turn, 1 message, no invalid kind, got: %+v", res.Diag)
@@ -792,5 +795,49 @@ func Test_RunFlowTurn_diag_allowedTypesIsAfterTheFilter(t *testing.T) {
 	}
 	if res.Diag.AllowedTypes != len(allowed) || res.Diag.AllowedTypes >= len(req.SupportedActionTypes) {
 		t.Errorf("Wrong match. expect: the filtered count below %d, got: %d", len(req.SupportedActionTypes), res.Diag.AllowedTypes)
+	}
+}
+
+// The Flow Builder sends json_object, not a schema (VOIP-1577). This goes
+// through the real handler, so the request that reaches the provider is what is
+// checked, and a removed override in FlowConfig makes it fail.
+func Test_FlowChat_sendsJSONObjectNotSchema(t *testing.T) {
+	hook, restore := captureLogs()
+	defer restore()
+
+	s := &recordSender{reply: flowGoodReply}
+	h, _, cache := newFlowTestHandler(t, s, 200, 3, true)
+	cache.EXPECT().BuilderFlowChatCountIncr(gomock.Any(), customerID, gomock.Any()).Return(int64(1), nil)
+
+	resp, err := h.Chat(context.Background(), customerID, flowChatReq())
+	if err != nil || resp == nil || resp.Draft == nil {
+		t.Fatalf("Wrong match. expect: a draft, got: %v, %v", resp, err)
+	}
+
+	got := s.req.ResponseFormat
+	if got == nil || got.Type != openai.ChatCompletionResponseFormatTypeJSONObject || got.JSONSchema != nil {
+		t.Errorf("Wrong match. expect: json_object without a schema, got: %+v", got)
+	}
+
+	lines := diagEntries(hook)
+	if len(lines) != 1 || lines[0].Data["json_mode"] != "object" || lines[0].Data["schema_bytes"] != 0 {
+		t.Errorf("Wrong match. expect: one line with json_mode=object and schema_bytes=0, got: %v", lines)
+	}
+}
+
+// FlowConfig fixes the mode whatever the shared config says, and leaves the
+// shared config alone (the Assistant Builder keeps its own mode).
+func Test_FlowConfig_ignoresTheSharedMode(t *testing.T) {
+	for _, mode := range []JSONMode{JSONModeSchema, JSONModeNone, JSONMode("")} {
+		base := testCfg()
+		base.JSONMode = mode
+
+		got := FlowConfig(base)
+		if got.JSONMode != JSONModeObject {
+			t.Errorf("Wrong match. base %q expect: json_object, got: %q", mode, got.JSONMode)
+		}
+		if base.JSONMode != mode {
+			t.Errorf("Wrong match. expect: the shared config unchanged (%q), got: %q", mode, base.JSONMode)
+		}
 	}
 }
