@@ -7,9 +7,10 @@ import "time"
 type JSONMode string
 
 const (
-	// JSONModeSchema sends json_schema with Strict:false (default). The Gemini
-	// OpenAI-compatible endpoint does not enforce strict mode, so Parse still
-	// validates everything.
+	// JSONModeSchema sends json_schema with Strict:false (the default of
+	// DefaultConfig, used by the Assistant Builder). The Gemini OpenAI-compatible
+	// endpoint does not enforce strict mode, so Parse still validates everything.
+	// The Flow Builder does not use it: see FlowConfig.
 	JSONModeSchema JSONMode = "json_schema"
 	// JSONModeObject sends json_object (valid JSON, no schema).
 	JSONModeObject JSONMode = "json_object"
@@ -23,7 +24,8 @@ const (
 //
 // Model, ReasoningEffort, MaxOutputTokens and LLMTimeout are operational
 // values. SystemPrompt, JSONMode and DataBlockInSystem are "evaluation
-// overrides": the evaluation changes them, production keeps the defaults. They
+// overrides": the evaluation changes them, the Assistant Builder keeps the
+// defaults, and the Flow Builder fixes the JSON mode itself (FlowConfig). They
 // are the price of measuring the production code path rather than a copy of it.
 //
 // All numeric defaults are initial values that have NOT been measured.
@@ -36,8 +38,9 @@ type Config struct {
 	// SystemPrompt is the system prompt. Evaluation overrides it; production
 	// uses the SystemPrompt constant.
 	SystemPrompt string
-	// JSONMode is the response_format. Evaluation overrides it; production
-	// uses JSONModeSchema.
+	// JSONMode is the response_format. Evaluation overrides it; the Assistant
+	// Builder uses JSONModeSchema and the Flow Builder JSONModeObject
+	// (FlowConfig).
 	JSONMode JSONMode
 	// DataBlockInSystem merges the session-facts block into the system prompt
 	// instead of prefixing the last user message. Evaluation only; production

@@ -23,15 +23,25 @@ import (
 const flowDefaultMaxOutputTokens = 8192
 
 // FlowConfig returns the per-turn behaviour of the Flow Builder, derived from
-// the shared Builder config: same model, reasoning effort, timeout and JSON
-// mode, a larger output budget, and no fixed system prompt (the prompt depends
-// on the request's allowed types, see FlowSystemPrompt).
+// the shared Builder config: same model, reasoning effort and timeout, a
+// larger output budget, and no fixed system prompt (the prompt depends on the
+// request's allowed types, see FlowSystemPrompt).
+//
+// The response format is always JSONModeObject, whatever the shared config
+// says (VOIP-1577). With json_schema the provider returned no draft and often
+// generated until the output cap, which takes longer than the call timeout;
+// with json_object the same model, prompt and parser returned a draft in a few
+// seconds (measurements: docs/plans/2026-10-08-flow-builder-missing-draft.md).
+// The prompt describes the answer shape, and FlowParse and AssembleFlowDraft
+// validate every part of it, so nothing relies on a schema. A mode set on the
+// shared config is ignored on purpose.
 func FlowConfig(base Config) Config {
 	c := base
 	if c.MaxOutputTokens < flowDefaultMaxOutputTokens {
 		c.MaxOutputTokens = flowDefaultMaxOutputTokens
 	}
 	c.SystemPrompt = ""
+	c.JSONMode = JSONModeObject
 	return c
 }
 
