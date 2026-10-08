@@ -28,10 +28,11 @@ const flowDefaultMaxOutputTokens = 8192
 // request's allowed types, see FlowSystemPrompt).
 //
 // The response format is always JSONModeObject, whatever the shared config
-// says (VOIP-1577). With json_schema the provider returned no draft and, in
-// about half of the calls, generated until the output cap, which takes longer
-// than the call timeout; with json_object the same model, prompt and parser
-// returned a draft every time in 2 to 7 seconds. The prompt describes the
+// says (VOIP-1577). With json_schema the provider returned no draft and often
+// generated until the output cap, which takes longer than the call timeout;
+// with json_object the same model, prompt and parser returned a draft in a few
+// seconds (measurements: docs/plans/2026-10-08-flow-builder-missing-draft.md).
+// The prompt describes the
 // answer shape and FlowParse and AssembleFlowDraft validate every part of it,
 // so nothing relies on a schema. A mode set on the shared config is ignored on
 // purpose.
