@@ -132,7 +132,15 @@ func Test_PostFlowBuilderChat_legacyDraftPositionsAreAcceptedAndDropped(t *testi
 			if err != nil {
 				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
-			if strings.Contains(string(b), "positions") {
+			var fwd map[string]any
+			if errUnmarshal := json.Unmarshal(b, &fwd); errUnmarshal != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", errUnmarshal)
+			}
+			draft, ok := fwd["current_draft"].(map[string]any)
+			if !ok {
+				t.Fatalf("Wrong match. the current_draft was not passed on: %s", b)
+			}
+			if _, ok := draft["positions"]; ok {
 				t.Errorf("Wrong match. the positions were passed on: %s", b)
 			}
 			return &flowbuilder.ChatResponse{Message: "ok"}, nil
