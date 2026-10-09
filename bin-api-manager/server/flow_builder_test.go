@@ -104,6 +104,46 @@ func Test_PostFlowBuilderChat_passesTheDraftOnWithoutLosingAnything(t *testing.T
 	}
 }
 
+// An editor built before the layout moved to the client still sends the
+// `positions` it got back in the last draft. The request must still succeed,
+// and the positions must not travel on to the service.
+func Test_PostFlowBuilderChat_legacyDraftPositionsAreAcceptedAndDropped(t *testing.T) {
+	mc := gomock.NewController(t)
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	a := builderServerAgent()
+
+	body := []byte(`{
+	  "messages":[{"role":"user","content":"hello"}],
+	  "supported_action_types":["talk","hangup"],
+	  "current_draft":{
+	    "actions":[{"id":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071","type":"talk","option":{"text":"Hi"}}],
+	    "labels":{"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071":"greet"},
+	    "positions":{"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071":{"x":120,"y":40}}
+	  }
+	}`)
+
+	mockSvc.EXPECT().FlowBuilderChat(gomock.Any(), a, gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ *auth.AuthIdentity, got *flowbuilder.ChatRequest) (*flowbuilder.ChatResponse, error) {
+			d := got.CurrentDraft
+			if d == nil || len(d.Actions) != 1 || d.Labels["6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"] != "greet" {
+				t.Fatalf("Wrong match. the draft was not passed on: %+v", got)
+			}
+			b, err := json.Marshal(got)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			if strings.Contains(string(b), "positions") {
+				t.Errorf("Wrong match. the positions were passed on: %s", b)
+			}
+			return &flowbuilder.ChatResponse{Message: "ok"}, nil
+		})
+
+	w := serveBuilder(t, mockSvc, a, "POST", "/flow_builder/chat", body)
+	if w.Code != http.StatusOK {
+		t.Fatalf("Wrong match. got %d %s", w.Code, w.Body.String())
+	}
+}
+
 func Test_PostFlowBuilderChat_nonAgentIsRefusedWith403AndNeverReachesTheService(t *testing.T) {
 	mc := gomock.NewController(t)
 	mockSvc := servicehandler.NewMockServiceHandler(mc) // strict: no service call
