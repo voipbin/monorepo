@@ -94,26 +94,18 @@ type SymbolicGraph struct {
 	Nodes []SymbolicNode `json:"nodes"`
 }
 
-// Position is one node's canvas coordinate, computed by the server (design
-// doc §3.2 step 7). The LLM never produces positions.
-type Position struct {
-	X int `json:"x"`
-	Y int `json:"y"`
-}
-
 // Draft is the server-confirmed Flow graph: a flat []action.Action (first
 // element is the start node, matching flow-manager's IDStart convention),
-// plus the editor's position map and the label each action id carries so the
-// server can deterministically reconstruct the symbolic graph on the next
-// turn without storing anything (design doc §3.2 step 9, §5).
+// plus the label each action id carries so the server can deterministically
+// reconstruct the symbolic graph on the next turn without storing anything
+// (design doc §3.2 step 9, §5).
 //
 // Actions is typed as []map[string]any (not []action.Action): the wire shape
 // is exactly action.Action's JSON encoding, and the client sends back what it
 // received. builderhandler does the typed conversion.
 type Draft struct {
-	Actions   []map[string]any    `json:"actions"`
-	Positions map[string]Position `json:"positions"`
-	Labels    map[string]string   `json:"labels"`
+	Actions []map[string]any  `json:"actions"`
+	Labels  map[string]string `json:"labels"`
 }
 
 // ChatRequest is the full client-held conversation plus the latest draft and

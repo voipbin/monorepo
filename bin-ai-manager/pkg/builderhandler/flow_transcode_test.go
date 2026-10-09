@@ -364,37 +364,6 @@ func Test_ValidateDraft_unreachable(t *testing.T) {
 	}
 }
 
-func Test_computeLayout(t *testing.T) {
-	idA := mustID(t, "1")
-	idB := mustID(t, "2")
-	idC := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
-
-	// a (next b) -> b (branch: 1 -> c, default -> a) ; c unreachable? no: c is a branch target.
-	actions := []fmaction.Action{
-		{ID: idA, Type: fmaction.TypeAnswer, NextID: idB},
-		{ID: idB, Type: fmaction.TypeBranch, Option: map[string]any{
-			"target_ids":        map[string]any{"1": idC.String()},
-			"default_target_id": idA.String(),
-		}},
-		{ID: idC, Type: fmaction.TypeStop},
-		{ID: uuid.FromStringOrNil("99999999-9999-9999-9999-999999999999"), Type: fmaction.TypeStop},
-	}
-	got := computeLayout(actions)
-	want := []flowbuilder.Position{
-		{X: 0, Y: 100},  // start
-		{X: 0, Y: 600},  // depth 1
-		{X: 0, Y: 1100}, // depth 2 (branch target)
-		{X: 0, Y: 1600}, // unreachable: one row below the deepest
-	}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", want, got)
-	}
-
-	if got := computeLayout(nil); got != nil {
-		t.Errorf("Wrong match. expect: nil for no actions, got: %v", got)
-	}
-}
-
 // encoding/json matches keys case-insensitively and flow-manager decodes an
 // option with it, so a case variant of a resource or reference key must not
 // get past the clearing and resolution (review round 2, H1).

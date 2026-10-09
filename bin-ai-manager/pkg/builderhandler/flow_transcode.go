@@ -2,8 +2,8 @@ package builderhandler
 
 // flow_transcode.go converts the LLM's label-addressed SymbolicGraph into a
 // confirmed Draft (VOIP-1573 design doc §3.2). Every step here is a pure,
-// deterministic function: the LLM never sees or produces a UUID, a position,
-// or a decision about which warning fires. This file has no dependency on
+// deterministic function: the LLM never sees or produces a UUID or a
+// decision about which warning fires. This file has no dependency on
 // the LLM client or any RPC; it is unit-tested directly.
 
 import (
@@ -102,8 +102,7 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 	// adjacency, and §3.3 flags every such node that is not last.
 	actions = reorderStartFirstOpenEndsLast(actions)
 
-	// Step 7: layout.
-	positions := computeLayout(actions)
+	// Step 7 (layout) was removed; the client lays out the graph.
 
 	// Step 9: assemble the wire draft. (Step 8, the empty-draft case, is
 	// handled above and after filterUnsupportedTypes/dedupe can make the
@@ -111,14 +110,12 @@ func AssembleFlowDraft(graph flowbuilder.SymbolicGraph, allowedTypes map[fmactio
 	// filterUnsupportedTypes always leaves a valid first element when
 	// len(nodes) > 0 -- see its own doc comment.)
 	draft := &flowbuilder.Draft{
-		Actions:   make([]map[string]any, 0, len(actions)),
-		Positions: make(map[string]flowbuilder.Position, len(actions)),
-		Labels:    make(map[string]string, len(actions)),
+		Actions: make([]map[string]any, 0, len(actions)),
+		Labels:  make(map[string]string, len(actions)),
 	}
-	for i, a := range actions {
+	for _, a := range actions {
 		m, _ := actionToMap(a)
 		draft.Actions = append(draft.Actions, m)
-		draft.Positions[a.ID.String()] = positions[i]
 		draft.Labels[a.ID.String()] = idToLabel[a.ID.String()]
 	}
 

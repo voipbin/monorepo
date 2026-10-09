@@ -1,14 +1,13 @@
 package builderhandler
 
-// flow_layout.go computes array order and canvas positions for a transcoded
-// Draft (VOIP-1573 design doc §3.2 steps 6-7, §3.3's sink definition). None
+// flow_graph.go computes array order and graph edges for a transcoded
+// Draft (VOIP-1573 design doc §3.2 step 6, §3.3's sink definition). None
 // of it reads an action type name; it only reads fmaction.MetaByType.Flow
 // and the actions' own next_id links.
 
 import (
 	"encoding/json"
 
-	"monorepo/bin-ai-manager/models/flowbuilder"
 	fmaction "monorepo/bin-flow-manager/models/action"
 )
 
@@ -65,18 +64,11 @@ func reorderStartFirstOpenEndsLast(actions []fmaction.Action) []fmaction.Action 
 	return out
 }
 
-const (
-	layoutStartX     = 0
-	layoutStartY     = 100
-	layoutDepthStepY = 500
-	layoutColStepX   = 450
-)
-
 // successors returns, per action index, the indexes the executor can reach
 // next: the next_id target, every ref:"action" target, and, for an open end
 // that is not the last element, the next array element (the executor's
-// array-adjacency fall-through, design doc 3.3). Layout and the unreachable
-// check share it so "unreachable" and "placed in the unreachable row" agree.
+// array-adjacency fall-through, design doc 3.3). The unreachable check
+// uses it.
 func successors(actions []fmaction.Action) [][]int {
 	byID := make(map[string]int, len(actions))
 	for i, a := range actions {
@@ -105,59 +97,6 @@ func successors(actions []fmaction.Action) [][]int {
 		}
 	}
 	return adj
-}
-
-// computeLayout assigns a grid {x,y} per action: x by order-of-appearance
-// within a BFS depth from the start node, y by depth. Edges are those of
-// successors (so a branch's targets land one row further down, like the
-// hand-built templates). Unreachable nodes go in one extra row below the
-// deepest reachable one (design doc 3.2 step 7).
-func computeLayout(actions []fmaction.Action) []flowbuilder.Position {
-	if len(actions) == 0 {
-		return nil
-	}
-
-	adj := successors(actions)
-
-	depth := make([]int, len(actions))
-	for i := range depth {
-		depth[i] = -1
-	}
-	depth[0] = 0
-	queue := []int{0}
-	for len(queue) > 0 {
-		cur := queue[0]
-		queue = queue[1:]
-		for _, next := range adj[cur] {
-			if depth[next] == -1 {
-				depth[next] = depth[cur] + 1
-				queue = append(queue, next)
-			}
-		}
-	}
-
-	maxDepth := 0
-	for _, d := range depth {
-		if d > maxDepth {
-			maxDepth = d
-		}
-	}
-	unreachableDepth := maxDepth + 1
-
-	colAtDepth := map[int]int{}
-	positions := make([]flowbuilder.Position, len(actions))
-	for i, d := range depth {
-		if d == -1 {
-			d = unreachableDepth
-		}
-		col := colAtDepth[d]
-		colAtDepth[d] = col + 1
-		positions[i] = flowbuilder.Position{
-			X: layoutStartX + col*layoutColStepX,
-			Y: layoutStartY + d*layoutDepthStepY,
-		}
-	}
-	return positions
 }
 
 // extractActionRefTargets reads a ref:"action" field's resolved UUID

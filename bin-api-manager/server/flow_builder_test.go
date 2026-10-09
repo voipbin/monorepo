@@ -53,7 +53,7 @@ func Test_PostFlowBuilderChat_success(t *testing.T) {
 }
 
 // The draft is the contract with the editor: every action key, including the
-// open-ended option, the next_id and the positions and labels, must reach the
+// open-ended option, the next_id and the labels, must reach the
 // service exactly as the client sent it.
 func Test_PostFlowBuilderChat_passesTheDraftOnWithoutLosingAnything(t *testing.T) {
 	mc := gomock.NewController(t)
@@ -68,7 +68,6 @@ func Test_PostFlowBuilderChat_passesTheDraftOnWithoutLosingAnything(t *testing.T
 	      {"id":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071","type":"talk","option":{"text":"Hi","language":"en-US","async":true},"next_id":"841c5fa2-f0c2-11ee-834f-53b2b00ec88d"},
 	      {"id":"841c5fa2-f0c2-11ee-834f-53b2b00ec88d","type":"branch","option":{"variable":"v","target_ids":{"1":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"},"default_target_id":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"}}
 	    ],
-	    "positions":{"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071":{"x":0,"y":100},"841c5fa2-f0c2-11ee-834f-53b2b00ec88d":{"x":0,"y":600}},
 	    "labels":{"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071":"greet"}
 	  }
 	}`)
@@ -90,14 +89,59 @@ func Test_PostFlowBuilderChat_passesTheDraftOnWithoutLosingAnything(t *testing.T
 			if !reflect.DeepEqual(branch["target_ids"], map[string]any{"1": "6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"}) {
 				t.Errorf("Wrong match. the branch targets were lost: %v", branch)
 			}
-			if d.Positions["841c5fa2-f0c2-11ee-834f-53b2b00ec88d"] != (flowbuilder.Position{X: 0, Y: 600}) {
-				t.Errorf("Wrong match. positions: %+v", d.Positions)
-			}
 			if d.Labels["6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"] != "greet" {
 				t.Errorf("Wrong match. labels: %+v", d.Labels)
 			}
 			if len(got.Messages) != 3 || got.Messages[1].Role != "assistant" {
 				t.Errorf("Wrong match. messages: %+v", got.Messages)
+			}
+			return &flowbuilder.ChatResponse{Message: "ok"}, nil
+		})
+
+	w := serveBuilder(t, mockSvc, a, "POST", "/flow_builder/chat", body)
+	if w.Code != http.StatusOK {
+		t.Fatalf("Wrong match. got %d %s", w.Code, w.Body.String())
+	}
+}
+
+// An editor built before the layout moved to the client still sends the
+// `positions` it got back in the last draft. The request must still succeed,
+// and the positions must not travel on to the service.
+func Test_PostFlowBuilderChat_legacyDraftPositionsAreAcceptedAndDropped(t *testing.T) {
+	mc := gomock.NewController(t)
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	a := builderServerAgent()
+
+	body := []byte(`{
+	  "messages":[{"role":"user","content":"hello"}],
+	  "supported_action_types":["talk","hangup"],
+	  "current_draft":{
+	    "actions":[{"id":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071","type":"talk","option":{"text":"Hi"}}],
+	    "labels":{"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071":"greet"},
+	    "positions":{"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071":{"x":120,"y":40}}
+	  }
+	}`)
+
+	mockSvc.EXPECT().FlowBuilderChat(gomock.Any(), a, gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ *auth.AuthIdentity, got *flowbuilder.ChatRequest) (*flowbuilder.ChatResponse, error) {
+			d := got.CurrentDraft
+			if d == nil || len(d.Actions) != 1 || d.Labels["6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"] != "greet" {
+				t.Fatalf("Wrong match. the draft was not passed on: %+v", got)
+			}
+			b, err := json.Marshal(got)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+			var fwd map[string]any
+			if errUnmarshal := json.Unmarshal(b, &fwd); errUnmarshal != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", errUnmarshal)
+			}
+			draft, ok := fwd["current_draft"].(map[string]any)
+			if !ok {
+				t.Fatalf("Wrong match. the current_draft was not passed on: %s", b)
+			}
+			if _, ok := draft["positions"]; ok {
+				t.Errorf("Wrong match. the positions were passed on: %s", b)
 			}
 			return &flowbuilder.ChatResponse{Message: "ok"}, nil
 		})

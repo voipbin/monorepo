@@ -23,9 +23,8 @@ func Test_AIV1FlowBuilderChat(t *testing.T) {
 		Messages:             []flowbuilder.Message{{Role: flowbuilder.RoleUser, Content: "greeting flow"}},
 		SupportedActionTypes: []string{"talk", "hangup"},
 		CurrentDraft: &flowbuilder.Draft{
-			Actions:   []map[string]any{{"id": "a", "type": "talk"}},
-			Positions: map[string]flowbuilder.Position{"a": {X: 0, Y: 100}},
-			Labels:    map[string]string{"a": "greet"},
+			Actions: []map[string]any{{"id": "a", "type": "talk"}},
+			Labels:  map[string]string{"a": "greet"},
 		},
 	}
 
@@ -37,7 +36,7 @@ func Test_AIV1FlowBuilderChat(t *testing.T) {
 	// The marshaled wire shape: the customer id is part of the body (the
 	// daily counter is charged to it), and the supported types and the draft
 	// travel with it.
-	expectBody := `{"customer_id":"83fec56f-8e28-4356-a50c-7641e39ed2df","messages":[{"role":"user","content":"greeting flow"}],"current_draft":{"actions":[{"id":"a","type":"talk"}],"positions":{"a":{"x":0,"y":100}},"labels":{"a":"greet"}},"supported_action_types":["talk","hangup"]}`
+	expectBody := `{"customer_id":"83fec56f-8e28-4356-a50c-7641e39ed2df","messages":[{"role":"user","content":"greeting flow"}],"current_draft":{"actions":[{"id":"a","type":"talk"}],"labels":{"a":"greet"}},"supported_action_types":["talk","hangup"]}`
 	mockSock.EXPECT().RequestPublish(deadlineNear(t, 55*time.Second), string(outline.QueueNameAIRequest), &sock.Request{
 		URI:      "/v1/flow_builder/chat",
 		Method:   sock.RequestMethodPost,
@@ -67,7 +66,7 @@ func Test_AIV1FlowBuilderChat_responseCarriesDraftAndSensitiveNodes(t *testing.T
 	mockSock.EXPECT().RequestPublish(gomock.Any(), gomock.Any(), gomock.Any()).Return(&sock.Response{
 		StatusCode: 200,
 		DataType:   ContentTypeJSON,
-		Data:       []byte(`{"message":"m","draft":{"actions":[{"id":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071","type":"message_send"}],"positions":{},"labels":{}},"draft_warnings":["open_end: a"],"sensitive_nodes":["6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"]}`),
+		Data:       []byte(`{"message":"m","draft":{"actions":[{"id":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071","type":"message_send"}],"labels":{}},"draft_warnings":["open_end: a"],"sensitive_nodes":["6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"]}`),
 	}, nil)
 
 	res, err := h.AIV1FlowBuilderChat(context.Background(), builderTestCustomerID, &flowbuilder.ChatRequest{})

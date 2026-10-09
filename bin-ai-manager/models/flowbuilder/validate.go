@@ -46,9 +46,6 @@ func ValidateRequest(req *ChatRequest) error {
 	if len(d.Actions) > MaxFlowNodes {
 		return invalid("current_draft.actions exceeds the limit of %d", MaxFlowNodes)
 	}
-	if len(d.Positions) > len(d.Actions) {
-		return invalid("current_draft.positions has more entries than actions")
-	}
 	if len(d.Labels) > len(d.Actions) {
 		return invalid("current_draft.labels has more entries than actions")
 	}

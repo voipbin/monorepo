@@ -17,7 +17,7 @@ import (
 
 // flowBuilderMaxBodyBytes caps the request body. It is NOT the Assistant
 // Builder's 160 KiB: a flow draft rides along on every turn (up to 60
-// actions of up to 4 KiB of option each, plus positions and labels) next to a
+// actions of up to 4 KiB of option each, plus labels) next to a
 // conversation of up to 40000 characters, about 380 KiB at the limits
 // (design doc 5). The initial value is not measured. It must stay below the
 // body limit of whatever sits in front of api-manager.
