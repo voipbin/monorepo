@@ -53,7 +53,7 @@ func Test_PostFlowBuilderChat_success(t *testing.T) {
 }
 
 // The draft is the contract with the editor: every action key, including the
-// open-ended option, the next_id and the positions and labels, must reach the
+// open-ended option, the next_id and the labels, must reach the
 // service exactly as the client sent it.
 func Test_PostFlowBuilderChat_passesTheDraftOnWithoutLosingAnything(t *testing.T) {
 	mc := gomock.NewController(t)
@@ -68,7 +68,6 @@ func Test_PostFlowBuilderChat_passesTheDraftOnWithoutLosingAnything(t *testing.T
 	      {"id":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071","type":"talk","option":{"text":"Hi","language":"en-US","async":true},"next_id":"841c5fa2-f0c2-11ee-834f-53b2b00ec88d"},
 	      {"id":"841c5fa2-f0c2-11ee-834f-53b2b00ec88d","type":"branch","option":{"variable":"v","target_ids":{"1":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"},"default_target_id":"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"}}
 	    ],
-	    "positions":{"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071":{"x":0,"y":100},"841c5fa2-f0c2-11ee-834f-53b2b00ec88d":{"x":0,"y":600}},
 	    "labels":{"6c73ff34-7f4c-11ec-b4d5-5b94d40e4071":"greet"}
 	  }
 	}`)
@@ -89,9 +88,6 @@ func Test_PostFlowBuilderChat_passesTheDraftOnWithoutLosingAnything(t *testing.T
 			branch := d.Actions[1]["option"].(map[string]any)
 			if !reflect.DeepEqual(branch["target_ids"], map[string]any{"1": "6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"}) {
 				t.Errorf("Wrong match. the branch targets were lost: %v", branch)
-			}
-			if d.Positions["841c5fa2-f0c2-11ee-834f-53b2b00ec88d"] != (flowbuilder.Position{X: 0, Y: 600}) {
-				t.Errorf("Wrong match. positions: %+v", d.Positions)
 			}
 			if d.Labels["6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"] != "greet" {
 				t.Errorf("Wrong match. labels: %+v", d.Labels)

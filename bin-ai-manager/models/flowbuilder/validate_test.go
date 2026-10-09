@@ -53,12 +53,6 @@ func Test_ValidateRequest(t *testing.T) {
 		{"option nested too deep", func(r *ChatRequest) {
 			r.CurrentDraft = &Draft{Actions: []map[string]any{{"id": "a", "option": deep}}}
 		}, true},
-		{"more positions than actions", func(r *ChatRequest) {
-			r.CurrentDraft = &Draft{
-				Actions:   []map[string]any{{"id": "a"}},
-				Positions: map[string]Position{"a": {}, "b": {}},
-			}
-		}, true},
 		{"more labels than actions", func(r *ChatRequest) {
 			r.CurrentDraft = &Draft{
 				Actions: []map[string]any{{"id": "a"}},
@@ -73,9 +67,8 @@ func Test_ValidateRequest(t *testing.T) {
 		}, true},
 		{"a sane draft", func(r *ChatRequest) {
 			r.CurrentDraft = &Draft{
-				Actions:   []map[string]any{{"id": "a", "type": "stop"}},
-				Positions: map[string]Position{"a": {X: 1, Y: 2}},
-				Labels:    map[string]string{"a": "end"},
+				Actions: []map[string]any{{"id": "a", "type": "stop"}},
+				Labels:  map[string]string{"a": "end"},
 			}
 		}, false},
 	}

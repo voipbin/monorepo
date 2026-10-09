@@ -64,8 +64,8 @@ func Test_FlowChat_success(t *testing.T) {
 	if resp.Draft.Actions[0]["type"] != "talk" {
 		t.Errorf("Wrong match. expect: talk first, got: %v", resp.Draft.Actions[0]["type"])
 	}
-	if len(resp.Draft.Positions) != 3 || len(resp.Draft.Labels) != 3 {
-		t.Errorf("Wrong match. expect: 3 positions and labels, got: %d, %d", len(resp.Draft.Positions), len(resp.Draft.Labels))
+	if len(resp.Draft.Labels) != 3 {
+		t.Errorf("Wrong match. expect: 3 labels, got: %d", len(resp.Draft.Labels))
 	}
 	if len(resp.SensitiveNodes) != 1 || resp.SensitiveNodes[0].String() != resp.Draft.Actions[1]["id"] {
 		t.Errorf("Wrong match. expect: exactly the message_send node as sensitive, got: %v", resp.SensitiveNodes)

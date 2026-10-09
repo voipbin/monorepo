@@ -123,7 +123,7 @@ func checkOpenEnds(actions []fmaction.Action, labels map[string]string) []string
 }
 
 // checkUnreachable flags every action the executor cannot reach from
-// actions[0], using the same edges as the layout (successors): next_id,
+// actions[0], using the edges from successors: next_id,
 // ref:"action" targets and the array fall-through of a non-last open end.
 func checkUnreachable(actions []fmaction.Action, labels map[string]string) []string {
 	if len(actions) == 0 {
