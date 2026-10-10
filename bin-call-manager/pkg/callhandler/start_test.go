@@ -1356,6 +1356,11 @@ func Test_warnExternalMembersInCallBridge(t *testing.T) {
 			},
 		},
 		{
+			name:     "nil bridge without an error is ignored",
+			callID:   "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+			bridgeID: "ed08cbf8-4319-11ec-a768-23af5da287d4",
+		},
+		{
 			name:              "bridge lookup error is ignored",
 			callID:            "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
 			bridgeID:          "ed08cbf8-4319-11ec-a768-23af5da287d4",
