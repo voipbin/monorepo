@@ -62,6 +62,14 @@ func (h *callHandler) bridgeLeftExternal(ctx context.Context, cn *channel.Channe
 		"bridge_id":  br.ID,
 	})
 
+	// the call bridge is owned by the call (Hangup destroys it). Only the external media channel is hung up here;
+	// kicking the remaining channels would remove the call channel from its own bridge.
+	if br.ReferenceType == bridge.ReferenceTypeCall {
+		log.Debugf("The external media channel left the call bridge. Hangup the channel only. remaining_channels: %d", len(br.ChannelIDs))
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
+		return nil
+	}
+
 	// hang up the channel
 	log.Debug("Hangup external media channel.")
 	_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNormalClearing)
@@ -94,6 +102,32 @@ func (h *callHandler) removeAllChannelsInBridge(ctx context.Context, bridge *bri
 		log.Debugf("Kicking out the channel from the bridge. channel_id: %s", channelID)
 		if errKick := h.bridgeHandler.ChannelKick(ctx, bridge.ID, channelID); errKick != nil {
 			log.Debugf("Could not hangup the channel. channel_id: %s, err: %v", channelID, errKick)
+		}
+	}
+}
+
+// hangupExternalMembers hangs up the external media channels remaining in the call bridge.
+// It is called when the call channel left the call bridge, so an injector never outlives the call.
+// Errors are logged only.
+func (h *callHandler) hangupExternalMembers(ctx context.Context, br *bridge.Bridge) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "hangupExternalMembers",
+		"bridge_id": br.ID,
+	})
+
+	for _, channelID := range br.ChannelIDs {
+		member, err := h.channelHandler.Get(ctx, channelID)
+		if err != nil {
+			log.Debugf("Could not get the member channel. channel_id: %s, err: %v", channelID, err)
+			continue
+		}
+		if member.Type != channel.TypeExternal {
+			continue
+		}
+
+		log.Infof("Hanging up the external media channel of the ended call. channel_id: %s", member.ID)
+		if _, errHangup := h.channelHandler.HangingUp(ctx, member.ID, ari.ChannelCauseNormalClearing); errHangup != nil {
+			log.Debugf("Could not hangup the external media channel. channel_id: %s, err: %v", member.ID, errHangup)
 		}
 	}
 }

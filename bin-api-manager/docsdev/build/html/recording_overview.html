@@ -697,6 +697,17 @@ Recording</p></td>
 </tbody>
 </table>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI and text-to-speech audio in call recordings</strong></p>
+<p>For a plain single call, the outgoing (<code class="docutils literal notranslate"><span class="pre">out</span></code>) side of the recording includes the audio that
+VoIPBin injects into the call: an AI voice conversation (<code class="docutils literal notranslate"><span class="pre">ai_talk</span></code>) and a speaking session created
+with <code class="docutils literal notranslate"><span class="pre">direction</span></code> <code class="docutils literal notranslate"><span class="pre">out</span></code>. This does not apply to conference legs, connect legs, group call legs,
+calls that are still dialing or ringing, or audio sent through a customer supplied external media host.
+Recordings made before this change are not modified.</p>
+<p>A transcription of the <code class="docutils literal notranslate"><span class="pre">out</span></code> or <code class="docutils literal notranslate"><span class="pre">both</span></code> direction (streaming or recording based) of such a call
+also contains the injected AI and text-to-speech speech.</p>
+</div>
 <p><strong>File Format</strong></p>
 <ul class="simple">
 <li><p>Format: WAV (PCM)</p></li>

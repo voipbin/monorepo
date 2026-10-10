@@ -11,6 +11,7 @@ import (
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
+	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/externalmedia"
 )
@@ -90,6 +91,15 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 		return nil, errors.Wrapf(err, "could not get channel info for channel_id: %s", c.ChannelID)
 	}
 
+	// injected audio (speak out) is recorded in the `out` recording only when the external media
+	// channel is a member of the call bridge, because a snoop spy never sees snoop whisper audio.
+	eligible, reason := isCallBridgeEligible(c, externalHost, directionListen, directionSpeak)
+	if eligible {
+		log.Infof("Starting the external media in the call bridge. call_id: %s, path: call_bridge", c.ID)
+		return h.startReferenceTypeCallBridge(ctx, id, c, ch, externalHost, encapsulation, transport, transportData, connectionType, format, directionListen, directionSpeak)
+	}
+	log.Infof("Starting the external media with the snoop channel. call_id: %s, path: snoop, reason: %s", c.ID, reason)
+
 	// create a bridge
 	bridgeID := h.utilHandler.UUIDCreate().String()
 	bridgeName := fmt.Sprintf("reference_type=%s,reference_id=%s", bridge.ReferenceTypeCallSnoop, c.ID)
@@ -139,6 +149,86 @@ func (h *externalMediaHandler) startReferenceTypeCall(
 		log.Errorf("Could not start the external media. err: %v", err)
 		_, _ = h.channelHandler.HangingUp(ctx, tmp.ID, ari.ChannelCauseNormalClearing)
 		_ = h.bridgeHandler.Destroy(ctx, br.ID)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// externalHostIncoming is the external host literal used by the platform services (pipecat, tts, transcribe)
+// for the websocket server mode.
+const externalHostIncoming = "INCOMING"
+
+// isCallBridgeEligible returns true when the external media can join the call bridge directly.
+// Otherwise it returns false with the first failed condition.
+func isCallBridgeEligible(c *call.Call, externalHost string, listen externalmedia.Direction, speak externalmedia.Direction) (bool, string) {
+	if speak != externalmedia.DirectionOut {
+		return false, "speak direction is not out"
+	}
+	if listen != externalmedia.DirectionNone && listen != externalmedia.DirectionIn {
+		return false, "listen direction is not none or in"
+	}
+	if externalHost != externalHostIncoming {
+		return false, "external host is not platform internal"
+	}
+	if c.Status != call.StatusProgressing {
+		return false, "call is not progressing"
+	}
+	if c.BridgeID == "" {
+		return false, "call has no bridge"
+	}
+	if c.ConfbridgeID != uuid.Nil {
+		return false, "call is in a conference"
+	}
+	if c.MasterCallID != uuid.Nil {
+		return false, "call is the slave leg of a connect"
+	}
+	if len(c.ChainedCallIDs) != 0 {
+		return false, "call is the master leg of a connect"
+	}
+	if c.GroupcallID != uuid.Nil {
+		return false, "call is a groupcall leg"
+	}
+
+	return true, ""
+}
+
+// startReferenceTypeCallBridge starts the external media as a member of the call bridge.
+// No snoop channel and no extra bridge are created, so there is nothing to clean up on failure,
+// and the call bridge is never destroyed on this path.
+func (h *externalMediaHandler) startReferenceTypeCallBridge(
+	ctx context.Context,
+	id uuid.UUID,
+	c *call.Call,
+	ch *channel.Channel,
+	externalHost string,
+	encapsulation externalmedia.Encapsulation,
+	transport externalmedia.Transport,
+	transportData string,
+	connectionType string,
+	format string,
+	directionListen externalmedia.Direction,
+	directionSpeak externalmedia.Direction,
+) (*externalmedia.ExternalMedia, error) {
+	res, err := h.startExternalMedia(
+		ctx,
+		id,
+		ch.AsteriskID,
+		c.BridgeID,
+		"",
+		externalmedia.ReferenceTypeCall,
+		c.ID,
+		externalHost,
+		encapsulation,
+		transport,
+		transportData,
+		connectionType,
+		format,
+		directionListen,
+		directionSpeak,
+	)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"func": "startReferenceTypeCallBridge", "call_id": c.ID}).Errorf("Could not start the external media. err: %v", err)
 		return nil, err
 	}
 
