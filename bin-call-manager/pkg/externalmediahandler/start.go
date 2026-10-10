@@ -210,7 +210,8 @@ func (h *externalMediaHandler) startReferenceTypeCallBridge(
 	directionListen externalmedia.Direction,
 	directionSpeak externalmedia.Direction,
 ) (*externalmedia.ExternalMedia, error) {
-	res, err := h.startExternalMedia(
+	// startExternalMedia logs and cleans up its own failures.
+	return h.startExternalMedia(
 		ctx,
 		id,
 		ch.AsteriskID,
@@ -227,12 +228,6 @@ func (h *externalMediaHandler) startReferenceTypeCallBridge(
 		directionListen,
 		directionSpeak,
 	)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{"func": "startReferenceTypeCallBridge", "call_id": c.ID}).Errorf("Could not start the external media. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
 }
 
 // startReferenceTypeConfbridge starts the external media processing reference type
