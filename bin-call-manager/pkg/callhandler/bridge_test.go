@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -204,6 +205,169 @@ func TestRemoveAllChannelsInBridge(t *testing.T) {
 				mockBridge.EXPECT().ChannelKick(ctx, tt.bridge.ID, channelID).Return(nil)
 			}
 			h.removeAllChannelsInBridge(ctx, tt.bridge)
+		})
+	}
+}
+
+func Test_BridgeLeftExternal_callBridge(t *testing.T) {
+	tests := []struct {
+		name    string
+		channel *channel.Channel
+		bridge  *bridge.Bridge
+	}{
+		{
+			name: "call bridge with the call channel remaining: hangup only, no kick, no destroy",
+			channel: &channel.Channel{
+				ID:         "3e20f43c-151d-11ec-be7f-6b10f15c44b3",
+				AsteriskID: "42:01:0a:a4:00:03",
+				Type:       channel.TypeExternal,
+			},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"5c0bfe56-151d-11ec-b49b-cf370dddad9f"},
+			},
+		},
+		{
+			name: "call bridge with no channel remaining: no destroy either",
+			channel: &channel.Channel{
+				ID:         "be2ad3b4-151d-11ec-bf66-0fbf215234b3",
+				AsteriskID: "42:01:0a:a4:00:03",
+				Type:       channel.TypeExternal,
+			},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &callHandler{
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+			ctx := context.Background()
+
+			// only HangingUp is expected: any Destroy or ChannelKick call fails the test.
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
+
+			if err := h.bridgeLeftExternal(ctx, tt.channel, tt.bridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_hangupExternalMembers(t *testing.T) {
+	tests := []struct {
+		name string
+
+		bridge *bridge.Bridge
+
+		responseChannels   map[string]*channel.Channel
+		responseGetErrIDs  map[string]bool
+		responseHangupErrs map[string]bool
+
+		expectHangupIDs []string
+	}{
+		{
+			name: "external member is hung up, other members are not",
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"join-channel", "ext-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"join-channel": {ID: "join-channel", Type: channel.TypeJoin},
+				"ext-channel":  {ID: "ext-channel", Type: channel.TypeExternal},
+			},
+			expectHangupIDs: []string{"ext-channel"},
+		},
+		{
+			name: "no external member",
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"join-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"join-channel": {ID: "join-channel", Type: channel.TypeJoin},
+			},
+			expectHangupIDs: []string{},
+		},
+		{
+			name: "no remaining channel",
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{},
+			},
+			expectHangupIDs: []string{},
+		},
+		{
+			name: "get error on one member does not stop the next member",
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"broken-channel", "ext-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"ext-channel": {ID: "ext-channel", Type: channel.TypeExternal},
+			},
+			responseGetErrIDs: map[string]bool{"broken-channel": true},
+			expectHangupIDs:   []string{"ext-channel"},
+		},
+		{
+			name: "hangup error on one external member does not stop the next member",
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"ext-channel-1", "ext-channel-2"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"ext-channel-1": {ID: "ext-channel-1", Type: channel.TypeExternal},
+				"ext-channel-2": {ID: "ext-channel-2", Type: channel.TypeExternal},
+			},
+			responseHangupErrs: map[string]bool{"ext-channel-1": true},
+			expectHangupIDs:    []string{"ext-channel-1", "ext-channel-2"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{channelHandler: mockChannel}
+			ctx := context.Background()
+
+			for _, channelID := range tt.bridge.ChannelIDs {
+				if tt.responseGetErrIDs[channelID] {
+					mockChannel.EXPECT().Get(ctx, channelID).Return(nil, fmt.Errorf("not found"))
+					continue
+				}
+				mockChannel.EXPECT().Get(ctx, channelID).Return(tt.responseChannels[channelID], nil)
+			}
+			for _, channelID := range tt.expectHangupIDs {
+				if tt.responseHangupErrs[channelID] {
+					mockChannel.EXPECT().HangingUp(ctx, channelID, ari.ChannelCauseNormalClearing).Return(nil, fmt.Errorf("hangup failed"))
+					continue
+				}
+				mockChannel.EXPECT().HangingUp(ctx, channelID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
+			}
+
+			h.hangupExternalMembers(ctx, tt.bridge)
 		})
 	}
 }

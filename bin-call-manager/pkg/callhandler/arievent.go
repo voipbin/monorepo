@@ -193,6 +193,9 @@ func (h *callHandler) ARIChannelLeftBridge(ctx context.Context, cn *channel.Chan
 
 	switch cn.Type {
 	case channel.TypeCall:
+		if br.ReferenceType == bridge.ReferenceTypeCall {
+			h.hangupExternalMembers(ctx, br)
+		}
 		return nil
 	case channel.TypeJoin:
 		return h.bridgeLeftJoin(ctx, cn, br)

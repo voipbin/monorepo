@@ -53,6 +53,17 @@ When you start a recording, VoIPBin captures the audio stream and writes it to c
 | Recording        |                                                       |
 +------------------+-------------------------------------------------------+
 
+.. note:: **AI and text-to-speech audio in call recordings**
+
+   For a plain single call, the outgoing (``out``) side of the recording includes the audio that
+   VoIPBin injects into the call: an AI voice conversation (``ai_talk``) and a speaking session created
+   with ``direction`` ``out``. This does not apply to conference legs, connect legs, group call legs,
+   calls that are still dialing or ringing, or audio sent through a customer supplied external media host.
+   Recordings made before this change are not modified.
+
+   A transcription of the ``out`` or ``both`` direction (streaming or recording based) of such a call
+   also contains the injected AI and text-to-speech speech.
+
 **File Format**
 
 - Format: WAV (PCM)
