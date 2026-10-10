@@ -127,7 +127,7 @@ func (h *callHandler) hangupExternalMembers(ctx context.Context, br *bridge.Brid
 
 		log.Infof("Hanging up the external media channel of the ended call. channel_id: %s", member.ID)
 		if _, errHangup := h.channelHandler.HangingUp(ctx, member.ID, ari.ChannelCauseNormalClearing); errHangup != nil {
-			log.Debugf("Could not hangup the external media channel. channel_id: %s, err: %v", member.ID, errHangup)
+			log.Warnf("Could not hangup the external media channel. channel_id: %s, err: %v", member.ID, errHangup)
 		}
 	}
 }

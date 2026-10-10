@@ -216,13 +216,15 @@ func (h *callHandler) startContextJoinCall(ctx context.Context, cn *channel.Chan
 		log.Errorf("Could not add the external snoop channel to the bridge. err: %v", errJoin)
 		return errors.Wrap(errJoin, "could not add the external snoop channel to the channel")
 	}
-	h.warnExternalMembersInCallBridge(ctx, callID, bridgeID)
 
 	// dial to the destination
 	if errDial := h.channelHandler.Dial(ctx, cn.ID, "", defaultDialTimeout); errDial != nil {
 		log.Errorf("Could not dial the channel to the destination. channel_id: %s, err: %v", cn.ID, errDial)
 		return errors.Wrap(errDial, "could not dial the channel to the destination")
 	}
+
+	// log only, after the join path is done so it never delays the dial.
+	h.warnExternalMembersInCallBridge(ctx, callID, bridgeID)
 
 	return nil
 }
@@ -783,7 +785,11 @@ func (h *callHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID,
 // external media channels. Best effort and log only: lookup errors are ignored.
 func (h *callHandler) warnExternalMembersInCallBridge(ctx context.Context, callID string, bridgeID string) {
 	br, err := h.bridgeHandler.Get(ctx, bridgeID)
-	if err != nil || br.ReferenceType != bridge.ReferenceTypeCall {
+	if err != nil {
+		logrus.Debugf("Could not get the bridge for the external member check. bridge_id: %s, err: %v", bridgeID, err)
+		return
+	}
+	if br == nil || br.ReferenceType != bridge.ReferenceTypeCall {
 		return
 	}
 
