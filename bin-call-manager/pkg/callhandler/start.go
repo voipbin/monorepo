@@ -223,6 +223,9 @@ func (h *callHandler) startContextJoinCall(ctx context.Context, cn *channel.Chan
 		return errors.Wrap(errDial, "could not dial the channel to the destination")
 	}
 
+	// log only, after the join path is done so it never delays the dial.
+	h.warnExternalMembersInCallBridge(ctx, callID, bridgeID)
+
 	return nil
 }
 
@@ -776,4 +779,32 @@ func (h *callHandler) getAddressOwner(ctx context.Context, customerID uuid.UUID,
 	}
 
 	return commonidentity.OwnerTypeAgent, tmp.ID, nil
+}
+
+// warnExternalMembersInCallBridge logs a warning when a join channel entered a call bridge that still holds
+// external media channels. Best effort and log only: lookup errors are ignored.
+func (h *callHandler) warnExternalMembersInCallBridge(ctx context.Context, callID string, bridgeID string) {
+	br, err := h.bridgeHandler.Get(ctx, bridgeID)
+	if err != nil {
+		logrus.Debugf("Could not get the bridge for the external member check. bridge_id: %s, err: %v", bridgeID, err)
+		return
+	}
+	if br == nil || br.ReferenceType != bridge.ReferenceTypeCall {
+		return
+	}
+
+	externals := []string{}
+	for _, channelID := range br.ChannelIDs {
+		member, errGet := h.channelHandler.Get(ctx, channelID)
+		if errGet == nil && member.Type == channel.TypeExternal {
+			externals = append(externals, member.ID)
+		}
+	}
+	if len(externals) > 0 {
+		logrus.WithFields(logrus.Fields{
+			"func":      "warnExternalMembersInCallBridge",
+			"call_id":   callID,
+			"bridge_id": bridgeID,
+		}).Warnf("A join channel entered the call bridge that holds external media channels. external_channels: %v", externals)
+	}
 }

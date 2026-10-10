@@ -84,7 +84,7 @@ The old `*.registrar.{base}` suffix is NOT accepted: the VOIP-1385 cutover remov
 
 4. **Recording exclusivity per resource**: each call or confbridge may have at most one active `recording_id` at a time. A second `recording_start` on the same resource is rejected while the first recording is active. Multiple completed recordings are accumulated in `recording_ids`.
 
-5. **ExternalMedia splicing requires bridge creation**: when external media is added to a call or confbridge, a dedicated snoop channel and bridge are created in Asterisk to route media to the external endpoint. The `bridge_id` and `channel_id` fields on `ExternalMedia` track these Asterisk objects.
+5. **ExternalMedia splicing**: when external media is added to a call or confbridge, a dedicated snoop channel and bridge are created in Asterisk to route media to the external endpoint. The `bridge_id` and `channel_id` fields on `ExternalMedia` track these Asterisk objects. Exception: a platform-internal external media (host `INCOMING`, speak `out`, listen `none` or `in`) on a plain progressing call (not a conference, connect or groupcall leg) joins the call's own bridge directly with no snoop channel, so injected audio is recorded in the `out` recording; its `bridge_id` is then the call bridge, which is owned by the call and is never destroyed when the external media leaves.
 
 6. **GroupCall answer semantics**: when `answer_method = hangup_others`, the first call to answer causes all other in-progress calls in the group to be hung up. The `answer_call_id` is set to the answering call, and `answer_groupcall_id` identifies the nested group that answered (for linear/nested strategies).
 
