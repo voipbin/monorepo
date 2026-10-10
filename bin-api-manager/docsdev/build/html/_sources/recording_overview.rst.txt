@@ -58,7 +58,7 @@ When you start a recording, VoIPBin captures the audio stream and writes it to c
    For a plain single call, the outgoing (``out``) side of the recording includes the audio that
    VoIPBin injects into the call: an AI voice conversation (``ai_talk``) and a speaking session created
    with ``direction`` ``out``. This does not apply to conference legs, connect legs, group call legs,
-   calls that are still dialing or ringing, or audio sent through a customer supplied external media host.
+   calls that are still dialing or ringing (including flows that run before the call is answered), media streams, or audio sent through a customer supplied external media host.
    Recordings made before this change are not modified.
 
    A transcription of the ``out`` or ``both`` direction (streaming or recording based) of such a call

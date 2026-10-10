@@ -209,6 +209,27 @@ func Test_answerCallBridgePeers(t *testing.T) {
 			expectAnswer:  true,
 		},
 		{
+			// an external media channel in the call bridge is already Up → skipped, no answer called
+			name: "external media peer already up - skip",
+			channel: &channel.Channel{
+				ID:       "call-out-channel-id-3",
+				State:    ari.ChannelStateUp,
+				BridgeID: "bridge-eee",
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-eee",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"call-out-channel-id-3", "external-media-channel-id"},
+			},
+			responsePeer: &channel.Channel{
+				ID:    "external-media-channel-id",
+				Type:  channel.TypeExternal,
+				State: ari.ChannelStateUp,
+			},
+			expectGetPeer: true,
+			expectAnswer:  false,
+		},
+		{
 			// guard check: confbridge bridge → no answer called
 			name: "confbridge bridge - no answer",
 			channel: &channel.Channel{
