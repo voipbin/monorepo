@@ -153,16 +153,14 @@ func Test_IsExist_getFailed(t *testing.T) {
 				notifyHandler: mockNotify,
 			}
 
-			// A short deadline keeps the test fast. Do not use an already
-			// cancelled context: getWithTimeout may then return (nil, nil)
-			// and IsExist would dereference a nil bridge.
+			// A short deadline keeps the test fast.
 			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
 			defer cancel()
 
-			// Block until the lookup context expires, then fail. The retry
-			// goroutine sleeps defaultDelayTimeout before it closes its result
-			// channel, so in practice getWithTimeout takes the timeout path
-			// and BridgeGet is called exactly once.
+			// Block until the lookup context expires, then fail. After its
+			// defaultDelayTimeout sleep the retry goroutine sees the expired
+			// context and exits without another lookup, so BridgeGet is
+			// called exactly once.
 			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).DoAndReturn(func(c context.Context, _ string) (*bridge.Bridge, error) {
 				<-c.Done()
 				return nil, fmt.Errorf("bridge not found")
