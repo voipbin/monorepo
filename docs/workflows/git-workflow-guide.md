@@ -241,7 +241,7 @@ Only commit directly to main when user explicitly says:
 
 ## Merging to Main Branch {#merging-rules}
 
-**Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles never merge.** Migration PRs, `bin-timeline-manager`, `bin-rag-manager` and `monorepo-monitoring` PRs still need CEO confirmation. Until the QA merge permission is enabled, the CEO or CPO merges on request.
+**Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles never merge.** Migration PRs, migration changes of `bin-timeline-manager` and `bin-rag-manager` (migration SQL and the migration runner: `runMigrations`, `MigrationsPath`, Dockerfile COPY of migrations), and `monorepo-monitoring` PRs still need CEO confirmation (other code-only changes to those two services are mergeable by QA, but their `main` deploy approval stays with the CEO). Until the QA merge permission is enabled, the CEO or CPO merges on request.
 
 ### Prohibited Actions
 
@@ -272,7 +272,7 @@ Claude: "I'll push the current branch to remote. The QA role merges after verifi
 ### Who Merges
 
 - The QA role merges to main after QA verification passes (squash only). Developer roles never merge.
-- Migration PRs, `bin-timeline-manager`, `bin-rag-manager` and `monorepo-monitoring` PRs need CEO confirmation before merge.
+- Migration PRs, migration changes of `bin-timeline-manager` and `bin-rag-manager`, and `monorepo-monitoring` PRs need CEO confirmation before merge.
 - Until the QA merge permission is enabled in the agent configuration, the CEO or CPO merges on request.
 
 ### After PR is Merged
