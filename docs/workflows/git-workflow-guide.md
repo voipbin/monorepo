@@ -241,11 +241,11 @@ Only commit directly to main when user explicitly says:
 
 ## Merging to Main Branch {#merging-rules}
 
-**NEVER merge any branch to `main` without explicit user permission.**
+**Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles never merge.** Migration PRs, `bin-timeline-manager`, `bin-rag-manager` and `monorepo-monitoring` PRs still need CEO confirmation. Until the QA merge permission is enabled, the CEO or CPO merges on request.
 
 ### Prohibited Actions
 
-**Prohibited actions without user approval:**
+**Prohibited actions for developer roles, and for anyone merging outside the QA process:**
 - `git merge <branch>` while on main
 - `git merge <branch> --no-ff` while on main
 - Any operation that merges commits into main
