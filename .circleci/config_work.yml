@@ -11,6 +11,28 @@ deploy_filters: &deploy_filters
     branches:
       only: main
 
+# Two deploy modes per service workflow (VOIP-1586).
+#
+# Approval-kept mode (most services today): build-approval gates test, build
+# and deploy on every branch; on main a human still approves the pipeline.
+#
+# Auto-deploy mode (services listed in .circleci/auto-deploy-services.txt):
+# on main there is no approval, test-auto -> build -> deploy run right after
+# the merge; on non-main branches build-approval still gates test/build as
+# before and deploy is never created. This is done inside one workflow:
+# build-approval and <svc>-test use non_main_filters, <svc>-test-auto (the
+# same test job under another name) uses deploy_filters, build requires both
+# (the one filtered out on a given branch is skipped, not an error), and the
+# deploy job serializes per service (serial-group) and refuses to deploy an
+# older commit that a newer one already superseded
+# (DEPLOY_REQUIRE_LATEST_FOR_PATHS, see komodo-api-deploy.sh).
+# .circleci/scripts/check-auto-deploy-config.rb pins this shape in CI.
+# Design: docs/plans/2026-10-13-main-auto-deploy-design.md.
+non_main_filters: &non_main_filters
+  filters:
+    branches:
+      ignore: main
+
 references:
   go_image: &go_image
     - image: cimg/go:1.27.1
@@ -212,15 +234,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-agent-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-agent-manager-test:
+          name: bin-agent-manager-test-auto
+          <<: *deploy_filters
       - bin-agent-manager-build:
           <<: *context_production
           requires:
             - bin-agent-manager-test
+            - bin-agent-manager-test-auto
       - bin-agent-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-agent-manager
           requires:
             - bin-agent-manager-build
   bin-api-manager:
@@ -328,15 +357,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-contact-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-contact-manager-test:
+          name: bin-contact-manager-test-auto
+          <<: *deploy_filters
       - bin-contact-manager-build:
           <<: *context_production
           requires:
             - bin-contact-manager-test
+            - bin-contact-manager-test-auto
       - bin-contact-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-contact-manager
           requires:
             - bin-contact-manager-build
   bin-conference-manager:
@@ -659,15 +695,22 @@ workflows:
     jobs:
       - build-approval:
           type: approval
+          <<: *non_main_filters
       - bin-storage-manager-test:
+          <<: *non_main_filters
           requires:
             - build-approval
+      - bin-storage-manager-test:
+          name: bin-storage-manager-test-auto
+          <<: *deploy_filters
       - bin-storage-manager-build:
           <<: *context_production
           requires:
             - bin-storage-manager-test
+            - bin-storage-manager-test-auto
       - bin-storage-manager-deploy:
           <<: [*context_production, *deploy_filters]
+          serial-group: << pipeline.project.slug >>/deploy-bin-storage-manager
           requires:
             - bin-storage-manager-build
   bin-tag-manager:
@@ -929,6 +972,7 @@ jobs:
       - run:
           name: Deploy bin-agent-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-agent-manager bin-agent-manager/komodo/docker-compose.yml
 
@@ -1197,6 +1241,7 @@ jobs:
       - run:
           name: Deploy bin-contact-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-contact-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-contact-manager bin-contact-manager/komodo/docker-compose.yml
 
@@ -1889,6 +1934,7 @@ jobs:
       - run:
           name: Deploy bin-storage-manager via Komodo API
           command: |
+            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-storage-manager" \
             CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
               .circleci/scripts/komodo-api-deploy.sh bin-storage-manager bin-storage-manager/komodo/docker-compose.yml bin-storage-manager/komodo/environment.env
 
@@ -2357,10 +2403,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install bats and mawk
+          # ruby runs check-auto-deploy-config.rb (VOIP-1586), which parses
+          # config_work.yml; there is no PyYAML or yq in this image.
+          name: Install bats, mawk and ruby
           command: |
             sudo apt-get update
-            sudo apt-get install -y bats mawk
+            sudo apt-get install -y bats mawk ruby
       - run:
           name: Run shell test suites
           command: bats .circleci/tests/*.bats docs/reference/tests/*.bats

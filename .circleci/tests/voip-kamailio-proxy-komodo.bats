@@ -4,18 +4,20 @@
 # (VOIP-1486). See voip-kamailio-proxy/docs/plans/2026-09-07-kamailio-proxy-
 # komodo-stack-design.md.
 #
-# CONSTRAINT: the shell-tests job in config_work.yml installs only bats and
-# mawk, so there is no PyYAML and no yq here. (Cited by job name on purpose:
-# line numbers in that file move, including from this very change.) Every
-# assertion below is grep/awk over the raw text. Assertions anchor on YAML key
-# shapes rather than bare substrings, because both files carry comments that
-# mention the very names some assertions require to be ABSENT.
+# CONSTRAINT: the shell-tests job in config_work.yml installs bats, mawk and
+# ruby (ruby only for check-auto-deploy-config.rb), and there is no PyYAML or
+# yq. (Cited by job name on purpose: line numbers in that file move, including
+# from this very change.) Every assertion in THIS file is grep/awk over the raw
+# text. Assertions anchor on YAML key shapes rather than bare substrings,
+# because both files carry comments that mention the very names some
+# assertions require to be ABSENT.
 #
-# KNOWN TRIGGER GAP: shell-tests is armed only by .circleci/scripts/.*,
-# .circleci/tests/.*, docs/reference/extractor.sh and docs/reference/tests/.*
-# (config.yml:59-62). Neither voip-kamailio-proxy/.* nor .circleci/config_work.yml
-# is on that list, so editing the compose file or the deploy wiring does not
-# re-run this suite; only editing a file under .circleci/tests/ does.
+# TRIGGER: shell-tests is armed by .circleci/scripts/.*, .circleci/tests/.*,
+# .circleci/config_work.yml, .circleci/auto-deploy-services.txt,
+# docs/reference/extractor.sh and docs/reference/tests/.* (config.yml). Editing
+# the deploy wiring in config_work.yml therefore re-runs this suite (VOIP-1586
+# closed that gap; before it, VOIP-1584 changed the deploy line shape unnoticed).
+# voip-kamailio-proxy/.* (the compose file) is still not on that list.
 #
 # Partial mitigation, and only for the compose file: the single highest-value
 # property, the __IMAGE_TAG__ placeholder, is independently enforced at deploy
@@ -123,7 +125,9 @@ teardown() {
     entry="$(awk '/^      - voip-kamailio-proxy-deploy:$/{f=1;next} /^      - /||/^  [^ ]/{f=0} f' "$CONFIG_WORK")"
 
     # Without the production context the Komodo credentials are not injected.
-    [ "$(printf '%s\n' "$entry" | grep -c '<<: \*context_production')" -eq 1 ]
+    # VOIP-1584 merged the deploy filters into the same line as a list
+    # (<<: [*context_production, *deploy_filters]), so accept both forms.
+    [ "$(printf '%s\n' "$entry" | grep -cE '<<: (\*context_production|\[\*context_production[],])')" -eq 1 ]
 
     # Positive assertion, deliberately. Asserting "no mismatching line" would
     # pass silently against the flow-sequence form

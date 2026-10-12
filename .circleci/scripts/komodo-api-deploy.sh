@@ -111,6 +111,18 @@
 #   CC_KOMODO_SERVER_NAME      Optional. The Komodo Server to create the
 #                              Stack on if it doesn't exist yet (step 1
 #                              above). Default: bm-nyc-01.
+#   DEPLOY_REQUIRE_LATEST_FOR_PATHS  Optional (VOIP-1586). Space-separated
+#                              repo paths. When non-empty, this deploy only
+#                              proceeds if $CIRCLE_SHA1 is the newest commit
+#                              on origin/main touching those paths; an older
+#                              commit fails (DEPLOY_SUPERSEDED) before any
+#                              Komodo call, so a slow older pipeline can never
+#                              overwrite a newer deploy. Fail-closed: any git
+#                              problem (no repo, fetch failure, still shallow,
+#                              empty history) also fails. Default off: when
+#                              unset or empty git is never called and behavior
+#                              is unchanged. See docs/plans/
+#                              2026-10-13-main-auto-deploy-design.md.
 #
 # Preconditions (caller's responsibility):
 #   - The target Stack's underlying image has already been built and
@@ -220,6 +232,59 @@ fi
 if [[ ! "$RUNNING_CHECK_INTERVAL_S" =~ ^[1-9][0-9]*$ ]]; then
   log_error "CC_KOMODO_RUNNING_CHECK_INTERVAL_S must be a positive integer with no leading zero (got: $RUNNING_CHECK_INTERVAL_S)"
   exit 1
+fi
+
+# Superseded-deploy guard (VOIP-1586, off unless DEPLOY_REQUIRE_LATEST_FOR_PATHS
+# is non-empty). Runs before any Komodo call. Every failure is fail-closed.
+if [[ -n "${DEPLOY_REQUIRE_LATEST_FOR_PATHS:-}" ]]; then
+  if [[ -z "${CIRCLE_SHA1:-}" ]]; then
+    log_error "DEPLOY_REQUIRE_LATEST_FOR_PATHS is set but CIRCLE_SHA1 is not - refusing to deploy"
+    exit 1
+  fi
+  read -r -a guard_paths <<< "$DEPLOY_REQUIRE_LATEST_FOR_PATHS"
+  if [[ ${#guard_paths[@]} -eq 0 ]]; then
+    log_error "DEPLOY_REQUIRE_LATEST_FOR_PATHS has no paths - refusing to deploy"
+    exit 1
+  fi
+  for guard_path in "${guard_paths[@]}"; do
+    if [[ "$guard_path" == -* || "$guard_path" == *:* ]]; then
+      log_error "DEPLOY_REQUIRE_LATEST_FOR_PATHS entry is not allowed: $guard_path"
+      exit 1
+    fi
+  done
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    log_error "superseded-deploy guard needs a git checkout but this is not one - refusing to deploy"
+    exit 1
+  fi
+  # Same fetch pattern as the check-test-conventions job: CircleCI's checkout
+  # fetches only the current refspec and may be shallow. Do NOT use --depth.
+  if ! git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main' >/dev/null 2>&1; then
+    log_error "superseded-deploy guard could not fetch origin/main - refusing to deploy"
+    exit 1
+  fi
+  if [[ "$(git rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
+    log_info "Shallow clone: deepening history for the superseded-deploy guard."
+    git fetch --no-tags --unshallow origin '+refs/heads/main:refs/remotes/origin/main' >/dev/null 2>&1 \
+      || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main' >/dev/null 2>&1 \
+      || true
+    if [[ "$(git rev-parse --is-shallow-repository 2>/dev/null)" != "false" ]]; then
+      log_error "superseded-deploy guard cannot get full history (still shallow) - refusing to deploy"
+      exit 1
+    fi
+  fi
+  if ! guard_latest="$(git --literal-pathspecs log -1 --format=%H origin/main -- "${guard_paths[@]}" 2>/dev/null)"; then
+    log_error "superseded-deploy guard: git log failed - refusing to deploy"
+    exit 1
+  fi
+  if [[ -z "$guard_latest" ]]; then
+    log_error "superseded-deploy guard: no history on origin/main for: ${guard_paths[*]} - refusing to deploy"
+    exit 1
+  fi
+  if [[ "$guard_latest" != "$CIRCLE_SHA1" ]]; then
+    log_error "DEPLOY_SUPERSEDED sha=$CIRCLE_SHA1 latest=$guard_latest (a newer commit on origin/main changed ${guard_paths[*]}; not deploying this older commit)"
+    exit 1
+  fi
+  log_info "Superseded-deploy guard passed: $CIRCLE_SHA1 is the latest commit touching ${guard_paths[*]}"
 fi
 
 # Placeholder guard (design doc §2 item 2): catches any remaining

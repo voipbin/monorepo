@@ -1,0 +1,13 @@
+# Services deployed automatically on main (no approval click). VOIP-1586.
+# One service workflow name per line. Each must have the auto-deploy shape in
+# config_work.yml; check-auto-deploy-config.rb (run by shell-tests) fails if a
+# service here is missing the shape, or if a workflow has the shape but is not
+# listed here. The services below are never allowed in this file.
+#   bin-timeline-manager, bin-rag-manager (migrations on startup),
+#   bin-trigger-sender, voip-asterisk-proxy, voip-rtpengine-proxy
+#   (build pushes :latest, approval is the production release),
+#   voip-kamailio-proxy (call SIP edge).
+# Design: docs/plans/2026-10-13-main-auto-deploy-design.md
+bin-agent-manager
+bin-contact-manager
+bin-storage-manager
