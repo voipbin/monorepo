@@ -254,27 +254,26 @@ Only commit directly to main when user explicitly says:
 
 1. ✅ Push feature branches to remote: `git push -u origin <branch-name>`
 2. ✅ Create pull requests on GitHub for review
-3. ❌ **DO NOT** merge to main directly - always ask user first
+3. ❌ **DO NOT** merge to main yourself as a developer role; hand over after the review loop and CI pass, and the QA role merges (see "Who Merges" below)
 
 ### If User Says "Push It"
 
 **If user says "push it" or similar:**
 - **ONLY push the current branch** to remote
 - **DO NOT assume** this means merge to main
-- **ASK explicitly** if merge to main is intended
+- **Do not merge it yourself** if you are a developer role; the QA role merges after verification
 
 **Example - What to do:**
 ```
 User: "push it"
-Claude: "I'll push the current branch to remote. Should I also merge it to main, or just push the feature branch?"
+Claude: "I'll push the current branch to remote. The QA role merges after verification, so I will not merge it myself."
 ```
 
-### Only Merge When
+### Who Merges
 
-**Only merge to main when the user explicitly says:**
-- "merge to main"
-- "merge it to main and push"
-- "yes, merge to main" (in response to your question)
+- The QA role merges to main after QA verification passes (squash only). Developer roles never merge.
+- Migration PRs, `bin-timeline-manager`, `bin-rag-manager` and `monorepo-monitoring` PRs need CEO confirmation before merge.
+- Until the QA merge permission is enabled in the agent configuration, the CEO or CPO merges on request.
 
 ### After PR is Merged
 
