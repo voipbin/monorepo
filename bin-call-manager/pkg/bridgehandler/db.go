@@ -169,10 +169,10 @@ func (h *bridgeHandler) getWithTimeout(ctx context.Context, id string, timeout t
 	cctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	chanRes := make(chan *bridge.Bridge)
+	// buffered and never closed: the retry goroutine's single send never blocks, so it exits after a timeout, and a receive always carries a real result
+	chanRes := make(chan *bridge.Bridge, 1)
 
 	go func() {
-		defer close(chanRes)
 		for {
 
 			select {

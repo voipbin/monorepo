@@ -3,7 +3,10 @@ package bridgehandler
 import (
 	"context"
 	reflect "reflect"
+	"runtime"
+	"strings"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -369,4 +372,147 @@ func Test_RemoveChannelID(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_getWithTimeout_cancelledContext(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id         string
+		iterations int
+	}
+
+	tests := []test{
+		{
+			name: "context is already cancelled",
+
+			id:         "c3d1a8e2-a7e4-11f0-8b1d-4f6a2c9e7d05",
+			iterations: 50000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := bridgeHandler{
+				db: mockDB,
+			}
+
+			// The retry goroutine sees the cancelled context before its
+			// first lookup, so BridgeGet is never called. The (nil, nil)
+			// race this guards against is probabilistic, hence the loop.
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+
+			for i := 0; i < tt.iterations; i++ {
+				res, err := h.getWithTimeout(ctx, tt.id, defaultExistTimeout)
+				if res != nil || err == nil {
+					t.Errorf("Wrong match. iteration: %d, expect: (nil, error), got: (%v, %v)", i, res, err)
+					break
+				}
+			}
+		})
+	}
+}
+
+func Test_getWithTimeout_lateSuccess(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id             string
+		responseBridge *bridge.Bridge
+	}
+
+	tests := []test{
+		{
+			name: "lookup succeeds after the context is cancelled",
+
+			id: "d4e2b9f3-a7e4-11f0-9c2e-5a7b3d0f8e06",
+			responseBridge: &bridge.Bridge{
+				ID: "d4e2b9f3-a7e4-11f0-9c2e-5a7b3d0f8e06",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := bridgeHandler{
+				db: mockDB,
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			// Give getWithTimeout time to start waiting, cancel the lookup,
+			// then succeed anyway: the result arrives after the caller has
+			// given up, which used to leave the goroutine blocked on send.
+			mockDB.EXPECT().BridgeGet(gomock.Any(), tt.id).DoAndReturn(func(c context.Context, _ string) (*bridge.Bridge, error) {
+				time.Sleep(50 * time.Millisecond)
+				cancel()
+				<-c.Done()
+				return tt.responseBridge, nil
+			}).Times(1)
+
+			res, err := h.getWithTimeout(ctx, tt.id, 10*time.Second)
+			if err == nil {
+				if reflect.DeepEqual(tt.responseBridge, res) == false {
+					t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseBridge, res)
+				}
+			} else if res != nil {
+				t.Errorf("Wrong match. expect: nil result with error, got: %v", res)
+			}
+
+			deadline := time.Now().Add(2 * time.Second)
+			for {
+				count, first := countGetWithTimeoutGoroutines()
+				if count == 0 {
+					break
+				}
+				if time.Now().After(deadline) {
+					t.Errorf("Wrong match. expect: no getWithTimeout goroutine, got: %d left\n%s", count, first)
+					break
+				}
+				time.Sleep(10 * time.Millisecond)
+			}
+		})
+	}
+}
+
+// countGetWithTimeoutGoroutines returns how many goroutines are running the
+// getWithTimeout retry closure, and the stack of the first one found.
+func countGetWithTimeoutGoroutines() (int, string) {
+	buf := make([]byte, 1<<16)
+	for {
+		n := runtime.Stack(buf, true)
+		if n < len(buf) {
+			buf = buf[:n]
+			break
+		}
+		buf = make([]byte, 2*len(buf))
+	}
+
+	count := 0
+	first := ""
+	for _, block := range strings.Split(string(buf), "\n\n") {
+		if !strings.Contains(block, "bridgehandler.(*bridgeHandler).getWithTimeout.func") {
+			continue
+		}
+		if count == 0 {
+			first = block
+		}
+		count++
+	}
+
+	return count, first
 }
