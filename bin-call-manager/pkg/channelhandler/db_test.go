@@ -2,7 +2,10 @@ package channelhandler
 
 import (
 	"context"
+	"fmt"
 	reflect "reflect"
+	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -259,6 +262,181 @@ func Test_getWithTimeout(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_getWithTimeout_lateSuccess(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id              string
+		timeout         time.Duration
+		responseChannel *channel.Channel
+	}
+
+	tests := []test{
+		{
+			name: "lookup succeeds after the deadline",
+
+			id:      "6a1f3c2e-a7f1-11f0-8d2b-6b8c4e1f9a07",
+			timeout: 100 * time.Millisecond,
+			responseChannel: &channel.Channel{
+				ID: "6a1f3c2e-a7f1-11f0-8d2b-6b8c4e1f9a07",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := channelHandler{
+				db: mockDB,
+			}
+
+			// The lookup is still in flight when the deadline passes and then
+			// succeeds: the caller has already given up, which used to leave
+			// the caller and the retry goroutine waiting on each other forever.
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).DoAndReturn(func(c context.Context, _ string) (*channel.Channel, error) {
+				<-c.Done()
+				time.Sleep(50 * time.Millisecond)
+				return tt.responseChannel, nil
+			}).Times(1)
+
+			type result struct {
+				res *channel.Channel
+				err error
+			}
+			chanResult := make(chan result, 1)
+			go func() {
+				res, err := h.getWithTimeout(context.Background(), tt.id, tt.timeout)
+				chanResult <- result{res: res, err: err}
+			}()
+
+			select {
+			case r := <-chanResult:
+				if r.res != nil || r.err == nil {
+					t.Errorf("Wrong match. expect: (nil, error), got: (%v, %v)", r.res, r.err)
+				}
+			case <-time.After(2 * time.Second):
+				t.Errorf("Wrong match. expect: return after the deadline, got: no return within 2s")
+			}
+
+			checkNoGetWithTimeoutGoroutine(t)
+		})
+	}
+}
+
+func Test_getWithTimeout_returnsAtDeadline(t *testing.T) {
+
+	type test struct {
+		name string
+
+		id      string
+		timeout time.Duration
+	}
+
+	tests := []test{
+		{
+			name: "lookup in flight at the deadline",
+
+			id:      "7b2e4d3f-a7f1-11f0-9e3c-7c9d5f2a0b18",
+			timeout: 50 * time.Millisecond,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := channelHandler{
+				db: mockDB,
+			}
+
+			// The lookup outlives the deadline until the test releases it. The
+			// caller must return at the deadline instead of waiting for the
+			// retry goroutine to finish the lookup.
+			release := make(chan struct{})
+			mockDB.EXPECT().ChannelGet(gomock.Any(), tt.id).DoAndReturn(func(c context.Context, _ string) (*channel.Channel, error) {
+				<-c.Done()
+				<-release
+				return nil, fmt.Errorf("channel not found")
+			}).Times(1)
+
+			type result struct {
+				res *channel.Channel
+				err error
+			}
+			chanResult := make(chan result, 1)
+			go func() {
+				res, err := h.getWithTimeout(context.Background(), tt.id, tt.timeout)
+				chanResult <- result{res: res, err: err}
+			}()
+
+			select {
+			case r := <-chanResult:
+				if r.res != nil || r.err == nil {
+					t.Errorf("Wrong match. expect: (nil, error), got: (%v, %v)", r.res, r.err)
+				}
+			case <-time.After(2 * time.Second):
+				t.Errorf("Wrong match. expect: return at the deadline, got: no return within 2s while the lookup is in flight")
+			}
+			close(release)
+
+			checkNoGetWithTimeoutGoroutine(t)
+		})
+	}
+}
+
+// checkNoGetWithTimeoutGoroutine waits up to 2 seconds for every
+// getWithTimeout retry goroutine to exit, and reports the first one left.
+func checkNoGetWithTimeoutGoroutine(t *testing.T) {
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		count, first := countGetWithTimeoutGoroutines()
+		if count == 0 {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Errorf("Wrong match. expect: no getWithTimeout goroutine, got: %d left\n%s", count, first)
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+// countGetWithTimeoutGoroutines returns how many goroutines are running the
+// getWithTimeout retry closure, and the stack of the first one found.
+func countGetWithTimeoutGoroutines() (int, string) {
+	buf := make([]byte, 1<<16)
+	for {
+		n := runtime.Stack(buf, true)
+		if n < len(buf) {
+			buf = buf[:n]
+			break
+		}
+		buf = make([]byte, 2*len(buf))
+	}
+
+	count := 0
+	first := ""
+	for _, block := range strings.Split(string(buf), "\n\n") {
+		if !strings.Contains(block, "channelhandler.(*channelHandler).getWithTimeout.func") {
+			continue
+		}
+		if count == 0 {
+			first = block
+		}
+		count++
+	}
+
+	return count, first
 }
 
 func Test_Delete(t *testing.T) {
