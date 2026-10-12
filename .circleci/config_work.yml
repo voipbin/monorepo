@@ -4,6 +4,13 @@ context_production: &context_production
   context: 
     - production
 
+# Deploy runs only on main. Non-main branches may approve to verify test/build
+# but must never reach production (VOIP-1584). Not a security boundary.
+deploy_filters: &deploy_filters
+  filters:
+    branches:
+      only: main
+
 references:
   go_image: &go_image
     - image: cimg/go:1.27.1
@@ -213,7 +220,7 @@ workflows:
           requires:
             - bin-agent-manager-test
       - bin-agent-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-agent-manager-build
   bin-api-manager:
@@ -230,7 +237,7 @@ workflows:
           requires:
             - bin-api-manager-test
       - bin-api-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-api-manager-build
   bin-billing-manager:
@@ -246,7 +253,7 @@ workflows:
           requires:
             - bin-billing-manager-test
       - bin-billing-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-billing-manager-build
   bin-call-manager:
@@ -262,7 +269,7 @@ workflows:
           requires:
             - bin-call-manager-test
       - bin-call-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           # Single approval gate (build-approval, above) covers the whole
           # pipeline including this deploy - matches the old GKE release
           # job's convenience (build-approval alone used to be enough to
@@ -288,7 +295,7 @@ workflows:
           requires:
             - bin-campaign-manager-test
       - bin-campaign-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-campaign-manager-build
   bin-ai-manager:
@@ -304,7 +311,7 @@ workflows:
           requires:
             - bin-ai-manager-test
       - bin-ai-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-ai-manager-build
   bin-common-handler:
@@ -329,7 +336,7 @@ workflows:
           requires:
             - bin-contact-manager-test
       - bin-contact-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-contact-manager-build
   bin-conference-manager:
@@ -345,7 +352,7 @@ workflows:
           requires:
             - bin-conference-manager-test
       - bin-conference-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-conference-manager-build
   bin-conversation-manager:
@@ -361,7 +368,7 @@ workflows:
           requires:
             - bin-conversation-manager-test
       - bin-conversation-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-conversation-manager-build
   bin-customer-manager:
@@ -377,7 +384,7 @@ workflows:
           requires:
             - bin-customer-manager-test
       - bin-customer-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-customer-manager-build
   # bin-dbscheme-manager: CI does not apply migrations. The production
@@ -427,7 +434,7 @@ workflows:
           requires:
             - bin-direct-manager-test
       - bin-direct-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-direct-manager-build
   bin-email-manager:
@@ -443,7 +450,7 @@ workflows:
           requires:
             - bin-email-manager-test
       - bin-email-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-email-manager-build
   bin-flow-manager:
@@ -459,7 +466,7 @@ workflows:
           requires:
             - bin-flow-manager-test
       - bin-flow-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-flow-manager-build
   bin-hook-manager:
@@ -475,7 +482,7 @@ workflows:
           requires:
             - bin-hook-manager-test
       - bin-hook-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-hook-manager-build
   bin-message-manager:
@@ -491,7 +498,7 @@ workflows:
           requires:
             - bin-message-manager-test
       - bin-message-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-message-manager-build
   bin-number-manager:
@@ -507,7 +514,7 @@ workflows:
           requires:
             - bin-number-manager-test
       - bin-number-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-number-manager-build
   bin-openapi-manager:
@@ -532,7 +539,7 @@ workflows:
           requires:
             - bin-outdial-manager-test
       - bin-outdial-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-outdial-manager-build
   bin-pipecat-manager:
@@ -548,7 +555,7 @@ workflows:
           requires:
             - bin-pipecat-manager-test
       - bin-pipecat-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-pipecat-manager-build
   bin-queue-manager:
@@ -564,7 +571,7 @@ workflows:
           requires:
             - bin-queue-manager-test
       - bin-queue-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-queue-manager-build
   bin-rag-manager:
@@ -580,7 +587,7 @@ workflows:
           requires:
             - bin-rag-manager-test
       - bin-rag-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-rag-manager-build
   bin-registrar-manager:
@@ -596,7 +603,7 @@ workflows:
           requires:
             - bin-registrar-manager-test
       - bin-registrar-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-registrar-manager-build
   bin-route-manager:
@@ -612,7 +619,7 @@ workflows:
           requires:
             - bin-route-manager-test
       - bin-route-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-route-manager-build
   bin-schedule-manager:
@@ -628,7 +635,7 @@ workflows:
           requires:
             - bin-schedule-manager-test
       - bin-schedule-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-schedule-manager-build
   bin-sentinel-manager:
@@ -644,7 +651,7 @@ workflows:
           requires:
             - bin-sentinel-manager-test
       - bin-sentinel-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-sentinel-manager-build
   bin-storage-manager:
@@ -660,7 +667,7 @@ workflows:
           requires:
             - bin-storage-manager-test
       - bin-storage-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-storage-manager-build
   bin-tag-manager:
@@ -676,7 +683,7 @@ workflows:
           requires:
             - bin-tag-manager-test
       - bin-tag-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-tag-manager-build
   bin-talk-manager:
@@ -692,7 +699,7 @@ workflows:
           requires:
             - bin-talk-manager-test
       - bin-talk-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-talk-manager-build
   bin-timeline-manager:
@@ -708,7 +715,7 @@ workflows:
           requires:
             - bin-timeline-manager-test
       - bin-timeline-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-timeline-manager-build
   bin-transcribe-manager:
@@ -724,7 +731,7 @@ workflows:
           requires:
             - bin-transcribe-manager-test
       - bin-transcribe-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-transcribe-manager-build
   bin-transfer-manager:
@@ -740,7 +747,7 @@ workflows:
           requires:
             - bin-transfer-manager-test
       - bin-transfer-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-transfer-manager-build
   bin-trigger-sender:
@@ -771,7 +778,7 @@ workflows:
           requires:
             - bin-tts-manager-test
       - bin-tts-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-tts-manager-build
   bin-webchat-manager:
@@ -787,7 +794,7 @@ workflows:
           requires:
             - bin-webchat-manager-test
       - bin-webchat-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-webchat-manager-build
   bin-webhook-manager:
@@ -803,7 +810,7 @@ workflows:
           requires:
             - bin-webhook-manager-test
       - bin-webhook-manager-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - bin-webhook-manager-build
   ############################################
@@ -849,7 +856,7 @@ workflows:
           requires:
             - voip-kamailio-proxy-test
       - voip-kamailio-proxy-deploy:
-          <<: *context_production
+          <<: [*context_production, *deploy_filters]
           requires:
             - voip-kamailio-proxy-build
 
