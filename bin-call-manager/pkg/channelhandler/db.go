@@ -414,13 +414,13 @@ func (h *channelHandler) getWithTimeout(ctx context.Context, id string, timeout 
 	cctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	chanRes := make(chan *channel.Channel)
-	chanStop := make(chan bool)
+	// buffered and never closed: the retry goroutine's single send never blocks, so it exits after a timeout, and a receive always carries a real result
+	chanRes := make(chan *channel.Channel, 1)
 
 	go func() {
 		for {
 			select {
-			case <-chanStop:
+			case <-cctx.Done():
 				return
 
 			default:
@@ -439,7 +439,6 @@ func (h *channelHandler) getWithTimeout(ctx context.Context, id string, timeout 
 	case res := <-chanRes:
 		return res, nil
 	case <-cctx.Done():
-		chanStop <- true
 		return nil, fmt.Errorf("could not get a channel within timeout. GetUntilTimeout. err: %v", cctx.Err())
 	}
 }
