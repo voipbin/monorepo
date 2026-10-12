@@ -103,6 +103,9 @@ EOF
     [[ "$output" != *"guard"* ]]
     [[ "$output" != *"DEPLOY_SUPERSEDED"* ]]
     [ ! -s "$GIT_CALL_LOG" ]
+    # Off means the deploy goes on to Komodo (the fake curl has no queued
+    # response, so it fails there), not that it stops early.
+    [ "$(curl_call_count)" -gt 0 ]
 }
 
 @test "guard off when the variable is the empty string" {
@@ -111,6 +114,7 @@ EOF
     run run_deploy_in /
     [[ "$output" != *"guard"* ]]
     [ ! -s "$GIT_CALL_LOG" ]
+    [ "$(curl_call_count)" -gt 0 ]
 }
 
 @test "guard on: the newest commit touching the path passes" {

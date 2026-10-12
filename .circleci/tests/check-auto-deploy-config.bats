@@ -157,6 +157,36 @@ expect_fail() {
     expect_fail "first argument must be bin-agent-manager"
 }
 
+@test "deploy without the production context fails" {
+    mutate "$CFG" $'<<: [*context_production, *deploy_filters]\n          serial-group: << pipeline.project.slug >>/deploy-bin-agent-manager' $'<<: *deploy_filters\n          serial-group: << pipeline.project.slug >>/deploy-bin-agent-manager'
+    run_checker
+    expect_fail "bin-agent-manager-deploy must use the production context"
+}
+
+@test "a second komodo-api-deploy.sh command in the deploy job fails" {
+    mutate "$CFG" $'              .circleci/scripts/komodo-api-deploy.sh bin-agent-manager bin-agent-manager/komodo/docker-compose.yml\n' $'              .circleci/scripts/komodo-api-deploy.sh bin-agent-manager bin-agent-manager/komodo/docker-compose.yml\n      - run: .circleci/scripts/komodo-api-deploy.sh bin-agent-manager other.yml\n'
+    run_checker
+    expect_fail "must run komodo-api-deploy.sh exactly once"
+}
+
+@test "komodo-api-deploy.sh called with a stack name that only starts with the service name fails" {
+    mutate "$CFG" 'komodo-api-deploy.sh bin-agent-manager bin-agent-manager/komodo' 'komodo-api-deploy.sh bin-agent-manager-x bin-agent-manager/komodo'
+    run_checker
+    expect_fail "first argument must be bin-agent-manager"
+}
+
+@test "the test-auto job built from a different job definition fails" {
+    mutate "$CFG" $'bin-agent-manager-test:\n          name: bin-agent-manager-test-auto' $'bin-agent-manager-other:\n          name: bin-agent-manager-test-auto'
+    run_checker
+    expect_fail "bin-agent-manager-test-auto key must be bin-agent-manager-test"
+}
+
+@test "an allowlisted workflow without a jobs list fails" {
+    mutate "$CFG" $'  bin-storage-manager:\n    when: << pipeline.parameters.run-bin-storage-manager >>\n    jobs:' $'  bin-storage-manager:\n    when: << pipeline.parameters.run-bin-storage-manager >>\n    nojobs:'
+    run_checker
+    expect_fail "bin-storage-manager is in the allowlist but has no jobs list"
+}
+
 # ---- (c) anchors ----
 
 @test "deploy_filters anchor widened beyond main fails" {
@@ -219,7 +249,7 @@ expect_fail() {
 @test "an ignore-main filter added to an approval-kept workflow fails" {
     mutate "$CFG" $'  bin-call-manager:\n    when: << pipeline.parameters.run-bin-call-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n' $'  bin-call-manager:\n    when: << pipeline.parameters.run-bin-call-manager >>\n    jobs:\n      - build-approval:\n          type: approval\n          <<: *non_main_filters\n'
     run_checker
-    expect_fail "workflow bin-call-manager"
+    expect_fail "job build-approval has an ignore branch filter but bin-call-manager is not auto-deploy"
 }
 
 @test "build-approval removed from an approval-kept workflow fails" {

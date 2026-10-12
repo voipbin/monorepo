@@ -59,7 +59,9 @@ end
 # The shell command logical lines of a job's run steps (backslash-newline joined).
 def logical_lines(job_def)
   Array(job_def && job_def['steps']).flat_map do |step|
-    cmd = step.is_a?(Hash) && step['run'].is_a?(Hash) ? step['run']['command'] : nil
+    run = step.is_a?(Hash) ? step['run'] : nil
+    # `- run: <string>` is the shorthand for `- run: { command: <string> }`.
+    cmd = run.is_a?(Hash) ? run['command'] : run
     cmd.to_s.gsub(/\\\n/, ' ').split("\n")
   end
 end
@@ -84,7 +86,10 @@ def check(config_path, list_path)
   end
 
   workflows.each do |name, wf|
-    next unless wf.is_a?(Hash) && wf['jobs'].is_a?(Array)
+    unless wf.is_a?(Hash) && wf['jobs'].is_a?(Array)
+      errors << "workflow #{name} is in the allowlist but has no jobs list" if list_lines.include?(name)
+      next
+    end
 
     js = wf['jobs'].map { |e| normalize(e) }
     has_auto = js.any? { |j| j[:id].end_with?('-test-auto') }
