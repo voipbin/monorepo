@@ -125,8 +125,8 @@ NOJIRA-brief-description-of-change
 **CRITICAL: Before making ANY changes or commits, ALWAYS check the current branch first.** If on `main`: STOP, ask user to create a feature branch (`NOJIRA-brief-description` or `VOIP-1234-brief-description`), wait for confirmation.
 
 **NEVER commit directly to `main` without explicit user permission.**
-**NEVER merge any branch to `main` without explicit user permission.**
-**NEVER merge as part of a review loop, automation workflow, or any process not explicitly authorized for merging.** A review loop ends at approval — report the verdict and STOP. Wait for the user to say "merge" before calling `gh pr merge`. The PreToolUse hook in `.claude/settings.json` enforces this by blocking `gh pr merge` calls.
+**Merge responsibility:** Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles (backend, frontend) never merge; they hand over after the review loop and CI (lint, test, build) pass on their branch. A review loop alone does not authorize a merge.
+**Human confirmation is still required (QA must not auto-merge) for:** PRs that include DB migrations (`bin-dbscheme-manager`, alembic, `*/migrations/*`, `*.sql`), services that migrate the database on startup (`bin-timeline-manager`, `bin-rag-manager`), and `monorepo-monitoring` PRs.
 
 **CRITICAL: ALL PR merges MUST use squash merge — no exceptions.**
 
