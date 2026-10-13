@@ -1,0 +1,15 @@
+# Hand-written structs that define ID and CustomerID themselves instead of
+# embedding commonidentity.Identity (docs/conventions/models.md 6.1).
+# Key: <directory>:<TypeName>, then a reason. Delete an entry when the struct is
+# converted to the embedding; a stale entry fails the gate.
+bin-call-manager/models/outboundconfig:OutboundConfig pre-existing
+bin-contact-manager/models/casenote:CaseNote pre-existing
+bin-contact-manager/models/kase:Case pre-existing
+bin-customer-manager/models/accesskey:Accesskey pre-existing
+bin-rag-manager/models/chunk:Chunk pre-existing
+bin-rag-manager/models/document:Document pre-existing
+bin-rag-manager/models/rag:Rag pre-existing
+bin-route-manager/models/providercall:ProviderCall pre-existing
+bin-route-manager/models/route:Route pre-existing
+bin-storage-manager/models/account:Account pre-existing
+bin-common-handler/models/identity:Identity definition of the shared embedding

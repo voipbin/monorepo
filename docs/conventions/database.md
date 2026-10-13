@@ -120,6 +120,8 @@ This rule is enforced by the PostToolUse hook `.claude/scripts/check-migration-u
 
 All SQL queries MUST use the squirrel query builder. Raw SQL strings are forbidden.
 
+CI (`check-structure-conventions`) enforces where squirrel may be imported (see 7.7). It cannot detect raw SQL that does not import squirrel, so that part of this rule stays a review item.
+
 ```go
 // CORRECT — squirrel
 query, args, _ := squirrel.Select(fields...).
@@ -261,6 +263,14 @@ type agentHandler struct {
     db *sql.DB  // FORBIDDEN outside dbhandler
 }
 ```
+
+CI (`check-structure-conventions`) uses the squirrel import location as a proxy for this rule: only the directories below may import `github.com/Masterminds/squirrel` (test files included). Raw SQL calls that do not use squirrel are not detected. The script compares this table with its own constants on every run.
+
+| Allowed directory | Note |
+|---|---|
+| `bin-*/pkg/dbhandler/` | The location this section requires |
+| `bin-common-handler/pkg/databasehandler/` | Shared DB helpers; existing exception |
+| `bin-timeline-manager/pkg/analysisdbhandler/` | Existing exception |
 
 ---
 
