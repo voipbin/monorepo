@@ -282,13 +282,14 @@ if [[ -n "${DEPLOY_REQUIRE_LATEST_FOR_PATHS:-}" ]]; then
   # stdout (the commit id) and stderr (warnings) are kept apart: a successful git
   # may still print warnings, which must not leak into the comparison.
   guard_err_file="$(mktemp)"
+  trap 'rm -f "$guard_err_file"' EXIT
   if ! guard_latest="$(git --literal-pathspecs log -1 --format=%H origin/main -- "${guard_paths[@]}" 2>"$guard_err_file")"; then
     log_error "superseded-deploy guard: git log failed - refusing to deploy"
     log_error "git: $(cat "$guard_err_file")"
-    rm -f "$guard_err_file"
     exit 1
   fi
   rm -f "$guard_err_file"
+  trap - EXIT
   if [[ -z "$guard_latest" ]]; then
     log_error "superseded-deploy guard: no history on origin/main for: ${guard_paths[*]} - refusing to deploy"
     exit 1
