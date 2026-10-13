@@ -264,6 +264,8 @@ EOF
     run run_deploy_in "$CLONE"
     [ "$status" -eq 1 ]
     [[ "$output" == *"could not fetch origin/main"* ]]
+    # The cause from git itself is shown, not swallowed.
+    [[ "$output" == *"git: "* ]]
     [ "$(curl_call_count)" -eq 0 ]
 }
 
@@ -285,6 +287,7 @@ EOF
     run run_deploy_in "$CLONE"
     [ "$status" -eq 1 ]
     [[ "$output" == *"git log failed"* ]]
+    [[ "$output" == *"git: git-shim: forced failure"* ]]
     [ "$(curl_call_count)" -eq 0 ]
 }
 

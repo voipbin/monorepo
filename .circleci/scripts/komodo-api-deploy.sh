@@ -262,8 +262,11 @@ if [[ -n "${DEPLOY_REQUIRE_LATEST_FOR_PATHS:-}" ]]; then
   fi
   # Same fetch pattern as the check-test-conventions job: CircleCI's checkout
   # fetches only the current refspec and may be shallow. Do NOT use --depth.
-  if ! git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main' >/dev/null 2>&1; then
+  # git's own error text is kept (it holds no credentials) so the cause of a
+  # failure (auth, network, permissions) is visible in the job log.
+  if ! guard_git_out="$(git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main' 2>&1)"; then
     log_error "superseded-deploy guard could not fetch origin/main - refusing to deploy"
+    log_error "git: $guard_git_out"
     exit 1
   fi
   if [[ "$(git rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
@@ -276,8 +279,9 @@ if [[ -n "${DEPLOY_REQUIRE_LATEST_FOR_PATHS:-}" ]]; then
       exit 1
     fi
   fi
-  if ! guard_latest="$(git --literal-pathspecs log -1 --format=%H origin/main -- "${guard_paths[@]}" 2>/dev/null)"; then
+  if ! guard_latest="$(git --literal-pathspecs log -1 --format=%H origin/main -- "${guard_paths[@]}" 2>&1)"; then
     log_error "superseded-deploy guard: git log failed - refusing to deploy"
+    log_error "git: $guard_latest"
     exit 1
   fi
   if [[ -z "$guard_latest" ]]; then
