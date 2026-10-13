@@ -47,7 +47,7 @@ function viol(r, loc, m) { print "VIOLATION " r " " loc ": " m; nviol++ }
 function lex(f, n,   i, k, line, len, ch, nx, st, out, outb, j, c) {
   st = 0
   for (i = 1; i <= n; i++) {
-    line = L[i]; len = length(line); S[i] = (st == 0); out = ""; outb = ""; k = 1
+    line = L[i]; len = length(line); S[i] = (st == 0); SR[i] = (st != 2); out = ""; outb = ""; k = 1
     while (k <= len) {
       ch = substr(line, k, 1); nx = substr(line, k + 1, 1)
       if (st == 1) {
@@ -97,7 +97,7 @@ function r2check(f, i, p) {
 function r2scan(f, n,   i, line, inblk, rest, m) {
   inblk = 0
   for (i = 1; i <= n; i++) {
-    if (!S[i]) continue
+    if (!SR[i]) continue
     line = C[i]
     if (!inblk) {
       if (line ~ /^[[:space:]]*import[[:space:]]*\(/) { inblk = 1; sub(/^[[:space:]]*import[[:space:]]*\(/, "", line) }
@@ -159,7 +159,7 @@ BEGIN {
   loadallow()
   while ((r = (getline f < LIST)) > 0) {
     nfiles++
-    n = 0; pre = 0; split("", L); split("", C); split("", B); split("", S)
+    n = 0; pre = 0; split("", L); split("", C); split("", B); split("", S); split("", SR)
     while ((r2 = (getline line < f)) > 0) {
       L[++n] = line
       if (index(line, "listenhandler/models/") || index(line, "Masterminds/squirrel")) pre = 1
@@ -310,6 +310,14 @@ S82() { local A=$AWKV; AWKV="$T/bad-awk"; printf '#!/bin/sh\nexit 1\n' > "$AWKV"
 S83() { local A=$AWKV; AWKV="$T/dead-awk"; printf '#!/bin/sh\nexit 0\n' > "$AWKV"; chmod +x "$AWKV"; want 1 GATE; AWKV=$A; }
 S84() { f bin-a-manager/pkg/x/x.go 'package x'; git add -A; rm bin-a-manager/pkg/x/x.go; NOADD=1 want 1 GATE; }
 S85() { want 0; }
+S86() { f bin-a-manager/pkg/foo/x.go "$(printf 'package x\n/* c\n*/ import %s\n' "$DTO")"; want 1 R2a; }
+S87() { f bin-a-manager/pkg/foo/x.go "$(printf 'package x\nvar s = "q\\"/*"\nimport %s\n' "$DTO")"; want 1 R2a; }
+S88() { f bin-a-manager/pkg/foohandler/x.go "$(imp '"github.com/Masterminds/squirrel/v3"')"; want 1 R2b; }
+S89() { f bin-n/models/n/n.go "$(printf 'package n\ntype R struct {\n\tParentID uuid.UUID `db:"id"`\n\tCustomerID uuid.UUID `db:"customer_id"`\n}')"; want 0; }
+S90() { f bin-a-manager/pkg/foo/x.go "$(printf 'package p\n\nimport (\n\t"fmt"\n)\n\nvar l = []string{\n\t%s,\n}\n' "$DTO")"; want 0; }
+S91() { f bin-n/models/n/n.go 'package n
+type A struct {
+	X string'; want 1 GATE; }
 
 self_test() {
   local v; NFAIL=0; NCASE=0
