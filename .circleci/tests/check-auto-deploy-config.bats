@@ -218,6 +218,18 @@ expect_fail() {
     expect_fail "bin-call-manager-ship is not gated by build-approval"
 }
 
+@test "guard env hidden inside another variable's value fails" {
+    mutate "$CFG" $'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n' $'FOO=a-DEPLOY_REQUIRE_LATEST_FOR_PATHS=bin-agent-manager \\\n'
+    run_checker
+    expect_fail "exactly once on the same command"
+}
+
+@test "an auto deploy job whose workflow key names another service's job fails" {
+    mutate "$CFG" $'      - bin-agent-manager-deploy:\n          <<: [*context_production, *deploy_filters]\n          serial-group' $'      - bin-call-manager-deploy:\n          name: bin-agent-manager-deploy\n          <<: [*context_production, *deploy_filters]\n          serial-group'
+    run_checker
+    expect_fail "bin-agent-manager-deploy key must be bin-agent-manager-deploy"
+}
+
 # ---- (c) anchors ----
 
 @test "deploy_filters anchor widened beyond main fails" {

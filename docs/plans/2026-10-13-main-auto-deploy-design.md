@@ -101,11 +101,12 @@
 
 ### 5.3 실측 결과 (T0, T6)
 - T0 (CircleCI GET, 최근 main 성공 실행 3건): test 최대 bin-agent-manager 291초, bin-contact-manager 271초, bin-storage-manager 233초. build 약 75~77초(storage 128~131초). deploy 19~35초. 서비스별 test, build, deploy 합계 최대치는 약 6.2분에서 6.7분이며 3배는 약 18분에서 20분이다(QA-2 창의 하한 10분과 상한 30분 안). 세 서비스의 경로 최신 커밋(a0f6b7942, 9f0c97af7, ec3d0790e)은 모두 deploy 성공 실행으로 확인되어 미배포 보류 커밋이 없다(파이프라인 vcs 필드가 비어 있어 실행 순서로 판단).
-- T6 checkout 실측(임시 실험 브랜치, cimg/base:2024.02 와 cimg/gcp:2026.02 두 이미지에서 동일, 실험 후 삭제): checkout 은 shallow 가 아니며(`--is-shallow-repository` false, 6000 커밋, `.git` 30MB, fetch refspec `+refs/heads/*:refs/remotes/origin/*`) `origin/main` 이 이미 있다. 명시 refspec fetch 는 rc 0 이며 unshallow 는 필요 없었다(방어용으로만 남음). 실제 CI 에서 오래된 SHA 로 guard 를 실행하면 `DEPLOY_SUPERSEDED sha=<old> latest=a0f6b7942...` 로 실패하고 Komodo 를 호출하지 않는다. 같은 실험 파이프라인에서 shell-tests(ruby 설치, 검증기, 신규 bats 포함 140개)도 성공했다.
+- T6 checkout 실측(임시 실험 브랜치, cimg/base:2024.02 와 cimg/gcp:2026.02 두 이미지에서 동일, 실험 후 삭제): checkout 은 shallow 가 아니며(`--is-shallow-repository` false, 6000 커밋, `.git` 30MB, fetch refspec `+refs/heads/*:refs/remotes/origin/*`) `origin/main` 이 이미 있다. 명시 refspec fetch 는 rc 0 이며 unshallow 는 필요 없었다(방어용으로만 남음). 실제 CI 에서 오래된 SHA 로 guard 를 실행하면 `DEPLOY_SUPERSEDED sha=<old> latest=a0f6b7942...` 로 실패하고 Komodo 를 호출하지 않는다. 같은 실험 파이프라인에서 shell-tests(ruby 설치, 검증기, 신규 bats 포함, 측정 시점의 140개)도 성공했다.
 - 참고: CircleCI v1.1 API(`/api/v1.1/project/<circleci 슬러그>/<job번호>`)는 단계 로그의 output_url 을 주므로 로그 확인이 필요한 경우 가능하다. QA 의 superseded 판정은 git 기준이다(T8).
 
 ### 5.4 구현 반영 사항 (코드 리뷰 R1, R2 반영, 위 T 항목에 우선)
-- 구현 파일: guard 는 `komodo-api-deploy.sh`, guard bats 21개는 `komodo-api-deploy-guard.bats`, 검증기는 `check-auto-deploy-config.rb` 와 bats 41개(`check-auto-deploy-config.bats`), 허용 목록 `auto-deploy-services.txt`. 변환은 파일럿 3개 수동 변환(5.1).
+- 구현 파일: guard 는 `komodo-api-deploy.sh`, guard bats 21개는 `komodo-api-deploy-guard.bats`, 검증기는 `check-auto-deploy-config.rb` 와 bats 43개(`check-auto-deploy-config.bats`), 허용 목록 `auto-deploy-services.txt`. 변환은 파일럿 3개 수동 변환(5.1).
 - T1 추가: 값에 줄바꿈이 있으면 첫 줄만 읽고 나머지를 무시하지 않고 실패한다.
 - T5 구현 규칙 보강: (a) deploy job 의 명령은 `VAR=value` 대입들 다음에 `komodo-api-deploy.sh` 가 오는 형태여야 하며(주석, `env -u`, `true;` 앞붙임 거부) `DEPLOY_REQUIRE_LATEST_FOR_PATHS` 대입이 정확히 한 번이고 값이 `<svc>` 이며 첫 인자가 `<svc>`(접두만 같은 이름 거부)이어야 한다. `run:` 축약형(`- run: <문자열>`)도 읽어 deploy 호출이 두 번 숨는 것을 막는다. deploy 는 production context 를 써야 한다. 허용 목록에 있는데 `jobs` 목록이 없는 workflow 는 거부한다. (e) 승인 유지 workflow 의 deploy 판별은 job 이름이 `-deploy` 로 끝나는 것뿐 아니라 키가 `-deploy` 로 끝나는 것(`name:` 으로 이름을 바꾼 경우)도 포함한다.
+- 코드 리뷰 R3 반영: 가드 대입은 토큰화해 변수 이름이 정확히 일치할 때만 인정하고(다른 변수 값 안에 숨긴 경우 거부), 자동 배포 workflow 의 deploy 항목은 키가 `<svc>-deploy` 여야 한다(`name:` 으로 다른 job 정의를 가리키는 경우 거부).
 - 한계(수용): 검증기는 단순 실수와 흔한 변형을 막는 장치이고, 악의적 우회(별도 gate 이름 등)를 전부 막지는 않는다. 변경은 diff 에서 리뷰어에게 보인다.

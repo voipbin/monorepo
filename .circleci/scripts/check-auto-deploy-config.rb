@@ -144,6 +144,7 @@ def check_auto_workflow(svc, js, jobs, errors)
   return unless deploy
 
   d = deploy[:attrs]
+  errors << "#{where}: #{svc}-deploy key must be #{svc}-deploy (it selects the job definition)" unless deploy[:key] == "#{svc}-deploy"
   errors << "#{where}: #{svc}-deploy filters must be exactly only: main" unless d['filters'] == ONLY_MAIN['filters']
   errors << "#{where}: #{svc}-deploy must require exactly #{svc}-build" unless requires_of(deploy) == ["#{svc}-build"]
   want_group = "<< pipeline.project.slug >>/deploy-#{svc}"
@@ -162,7 +163,9 @@ def check_auto_workflow(svc, js, jobs, errors)
     if m.nil?
       errors << "#{where}: #{svc}-deploy command must be VAR=value assignments followed by komodo-api-deploy.sh"
     else
-      guards = m[1].scan(/\bDEPLOY_REQUIRE_LATEST_FOR_PATHS=(?:"([^"]*)"|'([^']*)'|(\S*))/).map(&:compact).map(&:first)
+      # Tokenize the assignments so only a variable whose whole name matches counts.
+      assigns = m[1].scan(/([A-Za-z_][A-Za-z0-9_]*)=(?:"([^"]*)"|'([^']*)'|(\S*))/)
+      guards = assigns.select { |name, *_| name == 'DEPLOY_REQUIRE_LATEST_FOR_PATHS' }.map { |_, *vals| vals.compact.first.to_s }
       unless guards == [svc]
         errors << %(#{where}: #{svc}-deploy command must set DEPLOY_REQUIRE_LATEST_FOR_PATHS="#{svc}" exactly once on the same command as komodo-api-deploy.sh)
       end
