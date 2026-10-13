@@ -366,3 +366,21 @@ EOF
     [ "$status" -eq 1 ]
     [[ "$output" == *"DEPLOY_SUPERSEDED"* ]]
 }
+
+@test "guard on: a successful git log that prints warnings to stderr does not break the comparison" {
+    sha="$(commit_file bin-agent-manager/a.txt one)"
+    push_origin; full_clone
+    # git succeeds but writes a warning on stderr for the log call.
+    cat > "$MOCK_BIN_DIR/git" <<SHIM
+#!/bin/bash
+for a in "\$@"; do
+    if [ "\$a" = "log" ]; then echo "warning: refname 'origin/main' is ambiguous." >&2; fi
+done
+exec "$REAL_GIT" "\$@"
+SHIM
+    chmod +x "$MOCK_BIN_DIR/git"
+    export DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" CIRCLE_SHA1="$sha"
+    run run_deploy_in "$CLONE"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Superseded-deploy guard passed"* ]]
+}
