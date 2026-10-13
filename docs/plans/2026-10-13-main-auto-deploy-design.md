@@ -1,5 +1,7 @@
 # main 자동 배포 전환 설계 v7 (VOIP-1586 monorepo, SQUARE-101 monorepo-javascript)
 
+문서 이력 표기: 아래 1~4절 헤더 문단의 R1 이후 서술(R1, R2, ...)은 설계 문서 리뷰 루프의 라운드이고, 5.4절의 R1~R5 는 코드 리뷰 루프(PR #1384)의 라운드이다.
+
 작성: 2026-10-13. 대표님 지시: "main 은 머지되면 자동 배포되도록 변경, 티켓 만들고 진행". 방침: 위험이 낮은 서비스부터, 실측 신호 없는 선제 확장 반대, 기존 도구 재사용, 연쇄 후속 티켓 금지(CI 변경은 VOIP-1586, SQUARE-101, 지시문 변경은 ETC-24 범위). R1 결과(A 승인, B와 C 수정 요구)와 R2 결과(2명 승인), R3 결과(A+B 승인, C 수정 요구: MAJOR 2), R4 결과(둘 다 수정 요구), R5 결과(A+B 승인, C 수정 요구: 긴급 범주와 연장 규칙 모순, 알리지 않은 직접 머지 잔여 위험 미명시)를 반영했다.
 
 ## 1. 현황 (직접 확인한 사실)
@@ -28,7 +30,7 @@
 - `.circleci/.*` 변경은 5개 앱 workflow 전부를 만든다. 자동 전환 앱은 그 변경으로도 main 에서 현재 main 코드를 한 번 배포한다. 전환 PR 자체가 파일럿 앱의 첫 자동 배포다. 이를 알려진 동작으로 명시하고, Phase 1 은 파일럿 앱 1개만 전환해 영향 범위를 한 앱으로 제한한다.
 - `komodo-deploy.sh` 에도 같은 guard 를 env 플래그로 넣는다(앱 경로 기준).
 ### D2. 역전 배포 방지 guard (fail-closed, 건너뛰기를 success 로 숨기지 않음)
-- 위치: 각 deploy 의 shared script(`komodo-api-deploy.sh`, js 는 `komodo-deploy.sh`)에 env 플래그 `DEPLOY_REQUIRE_LATEST_FOR_PATHS="<경로들>"` 를 추가(기본 off 이므로 제외 서비스와 kamailio, 기존 bats 영향 없음). 켜면 명시 refspec fetch(필요 시 unshallow, 5절 T1)로 `origin/main` 을 확보한 후 `git log -1 --format=%H origin/main -- <경로>` 가 `$CIRCLE_SHA1` 과 다르면 이 deploy 를 실패 종료한다("superseded by <sha>"). 인라인 step 34개를 늘리지 않는다.
+- 위치: 각 deploy 의 shared script(`komodo-api-deploy.sh`, js 는 `komodo-deploy.sh`)에 env 플래그 `DEPLOY_REQUIRE_LATEST_FOR_PATHS="<경로들>"` 를 추가(기본 off 이므로 제외 서비스와 kamailio, 기존 bats 영향 없음). 켜면 명시 refspec fetch(필요 시 unshallow, 5절 T1)로 `origin/main` 을 확보한 후 `git log -1 --format=%H origin/main -- <경로>` 가 `$CIRCLE_SHA1` 과 다르면 이 deploy 를 실패 종료하며 로그에는 `DEPLOY_SUPERSEDED sha=<CIRCLE_SHA1> latest=<sha>` 를 남긴다(QA 의 superseded 판정은 로그가 아니라 git 기준, 5절 T8). 인라인 step 34개를 늘리지 않는다.
 - 경로: `<svc>` 디렉터리(bin-api-manager 는 bin-openapi-manager 포함, 단 파일럿에서는 제외), js 는 `<앱 디렉터리> .circleci` (js 의 `.circleci/.*` 매핑이 앱 workflow 를 만들기 때문. `.circleci` 만 바꾼 커밋도 최신 경로 커밋이 되어 guard 를 통과하며, 전환 PR 이 파일럿 앱의 첫 자동 배포가 된다는 서술과 일치한다. monorepo 는 `.circleci` 가 서비스 workflow 를 만들지 않으므로 서비스 디렉터리만).
 - 실패로 종료하는 이유: 건너뛰기를 success 로 처리하면 CircleCI 상 배포된 것으로 보여 QA 의 "마지막 성공 deploy"와 QA-2 확인이 오염된다. 대신 구 커밋 workflow 가 red 로 남지만 truthful 하다(그 커밋은 배포되지 않았고, 더 새 커밋이 같은 서비스 경로를 포함해 배포한다). QA-2 는 `DEPLOY_SUPERSEDED`(QA 는 로그가 아니라 git 으로 판정, T8) 를 보면 그 sha 의 deploy 로 확인 대상을 옮긴다.
 - fail-closed: fetch, log 실패, shallow 로 경로 이력 판정 불가도 deploy 실패(구현 PR 에서 full clone 여부 실측하고 bats 에 케이스 추가). 수동 rerun 한 구 커밋도 guard 가 같은 이유로 실패한다(의도).
@@ -105,11 +107,12 @@
 - T6 비-main 확인(실제 PR 브랜치, 임시 커밋 `bin-agent-manager/` 마커 파일, 확인 후 제거, 승인은 하지 않음): 파이프라인 #5205 에서 bin-agent-manager workflow 는 `build-approval` on_hold, `bin-agent-manager-test` blocked, `bin-agent-manager-build` blocked 이고 `test-auto` 와 `deploy` job 은 만들어지지 않았다. 같은 파이프라인의 shell-tests 는 성공했다.
 - 참고: CircleCI v1.1 API(`/api/v1.1/project/<circleci 슬러그>/<job번호>`)는 단계 로그의 output_url 을 주므로 로그 확인이 필요한 경우 가능하다. QA 의 superseded 판정은 git 기준이다(T8).
 
-### 5.4 구현 반영 사항 (코드 리뷰 R1~R4 반영, 위 T 항목에 우선)
+### 5.4 구현 반영 사항 (코드 리뷰 R1~R6 반영, 위 T 항목에 우선)
 - 구현 파일: guard 는 `komodo-api-deploy.sh`, guard bats 25개는 `komodo-api-deploy-guard.bats`, 검증기는 `check-auto-deploy-config.rb` 와 bats 47개(`check-auto-deploy-config.bats`), 허용 목록 `auto-deploy-services.txt`. 변환은 파일럿 3개 수동 변환(5.1).
 - T1 추가: 값에 줄바꿈이 있으면 첫 줄만 읽고 나머지를 무시하지 않고 실패한다.
 - T5 구현 규칙 보강: (a) deploy job 의 명령은 `VAR=value` 대입들 다음에 `komodo-api-deploy.sh` 가 오는 형태여야 하며(주석, `env -u`, `true;` 앞붙임 거부) `DEPLOY_REQUIRE_LATEST_FOR_PATHS` 대입이 정확히 한 번이고 값이 `<svc>` 이며 첫 인자가 `<svc>`(접두만 같은 이름 거부)이어야 한다. `run:` 축약형(`- run: <문자열>`)도 읽어 deploy 호출이 두 번 숨는 것을 막는다. deploy 는 production context 를 써야 한다. 허용 목록에 있는데 `jobs` 목록이 없는 workflow 는 거부한다. (e) 승인 유지 workflow 의 deploy 판별은 job 이름이 `-deploy` 로 끝나는 것뿐 아니라 키가 `-deploy` 로 끝나는 것(`name:` 으로 이름을 바꾼 경우)도 포함한다.
 - 코드 리뷰 R3 반영: 가드 대입은 토큰화해 변수 이름이 정확히 일치할 때만 인정하고(다른 변수 값 안에 숨긴 경우 거부), 자동 배포 workflow 의 deploy 항목은 키가 `<svc>-deploy` 여야 한다(`name:` 으로 다른 job 정의를 가리키는 경우 거부).
 - 코드 리뷰 R4 반영: guard bats 에 detached HEAD 체크아웃(CircleCI 가 CIRCLE_SHA1 을 detached 로 체크아웃하므로 `origin/main` 이 아니라 `HEAD` 를 보면 guard 가 항상 자기 자신을 최신으로 판정해 무력화됨)과 낡은 로컬 `origin/main` 갱신 케이스를 추가했다(변형 시험으로 확인). 승인 유지 workflow 는 deploy 가 의존하는 job(test, build 등 승인 체인 위의 job)에 branch 필터가 있으면 거부하고(main 에서 건너뛰어져 승인 없이 이어질 수 있음), deploy 는 `only: main` 외의 필터를 거부하며, deploy job 판별에 job 정의가 `komodo-api-deploy.sh` 를 호출하는지도 포함한다. 체인 밖 job(예: bin-dbscheme-manager 의 main 전용 migration-applied-checkpoint)은 제한하지 않는다.
 - 코드 리뷰 R5 반영: 검증기는 deploy job 명령의 주석 전용 줄을 명령으로 세지 않는다(주석이 스크립트 이름을 언급해도 거부하지 않음). guard bats 에 둘째 경로 항목의 dash 거부와 마지막 글자만 다른 커밋 id 거부 케이스를 추가했다.
+- 코드 리뷰 R6 반영: D2 의 옛 로그 문구(`superseded by <sha>`)를 실제 출력(`DEPLOY_SUPERSEDED ...`)과 git 기준 판정으로 정정했다.
 - 한계(수용): 검증기는 단순 실수와 흔한 변형을 막는 장치이고, 악의적 우회(별도 gate 이름 등)를 전부 막지는 않는다. 변경은 diff 에서 리뷰어에게 보인다.
