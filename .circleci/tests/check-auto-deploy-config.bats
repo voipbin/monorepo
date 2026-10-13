@@ -250,6 +250,12 @@ expect_fail() {
     expect_fail "bin-call-manager-ship is not gated by build-approval"
 }
 
+@test "a comment line that mentions komodo-api-deploy.sh inside the deploy command is ignored (positive)" {
+    mutate "$CFG" $'            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n' $'            # see komodo-api-deploy.sh for the guard\n            DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n'
+    run_checker
+    [ "$status" -eq 0 ]
+}
+
 # ---- (c) anchors ----
 
 @test "deploy_filters anchor widened beyond main fails" {

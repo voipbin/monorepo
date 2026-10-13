@@ -345,3 +345,21 @@ EOF
     [[ "$output" == *"must be a single line"* ]]
     [ "$(curl_call_count)" -eq 0 ]
 }
+
+@test "guard on: a dash entry as the second path is rejected too" {
+    export DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager -x" CIRCLE_SHA1="abc"
+    run run_deploy_in /
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"entry is not allowed"* ]]
+    [ "$(curl_call_count)" -eq 0 ]
+}
+
+@test "guard on: a commit id that differs from the latest only in its last character is not accepted" {
+    sha="$(commit_file bin-agent-manager/a.txt one)"
+    push_origin; full_clone
+    last="${sha: -1}"; if [ "$last" = "0" ]; then other=1; else other=0; fi
+    export DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" CIRCLE_SHA1="${sha%?}$other"
+    run run_deploy_in "$CLONE"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"DEPLOY_SUPERSEDED"* ]]
+}

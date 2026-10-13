@@ -62,7 +62,8 @@ def logical_lines(job_def)
     run = step.is_a?(Hash) ? step['run'] : nil
     # `- run: <string>` is the shorthand for `- run: { command: <string> }`.
     cmd = run.is_a?(Hash) ? run['command'] : run
-    cmd.to_s.gsub(/\\\n/, ' ').split("\n")
+    # Comment-only lines are not commands (a note may mention the script by name).
+    cmd.to_s.gsub(/\\\n/, ' ').split("\n").reject { |l| l.strip.start_with?('#') }
   end
 end
 
