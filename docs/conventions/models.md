@@ -21,6 +21,8 @@ type Agent struct {
 }
 ```
 
+New models embed `commonidentity.Identity`. The existing hand-written structs are pinned in `scripts/structure-conventions-allow.txt` (CI gate `check-structure-conventions`); delete the entry when you convert one to the embedding.
+
 ### 6.2 DB Tag Conventions
 
 | Tag | Usage | Example |

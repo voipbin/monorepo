@@ -930,6 +930,11 @@ workflows:
     jobs:
       - check-test-conventions
 
+  # Runs on every pipeline for the same reason as check-test-conventions.
+  check-structure-conventions:
+    jobs:
+      - check-structure-conventions
+
 
 #########################################################################################################################################################################
 # jobs
@@ -2333,6 +2338,27 @@ jobs:
           name: Check test conventions on added lines
           command: bash scripts/check-test-conventions.sh
 
+  # Blocks new structure-convention violations (DTO ownership, squirrel
+  # location, hand-written ID/CustomerID in models). Whole-tree check, so no
+  # base-branch fetch is needed. cimg/base has no Go and no guaranteed mawk.
+  check-structure-conventions:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install mawk
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y mawk
+      - run:
+          name: Check structure conventions
+          command: bash scripts/check-structure-conventions.sh
+      - run:
+          name: Self-test the structure gate
+          command: bash scripts/check-structure-conventions.sh --self-test
+
   lint-config-check:
     docker: *go_image
     resource_class: small
@@ -2368,6 +2394,40 @@ jobs:
             cd bin-common-handler
             go mod vendor
             golangci-lint run --timeout 10m
+      - run:
+          name: Fetch base branch
+          # Same procedure as check-test-conventions: checkout only fetches the
+          # current branch, and --new-from-merge-base needs origin/main. No --depth
+          # (a shallow boundary breaks merge-base); deepen only when needed.
+          command: |
+            git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+            if ! git merge-base origin/main HEAD >/dev/null 2>&1; then
+              echo "Merge base unreachable; deepening the clone."
+              git fetch --no-tags --unshallow origin '+refs/heads/main:refs/remotes/origin/main' \
+                || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
+            fi
+      - run:
+          name: Lint error wrapping on new lines (bin-common-handler)
+          environment:
+            GOGC: "50"
+            GOMEMLIMIT: 1500MiB
+            GOMAXPROCS: "1"
+          command: |
+            cd bin-common-handler
+            golangci-lint run --timeout 10m -c "$(git rev-parse --show-toplevel)/.golangci-errorlint.yml" --new-from-merge-base=origin/main
+      - run:
+          name: Verify the errorlint configuration
+          command: golangci-lint config verify -c .golangci-errorlint.yml
+      - run:
+          name: Install mawk
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y mawk
+      - run:
+          name: Check the structure gate script (syntax and self-test)
+          command: |
+            bash -n scripts/check-structure-conventions.sh
+            bash scripts/check-structure-conventions.sh --self-test
       - run:
           name: Check the convention gate script for syntax errors
           command: bash -n scripts/check-test-conventions.sh
@@ -2473,6 +2533,31 @@ commands:
                 command: |
                   cd << parameters.source-directory >>
                   golangci-lint run --timeout 10m
+            - run:
+                name: Fetch base branch
+                # Same procedure as check-test-conventions: checkout only fetches the
+                # current branch, and --new-from-merge-base needs origin/main. No --depth
+                # (a shallow boundary breaks merge-base); deepen only when needed.
+                command: |
+                  git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+                  if ! git merge-base origin/main HEAD >/dev/null 2>&1; then
+                    echo "Merge base unreachable; deepening the clone."
+                    git fetch --no-tags --unshallow origin '+refs/heads/main:refs/remotes/origin/main' \
+                      || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
+                  fi
+            - run:
+                name: Lint error wrapping on new lines
+                # docs/conventions/error-handling.md 4.2 (%w). Separate config and run so
+                # --new-from-merge-base does not weaken the full "Linting" step above.
+                # The config path is absolute because the command runs inside the service
+                # directory.
+                environment:
+                  GOGC: "50"
+                  GOMEMLIMIT: 1500MiB
+                  GOMAXPROCS: "1"
+                command: |
+                  cd << parameters.source-directory >>
+                  golangci-lint run --timeout 10m -c "$(git rev-parse --show-toplevel)/.golangci-errorlint.yml" --new-from-merge-base=origin/main
       - run:
           name: Testing
           command: |
@@ -2543,6 +2628,31 @@ commands:
                 command: |
                   cd << parameters.source-directory >>
                   golangci-lint run --timeout 10m
+            - run:
+                name: Fetch base branch
+                # Same procedure as check-test-conventions: checkout only fetches the
+                # current branch, and --new-from-merge-base needs origin/main. No --depth
+                # (a shallow boundary breaks merge-base); deepen only when needed.
+                command: |
+                  git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+                  if ! git merge-base origin/main HEAD >/dev/null 2>&1; then
+                    echo "Merge base unreachable; deepening the clone."
+                    git fetch --no-tags --unshallow origin '+refs/heads/main:refs/remotes/origin/main' \
+                      || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
+                  fi
+            - run:
+                name: Lint error wrapping on new lines
+                # docs/conventions/error-handling.md 4.2 (%w). Separate config and run so
+                # --new-from-merge-base does not weaken the full "Linting" step above.
+                # The config path is absolute because the command runs inside the service
+                # directory.
+                environment:
+                  GOGC: "50"
+                  GOMEMLIMIT: 1500MiB
+                  GOMAXPROCS: "1"
+                command: |
+                  cd << parameters.source-directory >>
+                  golangci-lint run --timeout 10m -c "$(git rev-parse --show-toplevel)/.golangci-errorlint.yml" --new-from-merge-base=origin/main
       - run:
           name: Testing
           command: |
@@ -2618,6 +2728,31 @@ commands:
                 command: |
                   cd << parameters.source-directory >>
                   golangci-lint run --timeout 10m
+            - run:
+                name: Fetch base branch
+                # Same procedure as check-test-conventions: checkout only fetches the
+                # current branch, and --new-from-merge-base needs origin/main. No --depth
+                # (a shallow boundary breaks merge-base); deepen only when needed.
+                command: |
+                  git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+                  if ! git merge-base origin/main HEAD >/dev/null 2>&1; then
+                    echo "Merge base unreachable; deepening the clone."
+                    git fetch --no-tags --unshallow origin '+refs/heads/main:refs/remotes/origin/main' \
+                      || git fetch --no-tags --deepen=1000 origin '+refs/heads/main:refs/remotes/origin/main'
+                  fi
+            - run:
+                name: Lint error wrapping on new lines
+                # docs/conventions/error-handling.md 4.2 (%w). Separate config and run so
+                # --new-from-merge-base does not weaken the full "Linting" step above.
+                # The config path is absolute because the command runs inside the service
+                # directory.
+                environment:
+                  GOGC: "50"
+                  GOMEMLIMIT: 1500MiB
+                  GOMAXPROCS: "1"
+                command: |
+                  cd << parameters.source-directory >>
+                  golangci-lint run --timeout 10m -c "$(git rev-parse --show-toplevel)/.golangci-errorlint.yml" --new-from-merge-base=origin/main
       - run:
           name: Testing
           command: |
