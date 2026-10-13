@@ -123,7 +123,7 @@ Rationale:
 - A parallel `*WithVariables` method permanently forks the call path and doubles the
   maintenance surface for every future change to call origination.
 
-This is surfaced as Open Question E for CTO ratification, since it is a deliberate
+This is surfaced as Open Question E for the maintainer's ratification, since it is a deliberate
 accept-the-blast-radius decision.
 
 ## Domain Model
@@ -459,7 +459,7 @@ LLM-facing copy uses `${...}` and the terms activeflow / flow, never "call flow"
 - **Reserved namespace integrity**: three-leg defense above (LAST overwrite + sanitizer drop of
   `voipbin.`-prefix and bare reserved keys + inherited read-source for the depth counter). A
   customer cannot forge reserved keys.
-- **Variable substitution is an injection surface (CTO attention).** Variables are substituted
+- **Variable substitution is an injection surface (maintainer attention).** Variables are substituted
   via `${}` into downstream action options, including `talk` text and, notably, `webhook_call`
   URLs/bodies. Since `create_call` lets an LLM author variable VALUES, AI-generated strings can
   flow into outbound HTTP request URLs/bodies → a template/SSRF-adjacent surface that did not
@@ -467,7 +467,7 @@ LLM-facing copy uses `${...}` and the terms activeflow / flow, never "call flow"
   alone (any `set_variables` + `webhook_call` flow already has it), but this feature widens the
   set of who can write those values to "the LLM during a call". Phase-1 position: document the
   risk; the existing webhook_call egress controls (customer-configured destinations) remain the
-  boundary. Flagged as Open Question G for CTO: do we want an allowlist/escaping pass on
+  boundary. Flagged as Open Question G for the maintainer: do we want an allowlist/escaping pass on
   variable values that reach URL-typed action options. Recommendation: separate hardening
   effort, not a blocker for this feature.
 - **No IDOR surface added**: variables are opaque strings, not resource references. The
@@ -523,12 +523,12 @@ map work).
 | # | Question | Recommendation | Owner / Priority |
 |---|---|---|---|
 | A | (resolved) fail-closed vs non-fatal | Edge 400 for users; sanitize-and-drop internally, reserved always seeded, never fail create | Resolved in v2 |
-| B | Reserved prefix: only `voipbin.`? | Yes (matches the single existing reserved namespace); normalize case+space | CPO / Decided unless objection |
-| E | Positional param vs options struct? | Positional (VoIPBin convention; mechanical blast radius) | CTO / Pre-implementation |
-| F | create_call silent-drop on bad LLM vars | Keep no-edge-validation, ship counter in Phase 1 for observability | CTO / Pre-implementation |
-| G | Escaping/allowlist for vars reaching URL-typed action options (SSRF surface) | Separate hardening effort, not a blocker | CTO / Phase 2 |
-| H | External-overrides-inheritance: should a lower-trust source be allowed to override a parent's non-reserved business variable? | Phase-1 paths are safe (LLM has no inheritance; REST callers are the customer's own integration). Revisit only if a future path inherits AND injects from a lower-trust source | CTO / Future |
-| D | Expose `variables` for campaign/conversation/transcribe origination? | Separate per-resource effort | CPO / Future |
+| B | Reserved prefix: only `voipbin.`? | Yes (matches the single existing reserved namespace); normalize case+space | Product owner / Decided unless objection |
+| E | Positional param vs options struct? | Positional (VoIPBin convention; mechanical blast radius) | Maintainer / Pre-implementation |
+| F | create_call silent-drop on bad LLM vars | Keep no-edge-validation, ship counter in Phase 1 for observability | Maintainer / Pre-implementation |
+| G | Escaping/allowlist for vars reaching URL-typed action options (SSRF surface) | Separate hardening effort, not a blocker | Maintainer / Phase 2 |
+| H | External-overrides-inheritance: should a lower-trust source be allowed to override a parent's non-reserved business variable? | Phase-1 paths are safe (LLM has no inheritance; REST callers are the customer's own integration). Revisit only if a future path inherits AND injects from a lower-trust source | Maintainer / Future |
+| D | Expose `variables` for campaign/conversation/transcribe origination? | Separate per-resource effort | Product owner / Future |
 
 ## Review Summary (round 1 → v2)
 

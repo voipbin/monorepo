@@ -280,9 +280,9 @@ registration during implementation.)
 
 | Question | Recommendation | Owner |
 |---|---|---|
-| Should the catalog expand nested model fields (Address, Attachment)? | No; describe one level + name the nested shape. Keep compact | CPO |
-| Should describe_action be in the default tool whitelist? | Yes; it is safe (static, read-only) and directly supports create_call assembly | CPO |
-| Phase 2 codegen from option.go AST? | Defer; revisit only if catalog drift becomes a recurring problem | CTO |
+| Should the catalog expand nested model fields (Address, Attachment)? | No; describe one level + name the nested shape. Keep compact | Product owner |
+| Should describe_action be in the default tool whitelist? | Yes; it is safe (static, read-only) and directly supports create_call assembly | Product owner |
+| Phase 2 codegen from option.go AST? | Defer; revisit only if catalog drift becomes a recurring problem | Maintainer |
 
 ## 11. Review Summary
 

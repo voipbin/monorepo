@@ -22,10 +22,10 @@ Related: docs/plans/2026-09-02-insight-assistant-get-contact-profile-design.md (
 
 ## 0. Provenance
 
-This design is the direct output of a 5-round "이슈 확인/분석" (issue-analysis) review loop conducted before any code was written, per project CLAUDE.md policy. That loop is what produced nearly every decision below -- including two decisions initially proposed differently and then explicitly revised by 대표님 (the product owner) after discussion:
+This design is the direct output of a 5-round "이슈 확인/분석" (issue-analysis) review loop conducted before any code was written, per project CLAUDE.md policy. That loop is what produced nearly every decision below -- including two decisions initially proposed differently and then explicitly revised by the maintainer (the product owner) after discussion:
 
-1. **Scope of "transcript"**: initially considered including recording-based post-hoc transcription (`transcribe_recording`). 대표님 confirmed recording and call are different resources and the tool should only handle call-linked (`transcribe_start`) transcripts; recording-based transcription is deferred to a separate future tool.
-2. **Access check narrowness**: initially proposed a "same peer/contact as the current Case" check (mirroring how call_id would normally be discovered). 대표님 explicitly rejected this in favor of a **tenant-only** check, reasoning that the LLM has no normal path to learn an unrelated call_id, and any call_id a human agent deliberately supplies is a legitimate intentional cross-case lookup. This is a **conscious widening from case-level to tenant-level isolation**, and residual risk is accepted (see §5).
+1. **Scope of "transcript"**: initially considered including recording-based post-hoc transcription (`transcribe_recording`). The maintainer confirmed recording and call are different resources and the tool should only handle call-linked (`transcribe_start`) transcripts; recording-based transcription is deferred to a separate future tool.
+2. **Access check narrowness**: initially proposed a "same peer/contact as the current Case" check (mirroring how call_id would normally be discovered). The maintainer explicitly rejected this in favor of a **tenant-only** check, reasoning that the LLM has no normal path to learn an unrelated call_id, and any call_id a human agent deliberately supplies is a legitimate intentional cross-case lookup. This is a **conscious widening from case-level to tenant-level isolation**, and residual risk is accepted (see §5).
 
 ## 1. Problem
 
@@ -562,7 +562,7 @@ Table-driven tests in `tool_insight_test.go`, mirroring `get_contact_profile`'s 
 
 Appending to `AllInsightToolNames` immediately grants this tool to every existing `ai.TypeInsight` config stored with `tool_names=["all"]` -- identical mechanic to `get_contact_profile`'s rollout (`models/ai/tool_validation.go:35-45`, `AllowedToolNames(TypeInsight)` -> `toSet(tool.AllInsightToolNames)`; `bin-pipecat-manager/pkg/toolhandler/main.go:91-107`, `hasAll` short-circuits to every allowed tool). No opt-in gate, no migration step, same as the precedent.
 
-Given §5 accepts a residual risk of surfacing an unrelated end-customer's call transcript **tenant-wide**, this acceptance lands retroactively on every already-deployed Insight AI that never specifically opted into it -- materially the same shape of decision as `get_contact_profile`'s PII-to-third-party-LLM auto-grant, and made with the same authority (대표님, §0.2).
+Given §5 accepts a residual risk of surfacing an unrelated end-customer's call transcript **tenant-wide**, this acceptance lands retroactively on every already-deployed Insight AI that never specifically opted into it -- materially the same shape of decision as `get_contact_profile`'s PII-to-third-party-LLM auto-grant, and made with the same authority (the maintainer, §0.2).
 
 **Caching note**: `bin-pipecat-manager/pkg/toolhandler/main.go:55-70` caches tool definitions via `FetchTools`/`AIV1ToolList`, refreshed on its own schedule -- so the tool may be invisible to already-running Insight sessions until pipecat-manager's cache refreshes after `bin-ai-manager` deploys. This ordering is fail-safe (no partial/broken state), just not instantaneous; worth knowing, not a blocker.
 

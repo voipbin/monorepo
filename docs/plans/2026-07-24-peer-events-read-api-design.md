@@ -4,7 +4,7 @@
 - Class: new read path across 4 services (bin-timeline-manager, bin-common-handler,
   bin-contact-manager, bin-api-manager) + bin-openapi-manager spec
 - Date: 2026-07-24
-- Author: Lux (CPO), decision confirmed with 대표님
+- Author: Lux (product owner), decision confirmed with the maintainer
 
 ## 1. Problem
 
@@ -17,7 +17,7 @@ REST). Not requested yet; this design covers ingestion only."
 This design adds that read path, so a customer's `contact_interactions` screen
 can also surface `peer_events` for a contact's registered addresses.
 
-**Explicit product decision (confirmed with 대표님, this session):**
+**Explicit product decision (confirmed with the maintainer, this session):**
 - `contact_interactions` (identity-resolved, CRM-eligibility-filtered) is
   left completely untouched. This is an ADDITIVE new capability, not a
   replacement or a merge of the two data sources into one query.
@@ -365,7 +365,7 @@ internal to this package's method body.
 
 ### 5.4 `pkg/listenhandler/v1_peer_events.go` (new) + `main.go` routing
 
-**GET, not POST** (corrected per 대표님's review — see rationale below).
+**GET, not POST** (corrected per the maintainer's review — see rationale below).
 New route `regV1PeerEvents = regexp.MustCompile(`/v1/peer-events(\?|$)`)`,
 `GET`, added to the `switch` in `processRequest` alongside the existing
 `regV1Correlations`/`regV1AnalysesGet` GET cases.
@@ -871,7 +871,7 @@ re-confirming the three-pair-type data flow compiles/imports correctly, the
 `server/contact_interactions.go:33-39`, and the `ErrNotFound`
 anti-enumeration precedent matches real `contact_address.go`. Also
 independently re-verified the GET-not-POST correction (made between Round 1
-and Round 2, per 대표님's review) is structurally sound: §5.4/§6.1's GET +
+and Round 2, per the maintainer's review) is structurally sound: §5.4/§6.1's GET +
 query-authority + body-filter shape was not part of Round 2's dispatched
 scope but is internally consistent with the rest of the doc as read.
 
@@ -956,7 +956,7 @@ started.
 
 ## 16. Post-approval redesign — `peer`/`local` response as `commonaddress.Address`; internal filter plumbing unified (external `peer_type`/`peer_target` query params UNCHANGED)
 
-During implementation (after the design loop closed), 대표님 raised three
+During implementation (after the design loop closed), the maintainer raised three
 follow-up questions that led to a real redesign of the response shape and
 filter contract described in §3/§4/§5.1–§5.3 above. **This section is the
 authoritative record of what actually shipped; §3/§4/§5.1–§5.3's flat
@@ -1031,7 +1031,7 @@ plumbing are superseded by what follows.**
 design as originally drafted (flat `peer_type`/`peer_target` throughout,
 per §3/§4/§5.1–§5.3), which was internally consistent and passed 2
 consecutive APPROVEs on its own terms. The redesign is a scope change
-made during implementation in response to 대표님's direct review of the
+made during implementation in response to the maintainer's direct review of the
 shipped response/request shapes, not a defect the review loop missed. No
 new review round was run for this section; the actual code (cross-checked
 against this section during r13a/r13b) is the source of truth going
@@ -1086,7 +1086,7 @@ live references to the old name remaining anywhere in the 4 services;
 **Process note:** this Round 1 review should have run BEFORE the commit
 was pushed to PR #1136, per the design-first-with-review-loops convention
 ("every push to an open PR branch is a review-loop trigger, no exception
-for small/follow-up commits"). It was skipped and only caught when 대표님
+for small/follow-up commits"). It was skipped and only caught when the maintainer
 asked directly "리뷰 루프 돌렸어?" — run retroactively here. Round 2 is
 required next (minimum 3-round floor), followed by 2 consecutive
 APPROVEs to close.
@@ -1252,12 +1252,12 @@ nice-to-have for future test coverage work, not a defect blocking this PR.
 | 4 | APPROVE | 0 findings — APPROVE #1 |
 | 5 | APPROVE | 0 findings — APPROVE #2, loop closed |
 
-This retroactive review loop (triggered by 대표님 asking "리뷰 루프
+This retroactive review loop (triggered by the maintainer asking "리뷰 루프
 돌렸어?" after the review was skipped before the initial push) caught 3
 real documentation-accuracy defects across Rounds 1–2 and one test-coverage
 gap in Round 3 — none were BLOCKERs (the underlying code was correct
 throughout), but all would have shipped inaccurate customer-facing docs
 and an undertested code path had the loop not run. PR #1136 (6 commits:
 44501b298, 1721b9bae, 991677f56, 50f609ffc, 7ec8cbc5f, plus this section's
-commit) is now push/merge-ready, pending 대표님's explicit authorization
+commit) is now push/merge-ready, pending the maintainer's explicit authorization
 to push and, separately, to merge.

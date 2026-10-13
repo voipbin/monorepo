@@ -1,7 +1,7 @@
 # Webchat Widget: split single FlowID into SessionFlowID + MessageFlowID
 
 - Ticket: NOJIRA
-- Author: Hermes (CPO), for pchero (CEO/CTO)
+- Author: Hermes (product owner), for pchero (maintainer)
 - Status: DRAFT — locked after a 16-round adversarial review loop (analysis
   stage) against a background subagent; ready for implementation
 - Supersedes: `2026-06-29-add-webchat-manager-design.md` (v8, merged to
@@ -24,7 +24,7 @@ pchero directed: split this into two independently configurable Flows:
 one that fires when a webchat session is created/started, and one that
 fires whenever a message is received.
 
-## 2. Decisions locked (CEO-directed, confirmed against real code across
+## 2. Decisions locked (maintainer-directed, confirmed against real code across
    16 rounds of adversarial review)
 
 1. **`Widget.FlowID` is renamed to `Widget.SessionFlowID`** — not
@@ -393,7 +393,7 @@ against this design before implementation. Key findings, in order:
   biggest correction, driven by pchero's own "flow-level condition
   branch, not a platform owner field" redirect after this was explained.
 - R8-R9: caught that `FlowID` conceptually maps to `SessionFlowID` (not
-  `MessageFlowID`) — pchero's own correction — and that CPO's own
+  `MessageFlowID`) — pchero's own correction — and that the product owner's own
   first attempt at implementing the fix over-corrected by also silently
   reverting the trigger's event (session-create vs. first-message),
   which was pchero's actual, deliberate ask.

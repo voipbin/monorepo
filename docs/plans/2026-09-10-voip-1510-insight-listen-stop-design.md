@@ -1,7 +1,7 @@
 # VOIP-1510: Insight AI conversation listen stops after a few turns
 
 Status: Round 2 APPROVE (2026-09-10) — proceeding to Round 3 per min-3-round policy
-Author: Hermes (CPO), 2026-09-10
+Author: Hermes (product owner), 2026-09-10
 Jira: VOIP-1510
 Branch: VOIP-1510-Fix-insight-listen-stop
 

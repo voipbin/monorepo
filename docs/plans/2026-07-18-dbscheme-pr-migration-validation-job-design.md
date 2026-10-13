@@ -1,7 +1,7 @@
 # bin-dbscheme-manager: PR-branch migration validation job
 
 Status: CLOSED-OUT (implementation verified, PR #1112, v5)
-Author: Hermes (CPO)
+Author: Hermes (product owner)
 Date: 2026-07-18
 
 ## 1. Problem
@@ -313,17 +313,17 @@ checkpoint to even become visible.
 ## 6. Scope assessment (round 1 review response)
 
 Confirmed right-sized as designed, with one wording correction (round 3):
-the lightweight-only approach (no DB, no Docker) matches the CEO's explicit
-constraint on *mechanism* precisely -- but the CEO's verbatim ask was to
+the lightweight-only approach (no DB, no Docker) matches the maintainer's explicit
+constraint on *mechanism* precisely -- but the maintainer's verbatim ask was to
 check "마이그레이션 파일 존재 여부만" (only whether the migration file exists).
 §3.1 deliberately goes beyond literal file-existence to structural/metadata
 validity (syntax parseability, exactly-one-head-per-stream, resolvable
 `down_revision` chain) -- reasoned there as a meaningful improvement over a
 check that "is trivially true any time a diff touches the path." This is a
 good-faith, reasoned scope expansion, not an exact literal-ask match; it is
-flagged here explicitly for CEO awareness rather than asserted as precise
+flagged here explicitly for the maintainer's awareness rather than asserted as precise
 conformance. It is still firmly within the "lightweight, no DB, no Docker,
-no approval gate" boundary the CEO set, and does not add anything beyond
+no approval gate" boundary the maintainer set, and does not add anything beyond
 metadata parsing.
 
 A cross-stream revision-ID collision check (bin-manager vs asterisk_config
@@ -370,8 +370,8 @@ to guard against.
   `docs/operations.md`), since that is the file the job's own failure
   message already cross-references, removing the last implementer judgment
   call; (c) reworded §6 to acknowledge the design deliberately goes beyond
-  the CEO's literal "file exists" ask to structural/metadata validity,
-  flagged explicitly for CEO awareness rather than asserted as precise
+  the maintainer's literal "file exists" ask to structural/metadata validity,
+  flagged explicitly for the maintainer's awareness rather than asserted as precise
   conformance -- the underlying design decision itself is unchanged, only
   the characterization of it. Round 3 independently re-verified all
   round-1/round-2 citations from scratch and found them still accurate; no
@@ -379,7 +379,7 @@ to guard against.
 - v5 (2026-07-18, implementation + integration): implemented exactly per
   v4, spike-tested standalone on a throwaway PR (#1113: `migration-lint`
   pass, `migration-applied-checkpoint` absent, confirmed via `gh pr checks`)
-  -- then, per CEO direction, folded into the existing PR #1112 (webchat
+  -- then, per maintainer direction, folded into the existing PR #1112 (webchat
   Session/Message Flow split) instead of shipping as a separate PR;
   re-verified the same spike-test result on PR #1112 itself. A PR-review
   round-1 subagent (dispatched against the now-closed standalone PR #1113,

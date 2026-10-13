@@ -195,5 +195,5 @@ activation logic and a new cross-customer-scoped DB write.
       narrative summary + project-prefixed bullets, no "Test plan"
       section, no AI attribution. One PR per repo (`monorepo`,
       `monorepo-javascript`) since they're separate GitHub repos.
-- [ ] **Do not merge.** Report PR URLs and stop; wait for 대표님's explicit
+- [ ] **Do not merge.** Report PR URLs and stop; wait for the maintainer's explicit
       merge instruction.

@@ -3,12 +3,12 @@
 작성일 2026-10-05. 기준 코드: monorepo origin/main 440b71f9d, monorepo-javascript origin/main a604bb12.
 워크트리: `~/gitvoipbin/monorepo/.worktrees/VOIP-1565-Expose-tenant-wide-extensions-with-password-masking`, `~/gitvoipbin/monorepo-javascript/.worktrees/SQUARE-89-Load-own-extensions-via-me-addresses`.
 
-## 1. 요구사항 (대표님 확정)
+## 1. 요구사항 (담당자 확정)
 - Agent(상담사)가 같은 고객사의 다른 상담사 extension 목록/단건을 조회할 수 있어야 한다.
 - 타인 extension 은 `password` 를 숨긴다. 본인 소유 extension 만 비밀번호 평문.
 - `GET /service_agents/extensions` 를 고객사 전체 조회로 전환 (scope 선택값 방식, 별도 /me/extensions 경로 모두 불채택).
 - 서비스 단절(하위 호환)은 고려하지 않는다.
-- `direct_hash` 타인 마스킹: 분석 단계 권고 (대표님 이의 없음, 설계에서 확정).
+- `direct_hash` 타인 마스킹: 분석 단계 권고 (담당자 이의 없음, 설계에서 확정).
 
 ## 2. 이슈 유효성 (현재 코드 재확인)
 
@@ -47,8 +47,8 @@
 
 ## 3. 진행 타당성
 - 우선순위/리스크: 신규 정보 노출 확대이므로 마스킹 누락이 곧 보안 사고. 핵심 위험은 (a) 교차 고객사 노출, (b) 마스킹 필드 누락(password, direct_hash), (c) 공유 모델 수정으로 admin/webhook 영향.
-- 의존성: monorepo 변경과 square-talk 변경은 저장소가 다르므로 PR 2개(저장소당 1). 대표님이 서비스 단절 비고려를 확정했으므로 배포 순서 제약 없음. square-talk 은 서버 변경에 기능적으로 의존하지 않는다(위 2.2) **[7.1 로 정정: 소유 판정 재조회(7.2)와 클라이언트 가드(7.3)를 전제로 한다]**.
-- 대안: (a) scope=all 선택값(불채택, 대표님 결정), (b) `/me/extensions` 신설(불채택), (c) 서버 변경 없이 agents 목록만 활용(요구 미충족). 진행이 타당하다.
+- 의존성: monorepo 변경과 square-talk 변경은 저장소가 다르므로 PR 2개(저장소당 1). 담당자가 서비스 단절 비고려를 확정했으므로 배포 순서 제약 없음. square-talk 은 서버 변경에 기능적으로 의존하지 않는다(위 2.2) **[7.1 로 정정: 소유 판정 재조회(7.2)와 클라이언트 가드(7.3)를 전제로 한다]**.
+- 대안: (a) scope=all 선택값(불채택, 담당자 결정), (b) `/me/extensions` 신설(불채택), (c) 서버 변경 없이 agents 목록만 활용(요구 미충족). 진행이 타당하다.
 - 오버엔지니어링 점검: 새 필드(`is_owner`) 미도입(공유 WebhookMessage 정합성 비용), 전역 플래그 미도입, 마스킹은 servicehandler 한 곳. 클라이언트의 "내 것" 판별은 `/me` addresses 로 가능.
 
 ## 4. 열린 질문 (설계 단계에서 확정)
@@ -82,7 +82,7 @@
 ### 5.4 소유 판정 기준과 기존 위험 (R1-B #1, #6, 코드 확인)
 - 소유 판정: 요청 Agent 의 `a.Agent.Addresses` 중 `type=extension` 의 `target`(extension UUID)과 id 가 일치하면 본인 소유. 기존 own-scope 구현과 같은 기준이며 새 소유 개념을 만들지 않는다.
 - **[7.2 로 대체됨, 아래 서술은 이력 보존용이며 구현 기준 아님]** 출처: `a.Agent` 는 JWT 클레임(`lib/middleware/authenticate.go:272-290`)에서 복원되므로 토큰 발급 시점의 Addresses 이다. 즉 (a) 방금 `PUT /me/addresses` 로 등록한 extension 은 재로그인 전까지 본인 소유로 보이지 않고(마스킹), (b) 관리자가 할당을 해제한 직후에도 기존 토큰이 만료되기 전에는 본인 소유로 보인다(평문). (b) 는 기존 own-scope 구현에도 동일하게 존재하는 창이며 신규 위험이 아니다. 결정: 기존 컨벤션과 일관성을 위해 JWT 값을 그대로 사용하고(재조회 RPC 미도입), 이 창은 수용된 한계로 설계 문서에 명시한다. 재조회 도입은 실측 신호가 생길 때 별도 이슈로 다룬다.
-- **기존 위험(본 변경 범위 밖, 대표님 보고 대상)**: `PUT /service_agents/me/addresses` → `agenthandler.UpdateAddresses`(`bin-agent-manager/pkg/agenthandler/agent.go:371-445`)는 extension 이 같은 customer 이고 다른 agent 에 할당되지 않았다면 일반 Agent 의 자기 등록을 허용한다(권한 검사 없음). 따라서 미할당 extension 은 어느 Agent 든 스스로 등록해 평문 password 를 볼 수 있다. 이는 현재도 가능한 동작이며 본 변경으로 새로 생기지 않는다. 다만 본 변경 후 타인/미할당 extension 의 id 가 목록에 드러나 발견 비용이 낮아진다. 본 PR 에서는 변경하지 않고 별도 후속 이슈로 대표님께 보고한다(범위 확장 금지 원칙, 의도된 셀프 등록 UX 일 수 있어 정책 결정이 필요).
+- **기존 위험(본 변경 범위 밖, 담당자 보고 대상)**: `PUT /service_agents/me/addresses` → `agenthandler.UpdateAddresses`(`bin-agent-manager/pkg/agenthandler/agent.go:371-445`)는 extension 이 같은 customer 이고 다른 agent 에 할당되지 않았다면 일반 Agent 의 자기 등록을 허용한다(권한 검사 없음). 따라서 미할당 extension 은 어느 Agent 든 스스로 등록해 평문 password 를 볼 수 있다. 이는 현재도 가능한 동작이며 본 변경으로 새로 생기지 않는다. 다만 본 변경 후 타인/미할당 extension 의 id 가 목록에 드러나 발견 비용이 낮아진다. 본 PR 에서는 변경하지 않고 별도 후속 이슈로 담당자에게 보고한다(범위 확장 금지 원칙, 의도된 셀프 등록 UX 일 수 있어 정책 결정이 필요).
 - 클라이언트는 `password` 가 빈 값인지로 소유 여부를 추정하지 말고 `/me` addresses 로 판단한다(square-talk 은 이미 그렇게 동작).
 
 ### 5.5 이벤트 경로 (R1-B 확인)

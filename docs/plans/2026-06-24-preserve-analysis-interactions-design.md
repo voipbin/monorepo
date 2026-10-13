@@ -1,7 +1,7 @@
 # VOIP-1200: Preserve Stage 2 interactions in the analysis verdict
 
 Status: Draft v3
-Owner: CPO (design) / CTO (decision)
+Owner: product owner (design) / maintainer (decision)
 Scope class: enhancement (verdict schema + model + prompt + projection + RST). Minimal-change bias applies.
 
 ## 1. Problem Statement
@@ -300,11 +300,11 @@ generate, not sending more input.
 
 | # | Question | Recommendation | Owner |
 |---|---|---|---|
-| Q1 | Bump `version` to 2, or keep 1 and treat interactions as optional-absent on old records? | **Bump to 2.** Additive but the shape genuinely changed; version is the disambiguator we already designed for. | CTO |
-| Q2 | Stage 3 emit interactions vs Stage 2 carry-forward? | **Carry forward** (no token re-spend, no Stage 3 paraphrase loss). Split `stage3VerdictSchema`. | CTO |
-| Q3 | Should the single-call (short-call) path also produce interactions, or accept short calls staying sparse? | **Produce them.** A short call rendering empty is the same defect; combined schema already nearly free. | CTO |
-| Q4 | Backfill v1 records to v2 by re-analysis? | **No.** Manual re-analysis already resets a row in place; no mass backfill (unbounded LLM cost). `version` disambiguates. | CTO |
-| Q5 | UI in this PR or separate SQUAR ticket — and does backend-only resolve the complaint? | **Separate SQUAR, but co-sequenced (R3 HIGH).** The "이게 다야?" complaint is a UI experience; shipping the backend field alone leaves the panel visually identical until the square-admin "Call flow summary" section ships, so backend-only spends (marginal) tokens with zero user-visible improvement. Backend stays a separate PR (different repo, additive field), but the SQUAR frontend ticket must be committed to the same release/sprint window, not left open-ended. New analyses created in the gap carry `interactions[]` and the UI reads them retroactively (persist-once, no backfill needed). **Decision needed from CEO: commit the SQUAR UI to this window?** | CEO |
+| Q1 | Bump `version` to 2, or keep 1 and treat interactions as optional-absent on old records? | **Bump to 2.** Additive but the shape genuinely changed; version is the disambiguator we already designed for. | Maintainer |
+| Q2 | Stage 3 emit interactions vs Stage 2 carry-forward? | **Carry forward** (no token re-spend, no Stage 3 paraphrase loss). Split `stage3VerdictSchema`. | Maintainer |
+| Q3 | Should the single-call (short-call) path also produce interactions, or accept short calls staying sparse? | **Produce them.** A short call rendering empty is the same defect; combined schema already nearly free. | Maintainer |
+| Q4 | Backfill v1 records to v2 by re-analysis? | **No.** Manual re-analysis already resets a row in place; no mass backfill (unbounded LLM cost). `version` disambiguates. | Maintainer |
+| Q5 | UI in this PR or separate SQUAR ticket — and does backend-only resolve the complaint? | **Separate SQUAR, but co-sequenced (R3 HIGH).** The "이게 다야?" complaint is a UI experience; shipping the backend field alone leaves the panel visually identical until the square-admin "Call flow summary" section ships, so backend-only spends (marginal) tokens with zero user-visible improvement. Backend stays a separate PR (different repo, additive field), but the SQUAR frontend ticket must be committed to the same release/sprint window, not left open-ended. New analyses created in the gap carry `interactions[]` and the UI reads them retroactively (persist-once, no backfill needed). **Decision needed from the maintainer: commit the SQUAR UI to this window?** | Maintainer |
 
 ## 13. Review Summary (v1 → v2)
 
@@ -313,7 +313,7 @@ Round 1: three independent reviewers (correctness/domain, schema/compat, cost/pr
 | Finding | Severity | Resolution in v2 |
 |---|---|---|
 | R2: staged-path nil slice marshals to `null`, not `[]` — two shapes inside one `version:2` contract | HIGH | §3: `buildFinalVerdict` normalizes `nil → []verdict.Interaction{}`; every v2 record carries `interactions:[]` at minimum |
-| R3: backend-only field does not resolve the UI-level "이게 다야?" complaint (sequencing) | HIGH | §2 + Q5: SQUAR UI ticket co-sequenced to the same release window; surfaced as explicit CEO decision |
+| R3: backend-only field does not resolve the UI-level "이게 다야?" complaint (sequencing) | HIGH | §2 + Q5: SQUAR UI ticket co-sequenced to the same release window; surfaced as explicit maintainer decision |
 | R1: source-selection keyed on `len()` is correct-by-accident, latent trap | low | §3: selection is now by PATH (structural) — `runStaged`/`runCombined` each pass their own source; `buildFinalVerdict` does not branch on `len()` |
 | R1: two json_schema literals can drift on shared fields | low | §4: derive `verdictSchema` from `stage3VerdictSchema` by injecting only the `interactions` property; shared fields have one source |
 | R3: "no extra LLM cost" overstated for single-call path | low | §2 cost line reworded: no new call/stage/model; negligible marginal output tokens on the single-call path |

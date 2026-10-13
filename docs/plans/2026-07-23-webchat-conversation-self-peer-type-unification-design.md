@@ -1,12 +1,12 @@
 # webchat Conversation/Case self/peer address-type unification (TypeWebSession)
 
 Status: DRAFT (round 0)
-Author: Hermes (CPO)
+Author: Hermes (product owner)
 Date: 2026-07-23
 
 ## 1. Problem
 
-pchero (CEO/CTO) noticed that webchat `Conversation`s are created with
+pchero (maintainer) noticed that webchat `Conversation`s are created with
 `Self.Type == Peer.Type == TypeWebchat` (`"webchat"`), when the intent -- already
 partially shipped for `webchat_sessions.Session` on 2026-07-22 (design doc
 `bin-webchat-manager/docs/plans/2026-07-22-webchat-session-referrer-peer-local-design.md`)

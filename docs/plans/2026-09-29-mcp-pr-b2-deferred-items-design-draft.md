@@ -2,7 +2,7 @@
 
 Status: **draft, input to PR B2, not approved.** Written during PR B1 and taken through
 nine design-review rounds (the ninth approved by both reviewers, with its minor points
-applied afterwards); a tenth round was stopped when the CEO decided to defer these items
+applied afterwards); a tenth round was stopped when the maintainer decided to defer these items
 (see section A.28 of `2026-09-27-mcp-phase2-tool-exposure-analysis-v2.md`). The text still
 speaks of landing "in PR B1" and cites in-place amendments to D16, D18 and A.27 that were
 not kept; read both as proposals for PR B2. Re-review against the code as it stands when
@@ -12,7 +12,7 @@ PR B2 starts; file:line references are to `532095f6d`.
 
 Round 14 found that section 6 places B10, B13, B19, B20 and B28 in PR B1 and the
 branch implemented none of them, with a deferral record only for part of B13 and
-D18. The CEO chose to implement all five in PR B1 as planned. This section is their
+D18. The maintainer chose to implement all five in PR B1 as planned. This section is their
 implementation design, written against the code at `532095f6d` and revised after
 design review rounds 1 to 9; where it departs from section 6, the ledger or an earlier
 appendix it says so and why.
@@ -416,7 +416,7 @@ hand-rolled (a map of in-flight executions under one mutex), since
   shared tool slice is read-only to every caller.
 - Nothing is kept after the execution ends: B14's cache stays in PR B2. Since B28 now lands
   in this PR, B20 is an optimisation rather than a correctness bound; it is kept because
-  it is small and the CEO chose to land all five items.
+  it is small and the maintainer chose to land all five items.
 
 ### Round 14's smaller findings, taken in the same change
 

@@ -3,11 +3,11 @@
 Revision 7 — incorporates round-1 (3 CRITICAL, 4 HIGH, 5 MEDIUM), round-2
 (3 HIGH, 6 MEDIUM), round-3 (1 CRITICAL, 1 HIGH, 3 MEDIUM), and round-4
 (1 CRITICAL + reference cleanups) architect review findings, plus two
-post-approval revisions from 대표님 (naming, and idempotent Stack
+post-approval revisions from the maintainer (naming, and idempotent Stack
 auto-create — both below). See "Review corrections log" at the end for
 the full architect-review mapping.
 
-**Naming decision (2026-08-16, post-merge-review, 대표님):** the new
+**Naming decision (2026-08-16, post-merge-review, the maintainer):** the new
 container's name is `voipbin-call-manager` — matching GKE's `call-manager`
 app name/label (verified in `bin-call-manager/k8s/deployment.yml`) rather
 than `install/`'s host-wide `voipbin-<service>-mgr` abbreviation. This is
@@ -30,7 +30,7 @@ bin-call-manager on bm-nyc-01 — the first production service to move off
 `voipbin/voipbin`'s `install/` (`versions.lock`/dist-live compose)
 mechanism entirely. `install/` stays as-is for external self-hosting users;
 this change does not touch it except to comment out one service block (see
-"Cutover sequencing"). Per 대표님's explicit decision, `versions.lock` and
+"Cutover sequencing"). Per the maintainer's explicit decision, `versions.lock` and
 digest resolution are not carried forward — image references use a plain
 tag (`$CIRCLE_SHA1`), and CircleCI talks to Komodo directly over its public
 HTTPS endpoint for routine deploys, not an SSH tunnel.
@@ -95,14 +95,14 @@ follow-up ticket rolls the pattern out.
   design work on 2026-08-14, not in PR #90's spike (round 1 review
   correctly flagged the original wrong citation). That empirical result
   itself is still valid; only the surrounding document was discarded per
-  대표님's "design from scratch" instruction. Re-confirm it holds as part of
+  the maintainer's "design from scratch" instruction. Re-confirm it holds as part of
   Step 0, since it's cheap to re-check while already standing up a
   disposable Stack for the interpolation test.
 - **CI credentials already exist and are broad.** `CC_KOMODO_API_KEY`/`CC_KOMODO_API_SECRET`
   are already registered in the `production` CircleCI context, and the
   `circleci` Komodo Service User is already promoted to **Admin** (per PR
   #90's spike). Round 1 initially had CI *not* auto-create Stacks because
-  of this — **superseded post-approval** (대표님, 2026-08-16): CI now does
+  of this — **superseded post-approval** (the maintainer, 2026-08-16): CI now does
   create the Stack, idempotently, when missing — see §2 item 1.
 - `RABBITMQ_ADDRESS`/`DATABASE_DSN_BIN` in the `bin-manager` namespace are
   already full connection strings (`amqp://user:pass@host:port`,
@@ -174,7 +174,7 @@ with real results.
 
 ### 1. `bin-call-manager/komodo/docker-compose.yml` (new, git-tracked)
 
-Directory named `komodo/`, sibling to `k8s/` (대표님's explicit convention
+Directory named `komodo/`, sibling to `k8s/` (the maintainer's explicit convention
 — per-service deploy definitions live alongside the service, one directory
 per deploy target).
 
@@ -264,7 +264,7 @@ future credential/domain change becomes a one-line edit).
 Interface: `komodo-api-deploy.sh <stack-name> <compose-file>`
 
 1. **Idempotent ensure-exists: `GetStack` first; if missing, `CreateStack`.**
-   Revised post-approval (대표님's explicit instruction, 2026-08-16 —
+   Revised post-approval (the maintainer's explicit instruction, 2026-08-16 —
    supersedes both this section's original text and round-1's finding
    below, which had gone the other way for good reasons that no longer
    win out against operational reality): a per-service *manual* bootstrap
@@ -563,7 +563,7 @@ exists to protect against.
    no longer knows about) without touching the Komodo-managed container.
    Fail-closed, not a production hazard, but keep this window short and
    expect a red CI build as the (harmless) symptom if it happens.
-   **Mandatory check before step 7 (naming decision, 대표님, 2026-08-16):**
+   **Mandatory check before step 7 (naming decision, the maintainer, 2026-08-16):**
    confirm the old container is actually gone —
    `docker ps -a --filter "name=^/voipbin-call-mgr$" --format '{{.Names}}'`
    must return nothing. Because the new container's name
@@ -608,12 +608,12 @@ ARI events for calls already in progress (hangup, bridge changes) are also
 delayed, risking channel-state desync and billing-timing drift for calls
 active at swap time. **Maximum acceptable gap: state a concrete number
 before executing this in production** (not defined in this design — a
-production-operations judgment call for 대표님, informed by current call
+production-operations judgment call for the maintainer, informed by current call
 volume at the chosen swap window) and treat exceeding it as an independent
 abort trigger, not just "reconnect and move on." Schedule the swap in the
 lowest-traffic window available.
 
-**Monitoring continuity (naming decision, 대표님, 2026-08-16 — new
+**Monitoring continuity (naming decision, the maintainer, 2026-08-16 — new
 concern, didn't exist while the name was unchanged):** whatever scrapes
 `:2112/metrics` for Prometheus and whatever dashboards/alerts reference
 this service by container name both need to be checked for whether they
@@ -640,7 +640,7 @@ Steps 2-3 below still apply.
 #    voipbin-call-manager container step 3 below removes):
 #    DestroyStack(bin-call-manager) via the Komodo API/UI.
 # 3. On bm-nyc-01, remove the NEW (Komodo-managed) container - note the
-#    name difference from the old one (naming decision, 대표님, 2026-08-16):
+#    name difference from the old one (naming decision, the maintainer, 2026-08-16):
 docker rm -f voipbin-call-manager 2>/dev/null || true
 # Un-comment call-manager's block in install/docker-compose.yml, which
 # recreates the OLD container under its original name (voipbin-call-mgr):
@@ -787,7 +787,7 @@ where noted):
   RabbitMQ (with an unbounded retry loop), and gate 5b now depends on
   that corrected understanding.
 
-**Post-approval naming revision** (대표님, 2026-08-16, after PR #1188 was
+**Post-approval naming revision** (the maintainer, 2026-08-16, after PR #1188 was
 opened — not an architect-review round, but logged here for the same
 reason):
 - New container renamed `voipbin-call-mgr` → `voipbin-call-manager`,
@@ -795,7 +795,7 @@ reason):
   `-mgr`-abbreviated convention (verified against
   `bin-call-manager/k8s/deployment.yml` before accepting the change, not
   taken on faith — GKE's actual name has no `voipbin-` prefix at all,
-  which was surfaced and 대표님 chose `voipbin-call-manager` explicitly
+  which was surfaced and the maintainer chose `voipbin-call-manager` explicitly
   over matching GKE exactly).
 - Consequence handled: the old/new name match this design leaned on for
   automatic Docker-level mutual exclusion no longer holds. §7 gained an
@@ -809,7 +809,7 @@ reason):
   §6's live-host captures) correctly stay `voipbin-call-mgr` — that
   container's real name is unchanged by this decision.
 
-**Post-approval Stack-bootstrap revision** (대표님, 2026-08-16, after the
+**Post-approval Stack-bootstrap revision** (the maintainer, 2026-08-16, after the
 naming revision above): CI now creates the Komodo Stack itself,
 idempotently, reversing round-1's "does not create Stacks" finding — see
 §2 item 1 for the full reasoning and the empirically-confirmed detection
@@ -817,7 +817,7 @@ mechanism (Komodo returns HTTP 500, not 404, for "Stack not found").
 §7 step 2's separate manual bootstrap is removed accordingly — folded into
 step 7's own first run.
 
-**Follow-up dependency, not in this PR's scope (대표님, 2026-08-16), tracked
+**Follow-up dependency, not in this PR's scope (the maintainer, 2026-08-16), tracked
 as [VOIP-1343](https://voipbin.atlassian.net/browse/VOIP-1343):** a
 neutral shared network `production`, owned by neither the `install`
 compose project nor any Komodo Stack, was built out in a separate session

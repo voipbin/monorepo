@@ -128,7 +128,7 @@ Phase 1 (backend, 이 워크트리) → Phase 2 (frontend, monorepo-javascript �
   go test ./... && golangci-lint run -v --timeout 5m`
 - 코드 리뷰 루프 (최소 3회, 2연속 Approval, CLAUDE.md 규칙)
 - main 충돌 확인 (git fetch + merge-tree) 후 push, PR 생성 (제목 = 브랜치명, 본문 형식 규칙 준수)
-- **머지는 대표님 명시 승인 후에만.**
+- **머지는 담당자 명시 승인 후에만.**
 
 ## Phase 2: Frontend (monorepo-javascript, 브랜치 VOIP-1391-extension-qr-provisioning)
 
@@ -168,7 +168,7 @@ Phase 1 (backend, 이 워크트리) → Phase 2 (frontend, monorepo-javascript �
 - `npm run build` 성공 확인.
 - 코드 리뷰 루프 (최소 3회, 2연속 Approval)
 - main 충돌 확인 (`git fetch origin main` + merge-tree, 워크트리에서. 필수 규칙) 후
-  push + PR 생성. **머지는 대표님 승인 후.**
+  push + PR 생성. **머지는 담당자 승인 후.**
 
 ## Phase 3: 배포 후 실기기 검증 (머지·배포 이후, 별도 보고)
 

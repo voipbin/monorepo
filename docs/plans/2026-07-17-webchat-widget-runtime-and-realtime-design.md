@@ -2,7 +2,7 @@
 
 - Ticket: VOIP-1265
 - Companion frontend doc: `monorepo-javascript/.worktrees/SQUARE-15-webchat-widget-runtime-preview/docs/plans/2026-07-17-webchat-widget-runtime-and-preview-design.md`
-- Author: Hermes (CPO), for pchero
+- Author: Hermes (product owner), for pchero
 - Status: DRAFT — Round 3 review complete (CHANGES_REQUESTED, 1 blocking finding: §9.2's code sample dropped FieldCustomerID, now fixed with verbatim-verified code), pending Round 4
 
 ## 1. Problem
@@ -11,7 +11,7 @@ square-admin can create a Webchat Widget and copy an embed snippet
 (`<script src="https://webchat.voipbin.net/embed.js" data-hash="...">`),
 but nothing in the platform actually renders that widget or lets a
 customer/admin see or test the real chat experience it produces. A
-CPO-level audit (this session) found four concrete gaps:
+Product-level audit (this session) found four concrete gaps:
 
 1. **No `embed.js` widget runtime exists anywhere in the codebase.** The
    design doc for `bin-webchat-manager` (`2026-06-29-add-webchat-manager-design.md`
@@ -236,7 +236,7 @@ Local/CI verification path for G5, until NG1 is separately resolved:
   session).
 - square-admin's own detail page can optionally embed the same runtime
   via a "Test this widget" action (loads the bundle against the current
-  widget's real `direct_hash`) — this satisfies the original CEO ask
+  widget's real `direct_hash`) — this satisfies the original maintainer ask
   ("실제로 바로 채팅 테스트를 해볼 수 있는 기능") without needing
   `webchat.voipbin.net` to exist.
 

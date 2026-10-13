@@ -2,7 +2,7 @@
 
 문서 이력 표기: 아래 1~4절 헤더 문단의 R1 이후 서술(R1, R2, ...)은 설계 문서 리뷰 루프의 라운드이고, 5.4절의 R1 이후 서술은 코드 리뷰 루프(PR #1384)의 라운드이다.
 
-작성: 2026-10-13. 대표님 지시: "main 은 머지되면 자동 배포되도록 변경, 티켓 만들고 진행". 방침: 위험이 낮은 서비스부터, 실측 신호 없는 선제 확장 반대, 기존 도구 재사용, 연쇄 후속 티켓 금지(CI 변경은 VOIP-1586, SQUARE-101, 지시문 변경은 ETC-24 범위). R1 결과(A 승인, B와 C 수정 요구)와 R2 결과(2명 승인), R3 결과(A+B 승인, C 수정 요구: MAJOR 2), R4 결과(둘 다 수정 요구), R5 결과(A+B 승인, C 수정 요구: 긴급 범주와 연장 규칙 모순, 알리지 않은 직접 머지 잔여 위험 미명시)를 반영했다.
+작성: 2026-10-13. 담당자 지시: "main 은 머지되면 자동 배포되도록 변경, 티켓 만들고 진행". 방침: 위험이 낮은 서비스부터, 실측 신호 없는 선제 확장 반대, 기존 도구 재사용, 연쇄 후속 티켓 금지(CI 변경은 VOIP-1586, SQUARE-101, 지시문 변경은 ETC-24 범위). R1 결과(A 승인, B와 C 수정 요구)와 R2 결과(2명 승인), R3 결과(A+B 승인, C 수정 요구: MAJOR 2), R4 결과(둘 다 수정 요구), R5 결과(A+B 승인, C 수정 요구: 긴급 범주와 연장 규칙 모순, 알리지 않은 직접 머지 잔여 위험 미명시)를 반영했다.
 
 ## 1. 현황 (직접 확인한 사실)
 - F1. monorepo `config_work.yml` 은 서비스마다 workflow 하나이고 deploy 가 있는 34개는 `build-approval(approval) -> <svc>-test -> <svc>-build -> <svc>-deploy(main 필터)` 로 균일하다(YAML 파싱으로 확인). 나머지 workflow(bin-common-handler 는 test 만, bin-openapi-manager 는 validate 만, bin-dbscheme-manager 는 lint 와 main 수동 checkpoint, bin-trigger-sender, voip-asterisk-proxy, voip-rtpengine-proxy 는 deploy 없이 build 까지)는 deploy 가 없어 변환 대상이 아니다. 변환 불가 정의 없음(`name:` 지정 job 없음, api-manager 의 `when: or` 는 workflow 레벨). deploy 는 `render-image-tag.sh` 와 `komodo-api-deploy.sh`(set -euo pipefail) 를 쓴다.
@@ -37,21 +37,21 @@
 - 한계: 최신 커밋 B 가 test 에서 실패하면 구 커밋 A 도 이미 guard 로 실패/미배포이므로 서비스는 구 버전에 머문다. 이는 안전한 방향의 정지이며 QA-2 가 deploy 미성공을 감지해 긴급 요청한다(근거: 위 red/실패 신호).
 ### D3. 사람 승인 유지(자동 전환 제외)
 - bin-timeline-manager, bin-rag-manager, bin-trigger-sender, voip-asterisk-proxy, voip-rtpengine-proxy, voip-kamailio-proxy. bin-dbscheme-manager, bin-common-handler, bin-openapi-manager 는 deploy 가 없어 변환 대상이 아니다. 제외 서비스 workflow 는 현재 구조 유지.
-- 스키마 의존 변경: 자동 전환 서비스에서는 승인 보류(11(g)(h))가 사라지므로 QA 규칙을 "머지 보류"로 승격한다(ETC-24). 기계적 기준: 해당 서비스 PR 이 `bin-dbscheme-manager` 를 건드리면 머지 불가(11(a) 유지), main 에 "적용 완료" 표시가 없는 dbscheme 변경이 있으면 자동 전환 서비스 PR 의 머지를 보류한다. 순서는 dbscheme 머지 -> 대표님 적용 -> '적용 완료' -> 코드 머지. 이는 대표님 직접 머지에도 적용되는 프로세스 규칙이며 CI 는 막지 못한다(위험으로 명시).
+- 스키마 의존 변경: 자동 전환 서비스에서는 승인 보류(11(g)(h))가 사라지므로 QA 규칙을 "머지 보류"로 승격한다(ETC-24). 기계적 기준: 해당 서비스 PR 이 `bin-dbscheme-manager` 를 건드리면 머지 불가(11(a) 유지), main 에 "적용 완료" 표시가 없는 dbscheme 변경이 있으면 자동 전환 서비스 PR 의 머지를 보류한다. 순서는 dbscheme 머지 -> 담당자 적용 -> '적용 완료' -> 코드 머지. 이는 담당자 직접 머지에도 적용되는 프로세스 규칙이며 CI 는 막지 못한다(위험으로 명시).
 ### D4. 단계적 전환과 성공 기준
-- Phase 1 파일럿: monorepo 3개 서비스와 js 1개 앱. 선정 기준(대표님 지정): 통화 핵심 경로 제외, 변경 빈도와 영향 범위가 작을 것. 추가 필수 조건(구현 전 dry-run 으로 확인): (i) 서비스 경로의 마지막 성공 deploy revision 과 origin/main 사이에 미배포(보류) 커밋이 없을 것, (ii) 해당 서비스의 migrations 나 dbscheme 대기 변경이 없을 것, (iii) bin-api-manager 는 bin-openapi-manager 결합으로 제외. 최근 측정에서 경로 최신 커밋이 이미 deploy 성공인 서비스는 agent, call, flow, ai, conference, campaign, contact, queue, storage, webhook, pipecat, talk, number 이며 이 중 통화 경로가 아닌 후보는 bin-agent-manager, bin-contact-manager, bin-storage-manager. js 후보는 square-meet. 최종 지정은 대표님이 한다. 변환 스크립트는 allowlist 로만 서비스를 건드린다.
-- 성공 기준(모두 확인): (1) main 머지 후 승인 없이 test-auto, build, deploy 가 이어진다, (2) 비-main 브랜치에서 deploy 가 생성되지 않는다, (3) 같은 서비스 연속 머지에서 guard 가 구 커밋을 막고 최신만 배포한다, (4) test 실패 시 build 와 deploy 가 막힌다, (5) QA-2 가 `superseded` 와 정상 deploy 를 구분한다, (5b) 파일럿 서비스에 대해 대표님 직접 머지 1건을 실제로 수행해 default 의 부모 없는 QA-2 생성과 배포 후 검증이 이어지고 test 실패 시 QA-2 가 [URGENT] 로 이어진다, (6) 제외 서비스 workflow 가 변하지 않았다(정적 검증).
+- Phase 1 파일럿: monorepo 3개 서비스와 js 1개 앱. 선정 기준(담당자 지정): 통화 핵심 경로 제외, 변경 빈도와 영향 범위가 작을 것. 추가 필수 조건(구현 전 dry-run 으로 확인): (i) 서비스 경로의 마지막 성공 deploy revision 과 origin/main 사이에 미배포(보류) 커밋이 없을 것, (ii) 해당 서비스의 migrations 나 dbscheme 대기 변경이 없을 것, (iii) bin-api-manager 는 bin-openapi-manager 결합으로 제외. 최근 측정에서 경로 최신 커밋이 이미 deploy 성공인 서비스는 agent, call, flow, ai, conference, campaign, contact, queue, storage, webhook, pipecat, talk, number 이며 이 중 통화 경로가 아닌 후보는 bin-agent-manager, bin-contact-manager, bin-storage-manager. js 후보는 square-meet. 최종 지정은 담당자가 한다. 변환 스크립트는 allowlist 로만 서비스를 건드린다.
+- 성공 기준(모두 확인): (1) main 머지 후 승인 없이 test-auto, build, deploy 가 이어진다, (2) 비-main 브랜치에서 deploy 가 생성되지 않는다, (3) 같은 서비스 연속 머지에서 guard 가 구 커밋을 막고 최신만 배포한다, (4) test 실패 시 build 와 deploy 가 막힌다, (5) QA-2 가 `superseded` 와 정상 deploy 를 구분한다, (5b) 파일럿 서비스에 대해 담당자 직접 머지 1건을 실제로 수행해 default 의 부모 없는 QA-2 생성과 배포 후 검증이 이어지고 test 실패 시 QA-2 가 [URGENT] 로 이어진다, (6) 제외 서비스 workflow 가 변하지 않았다(정적 검증).
 - js 의 deploy 필터도 `deploy_filters: &deploy_filters` 앵커(`only: main`)를 쓴다(monorepo 와 같은 이름). 구현은 이 앵커를 재사용하고 정적 검증은 풀어낸 값이 정확히 `only: main` 인지 본다. 구현 PR 전에 파일럿 서비스의 `git log -1 origin/main -- <svc>` 와 `CIRCLE_SHA1` 정합을 dry-run 으로 한 번 확인한다.
 - 구현 PR 에 js `image-build` 의 approval 필터 제외 시 동작 실측 결과와 checkout full clone 실측 결과를 남긴다(파일럿 머지 전).
 - 파일럿 머지 1건(README 한 줄 등)은 실제 운영 배포가 된다. 의도된 동작이다.
 - Phase 2: 파일럿 이상 없음이 확인되면 제외 목록을 뺀 나머지를 같은 스크립트로 전환.
 ### D4b. 배포 감시와 실패 감지 (Phase 1 전제, 지시문은 ETC-24 에서 D6 항목으로 확정)
-- 감시 트리거(직접 머지 포함): 파일럿 서비스 PR 은 QA-1 카드 경유 머지가 원칙이다. 대표님이 파일럿 서비스 PR 을 직접 머지했을 때의 트리거는 '대표님이 default 에게 머지했다고 알리는 것' 하나로 정한다(대표님께 파일럿 서비스 직접 머지 후 한 줄 알림을 요청). default 는 알림을 받으면 지시가 있는 것으로 보고 QA-2 카드를 부모 없이 생성한다(입력: 대상 서비스, 머지 SHA, PR 번호 를 본문에 명시). default 가 직접 머지한 경우도 같다. 이 트리거에 cron 을 쓰지 않는다. 점검 cron 은 읽기 전용 Komodo 키 발급 후 가동되며 가동되면 CircleCI GET 으로 파일럿 서비스 main 최신 커밋의 deploy 상태를 추가 확인한다(보조 안전망일 뿐 Phase 1 의 전제가 아니다).
+- 감시 트리거(직접 머지 포함): 파일럿 서비스 PR 은 머지 전 검증 경유 머지가 원칙이다. 담당자가 파일럿 서비스 PR 을 직접 머지했을 때의 트리거는 '담당자가 default 에게 머지했다고 알리는 것' 하나로 정한다(담당자에게 파일럿 서비스 직접 머지 후 한 줄 알림을 요청). default 는 알림을 받으면 지시가 있는 것으로 보고 배포 후 검증을 부모 없이 생성한다(입력: 대상 서비스, 머지 SHA, PR 번호 를 본문에 명시). default 가 직접 머지한 경우도 같다. 이 트리거에 cron 을 쓰지 않는다. 점검 cron 은 읽기 전용 Komodo 키 발급 후 가동되며 가동되면 CircleCI GET 으로 파일럿 서비스 main 최신 커밋의 deploy 상태를 추가 확인한다(보조 안전망일 뿐 Phase 1 의 전제가 아니다).
 - 지시문 변경 필수 항목: (a) QA 하드룰 13 에 '부모 없는 QA-2 는 default 가 대상 서비스, 머지 SHA 를 본문에 명시해 만든 경우에만 시작한다' 한 줄, (b) QA 하드룰 14 와 default SOUL 긴급 처리 문구에 '자동 배포 서비스의 main 최신 커밋 deploy 미성공(failed, canceled, 파이프라인 부재(머지 직후 30초 간격 GET 3회 재조회 뒤에도 없는 경우), deploy job failed)'을 '배포 후 확인된 장애 한 가지'와 같은 범주로 명시한다. 상한을 넘겨도 running 인 경우는 장애 범주가 아니며 NEEDS-HUMAN 이다. test-auto 실패는 flaky 여부와 별개로 '서비스가 배포되지 않았다'는 QA-2 확인 결과이므로 하드룰 14 의 '불안정 테스트는 예외 아님'과 충돌하지 않는다. 자동 서비스인데 on_hold 인 approval 이 보이는 오설정도 NEEDS-HUMAN 이다.
 - QA-2 대기 창: 자동 서비스는 머지 직후부터 test-auto, build, deploy 를 기다린다. 실측: 최근 main 3건에서 bin-agent-manager 는 test 206/291/222초, build 75~76초, deploy 21~25초(합계 약 5~7분). 파일럿 서비스별 최근 main 실행 3건 합계의 최대치의 3배(상한 30분)를 60초 간격 GET 폴링 창으로 한다(현행 방식 유지).
 - 타임아웃과 실패 구분: [URGENT] 는 workflow 가 failed 또는 canceled 이거나, 파이프라인이 없거나, deploy job 이 failed(guard 의 superseded 로 인한 실패는 새 커밋으로 대상 이동 후 판정) 인 경우로 한정한다. 상한을 넘겨도 running 이면 [URGENT] 가 아니라 한 번만 같은 길이로 연장하고, 그래도 끝나지 않으면 NEEDS-HUMAN(kanban_block)으로 보고한다(큐 지연이나 serial-group 대기 오탐 방지).
 - superseded 후 대상 이동 종료 조건(QA 하드룰 16(e)에 적용 완료): 이동한 대상에도 같은 규칙을 다시 적용한다. 이동한 최신 커밋의 workflow 가 failed 또는 canceled 이거나 deploy 가 failed 이면 [URGENT], 파이프라인이나 deploy job 이 아직 없거나 창을 넘기거나 한 번의 판정에서 이동이 3회를 넘으면 위 창과 연장 규칙으로 NEEDS-HUMAN 에 수렴한다. git 조회가 실패하거나 결과가 비어 있어도 NEEDS-HUMAN 이다.
-- 잔여 위험(수용): 대표님이 default 에 알리지 않은 직접 머지는 실패 감지가 없다. 이전에는 build-approval 이 on_hold 로 남아 신호가 됐으나 자동 서비스에서는 사라진다. 파일럿 범위가 서비스 3개와 앱 1개로 작고 실패해도 구 버전이 유지되는 안전한 방향이며 위험은 감지 지연이다. 점검 cron 가동 후 보조 안전망이 생긴다. CircleCI 프로젝트 기본 실패 알림을 켜는 것은 별도 도구가 필요 없는 대안으로 남겨 둔다.
+- 잔여 위험(수용): 담당자가 default 에 알리지 않은 직접 머지는 실패 감지가 없다. 이전에는 build-approval 이 on_hold 로 남아 신호가 됐으나 자동 서비스에서는 사라진다. 파일럿 범위가 서비스 3개와 앱 1개로 작고 실패해도 구 버전이 유지되는 안전한 방향이며 위험은 감지 지연이다. 점검 cron 가동 후 보조 안전망이 생긴다. CircleCI 프로젝트 기본 실패 알림을 켜는 것은 별도 도구가 필요 없는 대안으로 남겨 둔다.
 ### D5. 정적 검증과 테스트 (구현 PR 범위)
 - ruby 로 YAML 을 풀어(앵커 해제) 검사하는 스크립트를 `.circleci/scripts` 에 두고 `shell-tests` 에서 실행: allowlist 서비스는 상기 구조(필터가 정확히 `only: main`/`ignore: main`, serial-group, requires)를 만족하고, 제외 서비스 workflow 는 변경 전과 동일. 호스트에 `circleci` CLI 가 없으므로 CI 에서 `circleci config validate` 가능 여부는 구현 PR 에서 확인.
 - bats: guard 케이스(최신/구 커밋, fetch 실패, 경로 없음, 플래그 off 기본), 기존 `komodo-api-deploy.bats` 유지.
@@ -61,7 +61,7 @@
 - backend/frontend SOUL 4번 (b): `deploy_filters` 외에 test-auto 와 build-approval 필터 검사 추가. default SOUL: 승인 대기 알림 외에 자동 배포 실패/superseded 알림 경로.
 - 적용 순서: 지시문 먼저(모드 판별로 현 config 에서도 안전: test-auto 가 없으면 현행 규칙), config 나중.
 ### D7. 알려진 위험(설계가 막지 못하는 것)
-- 머지가 곧 배포: build-approval 이 대표님 직접 머지나 QA 를 거치지 않은 머지에 대한 2차 관문이었는데 자동 전환 서비스에서는 사라진다. main 보호 설정은 확인하지 않았다(프로세스로만 통제).
+- 머지가 곧 배포: build-approval 이 담당자 직접 머지나 QA 를 거치지 않은 머지에 대한 2차 관문이었는데 자동 전환 서비스에서는 사라진다. main 보호 설정은 확인하지 않았다(프로세스로만 통제).
 - 교차 서비스 배포 순서: 한 PR 이 여러 서비스를 바꾸면 서비스 간 병렬 배포. 계약 추가 PR 은 피호출자를 먼저 머지하는 지침을 QA 규칙에 한 줄 추가.
 - 공유 모듈 드리프트: bin-common-handler 나 타 서비스 모델 변경은 해당 서비스를 배포시키지 않으며 다음 배포 때 함께 나간다(현행과 동일, 이번 설계에서 개선하지 않음).
 - 롤백 자동화 없음(긴급 수정 정책 유지).
@@ -72,7 +72,7 @@
 - 최신 커밋 test 실패로 서비스가 구 버전에 머무는 경우는 D4b 의 QA-2 창과 [URGENT] 연결로 감지한다(15분 제한은 자동 서비스에서 D4b 창으로 대체).
 - 수동 rerun runbook: 최신 커밋의 deploy 는 rerun 허용, 구 커밋은 guard 로 실패(의도).
 - main 브랜치 보호는 설정되어 있지 않음을 확인했다(`branches/main/protection` 404). 머지가 곧 배포라는 위험은 QA 규칙으로만 완화된다.
-## 4. 대표님 결정 필요
+## 4. 담당자 결정 필요
 - 파일럿 monorepo 3개, js 1개 지정, 제외 목록 확정(voip-kamailio-proxy 제외 동의).
 
 ## 5. 구현 계획 v2 (VOIP-1586, 이 PR 범위. SQUARE-101 은 monorepo-javascript 별도 PR)

@@ -65,7 +65,7 @@ directives propagate `go` directive requirements:
 So the two-service k8s.io bump forces a `go.mod` `go`-directive bump on every
 module that (transitively, through local `replace`s) reaches
 `bin-sentinel-manager` — which is effectively the whole fleet.
-**대표님 결정: since the fleet is forced to touch nearly every `go.mod` anyway,
+**담당자 결정: since the fleet is forced to touch nearly every `go.mod` anyway,
 bump all active Go modules in the monorepo to the same target in one
 coordinated change**, rather than trying to draw an artificial boundary that
 the module graph doesn't actually respect.
@@ -96,7 +96,7 @@ forces this upgrade in the first place.
 
 **Target Go version: 1.27.1** — confirmed the latest stable release
 (`stable: true` on `https://go.dev/dl/?mode=json`) as of this check;
-`go1.26.8` is also stable but older. 대표님 explicitly chose "latest" over the
+`go1.26.8` is also stable but older. The maintainer explicitly chose "latest" over the
 dependency's bare minimum (`go 1.26.0`). Re-verify at implementation time in
 case a newer patch/minor has shipped since this document was written — do not
 silently use a stale number if `go1.27.2` or `go1.28.0` has since gone stable.
@@ -438,7 +438,7 @@ leave until "~32 services, any order":
   not an oversight.** Go 1.27 was roughly a month old at the time this
   document was written; `go1.26.8` is a mature patch release and satisfies
   `k8s.io/client-go`'s actual floor (`go 1.26.0`) exactly, with no version to
-  spare. 대표님 explicitly chose "latest stable" over "the dependency's bare
+  spare. The maintainer explicitly chose "latest stable" over "the dependency's bare
   minimum" when asked. Noting the tradeoff here so the choice is on the
   record as deliberate for a change touching 38 production services, not
   because either version is expected to cause problems.
@@ -499,7 +499,7 @@ leave until "~32 services, any order":
 - Does not address the `models/container`-via-`replace` coupling between
   `bin-sentinel-manager` and `bin-call-manager` architecturally (an
   alternative considered and set aside in favor of the fleet-wide bump per
-  대표님's explicit decision) — if a future dependency bump on
+  the maintainer's explicit decision) — if a future dependency bump on
   `bin-sentinel-manager` forces this same situation again, extracting
   `models/container` into its own minimal module becomes worth reconsidering
   at that time, not now.
@@ -514,7 +514,7 @@ defaults, with the freeze intended to be dropped in a later, separately
 staged and verified follow-up once the compiler bump had soaked in
 production.
 
-대표님 explicit decision after this PR's initial implementation was already
+The maintainer's explicit decision after this PR's initial implementation was already
 verified and pushed: skip the staged rollback plan and adopt the Go 1.27
 GODEBUG defaults immediately, in this same PR, accepting the (judged low)
 behavioral risk now rather than carrying the freeze forward with an

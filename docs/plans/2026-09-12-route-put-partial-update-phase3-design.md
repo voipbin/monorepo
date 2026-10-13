@@ -1,7 +1,7 @@
 # Phase 3: PUT /routes/{id} partial-update fix
 
 Status: DRAFT (Round 0)
-Author: CPO, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
+Author: product owner, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
 Phase: 3 of 8 (§4, roadmap row #5, rated **HIGH** risk)
 Precedent: PR #1291 (`mcpservers`, merged `81a9a6b98`), PR #1293 (Phase 1,
 `extensions`/`trunks`, merged `fcb65062c`), PR #1295 (Phase 2, `customer`/
@@ -303,7 +303,7 @@ pointer types:
 - No retroactive remediation for route rows whose `provider_id`/`target`
   may have already been silently wiped in production by the pre-fix
   behavior (mirrors PR #1291 §8 and the roadmap §6 — raise separately to
-  대표님 if a concrete customer complaint or traffic-misroute incident
+  the maintainer if a concrete customer complaint or traffic-misroute incident
   surfaces).
 - No `square-admin` frontend changes bundled into this PR (roadmap §6).
 - No new PATCH method / HTTP verb redesign (roadmap §6).

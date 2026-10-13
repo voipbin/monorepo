@@ -44,14 +44,14 @@ transfer.
   `bin-common-handler`'s `QueueV1QueueList` — it already exists and already
   supports a `customer_id` filter.
 
-## 4. Decisions locked (2026-09-23, confirmed with 대표님)
+## 4. Decisions locked (2026-09-23, confirmed with the maintainer)
 
 | # | Decision | Rationale |
 |---|---|---|
-| 1 | `list_queues` purpose: let the LLM self-judge, mid-call, which Queue to route to | 대표님 confirmed |
-| 2 | `join_queue` scope: `ReferenceTypeCall` only, mirrors `connect_call`'s shape (add action to activeflow, then terminate the AIcall) | 대표님 confirmed |
-| 3 | Tool names: `list_queues`, `join_queue` (new naming, not `get_queue_list`/`connect_queue`) | 대표님 confirmed |
-| 4 | Process: full design-first review loop (design 2+, PR 3+) | 대표님 confirmed |
+| 1 | `list_queues` purpose: let the LLM self-judge, mid-call, which Queue to route to | The maintainer confirmed |
+| 2 | `join_queue` scope: `ReferenceTypeCall` only, mirrors `connect_call`'s shape (add action to activeflow, then terminate the AIcall) | The maintainer confirmed |
+| 3 | Tool names: `list_queues`, `join_queue` (new naming, not `get_queue_list`/`connect_queue`) | The maintainer confirmed |
+| 4 | Process: full design-first review loop (design 2+, PR 3+) | The maintainer confirmed |
 
 ## 5. Existing precedent (code-verified)
 

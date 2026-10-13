@@ -35,7 +35,7 @@ Correction recorded 2026-10-05: the standalone `voipbin/install` repository (k8s
 - Tests/checks: run `scripts/check-env-template-sync.sh`: its baseline on `main` ALREADY exits 1 for one unrelated pre-existing item (`VOIPBIN_SANDBOX_DEV_SEED` in `.env.template:309`, read only by `start.sh:463`); the requirement is that after the change there is no NEW report mentioning `OPENROUTER_API_KEY`, and that pre-existing item is NOT fixed in this PR (do not touch `TEMPLATE_ONLY_VARS` or `init.sh` for it; record as a separate follow-up). Also run the full suites `install/CLAUDE.md` prescribes: `bats tests/*.bats` and `python3 tests/test_cli_mode.py` (grep shows no test currently lists `GOOGLE_API_KEY`, so no expected key list needs updating, confirm). Compose validation: `OPENROUTER_API_KEY= docker compose -f docker-compose.yml.dist config -q` with the compose-required variables stubbed from `.env.template` (copy it to a temp `.env`, fill required values with placeholders).
 - Write the failing test/expectation change first where a bats expectation lists the key set, then edit.
 - Commit author `Sungtae Kim <pchero21@gmail.com>`; follow `install/CLAUDE.md` commit format (bullet prefix `voipbin:`); summary line: `Add OPENROUTER_API_KEY to the self-host runner env`. PR title equals branch name; one PR in `voipbin/voipbin`.
-- Production (Komodo) path unchanged by this task: Task 1 plus the operator step. `monorepo-etc`: no PR (deliberate deviation from design 7, because the value is a secret only the CEO can SOPS-encrypt); the monorepo PR description carries the operator note: add `BIN_MANAGER__OPENROUTER_API_KEY` to `infra-secret/secrets-source/bin-manager/secrets.enc.yml` with a dedicated key (credit limit and balance alert) BEFORE the backend release.
+- Production (Komodo) path unchanged by this task: Task 1 plus the operator step. `monorepo-etc`: no PR (deliberate deviation from design 7, because the value is a secret only the maintainer can SOPS-encrypt); the monorepo PR description carries the operator note: add `BIN_MANAGER__OPENROUTER_API_KEY` to `infra-secret/secrets-source/bin-manager/secrets.enc.yml` with a dedicated key (credit limit and balance alert) BEFORE the backend release.
 - Self-hosting doc in the monorepo: `bin-api-manager/docsdev/source/self_hosting_providers.rst` (Task 17).
 
 ---
@@ -386,7 +386,7 @@ def _member_llm_type(ai: dict) -> str:
 ### Task 21: Re-vendor and full backend verification
 - For every Go service that vendors `monorepo/bin-ai-manager` or `monorepo/bin-common-handler` (find with `grep -rl "monorepo/bin-ai-manager" --include=go.mod .`): `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`. `vendor/` is gitignored, so nothing is committed from this step; it is verification only (each service resolves monorepo modules through `replace => ../`). Also include services that consume `bin-openapi-manager` gens besides api-manager.
 
-### Task 22: Real-call verification (uses the existing OpenRouter key in `~/.hermes/.env` as authorized by the CEO on 2026-10-05; read from the environment only, never echoed, printed, committed or logged; it is used for verification only, not placed in any production secret)
+### Task 22: Real-call verification (uses the existing OpenRouter key in `~/.hermes/.env` as authorized by the maintainer on 2026-10-05; read from the environment only, never echoed, printed, committed or logged; it is used for verification only, not placed in any production secret)
 - For each catalog candidate: one chat completion with a tool definition through the real `OpenRouterLLMService` configuration (same `extra_body.provider`), assert a tool call returns, record the sub-provider that answered; drop any model that fails from `catalog.go` (and its test expectations) and rerun Task 3 tests.
 - One Listen turn (`startListenPipecatcall` path) with an OpenRouter model.
 - One pipecat runner text session (`create_llm_service` with `platform_openrouter.<slug>`) and one mixed direct + OpenRouter team init.
@@ -401,11 +401,11 @@ def _member_llm_type(ai: dict) -> str:
 Temporarily break each guard (also the empty `LLMRunnerType` error at the runner and the update-validates-only-on-change condition; backend and UI: also the disabled engine key, the dirty-comparison skip, `engineKeyChanged=false`, and the synthetic legacy row), confirm a test fails, then revert: drop key blanking (Task 8/9), pass `string(pc.LLMType)` unresolved at the runner (Task 7), remove the catalog membership check (Task 4/5), remove `zdr` (Task 11), remove the Python fallback guard (Task 12), remove the `ResolveEngine` rejection of raw `openrouter.*` (Task 4). Record each in the PR notes.
 
 ### Task 24: Review loop, delivery
-- Gate semantics (CLAUDE.md): a CHANGES_REQUESTED round resets the consecutive-APPROVE count to zero; the loop stops at 30 rounds without 2 consecutive APPROVEs and the state is reported to the CEO. Author check covers every commit: `git log origin/main..HEAD --format=%ae` must list only `pchero21@gmail.com`.
+- Gate semantics (CLAUDE.md): a CHANGES_REQUESTED round resets the consecutive-APPROVE count to zero; the loop stops at 30 rounds without 2 consecutive APPROVEs and the state is reported to the maintainer. Author check covers every commit: `git log origin/main..HEAD --format=%ae` must list only `pchero21@gmail.com`.
 - Per policy: code review loop (min 3 rounds, then 2 consecutive APPROVE, 3 fresh parallel reviewers per round with distinct angles) on each PR before reporting it ready; fix and re-review on any CHANGES_REQUESTED.
 - Before creating each PR: `git fetch origin main`, conflict check, `git log -1 --format=%ae` equals `pchero21@gmail.com`.
 - PR titles equal branch names (`NOJIRA-Route-LLM-via-OpenRouter`), body per the monorepo convention (narrative + `project: change` bullets, no headers, no test plan, no AI attribution). One PR per repository: monorepo, monorepo-javascript, voipbin/voipbin.
-- Never merge without the CEO's explicit instruction; squash merge only; after merge pull main in the base checkout.
+- Never merge without the maintainer's explicit instruction; squash merge only; after merge pull main in the base checkout.
 - Read the PR's real CI checks before reporting ready.
 
 ## Scope notes

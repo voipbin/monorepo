@@ -2,7 +2,7 @@
 
 **Status:** Draft (Design Review Round 2 반영)
 **Ticket:** VOIP-1220
-**Author:** Hermes (CPO)
+**Author:** Hermes (product owner)
 **Date:** 2026-06-29
 **Depends on:** VOIP-1209 (Done)
 
@@ -238,7 +238,7 @@ if filterCount != 1 → 400 InvalidArgument
 
 ## 9. Open Questions / Non-Goals
 
-- **RST 문서 업데이트**: bin-api-manager CLAUDE.md는 신규 엔드포인트 추가 시 `docsdev/source/` 업데이트를 요구한다. 이 PR에 포함할지 별도 티켓으로 분리할지는 대표님 판단에 따른다.
+- **RST 문서 업데이트**: bin-api-manager CLAUDE.md는 신규 엔드포인트 추가 시 `docsdev/source/` 업데이트를 요구한다. 이 PR에 포함할지 별도 티켓으로 분리할지는 담당자 판단에 따른다.
 - **Interaction WebhookMessage**: 향후 내부 전용 필드가 `Interaction`에 추가될 경우 별도 작업으로 WebhookMessage 도입.
 - **ResolutionList**: 현재 listenhandler에 구현되지 않아 이 티켓 범위 밖.
 - **ResolutionDelete interactionID 소유권**: listenhandler가 `interaction_id`를 DB WHERE 절에 포함하지 않는 이슈는 별도 VOIP 티켓으로 추적 필요.

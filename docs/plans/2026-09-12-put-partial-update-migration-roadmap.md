@@ -1,7 +1,7 @@
 # PUT endpoint partial-update migration: platform-wide roadmap
 
 Status: DRAFT (Round 0)
-Author: CPO, per 대표님 approval ("점진적으로 수정하는 방향으로 진행하자")
+Author: product owner, per the maintainer's approval ("점진적으로 수정하는 방향으로 진행하자")
 Related: `docs/plans/2026-09-12-mcp-server-put-partial-update-design.md` (the
 already-merged reference implementation this roadmap generalizes, PR #1291,
 merged as `81a9a6b98`).
@@ -37,7 +37,7 @@ figure used throughout the rest of this document); "full-replace" below
 refers to this combined set of 34 unless a section explicitly says
 "strict full-replace."
 
-This roadmap does not re-litigate whether to fix this (대표님 already
+This roadmap does not re-litigate whether to fix this (the maintainer already
 approved "점진적으로" — phased). It defines: the inventory, the risk-based
 phase ordering, the reusable technical pattern, and the per-phase scope and
 exit criteria, so each phase can run through this monorepo's standard
@@ -210,7 +210,7 @@ design-review-loop (min 2 rounds, 2 consecutive APPROVE) and PR-review-loop
 (min 3 rounds, 2 consecutive APPROVE) independently. Phases do not block
 each other — Phase 2 can start before Phase 1's PR merges if capacity
 allows, though sequential is simpler to track and is the default unless
-대표님 asks to parallelize.
+the maintainer asks to parallelize.
 
 ## 5. Per-phase exit criteria
 
@@ -220,7 +220,7 @@ A phase is complete when:
 - Table tests exist and were confirmed to fail pre-fix (revert-and-rerun,
   per PR #1291 §7's standing practice) for at least the highest-risk field
   in that phase.
-- PR merged (squash, after 대표님's explicit "merge" instruction).
+- PR merged (squash, after the maintainer's explicit "merge" instruction).
 - This roadmap doc's phase table (§4) updated to mark the phase done, with
   the merged PR number, in the same follow-up commit style used elsewhere
   in this monorepo's plans (no separate tracking system needed — this doc
@@ -232,7 +232,7 @@ A phase is complete when:
 - No retroactive data remediation for rows that may have already been
   silently wiped by the pre-fix full-replace behavior in production
   (mirrors PR #1291 §8's same non-goal) — raise as a separate question to
-  대표님 if a specific customer complaint surfaces, not addressed here.
+  the maintainer if a specific customer complaint surfaces, not addressed here.
 - No frontend (square-admin/square-talk) changes bundled into backend
   phases unless a phase's own design doc identifies a concrete behavior
   change requiring one (mirrors PR #1291's frontend-scope discipline,
@@ -243,7 +243,7 @@ A phase is complete when:
   precedent.
 - Phase 8 (LOW-risk cosmetic-only endpoints) is explicitly deferred, not
   scheduled — do not build it preemptively without a concrete trigger
-  (repeats 대표님's standing 오버엔지니어링 지양 instruction).
+  (repeats the maintainer's standing 오버엔지니어링 지양 instruction).
 
 ## 7. Round 1 review disposition
 

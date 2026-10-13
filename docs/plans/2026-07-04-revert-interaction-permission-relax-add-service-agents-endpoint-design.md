@@ -2,7 +2,7 @@
 
 **Status:** Draft (Round 2, revised after Round 1 review)
 **Ticket:** #1052
-**Author:** Hermes (CPO)
+**Author:** Hermes (product owner)
 **Date:** 2026-07-04
 **Corrects:** PR #1047 (`NOJIRA-Relax-interaction-agent-permission`, merged, commit `1608cfa5f`)
 
@@ -169,7 +169,7 @@ server 레벨 HTTP 테스트(`server/service_agents_interactions_test.go`)도 �
 
 ## 8. Open Questions
 
-- **RST 문서 업데이트**: `bin-api-manager/CLAUDE.md`는 신규 엔드포인트 추가 시 `docsdev/source/` 업데이트를 요구. 이 PR에 포함할지 별도 티켓으로 분리할지 대표님 판단.
+- **RST 문서 업데이트**: `bin-api-manager/CLAUDE.md`는 신규 엔드포인트 추가 시 `docsdev/source/` 업데이트를 요구. 이 PR에 포함할지 별도 티켓으로 분리할지 담당자 판단.
 
 ## 9. Follow-up (별도 티켓, 이번 스코프 아님)
 

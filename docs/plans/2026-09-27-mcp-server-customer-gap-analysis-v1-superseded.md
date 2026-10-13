@@ -1,7 +1,7 @@
 # Analysis: MCP Server customer-facing gap (docs + square-admin)
 
 Date: 2026-09-27
-Author: CPO (Hermes)
+Author: product owner (Hermes)
 Status: Analysis, pending Analysis Review Loop (min 2, 2x consecutive APPROVED)
 
 ## 1. Issue statement
@@ -175,10 +175,10 @@ infrastructure, new measurement systems, nor speculative capacity.
 ## 4. Open questions for the reviewer
 
 1. Should the docs be a new top-level `mcpserver` section under the "AI &
-   Automation" caption, or sub-pages folded into the existing `ai` section? (CPO
+   Automation" caption, or sub-pages folded into the existing `ai` section? (product owner
    lean: new top-level entry — it is its own REST resource with 5 endpoints, and
    `rag` is the established precedent for exactly this shape.)
 2. Should the pre-existing `ai_overview.rst:681-685` "MCP Server" heading (about
    external AI via media stream) be renamed to remove ambiguity with the new
-   content? (CPO lean: yes, rename to something media-stream-specific and
+   content? (product owner lean: yes, rename to something media-stream-specific and
    cross-reference the new section.)

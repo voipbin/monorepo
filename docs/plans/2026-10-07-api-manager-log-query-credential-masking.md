@@ -13,7 +13,7 @@ Existing precedent: `SkipPaths` already suppresses access logs for provisioning 
 
 ## 2. Decision (ticket option A)
 
-Mask the values of `accesskey` and `token` in both log sinks. Option B (drop query auth) and key rotation are out of scope (ticket states they are separate CEO decisions).
+Mask the values of `accesskey` and `token` in both log sinks. Option B (drop query auth) and key rotation are out of scope (ticket states they are separate maintainer decisions).
 
 ## 3. Design
 

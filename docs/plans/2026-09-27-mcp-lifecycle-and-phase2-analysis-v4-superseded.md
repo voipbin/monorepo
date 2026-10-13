@@ -1,14 +1,14 @@
 # Analysis: MCP server lifecycle correctness + Phase 2 tool exposure (v3)
 
 Date: 2026-09-27
-Author: CPO (Hermes)
+Author: product owner (Hermes)
 Status: v4, Analysis Review Loop round 4 pending
 Supersedes:
 - `2026-09-27-mcp-server-customer-gap-analysis-v1-superseded.md` (§2.4 factually wrong)
 - `2026-09-27-mcp-server-revocation-and-docs-analysis-v2-superseded.md` (D1 severity overstated; missed the discarded tool list)
 - `2026-09-27-mcp-lifecycle-and-phase2-analysis-v3-superseded.md` (PR B scope understated; missed D9/D10/D11 and the ownership hole)
 
-## 0. CEO decisions locked 2026-09-27
+## 0. Maintainer decisions locked 2026-09-27
 
 Asked as Q1..Q4, answered verbatim:
 
@@ -17,7 +17,7 @@ Asked as Q1..Q4, answered verbatim:
 | Q1 | Implement the documented "MCP tools presented to the LLM" behavior, or correct the docs to match the code? | **Implement.** "Q1. 구현하자." |
 | Q2 | How much of the lifecycle scope lands? | **All of it.** "Q2. 전부." |
 | Q3 | Zero stored credentials on delete? | **Yes.** "Q3. 지우자. 그게 맞지." |
-| Q4 | Dead `mcp_tools_list_cache_ttl_seconds` flag: implement or remove? | Clarified in §2.6 below; **remove the flag, no cache** (CPO recommendation, accepted: "좋아. 진행해.") |
+| Q4 | Dead `mcp_tools_list_cache_ttl_seconds` flag: implement or remove? | Clarified in §2.6 below; **remove the flag, no cache** (product owner recommendation, accepted: "좋아. 진행해.") |
 | Q5 | PR B as one PR, or split into B1 (ai-manager prep) + B2 (pipecat wiring)? | **One PR.** "하나로 가자." |
 
 PR split approved in the same turn: PR A (lifecycle+docs), PR B (Phase 2 tool
@@ -475,14 +475,14 @@ a row.
 
 ## 3. Proceed decision and PR plan
 
-### PROCEED. Three PRs, ordering-constrained. CEO-approved split.
+### PROCEED. Three PRs, ordering-constrained. Maintainer-approved split.
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
 D1, D2, D3, D4, D5, D6, **D12**. One logical unit: "a deleted or foreign MCP server
 must be inert everywhere, and the docs/config must stop describing things that are
 not true." D12 joins A because it is a gate, not advertising.
 
-**PR B — `voipbin/monorepo` — Phase 2: expose MCP tools to the LLM. ONE PR (CEO Q5).**
+**PR B — `voipbin/monorepo` — Phase 2: expose MCP tools to the LLM. ONE PR (maintainer Q5).**
 D7, plus its prerequisites D9, D10, D11. Depends on PR A: this PR is what makes
 `CallTool` reachable, so it must not land before the revocation and ownership gates
 (§2.5, §2.5a). Scope, per §2.5b–§2.5e:
@@ -493,7 +493,7 @@ D7, plus its prerequisites D9, D10, D11. Depends on PR A: this PR is what makes
 | `bin-pipecat-manager` Go | change BOTH advertising sites — `runner.go:150` (single AI) and `run.go:178` (team, `resolveTeamForPython`); decide how MCP names pass the `AllowedToolNames` deny-by-default control (D10) |
 | `bin-pipecat-manager` python | `tools.py` per-tool registration for dynamic names; schema default hardening; both registration mechanisms (single-AI `run.py:258`, team `RoutingLLMService`) |
 
-CEO decision Q5: keep it as one PR rather than splitting into B1 (ai-manager prep)
+Maintainer decision Q5: keep it as one PR rather than splitting into B1 (ai-manager prep)
 + B2 (pipecat wiring), because B1 alone would be another "no observable effect"
 PR and reviewers would lose the context that motivates it.
 

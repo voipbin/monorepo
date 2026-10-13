@@ -402,7 +402,7 @@ bin-timeline-manager:
 | Q3 | ~~Stage model defaults (cost)~~ RESOLVED | **pchero = ok**: Stage1 cheap, Stage2 mid, Stage3 best (and the SMALL combined call); all overridable via env; all ⊆ gateway allow-set. Concrete model names pinned at implementation. | resolved |
 | Q4 | ~~Auto-trigger on activeflow end~~ RESOLVED | **pchero = later**: on-demand only in P1; auto-trigger deferred to a later phase with a cost estimate. | resolved |
 | Q5 | ~~Customer-facing exposure~~ RESOLVED | **pchero = customer-exposed**: api-manager <-> timeline-manager REST IS public (P1); only timeline-manager <-> ai-manager gateway stays internal. Completion webhook still deferred. | resolved |
-| Q6 | Gateway genericity vs lock-down | Internal-only + schema-required + model allow-set + input cap is the agreed control; keep prompt/data free-form for reuse. (Open: caller whitelist + cost attribution label — defer.) | CPO/CTO |
+| Q6 | Gateway genericity vs lock-down | Internal-only + schema-required + model allow-set + input cap is the agreed control; keep prompt/data free-form for reuse. (Open: caller whitelist + cost attribution label — defer.) | Maintainer |
 | Q7 | ~~Cost cap / abuse ceiling~~ RESOLVED | **pchero = cooldown only, 1 minute**: per-call `analysisMaxOutputTokens` (runaway guard) + per-activeflow re-analysis cooldown `analysisReanalyzeCooldown = 1m`. No per-customer/day cap in P1. | resolved |
 | Q8 | ~~Customer-facing fan-out cap (review F1)~~ RESOLVED | **pchero = 그냥 가도 돼**: no per-customer fan-out cap in P1. The 1-min per-activeflow cooldown (Q7) + `analysisMaxOutputTokens` are the only P1 spend guards; the distinct-activeflow fan-out cap is accepted as a known, deferred risk (can be added later if abuse appears). | resolved |
 

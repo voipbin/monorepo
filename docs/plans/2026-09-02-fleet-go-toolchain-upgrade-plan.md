@@ -203,7 +203,7 @@ improvise a fix mid-run**:
   version consistency, not the module graph — still not a decision to make
   unilaterally, just a different (smaller) kind of inconsistency if it ever
   came up. If a service turns out to need a real code fix, that's a scope
-  decision for 대표님, not something to resolve unilaterally mid-execution.
+  decision for the maintainer, not something to resolve unilaterally mid-execution.
   One option to raise at that point, not to apply automatically: stepping
   the whole target down to `go1.26.8` (mature, still satisfies
   `k8s.io/client-go`'s actual `go 1.26.0` floor per the design) rather than

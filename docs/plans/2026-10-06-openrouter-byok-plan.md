@@ -223,7 +223,7 @@ T0(착수 점검)
   - 기준선 측정은 변경 없는 트리이므로 `git stash`가 필요 없었다. 구현 후 비교는 CLAUDE.md의 `git stash` 방식(변경 stash, 기준선 측정, `git stash pop`, 변경 후 측정)을 따른다.
 - 1절 5번의 새 심볼 충돌 grep(전부 없음이어야 함).
 - 6절 분기 조건 항목의 현재 상태를 기록한다(T11 착수 전에 8.1 항목 8의 선택지가 확정되어야 한다).
-- **디자인 8.4가 "리뷰 전에 대표님 확인 권장"으로 남긴 8.1 항목 1(모델 ID 슬래시 1개 규칙)과 항목 2(키 입력 라벨 통일, `Engine Key (optional)`)의 확인 상태를 기록한다.** 둘 다 CPO 권장은 채택이고 이 plan은 채택을 전제로 T2(`customModelIDPattern`), T14(`KEY_FIELD_COPY`)를 짰다. 확인되지 않은 채 착수하면 두 태스크가 되돌림 비용을 갖는다는 점을 대표님께 알리고, 미채택 결정이 나면 T2 패턴과 T2 슬래시 0개/2개 이상 거부 테스트, T14 라벨 표만 바뀐다.
+- **디자인 8.4가 "리뷰 전에 담당자 확인 권장"으로 남긴 8.1 항목 1(모델 ID 슬래시 1개 규칙)과 항목 2(키 입력 라벨 통일, `Engine Key (optional)`)의 확인 상태를 기록한다.** 둘 다 제품 담당자 권장은 채택이고 이 plan은 채택을 전제로 T2(`customModelIDPattern`), T14(`KEY_FIELD_COPY`)를 짰다. 확인되지 않은 채 착수하면 두 태스크가 되돌림 비용을 갖는다는 점을 담당자에게 알리고, 미채택 결정이 나면 T2 패턴과 T2 슬래시 0개/2개 이상 거부 테스트, T14 라벨 표만 바뀐다.
 
 ---
 
@@ -336,7 +336,7 @@ func ValidateEngine(model EngineModel, key string, modelChanged bool) error
 - B2(권장, 같은 파일): `v1_ais.go:66`(**`Debugf`**), `:142,181,220,316`(`Errorf`)의 `Could not marshal the response message. message: %v, err: %v`에서 `message: %v` 인자와 문구를 제거하고 `err`만 남김.
 - **nil 확인(F11):** A의 `a.ID`/`c.ID` 전환 전에 각 줄의 `a`, `c`가 non-nil인지 코드로 확인한다(production 경로는 `resolveAI`가 non-nil을 보장). 기존 단위 테스트가 nil `*ai.AI`를 넘겨 패닉하면 코드가 아니라 **테스트 데이터를 고친다**.
 
-**Tests:** A는 전용 테스트 없음(대표님 확정). **B1 로그 캡처 테스트 1개**(`Test_processRequest_errorLogOmitsRequestBody`, 선례 `v1_ai_builder_test.go:221-224`의 `logrus.SetOutput(&buf)` + `TraceLevel` 패턴, 종료 시 복원): 더미 `engine_key`(`dummy-engine-key-not-real`)를 담은 (a) `POST /v1/ais`(aiHandler.Create가 오류), (b) `PUT /v1/ais/{id}`(Update 오류), (c) 알 수 없는 URI(`main.go:631` 경로)가 오류로 끝난 뒤 캡처 로그에 더미 문자열이 **없고** `uri`, `method`가 있음. 기존 `/v1/ais` 핸들러 테스트는 로그를 단정하지 않는다(확인함).
+**Tests:** A는 전용 테스트 없음(담당자 확정). **B1 로그 캡처 테스트 1개**(`Test_processRequest_errorLogOmitsRequestBody`, 선례 `v1_ai_builder_test.go:221-224`의 `logrus.SetOutput(&buf)` + `TraceLevel` 패턴, 종료 시 복원): 더미 `engine_key`(`dummy-engine-key-not-real`)를 담은 (a) `POST /v1/ais`(aiHandler.Create가 오류), (b) `PUT /v1/ais/{id}`(Update 오류), (c) 알 수 없는 URI(`main.go:631` 경로)가 오류로 끝난 뒤 캡처 로그에 더미 문자열이 **없고** `uri`, `method`가 있음. 기존 `/v1/ais` 핸들러 테스트는 로그를 단정하지 않는다(확인함).
 - **send.go:170(검토 1줄):** `log.WithField("ai", a).Debugf("Resolved team member AI. member_id: %s, ai_engine_model: %s", ..., a.EngineModel)`의 `a.EngineModel`은 고객이 입력한 `openrouter.<model-id>` 원문이 될 수 있다(고객 입력이므로 키 붙여넣기 반사 위험). A의 `"ai": a`를 `"ai_id": a.ID`로 바꾸는 같은 줄에서 `ai_engine_model`을 제거하거나 모델 ID 원문을 찍지 않는 형태로 함께 처리할지 검토해 결정한다(T9의 `loggableEngineModel`은 api-manager 전용 비공개 헬퍼라 재사용 불가, 제거가 가장 단순하고 `ai_id`로 조회 가능).
 
 **Verify:** `cd bin-ai-manager && go test ./... -count=1`와 아래 grep(**수정 전 코드에서 직접 실행한 실제 건수**를 함께 적는다). 이전 초안의 `grep -rn '"engine_key"\|"ai": \(a\|c\|tmpAI\)'`는 gofmt가 키 뒤 공백을 정렬(`"ai":            a,`)해 **수정 전에도 0건**이라 공회전했다(실측 0건). 교체:
@@ -449,7 +449,7 @@ E
 `bin-call-manager/pkg/callhandler/start_incoming_domain_type_sip.go:223`의 `log.WithField("ai", a)`를 `"ai_id", a.ID`로(같은 줄 `Debugf`가 이미 `a.ID`를 쓰므로 nil 위험 없음. 디자인의 `:222`는 오기). 전용 테스트 없음. **Verify:** `cd bin-call-manager && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`. **Commit:** C6.
 
 #### T11. **[분기 조건 있는 태스크]** 공용 `publish.go` + webhook-manager B4 (3.4 B3, B4, 8.1 항목 8)
-**조건:** 대표님이 8.1 항목 8을 확정한다. **기본 분기 A(권장): 이번 PR에서 처리.** 분기 B는 별도 PR이라 대표님 허락이 있어야 하고, 분기 C는 처리하지 않고 위험 수용(6.3 게이트 2의 "공용 로깅 범위 결정 완료"는 충족으로 본다).
+**조건:** 담당자가 8.1 항목 8을 확정한다. **기본 분기 A(권장): 이번 PR에서 처리.** 분기 B는 별도 PR이라 담당자 허락이 있어야 하고, 분기 C는 처리하지 않고 위험 수용(6.3 게이트 2의 "공용 로깅 범위 결정 완료"는 충족으로 본다).
 **분기 A 변경(총 10줄 = `publish.go` 1줄 + webhook-manager 9줄: `webhook.go` 2줄, `listenhandler/main.go` 1줄, `v1_webhooks.go` 6줄):**
 - `bin-common-handler/pkg/notifyhandler/publish.go:34`의 `"data": data` 한 줄 삭제(`customer_id`, `event_type` 유지, 시그니처 불변). 출력은 `:46`, `:51` 오류 경로.
 - `bin-webhook-manager/pkg/webhookhandler/webhook.go:33,126`(`"data": data`, 상시 `Debugf`) -> `"data_len": len(data)`(`data_type` 유지).
@@ -486,7 +486,7 @@ git status --short bin-openapi-manager/gens bin-api-manager/gens   # 변경된 �
 - `ai_models.rst`: 응답 예시에 `key_mode`, Custom 항목(`id: custom.openrouter`, `model_id_prefix: openrouter.`), 필드 목록(`:58-64`, 응답 예시 `:38,47`)에 `key_mode`, `model_id_prefix`, "Custom 항목의 `id`는 `engine_model`로 직접 쓸 수 없고 `model_id_prefix` + 모델 ID로 조합한다", 머리 note의 `INVALID_ENGINE_MODEL`에 `ENGINE_KEY_REQUIRED` 병기.
 - `ai_tutorial.rst:14`(`platform_managed` 언급), **`ai_overview.rst:821`과 `ai_tutorial.rst:437`**(오류 원인 문단이 `INVALID_ENGINE_MODEL`을 "`GET /ai_models` 값 또는 `openai`/`gemini`/`grok` 접두"로만 서술. `openrouter.<model-id>` 허용 규칙과 Custom 키 누락의 `ENGINE_KEY_REQUIRED`를 추가), `self_hosting_providers.rst`는 **변경 없음**(BYOK는 플랫폼 키가 필요 없음, 디자인 1.2).
 - `bin-ai-manager/docs/domain.md:12,111-127`(카탈로그, `ModelInfo` 필드, `Outcome` 표에 `OutcomeCustomOpenRouter`, `ValidateEngine`), `bin-pipecat-manager/docs/domain.md:78-79`(`classifySessionLLM`, Custom 키 전달, 오류 문구 정제). `scripts/check-service-docs.sh`(경고 전용)가 `models/` 변경에 `docs/domain.md`를 요구한다. 이 두 `docs/domain.md`는 S1(ai-manager), S2(pipecat)가 소유한 경로를 S3의 T13이 편집하는 예외다(2절 예외 표: S1, S2 커밋 이후에 수정).
-- 디자인 문서 정오표(`docs/plans/2026-10-06-openrouter-byok-design.md`): **8.1에 항목 10 추가**: "같은 그룹 안 벤더 변경(OpenAI에서 Gemini) 시 입력란에 사용자가 직접 타이핑한 키는 저장 키가 없을 때(가드 false) 유지된다(create와 동일). 화면에서 보고 입력한 값이고 저장 키 유출이 아니므로 수용된 재존이다. | CPO 권장: 수용". **8.3 위험 표**: 기존 '키 이월 잔존 경로' 행 아래에 행 추가: "수용된 재존(타이핑한 키의 같은 그룹 내 벤더 변경) | 저장 키가 없는 AI에서 사용자가 타이핑한 키는 같은 그룹의 다른 벤더로 바꿔도 유지됨 | 수용(사용자 입력 값, create와 동일)". '`aicall` 스냅샷 모델과 현재 AI 키의 시점 불일치' 행의 영향 칸에 문장 추가: "BYOK 도입으로 openrouter.ai가 고객 키의 새 수신처가 되므로, 모델과 키를 함께 바꾼 직후의 기존 aicall 세션에서 다른 발급처 키가 openrouter.ai로 전송될 수 있다(스냅샷 한계는 Custom 빈 키에서만 fail-closed)." 이 문서는 승인된 디자인이라 **정오표 성격의 문장 추가만** 하고 규칙은 바꾸지 않는다(코드 리뷰 루프에서 함께 확인).
+- 디자인 문서 정오표(`docs/plans/2026-10-06-openrouter-byok-design.md`): **8.1에 항목 10 추가**: "같은 그룹 안 벤더 변경(OpenAI에서 Gemini) 시 입력란에 사용자가 직접 타이핑한 키는 저장 키가 없을 때(가드 false) 유지된다(create와 동일). 화면에서 보고 입력한 값이고 저장 키 유출이 아니므로 수용된 재존이다. | 제품 담당자 권장: 수용". **8.3 위험 표**: 기존 '키 이월 잔존 경로' 행 아래에 행 추가: "수용된 재존(타이핑한 키의 같은 그룹 내 벤더 변경) | 저장 키가 없는 AI에서 사용자가 타이핑한 키는 같은 그룹의 다른 벤더로 바꿔도 유지됨 | 수용(사용자 입력 값, create와 동일)". '`aicall` 스냅샷 모델과 현재 AI 키의 시점 불일치' 행의 영향 칸에 문장 추가: "BYOK 도입으로 openrouter.ai가 고객 키의 새 수신처가 되므로, 모델과 키를 함께 바꾼 직후의 기존 aicall 세션에서 다른 발급처 키가 openrouter.ai로 전송될 수 있다(스냅샷 한계는 Custom 빈 키에서만 fail-closed)." 이 문서는 승인된 디자인이라 **정오표 성격의 문장 추가만** 하고 규칙은 바꾸지 않는다(코드 리뷰 루프에서 함께 확인).
 **빌드(F4, F19, 이전 기능의 절차를 `docs/plans/2026-10-05-openrouter-llm-routing-plan.md:349`와 실제 추적 파일로 대조함):** `bin-api-manager/docsdev/build/`는 gitignore이나 **838개 파일이 추적 중**이고(`git ls-files bin-api-manager/docsdev/build | wc -l`), 직전 기능 커밋 `bc68e3c32`도 RST와 함께 html 246개, doctrees 245개(`environment.pickle` 포함), `_sources` 9개, `objects.inv`, `searchindex.js`를 `git add -f`로 커밋했다. 기본 환경에는 sphinx가 없으므로(`python3 -m sphinx` 실패) 빌드 환경을 먼저 만든다(저장소 밖, `docsdev/requirements.txt`는 Sphinx 9.1.x가 Python 3.12 이상을 요구한다고 명시):
 ```
 # python3 -m venv가 ensurepip 부재로 실패하는 머신이면 uv를 쓴다 (직접 확인: Python 3.13.7과 3.12.3 모두 동작)
@@ -635,7 +635,7 @@ useEffect(() => {
   1. 기준선: `git stash` 후(변경이 이미 커밋돼 있으면 `git stash` 대신 기준 커밋 `54aa7281`의 별도 워크트리에서) `cd square-admin && npm test -- --watchAll=false --forceExit 2>&1 | grep "Tests:"` -> `Tests: 2 failed, 1 skipped, 3027 passed, 3030 total`(T0 기록과 같아야 함). `git stash pop` 후 같은 명령을 변경 후에 실행한다. **통과 조건:** 실패는 기준선과 같은 1 suite(`mcpServerCatalog.test.js`, 2건) 외 **신규 실패 없음**, passed가 신규 테스트 수만큼 증가. PR 본문에 "Known pre-existing failures: 1 suite (src/views/mcpservers/__tests__/mcpServerCatalog.test.js, 2 tests) - confirmed failing on main baseline"을 명시한다.
   2. 린트: `npx eslint <변경한 모든 소스와 테스트 파일>`을 기준선(1절 2번 표)과 파일별로 비교해 늘지 않음. 전체 `npm run lint`(기준선 381 errors 167 warnings)는 게이트가 아니며 PR 본문에 "전체 lint는 기준선 실패, 변경 파일은 기준선 대비 증가 없음"으로 적는다.
   3. 빌드: **`CI=true` 없이** `npm run build`(실제 CI와 동일, `prebuild`의 `build:widget` 포함)가 exit 0이고 `git status --short`가 깨끗. `CI=true npm run build`는 기준선에서 이미 실패하므로 쓰지 않는다.
-- **시각 검증 게이트(스킬 `voipbin-frontend-visual-verification-gate`, `voipbin-frontend-mock-render-screenshot`):** 목 카탈로그(픽스처)로 실제 컴포넌트를 렌더해 스크린샷: (1) 피커 열림(그룹 3개, 배지 3종, 검색, `Recommended`), (2) Custom 선택 + ID 입력란 + 오류 문구 + 키 입력란(안내 3줄), (3) sidebar 편집의 `own_required` 키 블록이 `<details>` 밖, (4) 가드 적용 경고 3종, (5) 저장 `openrouter.*` 복원(`Current:` 행 없음), (6) 4개 폼의 키 라벨/캡션. 목업(`2026-10-06-openrouter-byok-ui-mockup.png`) 패널 1~3과 대조하고 3.6.7의 목업 수정 항목은 실제 렌더로 대체한다(목업 png 수정은 이 PR의 범위가 아님, 대표님 요청 시 별도).
+- **시각 검증 게이트(스킬 `voipbin-frontend-visual-verification-gate`, `voipbin-frontend-mock-render-screenshot`):** 목 카탈로그(픽스처)로 실제 컴포넌트를 렌더해 스크린샷: (1) 피커 열림(그룹 3개, 배지 3종, 검색, `Recommended`), (2) Custom 선택 + ID 입력란 + 오류 문구 + 키 입력란(안내 3줄), (3) sidebar 편집의 `own_required` 키 블록이 `<details>` 밖, (4) 가드 적용 경고 3종, (5) 저장 `openrouter.*` 복원(`Current:` 행 없음), (6) 4개 폼의 키 라벨/캡션. 목업(`2026-10-06-openrouter-byok-ui-mockup.png`) 패널 1~3과 대조하고 3.6.7의 목업 수정 항목은 실제 렌더로 대체한다(목업 png 수정은 이 PR의 범위가 아님, 담당자 요청 시 별도).
 **Depends:** T14~T21. **Commit:** J3(테스트/린트 보정만).
 
 ---
@@ -675,7 +675,7 @@ grep -rn "dummy-" --include=*.go --include=*.py --include=*.js . | grep -v "_tes
 8. **monorepo-javascript(`CLAUDE.md:25-45`의 PR 테스트 게이트):** T22의 1~3(전체 테스트를 `git stash` 기준선과 `Tests:` 줄로 비교, **신규 실패 없음과 기존 실패 1 suite(`mcpServerCatalog.test.js` 2건)를 PR 본문에 명시**, 변경 파일 `npx eslint` 전후 비교에서 증가 없음, `CI=true` 없는 `npm run build` exit 0)를 모두 통과하고 결과를 PR 본문에 적는다. 같은 fetch와 충돌/작성자 점검(`git merge-tree ... | grep -E "^(CONFLICT|changed in both)"`, `git log origin/main..HEAD --format=%ae | sort -u`).
 **Depends:** S1~S4 완료.
 
-#### T24. **[조건부, 대표님 허용 전제]** 실호출 검증 (7절, 8절에 절차)
+#### T24. **[조건부, 담당자 허용 전제]** 실호출 검증 (7절, 8절에 절차)
 8절 참조. 항목 3, 5(더미 값, 외부 요청 없음)는 **허용 없이 수행하며 머지 게이트**다.
 
 #### T25. 변이 검사 (수동, PR 설명에 기록)
@@ -707,26 +707,26 @@ grep -rn "dummy-" --include=*.go --include=*.py --include=*.js . | grep -v "_tes
 
 #### T27. 리뷰 루프와 PR 전달
 - 설계 리뷰 루프(이 plan): 최소 2회, 2회 연속 Approval(리뷰어 독립, Request Changes 시 연속 카운트 0), 최대 20회.
-- 구현 후 코드 리뷰 루프: 최소 3회, 2회 연속 Approval, 최대 30회. PR별(monorepo, monorepo-javascript) 독립 리뷰어 3명이 서로 다른 관점(보안 3중 방어와 로깅, UI 가드와 상태 전이, 컴파일과 CI 게이트)으로 병렬 수행. CHANGES_REQUESTED가 나오면 카운트 리셋, 상한 도달 시 대표님께 상태 보고.
-- PR 제목은 브랜치명 `NOJIRA-Add-custom-OpenRouter-BYOK-models`, 본문은 narrative 한 문단 + `project-name: change` 불릿(헤더, test plan, AI 표기 금지). 머지는 대표님 명시 지시 후 squash만, 머지 후 `cd ~/gitvoipbin/monorepo && git pull origin main`. 두 PR 모두 실제 CI 체크를 읽고 보고한다.
+- 구현 후 코드 리뷰 루프: 최소 3회, 2회 연속 Approval, 최대 30회. PR별(monorepo, monorepo-javascript) 독립 리뷰어 3명이 서로 다른 관점(보안 3중 방어와 로깅, UI 가드와 상태 전이, 컴파일과 CI 게이트)으로 병렬 수행. CHANGES_REQUESTED가 나오면 카운트 리셋, 상한 도달 시 담당자에게 상태 보고.
+- PR 제목은 브랜치명 `NOJIRA-Add-custom-OpenRouter-BYOK-models`, 본문은 narrative 한 문단 + `project-name: change` 불릿(헤더, test plan, AI 표기 금지). 머지는 담당자 명시 지시 후 squash만, 머지 후 `cd ~/gitvoipbin/monorepo && git pull origin main`. 두 PR 모두 실제 CI 체크를 읽고 보고한다.
 - 롤아웃 노트(7절)와 T24 결과(키/원문 없이)를 PR 설명에 싣는다.
 
 ---
 
-## 6. 분기 조건 있는 태스크 (대표님 결정 또는 허용 대기)
+## 6. 분기 조건 있는 태스크 (담당자 결정 또는 허용 대기)
 
 > 정오표(코드 리뷰 3회차): T26-a가 "별도 이슈"로 둔 이벤트 버스 `engine_key` 제거는 이 PR에서 이미 구현되었다(`publishAIEvent`, 호출부 8곳, 가드 테스트 `Test_aiEventsPublishOnlyThroughHelper`). T26-a의 "이 PR의 코드는 변하지 않음"은 더 이상 사실이 아니다. 남는 확인은 이미 쌓인 ClickHouse 행 조회뿐이다.
 
 | ID | 조건 | 기본 분기(권장) | 대안 분기와 영향 |
 |---|---|---|---|
-| **T11** (publish.go + webhook-manager B4) | 8.1 항목 8 확정 | **A**: 이번 PR에서 `publish.go` 한 줄 + webhook-manager 9줄 수정(C6) | **B** 별도 PR(대표님 허락 필요, T11 제외, 6.3 게이트 2에 별도 이슈 번호 기록), **C** 미수정(위험 수용, 8.3에 명시, webhook-manager 상시 Debug에 BYOK 키가 남을 수 있음을 PR에 경고) |
-| **T24** (실호출 항목 1, 2, 7, 8) | 디자인 7절: 플랫폼 `OPENROUTER_API_KEY` 일회성 수동 확인을 **대표님이 허용**(현재 대기, 이 계획 작성 중 어떤 키로도 실호출하지 않음) | 허용 시 8절 절차 수행 | 불허: 항목 1, 2, 7, 8을 `미확인`으로 PR과 문서에 기록하고 6.3 게이트 4에서 "ZDR 없음 안내 문구는 3.7 기본 동작으로 출시할지" 대표님이 결정(8.1 항목 5 권장은 실호출 후 출시) |
-| **T26-a** (이벤트 버스/ClickHouse 확인, 7절 항목 4와 9) | ClickHouse 조회는 대표님 접근 필요(값은 출력하지 않고 필드 존재와 건수만) | 결과가 "키 저장됨"이면 별도 이슈(ai-manager가 발행 전 키 제외 페이로드)를 만들고 6.3 게이트 3에서 출시 전 처리 시점을 대표님이 결정 | 결과가 "저장 안 됨"이면 별도 조치 없음. 어느 쪽이든 이 PR의 코드는 변하지 않음 |
+| **T11** (publish.go + webhook-manager B4) | 8.1 항목 8 확정 | **A**: 이번 PR에서 `publish.go` 한 줄 + webhook-manager 9줄 수정(C6) | **B** 별도 PR(담당자 허락 필요, T11 제외, 6.3 게이트 2에 별도 이슈 번호 기록), **C** 미수정(위험 수용, 8.3에 명시, webhook-manager 상시 Debug에 BYOK 키가 남을 수 있음을 PR에 경고) |
+| **T24** (실호출 항목 1, 2, 7, 8) | 디자인 7절: 플랫폼 `OPENROUTER_API_KEY` 일회성 수동 확인을 **담당자가 허용**(현재 대기, 이 계획 작성 중 어떤 키로도 실호출하지 않음) | 허용 시 8절 절차 수행 | 불허: 항목 1, 2, 7, 8을 `미확인`으로 PR과 문서에 기록하고 6.3 게이트 4에서 "ZDR 없음 안내 문구는 3.7 기본 동작으로 출시할지" 담당자가 결정(8.1 항목 5 권장은 실호출 후 출시) |
+| **T26-a** (이벤트 버스/ClickHouse 확인, 7절 항목 4와 9) | ClickHouse 조회는 담당자 접근 필요(값은 출력하지 않고 필드 존재와 건수만) | 결과가 "키 저장됨"이면 별도 이슈(ai-manager가 발행 전 키 제외 페이로드)를 만들고 6.3 게이트 3에서 출시 전 처리 시점을 담당자가 결정 | 결과가 "저장 안 됨"이면 별도 조치 없음. 어느 쪽이든 이 PR의 코드는 변하지 않음 |
 | **T26-b** (`engine_key` 응답 포함 확인, 항목 4) | T24 항목 4에서 `GET /ais` 응답에 키가 실제 포함됨이 확인된 경우 | 기본: 문구 변경 없음 | 포함 확인 시 `ai_struct_ai.rst:77`과 `openapi.yaml:2198`의 "never returned/not returned"를 정정(T12/T13에 소폭 추가) |
 | **T26-c** (Q5 안내 문구와 분류기) | T24 항목 1, 2에서 ZDR 부재 응답 원문이 안정적으로 구분될 때 | 기본: `pipelineerror.go` 분류기 확장 없음(음성 세션 무음 가능 한계를 문서에 명시) | 구분 가능 시 `classifyPipelineError`(`pipelineerror.go:20-86`)에 카테고리와 고객 문구 `The selected OpenRouter model has no provider that supports zero data retention. Choose a different model.` 추가 + 테스트(`pipelineerror_test.go`) |
-| **T18/T20-alt** (8.1 항목 9, detail platform 목적지 키) | 대표님이 "detail에서도 platform 저장 시 키를 지운다"로 바꾸는 경우 | **유지**(제안 v): detail은 platform 저장 시 저장 키 재전송 | 변경 시 `ais_detail.js:422`의 platform 분기를 `''` 전송으로, `ais_detail.test.js:435-448`의 기대를 `''`로 바꾸고 detail에도 경고 `The saved key will be removed.` 표시, 4절 행 7, 16, 17의 detail 기대 수정 |
+| **T18/T20-alt** (8.1 항목 9, detail platform 목적지 키) | 담당자가 "detail에서도 platform 저장 시 키를 지운다"로 바꾸는 경우 | **유지**(제안 v): detail은 platform 저장 시 저장 키 재전송 | 변경 시 `ais_detail.js:422`의 platform 분기를 `''` 전송으로, `ais_detail.test.js:435-448`의 기대를 `''`로 바꾸고 detail에도 경고 `The saved key will be removed.` 표시, 4절 행 7, 16, 17의 detail 기대 수정 |
 | **Q4 변종 허용** (실호출 항목 7, 8 결과) | ZDR 유지가 확인된 변종/라우터형 ID가 있을 때 | 기본: 모두 거부(fail-closed) | 확인된 변종만 `ValidateCustomModelID`의 허용 규칙 표 한 줄 수정 + 테스트(후속 PR 가능) |
-| **7절 항목 9** (이미 쌓인 운영 로그 조회) | 대표님이 운영 로그 접근 | 필드 존재와 건수만 확인 | 결과가 "있음"이면 기존 OpenAI/Gemini/Grok 키 교체 권고(8.1 항목 4) |
+| **7절 항목 9** (이미 쌓인 운영 로그 조회) | 담당자가 운영 로그 접근 | 필드 존재와 건수만 확인 | 결과가 "있음"이면 기존 OpenAI/Gemini/Grok 키 교체 권고(8.1 항목 4) |
 
 ---
 
@@ -743,17 +743,17 @@ grep -rn "dummy-" --include=*.go --include=*.py --include=*.js . | grep -v "_tes
 ### 7.2 출시 게이트(디자인 6.3, ai-manager와 api-manager 배포 전)
 1. T24 항목 5(러너 SDK 폴백 실행 검증)와 항목 3(빈 키 실행 검증) 통과 **전에는 머지하지 않고 배포하지도 않는다**.
 2. 로그 수정 A(16곳), B1, T11 채택 시 B3, B4가 배포 대상 빌드에 포함, 이미 쌓인 로그 처리 판단(항목 9, 8.1 항목 4)과 공용 로깅 범위 결정(8.1 항목 8) 완료.
-3. `engine_key` 노출(GET, 웹훅, 이벤트 버스/ClickHouse) 처리 시점을 대표님이 결정(8.1 항목 3, T26-a).
+3. `engine_key` 노출(GET, 웹훅, 이벤트 버스/ClickHouse) 처리 시점을 담당자가 결정(8.1 항목 3, T26-a).
 4. 항목 1, 2 결과로 고객 안내 문구 확정 여부(8.1 항목 5).
 
 ### 7.3 PR 게이트 요약
-레포당 PR 1개(스트림은 같은 브랜치), 로컬에서 T23 1~7이 모두 통과(**CI가 막는 것은 `check-test-conventions`와 서비스별 Go 테스트이고, Python 테스트, T24 항목 3, 5, `lint-docs`, `lint-error-envelope`, `check-service-docs`는 CI가 막지 않으므로 PR 본문 체크리스트로 강제**, monorepo-javascript PR은 T23-8, 즉 CLAUDE.md의 테스트 게이트와 `CI=true` 없는 빌드), 생성 파일은 생성기로만 갱신, `docsdev/build`는 `git add -f`, 코드 리뷰 루프 통과(T27), 머지는 대표님 지시 후 squash.
+레포당 PR 1개(스트림은 같은 브랜치), 로컬에서 T23 1~7이 모두 통과(**CI가 막는 것은 `check-test-conventions`와 서비스별 Go 테스트이고, Python 테스트, T24 항목 3, 5, `lint-docs`, `lint-error-envelope`, `check-service-docs`는 CI가 막지 않으므로 PR 본문 체크리스트로 강제**, monorepo-javascript PR은 T23-8, 즉 CLAUDE.md의 테스트 게이트와 `CI=true` 없는 빌드), 생성 파일은 생성기로만 갱신, `docsdev/build`는 `git add -f`, 코드 리뷰 루프 통과(T27), 머지는 담당자 지시 후 squash.
 
 ---
 
 ## 8. 실호출 검증 절차 (T24, 키 비노출)
 
-**원칙:** 키는 환경변수로만 주입하고 값을 출력, 로그, 파일, 커밋, 문서에 남기지 않는다. **`~/.hermes/.env`를 `set -a; source`로 통째로 읽지 않는다**(다른 비밀값이 셸 전체에 노출됨). 필요한 변수 하나만 명령 한 줄에 주입한다: `OPENROUTER_API_KEY="$(grep '^OPENROUTER_API_KEY=' ~/.hermes/.env | tail -n1 | cut -d= -f2-)" python3 "$TMPDIR/probe.py"`(`tail -n1`은 dotenv의 마지막 줄 우선 관례, 값은 출력하지 않고 `set +x` 상태 유지). **`.env` 값이 따옴표로 감싸져 있을 수 있다**(`KEY="..."` 또는 `KEY='...'`): `cut` 결과의 양끝 따옴표 한 쌍을 벗기는 처리를 프로브 안에서 한다(예: Python `v = v.strip(); v = v[1:-1] if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'" else v`). 값 자체는 출력하지 않는다. `OPENROUTER_API_KEY=` 줄이 둘이므로 `grep -c '^OPENROUTER_API_KEY=' ~/.hermes/.env`의 개수만 확인하고, 두 줄이 다른 키일 가능성은 값을 찍지 않고 대표님께 어느 줄을 쓸지 확인한다. **또 `~/.hermes/.env`의 `OPENROUTER_API_KEY`가 VoIPBin 플랫폼 운영 키와 같은 값인지 대표님께 확인한다**(같다면 이 키로 하는 실호출은 플랫폼 계정에 청구되고 고객 계정 가드레일 시나리오와 무관하다. 다르면 개인 키이므로 어느 쪽이든 허용 범위를 대표님이 정한다). 값 비교는 하지 않고 대표님 답변만 기록한다. 스크립트는 `$TMPDIR`(scratch)에 두고 저장소에 넣지 않으며 결과는 모델 ID, HTTP 상태, 응답 **유형**, 응답한 하위 제공자 이름만 기록한다(원문 대화, 키 반사 여부는 "있음/없음"만). **프로브는 예외 문자열과 응답 본문을 출력하지 않는다**(예외 메시지나 본문에 요청 헤더, 키가 반사될 수 있음). 예외는 `type(e).__name__`, 응답은 상태 코드와 `Content-Type` 유형, 제공자명 필드만 출력한다. 플랫폼 키는 대표님 허용 시 응답 형태 확인용으로만 쓰고 고객 계정 가드레일 시나리오는 "확인 불가"로 남긴다.
+**원칙:** 키는 환경변수로만 주입하고 값을 출력, 로그, 파일, 커밋, 문서에 남기지 않는다. **`~/.hermes/.env`를 `set -a; source`로 통째로 읽지 않는다**(다른 비밀값이 셸 전체에 노출됨). 필요한 변수 하나만 명령 한 줄에 주입한다: `OPENROUTER_API_KEY="$(grep '^OPENROUTER_API_KEY=' ~/.hermes/.env | tail -n1 | cut -d= -f2-)" python3 "$TMPDIR/probe.py"`(`tail -n1`은 dotenv의 마지막 줄 우선 관례, 값은 출력하지 않고 `set +x` 상태 유지). **`.env` 값이 따옴표로 감싸져 있을 수 있다**(`KEY="..."` 또는 `KEY='...'`): `cut` 결과의 양끝 따옴표 한 쌍을 벗기는 처리를 프로브 안에서 한다(예: Python `v = v.strip(); v = v[1:-1] if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'" else v`). 값 자체는 출력하지 않는다. `OPENROUTER_API_KEY=` 줄이 둘이므로 `grep -c '^OPENROUTER_API_KEY=' ~/.hermes/.env`의 개수만 확인하고, 두 줄이 다른 키일 가능성은 값을 찍지 않고 담당자에게 어느 줄을 쓸지 확인한다. **또 `~/.hermes/.env`의 `OPENROUTER_API_KEY`가 VoIPBin 플랫폼 운영 키와 같은 값인지 담당자에게 확인한다**(같다면 이 키로 하는 실호출은 플랫폼 계정에 청구되고 고객 계정 가드레일 시나리오와 무관하다. 다르면 개인 키이므로 어느 쪽이든 허용 범위를 담당자가 정한다). 값 비교는 하지 않고 담당자 답변만 기록한다. 스크립트는 `$TMPDIR`(scratch)에 두고 저장소에 넣지 않으며 결과는 모델 ID, HTTP 상태, 응답 **유형**, 응답한 하위 제공자 이름만 기록한다(원문 대화, 키 반사 여부는 "있음/없음"만). **프로브는 예외 문자열과 응답 본문을 출력하지 않는다**(예외 메시지나 본문에 요청 헤더, 키가 반사될 수 있음). 예외는 `type(e).__name__`, 응답은 상태 코드와 `Content-Type` 유형, 제공자명 필드만 출력한다. 플랫폼 키는 담당자 허용 시 응답 형태 확인용으로만 쓰고 고객 계정 가드레일 시나리오는 "확인 불가"로 남긴다.
 
 | 항목(디자인 7절) | 절차 | 허용 필요 | 게이트 |
 |---|---|---|---|
@@ -763,7 +763,7 @@ grep -rn "dummy-" --include=*.go --include=*.py --include=*.js . | grep -v "_tes
 | 2 | 무효 키(401, 더미 키), 크레딧 없음(402, 재현 불가 시 문서 근거만), 러너가 보는 오류 원문과 `classifyPipelineError` 분류 결과, 키 반사 여부(`pipelineerror.go:12`의 2000자 로깅) | 401은 더미로 가능, 나머지 필요 | 분류기 확장 여부 근거 |
 | 7 | `openrouter.vendor/model:variant`가 첫 점 분리와 `extra_body`를 거쳐도 유지되는지(단위, 허용 없이 가능), 변종 ID의 ZDR 유지(실호출) | 단위 불필요, 실호출 필요 | Q4 순차 허용 근거 |
 | 8 | 라우터형 ID(`openrouter/auto`)의 ZDR 상호작용과 다른 제공자로의 라우팅 여부 | 필요 | 결과 전까지 거부 유지 |
-| 4, 9 | `GET /ais`, ai 웹훅, 이벤트 버스(ClickHouse `events.data`)에 `engine_key`가 포함되는지(더미 값으로 AI를 만들어 확인, 필드 존재와 건수만), 이미 쌓인 운영 로그 조회 | 대표님 운영 접근 | T26-a, 7.2 게이트 2, 3 |
+| 4, 9 | `GET /ais`, ai 웹훅, 이벤트 버스(ClickHouse `events.data`)에 `engine_key`가 포함되는지(더미 값으로 AI를 만들어 확인, 필드 존재와 건수만), 이미 쌓인 운영 로그 조회 | 담당자 운영 접근 | T26-a, 7.2 게이트 2, 3 |
 | 6 | sidebar 편집 저장 시 `engine_key`가 빈 값으로 덮이는지(재조회 적용 전/후 UI 실행 비교) | 불필요 | Q9는 실증과 무관하게 적용 |
 
 **항목 3, 5 실행 방법(직접 실행해 동작을 확인한 명령, F20):** `uv run --with pipecat-ai[openrouter]`처럼 `--no-project`로 일부 extra만 붙이면 `run.py`의 `google.genai` 등 다른 import가 없어 `import run`이 실패한다. 프로젝트 잠금 파일로 전체 의존성을 쓴다:
@@ -817,7 +817,7 @@ git status --short .                                           # 비어 있어�
 | 6.1, 6.2, 6.3 | PR 구성, 배포 순서, 게이트 | 7절, T27 |
 | 7절 항목 1~9 | 실호출 | 8절, T24, T26 |
 | 8.1 항목 1, 2 | 슬래시 1개 규칙, 라벨 통일 | T2(`customModelIDPattern`), T14(`KEY_FIELD_COPY`) |
-| 8.1 항목 3, 4, 5, 6, 7 | 대표님 결정 | 6절 |
+| 8.1 항목 3, 4, 5, 6, 7 | 담당자 결정 | 6절 |
 | 8.1 항목 8 | 로깅 범위 A/B/C | T11, 6절 |
 | 8.1 항목 9 | detail platform 키 유지 | 6절(T18/T20-alt) |
 | 8.2 | 구현 시 확인(nil, member.js, `onCloseAutoFocus`, B4 컴파일, `keySeqRef`, docs build, `Test_CatalogViewShape`, 필드 이름) | T5, T22, T15, T11, T20, T13, T1 |

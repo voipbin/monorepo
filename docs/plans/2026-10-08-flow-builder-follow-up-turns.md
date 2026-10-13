@@ -6,7 +6,7 @@ This document holds the issue analysis, the design and the implementation plan o
 
 ### Observed
 
-- The CEO used the Flow AI Builder in square-admin (production, after VOIP-1577). Turn 1 ("a typical parcel delivery company") got a question. Turn 2 ("I want delivery tracking") ended with "No usable response. Trying again may use another daily attempt." and a Try again button, which is the `BUILDER_RESPONSE_INVALID` message.
+- The maintainer used the Flow AI Builder in square-admin (production, after VOIP-1577). Turn 1 ("a typical parcel delivery company") got a question. Turn 2 ("I want delivery tracking") ended with "No usable response. Trying again may use another daily attempt." and a Try again button, which is the `BUILDER_RESPONSE_INVALID` message.
 - Production diagnostic lines (VOIP-1576) of the last 90 minutes for that conversation: turn 1 `outcome=ok`; every turn with `user_turns` 2, 3 and 4 (5 calls in total) `outcome=invalid_response`, `invalid_kind=unparsable`, `finish_reason=stop`, 2.3 to 3.6 s, 82 to 110 completion tokens, 144 to 193 response chars, `json_mode=object`. The model answered quickly and completely, and the answer was not accepted by the parser.
 
 ### Reproduction (local, developer key, `gemini-3.8-flash`, reasoning none, 27 to 30 allowed types, the production `flowMessages` and system prompt; the conversation of the screenshot)
@@ -81,4 +81,4 @@ So in all three triggers (fixed phrase, change request, approval of a summary) w
 3. `bin-ai-manager/docs/operations.md`: one sentence in the Flow Builder section that history assistant turns are sent as JSON and why (VOIP-1578), and that `request_chars` therefore counts the wrapping (about 14 characters plus escapes per assistant turn).
 4. Gates: `cd bin-ai-manager && go test ./... && golangci-lint run`; from the repository root, after committing and fetching `origin/main`, `bash scripts/check-test-conventions.sh`.
 5. Verification after deploy (read-only plus the minimum LLM calls, a temporary admin that is deleted afterwards, no calls, SMS, email or number purchases): repeat the screenshot conversation (turn 1, a question, turn 2, a question, then the fixed phrase) and the three product scenarios of VOIP-1577. Expected: no `invalid_response`, every turn `outcome=ok`, a draft on the fixed phrase and on a change request after earlier question turns and after a draft turn. Include a conversation of at least 6 user turns and a summary approved in natural language ("yes, go ahead") that must produce a draft.
-6. Only `bin-ai-manager/` changes, so CI builds and deploys only ai-manager; the release approval after merge belongs to the CEO.
+6. Only `bin-ai-manager/` changes, so CI builds and deploys only ai-manager; the release approval after merge belongs to the maintainer.

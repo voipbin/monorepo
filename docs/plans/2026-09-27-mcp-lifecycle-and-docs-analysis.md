@@ -1,7 +1,7 @@
 # Analysis: MCP server lifecycle correctness + square-admin parity (v35, PR A/C only)
 
 Date: 2026-09-27
-Author: CPO (Hermes)
+Author: product owner (Hermes)
 Status: v35, Analysis Review Loop round 27 pending
 Round 5: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (7 findings → D15-D19).
 Round 6: fact-check **APPROVED**; adversarial CHANGES_REQUESTED (3 blocking → D20).
@@ -15,12 +15,12 @@ inside the v12 material written to close the fourth (D23): a type flip omitting
 `mcp_server_ids` bypassed the gate and produced a permanently frozen Insight AI.
 Fact-check found a missed third transition site and a FALSE api-validator citation
 (`test_ai_lifecycle.py` is skipped at `:4`).
-**v14 — 대표님 REVERSED the underlying policy: "인사이트도 mcp 사용가능하도록 해."**
+**v14 — the maintainer REVERSED the underlying policy: "인사이트도 mcp 사용가능하도록 해."**
 Insight AIs may use MCP servers. No AI-type gate is added anywhere, which **voids
 D13, D22 and D23 outright** (retained in §3.12b/§3.12e as recorded instances of the
 failure mode, marked VOIDED and out of scope). Five rounds of gate design collapse into
 one docs sentence. D18 is re-scoped: it no longer rides on a signature rewrite.
-v9: 대표님 resolved §5 item 9 and §5 item 8. v10: §5 item 5 and §5 item 6. v12: §5 item 5(i)/(ii), now withdrawn.
+v9: the maintainer resolved §5 item 9 and §5 item 8. v10: §5 item 5 and §5 item 6. v12: §5 item 5(i)/(ii), now withdrawn.
 Round 10: **both tracks CHANGES_REQUESTED.** Fact-check confirmed the v15 external
 claims (PyPI/GitHub, D24) but found the D16 justification false. Adversarial found the
 **SIXTH instance (D25)**: this document's own §5 item 9 exemption, implemented as it mandated,
@@ -43,10 +43,10 @@ enforcement point, with its only promised test on the dead dispatch path.
 **v16 — the five unconfirmed "Recommend …" items (written at v16 as §5 Q1, Q3, Q4, Q7, Q8,
 whose §5 ordinals were then 1, 3, 4, 7, 8; §5 was renumbered in v31, and those same five items
 are 1, 3, 4, 10, 11 today) are now
-closed** by 대표님 ("a로 가자" for the MCP link, recommendations accepted for the rest).
+closed** by 담당자 ("a로 가자" for the MCP link, recommendations accepted for the rest).
 Investigating §5 item 3 surfaced **D24**: the docs advertise a stale third-party fork while
 `uvx voipbin-mcp` installs the official repo — a published-falsehood defect the v14
-draft had wrongly deferred to 대표님 as unjudgeable instead of simply checking.
+draft had wrongly deferred to the maintainer as unjudgeable instead of simply checking.
 **Readiness is still NOT claimed in this header.** Every §5 item is now decided, but
 v10, v12 and v15 each made that claim and each was refuted within one round; a round must
 return clean on both tracks before the design doc starts.
@@ -69,7 +69,7 @@ this package already uses at `listen_trigger.go:155`. Fact-check found no false 
 in the v19/v20 material other than the fix itself, and confirmed Q17's split withdrawal is
 clean.
 
-v20: 대표님 declined round 12's PR A split proposal — "하나로 가자." One PR per repository
+v20: the maintainer declined round 12's PR A split proposal — "하나로 가자." One PR per repository
 stands; Q17's "split out if it grows" hedge is withdrawn.
 
 Round 14: **both tracks CHANGES_REQUESTED, TENTH instance, again in the newest edit.** v21's
@@ -220,7 +220,7 @@ found only **PR B scope discoveries** (a fourth AIcall path missing the tool map
 a whitelist-reintroduction hazard, an asymmetric sanitizer in the team path) while
 confirming every lifecycle claim as correct.
 
-CEO decision (2026-09-27): split the analysis. Verbatim: "권고대로 진행해" in
+Maintainer decision (2026-09-27): split the analysis. Verbatim: "권고대로 진행해" in
 response to the recommendation that PR A/C analysis is converged and should not
 wait on PR B's, since PR A fixes live security defects and is PR B's prerequisite
 anyway.
@@ -228,7 +228,7 @@ anyway.
 This document therefore covers only the converged half. PR B keeps iterating
 separately.
 
-## 1. CEO decisions locked 2026-09-27
+## 1. Maintainer decisions locked 2026-09-27
 
 | # | Question | Decision |
 |---|---|---|
@@ -248,10 +248,10 @@ separately.
 | Q14 | Does `McpServerDelete` gain the same predicate (D16)? | **Yes**, but the handler keeps **200 on repeat DELETE** and stops re-publishing `EventTypeDeleted`. 200 is required because DELETE is idempotent and GET still returns the soft-deleted row; v15's "the validator fixture would fail on 404" reason was FALSE (`cleanup_report.py:86` tolerates 404) |
 | Q15 | Naming-collision rename scope, and the third-party MCP link | **Heading only**; and **replace** `nrjchnd/voipbin-mcp` with `github.com/voipbin/mcp`, remove the fork link entirely ("a로 가자"). `uvx voipbin-mcp` already installs the official repo per PyPI, so the published link contradicts the published command |
 | Q16 | Add api-validator MCP coverage now? | **Defer until ETC-18 is fixed.** The validator leaks ~4 MCP servers per run into production (100 measured); more coverage before the fix accelerates it |
-| Q17 | PR A docs scope for D14, and is PR A split? | **NOT split — one PR per repository** (대표님 확정: "하나로 가자"). Every PR A item, including the three webhook event types and the `ai_struct_ai.rst:69` contradiction, ships in ONE `monorepo` PR. Round 12's A1/A2 (logic vs docs) split proposal is **declined**; the earlier "split out if it grows" wording is withdrawn |
+| Q17 | PR A docs scope for D14, and is PR A split? | **NOT split — one PR per repository** (담당자 확정: "하나로 가자"). Every PR A item, including the three webhook event types and the `ai_struct_ai.rst:69` contradiction, ships in ONE `monorepo` PR. Round 12's A1/A2 (logic vs docs) split proposal is **declined**; the earlier "split out if it grows" wording is withdrawn |
 | Q18 | Does the already-stored-id exemption cover the ownership check too? | **NO — D25 (§3.5a), SIXTH instance.** The exemption applies to the `tm_delete` predicate ONLY. `ValidateMcpServerIDs` gains a `storedIDs` parameter so existence and ownership run on every id; v12-v15's "no signature change" claim created a cross-tenant hole and is retracted |
 | Q19 | Where does the D12 ownership assertion live? | **BOTH resolution and dispatch** — D26 (§3.5b), SEVENTH instance. Dispatch-only was dead code (§3.1); resolution is where the credential is decrypted and sent. `resolveTools` already holds `a.CustomerID`, so cost is zero |
-| Q20 | Do pre-deploy soft-deleted rows get their credentials zeroed? | **Yes — one-off Alembic data migration** ("a 로 가자"), all seven columns where `tm_delete IS NOT NULL`, authored in PR A and applied by 대표님, downgrade an explicit no-op. The affected-row count is unmeasured and remains a design-doc precondition (it changes the PR body's impact claim, not the decision) |
+| Q20 | Do pre-deploy soft-deleted rows get their credentials zeroed? | **Yes — one-off Alembic data migration** ("a 로 가자"), all seven columns where `tm_delete IS NOT NULL`, authored in PR A and applied by the maintainer, downgrade an explicit no-op. The affected-row count is unmeasured and remains a design-doc precondition (it changes the PR body's impact claim, not the decision) |
 | Q21 | How is D12's team-member half enforced? | **IMPLEMENTED, not prescribed** (`3fca779e2`, `dd2fb0b39`): `resolveActiveAIForMcp` (`helpers.go:194`) resolves the CURRENT member and degrades to the start member on ALL failure modes; used at `start.go:375` (team-gated — applying it unconditionally there breaks two existing tests) and `mcp_tool.go:151` (all types, with a fail-closed `default`). Shared resolver untouched. The reorder of `resolveTeamMemberForSend` was deliberately NOT done. v19/v21/v22/v23 prescriptions ALL withdrawn — D28 (§3.5c) |
 
 ## 2. Issue statement (PR A/C scope)
@@ -281,7 +281,7 @@ separately.
 - **D12** `toolHandleMcpCall` never asserts `server.CustomerID == c.CustomerID`,
   and on team AIcalls it validates the whitelist against the **start** member while
   the session runs the **current** member.
-- ~~**D13**~~ **VOIDED in v14.** `ValidateMcpServerIDs` takes no AI type. 대표님
+- ~~**D13**~~ **VOIDED in v14.** `ValidateMcpServerIDs` takes no AI type. The maintainer
   confirmed this is intended ("인사이트도 mcp 사용가능하도록 해"): Insight AIs may use
   MCP servers, so the asymmetry with `tool_names` is deliberate, not a defect. PR A adds
   no type gate; it owes only one docs sentence stating the behavior (see §5 item 5).
@@ -307,7 +307,7 @@ separately.
   with the full row — a path NO dbhandler-level gate can reach.
 - **D21** An AI holding a deleted MCP server id must stay saveable. Write-time
   validation **skips ids already in the stored whitelist and rejects only newly added
-  ones** (§5 item 9, 대표님 확정). Without the skip, every save of that AI 400s forever,
+  ones** (§5 item 9, 담당자 확정). Without the skip, every save of that AI 400s forever,
   for any unrelated edit; without the reject, attaching a deleted server fails
   silently. This is a PR A ↔ PR C cross-boundary defect that neither PR sees alone.
 - **D25** The D21 exemption above, as v12-v15 mandated it (filter the incoming id list,
@@ -325,7 +325,7 @@ separately.
   their ciphertext, and re-deleting them matches zero rows and reports 200 while zeroing
   nothing. **RESOLVED (v18): a one-off Alembic data migration** nulls all seven credential
   columns where `tm_delete IS NOT NULL` (§5 item 2), authored in PR A and applied by
-  대표님, with an explicit no-op downgrade.
+  the maintainer, with an explicit no-op downgrade.
 - **D28** — **IMPLEMENTED in this branch (commits `3fca779e2`, `dd2fb0b39`), not a
   prescription.** The team half of D12: the MCP paths resolved the START member's AI, so after
   a mid-conversation member switch a team aicall built its tool map from, and authorised tool
@@ -1055,7 +1055,7 @@ un-fixed code by mutation. The reorder of `resolveTeamMemberForSend` above the r
 **deliberately NOT performed** — round 15 established it is hygiene, not protection, and the
 protection is now unconditional inside the resolver.
 
-**Earlier note (v24), retained as the record of the first implementation round.** 대표님 authorised implementing D28 ahead of the remaining
+**Earlier note (v24), retained as the record of the first implementation round.** The maintainer authorised implementing D28 ahead of the remaining
 analysis, because three successive prescriptions for it were refuted by code the document had
 only reasoned about. The implementation is committed in this branch and the compiler and test
 suite adjudicated it. Two things the prose had NOT anticipated surfaced immediately:
@@ -1120,7 +1120,7 @@ loaded. **PR B precondition: refresh the map on member switch, covering both pat
 
 ### 3.6 D13: `mcp_server_ids` is not AI-type validated. VOIDED in v14, retained for history.
 
-**STATUS: VOIDED, not fixed.** 대표님 확정 (v14): "인사이트도 mcp 사용가능하도록 해."
+**STATUS: VOIDED, not fixed.** 담당자 확정 (v14): "인사이트도 mcp 사용가능하도록 해."
 Insight AIs MAY use MCP servers, so the absence of an AI-type check is **intended
 behavior, not a defect**. Nothing in this section is a PR A work item. The findings are
 kept only because §3.12b/§3.12e and the §8 retrospective reference them.
@@ -1535,7 +1535,7 @@ mcpserver webhooks, and it already handles `auth_type: 'oauth'`
 
 ### 3.12b D22: VOIDED in v14 — §5 item 5's Insight gate enforces nothing where it matters and freezes AIs elsewhere
 
-**STATUS: VOIDED, not fixed.** 대표님 reversed the underlying policy in v14 ("인사이트도
+**STATUS: VOIDED, not fixed.** The maintainer reversed the underlying policy in v14 ("인사이트도
 mcp 사용가능하도록 해") — Insight AIs may use MCP servers, so no AI-type gate is added
 and this defect cannot occur. The analysis below is retained verbatim because it is the
 fourth recorded instance of this document's recurring failure mode and its reasoning is
@@ -1586,7 +1586,7 @@ customer flipping an existing AI to Insight sends `type: "insight"` plus a non-e
 configuration" (`ais_detail.js:445`). The dead end is identical to D21 and lands in the repo PR A
 does not touch.
 
-Resolution: **none needed — VOIDED in v14.** 대표님 reversed the policy, so no gate is
+Resolution: **none needed — VOIDED in v14.** The maintainer reversed the policy, so no gate is
 built and this defect cannot occur.
 
 ### 3.12c §5 item 6's transition gate needs a read that does not exist, and its frontend safety is accidental
@@ -1736,7 +1736,7 @@ anything below.**
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
 D1, D2, D3, D4, D5, D6, D12, D14, **D15, D16, D17, D18, D19, D20, D21, D24, D25, D26, D27, D28**.
 D27 adds the only schema artifact in PR A: one Alembic data migration, authored here and
-applied by 대표님.
+applied by the maintainer.
 (D13, D22, D23 are VOIDED by the v14 policy reversal — Insight AIs may use MCP servers — and
 are NOT work items.) One
 logical unit: "a deleted or
@@ -1917,7 +1917,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    `mcp_tool.go` itself.
 2. **Credential zeroing mechanics. RESOLVED (v7): the same statement as the delete
    timestamps. RESOLVED (v18): pre-deploy rows are backfilled by a one-off Alembic data
-   migration** (대표님 확정: "a 로 가자").
+   migration** (담당자 확정: "a 로 가자").
 
    **(i) Why the same statement.** A separate `dbhandler.McpServerUpdate` after
    `McpServerDelete` would be **silently no-op'd** by the `tm_delete IS NULL` predicate
@@ -1954,7 +1954,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    `1ebd3fdcea8d_call_outbound_configs_add_default_.py`), so no new pattern is introduced.
 
    **Hard constraint on the design doc.** The migration file is **authored** in PR A;
-   `alembic upgrade` is **never run by this workstream** — 대표님 applies it. The
+   `alembic upgrade` is **never run by this workstream** — the maintainer applies it. The
    downgrade must be a no-op with a comment saying so: zeroed ciphertext is
    unrecoverable, and a downgrade that silently "succeeds" while restoring nothing would
    be a worse lie than the bug.
@@ -1966,7 +1966,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    customer-owned), so the blast radius is *probably* test data only — but that is an
    inference, not a measurement, and this document has already been burned three times by
    inference presented as fact. The count is therefore a **design-doc precondition**: one
-   DB query by 대표님 before the migration lands. It does not change the decision (the
+   DB query by the maintainer before the migration lands. It does not change the decision (the
    migration is correct at any count), only the PR body's claim about impact.
 
    **(iv) Migration-vs-deploy ordering: either order is safe, and the PR body must say so.**
@@ -1974,18 +1974,18 @@ Redis cache (§3.9), because there is no measured signal for it.
    soft-deleted OAuth row hits `Decrypt` with a zeroed `key_version` and fails with
    "key version 0 is not configured" (`mcpserverhandler/secret.go:126-129`) — a clean error on
    a best-effort path, skipped like any other. If AFTER, the gates already make the row inert
-   and the migration only cleans residue. **No ordering constraint is imposed on 대표님;**
+   and the migration only cleans residue. **No ordering constraint is imposed on the maintainer;**
    stating this prevents an implementer from inventing one.
 3. **Naming collision** (`uvx voipbin-mcp` = VoIPBin-as-MCP-server vs
    customer-registered MCP server). **RESOLVED (v15).**
    - **Rename scope: the `ai_overview.rst:681` heading only.** Not `skill.md` or
      `llms.txt` — PR A is already large and a platform-wide rename is its own task
      (kept as a §4 non-goal).
-   - **The third-party link is REPLACED, not kept. 대표님 확정: "a로 가자."**
+   - **The third-party link is REPLACED, not kept. 담당자 확정: "a로 가자."**
      `ai_overview.rst:685` currently advertises
      `https://github.com/nrjchnd/voipbin-mcp` as "A recommended open-source
      implementation". **This is a documentation defect of the same class as D5, not a
-     preference**, and the earlier draft of this document wrongly deferred it to 대표님
+     preference**, and the earlier draft of this document wrongly deferred it to the maintainer
      as unjudgeable. Measured 2026-09-27:
 
      | | `voipbin/mcp` | `nrjchnd/voipbin-mcp` (currently linked) |
@@ -2012,7 +2012,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    accumulation. Sequence: ETC-18 → then this coverage as its own PR.
 5. **D13 policy: are MCP servers permitted on `TypeInsight` AIs?**
    (v10 confirmed "add the AI-type gate" — "§5 item 5. 추가하도록 하자." — then)
-   **REVERSED in v14 — 대표님 확정: "인사이트도 mcp 사용가능하도록 해."** Insight AIs
+   **REVERSED in v14 — 담당자 확정: "인사이트도 mcp 사용가능하도록 해."** Insight AIs
    MAY use MCP servers. **No AI-type gate is added anywhere**, so:
    - `ValidateMcpServerIDs` does NOT gain a `Type` parameter, and neither call site
      changes signature.
@@ -2085,7 +2085,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    document**: `test_mcpservers_lifecycle.py` and `test_mcpservers_oauth.py` never set
    `auth_type: "oauth"` and never touch `mcp_server_ids`.
 
-6. **D17: is `auth_type: "oauth"` allowed on POST/PUT?** **RESOLVED — 대표님 확정:
+6. **D17: is `auth_type: "oauth"` allowed on POST/PUT?** **RESOLVED — 담당자 확정:
    reject it (option a).** ("좋아, 네 제안대로 가자")
 
    The code already declares this the correct behavior and only the implementation
@@ -2146,7 +2146,7 @@ Redis cache (§3.9), because there is no measured signal for it.
    §5 item 9's skip-not-reject removes the reason pruning existed (D21's frozen AI), and the
    loop's own costs (no transaction on `McpServerDelete`, un-indexed JSON column, one
    `ai_updated` webhook per affected AI) are real. See §5 item 9's "Rejected alternatives."
-9. **D21 (RESOLVED — 대표님 확정): what happens when an AI's whitelist already
+9. **D21 (RESOLVED — 담당자 확정): what happens when an AI's whitelist already
    contains a deleted id?** **Decision: skip what is already there, reject what is
    newly added.** ("skip-not-reject 방식으로 하자." + "이후에 AI 업데이트를 할 때
    ... 이때는 reject 를 해야하지 않을까?")
@@ -2219,7 +2219,7 @@ Redis cache (§3.9), because there is no measured signal for it.
 11. **D14 scope in PR A:** document the three webhook event types now, or only fix
    the `ai_struct_ai.rst:69` "Defaults to `[]`" vs `,omitempty` contradiction?
    **RESOLVED (v15/v20): the contradiction is MANDATORY in PR A, and so is the
-   event-type documentation — PR A is NOT split.** 대표님 확정 (v20): "하나로 가자."
+   event-type documentation — PR A is NOT split.** 담당자 확정 (v20): "하나로 가자."
    Round 12's adversarial review proposed splitting PR A into A1 (Go logic + migration)
    and A2 (docs/config, no Go changes), on the grounds that 20 defects across four
    services is a lot to review at once. **Declined.** The standing rule is one PR per
@@ -2246,12 +2246,12 @@ Redis cache (§3.9), because there is no measured signal for it.
 | OAuth Complete has no re-check (TOCTOU between Start and Complete) | Medium | D3; gate both independently |
 | PR A "corrects" the `openapi.yaml`/`ai_struct_ai.rst` LLM-merging text that PR B will make true | Medium | Leave D7's text alone in PR A; only fix the `,omitempty`/"Defaults to `[]`" contradiction (§5 item 11) |
 | Dead config flag + design doc justifying another decision by citing a nonexistent cache | Medium | D6; correct `2026-09-11-…:466-467`, `:705`, `:750-754` |
-| Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | n/a | **NOT A RISK (v14).** 대표님 confirmed this is intended. MCP tools are outside the curated Insight tool set by design; PR A documents the asymmetry rather than gating it (§5 item 5) |
+| Insight AIs can whitelist arbitrary MCP servers while denied most built-ins | n/a | **NOT A RISK (v14).** The maintainer confirmed this is intended. MCP tools are outside the curated Insight tool set by design; PR A documents the asymmetry rather than gating it (§5 item 5) |
 | ~~An Insight AI created by a type flip becomes permanently un-saveable~~ | n/a | **VOIDED (v14).** D23 depended on the AI-type gate, which no longer exists |
 | §5 item 6's transition gate has no pre-write row to compare against, and survives square-admin only because `AUTH_TYPE_OPTIONS` omits oauth and `:359-366` renders it read-only | Medium | §3.12c — one pre-write `McpServerGet` must serve D20, §3.7g and §5 item 6 together; assert transition semantics in a backend test, not via the form's option list |
 | `mcp_server_ids` grants all present and FUTURE tools of a server | Medium | One explicit docs sentence (§4 non-goals) |
 | A foreign customer's MCP server id, once stored, is used at resolution with its decrypted credential on an outbound request | **High** | D25 (§3.5a) + D26 (§3.5b) — the exemption must be predicate-scoped (`storedIDs` param), AND ownership must be asserted at resolution, not only at the dead dispatch path. Both need §7 assertions or the regression is silent |
-| Credentials on rows soft-deleted before the deploy are never zeroed, and re-deleting reports 200 while zeroing nothing | **Medium** | D27 — **RESOLVED**, §5 item 2: one-off Alembic data migration over all seven credential columns. Residual: the affected-row count is unmeasured, so the PR body must not claim an impact figure until 대표님 runs the count |
+| Credentials on rows soft-deleted before the deploy are never zeroed, and re-deleting reports 200 while zeroing nothing | **Medium** | D27 — **RESOLVED**, §5 item 2: one-off Alembic data migration over all seven credential columns. Residual: the affected-row count is unmeasured, so the PR body must not claim an impact figure until the maintainer runs the count |
 | An AI whose whitelist holds a deleted id becomes un-saveable for ANY edit (400 on every PUT, no UI affordance to clear it, no dirty-state hint) | **High** | D21 (§3.12a) — **RESOLVED by §5 item 9**: skip the deleted-row rejection for already-stored ids (existence + ownership still enforced, D25), reject only newly added ones. Both directions must be unit-tested (§7) |
 | Gating OAuth `Complete` discards a freshly-minted vendor grant: `complete.go:116 McpOAuthStateDelete` deletes the state row and `:120 exchangeCode` completes the token exchange BEFORE `:155 McpServerUpdate`, so VoIPBin holds a live GitHub/Linear token and drops it unrevoked | Medium | Preferable to writing onto a deleted row, but the orphaned vendor-side grant must be acknowledged in the PR body (and revocation considered) |
 | `PUT {}` on a deleted server returns 200 with the row because `mcpserverhandler.Update` short-circuits to `h.Get` before any DB write; NO dbhandler gate reaches it | **High** | D20 (§3.7f). Gate inside `mcpserverhandler.Update` ahead of the `len(fields)==0` branch AND ahead of `ValidateURL` |
@@ -2291,7 +2291,7 @@ predicate is `tm_delete IS NOT NULL`, that it covers all seven credential column
 excludes `oauth_vendor`/`access_token_expires_at`, that `key_version` is set to `0` per
 §5 item 2(ii), and that `downgrade()` is an explicit commented no-op, since zeroed
 ciphertext is unrecoverable and a downgrade that appears to succeed while restoring nothing
-would be worse than the bug. `alembic upgrade` is 대표님's step, not this PR's); that **resolution SKIPS and dispatch REFUSES** a server owned by another customer (D12/D26 — both sites, since dispatch alone is dead code per §3.1); that **a reused team AIcall whose `CurrentMemberID`
+would be worse than the bug. `alembic upgrade` is the maintainer's step, not this PR's); that **resolution SKIPS and dispatch REFUSES** a server owned by another customer (D12/D26 — both sites, since dispatch alone is dead code per §3.1); that **a reused team AIcall whose `CurrentMemberID`
 differs from `StartMemberID` builds its `mcp_tool_map` from the CURRENT member's
 whitelist** (D28, resolution side — host: `startReferenceTypeConversation` /
 `refreshMcpToolMap`, and `start_test.go:465 Test_startReferenceTypeConversation` already
@@ -2358,7 +2358,7 @@ still hold, and a repeat DELETE must still answer 200 (API idempotency, not the 
 
 **PR C (`monorepo-javascript`):** baseline-vs-branch test comparison per CLAUDE.md
 test gate; `npm run build`; production build served and verified in a real browser
-(reviews and RTL do not catch unmount races — 대표님 has repeatedly found real bugs
+(reviews and RTL do not catch unmount races — the maintainer has repeatedly found real bugs
 this way after green reviews). Verified no existing test breaks: `ais_create.test.js:157`
 is a blanket `ProviderGet.mockResolvedValue`, `:320/:380/:398/:431` use
 `expect.objectContaining`, `ais_create.test.js:446` uses `stringMatching(/rags/)`; `ais_detail.test.js:690-726`
@@ -2532,7 +2532,7 @@ Lessons now in effect:
   `CurrentMemberID`". **When writing a §7 line, name the function that will host the
   assertion**; if you cannot, the prescription behind it does not exist yet.
 - **"Only the owner can judge this" is a claim that itself needs evidence.** v14
-  deferred the MCP-link question to 대표님 as unjudgeable without opening either
+  deferred the MCP-link question to the maintainer as unjudgeable without opening either
   repository. Five minutes of checking (commit dates, tests, CI, and the PyPI package's
   declared repo) showed the documented link contradicts the documented command — an
   objective defect, D24. Escalate a question only after establishing there is no fact
@@ -2542,7 +2542,7 @@ Lessons now in effect:
 - **When a gate needs five rounds of design, question the policy, not the gate.**
   D13 → D22 → D23 was three escalating attempts to place one AI-type gate; each fix
   created the next defect. The author never stepped back to ask whether the restriction
-  itself was wanted. 대표님 answered that in one sentence ("인사이트도 mcp 사용가능하도록
+  itself was wanted. The maintainer answered that in one sentence ("인사이트도 mcp 사용가능하도록
   해") and three defects evaporated. **Repeated implementation difficulty is evidence
   about the requirement, not just the implementation.**
 - **Surface the policy question early, with its cost.** The author treated "are Insight

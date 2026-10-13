@@ -1,7 +1,7 @@
 # PUT /mcpservers/:id: fix full-field-required semantics to true partial update
 
 Status: DRAFT (Round 0)
-Author: CPO review of PR #1285/#1290 follow-up
+Author: product owner review of PR #1285/#1290 follow-up
 Related: `docs/plans/2026-09-11-mcp-tool-integration-design.md` §10 (original
 API surface design), PR #1285 (feature), PR #1290 (`ValidateMcpServerIDs`
 500->400 fix).
@@ -16,7 +16,7 @@ plain (non-pointer) value at the `bin-ai-manager` business-handler layer
 `UPDATE ... SET` field map, even when the caller omitted it from the JSON
 body.
 
-This was flagged during a CPO-level review as "PUT re-validates url/status
+This was flagged during a product-level review as "PUT re-validates url/status
 unconditionally, forcing clients to resend the whole object" -- investigation
 during design confirmed the actual defect is broader and, for some fields,
 more severe than re-validation friction alone:
@@ -25,7 +25,7 @@ more severe than re-validation friction alone:
 |---|---|---|---|
 | `name` | `*string` | `if req.Name != nil { name = *req.Name }` else `""` | **Silently wipes the name to `""`.** No validation rejects an empty name today (confirmed: `mcpserverhandler.Update` has no name-empty check), so this succeeds with HTTP 200 and destroys the customer's data with no warning. |
 | `detail` | `*string` | same pattern | Silently wipes `detail` to `""`. Same as `name` (no data-loss guard, but `detail` is optional/cosmetic so the blast radius is smaller). |
-| `url` | `*string` | same pattern | Wiped to `""` -> `ValidateURL("")` in `mcpserverhandler.Update` rejects it -> **HTTP 400 on every partial update that doesn't resend the same URL.** This is the "forces resending everything" symptom the CPO review originally named. |
+| `url` | `*string` | same pattern | Wiped to `""` -> `ValidateURL("")` in `mcpserverhandler.Update` rejects it -> **HTTP 400 on every partial update that doesn't resend the same URL.** This is the "forces resending everything" symptom the product owner review originally named. |
 | `status` | `*enum` | same pattern | Wiped to `Status("")` -> `!status.IsValid()` -> **HTTP 400**, same as `url`. |
 | `auth_type` | `*enum` | same pattern | Wiped to `AuthType("")` == `AuthTypeNone` (the zero value is a **valid** enum member, not an error) -> **passes validation and silently disables authentication** on every partial update that omits it -- the single worst case in this table: it is both silent AND security-relevant (the customer's outbound MCP call to their own server stops sending `Authorization`/API-key headers without any error surfaced). |
 | `api_key_header` | `*string` | same pattern | Silently wiped to `""`. Combined with the `auth_type` bug above, a customer who only meant to rotate their `secret` can end up with `auth_type=""` and `api_key_header=""`, fully de-authenticating the connector, with a `200 OK` response telling them nothing happened. |
@@ -572,7 +572,7 @@ type-correct call). Add at minimum two NEW cases beyond that mechanical fix:
   pre-fix bug in production -- if any occurred, that is a separate
   data-remediation question (checking `bin-ai-manager`'s change/audit
   trail if one exists, or asking affected customers to re-verify their MCP
-  server configs) to raise with 대표님 separately once this fix ships,
+  server configs) to raise with the maintainer separately once this fix ships,
   not something this design/PR addresses.
 
 ## 9. Round 1 review disposition

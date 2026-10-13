@@ -21,7 +21,7 @@ HTTP/JSON-RPC contract. This design lets a customer register their own
 remote MCP server(s) and have VoIPBin's LLM sessions call them exactly like
 a built-in tool.
 
-## 2. Decisions locked (2026-09-11, CEO sign-off)
+## 2. Decisions locked (2026-09-11, maintainer sign-off)
 
 1. **Scope**: Phase 1 covers all Go-only (non-realtime-voice) AI sessions.
    Gate: **`AIcall.ConfbridgeID == uuid.Nil`** (Round 5 correction --
@@ -96,7 +96,7 @@ compromised customer-registered server could still be hit at whatever
 rate the LLM's own tool-calling cadence produces. This is a known,
 deliberately deferred Phase 1 tradeoff (consistent with the doc's overall
 minimal-Phase-1 posture), not an oversight -- flagged explicitly here so
-the CEO sign-off record shows it was seen, and so Phase 2's spend/rate
+the maintainer's sign-off record shows it was seen, and so Phase 2's spend/rate
 governance work (above) has a concrete starting point.
 
 ## 4. Architecture overview

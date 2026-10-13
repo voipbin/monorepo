@@ -9,9 +9,9 @@
   placeholder semantics, and metrics are unchanged -- this document changes only HOW the
   subscription-id segment is resolved.
 
-## 0. Amendment (2026-08-29, CEO decision): Identity-promotion default
+## 0. Amendment (2026-08-29, maintainer decision): Identity-promotion default
 
-After the per-type implementation landed, the CEO clarified the intended shape: the own-id
+After the per-type implementation landed, the maintainer clarified the intended shape: the own-id
 default should come from ONE implementation on `commonidentity.Identity`, promoted into every
 model that embeds it by value -- not from a per-type boilerplate method. This amendment
 supersedes §3's "45 new methods" plan; everything else in this document (narrowed signatures,
@@ -49,7 +49,7 @@ VOIP-1404/1405 established the global topic exchange `bin-manager.event` with ro
 `eventtopic.SubscriptionIdentifier` interface first, then a JSON fallback that extracts the
 marshaled payload's top-level `"id"`.
 
-Decision (CEO, 2026-08-28, recorded on VOIP-1419): the fallback is too implicit -- a json
+Decision (maintainer, 2026-08-28, recorded on VOIP-1419): the fallback is too implicit -- a json
 tag rename silently changes routing keys, and nothing forces a new event type to think about
 its subscription address. Every published event data type must implement
 `EventSubscriptionID()` explicitly, enforced by the compiler, and the fallback is deleted.

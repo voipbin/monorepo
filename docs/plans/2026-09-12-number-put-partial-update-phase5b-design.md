@@ -1,7 +1,7 @@
 # Phase 5b: PUT /numbers/{id} and PUT /numbers/{id}/flow_id partial-update fix
 
 Status: DRAFT (Round 0)
-Author: CPO, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
+Author: product owner, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
 Phase: 5 of 8 (§4, roadmap rows #9 and #10, MEDIUM risk)
 Precedent: PR #1291 (`81a9a6b98`, mcpservers), and this migration's own
 Phase 1-4 (PRs #1293, #1295, #1298, #1299, #1300).

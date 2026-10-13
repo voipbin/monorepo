@@ -1,7 +1,7 @@
 # Phase 4a: PUT /queues/{id} partial-update fix
 
 Status: DRAFT (Round 0)
-Author: CPO, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
+Author: product owner, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
 Phase: 4 of 8 (§4, roadmap row #7, rated **MEDIUM** risk) — queue half of the
 two-service Phase 4 split (queues + providers land as two separate PRs per
 the roadmap's one-PR-per-repo-boundary rule; this doc covers `bin-queue-manager`

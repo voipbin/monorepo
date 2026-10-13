@@ -1,14 +1,14 @@
 # Recording Detail: Show the Summary's Source Transcript — Analysis
 
 Date: 2026-09-14
-Author: CPO (Hermes) with pchero
+Author: product owner (Hermes) with pchero
 Status: Issue analysis (review loop, rev.2)
 
-## 1. 문제 (대표님 요구)
+## 1. 문제 (담당자 요구)
 
 admin 레코딩 상세에서 AI Summary는 생성/표시되는데(스크린샷), 그 요약의 **근거가 된 트랜스크립트**는
-Transcript 카드에 "No transcript yet"으로 비어 있다. 대표님 요구: "요약을 만들 때 쓴 트랜스크립트
-내용도 이 화면에서 함께 보고 싶다." 소유권 변경은 원하지 않음(대표님 명시).
+Transcript 카드에 "No transcript yet"으로 비어 있다. 담당자 요구: "요약을 만들 때 쓴 트랜스크립트
+내용도 이 화면에서 함께 보고 싶다." 소유권 변경은 원하지 않음(담당자 명시).
 
 ## 2. 이슈 유효성 재확인 (현재 코드 기준)
 
@@ -61,7 +61,7 @@ IDAIManager 소유 transcribe를 잡지 못한다. 단일 조회 `TranscribeGet`
 리소스는 접근 불가(멀티테넌시 격리, 정상 설계).
 
 **프레이밍**: §2.2의 소유권/격리는 "transcribe를 찾아가서 transcripts를 읽는다"는 특정 경로에서만
-생기는 장애물이다. 대표님 요구(요약의 근거 텍스트를 화면에 표시)의 본질이 아니다. 대안 (a)/(b)는
+생기는 장애물이다. 담당자 요구(요약의 근거 텍스트를 화면에 표시)의 본질이 아니다. 대안 (a)/(b)는
 IDAIManager transcribe를 조회 경로로 "찾아가지" 않고, 요약 생성 주체(ai-manager, IDAIManager 권한
 보유)가 이미 확보한/재조회 가능한 transcript를 summary에 저장하거나 응답에 동봉하므로 소유권/격리를
 전혀 건드리지 않는다. (반면 대안 (c)는 조회 경로에 admin-safe 구멍을 내므로 §2.2의 "정상 설계" 격리와
@@ -110,7 +110,7 @@ if err == nil {
 
 ## 3. 진행 타당성 분석
 
-- **우선순위**: 대표님이 실제 화면을 보고 직접 요청한 UX 개선. 가치 명확.
+- **우선순위**: 담당자가 실제 화면을 보고 직접 요청한 UX 개선. 가치 명확.
 - **소유권 무변경 원칙 준수 가능성**: 가능하다. §2.1(원문 영구 잔존) + §2.2 프레이밍에 근거해, 요약이
   이미 확보한/재조회 가능한 transcript를 summary와 함께 남기거나 응답에 실으면 transcribe 소유권/목록/격리를
   건드리지 않는다.
@@ -144,7 +144,7 @@ if err == nil {
 
 - 이슈는 유효하고 진행 타당하다.
 - 근본 원인은 "요약이 근거 transcript로의 **연결**을 저장하지 않음"(§2.1)이며, 원문 자체는 IDAIManager
-  하위에 영구 잔존한다. IDAIManager 소유권(§2.2)은 대표님 요구의 본질이 아니라 특정 조회 경로의 부차적
+  하위에 영구 잔존한다. IDAIManager 소유권(§2.2)은 담당자 요구의 본질이 아니라 특정 조회 경로의 부차적
   장애물이다.
 - 설계는 §2.3(동기/비동기 저장 삽입 지점 비대칭)과 §2.4(멱등 재사용 경로 + 기존 summary 백필)를 반드시
   다뤄야 한다.

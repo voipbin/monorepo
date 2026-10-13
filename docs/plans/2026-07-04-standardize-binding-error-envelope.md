@@ -68,7 +68,7 @@ a name-only heuristic cannot distinguish (a required `chat_id` that's
 simply absent was being reported as "not a valid UUID", which is
 factually wrong).
 
-**Decision (CPO call, 2026-07-04): narrow scope.** ETC-3's actual
+**Decision (product owner call, 2026-07-04): narrow scope.** ETC-3's actual
 problem is the envelope *shape* mismatch (`{"msg": ...}` vs the
 standard `{"error": {...}}` envelope) — not full reason-code
 unification with the pre-existing (and separately inconsistent, see

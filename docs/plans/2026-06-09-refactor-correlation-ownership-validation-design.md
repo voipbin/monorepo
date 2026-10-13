@@ -319,9 +319,9 @@ No DB migration, no OpenAPI change, no RST docs (internal RPC-only tool).
 
 | Question | Recommendation | Owner |
 |---|---|---|
-| Add a Prometheus counter for cross-customer attempts (`...correlation_access_total{result}`)? | Defer to a Phase 2 if security monitoring/alerting is wanted. Out of scope here to keep the change minimal. | CEO/CTO |
-| Should timeline-RPC failure also be masked (vs honest tool failure)? | No. Keep current behavior: existence is unknown, masking would make the LLM assert a falsehood. Honest failure leaks nothing. | CPO (resolved) |
-| `errors.Wrap` vs `fmt.Errorf("%w")` for the transient case | Use `github.com/pkg/errors` (already the file's convention) for the wrapped transient error; sentinel via `errors.New`. | CPO (resolved) |
+| Add a Prometheus counter for cross-customer attempts (`...correlation_access_total{result}`)? | Defer to a Phase 2 if security monitoring/alerting is wanted. Out of scope here to keep the change minimal. | Maintainer |
+| Should timeline-RPC failure also be masked (vs honest tool failure)? | No. Keep current behavior: existence is unknown, masking would make the LLM assert a falsehood. Honest failure leaks nothing. | Product owner (resolved) |
+| `errors.Wrap` vs `fmt.Errorf("%w")` for the transient case | Use `github.com/pkg/errors` (already the file's convention) for the wrapped transient error; sentinel via `errors.New`. | Product owner (resolved) |
 
 ## 12. Implementation Note: errors package aliasing
 

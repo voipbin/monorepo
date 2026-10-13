@@ -245,7 +245,7 @@ PR A (this PR) — EXPAND, run inside a maintenance window (consumers stopped):
      (no UNIQUE yet). The JSON column stays.
   2. Stop agent-mutating + by-address consumers (scale agent-manager +
      call-manager consumers to 0), per the #1004 §3.4 precedent, so no concurrent
-     write races the migration. (Accepted brief downtime — CEO decision class.)
+     write races the migration. (Accepted brief downtime — maintainer decision class.)
   3. Data backfill: populate agent_addresses from the JSON column for every agent
      (idx = array position). Reuse the agent-control one-off pattern from #1004
      (Go, zero drift, ships in the image), NOT an Alembic data step.
@@ -352,14 +352,14 @@ This is an internal storage refactor of one existing service.
 
 | # | Question | Decision | Owner |
 |---|----------|----------|-------|
-| 1 | UNIQUE + soft-delete (NULL defeats MySQL UNIQUE for live rows) | HARD-DELETE child rows on replace; plain `UNIQUE(customer_id,type,target)`. Child rows have no independent identity/history/reference. (§3.1) | CTO |
-| 2 | dbhandler *sql.Tx helper? | None exists; add a minimal tx helper for the two write paths. (§3.3) | CTO |
-| 3 | Data migration mechanism | Reuse the agent-control one-off (Go, zero drift, ships in image); Alembic only does CREATE TABLE. (§3.5) | CEO/CTO |
-| 4 | Cutover: dual-write vs stop-the-world | Stop-the-world in a maintenance window (consumer scale-to-zero), per #1004; forward-only after resume. (§3.5) | CEO |
-| 5 | Drop the JSON column in this PR or follow-up | Follow-up PR (contract), after prod verification of PR A. (§3.5) | CEO/CTO |
-| 6 | Pre-existing cross-agent duplicates failing the UNIQUE migration | Duplicate GATE before adding UNIQUE: detect, human-resolve, then add UNIQUE. #1004 prod dry-run already shows 0 collisions, so expected clean. (§3.5) | CEO/CTO |
-| 7 | UNIQUE makes a previously-succeeding cross-agent duplicate now fail | Map MySQL 1062 to a typed domain error (`ADDRESS_ALREADY_ASSIGNED`); the real new surface is Create (which has no app dup-check); UpdateAddresses already app-checks. (§3.3, §6) | CTO |
-| 8 | Soft-deleted agent vs hard-delete child rows | AgentDelete hard-deletes the agent's agent_addresses rows in the same op, so deleted agents release UNIQUE slots and cannot win a by-address lookup (replaces the old `tm_delete IS NULL` join). (§3.3, §3.4) | CTO |
+| 1 | UNIQUE + soft-delete (NULL defeats MySQL UNIQUE for live rows) | HARD-DELETE child rows on replace; plain `UNIQUE(customer_id,type,target)`. Child rows have no independent identity/history/reference. (§3.1) | Maintainer |
+| 2 | dbhandler *sql.Tx helper? | None exists; add a minimal tx helper for the two write paths. (§3.3) | Maintainer |
+| 3 | Data migration mechanism | Reuse the agent-control one-off (Go, zero drift, ships in image); Alembic only does CREATE TABLE. (§3.5) | Maintainer |
+| 4 | Cutover: dual-write vs stop-the-world | Stop-the-world in a maintenance window (consumer scale-to-zero), per #1004; forward-only after resume. (§3.5) | Maintainer |
+| 5 | Drop the JSON column in this PR or follow-up | Follow-up PR (contract), after prod verification of PR A. (§3.5) | Maintainer |
+| 6 | Pre-existing cross-agent duplicates failing the UNIQUE migration | Duplicate GATE before adding UNIQUE: detect, human-resolve, then add UNIQUE. #1004 prod dry-run already shows 0 collisions, so expected clean. (§3.5) | Maintainer |
+| 7 | UNIQUE makes a previously-succeeding cross-agent duplicate now fail | Map MySQL 1062 to a typed domain error (`ADDRESS_ALREADY_ASSIGNED`); the real new surface is Create (which has no app dup-check); UpdateAddresses already app-checks. (§3.3, §6) | Maintainer |
+| 8 | Soft-deleted agent vs hard-delete child rows | AgentDelete hard-deletes the agent's agent_addresses rows in the same op, so deleted agents release UNIQUE slots and cannot win a by-address lookup (replaces the old `tm_delete IS NULL` join). (§3.3, §3.4) | Maintainer |
 
 ## 8. Review Summary
 

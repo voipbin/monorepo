@@ -231,7 +231,7 @@ and the plan document consistently refers to this file as "the design doc".)
 
 **VOIP-1444** ("bin-campaign-manager: reconciliation job to clean up orphaned flows from deleted
 campaigns") is a real, still-open follow-up filed during VOIP-1443. Scope was explicitly narrowed
-by 대표님 on 2026-09-02: the per-customer Prometheus alert-rule half of the original proposal is
+by the maintainer on 2026-09-02: the per-customer Prometheus alert-rule half of the original proposal is
 dropped; **only** the reconciliation job is in scope. `bin-flow-manager` remains untouched by this
 ticket (VOIP-1448 covers that separately, orthogonally).
 
@@ -640,7 +640,7 @@ this ticket's correctness depends on.
 
 - Does not clean up the pre-existing historical backlog beyond the bounded recent window — a full
   historical sweep is a separate, explicitly-deferred, authorization-gated data operation.
-- Does not add Prometheus alerting (explicitly dropped from VOIP-1444's scope by 대표님's
+- Does not add Prometheus alerting (explicitly dropped from VOIP-1444's scope by the maintainer's
   instruction) or any new alerting infrastructure — `bin-schedule-manager`'s existing audit trail
   and kill switch are operational tooling already in place, not new alerting.
 - Does not touch `bin-flow-manager` at all — the `Delete()` idempotency question is filed as

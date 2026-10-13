@@ -3,7 +3,7 @@
 - 상태: APPROVED (설계 리뷰 7회차, 6-7회차 연속 승인)
 - 티켓: VOIP-1567
 - 선행 문서: docs/plans/2026-10-07-VOIP-1567-extension-credential-log-exposure-analysis.md (이슈 분석, 범위와 결정 확정)
-- 범위: 분석 문서 4절의 유형 1(extension, trunk 객체 5곳)과 유형 2(`AuthIdentity` 단일 지점). 유형 3, 4 는 대표님 결정으로 처리하지 않는다.
+- 범위: 분석 문서 4절의 유형 1(extension, trunk 객체 5곳)과 유형 2(`AuthIdentity` 단일 지점). 유형 3, 4 는 담당자 결정으로 처리하지 않는다.
 
 ## 1. 목표와 비목표
 
@@ -84,7 +84,7 @@
 
 ### D5. 이미 기록된 값과 수용 위험
 
-- 이미 로그에 남은 password 와 direct_hash 는 확인하지 않고, 교체 여부는 대표님이 별도로 판단한다(분석 문서 6절). 이번 PR 에 포함하지 않는다.
+- 이미 로그에 남은 password 와 direct_hash 는 확인하지 않고, 교체 여부는 담당자가 별도로 판단한다(분석 문서 6절). 이번 PR 에 포함하지 않는다.
 - 유형 3, 4 는 처리하지 않으며, 로그인, agent 조회, 통화 경로의 agent `direct_hash` 와 direct 통화의 `hash` 가 계속 기록된다(분석 문서 4절의 수용 위험). PR 본문에 같은 내용을 적는다.
 
 ## 3. 변경 파일 목록

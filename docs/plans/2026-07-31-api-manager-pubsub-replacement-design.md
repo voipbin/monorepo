@@ -1,7 +1,7 @@
 # api-manager ZeroMQ 대체 분석 (디자인 문서)
 
 날짜: 2026-07-31
-작성: Claude (CPO)
+작성: Claude (product owner)
 상태: 디자인 리뷰 루프 완료 (R1 Request Changes → R2 Approve → R3 Approve, 2연속 Approval)
 
 ## 1. 배경 및 현재 상태 (코드 확인 기반 사실)

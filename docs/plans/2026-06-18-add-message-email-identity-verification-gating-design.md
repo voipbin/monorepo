@@ -93,7 +93,7 @@ The `cu == nil` check is MANDATORY before dereferencing `cu.IdentityVerification
 without-error shape; omitting the guard is both a parity break with call-manager
 and a nil-pointer panic risk (review round 1, HIGH).
 
-Difference from call-manager (deliberate, decided with CEO/CTO): **no
+Difference from call-manager (deliberate, decided with the maintainer): **no
 destination-type branch.** call-manager only gates PSTN (`TypeTel`) because
 non-PSTN call legs are internal. SMS and Email are by nature external, billable
 sends, so every send is gated. Internal/system traffic is covered by the
@@ -313,11 +313,11 @@ Key assertions:
 
 | # | Question | Recommendation | Owner / Priority |
 |---|---|---|---|
-| 1 | Does the same gap exist in SNS / conversation-manager send? | Likely yes; out of #989 scope. File a follow-up if confirmed. | CEO/CTO, Phase 2 |
-| 2 | Add Prometheus counter for verification rejections (mirror `promCallOutboundWhitelistRejectedTotal`)? | Defer; not required for the security fix. | CEO/CTO, Phase 2 |
+| 1 | Does the same gap exist in SNS / conversation-manager send? | Likely yes; out of #989 scope. File a follow-up if confirmed. | Maintainer, Phase 2 |
+| 2 | Add Prometheus counter for verification rejections (mirror `promCallOutboundWhitelistRejectedTotal`)? | Defer; not required for the security fix. | Maintainer, Phase 2 |
 | 3 | Should email gate run before or after balance check? | Before (verification-first reads stronger; saves a billing round-trip). | Settled in design |
 | 4 | Extract the helper into a shared `bin-common-handler` / customer-model function instead of duplicating per manager? | Keep per-manager duplication for v1 (call-manager already duplicates its own; cross-service shared helper is a larger refactor). | Settled: minimal-change |
-| 5 | Add account-status (`cu.Status == StatusActive`) check to message/email send, mirroring call-manager's `validateOutgoingCallPermission`? | Defer. #989 is scoped to identity verification; neither manager checks status today. A suspended-verified customer still passes this gate. File a follow-up if status-gating on send is desired. | CEO/CTO, Phase 2 |
+| 5 | Add account-status (`cu.Status == StatusActive`) check to message/email send, mirroring call-manager's `validateOutgoingCallPermission`? | Defer. #989 is scoped to identity verification; neither manager checks status today. A suspended-verified customer still passes this gate. File a follow-up if status-gating on send is desired. | Maintainer, Phase 2 |
 | 6 | Unexport `emailHandler.Send` (latent ungated dispatch surface — only caller today is `Create`'s goroutine)? | Defer. No live bypass (sole caller is post-gate). Unexporting touches mocks/tests; out of minimal-change scope. | Phase 2 |
 
 ## 12. Review Summary (v1 -> v2)
@@ -362,4 +362,4 @@ resolved or explicitly deferred with rationale. Ready for re-review.
 - [x] internal-customer bypass via `cucustomer.IsInternalSystemID`
 - [x] gate placed at resource-manager (flow-action path cannot bypass)
 - [x] regression tests cover verified / unverified / internal / fetch-failure
-- [x] no destination-type branch (deliberate divergence from call-manager, CEO/CTO approved)
+- [x] no destination-type branch (deliberate divergence from call-manager, maintainer approved)

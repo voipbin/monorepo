@@ -1,7 +1,7 @@
 # Webchat MessageFlowID: move Flow-trigger ownership from webchat-manager to conversation-manager
 
 - Ticket: NOJIRA
-- Author: Hermes (CPO), for pchero (CEO/CTO)
+- Author: Hermes (product owner), for pchero (maintainer)
 - Status: DRAFT — first pass, not yet reviewed
 - Supersedes: the `MessageFlowID` half of
   `2026-07-17-webchat-widget-session-message-flow-split-design.md` (§2.3,

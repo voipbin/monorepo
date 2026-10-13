@@ -3,7 +3,7 @@
 Status: §1-§7 **DESIGN APPROVED** (round 4 + round 5, 2 consecutive Approve — CLAUDE.md
 design review loop satisfied) and **shipped** in PR #1240 (Docker-only backend, merged
 into the branch, not yet merged to `main`). §8 is a **new addendum, DESIGN APPROVED** (round 7 + round 8, 2 consecutive Approve —
-CLAUDE.md design review loop satisfied, 8 rounds total) — added 2026-09-01 per the CEO's
+CLAUDE.md design review loop satisfied, 8 rounds total) — added 2026-09-01 per the maintainer's
 explicit direction after PR #1240 was opened. Eight rounds, several catching real
 client-go/informer correctness gaps: round 1 (fail-loud contract not inherited), round 2
 (mechanism under-specified), round 3 (`DeletedFinalStateUnknown` tombstone handling
@@ -30,7 +30,7 @@ work replaced).
   had no deploy target since (CI's `bin-sentinel-manager-release` job was removed in
   VOIP-1405; test/build stay as quality gates). VOIP-1377 (deployment-target decision) and
   VOIP-1335 (dual-backend implementation attempt, put on hold 2026-08-20) are both closed;
-  this ticket is their re-scoped successor per the CEO's 2026-08-28 decision: "sentinel is
+  this ticket is their re-scoped successor per the maintainer's 2026-08-28 decision: "sentinel is
   a needed service, not for retirement."
 - **Corrected topology finding** (this design's own investigation superseded an earlier,
   wrong "single instance" conclusion reached from a `ListStacks` API read that turned out to
@@ -356,7 +356,7 @@ not by anything about the watched containers' own behavior.
   instance count, single digits).
 - Recommend a staged verification once deployed: manually `docker stop` one non-primary
   instance (e.g. `voip-asterisk-registrar-docker-2`, least call-traffic-bearing of the three
-  during a low-traffic window, with 대표님's sign-off on timing) and confirm sentinel
+  during a low-traffic window, with the maintainer's sign-off on timing) and confirm sentinel
   publishes the event, call-manager logs `EventSMPodDeleted`/renamed-equivalent firing, and
   the resolved asterisk-id matches Redis's last-known value for that instance — before
   trusting this in an actual crash scenario.
@@ -389,7 +389,7 @@ not by anything about the watched containers' own behavior.
 
 - ~~Deleting the now-dead `bin-sentinel-manager/k8s/` manifests and `k8s.io/*`
   dependencies.~~ **Superseded by §8, then re-reversed after §8 shipped**: §8 restored the
-  manifests to active use; a follow-up CEO decision then deleted them permanently (§8.4/§8.6's
+  manifests to active use; a follow-up maintainer decision then deleted them permanently (§8.4/§8.6's
   correction notes) on the grounds that this repo should not own self-hosters' cluster
   configuration. The `k8s.io/*` *dependencies* are unaffected by that follow-up — the
   Kubernetes backend *code* stays, only the example deployment manifests are gone. Kept
@@ -532,7 +532,7 @@ one-consumer picture instead.
 - **Restored close to as-is**: `rest.InClusterConfig()` auth, the per-`(namespace,
   label-selector)` watch structure, the `AddFunc`-is-a-no-op / no-resync pattern.
 
-  **Reversed after this addendum shipped (CEO decision, post-merge)**: the paragraph below
+  **Reversed after this addendum shipped (maintainer decision, post-merge)**: the paragraph below
   originally kept `bin-sentinel-manager/k8s/` manifests (deployment, service, namespace, RBAC
   role/rolebinding) and reactivated them alongside the code restore. That reasoning has been
   overridden — this repository does not own or maintain example Kubernetes deployment

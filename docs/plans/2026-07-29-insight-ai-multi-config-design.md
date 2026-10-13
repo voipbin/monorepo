@@ -59,7 +59,7 @@ of a second `ai_ais` table rewrite. This is correct by construction
 regardless of what has or hasn't been applied where — no environment can
 be silently left in a partial state. Whether to batch this rewrite into
 the same maintenance window as SQUARE-23's own (still-pending) rollout is
-a deployment-sequencing call for 대표님/ops, not something fixed by this
+a deployment-sequencing call for the maintainer/ops, not something fixed by this
 design; flagged again in "Open items" below.
 
 New migration (generated via `alembic revision` against the
@@ -329,7 +329,7 @@ behavior, to match this new two-query resolution.
 
 - Deployment sequencing (when to actually run the chained migration
   relative to SQUARE-23's own still-pending rollout — same maintenance
-  window or separately) is an ops decision for 대표님/ops, not fixed by
+  window or separately) is an ops decision for the maintainer/ops, not fixed by
   this design.
 
 ## Known minor limitation (accepted, not fixed)
