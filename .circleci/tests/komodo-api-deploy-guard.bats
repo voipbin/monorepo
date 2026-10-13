@@ -381,6 +381,7 @@ SHIM
     chmod +x "$MOCK_BIN_DIR/git"
     export DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" CIRCLE_SHA1="$sha"
     run run_deploy_in "$CLONE"
-    [ "$status" -eq 0 ]
+    # The guard passes; what happens after it (Komodo calls) is outside this test.
     [[ "$output" == *"Superseded-deploy guard passed"* ]]
+    [[ "$output" != *"DEPLOY_SUPERSEDED"* ]]
 }
