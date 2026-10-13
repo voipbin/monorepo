@@ -1,20 +1,21 @@
 # VOIP-1588 Go 컨벤션 CI 집행 구현 계획
 
-- 단계: 2/3 계획. 설계는 `2026-10-13-VOIP-1588-go-convention-enforcement-design.md`(이하 설계 N.N)이며 이 문서는 설계를 바꾸지 않고 구현 순서와 설계가 계획 단계로 미룬 값만 정한다.
+- 문서: 구현 계획. 설계는 `2026-10-13-VOIP-1588-go-convention-enforcement-design.md`(이하 설계 N.N)이며 이 문서는 설계를 바꾸지 않고 구현 순서와 설계가 계획 단계로 미룬 값만 정한다.
+- 용어: 담당자와 후속 확인 담당은 설계 문서 서두의 용어 줄과 같은 뜻이다.
 - 기준: origin/main b3c97aea8 (착수 시 fetch로 설계 전제 재확인: DTO import 위반 0, squirrel 허용 밖 import 0, config.yml 66/67행 존재).
 
 ## 1. 결정 사항 (설계가 계획으로 미룬 값)
 
 | 항목 | 결정 |
 |---|---|
-| 스캐너 코드 크기 상한 | `check-structure-conventions.sh` 전체 600줄 이하, 그중 awk 프로그램 250줄 이하. 넘으면 규칙을 줄이지 않고 카드를 block 하고 default 에 묻는다 |
-| self-test 범위 상한 | 사례 90개 이하(awk 변형별 반복 실행은 사례 수에 세지 않고, 사례마다 ID `Sxx` 를 붙여 중복 열거를 막는다). 사례는 표 기반 헬퍼(`expect <id> <rc> <패턴> <<<fixture`)로 한 사례 3줄 이내로 쓴다. 코드 크기 상한은 awk 프로그램 250줄, 셸(래퍼, 허용 목록, 표 대조) 130줄, self-test 헬퍼와 픽스처 220줄로 나누어 세며 합계 600줄 이하다(셸과 self-test 사이 예산 이동은 합계 600줄 안에서 허용). 시간 상한: self-test 전체(두 변형) 60초 이내이며 임시 저장소는 사례마다 새로 만들지 않고 변형별 1개를 재사용해 파일만 바꾼다. 초과하면 규칙을 줄이지 않고 사례를 병합하거나, 병합으로도 안 되면 카드를 block 하고 default 에 묻는다. 임시 git 저장소는 `$TMPDIR`(없으면 `mktemp -d`) 아래에 만들고 종료 시 삭제. 네트워크/실제 저장소 의존 없음 |
+| 스캐너 코드 크기 상한 | `check-structure-conventions.sh` 전체 600줄 이하, 그중 awk 프로그램 250줄 이하. 넘으면 규칙을 줄이지 않고 작업을 중단한 뒤 담당자에게 확인한다 |
+| self-test 범위 상한 | 사례 90개 이하(awk 변형별 반복 실행은 사례 수에 세지 않고, 사례마다 ID `Sxx` 를 붙여 중복 열거를 막는다). 사례는 표 기반 헬퍼(`expect <id> <rc> <패턴> <<<fixture`)로 한 사례 3줄 이내로 쓴다. 코드 크기 상한은 awk 프로그램 250줄, 셸(래퍼, 허용 목록, 표 대조) 130줄, self-test 헬퍼와 픽스처 220줄로 나누어 세며 합계 600줄 이하다(셸과 self-test 사이 예산 이동은 합계 600줄 안에서 허용). 시간 상한: self-test 전체(두 변형) 60초 이내이며 임시 저장소는 사례마다 새로 만들지 않고 변형별 1개를 재사용해 파일만 바꾼다. 초과하면 규칙을 줄이지 않고 사례를 병합하거나, 병합으로도 안 되면 작업을 중단하고 담당자에게 확인한다. 임시 git 저장소는 `$TMPDIR`(없으면 `mktemp -d`) 아래에 만들고 종료 시 삭제. 네트워크/실제 저장소 의존 없음 |
 | fetch 단계 복제 | 공용 command 로 빼지 않는다. 기존 `check-test-conventions` 의 "Fetch base branch" 와 같은 본문을 3개 command 와 lint-config-check 에 복제한다(기존 패턴 재사용, 오버엔지니어링 회피) |
 | awk 변형 | self-test 는 `command -v awk` 와 `command -v mawk` 를 각각 실행하고 변형 이름과 실제 경로를 출력한다. CI(Ubuntu cimg)에서는 awk 가 mawk 여서 같은 바이너리일 수 있으며 중복 실행은 허용한다(gawk 호환은 로컬에서만 검증됨을 주석에 명시). 둘 중 하나라도 없으면 건너뛰지 않고 rc=1(의도된 동작, 스크립트 주석에 명시). 모든 awk 호출은 `LC_ALL=C` 로 고정한다 |
 | awk 이식성 금지 목록 | `gensub`, `asort`, `\b`/`\w`/`\s`, 정규식 interval `{n}`, `switch`, `BEGINFILE`/`ENDFILE`, `PROCINFO`, `length(배열)` 를 쓰지 않는다. `getline < file` 반환값이 -1(읽기 실패)이면 열거된 Go 파일, 허용 목록, 파일 목록 모두 gate 실패 |
 | R2 처리 범위 | 모호함을 없애기 위해 확정: R2 는 원문에 `listenhandler/models/` 또는 `Masterminds/squirrel` 문자열(백틱 import 경로도 이 문자열을 포함하므로 같은 필터로 잡힘)이 있는 파일(약 260개)에만 상태기계를 적용한다. 줄마다 "줄 시작 상태가 코드인가" 플래그를 기록하고, 플래그가 참인 줄에서만 `import` 를 인식한다(본문 raw string 이나 주석 속 `import "x"` 는 무시). import 블록은 `import (` 로 열고 코드 상태의 첫 `)` 로 닫으며, 닫히지 않은 블록은 gate 실패. import 구간 안의 `/* */` 는 상태기계가 제거한 뒤 처리한다 |
 | awk 파일 핸들 | 파일마다 `close()`(목록, 허용 목록, Go 파일 모두)를 호출한다(mawk 의 열린 파일 수 제한 회피). CI 이미지의 mawk 는 로컬(1.3.4)보다 구버전(Ubuntu 20200120)일 수 있으므로 이식성 금지 목록을 지키고 CI 로그로 확인한다 |
-| 성능 상한 | 실측(리뷰어): mawk 에서 전 파일 문자 루프는 약 23초이므로 상태기계는 필요한 파일에만 적용한다. 줄 단위 프리필터: R2 는 위 R2 처리 범위의 프리필터를 쓰고(백틱 단독 프리필터는 struct tag 때문에 1291개가 걸려 쓰지 않음), R3 는 `^bin-[^/]+/models/` 비테스트 파일(441개)만 상태기계로 처리한다. 파일을 한 문자열로 잇지 않고 줄 배열과 줄 내 인덱스로 처리한다. 전체 스캔 소요 상한: 실제 CI(small, mawk) 기준 60초 이내이며 측정은 로컬 mawk(`mawk` 명시 실행)로 하고 CI 로그에서 재확인한다. 초과하면 default 에 block 하고 묻는다 |
+| 성능 상한 | 실측: mawk 에서 전 파일 문자 루프는 약 23초이므로 상태기계는 필요한 파일에만 적용한다. 줄 단위 프리필터: R2 는 위 R2 처리 범위의 프리필터를 쓰고(백틱 단독 프리필터는 struct tag 때문에 1291개가 걸려 쓰지 않음), R3 는 `^bin-[^/]+/models/` 비테스트 파일(441개)만 상태기계로 처리한다. 파일을 한 문자열로 잇지 않고 줄 배열과 줄 내 인덱스로 처리한다. 전체 스캔 소요 상한: 실제 CI(small, mawk) 기준 60초 이내이며 측정은 로컬 mawk(`mawk` 명시 실행)로 하고 CI 로그에서 재확인한다. 초과하면 작업을 중단하고 담당자에게 확인한다 |
 | mawk 확보 | gate job 과 lint-config-check 에 `sudo apt-get update && sudo apt-get install -y mawk` 단계(shell-tests 와 동일) |
 | 열거 | `git ls-files '*.go'` 를 파일로 받아 종료 코드와 0건을 검사. 실패 또는 0건이면 rc=1 |
 | 백틱 import | import 구간(import 문 안)에서 백틱을 만나면 rc=1 |
@@ -55,20 +56,20 @@ R2 import 블록 내부 `/* */` 처리 / 닫히지 않은 import 블록 gate 실
 
 ## 4. 검증 절차 (설계 6장 대응)
 
-1. 로컬 golangci-lint 2.13.2 로 설계 6.1 전 항목(신규 파일 위반 file:line 정확성, 기존 위반 파일 미변경 시 통과, 기존 위반 줄 수정 시 보고, 기준 ref 삭제 시 rc=1, 사유 있는 `//nolint:errorlint // 사유` 제외)과 6.6(서비스 디렉터리에서 4.1 명령의 설정 로드와 main 동일 커밋 0건, 기존 `golangci-lint run` 이 변경 없이 비변경 줄의 `unused` 를 계속 보고함)을 합성 저장소와 bin-tag-manager 에서 실행. 2.14.0 은 바이너리를 scratch 에 내려받아(체크섬 검증) 재확인한다. 내려받지 못하면 미확인으로 보고한다.
+1. 로컬 golangci-lint 2.13.2 로 설계 6.1 전 항목(신규 파일 위반 file:line 정확성, 기존 위반 파일 미변경 시 통과, 기존 위반 줄 수정 시 보고, 기준 ref 삭제 시 rc=1, 사유 있는 `//nolint:errorlint // 사유` 제외)과 6.6(서비스 디렉터리에서 4.1 명령의 설정 로드와 main 동일 커밋 0건, 기존 `golangci-lint run` 이 변경 없이 비변경 줄의 `unused` 를 계속 보고함)을 합성 저장소와 bin-tag-manager 에서 실행. 2.14.0 은 바이너리를 임시 디렉터리에 내려받아(체크섬 검증) 재확인한다. 내려받지 못하면 미확인으로 보고한다.
 2. 실제 저장소: 스크립트 rc=0, 발견 구조체 집합이 허용 목록 11개와 일치, 허용 import 184줄 집계(자기 listenhandler 108, requesthandler 76).
 3. 소요 시간 측정(`time`, 기존 Linting 단계 대비 errorlint 단계 추가 소요 시간 포함, self-test 전체 시간 포함, 로컬 값이며 small 소요시간은 CI 로그로 확인), bin-api-manager 의 errorlint 를 `systemd-run --user -p MemoryMax=2G` 가 쓸 수 없으면 `docker run --memory=2g` 로 대체 시도, 둘 다 불가하면 미확인으로 보고.
-4. CI: `circleci` CLI 가 없으므로 공식 바이너리를 scratch 에 내려받아 `circleci config validate/process` 를 시도하고, 불가하면 ruby YAML 파싱 + `.circleci/scripts/check-auto-deploy-config.rb` 로 대체하고 미확인으로 보고한다. path-filtering 정규식은 스크립트로 두 파일명이 `run-lint-config-check` 에 매핑됨을 확인한다. 같은 패턴 `\.circleci/config_work\.yml` 이 `run-shell-tests` 와 `run-lint-config-check` 두 행에 걸리므로, CircleCI path-filtering 은 매핑 행마다 독립 평가하여 일치하는 모든 파라미터를 켠다는 공식 문서 근거를 확인하고(문서 확인 불가하면 미확인으로 보고) 이 PR 의 CI 에서 `lint-config-check` workflow 가 실제로 실행되는지 관찰한다.
+4. CI: `circleci` CLI 가 없으므로 공식 바이너리를 임시 디렉터리에 내려받아 `circleci config validate/process` 를 시도하고, 불가하면 ruby YAML 파싱 + `.circleci/scripts/check-auto-deploy-config.rb` 로 대체하고 미확인으로 보고한다. path-filtering 정규식은 스크립트로 두 파일명이 `run-lint-config-check` 에 매핑됨을 확인한다. 같은 패턴 `\.circleci/config_work\.yml` 이 `run-shell-tests` 와 `run-lint-config-check` 두 행에 걸리므로, CircleCI path-filtering 은 매핑 행마다 독립 평가하여 일치하는 모든 파라미터를 켠다는 공식 문서 근거를 확인하고(문서 확인 불가하면 미확인으로 보고) 이 PR 의 CI 에서 `lint-config-check` workflow 가 실제로 실행되는지 관찰한다.
 5. 기타: `scripts/check-docs.sh`, `scripts/check-service-docs.sh`, `scripts/check-test-conventions.sh`, `ruby .circleci/scripts/check-auto-deploy-config.rb`, error-handling.md 4.3 직접 비교 6곳 위치 기록, gate 메시지 인용 절 grep.
    처리된 설정에서 이 PR이 배포 workflow 를 새로 켜지 않음(5장 주장 근거)과 gate job 의 mawk 설치 단계 렌더링도 확인한다.
-6. 브랜치 push 후 CircleCI 결과(lint, test, build) 확인. 이 PR 은 `.circleci` 를 바꾸므로 build-approval 은 승인하지 않는다(개발자 승인 조건 불충족). 승인 없이 수집 가능한 workflow(`check-structure-conventions`, `lint-config-check`, `check-test-conventions`, `shell-tests`)만 확인한다.
+6. 브랜치 push 후 CircleCI 결과(lint, test, build) 확인. 이 PR 은 `.circleci` 를 바꾸므로 build-approval 은 수동 승인하지 않고 둔다. 승인 없이 수집 가능한 workflow(`check-structure-conventions`, `lint-config-check`, `check-test-conventions`, `shell-tests`)만 확인한다.
 
-## 4a. QA 카드 확인 항목 (완료 요약에 기재)
+## 4a. 머지 전 검증 확인 항목 (완료 요약에 기재)
 
-QA 카드가 확인할 항목: required status check 에 `check-structure-conventions` 하나가 등록되어 있는지(대표님 설정), `lint-config-check` 는 등록하지 않음, processed config 에서 배포 workflow 가 새로 켜지지 않음.
+머지 전 검증에서 확인할 항목: required status check 에 `check-structure-conventions` 하나가 등록되어 있는지(저장소 설정), `lint-config-check` 는 등록하지 않음, processed config 에서 배포 workflow 가 새로 켜지지 않음.
 
-## 5. 보고 항목 (설계 7장 + 구현 차이)
+## 5. 변경 공지 항목 (설계 7장 + 구현 차이)
 
-완료 요약에 번호로 열거: (1) R1 해석, (2) R3 구현 방식 변경(허용 목록, stale 실패)과 R2a/R2b 가 신규 라인 한정이 아닌 전체 트리 검사이며 baseline 이 없음, (3) 문서 명문화 추가, (4) CI 트리거 확장, (5) 승인안 대비 축소(depguard 대체, forbidigo 제외, DB 경계 대리 지표), (6) R1 신규 테스트 코드 적용과 R2 테스트 파일 검사, (7) R2a 교차 서비스 listenhandler import 미금지, (8) R3 미탐지 형태 전부, (9) R1 은 go-test* 3개 command 사용 서비스에만 적용, (10) 4.3 sentinel 충돌 가능성과 직접 비교 6곳 위치, (11) lint-config-check 비차단 한계, (12) required status check 등록 확인 항목(대표님 설정, 등록 대상은 `check-structure-conventions` 하나), (13) 머지 후 첫 서비스 PR errorlint 관찰(default 담당), (14) 결정 대기: import 순서, 일반 서비스 간 import 금지.
+완료 요약에 번호로 열거하고 담당자에게 공지한다: (1) R1 해석, (2) R3 구현 방식 변경(허용 목록, stale 실패)과 R2a/R2b 가 신규 라인 한정이 아닌 전체 트리 검사이며 baseline 이 없음, (3) 문서 명문화 추가, (4) CI 트리거 확장, (5) 초기 제안 대비 축소(depguard 대체, forbidigo 제외, DB 경계 대리 지표), (6) R1 신규 테스트 코드 적용과 R2 테스트 파일 검사, (7) R2a 교차 서비스 listenhandler import 미금지, (8) R3 미탐지 형태 전부, (9) R1 은 go-test* 3개 command 사용 서비스에만 적용, (10) 4.3 sentinel 충돌 가능성과 직접 비교 6곳 위치, (11) lint-config-check 비차단 한계, (12) required status check 등록 확인 항목(저장소 설정, 등록 대상은 `check-structure-conventions` 하나), (13) 머지 후 첫 서비스 PR errorlint 관찰(후속 확인 담당), (14) 보류 항목: import 순서, 일반 서비스 간 import 금지.
 
-구현 중 설계와 달라진 점이 있으면 완료 요약에 목록으로 적는다. 설계와 충돌하거나 설계에 없는 사안은 임의 해석하지 않고 block 한다.
+구현 중 설계와 달라진 점이 있으면 완료 요약에 목록으로 적는다. 설계와 충돌하거나 설계에 없는 사안은 임의 해석하지 않고 작업을 중단하고 담당자에게 확인한다.
