@@ -241,7 +241,7 @@ Only commit directly to main when user explicitly says:
 
 ## Merging to Main Branch {#merging-rules}
 
-**Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles never merge.** Migration PRs, migration changes of `bin-timeline-manager` and `bin-rag-manager` (migration SQL and the migration runner: `runMigrations`, `MigrationsPath`, Dockerfile COPY of migrations), and `monorepo-monitoring` PRs still need CEO confirmation (other code-only changes to those two services are mergeable by QA, but their `main` deploy approval stays with the CEO). PRs led by the CPO (default agent) are closed the same way, through a QA card, and the CPO does not merge them itself. A direct merge by anyone other than QA happens only when the CEO explicitly instructs it.
+**Merging to `main` is done by the QA role after QA verification passes (squash only). Developer roles never merge.** Migration PRs, migration changes of `bin-timeline-manager` and `bin-rag-manager` (migration SQL and the migration runner: `runMigrations`, `MigrationsPath`, Dockerfile COPY of migrations), and `monorepo-monitoring` PRs still need CEO confirmation (other code-only changes to those two services are mergeable by QA, but their `main` deploy approval stays with the CEO). PRs led by the CPO (default agent) are closed the same way, through a QA card, and the CPO does not merge them itself. A direct merge by anyone other than QA happens only when the CEO explicitly instructs it. PRs that need human confirmation (see the exceptions in this section) are verified by QA but confirmed and merged by the CEO.
 
 ### Prohibited Actions
 
@@ -273,7 +273,7 @@ Claude: "I'll push the current branch to remote. The QA role merges after verifi
 
 - The QA role merges to main after QA verification passes (squash only). Developer roles never merge.
 - Migration PRs, migration changes of `bin-timeline-manager` and `bin-rag-manager`, and `monorepo-monitoring` PRs need CEO confirmation before merge.
-- PRs led by the CPO (default agent) are closed the same way, through a QA card, and the CPO does not merge them itself. A direct merge by anyone other than QA happens only when the CEO explicitly instructs it.
+- PRs led by the CPO (default agent) are closed the same way, through a QA card, and the CPO does not merge them itself. A direct merge by anyone other than QA happens only when the CEO explicitly instructs it. PRs that need human confirmation (see the exceptions in this section) are verified by QA but confirmed and merged by the CEO.
 
 ### After PR is Merged
 
