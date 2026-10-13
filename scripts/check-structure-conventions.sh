@@ -26,6 +26,8 @@
 # is gawk). A missing variant is a failure, not a skip. Do not use gawk-only
 # features in AWK_PROG: gensub, asort, \b \w \s, {n} intervals, switch,
 # BEGINFILE/ENDFILE, PROCINFO, length(array). Every opened file is close()d.
+# Note: R2 recognizes `import` only at the start of a line (gofmt layout);
+# golangci-lint's gofmt formatter in .golangci.yml rejects other layouts.
 # Note: [*\[\]]* from the design doc is written [][*]* here (POSIX bracket).
 #
 set -uo pipefail
@@ -197,8 +199,10 @@ run_check() {
   rm -f "$listf"
   [ -n "$out" ] && echo "$out"
   [ "$arc" -eq 0 ] || { echo "GATE scanner exited $arc"; rc=1; }
-  echo "$out" | grep -q '^SCANNED ' || { echo "GATE scanner produced no SCANNED line (dead scanner?)"; rc=1; }
-  echo "$out" | grep -qE '^(VIOLATION|GATE) ' && rc=1
+  grep -q '^SCANNED ' <<<"$out" || { echo "GATE scanner produced no SCANNED line (dead scanner?)"; rc=1; }
+  # here-string, not `echo | grep -q`: with pipefail a large output makes grep -q
+  # exit early, echo dies of SIGPIPE and the pipeline reads as "no match" (fail-open)
+  grep -qE '^(VIOLATION|GATE) ' <<<"$out" && rc=1
   return $rc
 }
 
@@ -222,7 +226,7 @@ want() { # <rc> [output-pattern...]
   [ -n "${NOADD:-}" ] || git add -A >/dev/null 2>&1
   out="$(run_check "$PWD" "$AWKV" "$ALLOW" "$DBDOC" 2>&1)"; got=$?
   [ "$got" -eq "$rc" ] || { echo "FAIL $CASE ($AWKV): rc=$got want $rc"; echo "$out" | head -5; NFAIL=$((NFAIL+1)); return; }
-  for p in "$@"; do echo "$out" | grep -q -- "$p" || { echo "FAIL $CASE ($AWKV): output lacks '$p'"; NFAIL=$((NFAIL+1)); return; }; done
+  for p in "$@"; do grep -q -- "$p" <<<"$out" || { echo "FAIL $CASE ($AWKV): output lacks '$p'"; NFAIL=$((NFAIL+1)); return; }; done
 }
 S01() { f bin-a-manager/pkg/foohandler/x.go "$(imp "$DTO")"; want 1 R2a; }
 S02() { f bin-a-manager/pkg/listenhandler/x.go "$(imp '"monorepo/bin-a-manager/pkg/listenhandler/models/request"')"; want 0; }
@@ -310,6 +314,12 @@ S82() { local A=$AWKV; AWKV="$T/bad-awk"; printf '#!/bin/sh\nexit 1\n' > "$AWKV"
 S83() { local A=$AWKV; AWKV="$T/dead-awk"; printf '#!/bin/sh\nexit 0\n' > "$AWKV"; chmod +x "$AWKV"; want 1 GATE; AWKV=$A; }
 S84() { f bin-a-manager/pkg/x/x.go 'package x'; git add -A; rm bin-a-manager/pkg/x/x.go; NOADD=1 want 1 GATE; }
 S85() { want 0; }
+S92() { f bin-a-manager/vendor/x/x.go "$(imp "$DTO")"; want 0; }
+S93() { f bin-a-manager/internal/pkg/listenhandler/x.go "$(imp "$DTO")"; want 1 R2a; }
+S94() { rm -f "$ALLOW"; printf 'bin-allowed/models/old:Old x\n' > "$ALLOW"; rm -rf ./*; want 1 'no Go files'; }
+S95() { f bin-n/models/n/n.go 'package n
+}'; want 1 GATE; }
+S96() { local i; for i in $(seq 400); do f bin-a-manager/pkg/foo/x$i.go "$(imp "$DTO")"; done; want 1 'violations=400'; }
 S86() { f bin-a-manager/pkg/foo/x.go "$(printf 'package x\n/* c\n*/ import %s\n' "$DTO")"; want 1 R2a; }
 S87() { f bin-a-manager/pkg/foo/x.go "$(printf 'package x\nvar s = "q\\"/*"\nimport %s\n' "$DTO")"; want 1 R2a; }
 S88() { f bin-a-manager/pkg/foohandler/x.go "$(imp '"github.com/Masterminds/squirrel/v3"')"; want 1 R2b; }
