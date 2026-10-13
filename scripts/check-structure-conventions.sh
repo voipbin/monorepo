@@ -34,6 +34,7 @@ set -uo pipefail
 export LC_ALL=C
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SELF="${SCRIPT_DIR}/$(basename "${BASH_SOURCE[0]}")"
 ALLOW_DEFAULT="${SCRIPT_DIR}/structure-conventions-allow.txt"
 # R2b allowed directories as written in the database.md exception table.
 # The regexes in AWK_PROG must stay in step with these strings.
@@ -178,7 +179,7 @@ BEGIN {
   close(LIST)
   for (k in found) if (!(k in allow)) viol("R3", found[k], "struct " k " defines ID and CustomerID by hand; embed commonidentity.Identity instead. See docs/conventions/models.md 6.1")
   for (k in allow) if (!(k in found)) gate("allow list: stale entry " k " is no longer a hand-written struct; delete it from scripts/structure-conventions-allow.txt")
-  print "SCANNED files=" nfiles " r2files=" nr2 " r3files=" nr3 " structs=" nstruct " allowed_imports=" nallowed " violations=" nviol+0 " gate_failures=" ngate+0
+  print "SCANNED files=" nfiles " r2files=" nr2+0 " r3files=" nr3+0 " structs=" nstruct+0 " allowed_imports=" nallowed+0 " violations=" nviol+0 " gate_failures=" ngate+0
 }
 AWKEOF
 
@@ -314,6 +315,7 @@ S82() { local A=$AWKV; AWKV="$T/bad-awk"; printf '#!/bin/sh\nexit 1\n' > "$AWKV"
 S83() { local A=$AWKV; AWKV="$T/dead-awk"; printf '#!/bin/sh\nexit 0\n' > "$AWKV"; chmod +x "$AWKV"; want 1 GATE; AWKV=$A; }
 S84() { f bin-a-manager/pkg/x/x.go 'package x'; git add -A; rm bin-a-manager/pkg/x/x.go; NOADD=1 want 1 GATE; }
 S85() { want 0; }
+S97() { local o; o="$(bash "$SELF" --selftest 2>&1)"; [ $? -eq 2 ] || { echo "FAIL $CASE: unknown arg must exit 2"; NFAIL=$((NFAIL+1)); }; }
 S92() { f bin-a-manager/vendor/x/x.go "$(imp "$DTO")"; want 0; }
 S93() { f bin-a-manager/internal/pkg/listenhandler/x.go "$(imp "$DTO")"; want 1 R2a; }
 S94() { rm -f "$ALLOW"; printf 'bin-allowed/models/old:Old x\n' > "$ALLOW"; rm -rf ./*; want 1 'no Go files'; }
@@ -346,7 +348,11 @@ self_test() {
   echo "self-test: $NFAIL of $NCASE case runs FAILED" >&2; return 1
 }
 
-if [ "${1:-}" = "--self-test" ]; then self_test; exit $?; fi
+case "${1:-}" in
+  --self-test) self_test; exit $? ;;
+  "") ;;
+  *) echo "usage: $0 [--self-test]" >&2; exit 2 ;;
+esac
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "GATE not inside a git repository"; exit 1; }
 AWKBIN="$(command -v mawk || command -v awk)" || { echo "GATE awk not found"; exit 1; }
 run_check "$ROOT" "$AWKBIN" "$ALLOW_DEFAULT" "$ROOT/docs/conventions/database.md"
