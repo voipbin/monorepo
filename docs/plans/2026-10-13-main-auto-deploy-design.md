@@ -107,7 +107,7 @@
 - T6 비-main 확인(실제 PR 브랜치, 임시 커밋 `bin-agent-manager/` 마커 파일, 확인 후 제거, 승인은 하지 않음): 파이프라인 #5205 에서 bin-agent-manager workflow 는 `build-approval` on_hold, `bin-agent-manager-test` blocked, `bin-agent-manager-build` blocked 이고 `test-auto` 와 `deploy` job 은 만들어지지 않았다. 같은 파이프라인의 shell-tests 는 성공했다.
 - 참고: CircleCI v1.1 API(`/api/v1.1/project/<circleci 슬러그>/<job번호>`)는 단계 로그의 output_url 을 주므로 로그 확인이 필요한 경우 가능하다. QA 의 superseded 판정은 git 기준이다(T8).
 
-### 5.4 구현 반영 사항 (코드 리뷰 R1~R8 반영, 위 T 항목에 우선)
+### 5.4 구현 반영 사항 (코드 리뷰 R1~R10 반영, 위 T 항목에 우선)
 - 구현 파일: guard 는 `komodo-api-deploy.sh`, guard bats 26개는 `komodo-api-deploy-guard.bats`, 검증기는 `check-auto-deploy-config.rb` 와 bats 47개(`check-auto-deploy-config.bats`), 허용 목록 `auto-deploy-services.txt`. 변환은 파일럿 3개 수동 변환(5.1).
 - T1 추가: 값에 줄바꿈이 있으면 첫 줄만 읽고 나머지를 무시하지 않고 실패한다.
 - T5 구현 규칙 보강: (a) deploy job 의 명령은 `VAR=value` 대입들 다음에 `komodo-api-deploy.sh` 가 오는 형태여야 하며(주석, `env -u`, `true;` 앞붙임 거부) `DEPLOY_REQUIRE_LATEST_FOR_PATHS` 대입이 정확히 한 번이고 값이 `<svc>` 이며 첫 인자가 `<svc>`(접두만 같은 이름 거부)이어야 한다. `run:` 축약형(`- run: <문자열>`)도 읽어 deploy 호출이 두 번 숨는 것을 막는다. deploy 는 production context 를 써야 한다. 허용 목록에 있는데 `jobs` 목록이 없는 workflow 는 거부한다. (e) 승인 유지 workflow 의 deploy 판별은 job 이름이 `-deploy` 로 끝나는 것뿐 아니라 키가 `-deploy` 로 끝나는 것(`name:` 으로 이름을 바꾼 경우)도 포함한다.
