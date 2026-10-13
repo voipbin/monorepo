@@ -1,7 +1,7 @@
 # Phase 6b design: PUT partial-update for teams
 
 Status: DRAFT (Round 0)
-Author: CPO, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md` §4 Phase 6.
+Author: product owner, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md` §4 Phase 6.
 Reference pattern: `docs/plans/2026-09-12-mcp-server-put-partial-update-design.md` (PR #1291,
 merged `81a9a6b98`); same technical pattern applied by every prior phase
 (1-5) — see roadmap §3 for the canonical 11-step pattern, not re-derived

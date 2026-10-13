@@ -4,7 +4,7 @@ Written after implementation, to satisfy the issue-analysis checkpoint. Reviewer
 
 ## 1. Request
 
-CEO request: let a user create a Flow in square-admin by conversation, like the Assistant Builder (VOIP-1558). Standing constraints from the CEO:
+Maintainer request: let a user create a Flow in square-admin by conversation, like the Assistant Builder (VOIP-1558). Standing constraints from the maintainer:
 - Flow action components change over time, so the builder must not hardcode per-action knowledge. Adding or changing an action must not require builder changes, and missing metadata must fail CI (fail-closed).
 - Nothing is saved automatically; the user reviews the draft in the editor and saves it.
 

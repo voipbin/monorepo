@@ -21,7 +21,7 @@ deployment-surface-portable or multi-replica-safe:
    (`bin-manager.delay`), published transient (not broker-restart-safe). Not a recurring
    scheduler and not treated as one here.
 
-Decision (2026-08-01, CEO/CPO): eliminate external cron entirely. Schedules become
+Decision (2026-08-01, maintainer): eliminate external cron entirely. Schedules become
 platform data, executed by a new microservice — wherever the services run, the schedules
 run.
 

@@ -2,7 +2,7 @@
 
 **Status:** Ready for implementation (Round 3 fixes applied: duplicate/stale code block in §3.3 removed and merged into a single coherent version)
 **Ticket:** #1054
-**Author:** Hermes (CPO)
+**Author:** Hermes (product owner)
 **Date:** 2026-07-04
 **Depends on:** PR #1053 (merged), PR #1056 (merged)
 

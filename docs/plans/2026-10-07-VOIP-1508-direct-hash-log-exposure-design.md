@@ -2,7 +2,7 @@
 
 - 상태: APPROVED rev3 (디자인 리뷰 2회차 2명 모두 Approve, MINOR 반영)
 - 근거 문서: `2026-10-07-VOIP-1508-direct-hash-log-exposure-analysis.md` (APPROVED rev5)
-- 대표님 결정(2026-10-07): VOIP-1567 의 "유형 4 범위 밖" 결정을 재승인하여 유형 4 를 이번에 처리한다. 범위는 분석 문서 2.1, 2.2 의 전 지점과 direct-manager 요청, 응답 로그다. 유형 3(부모 리소스), 유형 5(call-manager channel)는 범위 밖이며 처리 후에도 direct 통화당 hash 노출은 0이 되지 않는다.
+- 담당자 결정(2026-10-07): VOIP-1567 의 "유형 4 범위 밖" 결정을 재승인하여 유형 4 를 이번에 처리한다. 범위는 분석 문서 2.1, 2.2 의 전 지점과 direct-manager 요청, 응답 로그다. 유형 3(부모 리소스), 유형 5(call-manager channel)는 범위 밖이며 처리 후에도 direct 통화당 hash 노출은 0이 되지 않는다.
 
 ## 1. 원칙
 
@@ -90,4 +90,4 @@ func (d *Direct) LogFields() logrus.Fields
 
 - 유형 3(부모 리소스 객체의 `direct_hash`), 유형 5(call-manager channel 의 `destination_number`)로 direct 통화당 hash 노출이 남는다.
 - 에러 문자열 URI 경로.
-- 이미 로그에 남은 hash 의 재생성 여부는 대표님 판단 사항이며 이번 PR 에 포함하지 않는다.
+- 이미 로그에 남은 hash 의 재생성 여부는 담당자 판단 사항이며 이번 PR 에 포함하지 않는다.

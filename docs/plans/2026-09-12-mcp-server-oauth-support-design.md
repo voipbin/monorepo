@@ -1,7 +1,7 @@
 # MCP server OAuth 2.1 support (GitHub + Linear pilot)
 
-Status: APPROVED (5-round design review, 2 consecutive APPROVE at R4/R5) -- 대표님 승인 2026-09-12. Implementation continues in this same PR/branch per 대표님's standing instruction (design and implementation are no longer split into separate PRs).
-Author: CPO design, per 대표님 "1번가자" (vendor-fixed OAuth catalog, GitHub +
+Status: APPROVED (5-round design review, 2 consecutive APPROVE at R4/R5) -- 담당자 승인 2026-09-12. Implementation continues in this same PR/branch per the maintainer's standing instruction (design and implementation are no longer split into separate PRs).
+Author: product owner design, per 담당자 "1번가자" (vendor-fixed OAuth catalog, GitHub +
 Linear pilot, api-manager owns the public callback)
 Depends on: docs/plans/2026-09-11-mcp-tool-integration-design.md (bearer/
 api_key/none auth, the McpServer entity, SSRF guard, mcptoolhandler),
@@ -16,7 +16,7 @@ Atlassian, Slack, Asana, HubSpot...) require OAuth 2.1 instead -- there is
 no static secret a customer can paste. Customers cannot register these
 without an OAuth flow VoIPBin drives on their behalf.
 
-## 2. Scope decision (대표님, this session)
+## 2. Scope decision (the maintainer, this session)
 
 - **Vendor-fixed catalog, not arbitrary OAuth.** VoIPBin pre-registers one
   OAuth application per supported vendor (holds `client_id`/`client_secret`

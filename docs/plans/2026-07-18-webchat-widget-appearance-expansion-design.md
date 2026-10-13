@@ -2,7 +2,7 @@
 
 Status: Draft
 
-## 1. Scope (locked with CEO/CTO)
+## 1. Scope (locked with the maintainer)
 
 Expand `Widget.ThemeConfig` from 3 fields (`primary_color`, `logo_url`,
 `position`) to 9 fields (adding 6), adding:
@@ -14,8 +14,8 @@ Expand `Widget.ThemeConfig` from 3 fields (`primary_color`, `logo_url`,
 - `header_title` (string, default `"Chat with us"`) — widget header text
 - `header_subtitle` (string, optional) — header subtext
 
-Explicitly OUT of scope (rejected as high-risk/low-value per CPO
-recommendation, confirmed by CEO/CTO):
+Explicitly OUT of scope (rejected as high-risk/low-value per product owner
+recommendation, confirmed by the maintainer):
 - Arbitrary `avatar_url` / `bubble_icon` custom-icon URLs (XSS/resource-
   loading risk beyond `logo_url`, which already exists and is precedented)
 - Free-form `width`/`height` panel sizing (responsive-layout risk)

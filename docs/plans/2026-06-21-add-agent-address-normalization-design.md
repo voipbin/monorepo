@@ -207,7 +207,7 @@ mutation). Local validation uses a populated throwaway DB with `--dry-run` then
 
 ### 3.4 Transition / deploy ordering (RPC consumers stopped, not "drained")
 
-Per CEO decision a brief downtime is acceptable. v5 spends that downtime to
+Per maintainer decision a brief downtime is acceptable. v5 spends that downtime to
 ELIMINATE the transient window. The earlier "deploy live, then backfill while
 serving" ordering is REJECTED: it creates a live read-modify-write race vs
 concurrent `UpdateAddresses` (lost-update) and a uniqueness-bypass that can leave
@@ -321,10 +321,10 @@ pure-function at 5 sites and backfills one JSON column.
 
 | # | Question | Decision | Owner |
 |---|----------|----------|-------|
-| 1 | Backfill mechanism? | Go one-shot CLI subcommand `agent-control agent normalize-addresses`, reusing the real `NormalizeTarget` (zero drift). The agent-control binary already ships in the deployed image (`go build ./cmd/...`). Alembic Python-port REJECTED: a non-Go reimplementation reintroduces a parity/drift risk the CLI structurally removes. | CEO/CTO |
-| 2 | downgrade() reversibility? | No-op (irreversible); the operational rollback is the code revert, constrained by the §3.5 forward-only guard | CTO |
-| 3 | Deploy ordering / downtime? | CEO accepted a brief downtime: code-first then immediate backfill (§3.4). Zero-downtime dual-key expand/contract rejected as over-engineering. | CEO/CTO |
-| 4 | agent_addresses normalized table instead of JSON column? | NO. Keep the JSON column; table normalization is explicitly out of scope (CEO decision). | CEO |
+| 1 | Backfill mechanism? | Go one-shot CLI subcommand `agent-control agent normalize-addresses`, reusing the real `NormalizeTarget` (zero drift). The agent-control binary already ships in the deployed image (`go build ./cmd/...`). Alembic Python-port REJECTED: a non-Go reimplementation reintroduces a parity/drift risk the CLI structurally removes. | Maintainer |
+| 2 | downgrade() reversibility? | No-op (irreversible); the operational rollback is the code revert, constrained by the §3.5 forward-only guard | Maintainer |
+| 3 | Deploy ordering / downtime? | Maintainer accepted a brief downtime: code-first then immediate backfill (§3.4). Zero-downtime dual-key expand/contract rejected as over-engineering. | Maintainer |
+| 4 | agent_addresses normalized table instead of JSON column? | NO. Keep the JSON column; table normalization is explicitly out of scope (maintainer decision). | Maintainer |
 
 ## 8. Review Summary
 
@@ -350,21 +350,21 @@ collisions; LOW: address-branch-only placement, slice-by-index mutation test.
 ### v2 (this revision) — findings applied
 - Backfill = Python port embedded in `upgrade()`, per-element by `type`, parity
   tested vs Go golden vectors (resolves code-verify HIGH + fidelity MEDIUM).
-- Deploy: CEO accepted brief downtime -> code-first + immediate backfill (§3.4);
+- Deploy: maintainer accepted brief downtime -> code-first + immediate backfill (§3.4);
   dual-key expand/contract rejected as over-engineering (resolves adversarial
-  HIGH #1 per CEO decision).
+  HIGH #1 per maintainer decision).
 - Rollback guard §3.5: lookup-normalization is forward-only; runbook must forbid
   rolling below this release post-backfill (resolves adversarial HIGH #2).
 - Collision logging in the migration (MEDIUM).
 - extension identity test + lookup normalization in the address-match branch only
   / TypeAgent UUID branch untouched / store normalize by index (MEDIUM + LOW).
-- agent_addresses table: explicitly out of scope (CEO).
+- agent_addresses table: explicitly out of scope (maintainer).
 
 A fresh re-review round on v2 follows (mandatory after the material change).
 
-### v3 (this revision) — backfill mechanism changed per CEO decision
+### v3 (this revision) — backfill mechanism changed per maintainer decision
 
-The CEO chose a Go one-shot CLI subcommand over the Alembic Python-port (the SQL
+The maintainer chose a Go one-shot CLI subcommand over the Alembic Python-port (the SQL
 / pure-query alternative was also weighed and rejected for the same drift reason:
 reproducing sip host-token-only lowercasing and the loss-proof no-digit rule
 byte-for-byte in SQL is fragile). Changes:
@@ -393,7 +393,7 @@ adversarial CHANGES REQUESTED (HIGH 2 + MEDIUM 3 + LOW 3). All applied:
 - **HIGH#1 (live backfill lost-update race) + HIGH#2 (uniqueness-bypass ->
   permanent dual-ownership):** root cause was "backfill while serving live
   traffic". §3.4 rewritten to run deploy + backfill inside ONE drained
-  maintenance window (CEO downtime spent to remove the transient window entirely,
+  maintenance window (maintainer downtime spent to remove the transient window entirely,
   not just bound it). With no agent-mutating/lookup traffic during the window,
   both HIGH findings are structurally impossible.
 - **MEDIUM#3 (collision -> nondeterministic routing, log-only insufficient):**

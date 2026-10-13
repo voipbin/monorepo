@@ -81,7 +81,7 @@ minimal outcome.)
 **Decision: this PR migrates the shared agent-basic-info update chain, fixing
 BOTH `PUT /service_agents/me` and `PUT /agents/{id}` (admin) to pointer/
 nil-means-unchanged semantics. Both server entrypoints are updated. This is
-reported explicitly to 대표님 as a scope observation (the roadmap undercounted
+reported explicitly to the maintainer as a scope observation (the roadmap undercounted
 `/agents/{id}` as already-safe when it is not).**
 
 This does NOT expand to a new PR per the one-PR-per-repo rule: `/agents/{id}`

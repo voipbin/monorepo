@@ -333,7 +333,7 @@ boundary: PR B1 is smaller than the first attempt claimed, and PR B2 is mostly
 work whose effect cannot be observed end to end until its last step.
 
 **The split is authorised, and round 6 re-derived its boundary.** The standing
-rule is one PR per repository and the CEO granted an exception for this work. The
+rule is one PR per repository and the maintainer granted an exception for this work. The
 first boundary attempt used dispatch reachability, which the code refutes (see
 section 0), so eight of the fourteen items originally placed in the first PR were
 dead code by the split's own criterion. The boundary is **discovery**
@@ -1055,7 +1055,7 @@ code), but the honest consequence is that the platform carries a documented prom
 it does not keep for the whole life of PR B2, which is the larger half. The cheap
 alternative he names is a one-sentence not-yet-available caveat in the RST inside PR
 B1, at the cost of a clean Sphinx rebuild and a force-add of the build output. This
-analysis does not decide that. It is a CEO decision and it is now on the record as
+analysis does not decide that. It is a maintainer decision and it is now on the record as
 one rather than as a consequence of where B22 happened to be filed.
 
 ## A.27 PR B1 code review: two OAuth refresh hazards deferred to their own change
@@ -1172,7 +1172,7 @@ Round 14 of PR B1's code review found that section 6 places B10, B13, B19, B20 a
 PR B1 and that the branch implements none of them, with a deferral record for only part of
 B13 and D18. An implementation design for all five was drafted and taken through nine
 design-review rounds; it is kept as PR B2 input in
-`2026-09-29-mcp-pr-b2-deferred-items-design-draft.md`. The CEO then decided to **defer all
+`2026-09-29-mcp-pr-b2-deferred-items-design-draft.md`. The maintainer then decided to **defer all
 five to PR B2**. Each item bounds or gates a path that no customer reaches today: on
 2026-09-28 no production AI had a non-empty `mcp_server_ids` (A.26), and nothing is
 presented to a model until PR B2, so none of them changes any customer's outcome in PR B1,

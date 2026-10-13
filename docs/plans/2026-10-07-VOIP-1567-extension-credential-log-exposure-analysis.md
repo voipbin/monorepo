@@ -9,8 +9,8 @@
 - 이슈는 유효하다. 가능성 확인이 아니라 실재하는 노출이다. 자격 증명 필드를 가진 객체를 통째로 로그에 남기는 곳이 있고, 평문으로 JSON 로그에 출력된다. 확인된 노출은 네 유형이다.
   - 유형 1: extension 과 trunk 객체(`password`, `direct_hash`). 5곳. 이번 범위.
   - 유형 2: 인증된 요청의 `*auth.AuthIdentity`(안의 agent `direct_hash`). api-manager 에서 약 420회, 거의 모든 인증된 API 핸들러가 시작부에서 기록한다. 이번 범위.
-  - 유형 3: `*amagent.Agent` 직접 로그(`direct_hash`). 14곳(api-manager 3, agent-manager 7, call-manager 4). 범위 밖(대표님 결정).
-  - 유형 4: `Direct` 객체와 hash 문자열 로그(`hash`, 공개 링크 비밀 값). 약 27곳, 9개 서비스. 범위 밖(대표님 결정).
+  - 유형 3: `*amagent.Agent` 직접 로그(`direct_hash`). 14곳(api-manager 3, agent-manager 7, call-manager 4). 범위 밖(담당자 결정).
+  - 유형 4: `Direct` 객체와 hash 문자열 로그(`hash`, 공개 링크 비밀 값). 약 27곳, 9개 서비스. 범위 밖(담당자 결정).
 - 운영에서 Debug 로그가 켜져 있다. api-manager(`internal/config/main.go:253`)와 call-manager(`internal/config/main.go:124`)가 로그 레벨을 조건 없이 `DebugLevel` 로 고정한다.
 - 지금 진행하는 것이 타당하다. 수정이 작고 위험이 낮으며, 코드 변경 없이는 노출이 계속 쌓인다. 유형 1 은 call-manager 가 해당 extension 이나 trunk 로 오는 통화마다, 유형 2 는 api-manager 가 인증된 요청마다 기록한다.
 - 우선순위는 티켓의 "중간"에서 P2 로 상향한다. 티켓이 정한 상향 조건(password 가 로그에 남는 경우)을 충족한다. `direct_hash` 는 VOIP-1566 에서 `password` 와 같은 급의 자격 증명 노출로 다룬 값이다.
@@ -53,7 +53,7 @@
 
 ## 4. 범위
 
-대표님 결정(2026-10-07): 유형 1 과 유형 2 만 이번 PR 에서 처리하고, 유형 3 과 4 는 처리하지 않는다. 별도 티켓도 만들지 않는다. 이 결정은 확정이며 리뷰에서 재론하지 않는다.
+담당자 결정(2026-10-07): 유형 1 과 유형 2 만 이번 PR 에서 처리하고, 유형 3 과 4 는 처리하지 않는다. 별도 티켓도 만들지 않는다. 이 결정은 확정이며 리뷰에서 재론하지 않는다.
 
 수정 대상.
 
@@ -62,11 +62,11 @@
 
 범위 밖(이번에 하지 않음).
 
-- 유형 3(Agent 직접 로그 14곳)과 유형 4(Direct 객체와 hash 문자열 로그 약 27곳). 대표님 결정으로 처리하지 않는다. 이로 인해 유형 3, 4 의 `direct_hash` 와 공개 링크 `hash` 가 계속 남는다는 점을 수용 위험으로 기록한다. 빈도는 낮지 않다.
+- 유형 3(Agent 직접 로그 14곳)과 유형 4(Direct 객체와 hash 문자열 로그 약 27곳). 담당자 결정으로 처리하지 않는다. 이로 인해 유형 3, 4 의 `direct_hash` 와 공개 링크 `hash` 가 계속 남는다는 점을 수용 위험으로 기록한다. 빈도는 낮지 않다.
 
   - 유형 3 은 로그인마다(`pkg/servicehandler/auth.go:29`), agent 조회마다(`pkg/servicehandler/agent.go:32,73`), agent 로 연결되는 통화마다(call-manager `start_incoming_domain_type_sip.go:313`, `start_incoming_domain_type_registrar.go:101`, `outgoing_call.go:493`, `groupcallhandler/dial.go:237`) 기록한다.
   - 유형 4 는 direct 통화마다 hash 문자열을 기록한다(call-manager `start_incoming_domain_type_sip.go:83`). 생성, 재생성 이벤트 로그가 나머지다.
-  - 따라서 유형 2 를 닫아도 agent 의 `direct_hash` 는 로그인과 통화 경로에서 계속 쌓인다. 이후 처리 여부는 대표님 몫이다.
+  - 따라서 유형 2 를 닫아도 agent 의 `direct_hash` 는 로그인과 통화 경로에서 계속 쌓인다. 이후 처리 여부는 담당자 몫이다.
 - 일반적 로그 redaction 훅이나 CI 게이트, 공용 redaction 도구 신설. 이번 수정이 가장 위험한 유형(SIP password)과 가장 빈번한 유형(요청 로그)을 닫으므로 새 도구는 만들지 않는다.
 - 로그의 `Debug` 고정 자체(운영 로그 레벨 정책). 별개 주제다.
 
@@ -76,10 +76,10 @@
 - 유형 2: `*auth.AuthIdentity` 에 `json.Marshaler` 를 구현해 비밀 필드를 뺀 출력을 만든다. 출력은 Type, CustomerID, agent 는 id 등 비밀이 아닌 식별 필드, accesskey 는 id 와 prefix, direct scope 는 `hash_fingerprint` 를 뺀 필드로 한정한다. 상세 필드 목록은 설계 단계에서 확정한다.
 - 재발 방지 테스트: 유형 2 는 마샬 결과에 비밀 값이 없고 허용 필드가 유지되는지 단위 테스트로 검증할 수 있다. 유형 1 은 로그 호출이라 단위 테스트가 어렵다. 로그 출력을 가로채 비밀 값 유무를 확인하는 테스트가 비용 대비 가치가 있는지는 설계 단계에서 판단한다.
 
-## 6. 대표님 결정 사항 (기록)
+## 6. 담당자 결정 사항 (기록)
 
 - 범위: 유형 1 과 2 만 처리, 유형 3 과 4 는 처리하지 않음(위 4절).
-- 이미 로그에 남은 password 와 direct_hash: 코드 수정으로 과거 로그는 사라지지 않는다. 로그 보존 기간과 잔존 건수는 확인하지 않기로 했고, extension 과 trunk password 교체, direct_hash 재생성 여부는 대표님이 별도로 판단한다. 이번 PR 에 포함하지 않는다.
+- 이미 로그에 남은 password 와 direct_hash: 코드 수정으로 과거 로그는 사라지지 않는다. 로그 보존 기간과 잔존 건수는 확인하지 않기로 했고, extension 과 trunk password 교체, direct_hash 재생성 여부는 담당자가 별도로 판단한다. 이번 PR 에 포함하지 않는다.
 
 ## 7. 진행 판단
 

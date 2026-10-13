@@ -1,7 +1,7 @@
 # Recording Detail: One-Click Transcribe & AI Summary — Design
 
 Date: 2026-09-13
-Author: CPO (Hermes) with pchero
+Author: product owner (Hermes) with pchero
 Status: Design review
 
 ## 1. 배경 / 문제
@@ -43,7 +43,7 @@ admin 콘솔의 레코딩 상세 화면(`recordings_detail.js`)은 현재 Downlo
 |---|------|------|------|
 | D1 | AI Summary 조회 | 백엔드 `GET /aisummaries`에 `reference_type + reference_id` 필터 추가 (transcribe와 동일 패턴) | 정석적, 클라이언트 전체 로드 필터링은 확장성 나쁨 |
 | D2 | Summary 중복 방지 | 기존 요약 있으면 결과 표시, 재생성은 명시적 **Regenerate** 버튼으로 분리 | summary는 멱등 아님 (버튼 연타 시 누적) |
-| D3 | 언어 선택 | 기본값 자동 지정 후 원클릭 실행, 드롭다운으로 변경 가능 | 원클릭 우선 (D1 대표님 확정) |
+| D3 | 언어 선택 | 기본값 자동 지정 후 원클릭 실행, 드롭다운으로 변경 가능 | 원클릭 우선 (D1 담당자 확정) |
 | D4 | Transcribe 중복 | 별도 처리 불필요. recording 대상은 백엔드가 이미 멱등 | 기존 동작 |
 
 ### 3.1 기본 언어 결정 (D3 세부)
@@ -72,7 +72,7 @@ square-admin CLAUDE.md는 **manual Refresh 버튼·polling을 명시적으로 �
 
 **결정 (D5, 옵션 B): 조회 인라인 표시 + 원클릭 생성까지 완성. 실시간 자동 갱신은 후속 과제.**
 
-- 대표님 확정(2026-09-13): 실시간 완료 자동 표시(WebSocket 구독)는 이번 범위에서 제외.
+- 담당자 확정(2026-09-13): 실시간 완료 자동 표시(WebSocket 구독)는 이번 범위에서 제외.
   근거: admin WS는 payload **shape로만** 이벤트를 분류하는데(wire에 `type` 필드 없음,
   `websocket.js:40-79`), transcribe의 `direction`은 이미 구독 중인 `call` payload에도,
   summary의 `reference_type`은 이미 구독 중인 `activeflow` payload에도 존재해 shape 분류가
@@ -219,4 +219,4 @@ square-admin CLAUDE.md는 **manual Refresh 버튼·polling을 명시적으로 �
 - 백엔드: 신규 servicehandler 메서드 단위 테스트(reference 필터가 실제 RPC filters로 전달되는지),
   server GET HTTP 테스트(쌍 검증 400 포함).
 - 프론트: 위 4.2 테스트 케이스. 빌드 성공.
-- 대표님 실브라우저 검증(리뷰 루프 통과 후에도 필수).
+- 담당자 실브라우저 검증(리뷰 루프 통과 후에도 필수).

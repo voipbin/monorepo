@@ -1,7 +1,7 @@
 # square-talk Cases menu: list + detail + Close/Assign (v1 scope)
 
 - Ticket: NOJIRA
-- Author: Hermes (CPO), for pchero (CEO/CTO)
+- Author: Hermes (product owner), for pchero (maintainer)
 - Status: DESIGN APPROVED — closed after 8 review rounds (16 independent
   reviews total, 2 consecutive fully clean rounds). Ready for
   implementation.

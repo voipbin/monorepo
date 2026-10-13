@@ -2,7 +2,7 @@
 
 - Status: Draft v2
 - Date: 2026-06-26
-- Owner: CPO
+- Owner: product owner
 - Service: bin-conversation-manager (consumer), bin-email-manager (event producer)
 
 ## 1. Problem Statement
@@ -409,9 +409,9 @@ Trace ID is propagated from the subscribed event context into
 
 | # | Question | Resolution | Owner |
 |---|----------|------------|-------|
-| Q1 | Should an email with N destinations create N separate threads, or one thread? | **Decided: N threads** (one per peer), matching SMS `MessageEventSent` fan-out. Email model has flat `Destinations` with no CC/BCC, and per-peer is the contact-center unit. Dedup keyed on composite `(email.ID, peer)`. | CEO/CTO |
-| Q2 | Should email attachments be mirrored into the conversation message `medias`? | Defer. Email attachments are storage references with a different model than inline message media; map in a later phase if needed. | CPO |
-| Q3 | What `status` should the email conversation message carry? | **Decided (A): `progressing`, fixed.** `email_created` fires before the provider send, so `done` would assert an unverified delivery. The message stays `progressing` in Phase 1 (conversation-manager does not subscribe to `email_updated`). Reflecting delivery transitions (done/failed on `email_updated`) is Phase 2. | CEO/CTO |
-| Q4 | Confirm there is genuinely no inbound email path. | Confirmed by code: email-manager has no subscribehandler and its provider webhooks carry only delivery-status updates, not customer-originated messages. | CPO |
-| Q5 | Lifecycle: should `email_deleted`/`email_updated` cascade to the conversation copy? | **Decided: no cascade.** The conversation message is an immutable send-time fact log (§3.2), identical to SMS (which ignores `message_updated`/`message_deleted`). GDPR erasure is handled by the platform retention procedure targeting `conversation_messages` by `reference_id` (§13), not by event cascade. | CEO/CTO |
+| Q1 | Should an email with N destinations create N separate threads, or one thread? | **Decided: N threads** (one per peer), matching SMS `MessageEventSent` fan-out. Email model has flat `Destinations` with no CC/BCC, and per-peer is the contact-center unit. Dedup keyed on composite `(email.ID, peer)`. | Maintainer |
+| Q2 | Should email attachments be mirrored into the conversation message `medias`? | Defer. Email attachments are storage references with a different model than inline message media; map in a later phase if needed. | Product owner |
+| Q3 | What `status` should the email conversation message carry? | **Decided (A): `progressing`, fixed.** `email_created` fires before the provider send, so `done` would assert an unverified delivery. The message stays `progressing` in Phase 1 (conversation-manager does not subscribe to `email_updated`). Reflecting delivery transitions (done/failed on `email_updated`) is Phase 2. | Maintainer |
+| Q4 | Confirm there is genuinely no inbound email path. | Confirmed by code: email-manager has no subscribehandler and its provider webhooks carry only delivery-status updates, not customer-originated messages. | Product owner |
+| Q5 | Lifecycle: should `email_deleted`/`email_updated` cascade to the conversation copy? | **Decided: no cascade.** The conversation message is an immutable send-time fact log (§3.2), identical to SMS (which ignores `message_updated`/`message_deleted`). GDPR erasure is handled by the platform retention procedure targeting `conversation_messages` by `reference_id` (§13), not by event cascade. | Maintainer |
 ```

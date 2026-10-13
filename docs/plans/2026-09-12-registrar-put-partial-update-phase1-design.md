@@ -1,7 +1,7 @@
 # Phase 1: PUT /extensions/{id} and PUT /trunks/{id} partial-update fix
 
 Status: DRAFT (Round 0)
-Author: CPO, per 대표님 approval to proceed directly to Phase 1 (no gating on
+Author: product owner, per the maintainer's approval to proceed directly to Phase 1 (no gating on
 the roadmap PR's merge)
 Related: `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
 (§4 Phase 1 definition, §3 the reusable technical pattern this doc applies),
@@ -438,7 +438,7 @@ confirm FAIL, restore) before considering the suite complete.
 
 - No retroactive remediation for extensions/trunks whose password may
   have already been silently wiped in production by the pre-fix
-  behavior -- raise as a separate question to 대표님 if a specific
+  behavior -- raise as a separate question to the maintainer if a specific
   customer complaint surfaces (mirrors PR #1291 §8, roadmap §6).
 - No frontend changes bundled into this PR (see §2).
 - No change to `Create`/`POST` validation or behavior (see §4).

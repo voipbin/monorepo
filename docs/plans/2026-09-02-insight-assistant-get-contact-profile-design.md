@@ -41,7 +41,7 @@ Related: VOIP-1234 (Insight Assistant tool set + implicit-scoping design), desig
   (phone/email) to a third-party LLM processor, auto-enabled for every
   existing `tool_names=["all"]` Insight AI with no opt-in gate. This is a
   genuine product/business decision, not something this document is
-  entitled to self-approve -- **escalated to 대표님, who explicitly chose
+  entitled to self-approve -- **escalated to the maintainer, who explicitly chose
   to ship addresses in v1 with immediate auto-activation for all existing
   Insight AIs** (decision recorded 2026-09-02; see §5). (5) Added the
   missing OpenAPI schema + RST doc sync to §3.5, required by root
@@ -465,7 +465,7 @@ contact's raw phone number(s) and email address(es) to a third-party LLM
 provider as part of a profile record, not just as an interaction-log peer
 target. Round-2 review correctly identified this as a product/business
 decision this document is not entitled to self-approve. **Escalated to
-대표님 and explicitly decided (2026-09-02): ship addresses in v1, with
+the maintainer and explicitly decided (2026-09-02): ship addresses in v1, with
 immediate auto-activation for all existing `tool_names=["all"]` Insight
 AIs -- no opt-in gate for the initial release.** See §5 for the accurate
 (non-mis-cited) risk framing.
@@ -564,7 +564,7 @@ added the `ReferenceType` guard case.
   step 2, genuinely tenant-scoped) plus the mandatory response-side tenant
   check (§3.2 step 5) together provide the scope verification that
   precondition asked for, applied inline rather than via a shared utility.
-  **This has been escalated to and decided by 대표님 (2026-09-02): ship
+  **This has been escalated to and decided by the maintainer (2026-09-02): ship
   addresses (phone/email) in v1, with immediate auto-activation for every
   existing `tool_names=["all"]` Insight AI, no opt-in gate for the initial
   release.** Residual considerations for the record, not yet independently

@@ -180,8 +180,8 @@ both lines and match registrar, keeping cross-service log queries consistent.
 
 | Question | Recommendation | Owner |
 |---|---|---|
-| Standardize response logging across all ~33 services? | Separate follow-up PR + exclusion-filter; not now | CEO/CTO |
-| Truncate/redact `m.Data` in logs platform-wide? | Cross-service policy decision, defer | CEO/CTO |
+| Standardize response logging across all ~33 services? | Separate follow-up PR + exclusion-filter; not now | Maintainer |
+| Truncate/redact `m.Data` in logs platform-wide? | Cross-service policy decision, defer | Maintainer |
 
 ## Review Summary (v1 -> v2)
 

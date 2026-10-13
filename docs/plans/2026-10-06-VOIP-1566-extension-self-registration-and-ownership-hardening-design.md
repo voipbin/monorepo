@@ -15,7 +15,7 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 
 결과: 같은 고객사 내부자가 임의 extension 의 SIP password, direct_hash 를 평문으로 열람(toll fraud 가능, P2). 또한 canonical 형식으로 등록된 extension 은 해당 extension 발착신 call 의 소유자가 된다.
 
-## 2. 대표님 결정 (확정, 번복 금지)
+## 2. 담당자 결정 (확정, 번복 금지)
 
 - (a) extension 주소는 Admin/Manager 권한의 관리자 경로(`PUT /agents/{id}/addresses`, square-admin 사용)로만 등록한다. `PUT /service_agents/me/addresses` 에서는 역할과 무관하게 extension 주소의 추가와 변경을 거부하고 기존 유지와 제거만 허용한다.
 - (b) tel, sip 주소는 비관리자 자유 등록을 유지한다(VOIP-956 self-service). 위험 수용 범위는 12절.
@@ -31,7 +31,7 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 
 - `normalize.go` 의 `NormalizeTarget` 전역 변경(호출처 다수, 영향 큼).
 - extension 쪽 소유권 기록(옵션 C, 장기 과제).
-- transcribe, transcript, aicall 의 고객사 전체 노출 및 `transcribeGetResourceInfoForAgent` break 누락(이슈 분석상 별도 독립 문제, 티켓 미등록, 대표님 결정).
+- transcribe, transcript, aicall 의 고객사 전체 노출 및 `transcribeGetResourceInfoForAgent` break 누락(이슈 분석상 별도 독립 문제, 티켓 미등록, 담당자 결정).
 - tel, sip 소유 선점 방지, `groupcallhandler getAddressOwner` 목적지 비정규화.
 - 관리자 경로 권한 변경.
 
@@ -39,7 +39,7 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 
 | # | 결정 | 근거 |
 |---|---|---|
-| D1 | 방어선 2 비교 규칙. 요청의 각 extension 주소는 호출 시점 `agentGet` 으로 재조회한 저장 주소 중 `(Type, Target, TargetName)` 이 문자열 exact 로 일치하는 항목이 있고, 그 저장 `Target` 이 canonical(`uuid.FromStringOrNil(t).String()==t` 이고 Nil 아님)일 때만 허용한다. 일치 항목이 없으면(추가, `Target` 또는 `TargetName` 변경 포함) 거부한다. 저장 target 이 비-canonical 인 row 는 재제출해도 거부된다(제거만 가능). `Name`, `Detail` 은 비교하지 않는다(라우팅, 소유와 무관). extension 항목이 하나도 없는 요청은 기존 extension 을 제거하는 것으로 해석한다(PUT 전체 교체 의미 유지). 거부 오류는 `cerrors.PermissionDenied(ServiceNameAPIManager, "EXTENSION_ADDRESS_ADMIN_ONLY", message)`(HTTP 403)이며 message 는 다음으로 확정한다: "Extension addresses can only be added or changed by an administrator. To keep an existing extension, send it back unchanged as returned by GET /service_agents/me. An extension stored in a non-canonical form can only be removed. Ask an administrator to correct it." 역할(관리자 포함)은 판정하지 않는다 | 대표님 결정 (a), 분석 8회차 canonical 재제출 승격 방지 |
+| D1 | 방어선 2 비교 규칙. 요청의 각 extension 주소는 호출 시점 `agentGet` 으로 재조회한 저장 주소 중 `(Type, Target, TargetName)` 이 문자열 exact 로 일치하는 항목이 있고, 그 저장 `Target` 이 canonical(`uuid.FromStringOrNil(t).String()==t` 이고 Nil 아님)일 때만 허용한다. 일치 항목이 없으면(추가, `Target` 또는 `TargetName` 변경 포함) 거부한다. 저장 target 이 비-canonical 인 row 는 재제출해도 거부된다(제거만 가능). `Name`, `Detail` 은 비교하지 않는다(라우팅, 소유와 무관). extension 항목이 하나도 없는 요청은 기존 extension 을 제거하는 것으로 해석한다(PUT 전체 교체 의미 유지). 거부 오류는 `cerrors.PermissionDenied(ServiceNameAPIManager, "EXTENSION_ADDRESS_ADMIN_ONLY", message)`(HTTP 403)이며 message 는 다음으로 확정한다: "Extension addresses can only be added or changed by an administrator. To keep an existing extension, send it back unchanged as returned by GET /service_agents/me. An extension stored in a non-canonical form can only be removed. Ask an administrator to correct it." 역할(관리자 포함)은 판정하지 않는다 | 담당자 결정 (a), 분석 8회차 canonical 재제출 승격 방지 |
 | D2 | 방어선 2 의 read-then-update 경쟁은 수용한다. `AgentSetAddresses` 는 행 잠금 후 전체 교체(last-writer-wins)이며, 관리자가 extension 을 회수한 직후 구버전 목록을 제출하면 회수분이 되살아날 수 있는 좁은 P3 창이 있다. 같은 agent 의 자기 요청이고 서버 측 CAS 는 agent-manager 변경 범위를 키우므로 도입하지 않고 문서화한다 | 오버엔지니어링 지양, 실측 신호 없음 |
 | D3 | 방어선 3 구현. agent-manager `agenthandler` 에 `canonicalExtensionTarget(target) (string, error)` 헬퍼(`uuid.FromString` 후 `.String()`, 실패 시 오류)를 둔다. `UpdateAddresses` 는 extension 분기에서 검증 직후 target 을 canonical 로 교체한 뒤 중복 검사와 저장을 한다. `Create` 는 extension 주소가 UUID 로 파싱되면 canonical 로 저장하고, 파싱되지 않으면 기존 동작을 유지한다(거부 추가 없음. 비-UUID 값은 `FromStringOrNil` 이 Nil 이라 소유 판정이 어차피 false 이며 admin 전용 경로에 새 행위 변경을 더하지 않는다. registrar 존재 검증도 추가하지 않는다). `GetByCustomerIDAndAddress` 는 변경하지 않는다(`UpdateAddresses` 가 canonical 화 후 호출하고 외부 RPC 호출자는 registrar 의 canonical UUID 를 넘긴다). `normalize.go` 는 변경하지 않는다 | 영향 최소화 |
 | D4 | 기존 DB 정리. `cmd/agent-control normalize-addresses` 의 `normalizeAddresses` 에 extension UUID canonical 화를 추가한다(도구 내부 로컬 함수, 공유 `NormalizeTarget` 불변). 기존 도구의 충돌 hard-fail 은 유지한다. 변형 row 가 타 agent 의 canonical row 와 충돌하면 우회 흔적이므로 hard-fail 이 탐지 신호가 된다. 자동 변환은 취약 기간에 자기 등록된 canonical row 를 정당화하지 않으며(DB 에 등록 주체 기록이 없음), 실행 전 관리자가 extension 보유 agent 전수 목록을 검토하는 절차를 runbook 으로 둔다(11절). 롤백 절차는 11절 | 분석 8회차 |
@@ -114,6 +114,6 @@ VOIP-1565 로 Agent 가 같은 고객사 extension 을 조회하되 타인 exten
 5. 롤백: 적용 결과가 잘못되면 백업 테이블에서 `agent_addresses` 를 복원한다. canonical row 는 이전 코드(agent-manager, api-manager)에서도 정상 동작하므로 코드만 이전 버전으로 되돌려도 안전하다.
 6. 취약 창: agent-manager 배포(2단계) 후에는 신규 변형 저장이 D3 로 막히지만, api-manager 배포(4단계) 전까지는 방어선 2 와 1 이 없으므로 기존 변형 row 의 소유 판정 우회와 canonical 형식 자기 등록이 남는다. 정리와 배포를 한 유지보수 시간 안에 이어서 수행해 창을 줄인다.
 
-## 12. 수용한 위험 (대표님 결정)
+## 12. 수용한 위험 (담당자 결정)
 
 tel, sip 자유 등록을 유지한다. 아무도 등록하지 않은 번호를 선점하면 그 번호의 수신, 발신 call 의 소유자가 되어 call 메타데이터(`recording_ids` 포함)와 owner 토픽 실시간 이벤트를 볼 수 있다(이미 다른 agent 가 소유한 번호는 중복 검사로 막힘). 자기 agent 주소로 임의 tel, sip 를 두어 자기에게 오는 호의 착신 대상을 정하면 고객사 PSTN 비용이 발생할 수 있다(VOIP-956 본래 성질). 녹취 본체는 Admin|Manager 전용이다. 별개의 기존 노출로 `ServiceAgentTranscribeStart` 는 call 참조를 고객사 일치만 확인하므로 call 소유와 무관하게 고객사 내 어느 agent 든 call id 로 transcript 를 읽을 수 있다(범위 밖).

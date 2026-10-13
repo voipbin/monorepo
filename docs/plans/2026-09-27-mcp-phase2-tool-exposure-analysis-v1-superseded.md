@@ -1,14 +1,14 @@
 # Analysis: Phase 2 — expose MCP tools to the LLM (PR B)
 
 Date: 2026-09-27
-Author: CPO (Hermes)
+Author: product owner (Hermes)
 Status: v1 of this document (carries forward rounds 1-4 findings from the split
 parent), Analysis Review Loop pending
 Scope: **PR B only.** Lifecycle correctness and docs (PR A) and square-admin
 parity (PR C) are in `2026-09-27-mcp-lifecycle-and-docs-analysis.md`.
 
 Parent history: this document was split out of
-`2026-09-27-mcp-lifecycle-and-phase2-analysis-v4-superseded.md` at the CEO's
+`2026-09-27-mcp-lifecycle-and-phase2-analysis-v4-superseded.md` at the maintainer's
 direction after round 4, because the lifecycle half had converged while this half
 kept producing scope-changing discoveries each round.
 
@@ -30,7 +30,7 @@ code path does this.** Customers can register a server (UI shipped), whitelist i
 on an AI (UI shipped), read documentation promising tool use (shipped), and nothing
 happens.
 
-CEO decision 2026-09-27: **implement it**, do not retract the docs. Verbatim: "Q1.
+Maintainer decision 2026-09-27: **implement it**, do not retract the docs. Verbatim: "Q1.
 구현하자." And as one PR, not split: "하나로 가자."
 
 Prerequisites discovered while scoping D7, each of which would independently break
@@ -307,7 +307,7 @@ Team-member-level `mcp_server_ids` semantics are undefined and must be decided h
 
 ### PROCEED, as ONE PR, AFTER PR A.
 
-CEO decision Q5: one PR rather than B1 (ai-manager prep) + B2 (pipecat wiring),
+Maintainer decision Q5: one PR rather than B1 (ai-manager prep) + B2 (pipecat wiring),
 because B1 alone would be another "no observable effect" PR and reviewers would lose
 the context that motivates it.
 
@@ -676,7 +676,7 @@ in which to fix this properly rather than hastily.
 Round 2 was told to attack section 8 itself rather than repeat round 1. It
 found no incorrect correction in section 8, which is the first time that has
 happened, but it settled the one item section 8 left open and it changed the
-size class of this PR. Everything below was re-verified by the CPO with real
+size class of this PR. Everything below was re-verified by the product owner with real
 execution before being recorded.
 
 #### 8.6 P10 is REFUTED, not unproven, and its scope was materially too small
@@ -728,7 +728,7 @@ critical path.
 
 Round 2 was specifically tasked with checking whether write-time validation
 already blocks the fail-open case, which would have made C2 overstated. It does
-not, and the CPO re-ran the check as real Go against the production resolver:
+not, and the product owner re-ran the check as real Go against the production resolver:
 
     ValidateToolNames(TypeInsight, [all]) = <nil>          <- legal, storable
     ai-manager GetByNames([all])          = 25 tools
@@ -904,7 +904,7 @@ answer a bare `tools/list`.
 L2. **Real-server integration**, build-tagged, starting the reference `mcp`
 python SDK as a subprocess in **both** default/stateful and stateless modes and
 asserting a non-empty tool list with a populated schema in both. This is the
-test that would have caught the inert feature, and it is automatable: the CPO
+test that would have caught the inert feature, and it is automatable: the product owner
 ran the equivalent by hand in minutes.
 
 L3. **The pipecat half must actually run.** `bin-pipecat-manager-test` is
@@ -972,7 +972,7 @@ other open question in section 4 now has an answer above.
 
 ### Round 3 (2 reviewers: one APPROVED, one CHANGES_REQUESTED)
 
-The two reviewers disagreed about P12, so the CPO adjudicated against real
+The two reviewers disagreed about P12, so the product owner adjudicated against real
 code rather than averaging the verdicts. Reviewer 1 settled P12 with live
 provider calls and approved; reviewer 2 built the scope ledger nobody had built
 and rejected on two holes in the scope reductions. Both findings are recorded

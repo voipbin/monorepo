@@ -3,10 +3,10 @@
 Date: 2026-08-23 (rev 2, same day)
 Ticket: VOIP-1385 (Support large SIP INVITE over UDP)
 Status: rev 2 for review. Rev 1 (option comparison, phased opt-in rollout)
-passed its design review loop and was then superseded by CEO/CTO decisions;
+passed its design review loop and was then superseded by the maintainer's decisions;
 the option analysis is retained in section 3 as the decision record.
 
-## 0. Final decisions (CEO/CTO, 2026-08-23)
+## 0. Final decisions (maintainer, 2026-08-23)
 
 1. Option B (canonical short domain) — approved.
 2. FULL immediate cutover: existing customers' DB rows migrate uuid -> short
@@ -32,7 +32,7 @@ IP-fragmented, and the fragments are dropped before reaching our server
 (verified: no fragment arrives at bm-nyc-01's NIC; single-packet 1,320B messages
 pass). Result: digest auth over UDP fails for affected clients.
 
-Goal (CEO/CTO directive): keep supporting UDP. Shrink our contribution to the
+Goal (maintainer directive): keep supporting UDP. Shrink our contribution to the
 message size so typical INVITEs stay under MTU. Shortening the customer domain
 is the only server-side lever with meaningful savings.
 
@@ -190,7 +190,7 @@ registrar tables.
      uuid.Nil).
    - ParseSIPURI + ari_contact.go -> same lookup.
    - projectconfig suffix constant: `DomainRegistrarSuffix` = `".reg."+base`
-     ONLY. Legacy `.registrar.` classification is NOT accepted (CEO/CTO
+     ONLY. Legacy `.registrar.` classification is NOT accepted (maintainer
      decision 2026-08-23: downtime during the deploy->batch window is
      accepted; a `.registrar.` domain classifies as none and the call is
      rejected). Kamailio's `.registrar.` auth-gate regex is kept — that one
@@ -294,7 +294,7 @@ confusion. `reg.` has no collision.
   line — expected noise, not an alarm condition (the batch purges stale
   ps_contacts anyway).
 - Execution: Claude authors the batch + Alembic schema migration; the batch
-  run against production is executed by the CEO/CTO (same policy as Alembic
+  run against production is executed by the maintainer (same policy as Alembic
   upgrades).
 
 ## 8. Deploy order (hard gates)
@@ -308,7 +308,7 @@ confusion. `reg.` has no collision.
        (100% coverage required before 1d).
    1d. call-manager deploy: lookup cutover (TrimSuffix deleted; unknown
        realm rejects) + `.reg.`-ONLY classification.
-   ACCEPTED DOWNTIME (CEO/CTO 2026-08-23): from 1d until the migration
+   ACCEPTED DOWNTIME (maintainer 2026-08-23): from 1d until the migration
    batch (step 5) completes, incoming calls to legacy `.registrar.` customer
    domains are REJECTED at classification. Run 1d through step 5 as one
    compressed maintenance window. (NEW customers created in this window get
@@ -325,7 +325,7 @@ confusion. `reg.` has no collision.
 4. registrar-manager env flip: `DOMAIN_NAME_EXTENSION=reg.voipbin.net` AND
    `DOMAIN_SHORT_LABEL_ENABLED=true` — from here, new provisioning uses
    short labels under `reg.voipbin.net`.
-5. Migration batch run (CEO/CTO executes): all existing customers ->
+5. Migration batch run (maintainer executes): all existing customers ->
    `<4ch>.reg.voipbin.net`. Portal notice + reconfiguration guide go out
    simultaneously.
 6. Later cleanup (separate change, after stability): remove Kamailio's
@@ -340,7 +340,7 @@ confusion. `reg.` has no collision.
 - Lookup failure on incoming calls: fail closed (reject + log); Redis-cached;
   strictly better than today's silent uuid.Nil.
 - 4-char label enumeration: 36^4 = 1.68M combinations IS sweepable by a
-  determined scanner (flagged during design; accepted by CEO/CTO decision 5).
+  determined scanner (flagged during design; accepted by maintainer decision 5).
   Mitigations: the Kamailio pike/ban ingress gate rate-limits and bans
   scanning sources; a discovered domain still requires digest auth for every
   INVITE and REGISTER; domains are not treated as secrets. Revisit label

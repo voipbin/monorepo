@@ -121,7 +121,7 @@ Record the answer here before continuing:
 ```
 in  = CUSTOMER   (PROVISIONAL — proceeding on the design's structural
 out = AGENT       reading, not an empirical confirmation. Decided by
-                   대표님, 2026-09-04: "구조적 근거로 잠정 진행, 실증은
+                   담당자, 2026-09-04: "구조적 근거로 잠정 진행, 실증은
                    후속 티켓으로." Empirical verification tracked as
                    VOIP-1461. If VOIP-1461 finds the mapping reversed,
                    Task 23's speakerTag function and its golden test
@@ -144,7 +144,7 @@ Expected: `redis_version:6.2.0` or higher.
 
 ```
 redis_version = ASSUMED >= 6.2   (PROVISIONAL — not empirically confirmed
-                                   against production. Decided by 대표님,
+                                   against production. Decided by the maintainer,
                                    2026-09-04: proceed on the structural
                                    assumption; verification tracked as
                                    VOIP-1462. Task 11 is implemented
@@ -178,7 +178,7 @@ Two consequences a human must sign off on:
 
 ```
 Confirmed: IDAIManagerListen ships as a bare, well-formed UUID constant with no seed row.
-(confirmed by: 대표님, 2026-09-04, on the code evidence already presented above —
+(confirmed by: the maintainer, 2026-09-04, on the code evidence already presented above —
  IDAIManager's own working precedent in summaryhandler/start.go, and the malformed-
  literal collision risk Task 1's test pins directly.)
 ```
@@ -208,13 +208,13 @@ Confirmed: the proposed defaults above are acceptable to ship with, unchanged
 (2/30/45/60/3). These are config values, not code paths — revisable via a
 config-only change post-deploy once real hold/ring-time distributions are
 observed, so this does not block implementation the way (a)/(b) do.
-(confirmed by: 대표님, 2026-09-04)
+(confirmed by: the maintainer, 2026-09-04)
 ```
 
 - [x] **Step 5: Report the four answers and wait**
 
 **Human gate cleared, 2026-09-04.** (a) and (b) proceed provisionally on
-structural grounds per 대표님's explicit decision ("구조적 근거로 잠정
+structural grounds per the maintainer's explicit decision ("구조적 근거로 잠정
 진행, 실증은 후속 티켓으로"), tracked as VOIP-1461 and VOIP-1462
 respectively. (c) and (d) are confirmed outright. Task 1 may proceed.
 

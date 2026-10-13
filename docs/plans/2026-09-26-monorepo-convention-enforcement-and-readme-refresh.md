@@ -108,7 +108,7 @@ bin-timeline 63%·bin-rag 59% 로 갈린다.
 
 ---
 
-## 3. Decisions locked (2026-09-26, 대표님 확정)
+## 3. Decisions locked (2026-09-26, 담당자 확정)
 
 | # | 결정 | 근거 |
 |---|---|---|
@@ -845,7 +845,7 @@ gofmt는 함수 시그니처 줄이나 import 줄 자체를 바꾸지 않으므�
 docs/conventions/testing.md` → 0건). 개정으로 `Test_` 접두사가 표기 종류와 무관하게
 적용되고 `TestMain`이 유일 예외로 명기되었으므로, 이 공백은 해소되었다.
 
-**결정(대표님 확정, 2026-09-26 개정): Rule 1은 `Test_` 접두사 자체를 강제한다.**
+**결정(담당자 확정, 2026-09-26 개정): Rule 1은 `Test_` 접두사 자체를 강제한다.**
 
 초기 판단은 "`TestXxx_Case`만 잡는다"였다. 이는 `TestCreate_HappyPath` 같은 이름을
 `Test_HappyPath`로 줄여야 하는 것으로 오독한 결과다. 올바른 변환은 밑줄 하나를
@@ -1228,7 +1228,7 @@ images that the installer consumes; it is not deployed directly from a checkout 
 
 브랜드 규칙 준수 확인: em/en 대시 미사용, "opensource" 한 단어, 타사 언급 없음, 개인 연락처 노출 없음.
 
-#### (c) 기존 em dash 11건 정리 (대표님 확정)
+#### (c) 기존 em dash 11건 정리 (담당자 확정)
 
 README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110, 146, 153.
 (b)가 손대는 것은 L146 하나뿐이므로 나머지 10건이 남는다.
@@ -1248,7 +1248,7 @@ README에 em dash가 **11건** 존재한다: L3, 21, 39, 45, 52, 53, 54, 55, 110
 
 아울러 L3·L23의 `open-source`(하이픈 표기)를 `opensource` 한 단어로 통일한다.
 
-#### (d) L110 "Kubernetes-based deployments" 서술 수정 (대표님 확정)
+#### (d) L110 "Kubernetes-based deployments" 서술 수정 (담당자 확정)
 
 현재 L110:
 
@@ -1370,10 +1370,10 @@ v2.14.0(go1.27.0 빌드)으로 교체하여 실제 `run` 성공을 확인했다.
 해결했고, `TestMainHandler`가 함께 제외되지 않는 것도 실측 확인했다.
 초안의 "Rule 1을 `TestXxx_Case`만 매치하도록 축소" 방안은 철회되었다.
 
-**Q7 — 해결됨 (§6.5(c), 대표님 확정).** README의 em dash 11건을 **전부 정리**한다.
+**Q7 — 해결됨 (§6.5(c), 담당자 확정).** README의 em dash 11건을 **전부 정리**한다.
 `open-source`(하이픈) 2건도 `opensource` 한 단어로 통일한다.
 
-**Q8 — 해결됨 (§6.5(d), 대표님 확정).** L110의 "Kubernetes-based deployments" 서술을
+**Q8 — 해결됨 (§6.5(d), 담당자 확정).** L110의 "Kubernetes-based deployments" 서술을
 같은 PR에서 수정한다. 셀프호스팅 정본 변경과 같은 문서 안에서 충돌하기 때문이다.
 
 남은 질문: 없음. 구현 착수 가능 상태다.

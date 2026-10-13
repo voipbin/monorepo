@@ -1,6 +1,6 @@
 # 이슈 분석: 모델 선택기 키 방식 구분 + Custom OpenRouter(BYOK) 모델
 
-Status: 리뷰 진행 중. **Q1a·Q1b·Q5·Q10은 CEO 승인 대기. Q1a·Q1b·Q5는 제안안(대표님 승인 대기)이며 확정이 아니다.** 이 문서에서 "권장"으로 적은 항목(Q9·Q10 등 CPO 결정 사항 포함)도 모두 제안안이며 CEO 승인 전에는 확정이 아니다.
+Status: 리뷰 진행 중. **Q1a·Q1b·Q5·Q10은 담당자 승인 대기. Q1a·Q1b·Q5는 제안안(담당자 승인 대기)이며 확정이 아니다.** 이 문서에서 "권장"으로 적은 항목(Q9·Q10 등 제품 담당자 결정 사항 포함)도 모두 제안안이며 담당자 승인 전에는 확정이 아니다.
 수정 이력: 수정회차 4 (리뷰 5·6회차 반영. 로깅 누출 분리 결정을 "13곳 이번 PR 함께 처리" 권장안으로 재작성(R9 선택지 비교 표, Q10, §6, §8 항목 8), 오류 경로 목록에 `v1_ais.go` `%v` marshal 경로 추가와 지점 수 정정, §6 표를 단일 정본으로 재작성(문서·테스트·ai-control·gens·Q4·Q8·Q2·Q5 포함, 중복 행 병합), 오류 코드 `ENGINE_KEY_REQUIRED` 제안, `key_mode` 더 작은 대안 비교, Q9와 `engine_key` 응답 제거 이슈의 결합 명시, Python `test_init_pipeline.py:804,827,890` 추가)
 수정 이력: 수정회차 3 (리뷰 3·4회차 지적 반영. R1-f·Q9·§3·§6 권고안을 "모든 AI sidebar 재조회(A) 이번 PR 포함"으로 통일, R9 로깅 누출 지점을 전 서비스 대상으로 재수집(call-manager 추가, 지점 수 정정), §6에 PR 범위 3열 표 신설, §8에 차단 대상/수행자/시점 열 추가, R1-a의 Python `None` 도착 경로와 `(key or "").strip()` 방어 명시, Q1a·Q3 3종 정렬, Q4 정리, 지원 표면 2.7절 신설, 목업 수정 필요 표기)
 수정 이력: 수정회차 2 (리뷰 1·2회차 지적 반영. R1-f 해결안 재작성, R9 로깅 누출 지점 전수 재수집, Q1 분리(Q1a/Q1b), Q4 기본값 fail-closed로 변경, SDK 환경변수 폴백 확정, 테스트 영향 범위 보강, 롤아웃 순서 단일화 6.1절 신설)
@@ -11,7 +11,7 @@ UI 목업: `2026-10-06-openrouter-byok-ui-mockup.png` (열람 완료, 4절 참�
 
 표기: 파일:라인은 이 워크트리의 현재 코드를 직접 읽은 결과다. "미실증"은 코드·문서 읽기까지만 했고 실제 호출·실행으로 확인하지 않았다는 뜻이다. 영어로 노출될 문구는 `English` 원문으로 병기하며, 확정이 아니라 제안이다.
 
-## 1. 요구 정리 (대표님 확정 방향)
+## 1. 요구 정리 (담당자 확정 방향)
 
 1. 모델 선택기에서 키 방식을 배지와 그룹으로 구분. 그룹: PLATFORM PROVIDED(키 불필요), YOUR OWN KEY(내 키), 추천 Gemini 2.5 Flash는 "내 키 또는 기본 키"(Q1a 제안은 직접 모델 전체에 이 표기를 적용). 카탈로그 응답에 키 방식 필드(예: `key_mode`) 추가.
 2. 고객 본인의 OpenRouter 키(BYOK)로 호출하는 Custom OpenRouter 모델.
@@ -82,11 +82,11 @@ UI 목업: `2026-10-06-openrouter-byok-ui-mockup.png` (열람 완료, 4절 참�
 
 | 영역 | 변경 |
 |---|---|
-| Go ai-manager | `ModelEntry/ModelInfo`에 `key_mode`, resolver에 BYOK 분기, 키를 받는 검증(생성/수정), `ai-control`, 오류 코드. **BYOK 키 누락은 별도 reason `ENGINE_KEY_REQUIRED`(HTTP 400, `cerrors.InvalidArgument`, `chatbot.go:20-28`의 `errInvalidEngineModel`과 같은 방식의 신규 헬퍼)로 제안**(제안안, CEO 승인 대기). `INVALID_ENGINE_MODEL`(모델 ID 형식 오류 등)과 구분해야 UI/SDK가 "키 입력 안내"와 "모델 선택 오류"를 분기할 수 있다. 메시지(영어, 제안): `An API key is required for custom OpenRouter models.` |
+| Go ai-manager | `ModelEntry/ModelInfo`에 `key_mode`, resolver에 BYOK 분기, 키를 받는 검증(생성/수정), `ai-control`, 오류 코드. **BYOK 키 누락은 별도 reason `ENGINE_KEY_REQUIRED`(HTTP 400, `cerrors.InvalidArgument`, `chatbot.go:20-28`의 `errInvalidEngineModel`과 같은 방식의 신규 헬퍼)로 제안**(제안안, 담당자 승인 대기). `INVALID_ENGINE_MODEL`(모델 ID 형식 오류 등)과 구분해야 UI/SDK가 "키 입력 안내"와 "모델 선택 오류"를 분기할 수 있다. 메시지(영어, 제안): `An API key is required for custom OpenRouter models.` |
 | Go pipecat-manager | `resolveSessionLLM`의 BYOK 처리(키 없는 사전 분류 호출과 구분), 팀 경로, 오류 분류 보강 여부 |
 | Python | `create_llm_service`에 `openrouter` 분기(키 필수, 환경변수 폴백 금지), ZDR provider 설정 공유, `_member_llm_type` 가드 정리 |
 | OpenAPI/gens | `AIManagerAIModel` 필드 추가, 재생성(`bin-openapi-manager/gens`, `bin-api-manager/gens`) |
-| api-manager | `POST/PUT /ais` 및 카탈로그 통과 로직(비즈니스 로직)은 변경 없음. **다만 CPO 권장안(Q10, 제안안, CEO 승인 대기)을 따르면 `servicehandler/ai.go`의 로그 4줄(`:66`, `:121`, `:403`, `:465`)을 id 필드만 남기도록 한 줄씩 수정**한다(로직 무변경, 로그 줄만). CEO가 "분리"를 택하면 이 4줄은 제외되어 api-manager 변경이 없어진다. Q11 처리 시 OpenAPI 문구(`openapi.yaml:2196-2198`)와 gens 재생성이 생김 |
+| api-manager | `POST/PUT /ais` 및 카탈로그 통과 로직(비즈니스 로직)은 변경 없음. **다만 제품 담당자 권장안(Q10, 제안안, 담당자 승인 대기)을 따르면 `servicehandler/ai.go`의 로그 4줄(`:66`, `:121`, `:403`, `:465`)을 id 필드만 남기도록 한 줄씩 수정**한다(로직 무변경, 로그 줄만). 담당자가 "분리"를 택하면 이 4줄은 제외되어 api-manager 변경이 없어진다. Q11 처리 시 OpenAPI 문구(`openapi.yaml:2196-2198`)와 gens 재생성이 생김 |
 | 로깅 정리(Q10 권장안 시) | ai-manager 8곳, call-manager 1곳의 로그 한 줄 수정(R9 A). 신규 기능 테스트 외 전용 회귀 테스트는 만들지 않음 |
 | UI | 선택기 그룹/배지, Custom 항목과 모델 ID 입력, 키 필수 UX, 4개 폼(create, detail, sidebar 생성/편집)의 키 처리, sidebar 편집 진입 시 `GET ais/{id}` 재조회(모든 AI 대상, R1-f, 6절 표 필수 열) |
 | 문서 | `ai_struct_ai.rst`, `GET /ai_models` RST, `square-main/public/skill.md`, `llms.txt`(해당 시), 사용자용 BYOK 설명 |
@@ -97,7 +97,7 @@ UI 목업: `2026-10-06-openrouter-byok-ui-mockup.png` (열람 완료, 4절 참�
 목업 3개 패널: (1) 선택기: RECOMMENDED(Gemini 2.5 Flash, 배지 "내 키 또는 기본 키" + Low cost), PLATFORM PROVIDED · 키 불필요(Claude Haiku 4.5, Llama 3.3 70B, 배지 "키 불필요"), YOUR OWN KEY · OpenAI / Gemini / Grok(GPT-5, Grok 3, 배지 "내 키"), CUSTOM("OpenRouter model (내 OpenRouter 키)", 배지 "내 키 필수"). (2) Custom 선택 시: Engine Model, "OpenRouter Model ID *"(예: `mistralai/mistral-large-2411`), "OpenRouter API Key *", 안내문 3개, 빨간 오류 "API key is required for custom OpenRouter models." (3) 현재 동작: 플랫폼 모델은 키 입력 disabled + "API key not required for this model.", GPT-5는 "Engine API Key (optional)" + "비워 두면 플랫폼 기본 키로 동작합니다".
 
 코드와 충돌하는 점 (사실):
-- 패널 3의 GPT-5는 배지 "내 키"인데 키는 optional이고 비우면 플랫폼 키로 동작한다고 적혀 있다. 코드도 직접 모델은 빈 키면 `os.getenv(<PROVIDER>_API_KEY)`로 폴백한다(`run.py:603,618,633`). **확정 사실(대표님 전달, 종류별 확인 완료)**: 운영 `bin-manager` 시크릿에 `OPENAI_API_KEY`, `XAI_API_KEY`, `GOOGLE_API_KEY`가 모두 존재하고 비어 있지 않으며, 러너 컨테이너에 주입된다(`bin-pipecat-manager/komodo/docker-compose.yml:157-161,231-235`). 따라서 직접 모델(OpenAI/Gemini/Grok)은 운영에서 빈 키일 때 플랫폼 키로 폴백하는 것이 사실이고, 추천 모델의 "내 키 또는 기본 키" 표기는 허위가 아니다. 반면 순수 "내 키"(플랫폼 키 폴백 없음) 표기는 현재 동작과 맞지 않는다(Q1a).
+- 패널 3의 GPT-5는 배지 "내 키"인데 키는 optional이고 비우면 플랫폼 키로 동작한다고 적혀 있다. 코드도 직접 모델은 빈 키면 `os.getenv(<PROVIDER>_API_KEY)`로 폴백한다(`run.py:603,618,633`). **확정 사실(담당자 전달, 종류별 확인 완료)**: 운영 `bin-manager` 시크릿에 `OPENAI_API_KEY`, `XAI_API_KEY`, `GOOGLE_API_KEY`가 모두 존재하고 비어 있지 않으며, 러너 컨테이너에 주입된다(`bin-pipecat-manager/komodo/docker-compose.yml:157-161,231-235`). 따라서 직접 모델(OpenAI/Gemini/Grok)은 운영에서 빈 키일 때 플랫폼 키로 폴백하는 것이 사실이고, 추천 모델의 "내 키 또는 기본 키" 표기는 허위가 아니다. 반면 순수 "내 키"(플랫폼 키 폴백 없음) 표기는 현재 동작과 맞지 않는다(Q1a).
 - 목업 패널 3은 현재 동작의 재현이 아니다. 실제 UI 라벨은 create/detail이 `Engine Key`(`ais_create.js:577`, `ais_detail.js:1300`)이고, `(optional)` 표기는 team graph sidebar에만 있다(`sidebar.js:968` `Engine Key (optional)`, `:1347` `API Key (optional)`). 목업의 `Engine API Key (optional)`과 "비워 두면 플랫폼 기본 키로 동작합니다" 문구는 코드에 없다(미실증: 다른 화면 문구 전수 대조는 하지 않음).
 - Custom은 키 필수이므로 라벨이 `OpenRouter API Key *`로 바뀌어야 한다.
 
@@ -118,7 +118,7 @@ UI 목업: `2026-10-06-openrouter-byok-ui-mockup.png` (열람 완료, 4절 참�
 | c | `runGetLLMKey` 조회 실패와 비 AIcall 참조 유형 | `run.go:121-141`에서 `aiKey=""`로 `resolveSessionLLM` 호출. 키 조회는 `ReferenceTypeAICall` 케이스에서만 일어나고(`run.go:122-139`), `ReferenceTypeCall` 등 다른 참조 유형은 `aiKey`가 항상 빈 채로 `resolveSessionLLM`에 들어간다 | b와 동일 규칙. 즉 BYOK 모델 + 비 AIcall 참조 유형은 항상 거부된다. 이는 **의도된 fail-closed**이며(이 유형들에서는 BYOK 키를 얻을 경로가 없음) 문서에 명시. 해당 조합의 실제 발생 여부는 미확인 |
 | d | 팀 멤버 경로 | `resolveTeamForPython`이 `ai.EngineKey`를 그대로 전달(`run.go:209-228`). 거부 시 `llm_type=""` + 로그만 | BYOK 멤버의 빈 키도 거부(`llm_type=""`)로 취급, Python이 초기화 시 예외. 팀 멤버는 비동기 경로라 세션 시작 후 실패(기존 수용 한계와 동일) |
 | e | 서버 저장 경로 | `Create`/`Update`는 키를 검증하지 않음(`chatbot.go:51,148`). 공백만 있는 키, 모델만 BYOK로 바꾸고 기존 빈 키 유지하는 update가 통과 가능 | BYOK 모델이면 `strings.TrimSpace(engineKey) != ""` 필수(위반 시 reason `ENGINE_KEY_REQUIRED`, 400, §3). update는 "모델이 BYOK"인 최종 상태를 기준으로 검사(모델이 안 바뀌어도 키가 비면 거부) |
-| f | sidebar 편집 저장 | **코드로 확정한 사실**: (1) sidebar의 AI 목록 캐시 저장 시 `engine_key`를 항상 제거(`sidebar.js:488`, `:636-639`), 캐시 히트 경로는 키 없는 객체를 `setAiData`(`:622-624`). API 재조회 경로(`:630-639`)의 `setAiData(res)`(`:633`)만 키를 보유. 따라서 `aiData.engine_key`는 캐시 경유 시 `undefined`다. (2) 편집 저장은 키가 안 바뀌면 `engine_key`를 body에서 생략(`:807-808`). 서버는 PUT의 `engine_key`를 부재=빈 문자열로 받아 전체 교체(`bin-api-manager/server/ais.go:311`, `request/ais.go:60` `omitempty`, `aihandler/db.go:280`). **sidebar에서 이름만 바꿔 저장해도 키가 빈 값으로 덮인다(코드 기준 확정, 실행 실증은 §8)**. (3) 저장 후 `setAiData({..., engine_key: aiData.engine_key})`(`:820-822`)도 캐시 경유 시 `undefined`를 유지할 뿐이다. 이 덮어쓰기는 **직전 구현의 직접 모델에서도 이미 존재하는 문제**이고(키 삭제 후 운영 시크릿 키로 폴백하므로 눈에 띄지 않을 뿐) BYOK의 신규 버그가 아니다 | 이전 초안의 "`aiData.engine_key` 재전송"은 전제가 틀렸으므로 폐기. 해결안 후보: **(A)** 편집 진입(또는 저장 직전)에 `GET ais/{id}`로 재조회해 키를 확보하고 키가 안 바뀌었으면 그 값을 재전송(키가 화면 메모리에 올라옴, `ais_detail.js:203,422`가 이미 같은 방식). **(B)** 서버가 `engine_key` 부재를 "변경 없음"으로 해석하도록 의미 변경(포인터/필드 맵 필요). B는 PUT 의미 변경이라 모든 API 클라이언트에 영향이 있는 비호환 후보이고 이번 PR 범위로는 크다. **제안안(CEO 승인 대기, 권장안 단일화): A를 모든 AI(직접 모델 포함)에 이번 PR에서 함께 적용한다.** 근거: 직접 모델과 BYOK가 같은 sidebar 코드 경로라 직접 모델까지 적용해도 추가 비용이 없고, **서버가 BYOK + 빈 키를 400으로 거부하므로(R1-e) A를 적용하지 않으면 sidebar에서 BYOK AI의 이름만 바꿔도 `engine_key`가 생략되어 항상 400으로 실패한다(BYOK에 필수 작업)**. 직접 모델에서 이미 존재하던 키 덮어쓰기 문제도 같은 수정으로 사라지므로 별도 버그로 분리하지 않는다 |
+| f | sidebar 편집 저장 | **코드로 확정한 사실**: (1) sidebar의 AI 목록 캐시 저장 시 `engine_key`를 항상 제거(`sidebar.js:488`, `:636-639`), 캐시 히트 경로는 키 없는 객체를 `setAiData`(`:622-624`). API 재조회 경로(`:630-639`)의 `setAiData(res)`(`:633`)만 키를 보유. 따라서 `aiData.engine_key`는 캐시 경유 시 `undefined`다. (2) 편집 저장은 키가 안 바뀌면 `engine_key`를 body에서 생략(`:807-808`). 서버는 PUT의 `engine_key`를 부재=빈 문자열로 받아 전체 교체(`bin-api-manager/server/ais.go:311`, `request/ais.go:60` `omitempty`, `aihandler/db.go:280`). **sidebar에서 이름만 바꿔 저장해도 키가 빈 값으로 덮인다(코드 기준 확정, 실행 실증은 §8)**. (3) 저장 후 `setAiData({..., engine_key: aiData.engine_key})`(`:820-822`)도 캐시 경유 시 `undefined`를 유지할 뿐이다. 이 덮어쓰기는 **직전 구현의 직접 모델에서도 이미 존재하는 문제**이고(키 삭제 후 운영 시크릿 키로 폴백하므로 눈에 띄지 않을 뿐) BYOK의 신규 버그가 아니다 | 이전 초안의 "`aiData.engine_key` 재전송"은 전제가 틀렸으므로 폐기. 해결안 후보: **(A)** 편집 진입(또는 저장 직전)에 `GET ais/{id}`로 재조회해 키를 확보하고 키가 안 바뀌었으면 그 값을 재전송(키가 화면 메모리에 올라옴, `ais_detail.js:203,422`가 이미 같은 방식). **(B)** 서버가 `engine_key` 부재를 "변경 없음"으로 해석하도록 의미 변경(포인터/필드 맵 필요). B는 PUT 의미 변경이라 모든 API 클라이언트에 영향이 있는 비호환 후보이고 이번 PR 범위로는 크다. **제안안(담당자 승인 대기, 권장안 단일화): A를 모든 AI(직접 모델 포함)에 이번 PR에서 함께 적용한다.** 근거: 직접 모델과 BYOK가 같은 sidebar 코드 경로라 직접 모델까지 적용해도 추가 비용이 없고, **서버가 BYOK + 빈 키를 400으로 거부하므로(R1-e) A를 적용하지 않으면 sidebar에서 BYOK AI의 이름만 바꿔도 `engine_key`가 생략되어 항상 400으로 실패한다(BYOK에 필수 작업)**. 직접 모델에서 이미 존재하던 키 덮어쓰기 문제도 같은 수정으로 사라지므로 별도 버그로 분리하지 않는다 |
 | g | 버전 혼재 | 신규 Python + 이전 Go(#1363)는 raw `openrouter.*`를 `Rejected`로 막음(싱글: `start.go:41`, 팀: `llm_type=""`). 신규 Go + 이전 Python은 `Unsupported LLM service`로 실패 | 두 경우 모두 안전(fail-closed). **배포 순서는 6.1절에 단일화**하여 기술 |
 | h | 키 이월 | 모델을 BYOK에서 direct(예 `openai.*`)로 바꾸고 키를 두면 OpenRouter 키가 OpenAI로 전송됨. 반대로 `sk-...`(OpenAI) 키가 남은 채 BYOK로 바꾸면 OpenAI 키가 OpenRouter로 전송됨. 플랫폼 키 문제는 아니나 고객 키의 타 벤더 유출. **서버 측 한계**: 서버는 최종 (모델, 키) 스냅샷만 받으므로 키 발급처를 알 수 없고, 키 형식 검증도 하지 않는다(Q7). 따라서 현재 AI에 저장된 키와 새 모델의 조합이 맞는지 서버가 판별해 거부할 수 없다(맞지 않으면 호출 시 401). 방어는 UI에 의존 | UI에서 키 방식 그룹이 바뀔 때 키 입력 초기화 또는 경고(Q8). 서버는 "BYOK 최종 상태 + 비어 있지 않은 키"만 보장 |
 
@@ -170,7 +170,7 @@ BYOK 분기가 생기면 새로 생기는 승격 시도 표면과 요구되는 �
 - `ModelLabel`/`modelLabel`(`aicalls_*`, `ais_list` 등)은 카탈로그 밖 ID를 원문 표기로 폴백하므로 BYOK ID는 그대로 표시된다. 동작 변경 불필요(미실증).
 
 ### R6. 운영 DB 기존 `openrouter.*` 값
-이미 0건 확인됨(대표님 전달). 따라서 기존 값 마이그레이션이나 하위 호환 분기는 불필요. 이후 값은 신규 검증을 거친 것만 존재.
+이미 0건 확인됨(담당자 전달). 따라서 기존 값 마이그레이션이나 하위 호환 분기는 불필요. 이후 값은 신규 검증을 거친 것만 존재.
 
 ### R7. `key_mode` 필드 공존/호환
 - 서버는 `platform_managed`를 유지하고 `key_mode`를 추가(가산 변경). 구 UI는 모르는 필드를 무시한다(JSON). api-manager는 `amai.ModelInfo`를 통과시키므로(2.1) Go 쪽 변경은 `ModelInfo`뿐, OpenAPI는 문서/생성 타입 용도(`gen.go`의 `AIManagerAIModel`).
@@ -223,36 +223,36 @@ BYOK 분기가 생기면 새로 생기는 승격 시도 표면과 요구되는 �
 
 **지점 수 정정**: 이전 수정회차 표(구조체 로깅 "약 11곳")는 call-manager를 빠뜨려 부정확했다. 재수집 기준 무조건 로그 필드에 키가 실리는 지점은 **13곳**(명시 필드 2 + 구조체 11. 서비스별로는 api-manager 4, ai-manager 8, call-manager 1), 서비스 3개. 오류 경로 한정 지점은 **최소 10곳 + `%v` 패턴 경로**(위 B). 이 수치는 grep 기반이라 하한이며, 변수명이 다르거나 `%v`로 문자열화하는 로깅은 놓칠 수 있다.
 
-**BYOK 키는 고객 과금과 직결된다**: OpenAI/Gemini 키가 로그에 남는 기존 문제와 달리, 고객의 OpenRouter 키가 유출되면 해당 고객 OpenRouter 계정에 청구되는 사용량(과금)으로 곧바로 이어진다. 또 CEO 정책 "키 로깅 금지"와 이전 안(전수 정리를 별도 이슈로 분리)은 긴장 관계에 있다. 그래서 CPO는 분리안을 철회하고 아래 비교 표의 **전수 13곳을 이번 PR에서 함께 처리**를 권장한다(제안안, CEO 승인 대기).
+**BYOK 키는 고객 과금과 직결된다**: OpenAI/Gemini 키가 로그에 남는 기존 문제와 달리, 고객의 OpenRouter 키가 유출되면 해당 고객 OpenRouter 계정에 청구되는 사용량(과금)으로 곧바로 이어진다. 또 담당자 정책 "키 로깅 금지"와 이전 안(전수 정리를 별도 이슈로 분리)은 긴장 관계에 있다. 그래서 제품 담당자는 분리안을 철회하고 아래 비교 표의 **전수 13곳을 이번 PR에서 함께 처리**를 권장한다(제안안, 담당자 승인 대기).
 
-**로깅 누출 처리 선택지 비교 (제안안, CEO 승인 대기)**
+**로깅 누출 처리 선택지 비교 (제안안, 담당자 승인 대기)**
 
-| 선택지 | 범위 | 비용 | 위험/잔여 | CPO 판단 |
+| 선택지 | 범위 | 비용 | 위험/잔여 | 제품 담당자 판단 |
 |---|---|---|---|---|
 | **1. 전수 13곳 함께 처리 (권장)** | A의 13곳(api-manager 4, ai-manager 8, call-manager 1)을 구조체·키 대신 id 필드만 남기는 **기계적 한 줄 수정**. 로그 메시지와 다른 필드는 유지. 로직 변경 없음 | 3개 서비스에 로그 한 줄씩. 신규 기능 테스트 외 전용 회귀 테스트는 만들지 않음(오버엔지니어링 지양) | 정책("키 로깅 금지")과 일치. B의 오류 경로는 아래 선택 항목으로 남음 | 권장. BYOK 키는 과금 직결이므로 알려진 무조건 누출을 남긴 채 출시하지 않는다 |
 | 2. api-manager 4곳만 | 키를 요청 본문에서 처음 받는 지점만 정리 | 최소 | ai-manager 8곳과 call-manager 1곳은 `AIV1AIGet` 결과를 매 통화/세션 시작마다 기록하므로 오히려 빈도가 높은 지점이 남음 | 비권장. 누출 빈도가 큰 쪽이 남는다 |
-| 3. 분리(이전 안) | 이번 PR은 신규 코드 무로깅만, 기존은 별도 이슈 | PR 범위 최소 | 출시 시점에 BYOK 키가 기존 13곳에 기록됨. 정책과 긴장 | 철회 권장. 분리하려면 대표님이 위험을 명시 수용해야 함 |
+| 3. 분리(이전 안) | 이번 PR은 신규 코드 무로깅만, 기존은 별도 이슈 | PR 범위 최소 | 출시 시점에 BYOK 키가 기존 13곳에 기록됨. 정책과 긴장 | 철회 권장. 분리하려면 담당자가 위험을 명시 수용해야 함 |
 
-**오류 경로(B) 처리**: 키가 실제로 로그 줄에 실리는지 미실증이므로 **이번 PR 선택 항목**(`v1_ais.go` `%v` 5곳, `request` 로깅 3곳, notifyhandler/requesthandler publish 2곳). 출시 전 확인 조건은 Q10에 둔다(로그 레벨·포매터 실증, 이미 쌓인 로그 보관·폐기 여부 대표님 판단).
+**오류 경로(B) 처리**: 키가 실제로 로그 줄에 실리는지 미실증이므로 **이번 PR 선택 항목**(`v1_ais.go` `%v` 5곳, `request` 로깅 3곳, notifyhandler/requesthandler publish 2곳). 출시 전 확인 조건은 Q10에 둔다(로그 레벨·포매터 실증, 이미 쌓인 로그 보관·폐기 여부 담당자 판단).
 
 **실제로 키가 출력되는지는 추정이다.** 코드로 확인한 것: 두 서비스 모두 `logrus.SetLevel(logrus.DebugLevel)`을 무조건 설정(`bin-ai-manager/internal/config/main.go:328-329`, `bin-api-manager/internal/config/main.go:252-253`)하고 포매터는 `joonix`다. 이로 미루어 위 Debug 줄은 켜져 있을 것으로 **추정**되며, 운영에서 레벨을 다른 곳에서 덮는지, `joonix`가 구조체 필드를 JSON 태그대로 직렬화해 `engine_key`가 실제 로그 줄에 나오는지는 **미실증**(§8).
 
-- `GET /ais`와 ai 웹훅 이벤트가 `engine_key`를 포함하는 것으로 코드상 보인다: `ConvertWebhookMessage`가 `EngineKey`를 복사(`models/ai/webhook.go:29,70`), `AIGet`이 이를 반환(`servicehandler/ai.go:330`), UI도 이 값을 사용(`ais_detail.js:203,422`, `sidebar.js:488`의 제거는 로컬 캐시 용도). 문서와 OpenAPI가 코드와 불일치한다: RST는 "never returned"(`ai_struct_ai.rst:77`), **`bin-openapi-manager/openapi/openapi.yaml:2196-2198`의 `engine_key` 설명이 "Write-only; not returned in responses."**이다. 실제 응답 실증은 미수행. 고쳐서 마스킹하면 UI가 저장 키를 재전송하는 흐름(`ais_detail.js:422`)이 깨지므로(그리고 R1-f의 A안 재조회가 이 응답 노출에 의존하므로) 이번 PR 범위에서 제외하고 별도 이슈로 분리해 대표님께 보고하는 항목이다(제안안). **결합 주의: 별도 이슈로 `engine_key` 응답 제거를 진행하면 이번 PR의 R1-f A안(편집 시 `GET ais/{id}` 재조회로 키 확보)과 `ais_detail.js:203,422`의 재전송 흐름이 깨진다. 따라서 그 이슈는 A안의 대체 수단(예: PUT에서 `engine_key` 부재=변경 없음 의미 변경)과 한 쌍으로만 착수할 수 있다.** 단 문서 불일치(RST, openapi.yaml)는 Q11에서 이번 PR에 문구를 정정할지("returned"로) 또는 코드를 문서에 맞출지 결정 필요.
+- `GET /ais`와 ai 웹훅 이벤트가 `engine_key`를 포함하는 것으로 코드상 보인다: `ConvertWebhookMessage`가 `EngineKey`를 복사(`models/ai/webhook.go:29,70`), `AIGet`이 이를 반환(`servicehandler/ai.go:330`), UI도 이 값을 사용(`ais_detail.js:203,422`, `sidebar.js:488`의 제거는 로컬 캐시 용도). 문서와 OpenAPI가 코드와 불일치한다: RST는 "never returned"(`ai_struct_ai.rst:77`), **`bin-openapi-manager/openapi/openapi.yaml:2196-2198`의 `engine_key` 설명이 "Write-only; not returned in responses."**이다. 실제 응답 실증은 미수행. 고쳐서 마스킹하면 UI가 저장 키를 재전송하는 흐름(`ais_detail.js:422`)이 깨지므로(그리고 R1-f의 A안 재조회가 이 응답 노출에 의존하므로) 이번 PR 범위에서 제외하고 별도 이슈로 분리해 담당자에게 보고하는 항목이다(제안안). **결합 주의: 별도 이슈로 `engine_key` 응답 제거를 진행하면 이번 PR의 R1-f A안(편집 시 `GET ais/{id}` 재조회로 키 확보)과 `ais_detail.js:203,422`의 재전송 흐름이 깨진다. 따라서 그 이슈는 A안의 대체 수단(예: PUT에서 `engine_key` 부재=변경 없음 의미 변경)과 한 쌍으로만 착수할 수 있다.** 단 문서 불일치(RST, openapi.yaml)는 Q11에서 이번 PR에 문구를 정정할지("returned"로) 또는 코드를 문서에 맞출지 결정 필요.
 - 비밀번호급 값인 OpenRouter 키를 같은 컬럼(`engine_key varchar(255)`)에 평문 저장하는 것은 기존 OpenAI/Gemini 키와 동일하다(신규 위험 유형은 아님).
 - 러너가 OpenRouter 오류 원문을 최대 2000자 로깅한다(`pipelineerror.go:12`, 직전 R20). OpenRouter 401 본문에 키가 반사되는지는 미확인. 실호출 시 확인.
 
 ## 6. 진행 타당성과 권장 범위
 
-판단: 진행 타당. 직전 PR의 resolver/세션 해석 구조가 이미 있어 BYOK는 "키 있는 direct 계열의 한 변종 + 고정 provider 옵션"으로 구현 가능하다. 다만 키 방어 3중 구조(R1)와 sidebar 키 손실(R1-f)이 이번 작업의 실질 난점이다. 아래 영역별 표(필수/선택/별도 이슈)가 이 PR의 범위를 하나로 고정한다(모두 제안안, CEO 승인 대기).
+판단: 진행 타당. 직전 PR의 resolver/세션 해석 구조가 이미 있어 BYOK는 "키 있는 direct 계열의 한 변종 + 고정 provider 옵션"으로 구현 가능하다. 다만 키 방어 3중 구조(R1)와 sidebar 키 손실(R1-f)이 이번 작업의 실질 난점이다. 아래 영역별 표(필수/선택/별도 이슈)가 이 PR의 범위를 하나로 고정한다(모두 제안안, 담당자 승인 대기).
 
-**이 표가 PR 범위의 단일 정본이다.** 각 칸 안의 항목은 `<br>`로 구분했다. "(확정 대기)"는 CEO 결정이 나야 칸 이동이 확정되는 항목, "(실호출 후 확정)"은 §8 실증 결과에 따라 달라지는 항목이다.
+**이 표가 PR 범위의 단일 정본이다.** 각 칸 안의 항목은 `<br>`로 구분했다. "(확정 대기)"는 담당자 결정이 나야 칸 이동이 확정되는 항목, "(실호출 후 확정)"은 §8 실증 결과에 따라 달라지는 항목이다.
 
 | 영역 | 이번 PR 필수 | 같은 PR 선택 | 별도 이슈 |
 |---|---|---|---|
 | 서버 코드 | BYOK 유형: resolver 분기(키 필수), `ValidateEngine(model,key)`(create/update/`ai-control` 공용, update는 최종 상태 기준), 오류 reason `ENGINE_KEY_REQUIRED`(400)<br>Python `openrouter` 분기, ZDR dict 공유, `(key or "").strip()` 빈 값 예외<br>pipecat-manager `resolveSessionLLM`/팀 경로 BYOK 처리(R1)<br>`ModelInfo.key_mode` 3값 추가(`platform_managed` 유지, Q6) | **Q5 분류 보강**: ZDR 없음 응답 원문 확인 후 (b) 새 카테고리 또는 (c) 매핑(실호출 후 확정. 확인 전에는 (a) `unknown` 유지) | 직접 모델 빈 키 거부(Q1b)<br>`GET /ais` 응답의 `engine_key` 제거(R1-f A안과 결합. **A안의 재조회가 이 응답에 의존하므로 단독 착수 불가**, PUT 의미 변경(B)과 한 쌍, Q9) |
 | 모델 ID 검증 | **Q4**: 길이 255, 허용 문자 영숫자와 `. _ - /`, `:` 변종과 라우터형 ID 거부(실증 전 fail-closed) | 실증(§8 항목 6, 10)에서 ZDR 유지가 확인된 변종 순차 허용 | |
 | Q2 결정 (확정 대기) | Custom 항목을 서버 카탈로그로 제공하는 경우: 신규 Route/필드, `catalog_test.go` 계열과 `v1_ai_models_test.go` 수정(R7), 누출 방지 가드 예외를 Custom 1개로 한정 | UI 상수안(6절 대안 A)을 택하면 위 테스트 변경이 사라지고 UI에 접두 상수가 생김 | |
-| 로깅 (Q10, 제안안, 확정 대기) | **신규 코드는 키를 로깅하지 않음**(신규 로그 줄에 `*ai.AI`, 요청 본문, 키 값 금지)<br>**권장안: R9 A의 13곳(api-manager 4, ai-manager 8, call-manager 1)을 id 필드만 남기는 한 줄 수정으로 함께 처리**(정책 "키 로깅 금지" 일치, BYOK 키는 고객 과금과 직결). 전용 회귀 테스트는 만들지 않음 | R9 B 오류 경로(최소 10곳: `listenhandler` `request` 3, `v1_ais.go` `%v` 5, common-handler 2). 출시 전 확인 조건은 Q10 | 로그 중앙 처리(logrus Hook 등, Q10 (B))<br>CEO가 "분리"를 택하면 13곳도 이 칸으로 이동(위험 수용 명시 필요) |
+| 로깅 (Q10, 제안안, 확정 대기) | **신규 코드는 키를 로깅하지 않음**(신규 로그 줄에 `*ai.AI`, 요청 본문, 키 값 금지)<br>**권장안: R9 A의 13곳(api-manager 4, ai-manager 8, call-manager 1)을 id 필드만 남기는 한 줄 수정으로 함께 처리**(정책 "키 로깅 금지" 일치, BYOK 키는 고객 과금과 직결). 전용 회귀 테스트는 만들지 않음 | R9 B 오류 경로(최소 10곳: `listenhandler` `request` 3, `v1_ais.go` `%v` 5, common-handler 2). 출시 전 확인 조건은 Q10 | 로그 중앙 처리(logrus Hook 등, Q10 (B))<br>담당자가 "분리"를 택하면 13곳도 이 칸으로 이동(위험 수용 명시 필요) |
 | UI | 선택기 그룹/배지(3종), Custom 항목과 모델 ID 입력, 키 필수 UX와 오류 문구(Q3)<br>4개 폼(create, detail, sidebar 생성/편집) 키 처리 `key_mode` 일반화<br>**sidebar 편집 진입 시 `GET ais/{id}` 재조회(A안, 모든 AI, Q9)**<br>**Q8 키 이월 UX**: create는 키 입력 초기화, detail/sidebar 편집은 키 방식 그룹 변경 시 경고 문구 | | 목업 수정(4절, 디자인 단계 작업) |
 | 문서 (Q11) | `ai_struct_ai.rst`(Custom 유형, `engine_key` 필수 조건, ZDR 안내, 비용은 고객 계정 청구)<br>`GET /ai_models` 문서 `ai_models.rst`(`key_mode`)<br>`square-main/public/skill.md`<br>`llms.txt`(BYOK 언급이 해당될 때) | `ai_struct_ai.rst:77`과 `openapi.yaml:2196-2198`의 "engine_key 응답 안 됨" 문구를 "returned"로 정정(문구만, §8 항목 4 실증 후, 같은 PR 권장) | 자체 호스팅 문서는 변경 없음(BYOK는 플랫폼 키 불필요) |
 | OpenAPI, gens | `AIManagerAIModel`에 `key_mode`(및 Q2 서버 제공 시 접두 필드) 추가, `bin-openapi-manager/gens`, `bin-api-manager/gens` 재생성 | | |
@@ -275,41 +275,41 @@ BYOK 분기가 생기면 새로 생기는 승격 시도 표면과 요구되는 �
 3. 신규 UI 배포. 신규 UI + 구 API(필드 없음)는 `key_mode` 부재 시 `platform_managed`로 폴백(`true`면 platform, 아니면 own). 구 UI + 신규 API는 모르는 필드를 무시하고 Custom 항목을 일반 행으로 보여 UX가 열화될 수 있으나 서버 검증이 최종 방어.
 
 더 작은 대안:
-- A. Custom 항목을 카탈로그에 내리지 않고 UI가 `openrouter.` 상수와 고정 문구를 가짐. API 변경은 `key_mode` 1개로 끝나나, 접두 상수가 클라이언트에 복제되고 CLI/SDK 사용자는 Custom 존재를 `GET /ai_models`로 알 수 없다. (CEO가 "카탈로그에 키 방식 필드" 방향을 확정했으므로 권장은 서버 제공 쪽, Q2)
-- B. 키 방식 배지만 먼저 배포하고 BYOK를 후속 PR로 분리. 기본 규칙(1 PR/작업)과 대표님 확정 방향(한 요청 두 기능)에 반하므로 제안만 하며 분리하지 않는다.
+- A. Custom 항목을 카탈로그에 내리지 않고 UI가 `openrouter.` 상수와 고정 문구를 가짐. API 변경은 `key_mode` 1개로 끝나나, 접두 상수가 클라이언트에 복제되고 CLI/SDK 사용자는 Custom 존재를 `GET /ai_models`로 알 수 없다. (담당자가 "카탈로그에 키 방식 필드" 방향을 확정했으므로 권장은 서버 제공 쪽, Q2)
+- B. 키 방식 배지만 먼저 배포하고 BYOK를 후속 PR로 분리. 기본 규칙(1 PR/작업)과 담당자 확정 방향(한 요청 두 기능)에 반하므로 제안만 하며 분리하지 않는다.
 
 ## 7. 디자인 단계 열린 질문
 
 | # | 질문 | 권장안 |
 |---|---|---|
-| Q1a | **(제안안, 승인 대기)** 키 방식 값 체계와 항목별 배정. 운영 시크릿 3종이 모두 존재하므로(4절) 직접 모델은 전부 "내 키 또는 기본 키"가 사실이고, 순수 "내 키"(폴백 없음) 배지는 현재 동작과 맞지 않는다. **값 3종**: `platform`(No key needed), `own_or_default`(Your key or default), `own_required`(Your key required). 쟁점: 직접 모델 11개가 모두 같은 폴백 동작을 가지므로 전 direct 항목에 `own_or_default`를 동일 적용할지, 목업처럼 Gemini 2.5 Flash만 구분할지 | **전 direct 항목에 `own_or_default` 동일 적용**(그러면 순수 `own` 값은 존재하지 않음). 그룹은 3개(PLATFORM PROVIDED / YOUR OWN KEY / CUSTOM)이고 `own_or_default` 항목은 YOUR OWN KEY 그룹에 둔다. 목업 패널 1의 GPT-5 `내 키`와 별도 `추천` 구분 배지는 허위가 되므로 디자인 단계에서 수정 필요(4절). 대표님 확인 필요 |
+| Q1a | **(제안안, 승인 대기)** 키 방식 값 체계와 항목별 배정. 운영 시크릿 3종이 모두 존재하므로(4절) 직접 모델은 전부 "내 키 또는 기본 키"가 사실이고, 순수 "내 키"(폴백 없음) 배지는 현재 동작과 맞지 않는다. **값 3종**: `platform`(No key needed), `own_or_default`(Your key or default), `own_required`(Your key required). 쟁점: 직접 모델 11개가 모두 같은 폴백 동작을 가지므로 전 direct 항목에 `own_or_default`를 동일 적용할지, 목업처럼 Gemini 2.5 Flash만 구분할지 | **전 direct 항목에 `own_or_default` 동일 적용**(그러면 순수 `own` 값은 존재하지 않음). 그룹은 3개(PLATFORM PROVIDED / YOUR OWN KEY / CUSTOM)이고 `own_or_default` 항목은 YOUR OWN KEY 그룹에 둔다. 목업 패널 1의 GPT-5 `내 키`와 별도 `추천` 구분 배지는 허위가 되므로 디자인 단계에서 수정 필요(4절). 담당자 확인 필요 |
 | Q1b | **(제안안, 승인 대기)** 직접 모델의 빈 키를 서버에서 거부할지(키 필수화). 거부하면 키 없이 플랫폼 키로 동작 중인 기존 AI와 진행 중인 호출이 깨지는 비호환 변경 | 이번 PR은 거부하지 않음(현 동작 유지, 배지로 정직하게 표기). 필수화는 별도 결정 |
-| Q2 | Custom 항목을 카탈로그가 내려주는가(`key_mode:"own_required"` + 모델 ID 접두를 알려주는 필드 1개), UI 상수로 두는가. 비용 비교: 서버 제공은 카탈로그 테스트 5개 이상 수정과 `openrouter` 누출 방지 가드 약화(R7 "테스트 영향 범위"), 신규 Route/필드, OpenAPI 변경이 든다. UI 상수는 테스트 변경이 없으나 접두 복제와 CLI/SDK 발견 불가 | 서버 제공(대표님 확정 방향 "카탈로그에 키 방식 필드"와 일관). 단 가드 예외를 Custom 항목 1개에 한정해 테스트로 고정. 비용이 부담되면 UI 상수안(6절 대안 A)이 더 작음. 대표님 선택 |
-| Q3 | 고객 노출 문구 확정(제안): 그룹 `PLATFORM PROVIDED` / `YOUR OWN KEY` / `CUSTOM`, 배지 3종 `No key needed`(`platform`) / `Your key or default`(`own_or_default`) / `Your key required`(`own_required`) (Q1a와 정렬, 이전의 `Your key` 4번째 배지는 제거), Custom 항목 `OpenRouter model (your OpenRouter key)`, 설명 `Enter any model supported by OpenRouter.`, 필드 `OpenRouter Model ID *`(도움말 `Enter the model ID from the OpenRouter model page, e.g. vendor/model-name.`), `OpenRouter API Key *`, 안내 `Calls use this key and are billed to your OpenRouter account. The platform key is never used.` / `Zero data retention (ZDR) routing is enforced on every request. If no ZDR provider supports this model, calls will fail.` / `The AI cannot be saved without an API key.`, 오류 `API key is required for custom OpenRouter models.`(목업 원문) | 대표님 문구 확정 |
+| Q2 | Custom 항목을 카탈로그가 내려주는가(`key_mode:"own_required"` + 모델 ID 접두를 알려주는 필드 1개), UI 상수로 두는가. 비용 비교: 서버 제공은 카탈로그 테스트 5개 이상 수정과 `openrouter` 누출 방지 가드 약화(R7 "테스트 영향 범위"), 신규 Route/필드, OpenAPI 변경이 든다. UI 상수는 테스트 변경이 없으나 접두 복제와 CLI/SDK 발견 불가 | 서버 제공(담당자 확정 방향 "카탈로그에 키 방식 필드"와 일관). 단 가드 예외를 Custom 항목 1개에 한정해 테스트로 고정. 비용이 부담되면 UI 상수안(6절 대안 A)이 더 작음. 담당자 선택 |
+| Q3 | 고객 노출 문구 확정(제안): 그룹 `PLATFORM PROVIDED` / `YOUR OWN KEY` / `CUSTOM`, 배지 3종 `No key needed`(`platform`) / `Your key or default`(`own_or_default`) / `Your key required`(`own_required`) (Q1a와 정렬, 이전의 `Your key` 4번째 배지는 제거), Custom 항목 `OpenRouter model (your OpenRouter key)`, 설명 `Enter any model supported by OpenRouter.`, 필드 `OpenRouter Model ID *`(도움말 `Enter the model ID from the OpenRouter model page, e.g. vendor/model-name.`), `OpenRouter API Key *`, 안내 `Calls use this key and are billed to your OpenRouter account. The platform key is never used.` / `Zero data retention (ZDR) routing is enforced on every request. If no ZDR provider supports this model, calls will fail.` / `The AI cannot be saved without an API key.`, 오류 `API key is required for custom OpenRouter models.`(목업 원문) | 담당자 문구 확정 |
 | Q4 | 모델 ID 입력 정책(제안): 최대 길이 255(DB `varchar(255)`, 접두 `openrouter.` 포함), **허용 문자는 영숫자와 `. _ - /`**(`~`는 제외). **거부 규칙(별도)**: `:` 변종 접미사(`:free`, `:nitro`, `:online` 등)와 `openrouter/auto` 같은 라우터형 ID는 요청한 모델과 다른 모델/제공자로 라우팅되거나 ZDR 강제와 상호작용하는 방식이 미확인이라 ZDR 우회 가능성을 배제할 수 없으므로 실증 전 거부 | 위 규칙을 서버에서 검증(fail-closed). 실증(§8 항목 10)에서 ZDR 유지가 확인된 변종만 순차 허용 |
-| Q5 | **(제안안, 승인 대기)** ZDR 제공자 없음 실패 고객 안내: (a) 기존 `unknown` 유지(음성 세션 무음, 운영 로그만), (b) 새 카테고리 추가(열거형 확장, `pipeline_error.go` 문구 맵, RST, 테스트 변경), (c) 해당 문구를 감지해 기존 카테고리로 매핑. 먼저 실호출로 응답 원문 확인 필요. **실호출에는 고객 OpenRouter 키를 가진 테스트 계정이 필요하다(대표님 또는 검증용 키 제공).** 대안: 기존 플랫폼 OpenRouter 키를 "고객 키 역할"로 재사용해 응답 형태만 확인하는 방법이 가능하나, 플랫폼 키는 가드레일/ZDR 계정 설정이 고객 계정과 다를 수 있어(R2 문서: 계정 설정과 요청 값은 OR 관계) 결과가 고객 환경과 다를 수 있고, 이 키를 BYOK 코드 경로 테스트에 넣는 것은 "플랫폼 키 사용 금지" 검증의 의미를 흐리므로 일회성 수동 확인에만 쓰고 코드/테스트에는 넣지 않는 것을 권장 | 실호출 결과에 따라. 원문이 안정적으로 구분되면 (b)를 권장(무음 통화는 고객 신뢰 문제), 아니면 (a)+문서 안내 |
+| Q5 | **(제안안, 승인 대기)** ZDR 제공자 없음 실패 고객 안내: (a) 기존 `unknown` 유지(음성 세션 무음, 운영 로그만), (b) 새 카테고리 추가(열거형 확장, `pipeline_error.go` 문구 맵, RST, 테스트 변경), (c) 해당 문구를 감지해 기존 카테고리로 매핑. 먼저 실호출로 응답 원문 확인 필요. **실호출에는 고객 OpenRouter 키를 가진 테스트 계정이 필요하다(담당자 또는 검증용 키 제공).** 대안: 기존 플랫폼 OpenRouter 키를 "고객 키 역할"로 재사용해 응답 형태만 확인하는 방법이 가능하나, 플랫폼 키는 가드레일/ZDR 계정 설정이 고객 계정과 다를 수 있어(R2 문서: 계정 설정과 요청 값은 OR 관계) 결과가 고객 환경과 다를 수 있고, 이 키를 BYOK 코드 경로 테스트에 넣는 것은 "플랫폼 키 사용 금지" 검증의 의미를 흐리므로 일회성 수동 확인에만 쓰고 코드/테스트에는 넣지 않는 것을 권장 | 실호출 결과에 따라. 원문이 안정적으로 구분되면 (b)를 권장(무음 통화는 고객 신뢰 문제), 아니면 (a)+문서 안내 |
 | Q6 | `platform_managed`를 유지하는가, `key_mode`로 대체하는가 | 이번 PR은 유지(구 UI/외부 클라이언트 호환), 폐기는 별도 |
 | Q7 | 키 형식 사전 검증(`sk-or-` 접두 등): OpenRouter 키 형식 공식 문서 근거 미확인이라 하지 않음이 안전. 형식 불일치 키는 호출 시 401로 드러남 | 하지 않음 |
 | Q8 | 키 이월 방지(R1-h): 키 방식 그룹이 바뀔 때 UI가 키 입력을 비우는가 | create는 비움, detail/sidebar 편집은 사용자가 지울 수 있게 경고 문구 표시 |
-| Q9 | sidebar 편집의 키 손실(R1-f) 처리. 선택지: (i) 별도 버그로 분리하고 BYOK는 서버 검증(400)으로 방어, (ii) 편집 진입 시 `GET ais/{id}` 재조회(A)를 모든 AI에 적용, (iii) 서버 의미 변경(B) | **(ii) 단일 권장(제안안, CEO 승인 대기)**. 이번 PR에 포함. 직접 모델과 BYOK가 같은 코드 경로라 비용이 같고, (i)로 두면 서버가 BYOK+빈 키를 400으로 거부하므로 sidebar에서 BYOK AI 이름 변경이 항상 실패한다. 별도 버그로 분리하지 않음. (iii)은 PUT 의미 변경이라 채택하지 않음. **결합 조건**: 별도 이슈 "GET 응답의 `engine_key` 제거"를 진행하면 (ii)의 재조회가 키를 얻지 못해 깨진다. 그 이슈는 (iii) 또는 동등한 대체와 한 쌍으로만 진행한다(§6 표) |
-| Q10 | 키 로깅 정책(R9). **필수(이번 PR)**: 신규 코드가 키(`*ai.AI`, 요청 본문, 키 값)를 로깅하지 않는다. 기존 누출 지점 처리 선택지는 R9의 비교 표(전수 13곳 / api-manager 4곳만 / 분리). (B) 단일 지점 처리(logrus Hook 또는 `AI`에 로그용 가림)는 `models/ai/main.go:67`의 JSON 태그가 서비스 간 RPC 직렬화에도 쓰여 `json:"-"`로 바꾸면 키 전달이 끊기므로 그 방법은 불가 | **권장(제안안, CEO 승인 대기): 항상 키가 실리는 13곳(api-manager 4, ai-manager 8, call-manager 1)을 이번 PR에서 구조체·키 대신 id 필드만 남기는 기계적 한 줄 수정으로 함께 처리**. 로그 메시지와 다른 필드는 유지하고, 신규 기능 테스트 외 전용 회귀 테스트는 만들지 않는다. 근거: CEO 정책 "키 로깅 금지"와의 정합성, BYOK 키는 고객 OpenRouter 계정 과금과 직결. 이전 안(별도 이슈 분리)은 철회 권장. **오류 경로(R9 B, 최소 10곳, `v1_ais.go` `%v` 패턴과 notifyhandler/requesthandler publish 포함)는 키가 실리는지 미실증이므로 이번 PR 선택 항목**. **출시 전 확인 조건(제안)**: (1) 운영 로그 레벨과 포매터 실증(§8 항목 8: `DebugLevel`이 실제 적용되는지, `joonix` 출력에 `engine_key`가 포함되는지), (2) **이미 쌓인 로그의 보관·폐기 여부는 대표님이 판단**(기존 OpenAI/Gemini/Grok 키가 이미 기록되었을 수 있고, 이는 키 교체 권고 여부와도 연결). GET 응답 노출(R9)은 별도 이슈(Q9 결합 조건 참조) |
+| Q9 | sidebar 편집의 키 손실(R1-f) 처리. 선택지: (i) 별도 버그로 분리하고 BYOK는 서버 검증(400)으로 방어, (ii) 편집 진입 시 `GET ais/{id}` 재조회(A)를 모든 AI에 적용, (iii) 서버 의미 변경(B) | **(ii) 단일 권장(제안안, 담당자 승인 대기)**. 이번 PR에 포함. 직접 모델과 BYOK가 같은 코드 경로라 비용이 같고, (i)로 두면 서버가 BYOK+빈 키를 400으로 거부하므로 sidebar에서 BYOK AI 이름 변경이 항상 실패한다. 별도 버그로 분리하지 않음. (iii)은 PUT 의미 변경이라 채택하지 않음. **결합 조건**: 별도 이슈 "GET 응답의 `engine_key` 제거"를 진행하면 (ii)의 재조회가 키를 얻지 못해 깨진다. 그 이슈는 (iii) 또는 동등한 대체와 한 쌍으로만 진행한다(§6 표) |
+| Q10 | 키 로깅 정책(R9). **필수(이번 PR)**: 신규 코드가 키(`*ai.AI`, 요청 본문, 키 값)를 로깅하지 않는다. 기존 누출 지점 처리 선택지는 R9의 비교 표(전수 13곳 / api-manager 4곳만 / 분리). (B) 단일 지점 처리(logrus Hook 또는 `AI`에 로그용 가림)는 `models/ai/main.go:67`의 JSON 태그가 서비스 간 RPC 직렬화에도 쓰여 `json:"-"`로 바꾸면 키 전달이 끊기므로 그 방법은 불가 | **권장(제안안, 담당자 승인 대기): 항상 키가 실리는 13곳(api-manager 4, ai-manager 8, call-manager 1)을 이번 PR에서 구조체·키 대신 id 필드만 남기는 기계적 한 줄 수정으로 함께 처리**. 로그 메시지와 다른 필드는 유지하고, 신규 기능 테스트 외 전용 회귀 테스트는 만들지 않는다. 근거: 담당자 정책 "키 로깅 금지"와의 정합성, BYOK 키는 고객 OpenRouter 계정 과금과 직결. 이전 안(별도 이슈 분리)은 철회 권장. **오류 경로(R9 B, 최소 10곳, `v1_ais.go` `%v` 패턴과 notifyhandler/requesthandler publish 포함)는 키가 실리는지 미실증이므로 이번 PR 선택 항목**. **출시 전 확인 조건(제안)**: (1) 운영 로그 레벨과 포매터 실증(§8 항목 8: `DebugLevel`이 실제 적용되는지, `joonix` 출력에 `engine_key`가 포함되는지), (2) **이미 쌓인 로그의 보관·폐기 여부는 담당자가 판단**(기존 OpenAI/Gemini/Grok 키가 이미 기록되었을 수 있고, 이는 키 교체 권고 여부와도 연결). GET 응답 노출(R9)은 별도 이슈(Q9 결합 조건 참조) |
 | Q11 | 고객 노출 문서 위치: `ai_struct_ai.rst`(Custom 유형 설명, `engine_key` 필수 조건, ZDR 안내, 비용은 고객 계정에 청구), `GET /ai_models` RST(`key_mode`), `skill.md`. 자체 호스팅 문서는 변경 없음(BYOK는 플랫폼 키 불필요). `engine_key` 응답 여부에 대한 RST/openapi.yaml(`:2196-2198`) 문구 불일치 정정 여부도 함께 결정 | BYOK 문서는 이번 PR 필수: `ai_struct_ai.rst`, `ai_models.rst`(`GET /ai_models`), `skill.md`, `llms.txt`(BYOK 언급이 해당될 때). 문구 불일치 정정은 6절 표의 "같은 PR 선택"(문구만 정정, 코드 변경 없음, 같은 PR에서 함께 권장) |
 
 ## 8. 실증이 필요한 항목 요약 (코드만으로 확정 불가)
 
-수행자: **대표님**(고객 OpenRouter 키 또는 검증용 키 제공, 운영 로그 접근) 또는 **Claude**(코드 실행, 더미 값 사용). 시점: **디자인 전**(디자인 결정을 막는 항목), **구현 중**(테스트로 고정), **별도 이슈**(정리 이슈에서 수행). 차단 항목은 실증 전 아래 fail-closed 기본값을 적용한다.
+수행자: **담당자**(고객 OpenRouter 키 또는 검증용 키 제공, 운영 로그 접근) 또는 **Claude**(코드 실행, 더미 값 사용). 시점: **디자인 전**(디자인 결정을 막는 항목), **구현 중**(테스트로 고정), **별도 이슈**(정리 이슈에서 수행). 차단 항목은 실증 전 아래 fail-closed 기본값을 적용한다.
 
 | # | 항목 | 차단 대상 | 수행자 | 시점 | 실증 전 fail-closed 기본값 |
 |---|---|---|---|---|---|
-| 1 | 고객 키로 `provider.zdr:true` 호출: ZDR 제공자가 있는 모델 성공, 없는 모델 실패 상태/원문(R2) | Q5 | 대표님(키 제공) + Claude(호출) | 디자인 전 | Q5는 (a) `unknown` 유지 + 문서 안내. 분류기는 확장하지 않음 |
-| 2 | 무효 키, 크레딧 없음(402)에서 러너가 보는 오류 원문과 분류 결과, 키 반사 여부(R5, R2) | Q5, R9 마지막 항목 | 대표님(키 제공) + Claude | 디자인 전 | 위와 동일. 러너 오류 원문 로깅(최대 2000자)은 이번 PR에서 유지만 하고 BYOK 키 반사 가능성을 보고 항목으로 둠 |
+| 1 | 고객 키로 `provider.zdr:true` 호출: ZDR 제공자가 있는 모델 성공, 없는 모델 실패 상태/원문(R2) | Q5 | 담당자(키 제공) + Claude(호출) | 디자인 전 | Q5는 (a) `unknown` 유지 + 문서 안내. 분류기는 확장하지 않음 |
+| 2 | 무효 키, 크레딧 없음(402)에서 러너가 보는 오류 원문과 분류 결과, 키 반사 여부(R5, R2) | Q5, R9 마지막 항목 | 담당자(키 제공) + Claude | 디자인 전 | 위와 동일. 러너 오류 원문 로깅(최대 2000자)은 이번 PR에서 유지만 하고 BYOK 키 반사 가능성을 보고 항목으로 둠 |
 | 3 | 빈 키로 BYOK 호출 시 Python이 `OPENROUTER_API_KEY`가 설정된 컨테이너에서도 예외를 내는지(R1-a, R4) | R1 방어 완결 | Claude | 구현 중 | `(key or "").strip()` 빈 값은 항상 예외. 이 실증이 통과하기 전에는 머지하지 않음 |
 | 4 | `GET /ais` 응답과 ai 웹훅에 `engine_key`가 실제 포함되는지(R9) | Q11 문구 정정 방향 | Claude | 구현 중 | 문구 정정은 "실증된 사실"로만 하고 미확인이면 정정하지 않음 |
 | 5 | sidebar 편집 저장 시 `engine_key`가 빈 값으로 덮이는지(R1-f) | Q9 | Claude(UI 실행) | 구현 중 | A안(재조회)을 무조건 적용(실증과 무관하게 안전) |
-| 6 | `openrouter.vendor/model:variant` ID가 첫 점 분리와 `extra_body` 전송까지 그대로 유지되는지(R3, 단위 + 실호출 1건) | Q4 | Claude(단위) + 대표님(실호출 키) | 구현 중 | `:` 변종은 거부 |
+| 6 | `openrouter.vendor/model:variant` ID가 첫 점 분리와 `extra_body` 전송까지 그대로 유지되는지(R3, 단위 + 실호출 1건) | Q4 | Claude(단위) + 담당자(실호출 키) | 구현 중 | `:` 변종은 거부 |
 | 7 | **러너 실제 폴백 검증(실행)**: 러너와 동일 환경(`OPENROUTER_API_KEY`, `OPENAI_API_KEY` 주입)에서 BYOK 분기에 빈 키/공백 키/`None`을 넣어 예외가 나고 외부 요청이 나가지 않음을 확인. 단위 테스트는 `conftest.py:55-63`이 pipecat 전체를 `MagicMock`으로 대체해 SDK 실제 동작을 검증하지 못함 | R1-a | Claude | 구현 중 | 3번과 동일 |
-| 8 | **로깅 레벨/포매터**: 운영에서 `DebugLevel`이 실제 적용되는지, `joonix` 출력에 `*ai.AI`의 `engine_key`가 실제 포함되는지(R9). 더미 값으로 `POST /ais` 후 로그 조회 | **R9 B 오류 경로(선택 항목)의 포함 여부와 이미 쌓인 로그의 폐기·키 교체 판단.** 13곳(A) 수정 자체는 이 실증을 기다리지 않는다(항상 실리는 지점이며 수정 비용이 작음) | 대표님(운영 로그 접근) | **출시 전 확인**(구현은 막지 않고 BYOK 출시 직전 게이트) | 누출 가능으로 간주하고 13곳 수정, 신규 코드는 무로깅. B는 실증 전 선택 항목 |
+| 8 | **로깅 레벨/포매터**: 운영에서 `DebugLevel`이 실제 적용되는지, `joonix` 출력에 `*ai.AI`의 `engine_key`가 실제 포함되는지(R9). 더미 값으로 `POST /ais` 후 로그 조회 | **R9 B 오류 경로(선택 항목)의 포함 여부와 이미 쌓인 로그의 폐기·키 교체 판단.** 13곳(A) 수정 자체는 이 실증을 기다리지 않는다(항상 실리는 지점이며 수정 비용이 작음) | 담당자(운영 로그 접근) | **출시 전 확인**(구현은 막지 않고 BYOK 출시 직전 게이트) | 누출 가능으로 간주하고 13곳 수정, 신규 코드는 무로깅. B는 실증 전 선택 항목 |
 | 9 | **SDK 환경변수 폴백**: `api_key=None`으로 `OpenRouterLLMService`를 만들 때 `OPENAI_API_KEY`가 실제로 `Authorization` 헤더에 실리는지(2.3은 소스 읽기 결과) | R1-a 근거 | Claude | 구현 중 | 폴백이 일어난다고 가정하고 `None`/`""`을 SDK에 넘기지 않음 |
-| 10 | **변종/라우터 ID와 ZDR 상호작용**: `:free`, `:online`, `:nitro`, `openrouter/auto` 등에서 `provider.zdr:true`가 유지되는지, 요청과 다른 제공자로 라우팅되는지(Q4) | Q4 | 대표님(키 제공) + Claude | 디자인 전 또는 후속 | 변종과 라우터형 ID는 거부 |
+| 10 | **변종/라우터 ID와 ZDR 상호작용**: `:free`, `:online`, `:nitro`, `openrouter/auto` 등에서 `provider.zdr:true`가 유지되는지, 요청과 다른 제공자로 라우팅되는지(Q4) | Q4 | 담당자(키 제공) + Claude | 디자인 전 또는 후속 | 변종과 라우터형 ID는 거부 |
 
 이 단계는 문서만 작성했으며 코드 수정, git commit/push는 하지 않았다.

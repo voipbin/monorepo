@@ -338,9 +338,9 @@ internal-RPC/tool-only features do not require RST `docsdev` updates.
 | Question | Recommendation | Owner |
 |---|---|---|
 | Composition guards (action count / recursion / loop) | Deferred to flow-manager activeflow layer, #991 (decided) | flow-manager |
-| SMS/Email/SNS verification gap | Fixed at resource managers, #989 (decided); not gated in this tool | CEO/CTO |
-| webhook_send SSRF / egress | Tracked in #979; not addressed here | CEO/CTO |
-| Should `talk` language default be injected if LLM omits it? | No; leave to the talk action executor's existing defaults | CPO |
+| SMS/Email/SNS verification gap | Fixed at resource managers, #989 (decided); not gated in this tool | Maintainer |
+| webhook_send SSRF / egress | Tracked in #979; not addressed here | Maintainer |
+| Should `talk` language default be injected if LLM omits it? | No; leave to the talk action executor's existing defaults | Product owner |
 
 ## 11. Review Summary
 

@@ -25,7 +25,7 @@ Both exist to serve the same visitor-facing moment ("what does the
 visitor see when the chat opens"), through two structurally different
 paths. This violates the standing product principle: **state-field
 duplication is disfavored where a Flow branch can express the same
-behavior** (see CPO decision log, 2026-07). Concretely:
+behavior** (see product owner decision log, 2026-07). Concretely:
 
 - `WelcomeMessage` bypasses the conversation/activeflow system
   entirely, so it never appears in conversation history — an
@@ -54,7 +54,7 @@ behavior** (see CPO decision log, 2026-07). Concretely:
    UI changes are explicitly deferred (see Non-goals).
 4. Ship as a clean removal, no field-preserving compatibility shim.
 
-## 3. Decisions locked (2026-07-18, CEO/CTO)
+## 3. Decisions locked (2026-07-18, maintainer)
 
 1. **Scope**: backend mechanism consolidation only
    (`bin-webchat-manager` + `bin-openapi-manager` +

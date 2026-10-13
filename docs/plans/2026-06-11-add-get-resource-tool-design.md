@@ -629,12 +629,12 @@ Table-driven, gomock requesthandler. Cases:
 | # | Question | Recommendation | Owner |
 |---|---|---|---|
 | 1 | Should aicall summaries include conversation history? | YES (settled — pchero, 2026-06-11: "적극적으로 포함"; transcribe/summary are different resources, and chat/conversation aicalls have no transcribe). Curated rendering: user/assistant lines + compact tool-call markers; system/notification/tool bodies excluded. Note: `get_aicall_messages` already exposes the full raw dump (incl. system) cross-session with the same ownership check, so this adds no new data surface. | settled |
-| 2 | Add `conversation` / `campaigncall` in Phase 1? | No. Correlation coverage for them is unverified (event payload activeflow_id); add in Phase 2 after verifying. | CPO |
+| 2 | Add `conversation` / `campaigncall` in Phase 1? | No. Correlation coverage for them is unverified (event payload activeflow_id); add in Phase 2 after verifying. | Product owner |
 | 3 | Per-AI gating beyond tool_names? | No. Ownership check is the control, consistent with get_correlation precedent. | settled |
 | 4 | PII: resource content (transcripts, summaries) flows to the customer's own LLM engine. | No new exposure: the same engine already receives the live conversation. No action. | settled |
 | 5 | `formatCorrelationSummary` prints `r.DataType` per line, which is the envelope content-type (`application/json`), not the model name — it is the exact line the LLM reads to pick `resource_type`. | Fix IN THIS PR: derive the label via first-underscore cut of `EventTypes[0]` (empty → `resource`); see Implementation Order step 5b + test case 11. | settled (round 3) |
 | 6 | Phase 1 carries 8 types; the motivating chain needs ~5 (call, transcribe, recording, summary, queuecall). Trim to reduce PR size? | Keep 8 per pchero's explicit scope direction (aicall, conferencecall included). Each fetcher is small; architecture identical either way. | settled (pchero, 2026-06-11) |
-| 7 | `get_aicall_messages` (pre-existing) returns distinguishable errors for absent vs cross-customer aicall ids — an existence oracle that coexists with get_resource's masking (see Section 5 caveat). Align its two failure paths behind one masked response? | Yes, as a small follow-up PR (behavior change to an existing tool's error copy; out of this PR's minimal-change scope). | CPO follow-up |
+| 7 | `get_aicall_messages` (pre-existing) returns distinguishable errors for absent vs cross-customer aicall ids — an existence oracle that coexists with get_resource's masking (see Section 5 caveat). Align its two failure paths behind one masked response? | Yes, as a small follow-up PR (behavior change to an existing tool's error copy; out of this PR's minimal-change scope). | Product owner follow-up |
 
 ## Review Summary
 

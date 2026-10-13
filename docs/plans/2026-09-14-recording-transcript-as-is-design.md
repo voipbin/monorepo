@@ -1,15 +1,15 @@
 # Recording Detail: Show Transcripts As-Is (Owner-agnostic) — Design
 
 Date: 2026-09-14
-Author: CPO (Hermes) with pchero
+Author: product owner (Hermes) with pchero
 Status: Design (review loop)
 Related analysis: 2026-09-14-recording-summary-source-transcript-analysis.md (issue analysis, 2연속 Approve)
 
-## 0. 결정 요약 (대표님 확정)
+## 0. 결정 요약 (담당자 확정)
 
 - **레이아웃**: E안 — 원문(Transcript)이 본문의 주인공, 상단에 AI Summary 배너. 4상태 정의(§4).
 - **구현 방향**: 선택 B — "이 recording에 딸린 transcript를 소유자 무관하게 있는 그대로 조회해 표시".
-  대표님 완화("Summary가 쓴 transcript와 표시 transcript가 반드시 일치할 필요 없다, 있는 그대로 보여주면 된다")로
+  담당자 완화("Summary가 쓴 transcript와 표시 transcript가 반드시 일치할 필요 없다, 있는 그대로 보여주면 된다")로
   summary↔transcript 매칭/연결/동봉/재파생 로직이 전부 불필요해짐.
 - **소유권 변경 아님**: transcribe 소유자(IDAIManager)는 그대로 둔다. 읽기 경로 하나만 recording 소유권으로 게이트해 연다.
 
@@ -32,7 +32,7 @@ Related analysis: 2026-09-14-recording-summary-source-transcript-analysis.md (is
 - E안 레이아웃과 4상태(§4)를 구현한다.
 
 **비목표**
-- summary와 transcript를 정확히 매칭/연결하지 않는다(대표님 완화). "summary source" 뱃지 등 연결 표기 안 함.
+- summary와 transcript를 정확히 매칭/연결하지 않는다(담당자 완화). "summary source" 뱃지 등 연결 표기 안 함.
 - transcribe 소유권 변경 안 함. 고객 transcribe 목록(별도 메뉴)에 IDAIManager transcribe를 노출하지 않음
   (본 변경은 recording 상세의 조회 경로에 한정).
 - SQUARE-69 이슈 B(고객 Transcribe 버튼 멱등키 문제)는 별도 트랙. 본 설계 범위 밖(§7).
@@ -166,7 +166,7 @@ transcribe=IDAIManager 소유), 각 축을 독립적으로 렌더하고 조합�
 
 **도달 가능한 조합 예시 (완전성 확인)**
 - T:ready × S:ready = 상태1(요약+원문)
-- T:ready × S:none = 상태2(원문만, Summarize 유도) ← 대표님 지적
+- T:ready × S:none = 상태2(원문만, Summarize 유도) ← 담당자 지적
 - T:ready × S:progressing = 원문 아래에서 요약 생성 중
 - **T:none × S:ready = 요약 배너 + "No transcript yet"** ← 리뷰 R1 지적. retention/TTL로 transcript가
   소거되고 summary(고객 소유)만 잔존 시 실재. 하단은 none 규칙대로 Transcribe 유도, 상단은 요약 표시.
@@ -179,7 +179,7 @@ transcribe=IDAIManager 소유), 각 축을 독립적으로 렌더하고 조합�
 × none/progressing/ready = 9)이 규칙으로 커버된다. 특정 조합 누락이 원천적으로 발생하지 않는다.
 
 **owner-agnostic 조회 원칙**: 하단 Transcript 축은 §3.2 신규 경로(`GET /recordings/{id}/transcribes`)로
-조회하므로, 사용자 생성/요약 부산물을 구분하지 않고 "있는 그대로" 반환한다(대표님 완화). "summary source" 등
+조회하므로, 사용자 생성/요약 부산물을 구분하지 않고 "있는 그대로" 반환한다(담당자 완화). "summary source" 등
 연결 표기는 하지 않는다.
 
 ### 4.2 컴포넌트 / 데이터 페치 계약 (확정)
@@ -205,7 +205,7 @@ transcribe=IDAIManager 소유), 각 축을 독립적으로 렌더하고 조합�
   내부적으로 IDAIManager transcribe를 생성하므로, 재진입 시 owner-agnostic 조회로 하단 원문이 채워진다.
   따라서 "Transcribe & Summarize" 결합 버튼은 제거한다. 이유: 결합 버튼이 고객 POST /transcribes까지 함께
   발행하면 동일 recording에 transcribe 2건(고객 소유 + IDAIManager 소유)이 생겨 owner-agnostic 조회가 둘 다
-  반환 → 하단에 동일 언어 그룹이 중복 렌더된다. 대표님 완화("있는 그대로")로 중복 억제 매칭을 배제했으므로,
+  반환 → 하단에 동일 언어 그룹이 중복 렌더된다. 담당자 완화("있는 그대로")로 중복 억제 매칭을 배제했으므로,
   중복 소스 자체를 만들지 않는 것이 옳다.
   - 상태4에서 "Transcribe"(원문만) 버튼도 둘지: 둔다. 단 Summarize와 Transcribe를 **동시에 누르는 결합은 없다**
     (각각 별도 버튼). 사용자가 Transcribe만 누르면 고객 소유 transcribe 1건, Summarize만 누르면 IDAIManager

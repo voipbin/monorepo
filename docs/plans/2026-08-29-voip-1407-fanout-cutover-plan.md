@@ -4,7 +4,7 @@
 - Ticket: VOIP-1407
 - Stage: 3 of 4 (implementation plan). Stage 1 (issue analysis, `tasks/todo.md` rev.11) and stage 2 (design, `docs/plans/2026-08-29-voip-1407-fanout-cutover-design.md`) are both APPROVED and are the authoritative sources for every technical decision below.
 - Branch / worktree: `VOIP-1407-Cutover-remove-fanout-dual-publish`, worktree at `~/gitvoipbin/monorepo/.worktrees/VOIP-1407-Cutover-remove-fanout-dual-publish`
-- Status: **APPROVED** (설계 review closed -- R4/R5 consecutive Approve after a 5-round loop across rounds 1-3's real findings, shrinking from 2 HIGH to 1 MEDIUM+3 LOW, and rounds 4-5's targeted fourth/fifth-instance passes finding nothing further requiring change). §8's open questions still require the 대표님's decision before implementation begins.
+- Status: **APPROVED** (설계 review closed -- R4/R5 consecutive Approve after a 5-round loop across rounds 1-3's real findings, shrinking from 2 HIGH to 1 MEDIUM+3 LOW, and rounds 4-5's targeted fourth/fifth-instance passes finding nothing further requiring change). §8's open questions still require the maintainer's decision before implementation begins.
 
 **Citation convention used throughout.** `design §N` = a section of `docs/plans/2026-08-29-voip-1407-fanout-cutover-design.md`. `issue §N` = a section of `tasks/todo.md`. `path:line` = a source citation carried forward from one of those two documents, or (where marked *verified this plan*) re-confirmed against the worktree while writing this plan. **No task in this plan introduces a decision that is not already made in the design doc.** Where this plan found something the design doc does not cover, it is raised in §8 (Open questions) rather than decided here.
 
@@ -533,7 +533,7 @@ Residue sweeps (R1 finding LOW-7 added the last two, matching §3 E5's full set)
   git log --oneline HEAD..origin/main
   ```
   If conflicts exist: rebase/merge, resolve, and **re-run the full verification workflow in every affected service** before proceeding.
-- **Merge:** do NOT merge. A review loop ends at approval. Wait for the 대표님's explicit "merge" instruction, then `gh pr merge <n> --squash --delete-branch`.
+- **Merge:** do NOT merge. A review loop ends at approval. Wait for the maintainer's explicit "merge" instruction, then `gh pr merge <n> --squash --delete-branch`.
 
 ### 6.1 PR body
 
@@ -709,11 +709,11 @@ Three different failure-handling regimes now coexist. Mixing them up is silent a
 
 ---
 
-## 8. Open questions for the 대표님 (design doc does not settle these)
+## 8. Open questions for the maintainer (design doc does not settle these)
 
 Per this plan's constraint, these are raised rather than decided.
 
-**OQ-1 -- RESOLVED (대표님 decision):** leave `bin-api-manager`'s residual machinery untouched in this PR; filed as a separate Jira cleanup follow-up, [VOIP-1425](https://voipbin.atlassian.net/browse/VOIP-1425). Matches this section's own recommendation below. **(done in VOIP-1425.)**
+**OQ-1 -- RESOLVED (the maintainer's decision):** leave `bin-api-manager`'s residual machinery untouched in this PR; filed as a separate Jira cleanup follow-up, [VOIP-1425](https://voipbin.atlassian.net/browse/VOIP-1425). Matches this section's own recommendation below. **(done in VOIP-1425.)**
 
 **OQ-1 -- `bin-api-manager`'s residual fanout-subscribe machinery.**
 *Verified this plan:* `bin-api-manager/pkg/subscribehandler/main.go` carries a `subscribeTargets []string` struct field (`:33`), constructor parameter (`:65`), and a fanout `QueueSubscribe` loop in `Run()` (`:94-95`) -- structurally identical to what design §3.1 deletes in the 20 services. It is fed an **empty** slice literal at `bin-api-manager/cmd/api-manager/main.go:206` (`subscribeTargets := []string{}`), so it binds zero fanout exchanges and design §5's exchange deletion **cannot** break it. That is presumably why it is correctly absent from the 20-service list. But the design doc does not mention this 21st instance of the same machinery at all, so it is unclear whether leaving it is intentional (genuinely harmless dead code, out of this ticket's stated scope) or an oversight (exactly the code shape this ticket exists to remove). **Recommendation: leave it, and file a separate Jira cleanup follow-up** -- deleting it adds a 21st service to an already 23-module PR for zero functional gain, and it cannot cause the outage design §5 guards against. Needs a ruling either way so a reviewer does not flag it as a miss.
@@ -721,10 +721,10 @@ Per this plan's constraint, these are raised rather than decided.
 **OQ-2 -- the test-file blast radius of Unit C's dead-wiring deletion.**
 Design §4 calls the 3 dead-wiring deletions "trivial (remove an unused field, an unused constructor parameter, and the `NewNotifyHandler` call plus its now-unused imports)." *Verified this plan:* removing `bin-transfer-manager/pkg/transferhandler`'s `notifyHandler` field and constructor parameter mechanically touches **8 test files** in that package. `bin-tts-manager/pkg/ttshandler` carries the same shape at smaller scale -- one test file (`main_test.go:97`) plus, unlike transfer, a SECOND live construction site (the `tts-manager` daemon at `cmd/tts-manager/main.go:128`, alongside `tts-control`) -- fully specified in Unit C's own text now (R3 finding MEDIUM-1), not just here. The mechanical fix (drop the mock-notify argument from each construction) is unambiguous, but a second question is not: several of those tests may currently set `mockNotify.EXPECT()` expectations that would become unused variables. **Recommendation: proceed with the mechanical fix and delete any now-unused mock declarations** -- that is the only compiling outcome. Flagged because the design doc's "trivial" framing under-describes the diff size, and a reviewer comparing plan-to-design may read the larger diff as scope creep.
 
-**OQ-3 -- RESOLVED (대표님 decision):** delete the now-meaningless tests as this plan's §3 E4 already specifies, do not rewrite them. Confirmed default; no change to E4's dispositions.
+**OQ-3 -- RESOLVED (the maintainer's decision):** delete the now-meaningless tests as this plan's §3 E4 already specifies, do not rewrite them. Confirmed default; no change to E4's dispositions.
 
 **OQ-3 -- the derived per-service consumer test inventory (§3 E4).**
-Design §8 specifies the consumer-side test requirement generically ("update `binding_golden_test.go` and the `Run()` sequencing test") rather than naming each service's tests, unlike the exhaustive treatment it gives `notifyhandler`'s tests. §3 E4 above **derives** the concrete per-service list by locating every existing `Run()`-related test in the worktree. The derivation contains judgment calls the design doc does not explicitly authorize -- specifically the **deletions**: `Test_Run_fanoutUnbindFails` (call), `Test_Run_sequencing_fanoutUnbindFailure_continues` (billing, contact), `Test_Run_TopicMigration_FanoutUnbindFailure` (timeline), `Test_Run_QueueSubscribeError` (tag), `Test_Run_SubscribeError` (contact), and the whole of `bin-timeline-manager/pkg/subscribehandler/run_sentinel_test.go`. Each targets behavior design §3.1/§3.2 removes, so deletion follows logically, but "delete the test" vs "keep the file and rewrite it to pin the new behavior" is a real choice. **This is the part of the plan a reviewer should scrutinize hardest.** No decision is made here beyond "follow the design's own logic"; if the 대표님 prefers rewriting over deleting for any of these, say so before implementation starts.
+Design §8 specifies the consumer-side test requirement generically ("update `binding_golden_test.go` and the `Run()` sequencing test") rather than naming each service's tests, unlike the exhaustive treatment it gives `notifyhandler`'s tests. §3 E4 above **derives** the concrete per-service list by locating every existing `Run()`-related test in the worktree. The derivation contains judgment calls the design doc does not explicitly authorize -- specifically the **deletions**: `Test_Run_fanoutUnbindFails` (call), `Test_Run_sequencing_fanoutUnbindFailure_continues` (billing, contact), `Test_Run_TopicMigration_FanoutUnbindFailure` (timeline), `Test_Run_QueueSubscribeError` (tag), `Test_Run_SubscribeError` (contact), and the whole of `bin-timeline-manager/pkg/subscribehandler/run_sentinel_test.go`. Each targets behavior design §3.1/§3.2 removes, so deletion follows logically, but "delete the test" vs "keep the file and rewrite it to pin the new behavior" is a real choice. **This is the part of the plan a reviewer should scrutinize hardest.** No decision is made here beyond "follow the design's own logic"; if the maintainer prefers rewriting over deleting for any of these, say so before implementation starts.
 
 **OQ-4 -- deploy sequencing is intentionally out of this plan.**
 Design §1 notes the publish-side and consumer-side changes "do not depend on EACH OTHER's code being live first, and can ship in separate PRs/commits," while design §3.4 and §5 impose per-service rollout preconditions. This plan follows root `CLAUDE.md` and ships one PR, which means **the whole change deploys as one unit**, and the per-service rollout gates of §3.4 apply to the deployment of that one artifact set rather than to separately merged PRs. That is compatible with both documents, but it does mean the deployment runbook (post-merge, out of this plan's scope) has to be written against a single-artifact rollout. Flagging so the deployment step is not assumed to inherit a two-phase shape the PR structure does not provide.
@@ -737,7 +737,7 @@ Design §1 notes the publish-side and consumer-side changes "do not depend on EA
 - [ ] §4.1's full verification workflow passes in all 23 code-touched modules, the blast-radius `go build` passes repo-wide, and F2b's 8 doc-only modules have their doc update reviewed (no Go verification applies to them).
 - [ ] Every checkbox in §4.2 (design §8 traceability) ticked.
 - [ ] Every checkbox in §7 (risk register) ticked.
-- [ ] §8's open questions answered by the 대표님 before implementation starts.
+- [ ] §8's open questions answered by the maintainer before implementation starts.
 - [ ] Docs (Unit F) staged with their corresponding code commits; `scripts/check-service-docs.sh` emits no unresolved warnings.
 - [ ] `git fetch origin main` + conflict check clean, PR opened with the §6.1 body and §6.2 verification section.
-- [ ] **NOT merged.** Awaiting the 대표님's explicit merge instruction.
+- [ ] **NOT merged.** Awaiting the maintainer's explicit merge instruction.

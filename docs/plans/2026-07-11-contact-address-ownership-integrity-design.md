@@ -1,7 +1,7 @@
 # Contact-Address Ownership Integrity — Design Doc
 
 - Status: DRAFT (under adversarial review loop; latest completed round recorded in §8)
-- Owner: pchero (CEO/CTO), design partner: Hermes (CPO role)
+- Owner: pchero (maintainer), design partner: Hermes (product owner role)
 - Ticket: NOJIRA (no JIRA ticket at time of writing)
 - Affected service: `bin-contact-manager`
 - Related prior work: VOIP-1204/1206/1207/1208/1209 (contact CRM interaction

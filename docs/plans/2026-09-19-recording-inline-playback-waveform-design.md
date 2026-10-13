@@ -2,7 +2,7 @@
 
 Status: Design APPROVED (2 consecutive rounds, iter-2/iter-3)
 Date: 2026-09-19
-Author: CPO (Hermes)
+Author: product owner (Hermes)
 Analysis: `2026-09-19-recording-inline-playback-waveform-analysis.md` (Analysis APPROVED, iter-4/5)
 
 ## 1. Problem statement
@@ -13,7 +13,7 @@ square-admin 레코딩 상세 페이지에는 Download(zip) 버튼만 있어 통
 
 - G1. 레코딩 상세 페이지에서 다운로드 없이 녹음을 인라인 재생할 수 있다(네이티브 오디오 컨트롤).
 - G2. 통화 녹음의 방향별(in/out) 파일을 각각 재생할 수 있다. conference 녹음은 단일 파일.
-- G3. 재생과 함께 음성 파형을 표시한다. **녹음 길이와 무관하게 모든 녹음에서 파형을 표시한다**(대표님 결정, 분석 §5.4).
+- G3. 재생과 함께 음성 파형을 표시한다. **녹음 길이와 무관하게 모든 녹음에서 파형을 표시한다**(담당자 결정, 분석 §5.4).
 - G4. 파형 데이터는 백엔드가 계산해 제공한다. 클라이언트는 wav 원본을 파형 목적으로 내려받지 않는다(CORS·이그레스·모바일 메모리 문제 회피).
 - G5. 녹음이 아직 없거나(진행중/등록지연) 파일이 없을 때 재생 UI가 빈/생성중 상태를 구분해 안내한다.
 
@@ -24,7 +24,7 @@ square-admin 레코딩 상세 페이지에는 Download(zip) 버튼만 있어 통
 - N3. 재생 속도 조절·트랜스크립트 동기 하이라이트. (별도 후속.)
 - N4. recordingfiles/{id}(zip) 다운로드 경로 변경. 기존 Download 버튼 유지.
 
-## 4. Decisions locked (대표님 확정)
+## 4. Decisions locked (담당자 확정)
 
 - D1. 재생 UI = 레코딩 상세 페이지 인라인.
 - D2. 재생용 wav URL = 신규 `GET /recordings/{id}/playfiles`.

@@ -3,7 +3,7 @@
 Status: issue analysis (pre-design), revision 6. Review loop closed: rounds 1-4 REQUEST
 CHANGES, rounds 5-6 APPROVE (2 consecutive); round-6 Medium/Low/Nit applied.
 Scope: PR #1349 (NOJIRA-Add-mcp-tool-exposure-b2), deployed to prod ahead of merge
-by the CEO for a live check.
+by the maintainer for a live check.
 
 ## 1. Symptom (prod, 2026-09-29, 08:27:47 to 08:28:40 UTC)
 
@@ -216,7 +216,7 @@ E. Per-tool isolation on the Gemini path (Python). Hook: `run.py create_llm_serv
   rules and the live call before merge.
 - Also in PR #1349: make the Go side log the RTVI `error` frame at WARN (today DEBUG) so the
   failure is visible where the rest of the session is logged. A metric is optional.
-- B as a separate track (CEO approved the split). Reframe it as: the runner version floats
+- B as a separate track (maintainer approved the split). Reframe it as: the runner version floats
   and is held back only by `pipecat-ai-flows`' `<1.5.0` cap; pin it deliberately, migrate
   flows to `pipecat.flows`, and bring the runner current. It also closes the reported case
   a second way.

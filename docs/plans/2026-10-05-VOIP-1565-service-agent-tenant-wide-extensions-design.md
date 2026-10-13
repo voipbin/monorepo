@@ -8,7 +8,7 @@
 
 ## 1. 문제
 
-`GET /service_agents/extensions`, `GET /service_agents/extensions/{id}` 는 로그인 Agent 본인 `Addresses` 의 extension 만 반환한다(분석 2.1). 상담사는 같은 고객사 다른 상담사의 extension(번호, 이름)을 볼 수 없다. 대표님 요구는 고객사 전체 extension 을 조회하되 SIP 비밀번호는 본인 소유만 볼 수 있게 하는 것이다.
+`GET /service_agents/extensions`, `GET /service_agents/extensions/{id}` 는 로그인 Agent 본인 `Addresses` 의 extension 만 반환한다(분석 2.1). 상담사는 같은 고객사 다른 상담사의 extension(번호, 이름)을 볼 수 없다. 담당자 요구는 고객사 전체 extension 을 조회하되 SIP 비밀번호는 본인 소유만 볼 수 있게 하는 것이다.
 
 ## 2. 목표
 
@@ -20,9 +20,9 @@
 
 ## 3. Non-goals
 
-- 별도 `scope` 파라미터, `/me/extensions` 경로, `is_owner` 필드 신설 (대표님 결정 및 분석 3절 오버엔지니어링 점검).
-- 하위 호환 유지 (대표님: 서비스 단절 비고려).
-- `PUT /service_agents/me/addresses` 자기 등록 정책 변경 (분석 5.4, 후속 이슈로 대표님께 별도 보고).
+- 별도 `scope` 파라미터, `/me/extensions` 경로, `is_owner` 필드 신설 (담당자 결정 및 분석 3절 오버엔지니어링 점검).
+- 하위 호환 유지 (담당자: 서비스 단절 비고려).
+- `PUT /service_agents/me/addresses` 자기 등록 정책 변경 (분석 5.4, 후속 이슈로 담당자에게 별도 보고).
 - `extensionGet` 의 기존 Debug 로그 변경 (분석 6.3, 후속 보고).
 - admin `/extensions` 경로 변경.
 
@@ -30,7 +30,7 @@
 
 | # | 결정 | 근거 |
 |---|---|---|
-| D1 | 고객사 전체 조회로 전환, 별도 모드 없음 | 대표님 확정 |
+| D1 | 고객사 전체 조회로 전환, 별도 모드 없음 | 담당자 확정 |
 | D2 | 마스킹 필드는 `password`, `direct_hash`. `username`, `domain_name`, `extension`, `name`, `detail` 은 노출 | 분석 5.3 |
 | D3 | 마스킹 값은 빈 문자열(키 유지). `WebhookMessage` 에 omitempty 없음, 구조 변경 없음 | 분석 4절 1번 |
 | D4 | 소유 판정 = `agentGet` 재조회 Addresses 의 `type=extension` target 일치. 재조회 실패 시 오류(fail closed) | 분석 7.2 |

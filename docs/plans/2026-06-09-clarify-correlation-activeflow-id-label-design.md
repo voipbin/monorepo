@@ -1,7 +1,7 @@
 # Design: Use "activeflow" terminology in get_correlation output and description
 
 Status: Draft (v2)
-Author: CPO (with pchero)
+Author: product owner (with pchero)
 Date: 2026-06-09
 Service: bin-ai-manager
 

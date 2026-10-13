@@ -2,7 +2,7 @@
 
 Date: 2026-06-15
 Branch: NOJIRA-transcribe-direction-bugfix-calls-spec
-Author: CPO (Lux) for pchero
+Author: product owner (Lux) for pchero
 
 ## Context
 

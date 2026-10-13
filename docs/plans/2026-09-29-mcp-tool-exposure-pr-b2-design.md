@@ -2,7 +2,7 @@
 
 Status: design, based on `2026-09-27-mcp-phase2-tool-exposure-analysis-v2.md`
 (nine review rounds) and `2026-09-29-mcp-pr-b2-deferred-items-design-draft.md`
-(a draft written mid-PR-B1 for five items the CEO chose to land there
+(a draft written mid-PR-B1 for five items the maintainer chose to land there
 instead; re-read here for its still-relevant reasoning on B10/B19/B13/B20/B28,
 all already merged). This document is normative for what remains: **B2 is the
 PR where advertisement turns on** (B12), plus every correctness item the v2
@@ -29,7 +29,7 @@ the tag); §2.3a adds a session-start discovery latency budget (High); §2.2
 documents the structural mcp_-prefix collision guarantee (High); §3's caller
 graph is confirmed at implementation time per §2.4's note (High, B11); §8
 now states the kill switch location unambiguously; §9 commits to concrete
-metric labels; §12 adds the token-cost/DoS risk as an explicit CEO/CTO
+metric labels; §12 adds the token-cost/DoS risk as an explicit maintainer
 sign-off item rather than a silent deferral; §2.3's `persistToolMap` now
 documents its concurrency handling.
 
@@ -626,7 +626,7 @@ is updated to name it explicitly.
 
 ## 12. Open questions carried forward (not blocking this PR)
 
-**Risk requiring explicit CEO/CTO sign-off before merge (round 1 High finding,
+**Risk requiring explicit maintainer sign-off before merge (round 1 High finding,
 not previously called out this plainly):** the v2 analysis measured a
 worst-case ~132,000 tokens per conversational turn for 64 MCP tools with
 Korean-heavy descriptions at the existing per-tool cap. B7 (a token-based
@@ -650,7 +650,7 @@ under today's implicit limit, e.g. 512 characters, cheap to add, not the full
 token-aware design) into this PR as a stopgap. Recommend (a) with the PR body
 calling it out explicitly, since (b) risks scope creep into B7's real design
 work and the blast radius is per-customer, not platform-wide -- but this is a
-CEO/CTO call, not an engineering default.
+maintainer call, not an engineering default.
 
 **Second day-one risk, no aggregate rate limit on repeated discovery (round 2
 High finding):** §2.3's `persistToolMap` concurrency note observes that
@@ -724,7 +724,7 @@ Status: design addendum, revised after design review round 1 and amended after c
 review rounds 1 to 6 of `0aa260c84` (R4 dedupe, R7a, R10a, `maxWork` in R12), and
 15.6 after merging `main` (VOIP-1542). Source analysis:
 `2026-09-29-mcp-tool-schema-provider-compat-analysis.md` (revision 6, review loop
-closed; "the analysis" below, section numbers prefixed "an."). CEO decision: A (Go
+closed; "the analysis" below, section numbers prefixed "an."). Maintainer decision: A (Go
 allowlist normalization in ai-manager) plus E (per-tool Gemini validation in the
 Python runner) plus the Go-side RTVI `error` frame log raised to WARN, all in this PR.
 B (pipecat upgrade) is a separate later track and out of scope here. Code references
@@ -1465,7 +1465,7 @@ pipecat job, `go-test-pipecat-manager`, runs Go only). So:
 
 ### 15.8 Pre-merge live verification
 
-Who: the CEO triggers it (paid provider calls; per the no-cost-test rule these are
+Who: the maintainer triggers it (paid provider calls; per the no-cost-test rule these are
 not automated). Claude prepares the payloads and the exact commands, and records the
 results in the PR body.
 

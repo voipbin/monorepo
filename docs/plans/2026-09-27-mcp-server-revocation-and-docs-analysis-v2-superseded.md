@@ -1,7 +1,7 @@
 # Analysis: MCP server revocation gap + docs/UI correctness (v2)
 
 Date: 2026-09-27
-Author: CPO (Hermes)
+Author: product owner (Hermes)
 Status: v2, Analysis Review Loop round 2 pending
 Supersedes: `2026-09-27-mcp-server-customer-gap-analysis-v1-superseded.md`
 (v1 §2.4 was factually wrong; retrospective in §7)
@@ -212,7 +212,7 @@ table — the table itself needs a row.
 3. **Narrative docs (`mcpserver_overview` / `_tutorial`)** — same PR as (1) if it
    stays reviewable, otherwise a follow-up. Decide at design time.
 
-### CEO decision locked 2026-09-27
+### Maintainer decision locked 2026-09-27
 
 Option A: **soft-delete MUST revoke tool access.** Verbatim: "A로 가자. 당연히
 삭제했으면 차단하는게 맞아." So D1 is a backend fix, not a docs-only

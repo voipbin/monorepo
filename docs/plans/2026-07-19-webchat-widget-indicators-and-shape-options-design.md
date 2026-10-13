@@ -2,7 +2,7 @@
 
 Status: APPROVED (3 rounds, rounds 2-3 consecutive 3/3 + 1/1 APPROVE — see §9-§10). Ready for implementation.
 
-## 1. Scope (locked with CEO/CTO)
+## 1. Scope (locked with the maintainer)
 
 Fourth extension to `Widget.ThemeConfig` (currently 9 fields:
 `primary_color`, `secondary_color`, `header_background_color`,

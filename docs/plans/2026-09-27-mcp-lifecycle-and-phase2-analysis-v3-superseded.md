@@ -1,13 +1,13 @@
 # Analysis: MCP server lifecycle correctness + Phase 2 tool exposure (v3)
 
 Date: 2026-09-27
-Author: CPO (Hermes)
+Author: product owner (Hermes)
 Status: v3, Analysis Review Loop round 3 pending
 Supersedes:
 - `2026-09-27-mcp-server-customer-gap-analysis-v1-superseded.md` (§2.4 factually wrong)
 - `2026-09-27-mcp-server-revocation-and-docs-analysis-v2-superseded.md` (D1 severity overstated; missed F1/F2/F3)
 
-## 0. CEO decisions locked 2026-09-27
+## 0. Maintainer decisions locked 2026-09-27
 
 Asked as Q1..Q4, answered verbatim:
 
@@ -16,7 +16,7 @@ Asked as Q1..Q4, answered verbatim:
 | Q1 | Implement the documented "MCP tools presented to the LLM" behavior, or correct the docs to match the code? | **Implement.** "Q1. 구현하자." |
 | Q2 | How much of the lifecycle scope lands? | **All of it.** "Q2. 전부." |
 | Q3 | Zero stored credentials on delete? | **Yes.** "Q3. 지우자. 그게 맞지." |
-| Q4 | Dead `mcp_tools_list_cache_ttl_seconds` flag: implement or remove? | Clarified in §2.6 below; **remove the flag, no cache** (CPO recommendation, accepted: "좋아. 진행해.") |
+| Q4 | Dead `mcp_tools_list_cache_ttl_seconds` flag: implement or remove? | Clarified in §2.6 below; **remove the flag, no cache** (product owner recommendation, accepted: "좋아. 진행해.") |
 
 PR split approved in the same turn: PR A (lifecycle+docs), PR B (Phase 2 tool
 exposure), PR C (square-admin). Rationale in §3.
@@ -309,7 +309,7 @@ a row.
 
 ## 3. Proceed decision and PR plan
 
-### PROCEED. Three PRs, ordering-constrained. CEO-approved split.
+### PROCEED. Three PRs, ordering-constrained. Maintainer-approved split.
 
 **PR A — `voipbin/monorepo` — MCP server lifecycle correctness + docs.**
 D1, D2, D3, D4, D5, D6. One logical unit: "a deleted MCP server must be inert

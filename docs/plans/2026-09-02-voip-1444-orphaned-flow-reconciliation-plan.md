@@ -326,7 +326,7 @@ that wrongly claimed it did). One PR, commit body with both `bin-campaign-manage
 Explicitly out of scope (all already filed as separate tickets or explicitly deferred):
 - The existing historical flow backlog beyond the window (VOIP-1443's design doc, needs separate
   authorization).
-- Prometheus alerting (dropped from VOIP-1444 by 대표님's explicit instruction).
+- Prometheus alerting (dropped from VOIP-1444 by the maintainer's explicit instruction).
 - `bin-flow-manager`'s `Delete()` non-idempotency (VOIP-1448, orthogonal — `bin-schedule-manager`'s
   claim semantics make concurrent duplicate dispatch structurally impossible, so this job's
   correctness never depends on VOIP-1448 landing).
@@ -827,7 +827,7 @@ DESC-order-plus-two-signal fix was chosen over a cursor, not because a cursor wa
    `bin-dbscheme-manager/CLAUDE.md`'s migration+fixture-sync rule.
 10. **Rollout sequencing (closes the dispatch-before-route-exists ordering hazard)**: the seed
     migration ships with **`enabled: 0`**. After this PR merges and both the migration is applied
-    (by 대표님/ops, per the Alembic AI-authorship boundary below) and the `bin-campaign-manager`
+    (by the maintainer/ops, per the Alembic AI-authorship boundary below) and the `bin-campaign-manager`
     image carrying the new route is deployed: (a) fire a manual smoke test via
     `POST /v1/schedules/{id}/execute` — **design-round-8 addition, how to actually issue this
     call**: `bin-schedule-manager/cmd/schedule-control` has no `execute` subcommand (only

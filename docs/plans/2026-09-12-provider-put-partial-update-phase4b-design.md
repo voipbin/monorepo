@@ -1,7 +1,7 @@
 # Phase 4b: PUT /providers/{id} partial-update fix
 
 Status: DRAFT (Round 0)
-Author: CPO, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
+Author: product owner, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
 Phase: 4 of 8 (§4, roadmap row #6, rated **MEDIUM** risk, hybrid — `codecs`
 already optional) — provider half of the two-service Phase 4 split (queues
 + providers land as two separate PRs per the roadmap's one-PR-per-repo-boundary
@@ -102,7 +102,7 @@ resends the exact-current values in full, or — after this fix — omits
 every field) and should be called out explicitly to reviewers, not left
 implicit.** No known webhook consumer depends on receiving
 `provider_updated` for a true no-op; if one is discovered, that is a
-separate question to raise with 대표님, not a reason to block this phase
+separate question to raise with the maintainer, not a reason to block this phase
 (mirrors the roadmap §6 non-goal discipline: no retroactive/consumer-side
 accommodation without a concrete signal).
 

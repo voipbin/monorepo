@@ -1,7 +1,7 @@
 # Phase 2: PUT /customer and PUT /customers/{id} partial-update fix
 
 Status: DRAFT (Round 0)
-Author: CPO, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
+Author: product owner, per roadmap `docs/plans/2026-09-12-put-partial-update-migration-roadmap.md`
 Phase: 2 of 8 (§4, roadmap row #1/#2, both rated **HIGH** risk)
 Precedent: PR #1291 (`mcpservers`, merged `81a9a6b98`), PR #1293 (Phase 1,
 `extensions`/`trunks`, merged `fcb65062c`) — this doc applies the same
@@ -195,7 +195,7 @@ Per roadmap §3's established pattern, applied to this chain:
   `IsValid()` method exists on `customer.WebhookMethod`, confirmed via
   `models/customer` package search — only 5 string constants are defined,
   no validation function). This phase does not add new validation; it only
-  makes the field's *presence* conditional. If 대표님 wants webhook_method
+  makes the field's *presence* conditional. If the maintainer wants webhook_method
   validated in the future, that is a separate, unrelated enhancement.
 
 ## 5. Risk / rollback
@@ -259,7 +259,7 @@ site is `customerHandler.UpdateBasicInfo`, not the listenhandler):
 - No retroactive remediation for customer rows whose `webhook_uri`/other
   fields may have already been silently wiped in production by the pre-fix
   behavior (mirrors PR #1291 §8 and the roadmap §6 — raise separately to
-  대표님 if a concrete customer complaint surfaces).
+  the maintainer if a concrete customer complaint surfaces).
 - No `square-admin` frontend changes bundled into this PR (roadmap §6).
 - No new PATCH method / HTTP verb redesign (roadmap §6).
 - No `webhook_method` value validation added (§4 above — out of scope,

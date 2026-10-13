@@ -1,7 +1,7 @@
 # Design: Fix contact wire-DTO layering violation in bin-api-manager
 
 Date: 2026-09-28
-Author: CPO (Claude, on behalf of 대표님)
+Author: product owner (Claude, on behalf of the maintainer)
 Status: draft
 
 ## Problem

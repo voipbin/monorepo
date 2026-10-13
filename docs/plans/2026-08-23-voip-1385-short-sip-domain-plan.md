@@ -22,7 +22,7 @@ Merging follows the design's deploy order; PR bodies state their gate.
   customer_id BINARY(16) PK, domain_label VARCHAR(64) UNIQUE,
   realm VARCHAR(255) UNIQUE, tm_create/tm_update DATETIME(6). No tm_delete
   (deliberate, documented deviation).
-- Do NOT run alembic upgrade (policy; CEO/CTO executes).
+- Do NOT run alembic upgrade (policy; maintainer executes).
 
 ## Task 2 — bin-registrar-manager: domain model + handler + RPC
 
@@ -124,7 +124,7 @@ New package layout (follows existing per-entity conventions):
 ## Task 5 — bin-call-manager: reverse-parse removal + .reg.-only classification
 
 - projectconfig: `DomainRegistrarSuffix` becomes `".reg." + base` ONLY —
-  no legacy constant (CEO/CTO decision: window downtime accepted;
+  no legacy constant (maintainer decision: window downtime accepted;
   `.registrar.` domains classify as none/rejected). Kamailio keeps its
   `.registrar.` auth-gate regex (security, removed in cleanup step 6).
 - start_incoming_domain_type_registrar.go: replace TrimSuffix+FromStringOrNil
@@ -210,7 +210,7 @@ New package layout (follows existing per-entity conventions):
 ## Explicitly out of scope (this PR set)
 
 - DNS record creation, cert issuance, Komodo variable registration, env
-  flip, production batch execution (runbook steps, CEO/CTO-driven).
+  flip, production batch execution (runbook steps, maintainer-driven).
 - Legacy suffix cleanup (design step 6).
 - Vanity labels.
 - SDK regeneration (voipbin-go, python-sdk, vn CLI, MCP) + release notes:

@@ -1,6 +1,6 @@
 # VOIP-1573 Flow AI Builder 디자인 (v9)
 
-Jira: VOIP-1573. 상태: **디자인 리뷰 루프 종료. 구현 착수(2026-10-07, 대표님 지시).** OQ1=노출, OQ7=분리로 확정. 이력: 1~5회차는 REQUEST_CHANGES가 섞였고(Critical는 1~3회차에서 각각 해소), 6회차는 I APPROVE와 J REQUEST_CHANGES(리셋)였다. 8회차의 Low/Nit는 v9에서 문서 정정으로 반영했다(리셋하지 않음).
+Jira: VOIP-1573. 상태: **디자인 리뷰 루프 종료. 구현 착수(2026-10-07, 담당자 지시).** OQ1=노출, OQ7=분리로 확정. 이력: 1~5회차는 REQUEST_CHANGES가 섞였고(Critical는 1~3회차에서 각각 해소), 6회차는 I APPROVE와 J REQUEST_CHANGES(리셋)였다. 8회차의 Low/Nit는 v9에서 문서 정정으로 반영했다(리셋하지 않음).
 
 v9는 8회차의 Low/Nit를 반영했다(부록 A). 이전 회차 변경 이력은 부록 A에 있다.
 
@@ -8,7 +8,7 @@ v9는 8회차의 Low/Nit를 반영했다(부록 A). 이전 회차 변경 이력�
 
 square-admin의 Flow 에디터(`flows_create.js` + `actiongraph/`)는 하드코딩 템플릿(`flow_templates.js`)만 제공한다. Assistant 생성 화면에는 이미 대화형 "Build with AI"(VOIP-1558, `bin-ai-manager/pkg/builderhandler`, 설계 `docs/plans/2026-10-01-conversational-assistant-builder-design.md`)가 있다. 같은 경험을 Flow 생성에도 제공한다.
 
-확정 결정(대표님):
+확정 결정(담당자):
 1. **상태 없는 동기 멀티턴.** 대화 이력은 브라우저가 보관하고 서버는 저장하지 않는다.
 2. 자동 저장하지 않는다. 기존 Flow 에디터에 초안을 채우고 사용자가 확인 후 저장한다.
 3. **핵심 요건: Flow 액션 목록과 옵션은 언제든 추가/변경된다. 빌더는 액션 타입 이름으로 분기하는 코드를 갖지 않고 flow-manager의 액션 정의 메타데이터에서 전부 파생된다.** 노출은 분류 선언으로 자동 결정한다(고정 허용 목록 기각).
@@ -185,7 +185,7 @@ Assistant Builder의 구성(역할, 핵심 차원, 인터뷰 행동 규칙, few-
 
 ## 7. sensitive 노출 정책
 
-v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노출하고, 초안에 포함되면 `sensitive_nodes`에 노드 id를 담는다(구조화 필드 하나만 둔다. 같은 사실을 경고 문자열로 중복하지 않으며, 패널이 `sensitive_nodes`가 비어 있지 않을 때 고정 영문 안내와 노드 강조를 표시한다). 프롬프트 규칙은 사용자가 말한 동작만 넣게 한다(LLM 준수 사항이며 코드가 보증하는 것은 표시까지다). 비노출로 정하면 콜백, 아웃바운드 캠페인처럼 핵심 시나리오를 만들 수 없으므로 노출을 권고한다. 결정은 대표님 몫이다(Open Question 1).
+v1(코드 상수 결정이며 설정 플래그가 아니다): `sensitive`를 노출하고, 초안에 포함되면 `sensitive_nodes`에 노드 id를 담는다(구조화 필드 하나만 둔다. 같은 사실을 경고 문자열로 중복하지 않으며, 패널이 `sensitive_nodes`가 비어 있지 않을 때 고정 영문 안내와 노드 강조를 표시한다). 프롬프트 규칙은 사용자가 말한 동작만 넣게 한다(LLM 준수 사항이며 코드가 보증하는 것은 표시까지다). 비노출로 정하면 콜백, 아웃바운드 캠페인처럼 핵심 시나리오를 만들 수 없으므로 노출을 권고한다. 결정은 담당자 몫이다(Open Question 1).
 
 실행 시점 게이트: 저장 전에는 Flow가 없으므로 초안은 실행되지 않는다. 저장된 Flow 실행 시 비용/권한 게이트는 하위 서비스 책임이다. `fetch`/`webhook_send`의 URL 검증은 구현 시작 시 코드를 읽고 확인했다(Open Question 8): `fetch`는 검증이 없어 v1 비노출(`internal`), `webhook_send`는 webhook-manager가 검증한다.
 
@@ -222,16 +222,16 @@ Assistant Builder의 `builder_eval` 하네스를 차용해 Flow 시나리오로 
 
 | # | 질문 | 제안 | 결정 |
 |---|---|---|---|
-| 1 | `sensitive` 노출(코드 상수 결정) | 노출 + 구조화 표시와 경고. 비노출 시 아웃바운드 시나리오 불가 | **확정(대표님, 2026-10-07): 노출**. |
-| 2 | 리소스 ID 목록 주입 | v1 비움 + 경고, 주입은 후속 | 대표님 |
+| 1 | `sensitive` 노출(코드 상수 결정) | 노출 + 구조화 표시와 경고. 비노출 시 아웃바운드 시나리오 불가 | **확정(담당자, 2026-10-07): 노출**. |
+| 2 | 리소스 ID 목록 주입 | v1 비움 + 경고, 주입은 후속 | 담당자 |
 | 3 | `ref` 태깅 범위 | 해결: UUID 필드를 가진 모든 타입에 태깅 | 확정 제안 |
-| 4 | 한도/오류코드 공유 | `Reason*` 코드와 대화용 한도 상수는 `models/builder`와 공유하고, 요청/응답/검증 타입은 신규 flow builder 모델 패키지로 둔다 | 대표님 |
-| 5 | `ref` 태그를 `describe_action` 카탈로그에 반영 | 범위 밖 | 대표님 |
+| 4 | 한도/오류코드 공유 | `Reason*` 코드와 대화용 한도 상수는 `models/builder`와 공유하고, 요청/응답/검증 타입은 신규 flow builder 모델 패키지로 둔다 | 담당자 |
+| 5 | `ref` 태그를 `describe_action` 카탈로그에 반영 | 범위 밖 | 담당자 |
 | 6 | 노출 타입 집합 | 고정 목록 없이 `Exposure` ∩ 프런트 목록 ∩ 구조 제외 | 해결 |
-| 7 | 일일 한도 카운터를 Assistant와 분리할지 | 분리 권고(한쪽이 다른 쪽을 소진하지 않게). 공유는 추가 변경 없이 가능하나 서로 한도를 소진. 분리 시 cachehandler 인터페이스/mock/테스트 변경 | **확정(대표님, 2026-10-07): 분리**. |
-| 8 | `fetch`/`webhook_send` URL 검증 | **확인 완료(구현 시작 시 코드 확인)**: `webhook_send`는 bin-webhook-manager의 SSRF 방어 클라이언트와 URL 검증(`urlvalidator.go`, 사설/예약 IP 거부)을 거친다. `fetch`(`ActionFetchGet`)는 일반 `http.Client{}`로 옵션의 URL을 그대로 호출하며 검증이 없다. 결정: `fetch`는 `Exposure=internal`로 두어 v1 빌더가 넣지 않는다(실행기가 URL을 검증하게 되면 재검토). `webhook_send`는 `sensitive`로 유지 | CPO 결정, 대표님 검토 |
-| 9 | 출구 없는 루프 탐지 | 평가에서 실제 문제 확인 시 후속 | 대표님 |
-| 10 | Flow 턴 타임아웃이 큐 서킷브레이커에 미치는 영향 | 수용, 평가 실측 후 필요 시 빌더 타임아웃 집계 제외를 후속 설계 | 대표님 |
+| 7 | 일일 한도 카운터를 Assistant와 분리할지 | 분리 권고(한쪽이 다른 쪽을 소진하지 않게). 공유는 추가 변경 없이 가능하나 서로 한도를 소진. 분리 시 cachehandler 인터페이스/mock/테스트 변경 | **확정(담당자, 2026-10-07): 분리**. |
+| 8 | `fetch`/`webhook_send` URL 검증 | **확인 완료(구현 시작 시 코드 확인)**: `webhook_send`는 bin-webhook-manager의 SSRF 방어 클라이언트와 URL 검증(`urlvalidator.go`, 사설/예약 IP 거부)을 거친다. `fetch`(`ActionFetchGet`)는 일반 `http.Client{}`로 옵션의 URL을 그대로 호출하며 검증이 없다. 결정: `fetch`는 `Exposure=internal`로 두어 v1 빌더가 넣지 않는다(실행기가 URL을 검증하게 되면 재검토). `webhook_send`는 `sensitive`로 유지 | 제품 담당자 결정, 담당자 검토 |
+| 9 | 출구 없는 루프 탐지 | 평가에서 실제 문제 확인 시 후속 | 담당자 |
+| 10 | Flow 턴 타임아웃이 큐 서킷브레이커에 미치는 영향 | 수용, 평가 실측 후 필요 시 빌더 타임아웃 집계 제외를 후속 설계 | 담당자 |
 
 ## 12. 구현 순서
 

@@ -1,7 +1,7 @@
 # Design: `create_call` LLM Tool (independent outbound call origination)
 
 Status: Draft (v3 — post review round 2)
-Author: CPO (with pchero)
+Author: product owner (with pchero)
 Date: 2026-06-09
 Service: bin-ai-manager (+ reuses bin-call-manager RPC)
 
@@ -278,7 +278,7 @@ Residual risk acknowledged: balance is a backstop, not a rate limiter; a custome
 
 ### Round 1 (2 independent reviewers, fresh delegate_task)
 
-Reviewer A produced no usable output (aborted early). Reviewer B (skeptical Go engineer + CPO) returned CHANGES REQUESTED with the following, all addressed in v2:
+Reviewer A produced no usable output (aborted early). Reviewer B (skeptical Go engineer + product owner) returned CHANGES REQUESTED with the following, all addressed in v2:
 
 | Severity | Finding | Resolution in v2 |
 |---|---|---|

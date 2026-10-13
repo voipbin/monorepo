@@ -404,9 +404,9 @@ storage boundaries.
 
 | # | Question | Recommendation | Owner |
 |---|----------|----------------|-------|
-| 1 | message-manager: normalize at `Send` entry (canonical reaches provider too) vs only in `Create` (provider gets raw)? | Normalize at `Send`/`hook` entry — normalized tel = E.164 = what providers want, so it also fixes punctuated-input provider rejections. Safe. | CTO |
-| 2 | call-manager: normalize at `Create` chokepoint vs per-path entry? | `Create` chokepoint — sole writer, dial reads persisted value, incoming lookups stay upstream on raw input. | CTO |
-| 3 | Should normalization failure (unknown type) hard-fail the create, or fall back to raw? | For the known channel types in scope, NormalizeTarget never errors. Use the canonical value; on the impossible error path, keep the raw target and log (do not silently drop). | CPO |
+| 1 | message-manager: normalize at `Send` entry (canonical reaches provider too) vs only in `Create` (provider gets raw)? | Normalize at `Send`/`hook` entry — normalized tel = E.164 = what providers want, so it also fixes punctuated-input provider rejections. Safe. | Maintainer |
+| 2 | call-manager: normalize at `Create` chokepoint vs per-path entry? | `Create` chokepoint — sole writer, dial reads persisted value, incoming lookups stay upstream on raw input. | Maintainer |
+| 3 | Should normalization failure (unknown type) hard-fail the create, or fall back to raw? | For the known channel types in scope, NormalizeTarget never errors. Use the canonical value; on the impossible error path, keep the raw target and log (do not silently drop). | Product owner |
 
 ## 8. Review Summary
 

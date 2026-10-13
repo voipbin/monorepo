@@ -6,9 +6,9 @@ Status: Revision 2. Design review finished (rounds 3 and 4 approved); implemente
 
 ## 1. Problem
 
-1. Production asterisk-proxy (digest `86b07fba`, monorepo 61224fe40, 2026-09-14) must be rebuilt from current main before the Asterisk 23.5.0 upgrade (CEO decision: proxy first). The monorepo `voip-asterisk-proxy` workflow runs only when a file under `voip-asterisk-proxy/` changes (`.circleci/config.yml`, `base-revision: main`).
+1. Production asterisk-proxy (digest `86b07fba`, monorepo 61224fe40, 2026-09-14) must be rebuilt from current main before the Asterisk 23.5.0 upgrade (maintainer decision: proxy first). The monorepo `voip-asterisk-proxy` workflow runs only when a file under `voip-asterisk-proxy/` changes (`.circleci/config.yml`, `base-revision: main`).
 2. VOIP-1546 defect in `pkg/servicehandler/recording.go` `recordingFileUpload`: after `io.Copy` into the GCS writer, `wc.Close()` is deferred with its error ignored, and `os.Remove` of the local file runs before it. storage v1.61.3 reports the upload result only from `Writer.Close` (multipart upload for files up to the 16 MiB chunk; the request is sent at Close). Any GCS rejection at commit (permissions, revoked key, missing bucket, network) returns success while the local file is already deleted: recording lost. Verified with a fake GCS server: 403 gives `io.Copy` nil and `Close` `googleapi: Error 403`, also for 0-byte files. Also on `io.Copy` error the writer is never closed and 2 goroutines leak per writer permanently (ctx is `context.Background()`).
-   CEO decision 2026-09-30: fix VOIP-1546 in this PR so it ships with the rebuild.
+   Maintainer decision 2026-09-30: fix VOIP-1546 in this PR so it ships with the rebuild.
 3. Proxy docs drift against code: README lacks `--google_application_credentials_json` (init.go:89; 21 of 22 flags documented); `--recording_bucket_directory` reads like a mount but is a GCS object-name prefix used verbatim (`fmt.Sprintf("%s/%s", dir, filename)`); `docs/domain.md` says ADC only; `docs/architecture.md` names the handler `MoveRecordingFile` (real: `RecordingFileMove`); `docs/operations.md` troubleshooting lacks the upload failure symptoms; `docs/subsystems.md` shows an `emptyDir` share without the retention implication.
 
 Issue analysis (9 review rounds, closed with 2 consecutive approvals): `~/.hermes/cache/scratch/ast/VOIP-1546-analysis.md`.
@@ -17,7 +17,7 @@ Issue analysis (9 review rounds, closed with 2 consecutive approvals): `~/.herme
 
 1. Recording upload deletes the local file only after GCS confirms the commit; any upload failure is returned as an RPC error with the local file kept.
 2. A failed copy never commits a partial object and never leaks the writer.
-3. Delete failure after a confirmed upload: log an error and return success (CEO decision (b)).
+3. Delete failure after a confirmed upload: log an error and return success (maintainer decision (b)).
 4. Unit tests with a fake GCS server cover every path, runnable as root.
 5. README table matches all 22 flags; README/domain/architecture/operations/subsystems describe the fixed behavior.
 6. Merge produces `voipbin/voip-asterisk-proxy:<merge sha>` via the main pipeline; digest captured per §7.
@@ -201,7 +201,7 @@ Append to the "Recording file sharing" paragraph: "Files whose upload fails are 
 
 ## 7. Rollout and digest capture
 
-1. PR review loop; CEO merge instruction (squash). Squash body = PR body.
+1. PR review loop; maintainer merge instruction (squash). Squash body = PR body.
 2. Approve only the `build-approval` job of the `voip-asterisk-proxy` workflow on the main pipeline whose checkout sha equals the merge sha (`git rev-parse origin/main` after merge). Do not approve branch pipelines (#5002, #5003 and later ones for this branch) or the old on_hold #4964 (would overwrite `:latest` with an older build).
 3. Digest: `curl -s https://hub.docker.com/v2/repositories/voipbin/voip-asterisk-proxy/tags/<merge sha>` `digest` field; cross-check with the build log `docker push` digest and the `latest` digest; record tag, digest, pipeline number, job URL, time in VOIP-1545 and the PR-B body.
 4. Do not rerun the build job (floating base images give a new digest for the same tag); if unavoidable, redo step 3 and use only the last successful run.
@@ -229,7 +229,7 @@ PR round 2: APPROVED. Non-blocking applied: status header updated.
 
 ## Revision 1 history
 
-Revision 1 was a docs-only version of this PR (design rounds 1-4, PR rounds 1-3). It was superseded by Revision 2 when the CEO folded the VOIP-1546 fix into this PR. The review records below describe Revision 1 and are kept for history only.
+Revision 1 was a docs-only version of this PR (design rounds 1-4, PR rounds 1-3). It was superseded by Revision 2 when the maintainer folded the VOIP-1546 fix into this PR. The review records below describe Revision 1 and are kept for history only.
 
 ### Iter-1 review response summary
 A1 upload order / failure paths / defect -> §1.1 (VOIP-1546), §5.2, §5.5. A2 object name + leading slash + prod `recording` -> §1, §5.1, §5.2. A3 domain.md/architecture.md drift -> included, §4, §5.3, §5.4. A4 footer kept -> §3. A5 client-creation conditions + bucket required -> §5.1, §5.2. A6 #4964 do-not-approve -> §7.2. A7 script handles literals/Int/Bool -> §6.

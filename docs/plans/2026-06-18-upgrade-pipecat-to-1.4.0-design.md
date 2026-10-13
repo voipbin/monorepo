@@ -368,11 +368,11 @@ Python library upgrade.
 
 | Question | Recommendation | Owner |
 |---|---|---|
-| Adopt 1.x turn-detection strategies now or defer? | Defer to a separate measurable change; this PR is behavior-preserving | CPO -> CEO/CTO |
-| Move to Deepgram nova-3 default? | Separate decision; keep nova-2 here to isolate the upgrade | CEO/CTO |
-| Rename PipelineTask -> PipelineWorker? | Defer; alias works, renaming is cosmetic churn | CPO |
-| Migrate team routing onto native `LLMSwitcher` (flows 1.2.0 seam) instead of the `_llm` private-attr swap? | Fast-follow PR; keeps this PR minimal, removes the private-attr fragility before the next upgrade | CPO |
-| Migrate Deepgram to `settings=Settings(...)` and services to `settings=Settings(model=...)` off the deprecated `LiveOptions`/`model=` kwargs before 2.0.0? | Fast-follow; functional now, deprecation clock running | CPO |
+| Adopt 1.x turn-detection strategies now or defer? | Defer to a separate measurable change; this PR is behavior-preserving | Product owner -> maintainer |
+| Move to Deepgram nova-3 default? | Separate decision; keep nova-2 here to isolate the upgrade | Maintainer |
+| Rename PipelineTask -> PipelineWorker? | Defer; alias works, renaming is cosmetic churn | Product owner |
+| Migrate team routing onto native `LLMSwitcher` (flows 1.2.0 seam) instead of the `_llm` private-attr swap? | Fast-follow PR; keeps this PR minimal, removes the private-attr fragility before the next upgrade | Product owner |
+| Migrate Deepgram to `settings=Settings(...)` and services to `settings=Settings(model=...)` off the deprecated `LiveOptions`/`model=` kwargs before 2.0.0? | Fast-follow; functional now, deprecation clock running | Product owner |
 
 ## 10. Review Summary (v1 -> v2)
 
