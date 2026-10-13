@@ -241,6 +241,10 @@ if [[ -n "${DEPLOY_REQUIRE_LATEST_FOR_PATHS:-}" ]]; then
     log_error "DEPLOY_REQUIRE_LATEST_FOR_PATHS is set but CIRCLE_SHA1 is not - refusing to deploy"
     exit 1
   fi
+  if [[ "$DEPLOY_REQUIRE_LATEST_FOR_PATHS" == *$'\n'* ]]; then
+    log_error "DEPLOY_REQUIRE_LATEST_FOR_PATHS must be a single line - refusing to deploy"
+    exit 1
+  fi
   read -r -a guard_paths <<< "$DEPLOY_REQUIRE_LATEST_FOR_PATHS"
   if [[ ${#guard_paths[@]} -eq 0 ]]; then
     log_error "DEPLOY_REQUIRE_LATEST_FOR_PATHS has no paths - refusing to deploy"

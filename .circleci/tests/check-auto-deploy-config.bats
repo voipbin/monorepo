@@ -187,6 +187,37 @@ expect_fail() {
     expect_fail "bin-storage-manager is in the allowlist but has no jobs list"
 }
 
+@test "guard env overridden to empty later on the same command fails" {
+    mutate "$CFG" $'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n' $'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" DEPLOY_REQUIRE_LATEST_FOR_PATHS="" \\\n'
+    run_checker
+    expect_fail "exactly once on the same command"
+}
+
+@test "guard env stripped by an env -u prefix fails" {
+    mutate "$CFG" $'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \\\n              .circleci/scripts/komodo-api-deploy.sh bin-agent-manager' $'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \\\n              env -u DEPLOY_REQUIRE_LATEST_FOR_PATHS .circleci/scripts/komodo-api-deploy.sh bin-agent-manager'
+    run_checker
+    expect_fail "must be VAR=value assignments followed by komodo-api-deploy.sh"
+}
+
+@test "guard env followed by a true; no-op that detaches the assignment fails" {
+    mutate "$CFG" $'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" \\\n            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \\\n              .circleci/scripts/komodo-api-deploy.sh bin-agent-manager' $'DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" true; \\\n            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \\\n              .circleci/scripts/komodo-api-deploy.sh bin-agent-manager'
+    run_checker
+    expect_fail "must be VAR=value assignments followed by komodo-api-deploy.sh"
+}
+
+@test "the deploy command commented out fails" {
+    mutate "$CFG" $'              .circleci/scripts/komodo-api-deploy.sh bin-agent-manager bin-agent-manager/komodo' $'              # .circleci/scripts/komodo-api-deploy.sh bin-agent-manager bin-agent-manager/komodo'
+    run_checker
+    [ "$status" -eq 1 ]
+}
+
+@test "an approval-kept deploy renamed so it no longer ends in -deploy is still checked" {
+    mutate "$CFG" $'      - bin-call-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-call-manager-deploy:\n          name: bin-call-manager-ship\n          <<: [*context_production, *deploy_filters]'
+    mutate "$CFG" $'      - bin-call-manager-build:\n          <<: *context_production\n          requires:\n            - bin-call-manager-test' $'      - bin-call-manager-build:\n          <<: *context_production'
+    run_checker
+    expect_fail "bin-call-manager-ship is not gated by build-approval"
+}
+
 # ---- (c) anchors ----
 
 @test "deploy_filters anchor widened beyond main fails" {

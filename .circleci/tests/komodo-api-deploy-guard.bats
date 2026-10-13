@@ -311,3 +311,11 @@ EOF
     [ "$status" -eq 1 ]
     [[ "$output" == *"no history on origin/main"* ]]
 }
+
+@test "guard on: a value with an embedded newline is rejected, not silently truncated" {
+    export DEPLOY_REQUIRE_LATEST_FOR_PATHS=$'bin-agent-manager\nbin-other-manager' CIRCLE_SHA1="abc"
+    run run_deploy_in /
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"must be a single line"* ]]
+    [ "$(curl_call_count)" -eq 0 ]
+}

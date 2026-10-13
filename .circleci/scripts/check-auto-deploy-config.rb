@@ -156,12 +156,17 @@ def check_auto_workflow(svc, js, jobs, errors)
   if lines.size != 1
     errors << "#{where}: job #{svc}-deploy must run komodo-api-deploy.sh exactly once (found #{lines.size})"
   else
-    line = lines.first
-    unless line.include?(%(DEPLOY_REQUIRE_LATEST_FOR_PATHS="#{svc}"))
-      errors << %(#{where}: #{svc}-deploy command must set DEPLOY_REQUIRE_LATEST_FOR_PATHS="#{svc}" on the same command as komodo-api-deploy.sh)
-    end
-    unless line =~ %r{komodo-api-deploy\.sh\s+#{Regexp.escape(svc)}\s}
-      errors << "#{where}: komodo-api-deploy.sh first argument must be #{svc}"
+    # Leading VAR=value assignments, then the script path, then its arguments.
+    # Anything else in front of the script (a comment, `env -u`, `true;`) fails.
+    m = lines.first.match(/\A\s*((?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\S*)\s+)*)(\S*komodo-api-deploy\.sh)\s+(\S+)/)
+    if m.nil?
+      errors << "#{where}: #{svc}-deploy command must be VAR=value assignments followed by komodo-api-deploy.sh"
+    else
+      guards = m[1].scan(/\bDEPLOY_REQUIRE_LATEST_FOR_PATHS=(?:"([^"]*)"|'([^']*)'|(\S*))/).map(&:compact).map(&:first)
+      unless guards == [svc]
+        errors << %(#{where}: #{svc}-deploy command must set DEPLOY_REQUIRE_LATEST_FOR_PATHS="#{svc}" exactly once on the same command as komodo-api-deploy.sh)
+      end
+      errors << "#{where}: komodo-api-deploy.sh first argument must be #{svc}" unless m[3] == svc
     end
   end
 end
@@ -175,7 +180,7 @@ def check_kept_workflow(name, js, errors)
       errors << "#{where}: job #{j[:id]} has an ignore branch filter but #{name} is not auto-deploy"
     end
   end
-  deploys = js.select { |j| j[:id].end_with?('-deploy') }
+  deploys = js.select { |j| j[:id].end_with?('-deploy') || j[:key].end_with?('-deploy') }
   return if deploys.empty?
 
   approval = by_id['build-approval']
