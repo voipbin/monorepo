@@ -230,6 +230,26 @@ expect_fail() {
     expect_fail "bin-agent-manager-deploy key must be bin-agent-manager-deploy"
 }
 
+@test "an only-filter on the test job of an approval-kept workflow fails" {
+    mutate "$CFG" $'      - bin-call-manager-test:\n          requires:' $'      - bin-call-manager-test:\n          filters:\n            branches:\n              only: /^feature.*/\n          requires:'
+    run_checker
+    expect_fail "job bin-call-manager-test has a branch filter but bin-call-manager is not auto-deploy"
+}
+
+@test "an approval-kept deploy with a widened filter fails" {
+    mutate "$CFG" $'      - bin-call-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-call-manager-deploy:\n          <<: [*context_production, *deploy_filters]\n          filters:\n            branches:\n              only: /.*/'
+    run_checker
+    expect_fail "deploy job bin-call-manager-deploy has a branch filter other than only: main"
+}
+
+@test "an approval-kept deploy whose key and name no longer end in -deploy is found by its job definition" {
+    mutate "$CFG" $'      - bin-call-manager-deploy:\n          <<: [*context_production, *deploy_filters]' $'      - bin-call-manager-ship:\n          <<: [*context_production, *deploy_filters]'
+    mutate "$CFG" $'  bin-call-manager-deploy:\n    docker:' $'  bin-call-manager-ship:\n    docker:'
+    mutate "$CFG" $'      - bin-call-manager-build:\n          <<: *context_production\n          requires:\n            - bin-call-manager-test' $'      - bin-call-manager-build:\n          <<: *context_production'
+    run_checker
+    expect_fail "bin-call-manager-ship is not gated by build-approval"
+}
+
 # ---- (c) anchors ----
 
 @test "deploy_filters anchor widened beyond main fails" {

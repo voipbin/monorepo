@@ -101,7 +101,7 @@ def check(config_path, list_path)
     if listed
       check_auto_workflow(name, js, jobs, errors)
     else
-      check_kept_workflow(name, js, errors)
+      check_kept_workflow(name, js, jobs, errors)
     end
   end
   errors
@@ -175,15 +175,44 @@ def check_auto_workflow(svc, js, jobs, errors)
 end
 
 # (b)/(e) workflows that must keep approval before deploy.
-def check_kept_workflow(name, js, errors)
+def check_kept_workflow(name, js, jobs, errors)
   where = "workflow #{name}"
   by_id = js.to_h { |j| [j[:id], j] }
-  js.each do |j|
-    if j[:attrs]['filters'].is_a?(Hash) && j[:attrs]['filters'].dig('branches', 'ignore')
-      errors << "#{where}: job #{j[:id]} has an ignore branch filter but #{name} is not auto-deploy"
+  # A deploy job is one named *-deploy (by key or by name) or whose job
+  # definition runs komodo-api-deploy.sh, so renaming it does not hide it.
+  deploys = js.select do |j|
+    j[:id].end_with?('-deploy') || j[:key].end_with?('-deploy') ||
+      logical_lines(jobs[j[:key]]).any? { |l| l.include?('komodo-api-deploy.sh') }
+  end
+  # The jobs a deploy depends on (test, build, ...) sit between the approval and
+  # the deploy; a branch filter on any of them could skip it on main and let the
+  # pipeline run without the approval. Jobs outside that chain (for example the
+  # main-only migration checkpoint of bin-dbscheme-manager) are not constrained.
+  chain = {}
+  collect = lambda do |id|
+    requires_of(by_id[id] || { attrs: {} }).each do |r|
+      next if chain[r]
+
+      chain[r] = true
+      collect.call(r)
     end
   end
-  deploys = js.select { |j| j[:id].end_with?('-deploy') || j[:key].end_with?('-deploy') }
+  deploys.each { |dj| collect.call(dj[:id]) }
+
+  js.each do |j|
+    filters = j[:attrs]['filters']
+    if filters.is_a?(Hash) && filters.dig('branches', 'ignore')
+      errors << "#{where}: job #{j[:id]} has an ignore branch filter but #{name} is not auto-deploy"
+    end
+    if deploys.include?(j)
+      # The only branch filter an approval-kept deploy may carry is deploy_filters.
+      if !filters.nil? && filters != ONLY_MAIN['filters']
+        errors << "#{where}: deploy job #{j[:id]} has a branch filter other than only: main"
+      end
+    elsif chain[j[:id]] && j[:id] != 'build-approval' && !filters.nil?
+      errors << "#{where}: job #{j[:id]} has a branch filter but #{name} is not auto-deploy"
+    end
+  end
   return if deploys.empty?
 
   approval = by_id['build-approval']

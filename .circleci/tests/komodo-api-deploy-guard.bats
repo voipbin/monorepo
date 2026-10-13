@@ -137,6 +137,32 @@ EOF
     [[ "$output" == *"Superseded-deploy guard passed"* ]]
 }
 
+@test "guard on: a detached-HEAD checkout of the old commit (as CircleCI does) is still superseded" {
+    old="$(commit_file bin-agent-manager/a.txt one)"
+    new="$(commit_file bin-agent-manager/a.txt two)"
+    push_origin; full_clone
+    # CircleCI checks out CIRCLE_SHA1 detached, so HEAD is the old commit and
+    # looking at HEAD instead of origin/main would always report "latest".
+    git -C "$CLONE" checkout -q --detach "$old"
+    export DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" CIRCLE_SHA1="$old"
+    run run_deploy_in "$CLONE"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"DEPLOY_SUPERSEDED sha=$old latest=$new"* ]]
+    [ "$(curl_call_count)" -eq 0 ]
+}
+
+@test "guard on: a stale local origin/main is refreshed from the remote before comparing" {
+    old="$(commit_file bin-agent-manager/a.txt one)"
+    push_origin; full_clone
+    new="$(commit_file bin-agent-manager/a.txt two)"
+    push_origin
+    # The clone's origin/main still points at the old commit until the guard fetches.
+    export DEPLOY_REQUIRE_LATEST_FOR_PATHS="bin-agent-manager" CIRCLE_SHA1="$old"
+    run run_deploy_in "$CLONE"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"DEPLOY_SUPERSEDED sha=$old latest=$new"* ]]
+}
+
 @test "guard on: an older commit is superseded by a newer commit touching the path, and Komodo is never called" {
     old="$(commit_file bin-agent-manager/a.txt one)"
     new="$(commit_file bin-agent-manager/a.txt two)"
