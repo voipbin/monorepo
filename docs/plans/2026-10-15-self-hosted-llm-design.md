@@ -1,6 +1,6 @@
 # Self-hosted OpenAI-compatible LLM support (VOIP-1599)
 
-Status: design, revision 20 (design review loop closed). This change implements Layer 1 only; Layer 2 is an unimplemented gate (proof of concept, its own design round and an earlier schema change come first, section 4). Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-openapi-manager, bin-api-manager docs.
+Status: design, revision 21 (design review loop closed). This change implements Layer 1 only; Layer 2 is an unimplemented gate (proof of concept, its own design round and an earlier schema change come first, section 4). Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-openapi-manager, bin-api-manager docs.
 
 ## 1. Issue analysis (current state, verified on main)
 
@@ -118,7 +118,7 @@ Files and steps, each with its check.
 3. `resolve.go`: after the `catalog` loop, look up the registry; return `Resolved{Entry, RunnerType: string(m), BlankKey: true}, OutcomeCatalog`. Check: resolve tests, key never forwarded (`resolveSessionLLM` test in pipecat-manager).
 4. Config: `LOCAL_LLM_MODELS` key in `bin-ai-manager/internal/config` and `bin-pipecat-manager/internal/config`; call `ConfigureLocalModels` and log the summary (counts only) in `cmd/ai-manager`, `cmd/ai-control`, `cmd/pipecat-manager`, `cmd/pipecat-control`. Check: config tests, build.
 5. Runner `run.py`: `local` branch (endpoint lookup from `LOCAL_LLM_ENDPOINTS`, parsed once; placeholder key; `OpenAILLMService(base_url, api_key)`), `_member_llm_type` guard for `local`. Check: pytest cases for success, missing endpoint, key placeholder never None with `OPENAI_API_KEY` set, member guard.
-6. `komodo/docker-compose.yml`: `LOCAL_LLM_ENDPOINTS` for both runner containers, `LOCAL_LLM_MODELS` for both pipecat-manager containers, and for ai-manager's compose if present. Check: `docker compose config` style parse.
+6. `komodo/docker-compose.yml`: `LOCAL_LLM_ENDPOINTS` for both runner containers, `LOCAL_LLM_MODELS` for both pipecat-manager containers, and in `bin-ai-manager/komodo/docker-compose.yml`. Check: `docker compose config` style parse.
 7. Docs/spec: OpenAPI tag text, `go generate` in `bin-openapi-manager` and `bin-api-manager`, RST files in section 5, service docs, docsdev rebuild.
 8. Real run: a stub OpenAI-compatible server and `create_llm_service` plus a streamed completion through the runner code path; real model latency and tool-call quality stay unverified.
 
@@ -158,3 +158,9 @@ Not touched: frontend, billing, the Ollama constant, Layer 2 code and schema.
 - A malformed value or any skipped entry logs at error level; a unit test with a logrus test hook covers the helper that builds the summary line in each service (a shared function `LocalParseResult.LogFields()` returning counts only).
 - Runner: `base_url` rule also rejects an empty host and a fragment. A Go/Python contract test feeds the Go-produced runner type (including an id with a dot such as `qwen2.5-7b`) to the Python splitter. The real run goes through the `/run` handler.
 - Test data for configured catalogs uses ids without banned words; existing banned-term scans keep running with an empty registry.
+
+### 9.5 Plan additions (review round 5, minor items)
+- Step 1 checks include the size limits: input over 64 KiB returns an error and no models; the 200th model is accepted and the 201st counts as skipped.
+- Tests that call `SetLocalModels` do not use `t.Parallel()` and restore the registry with `t.Cleanup` (the atomic pointer protects memory, not test isolation).
+- The real run searches the runner log and the pipecat-manager Go log (`runnerHandlePipelineError` logs up to 2000 characters of the runner text) for the endpoint URL and key.
+- Operator docs carry only the 9.4 enable order; the earlier wording in 9.2 and 9.3 is superseded.
