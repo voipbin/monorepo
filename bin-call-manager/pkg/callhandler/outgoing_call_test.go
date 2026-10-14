@@ -1273,6 +1273,14 @@ func Test_CreateCallsOutgoing_groupcallStartFailure(t *testing.T) {
 			expectReason: "EXTENSION_NOT_REGISTERED",
 		},
 		{
+			name: "other typed error only, stays a plain error",
+
+			destinations: []commonaddress.Address{{Type: commonaddress.TypeAgent, Target: "6a9b7c10-0a2f-4d5e-8f01-2b3c4d5e6f70"}},
+			startErrs:    []error{pkgerrors.Wrap(cerrors.NotFound(commonoutline.ServiceNameAgentManager, "AGENT_NOT_FOUND", "The agent was not found."), "could not get agent info")},
+
+			expectTyped: false,
+		},
+		{
 			name: "untyped error only, stays a plain error",
 
 			destinations: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "test-exten"}},

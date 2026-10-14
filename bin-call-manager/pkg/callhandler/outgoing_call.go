@@ -10,6 +10,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
@@ -32,6 +33,7 @@ import (
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/groupcall"
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 )
 
@@ -90,11 +92,12 @@ func (h *callHandler) CreateCallsOutgoing(
 			if err != nil {
 				log.Errorf("Could not create outgoing groupcall. err: %v", err)
 
-				// keep the first typed error (e.g. the extension is not registered) so that, when every
-				// destination fails, the caller gets its status instead of a generic 500.
-				// only this branch keeps it: the other branches keep returning the generic error.
+				// keep the first "extension is not registered" error so that, when every destination fails,
+				// the caller gets its 4xx status instead of a generic 500.
+				// only this error is kept: any other error keeps returning the generic error.
 				var ve *cerrors.VoipbinError
-				if groupcallTypedErr == nil && stderrors.As(err, &ve) {
+				if groupcallTypedErr == nil && stderrors.As(err, &ve) &&
+					ve.Domain == string(commonoutline.ServiceNameCallManager) && ve.Reason == groupcallhandler.ReasonExtensionNotRegistered {
 					groupcallTypedErr = ve
 				}
 				continue
