@@ -87,7 +87,7 @@ func Test_pipecatcallHandler_Ping(t *testing.T) {
 		name   string
 		hostID string
 	}{
-		{"non-empty host id", "10.4.2.18"},
+		{"non-empty host id", "10.0.0.18"},
 		{"empty host id (defensive)", ""},
 	}
 
@@ -232,7 +232,7 @@ func Test_processV1PingGet(t *testing.T) {
 				URI:    "/v1/ping",
 				Method: sock.RequestMethodGet,
 			},
-			mockPing:       &pipecatcall.PingResult{HostID: "10.4.2.18", Timestamp: time.Now().UTC()},
+			mockPing:       &pipecatcall.PingResult{HostID: "10.0.0.18", Timestamp: time.Now().UTC()},
 			expectedStatus: 200,
 		},
 	}
@@ -543,10 +543,10 @@ func Test_PipecatV1Ping(t *testing.T) {
 	}{
 		{
 			name:        "alive pod returns matching host_id",
-			hostID:      "10.4.2.18",
-			expectQueue: "bin-manager.pipecat-manager.request.10.4.2.18",
+			hostID:      "10.0.0.18",
+			expectQueue: "bin-manager.pipecat-manager.request.10.0.0.18",
 			mockResponse: func() *sock.Response {
-				body, _ := json.Marshal(pmpipecatcall.PingResult{HostID: "10.4.2.18", Timestamp: time.Now().UTC()})
+				body, _ := json.Marshal(pmpipecatcall.PingResult{HostID: "10.0.0.18", Timestamp: time.Now().UTC()})
 				return &sock.Response{StatusCode: 200, DataType: "application/json", Data: body}
 			}(),
 			mockErr:   nil,
@@ -554,10 +554,10 @@ func Test_PipecatV1Ping(t *testing.T) {
 		},
 		{
 			name:        "host_id echo mismatch returns error",
-			hostID:      "10.4.2.18",
-			expectQueue: "bin-manager.pipecat-manager.request.10.4.2.18",
+			hostID:      "10.0.0.18",
+			expectQueue: "bin-manager.pipecat-manager.request.10.0.0.18",
 			mockResponse: func() *sock.Response {
-				body, _ := json.Marshal(pmpipecatcall.PingResult{HostID: "10.4.2.99", Timestamp: time.Now().UTC()})
+				body, _ := json.Marshal(pmpipecatcall.PingResult{HostID: "10.0.0.99", Timestamp: time.Now().UTC()})
 				return &sock.Response{StatusCode: 200, DataType: "application/json", Data: body}
 			}(),
 			mockErr:         nil,
@@ -566,24 +566,24 @@ func Test_PipecatV1Ping(t *testing.T) {
 		},
 		{
 			name:        "old pod 404 with empty body treated as alive",
-			hostID:      "10.4.2.18",
-			expectQueue: "bin-manager.pipecat-manager.request.10.4.2.18",
+			hostID:      "10.0.0.18",
+			expectQueue: "bin-manager.pipecat-manager.request.10.0.0.18",
 			mockResponse: &sock.Response{StatusCode: 404},
 			mockErr:     nil,
 			expectErr:   false,
 		},
 		{
 			name:        "200 with empty body treated as alive (no echo check possible)",
-			hostID:      "10.4.2.18",
-			expectQueue: "bin-manager.pipecat-manager.request.10.4.2.18",
+			hostID:      "10.0.0.18",
+			expectQueue: "bin-manager.pipecat-manager.request.10.0.0.18",
 			mockResponse: &sock.Response{StatusCode: 200},
 			mockErr:     nil,
 			expectErr:   false,
 		},
 		{
 			name:            "timeout error from sendRequest is propagated",
-			hostID:          "10.4.2.18",
-			expectQueue:     "bin-manager.pipecat-manager.request.10.4.2.18",
+			hostID:          "10.0.0.18",
+			expectQueue:     "bin-manager.pipecat-manager.request.10.0.0.18",
 			mockResponse:    nil,
 			mockErr:         context.DeadlineExceeded,
 			expectErr:       true,
@@ -828,28 +828,28 @@ func Test_aicallHandler_pingPipecatHost(t *testing.T) {
 		},
 		{
 			name:        "alive pod returns true",
-			hostID:      "10.4.2.18",
+			hostID:      "10.0.0.18",
 			mockErr:     nil,
 			expectCall:  true,
 			expectAlive: true,
 		},
 		{
 			name:        "deadline exceeded returns false",
-			hostID:      "10.4.2.18",
+			hostID:      "10.0.0.18",
 			mockErr:     errors.Wrap(context.DeadlineExceeded, "could not send the request"),
 			expectCall:  true,
 			expectAlive: false,
 		},
 		{
 			name:        "circuit open returns false",
-			hostID:      "10.4.2.18",
+			hostID:      "10.0.0.18",
 			mockErr:     errors.Wrap(circuitbreakerhandler.ErrCircuitOpen, "could not send the request"),
 			expectCall:  true,
 			expectAlive: false,
 		},
 		{
 			name:        "unexpected error returns false",
-			hostID:      "10.4.2.18",
+			hostID:      "10.0.0.18",
 			mockErr:     fmt.Errorf("broker connection refused"),
 			expectCall:  true,
 			expectAlive: false,
@@ -951,8 +951,8 @@ If the existing tests use `.AnyTimes()` or wildcards that already accept any RPC
 **Step 12.4: Add a new test case for the dead-pod path**
 
 Add a new entry to the `SendReferenceTypeCall` table or a new `t.Run` covering:
-- Setup: `pc.HostID = "10.4.2.18"`.
-- Mock: `mockReq.EXPECT().PipecatV1Ping(gomock.Any(), "10.4.2.18").Return(context.DeadlineExceeded)`.
+- Setup: `pc.HostID = "10.0.0.18"`.
+- Mock: `mockReq.EXPECT().PipecatV1Ping(gomock.Any(), "10.0.0.18").Return(context.DeadlineExceeded)`.
 - Mock: assert `PipecatV1MessageSend` is **never** called by NOT registering an expectation; gomock will fail if it is called.
 - Assert: `Send` returns non-nil error containing "no longer reachable".
 - Assert: `messageHandler.Create` IS called (the message row is persisted before the preflight).

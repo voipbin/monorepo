@@ -1,7 +1,7 @@
 # 이슈 분석: AI Summary 결과 포맷을 평문 인용 친화적으로 개선
 
 작성일: 2026-09-17
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-NEW-AI-summary-plaintext-prompt (백엔드), 별도 프론트 브랜치
 상태: Draft (이슈 분석 리뷰 대기)
 

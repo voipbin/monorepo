@@ -2,14 +2,14 @@
 
 Status: Draft
 Branch: `NOJIRA-Add-case-reference-id`
-Owner: CPO-directed backend feature
+Owner: Product-owner-directed backend feature
 
 > **CORRECTION (2026-07-24, post-approval):** The original design below
 > misinterpreted `Case.ReferenceID` as a customer-supplied external
 > reference string (order/ticket ID from the tenant's own outside system),
 > and exposed it as a freely user-settable field on `POST /v1/cases`, the
 > `case_create` Flow action, and the `case_create` AI tool. **This was
-> wrong.** 대표님 directly flagged the error; CPO confirmed against actual
+> wrong.** The maintainer directly flagged the error; product owner confirmed against actual
 > code. The correct semantics: `Case.ReferenceID` is the actual
 > VoIPBin-**internal** id of the resource that `Case.ReferenceType` points
 > at (e.g. the call id when `reference_type="call"`, the conversation id
@@ -111,7 +111,7 @@ genuinely separate out-of-scope feature (see §7).
 | Item | Why cut | Re-engagement signal |
 |---|---|---|
 | General key/value Case metadata (arbitrary customer-defined fields beyond a single reference string) | The current concrete request is for exactly one field; a generic metadata system is a separate shape decision (JSON blob vs. structured columns) that deserves its own design, not a bolt-on here | A second concrete field request from an early adopter |
-| `ReferenceID` mutability after creation (update via PUT/PATCH) | Mirrors `Name`/`Detail`'s existing creation-time-only precedent exactly (design VOIP-1243 §3.4); no request from CPO to make this field editable | An explicit customer complaint that a mistyped/stale reference can't be corrected |
+| `ReferenceID` mutability after creation (update via PUT/PATCH) | Mirrors `Name`/`Detail`'s existing creation-time-only precedent exactly (design VOIP-1243 §3.4); no request from product owner to make this field editable | An explicit customer complaint that a mistyped/stale reference can't be corrected |
 | Fuzzy/partial/prefix search on `reference_id` | The stated need is "find the Case for order #12345" — an exact match on a caller-known value. Partial search is a different feature (would need a different index shape, e.g. a prefix index or full-text) | A customer reports needing to search by partial reference (e.g. "starts with ORD-") |
 | `reference_id` on `POST /v1/cases/{id}/continue` (the re-contact / chained-Case-continuation endpoint) | `Continue` creates a fresh Case row reusing the *previous* Case's peer/reference_type but represents a **new** contact touchpoint from VoIPBin's perspective; there is no clear default for what `reference_id` the new Case should carry (same as the closed one? blank?) and no request specifies this. Leaving it out means the continued Case starts with an empty `reference_id`, consistent with every other field `Continue` does NOT carry forward from the source Case (see `casehandler/continue.go`, confirmed empirically in §5.3 below) | A concrete request to auto-copy `reference_id` on continuation |
 | Validation / format enforcement (e.g. max length beyond the DB column limit, character allowlist) | No stated customer format constraint exists; different customers use different external ID shapes (numeric order IDs, alphanumeric ticket IDs, UUIDs) | A concrete data-quality incident traced to unvalidated `reference_id` input |
@@ -120,7 +120,7 @@ genuinely separate out-of-scope feature (see §7).
 
 These were not open questions handed to the reviewer — they are resolved
 here based on direct precedent in the existing `Name`/`Detail` fields and
-the task's explicit CPO direction, then verified against the actual
+the task's explicit direction from the product owner, then verified against the actual
 `Continue` implementation in §5.3 below.
 
 1. **Column type: `varchar(255)`, nullable-via-empty-string (NOT NULL
@@ -139,7 +139,7 @@ the task's explicit CPO direction, then verified against the actual
    `Detail`. `json:"reference_id,omitempty"` on the Go struct so an unset
    `ReferenceID` is omitted from JSON output exactly like `Name`/`Detail`
    today, not serialized as `""`.
-3. **Search/filter scope: IN-SCOPE, exact-match only.** Per the CPO's
+3. **Search/filter scope: IN-SCOPE, exact-match only.** Per the product owner's
    explicit direction in the task context: "최소한 GET 응답에 필드를 노출하는 것과
    리스트 필터링 정도는 이번 스코프에 포함하는 것이 합리적". This design ships:
    - `ReferenceID` on every read response (§2.3 above — free, no extra
@@ -336,7 +336,7 @@ the customer-facing HTTP surface (`bin-api-manager`
 `POST /contact_cases`) that would let an external customer supply
 `reference_id` at creation time via the public API **does not exist**.
 
-Given CPO's explicit scope ("ReferenceID... 검색/조회할 수 있어야 하는지... 최소한
+Given the product owner's explicit scope ("ReferenceID... 검색/조회할 수 있어야 하는지... 최소한
 GET 응답에 필드를 노출하는 것과 리스트 필터링 정도는 이번 스코프에 포함"), and that the
 task's core ask is "add ReferenceID so customers can tag+find their
 Cases", NOT "add a new public Case-creation endpoint" (a separate,
@@ -355,7 +355,7 @@ explicitly:
   this design introduces or worsens.
 - `ReferenceID` IS visible on every GET response and filterable on
   `GET /contact_cases?reference_id=...` through the public API — satisfying
-  the CPO's explicit minimum-scope requirement (§4.3).
+  the product owner's explicit minimum-scope requirement (§4.3).
 
 This is flagged as a locked decision, not an open question — the
 alternative (adding a brand-new `POST /contact_cases` public endpoint in
@@ -509,7 +509,7 @@ is a separate, unrelated piece of work outside this design's scope.)
    to a follow-up PR the right call (§6.4), or should this PR add the
    minimal creation endpoint too, since "settable via POST" was part of
    the original literal task wording? This design's position: defer, because
-   no public creation endpoint exists for ANY field yet, and the CPO's
+   no public creation endpoint exists for ANY field yet, and the product owner's
    explicit scope-floor was "GET 응답 노출 + 리스트 필터링", not "public POST".
 2. Is a single-record `by-reference` lookup endpoint (as opposed to the
    list filter) warranted now, or should it wait for a concrete need
@@ -590,7 +590,7 @@ CLOSED per skill's min-3 / 2-consecutive-APPROVE rule.**
 
 1. **Defer `POST /contact_cases` public endpoint** — CONFIRMED deferred
    to a follow-up PR. Rationale unchanged from §6.4: no public
-   Case-creation endpoint exists for ANY field today; CPO's explicit
+   Case-creation endpoint exists for ANY field today; product owner's explicit
    scope floor was GET-exposure + list-filtering, not a new public POST
    surface. Zero implementation risk carried into this PR (§13 Round 3).
 2. **No dedicated single-record `by-reference` lookup endpoint** —

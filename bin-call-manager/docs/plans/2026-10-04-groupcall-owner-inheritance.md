@@ -2,7 +2,7 @@
 
 Status: Draft
 Ticket: VOIP-1561 (sibling: SQUARE-87)
-Source: Fully re-verified via 8-round analysis review loop (rounds 7-8 consecutive APPROVED), see `../../../.worktrees/SQUARE-87-In-call-caller-context-panel-and-live-transcript/square-talk/docs/plans/2026-10-04-incall-context-and-live-transcript-analysis.md` §4.1, §4.3 (a-2). CEO confirmed decision (1)/(6): implement (a-2), linear 2nd+ destination path left unsupported (follow-up).
+Source: Fully re-verified via 8-round analysis review loop (rounds 7-8 consecutive APPROVED), see `../../../.worktrees/SQUARE-87-In-call-caller-context-panel-and-live-transcript/square-talk/docs/plans/2026-10-04-incall-context-and-live-transcript-analysis.md` §4.1, §4.3 (a-2). Maintainer confirmed decision (1)/(6): implement (a-2), linear 2nd+ destination path left unsupported (follow-up).
 
 ## 1. Problem statement
 
@@ -22,9 +22,9 @@ Consequence for square-talk (SQUARE-87, blocked by this ticket):
 
 ## 3. Non-goals
 
-- Fixing `ring_method=linear` 2nd+ destination inheriting owner (`groupcallhandler/dial.go:90` path) — parent groupcall owner is structurally `None` there (no owner to inherit from without a separate RPC/lookup change). CEO-confirmed non-goal (decision 6); filed as follow-up once a concrete need surfaces.
+- Fixing `ring_method=linear` 2nd+ destination inheriting owner (`groupcallhandler/dial.go:90` path) — parent groupcall owner is structurally `None` there (no owner to inherit from without a separate RPC/lookup change). Maintainer-confirmed non-goal (decision 6); filed as follow-up once a concrete need surfaces.
 - Fixing `ring_method=linear` being effectively ignored for agent destinations (pre-existing defect, `start.go:325-360` fires all agent addresses concurrently via goroutines) — pre-existing, out of scope, filed as follow-up defect candidate.
-- Backfilling historical (pre-deploy) `owner_id=Nil` call rows — CEO-confirmed non-goal (decision 4).
+- Backfilling historical (pre-deploy) `owner_id=Nil` call rows — maintainer-confirmed non-goal (decision 4).
 - Any bin-common-handler RPC signature change (the a-1 alternative) — explicitly rejected in favor of (a-2)'s local-only change.
 - square-talk frontend changes — tracked entirely in SQUARE-87.
 
@@ -129,7 +129,7 @@ Placement: strictly after the existing `getAddressOwner` call and strictly befor
 
 ## 9. Open questions
 
-None outstanding — all CEO decision points for this ticket's scope (decisions 1, 4, 6) were locked before this doc was drafted. Reviewer should focus on: correctness of the fallback condition (especially interaction with the `ownerType == OwnerTypeNone` check when `getAddressOwner` itself errored vs. cleanly returned None), and whether §6's coverage matrix is actually exhaustive against the current code.
+None outstanding — all maintainer decision points for this ticket's scope (decisions 1, 4, 6) were locked before this doc was drafted. Reviewer should focus on: correctness of the fallback condition (especially interaction with the `ownerType == OwnerTypeNone` check when `getAddressOwner` itself errored vs. cleanly returned None), and whether §6's coverage matrix is actually exhaustive against the current code.
 
 ## 10. Approval status
 

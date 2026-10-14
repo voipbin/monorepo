@@ -1,7 +1,7 @@
 # 이슈 분석: 기본 LLM 모델을 최신 Gemini flash로 통일 (VOIP-1537, PR1=A+B)
 
 작성일: 2026-09-20
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-1537-unify-gemini-flash
 상태: 이슈 분석 (리뷰 대기)
 
@@ -24,7 +24,7 @@ Gemini 2.5 계열은 2026-10-20 종료 예정(웹 조사: Google model lifecycle
 
 ### 2.2 최신 flash 버전 확정
 2026-09-21 기준 최신 stable flash = `gemini-3.8-flash` (2026-09-02 GA, Gemini API 공식 changelog).
-대표님 확정: 전부 gemini-3.8-flash 단일로 통일(Proposal의 pro도 flash로 낮춤).
+담당자 확정: 전부 gemini-3.8-flash 단일로 통일(Proposal의 pro도 flash로 낮춤).
 
 ## 3. 현황 (실코드 전수 조사)
 

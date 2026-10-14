@@ -171,13 +171,13 @@ func Test_RTPEngineV1CommandsSend(t *testing.T) {
 	}{
 		{
 			"start recording",
-			"10.164.0.12",
+			"10.0.0.12",
 			map[string]interface{}{
 				"command": "start recording",
 				"call-id": "abc123@sip-server",
 			},
 
-			"rtpengine.10.164.0.12.request",
+			"rtpengine.10.0.0.12.request",
 			"/v1/commands",
 			sock.RequestMethodPost,
 
@@ -186,13 +186,13 @@ func Test_RTPEngineV1CommandsSend(t *testing.T) {
 		},
 		{
 			"stop recording",
-			"10.164.0.12",
+			"10.0.0.12",
 			map[string]interface{}{
 				"command": "stop recording",
 				"call-id": "abc123@sip-server",
 			},
 
-			"rtpengine.10.164.0.12.request",
+			"rtpengine.10.0.0.12.request",
 			"/v1/commands",
 			sock.RequestMethodPost,
 

@@ -1,7 +1,7 @@
 # 설계: AI Summary 출력 언어 강제 (1차: 첫 생성 강제 + 2차: 검증 하네스) — VOIP-1532 후속
 
 작성일: 2026-09-17
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-1532-separate-stt-and-summary-output-language (PR #1323에 흡수)
 상태: Draft (설계 리뷰 대기)
 결정(대표):
@@ -371,7 +371,7 @@ ChatCompletionRequest는 Temperature를 설정하지 않아 OpenAI 기본값(비
 - R8 (deleg_92b1f81b, task1): CHANGES_REQUESTED. [경] §5.3 "재시도 불필요" 서술이 R6-2 bounded
   재시도와 표면 모순. [경] R6-2 bounded 재시도가 "안전망 위의 안전망"으로 오버엔지니어링 의심
   (새 config 표면 2개, 실측 신호 아닌 429 가정). 나머지(canonical/최소산문)는 이슈 아님.
-- 정정(R7 + R8 반영, CPO 판단):
+- 정정(R7 + R8 반영, 제품 담당자 판단):
   * **R8-2 채택 → bounded 재시도 제거**: 대표 원칙(실측 신호 없는 선제 방어 지양, 신규 config
     표면 지양)에 부합. §5.3/§5.4/§6에서 languageVerifyMaxTries/RetryWait 제거, SendOnce 1회 +
     fail-open으로 단순화. 잔존 위험은 §6에 트레이드오프로 명시(트리거 기반 향후 도입).

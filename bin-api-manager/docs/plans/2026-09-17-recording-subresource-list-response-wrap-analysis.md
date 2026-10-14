@@ -1,7 +1,7 @@
 # 이슈 분석: recording 서브리소스 transcribe/transcript 목록 응답이 스펙과 불일치 (raw 배열)
 
 작성일: 2026-09-17
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-NEW-Wrap-recording-transcribe-transcript-list-responses
 상태: Draft (이슈 분석 리뷰 대기)
 

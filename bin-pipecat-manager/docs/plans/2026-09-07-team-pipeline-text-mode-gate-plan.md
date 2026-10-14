@@ -98,7 +98,7 @@ No Go files touched → the full Go verification chain (`go mod tidy && go mod v
   - bin-pipecat-manager: document the audio-mode rule in docs/domain.md and add the VOIP-1481 analysis/design/plan docs
   ```
 - Push branch, open PR titled `VOIP-1481-Gate-team-pipeline-tts-stt-on-text-sessions`. Body per the monorepo/global format: a narrative paragraph first (which also states, in prose, the pytest run result, that Go is untouched, that CI runs no tests for this service (VOIP-1356), that voice regression is covered by tests only, the VOIP-1482 caveat for Google voice teams, and that RST docs are unaffected), then the `bin-pipecat-manager:` bullets. No markdown headers, no "Test plan" section, no AI attribution.
-- Do not merge; wait for 대표님's explicit instruction.
+- Do not merge; wait for the maintainer's explicit instruction.
 
 ### Step 9. After merge (separate approval)
 

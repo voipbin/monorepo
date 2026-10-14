@@ -2,7 +2,7 @@
 
 Status: design approved (design review rounds 1-2 APPROVED consecutively); implemented in this PR.
 
-Superseded 2026-10-03: the `RECOVERY_ENABLED` gate this design introduced was removed entirely (not just turned on) in `docs/plans/2026-10-03-remove-recovery-enabled-flag-design.md`, per CEO instruction. This document is left unedited as a historical record of why the gate existed.
+Superseded 2026-10-03: the `RECOVERY_ENABLED` gate this design introduced was removed entirely (not just turned on) in `docs/plans/2026-10-03-remove-recovery-enabled-flag-design.md`, per maintainer instruction. This document is left unedited as a historical record of why the gate existed.
 Ticket: VOIP-1553. The issue analysis (findings F1-F10 referenced below) is recorded in the VOIP-1553 ticket comments.
 Blocks: VOIP-1555 (Homer repair). Follow-up: VOIP-1556 (recovery redesign).
 
@@ -12,11 +12,11 @@ Call recovery (`callHandler.RecoveryStart`) has never succeeded in production be
 
 Today this is harmless only because Homer is broken. Repairing Homer (VOIP-1555) without first disabling recovery would turn the next call-Asterisk container recreation into up to 10000 unwanted re-dials with side effects. Recovery must be off before Homer is repaired.
 
-## 2. Decisions locked (CEO, 2026-10-01)
+## 2. Decisions locked (maintainer, 2026-10-01)
 
 - D1. Option A from the analysis: recovery is disabled, redesign later (VOIP-1556).
 - D2. Implemented as a setting, `recovery_enabled` / env `RECOVERY_ENABLED`. Absent or empty means disabled. Only an explicit true value enables it. Chosen so recovery can be re-enabled after the redesign without a code change.
-- D3. Public developer docs (`bin-api-manager/docsdev/...` "SIP Session Recovery") are out of scope for this PR. The CEO is handling them directly.
+- D3. Public developer docs (`bin-api-manager/docsdev/...` "SIP Session Recovery") are out of scope for this PR. The maintainer is handling them directly.
 
 ## 3. Entry points (verified, main 57573bff9)
 
@@ -88,7 +88,7 @@ if !h.recoveryEnabled {
 
 ## 6. Rollout and VOIP-1555 unblock gate
 
-After merge and CircleCI release approval (CEO), the gate for starting Homer repair is:
+After merge and CircleCI release approval (maintainer), the gate for starting Homer repair is:
 
 1. Every call-manager instance on bm-nyc-01 (Komodo Stack `bin-call-manager`, `deploy.replicas: 2`) runs the new image (Komodo `ListStackServices` image tag equals the merge commit), and no other container running a `voipbin/bin-call-manager` image exists on the host (Komodo `ListDockerContainers`; the legacy install-stack `voipbin-call-mgr` shares the subscribe queue and would process `container_died` without the guard). Checked 2026-10-01: only `bin-call-manager-call-manager-1` and `-2` run.
 2. The deployed environment has no `RECOVERY_ENABLED` set to a true value (Komodo `InspectDockerContainer` env).

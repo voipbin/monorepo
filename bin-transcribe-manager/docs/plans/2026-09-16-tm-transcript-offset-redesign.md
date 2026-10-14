@@ -1,7 +1,7 @@
 # 설계: tm_transcript를 오프셋 숫자 컬럼으로 재설계 (VOIP-1528)
 
 작성일: 2026-09-16
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 티켓: VOIP-1528
 브랜치: VOIP-1528-Redesign-tm_transcript-offset-column
 상태: Draft (설계 리뷰 대기)
@@ -10,7 +10,7 @@
 (근본 원인: tm_transcript가 세그먼트 발화 오프셋을 연도 0001 DATETIME으로 인코딩 →
 DATETIME 범위 밖 → DB가 zero-value 치환 저장 → 읽기 파싱 실패 "month out of range" →
 transcript scan 실패 → transcribe가 progressing 잔류. 이슈 분석은 4라운드 리뷰로
-2연속 Approve 완료. 방향 C(오프셋 숫자 컬럼 재설계) 대표님 확정.)
+2연속 Approve 완료. 방향 C(오프셋 숫자 컬럼 재설계) 담당자 확정.)
 
 ## 1. 문제 정의
 
@@ -28,7 +28,7 @@ transcript scan 실패 → transcribe가 progressing 잔류. 이슈 분석은 4�
 4. cross-service 소비자(bin-ai-manager 렌더러)가 새 오프셋 타입으로 정상 동작한다.
 5. 전 서비스 build/test/lint 통과, OpenAPI/RST 문서 정합.
 
-## 3. Decisions locked (대표님 확정 2026-09-16)
+## 3. Decisions locked (담당자 확정 2026-09-16)
 
 - 방향 C 채택(A/B 미채택). tm_transcript를 숫자 오프셋 컬럼으로 재설계.
 
@@ -162,7 +162,7 @@ tm_create로 정렬한다(코드 확인). 따라서 프론트 PR의 필수 작�
 - 옵션 (i): 프론트 PR은 타입 정합만(offset 필드 수용, 표시는 미도입). 최소.
 - 옵션 (ii): 프론트 PR에서 offset을 실제 표시(타임코드 배지)까지 구현. 목표3 완성.
 
-**결정 (대표님 확정 2026-09-16): (ii) 채택.** 프론트 PR에서 각 transcript 줄 앞에
+**결정 (담당자 확정 2026-09-16): (ii) 채택.** 프론트 PR에서 각 transcript 줄 앞에
 `[00:00:03]` 형태의 타임코드 배지를 실제로 표시하는 것까지 구현한다. CaseCallTranscriptPanel.js가
 offset(밀리초)을 HH:MM:SS로 포맷해 각 라인에 렌더한다. api.ts 타입 정합 + fixture 갱신 +
 표시 로직 + 관련 테스트가 프론트 PR 범위에 포함된다.
@@ -217,11 +217,11 @@ offset(밀리초)을 HH:MM:SS로 포맷해 각 라인에 렌더한다. api.ts �
 - cross-service: bin-ai-manager가 모델 변경에 직접 의존하므로 동일 PR(백엔드)에서 함께 수정
   (레포 동일 monorepo이므로 1 PR).
 
-## 10. Open questions → 전부 해소 (설계 리뷰 + 대표님 확정)
+## 10. Open questions → 전부 해소 (설계 리뷰 + 담당자 확정)
 
 1. 컬럼/필드명: **`offset_ms` 확정.** `offset`은 MySQL 예약어(squirrel backtick 미사용으로 SQL
    오류 위험) + `_ms` 접미사 컨벤션(duration_ms/timeout_ms 실측). (R2 blocking 해소)
-2. 프론트 범위: **(ii) 확정** — 타임코드 배지 표시까지 구현. (대표님 2026-09-16)
+2. 프론트 범위: **(ii) 확정** — 타임코드 배지 표시까지 구현. (담당자 2026-09-16)
 3. 정밀도: **밀리초(ms) 확정.** UI 표시는 초 단위(HH:MM:SS)이고 정렬/식별에 ms면 충분. us 불필요.
    (R2: 비-blocking, §4.1 근거 충분)
 

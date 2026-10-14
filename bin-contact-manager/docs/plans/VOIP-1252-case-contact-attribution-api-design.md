@@ -2,7 +2,7 @@
 
 Repo: voipbin/monorepo
 Ticket: VOIP-1252
-Author: Hermes (CPO) on behalf of pchero (CEO/CTO)
+Author: Hermes (product owner) on behalf of pchero (maintainer)
 Date: 2026-07-12
 Status: APPROVED (Round 3, 2026-07-12) -- ready for implementation
 

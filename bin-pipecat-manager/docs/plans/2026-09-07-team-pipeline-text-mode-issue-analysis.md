@@ -1,7 +1,7 @@
 # Issue Analysis: webchat AI Talk (Team) always replies with backstop text
 
 Date: 2026-09-07 (rev 5, after review rounds 1-4; round 4 approved, non-blocking notes folded in)
-Reporter: 대표님 (CEO/CTO), observed on voipbin.net webchat widget ("voipbin main webchat", widget 8d566129)
+Reporter: the maintainer, observed on voipbin.net webchat widget ("voipbin main webchat", widget 8d566129)
 Related AIcall: a9b2c39b-85c3-40db-8fa0-647276f93c2f, pipecatcall 9770d769-1c2a-463e-abc1-521751add341
 Observed message: 871c1af6-9d03-4015-aca1-58317833113f, text "Sorry, I'm having trouble responding right now. Please try again." (sender_id nil, direction outbound)
 

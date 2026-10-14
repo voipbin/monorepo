@@ -218,7 +218,7 @@ registrar tables.
 
 Bundled into the same cutover so customers reconfigure devices exactly once.
 
-1. DNS: add wildcard A `*.reg.voipbin.net` -> 199.127.61.42 (Cloudflare).
+1. DNS: add wildcard A `*.reg.voipbin.net` -> <reg-edge-ip> (Cloudflare).
 2. TLS: issue wildcard cert `*.reg.voipbin.net` via the existing certbot
    DNS-01 path; deliver via Komodo Variables (VOIP-1375 mechanism); add a
    server_name profile in Kamailio tls.cfg.

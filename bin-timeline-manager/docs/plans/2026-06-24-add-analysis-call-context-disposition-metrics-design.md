@@ -1,7 +1,7 @@
 # Timeline Analysis: Channel-Neutral Context, Outcome, and Metrics
 
 Status: DRAFT v3 (design-first, pre-implementation)
-Owner: CPO (design) / CEO-CTO (approval)
+Owner: Product owner (design) / maintainer (approval)
 Service: bin-timeline-manager (analysishandler + verdict model)
 Related prior work: VOIP-1008 (analysis pipeline), VOIP-1200 (preserve Stage 2 interactions)
 
@@ -613,9 +613,9 @@ counters/histogram unchanged.
 | Q3 | `ai` (AIcall) provider depth in P1: does enrichAIcall need a second hop to an underlying call leg for participants? | Best-effort P1 (whatever AIcall Get gives); document the second-hop as P2 if needed | Pre-impl |
 | Q4 | Result enum P1 set `completed/failed/no_answer/busy/in_progress/unknown` — confirm it covers call AND conversation | Lock call mapping (§6b table) + conversation mapping (§6b-2) at impl; extend with a fresh review if a value is missing | Pre-impl |
 | Q5 | transcribe/recording origin-chase: confbridge origin is P2 (call/conversation origins P1). OK to ship call/conversation origins first? | Yes; confbridge is the multi-party origin, lower volume, P2 | Pre-impl |
-| Q-UI | Backend ships fields but the card is identical until square-admin renders. Sequence the SQUAR UI ticket same release? | Yes; new analyses carry fields, UI reads retroactively (no backfill) | Immediate (CEO) |
+| Q-UI | Backend ships fields but the card is identical until square-admin renders. Sequence the SQUAR UI ticket same release? | Yes; new analyses carry fields, UI reads retroactively (no backfill) | Immediate (maintainer) |
 | Q-narrative | LLM narrative could contradict a deterministic fact. Reconcile or accept? | Accept P1 (deterministic block is source of truth); post-hoc lint Phase 2 | Phase 2 |
-| Q-backfill | Backfill old v2 analyses? | No; manual re-analysis overwrites in place; mass re-analysis = unbounded LLM cost | Immediate (CEO) |
+| Q-backfill | Backfill old v2 analyses? | No; manual re-analysis overwrites in place; mass re-analysis = unbounded LLM cost | Immediate (maintainer) |
 
 ## 14. Review Summary
 
@@ -717,7 +717,7 @@ are correct, then caught post-edit drift + an undescribed gap:
 
 ### Round 5 (convergence check) -> CONVERGED / APPROVE
 The independent reviewer could not run (LLM provider returned Overloaded on 3
-retries), so the CPO performed the convergence check directly, tracing all five
+retries), so the product owner performed the convergence check directly, tracing all five
 chase-path sanity checks against the v5 pseudocode:
 1. transcribe->call chased=true propagation: correct (inner chased=false discarded,
    outer forces true; enrich() suppresses metrics/flags as intended).
@@ -736,5 +736,5 @@ VERDICT: APPROVE. Severity trajectory across rounds confirms convergence:
 R1 5-Critical -> R2 1-Critical(category error) -> R3 1-Critical(wrong-activeflow) ->
 R4 2-High(doc gap/drift) -> R5 1-Low(fixed)+1-cosmetic. No architecture change since
 R3; the last two rounds were consistency/polish. The design is ready for
-implementation pending CEO sign-off on the Open Questions (Q-UI sequencing,
+implementation pending maintainer sign-off on the Open Questions (Q-UI sequencing,
 Q-backfill).

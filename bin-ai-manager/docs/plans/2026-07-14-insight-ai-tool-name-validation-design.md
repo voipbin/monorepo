@@ -12,7 +12,7 @@ Normal-AI tool), and nothing stops a `Normal`-type AI from being given the two
 Insight-only tools (`get_contact_interactions`, `get_conversation_content`)
 either, once those are implemented.
 
-CPO decision (2026-07-14, pchero approved): reject invalid combinations with a
+Product owner decision (2026-07-14, pchero approved): reject invalid combinations with a
 400, rather than silently filtering `tool_names` on write. Silent filtering
 would make the stored value diverge from what the client submitted, which
 contradicts this codebase's "code is the single source of truth, write-through
@@ -190,7 +190,7 @@ not have to also read the `type` entry to learn this.
   below on customer-visible impact, which requires a pre-launch audit step
   (not a "nice to have").
 - **Backward compatibility for existing customers (real production risk,
-  CPO-acknowledged).** VoIPBin is a live production CPaaS. A customer who
+  Product-owner-acknowledged).** VoIPBin is a live production CPaaS. A customer who
   already has a saved `ai.Type=insight` AI with non-Insight `tool_names`
   (legally created today, since no validation exists yet) will get a new 400
   on their very next `PUT /ais/{id}` call that echoes `tool_names` back
@@ -199,7 +199,7 @@ not have to also read the `type` entry to learn this.
   this same PUT endpoint's full-overwrite semantics documented above). This
   is a real behavior change for existing customers, distinct from "no
   backfill of DB rows."
-  **Decision (CPO): ship the audit query as a REQUIRED pre-launch step, not
+  **Decision (product owner): ship the audit query as a REQUIRED pre-launch step, not
   an optional follow-up.** Before this PR is deployed to production, run a
   read-only query (`SELECT id, customer_id, tool_names FROM ai_ais WHERE type
   = 'insight' AND deleted_at IS NULL` and filter for tool_names not in

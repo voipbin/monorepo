@@ -4,7 +4,7 @@
 - Class: new ClickHouse table + subscribe-path insert extension + shared helper
 - Service: bin-timeline-manager (+ bin-common-handler for the shared derive helper)
 - Date: 2026-07-24
-- Author: Lux (CPO), reviewed with 대표님 in #voipbin-cpo
+- Author: Lux (product owner), reviewed with the maintainer in #voipbin-cpo
 
 ## 1. Problem
 
@@ -22,7 +22,7 @@ legs). That is the right shape for CRM identity resolution, but it is a
 different use case: it discards events with no resolvable contact, and it is
 scoped to only two publishers already.
 
-The new requirement (confirmed with 대표님, see decision log below) is a
+The new requirement (confirmed with the maintainer, see decision log below) is a
 **third**, independent shape: a raw, unfiltered, address-searchable peer/local
 event log, scoped to call-manager and conversation-manager only, living in
 ClickHouse next to `events`, with **no identity resolution and no eligibility
@@ -167,7 +167,7 @@ column, only `publisher`/`event_type`/`data_type`/`data`), so a join-based
 dedup would need `events` schema changes out of scope here. Storage cost is
 double the payload bytes for exactly the call/conversation_message/conversation
 event volume (already the smallest 2 of 27 publishers by count), accepted
-trade-off per 대표님's explicit choice in §2.7.
+trade-off per the maintainer's explicit choice in §2.7.
 
 ## 5. Ingestion path (extends existing subscribe pipeline, no new queue)
 
@@ -227,7 +227,7 @@ carries `Type`/`Name`/`Detail`/`ProviderData`/`MessageFlowID`, no
 `Source`/`Destination`/`Self`/`Peer`). This narrows §2.9's "ALL event types"
 decision to mean "all event types of the two Webhook*Message shapes that
 actually carry peer/local data," not literally every event on the queue —
-confirmed as the correct reading of 대표님's intent (the goal was "no
+confirmed as the correct reading of the maintainer's intent (the goal was "no
 `_created`-only restriction," not "ingest structurally incompatible
 payloads"). The allowlist below is exhaustive over BOTH services'
 `models/*/event.go` files (every event type in both files is either in the
@@ -482,7 +482,7 @@ Remaining open items carried into round 3:
 
 ### 7.1 No eligibility filter — confirmed noise implication
 
-Per 대표님's explicit decision (§2.4), `peer_events` will contain agent
+Per the maintainer's explicit decision (§2.4), `peer_events` will contain agent
 extensions, AI resources, conference legs, and other internal-resource peer
 types that `contact_interactions` deliberately excludes. This is intentional
 (raw log, no identity judgment), but any future consumer building an

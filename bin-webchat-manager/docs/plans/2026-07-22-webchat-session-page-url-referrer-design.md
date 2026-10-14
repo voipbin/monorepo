@@ -1,7 +1,7 @@
 # bin-webchat-manager: Session PageURL/Referrer capture
 
 Status: DRAFT (round 2 -- fixes round 1 review finding, see docs/plans/2026-07-22-webchat-session-page-url-referrer-design-review-round1.md)
-Author: Hermes (CPO)
+Author: Hermes (product owner)
 Date: 2026-07-22
 
 ## 1. Problem
@@ -348,7 +348,7 @@ Format consistency with Case/Interaction was considered as a reason to
 add them anyway, but rejected: introducing a column whose only value is
 "looks like the other services' pattern" contradicts the project's
 stated preference for storing 1st-party immutable facts, not schema
-decoration (see pchero's standing principle on this, captured in CPO
+decoration (see pchero's standing principle on this, captured in product owner
 memory). `page_url` (this design) is a genuinely new fact Session does
 not otherwise carry, which is why it was pursued instead.
 

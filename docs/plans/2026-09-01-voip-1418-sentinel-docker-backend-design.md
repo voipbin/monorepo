@@ -47,7 +47,7 @@ work replaced).
   2. *Asterisk-id instability across container recreation* — **re-confirmed still live**,
      without a disruptive restart test: `InspectDockerContainer` on all 4 running asterisk
      containers shows MAC addresses with no relationship to their static IPs (e.g.
-     `172.24.0.101` → `72:ce:24:e6:51:2f`), and no `mac_address:` pin exists in any compose
+     `<container-ip>` → `<mac-address>`), and no `mac_address:` pin exists in any compose
      file. The `production` Docker network assigns MACs randomly on container creation.
      `voip-asterisk-proxy`'s `getAsteriskIDAddress` derives the asterisk-id from this MAC at
      runtime (compose comment: "AsteriskID is computed at runtime from the container's MAC

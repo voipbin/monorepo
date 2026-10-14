@@ -1,7 +1,7 @@
 # 이슈 분석: AI Summary Regenerate가 dedup 때문에 실제 재생성되지 않음 (VOIP-1535)
 
 작성일: 2026-09-18
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-1535-regenerate-summary-bypass-dedup
 단계: 이슈 확인/분석 (design 이전)
 

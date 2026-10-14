@@ -1,12 +1,12 @@
 # Queue-manager Queuecall-centric Event-driven Redesign (v10)
 
-Status: APPROVED (v10 확정 — iter-16·17 2연속 양쪽 APPROVE, 2026-09-23). 구현 착수 대기(대표님 승인)
+Status: APPROVED (v10 확정 — iter-16·17 2연속 양쪽 APPROVE, 2026-09-23). 구현 착수 대기(담당자 승인)
 Supersedes: `2026-09-22-queue-manager-event-driven-routing-redesign.md` (v9, "큐 스케줄러" 방식 — 대안 보존)
 Worktree: `NOJIRA-Queue-manager-event-driven-routing-redesign`
 
 ## 0. v9 → v10 전환 이유
 
-v9는 큐 스케줄러(`queue.execute` Run/Stop + `execute_run` self-RPC 루프)를 유지한 채 이벤트 wake를 얹었다. 대표님 반박: "큐의 `execute_run` 개념은 폴링 잔재. `waiting_queuecall_ids`는 모니터링용." 제어축은 큐가 아니라 **큐콜.status + 상담원 가용성**. v10은 큐 스케줄러를 제거하고 **큐콜 중심 순수 이벤트 매칭**으로 재설계한다.
+v9는 큐 스케줄러(`queue.execute` Run/Stop + `execute_run` self-RPC 루프)를 유지한 채 이벤트 wake를 얹었다. 담당자 반박: "큐의 `execute_run` 개념은 폴링 잔재. `waiting_queuecall_ids`는 모니터링용." 제어축은 큐가 아니라 **큐콜.status + 상담원 가용성**. v10은 큐 스케줄러를 제거하고 **큐콜 중심 순수 이벤트 매칭**으로 재설계한다.
 
 **[iter-7/8 핵심] 병렬화의 대가.** v9 스케줄러는 매칭을 우연히 직렬화해 큐콜 status 전이의 경합을 가렸다. v10은 스케줄러를 제거해 이벤트 병렬 매칭이 되므로, **status 전이 전부가 서로/이벤트와 경합한다**. 따라서 **무조건 부수효과(webhook/confbridge delete/모니터링 배열 add·remove/변수 삭제/메트릭/RPC)를 가진 모든 status 전이 메서드는 예외 없이 blind→CAS 승자 게이팅**(§5.0에 전수 명세).
 
@@ -27,7 +27,7 @@ v9는 큐 스케줄러(`queue.execute` Run/Stop + `execute_run` self-RPC 루프)
 - docsdev RST: `agent_struct_agent.rst:83`, `agent_overview.rst:10,75`, `queue_overview.rst:199,272`
 - agent-manager 문서(domain/operations/architecture/README/CLAUDE)
 
-**결정(대표님): enum 완전 제거(방법 B).** `ringing`은 백엔드가 **실제로 발행하던 라이브 라우팅 상태**라, 제거하려면 계약·문서·백필 전수 처리(파괴적 계약 변경 감수). **call status `ringing`(openapi 967/974 `CallManagerCallStatus`, 1113/1117 `tm_ringing`)은 별개 타입, 불변.**
+**결정(담당자): enum 완전 제거(방법 B).** `ringing`은 백엔드가 **실제로 발행하던 라이브 라우팅 상태**라, 제거하려면 계약·문서·백필 전수 처리(파괴적 계약 변경 감수). **call status `ringing`(openapi 967/974 `CallManagerCallStatus`, 1113/1117 `tm_ringing`)은 별개 타입, 불변.**
 
 **효과:** available→busy 직행(`EventGroupcallProgressing` 무가드 busy write). dial 중 배제는 예약 전담. 유령 ringing 소멸. `EventGroupcallCreated` 핸들러/구독 제거.
 
@@ -133,7 +133,7 @@ UpdateStatusX(qc):
 **완결성 근거(코드 grep 전수).** db.go 무조건 부수효과 소비처: PublishWebhookEvent(132/171/195/222/261/309/353), AddWaitQueueCallID(358), AddServiceQueuecallID(224), RemoveQueuecallID(264/312), ConfbridgeDelete(273/321). 이 중 status 전이는 위 6행이 **전부**. Create(132)/Delete(171)는 status 전이 아닌 생성/삭제(범위 밖).
 
 **[iter-10 정정] 죽은 코드 `StatusKicking`는 건드리지 않는다(오버엔지니어링 회피).**
-`StatusKicking`(모델 queuecall.go:77) + `QueuecallSetStatusKicking`(dbhandler:440)은 핸들러 계층 호출자 0(grep: def/interface/mock/test만). **부수효과 없고 라이브 경합 없음 → CAS 게이팅 대상이 아니다.** iter-9는 이를 제거해 "잔존 blind setter 0" 수사적 완결을 노렸으나, 두 리뷰어(iter-10)가 지적: 제거는 CAS 정합성에 불필요하고, 공개 계약 표면(openapi `QueueManagerQueuecallStatus` `kicking` enum, 재생성물 2, docsdev RST 2)까지 흔드는 파괴적 크로스서비스 변경을 유발한다(대표님 오버엔지니어링 지양 원칙 충돌). **결정: 무해한 죽은 상수·setter·enum을 그대로 둔다. "잔존 blind setter 0" 주장 철회.** `ringing`(백엔드가 실제 발행하던 라이브 상태 → 전수 제거)과 `kicking`(원래부터 미발행 죽은 enum, gens 자체 상수라 무해 → 유지)의 처리 비대칭은 이 근거로 정당. 게이팅 범위는 "부수효과 가진 전이 6종"으로 충분하고 완결.
+`StatusKicking`(모델 queuecall.go:77) + `QueuecallSetStatusKicking`(dbhandler:440)은 핸들러 계층 호출자 0(grep: def/interface/mock/test만). **부수효과 없고 라이브 경합 없음 → CAS 게이팅 대상이 아니다.** iter-9는 이를 제거해 "잔존 blind setter 0" 수사적 완결을 노렸으나, 두 리뷰어(iter-10)가 지적: 제거는 CAS 정합성에 불필요하고, 공개 계약 표면(openapi `QueueManagerQueuecallStatus` `kicking` enum, 재생성물 2, docsdev RST 2)까지 흔드는 파괴적 크로스서비스 변경을 유발한다(담당자 오버엔지니어링 지양 원칙 충돌). **결정: 무해한 죽은 상수·setter·enum을 그대로 둔다. "잔존 blind setter 0" 주장 철회.** `ringing`(백엔드가 실제 발행하던 라이브 상태 → 전수 제거)과 `kicking`(원래부터 미발행 죽은 enum, gens 자체 상수라 무해 → 유지)의 처리 비대칭은 이 근거로 정당. 게이팅 범위는 "부수효과 가진 전이 6종"으로 충분하고 완결.
 
 **왜 6종 전부 CAS인가(경합 실재, 오버엔지니어링 아님 — iter-8 적대 리뷰 코드 확인):**
 - waiting(1): abandon(initiating 중 고객 hangup, `event.go:16-38`이 initiating 배제 안 함) 승리 후 blind waiting-write가 **버려진 콜 부활**.
@@ -321,19 +321,19 @@ status CAS는 스키마 무변경(WHERE절만). Alembic은 bin-dbscheme-manager 
 ### iter-10 (둘 다 CHANGES, 핵심 설계 양쪽 건전 재확정 — StatusKicking 오버엔지니어링) → v10
 | ID | 지적 | 반영 |
 |---|---|---|
-| **StatusKicking 제거 = 오버엔지니어링 (양쪽)** | 저 스스로 "부수효과 없고 라이브 경합 없음"이라 인정 → 제거는 CAS 정합성에 불필요. 죽은 상수 1개 지우려 openapi enum+재생성물 2+docs RST 2 파괴적 크로스서비스 변경 유발(§11 누락으로 불완전하기까지). 대표님 오버엔지니어링 지양 원칙 충돌 | §5.0·§10·§11·§13·Q9: **StatusKicking 제거 철회, 죽은 코드 유지**. "잔존 blind setter 0" 수사 철회. ringing(라이브)/kicking(죽은 enum) 비대칭 근거 명시 |
+| **StatusKicking 제거 = 오버엔지니어링 (양쪽)** | 저 스스로 "부수효과 없고 라이브 경합 없음"이라 인정 → 제거는 CAS 정합성에 불필요. 죽은 상수 1개 지우려 openapi enum+재생성물 2+docs RST 2 파괴적 크로스서비스 변경 유발(§11 누락으로 불완전하기까지). 담당자 오버엔지니어링 지양 원칙 충돌 | §5.0·§10·§11·§13·Q9: **StatusKicking 제거 철회, 죽은 코드 유지**. "잔존 blind setter 0" 수사 철회. ringing(라이브)/kicking(죽은 enum) 비대칭 근거 명시 |
 | **Phase 1 배포 순서 미명시 (적대)** | 6 리포 크로스서비스인데 런타임 의존 순서(dbscheme→agent RPC 라이브→queue 소비, 백필→enum) 롤아웃 제약 부재 | §10에 **배포 순서 4단계 + 게이팅** 명문화. 단방향(순환 없음) |
 | **핵심 설계 (양쪽)** | 6전이 게이팅·롤백 분리·단일귀속·no-op·I-CB·kick TOCTOU·배포 단방향 | 검증 통과(양쪽 건전 재확정) |
 
-iter-10 두 리뷰어가 **핵심 설계는 건전** 재확정, 남은 건 iter-9에서 내가 추가한 **StatusKicking 제거(오버엔지니어링)**와 배포 순서 누락. StatusKicking을 죽은 코드로 되돌려(스코프 축소) 대표님 원칙에 정합, 배포 순서 명문화. iter-11 fresh 재검토.
+iter-10 두 리뷰어가 **핵심 설계는 건전** 재확정, 남은 건 iter-9에서 내가 추가한 **StatusKicking 제거(오버엔지니어링)**와 배포 순서 누락. StatusKicking을 죽은 코드로 되돌려(스코프 축소) 담당자 원칙에 정합, 배포 순서 명문화. iter-11 fresh 재검토.
 
 ### iter-11 (스플릿: 적대 APPROVE, 표준 CHANGES) → v10
 | ID | 지적 | 반영 |
 |---|---|---|
 | **execute DROP 배포 순서 (표준)** | §10 step 1(dbscheme 최선행)이 additive만 열거, 파괴적 `execute` DROP 순서 누락. 구 queue-manager가 `queue` struct(`queue.go:28 db:"execute"`) SELECT 로드하므로 선DROP 시 런타임 실패(expand/contract 위반) | §10 step 5·§6·§11: **execute DROP을 별도 2차 마이그레이션, 스케줄러 제거(step 3) 배포 후 최후행**. dbscheme 2회 배포 명시 |
-| **APPROVE (적대)** | 구현 착수 가능(파일별 라인 명세)·Phase 1 크기는 구조적 필연(원칙 위반 아님)·예약/Redis 리스 선제 인프라 아님(각각 유일 방어축/기존 의존 재사용)·핵심 CAS 무결함·Q1~Q10 대표님 결정 대기 없음 | 착수 준비 확정 |
+| **APPROVE (적대)** | 구현 착수 가능(파일별 라인 명세)·Phase 1 크기는 구조적 필연(원칙 위반 아님)·예약/Redis 리스 선제 인프라 아님(각각 유일 방어축/기존 의존 재사용)·핵심 CAS 무결함·Q1~Q10 담당자 결정 대기 없음 | 착수 준비 확정 |
 
-iter-11 적대 리뷰어 APPROVE(구현 착수 가능·오버엔지니어링 없음·대표님 결정 대기 항목 0 확정), 표준 리뷰어가 execute DROP 배포 순서 1건. 반영으로 expand/contract 준수. iter-12 fresh 재검토.
+iter-11 적대 리뷰어 APPROVE(구현 착수 가능·오버엔지니어링 없음·담당자 결정 대기 항목 0 확정), 표준 리뷰어가 execute DROP 배포 순서 1건. 반영으로 expand/contract 준수. iter-12 fresh 재검토.
 
 ### iter-12 (둘 다 CHANGES, 동일 결함 수렴 — execute struct 필드 제거 누락) → v10
 | ID | 지적 | 반영 |
@@ -346,11 +346,11 @@ iter-12 두 리뷰어가 독립적으로 "execute DB 컬럼 DROP 안전의 전�
 ### iter-13 (스플릿: 적대 APPROVE, 표준 CHANGES — 동일 사실 상반 해석) → v10
 | ID | 지적 | 반영 |
 |---|---|---|
-| **execute 제거 체인 나열 (해석 갈림)** | 표준: §11이 filters.go/listenhandler/cmd/test 미열거 → "완결 주장" 거짓 = CHANGES. 적대: 이들은 **전부 `Execute` 타입 제거 시 컴파일러 강제 노출**, silent-risk는 struct 필드뿐(iter-12 반영됨), 크로스서비스 소비 0건(self-RPC) = **APPROVE, 치명 결함 없음** | **적대 해석 채택(CPO 판단)**: 설계 문서 목적은 전수 파일 나열이 아니라 silent-risk 식별. §10 step2에 **스코프 성격 명시(silent-risk=struct 필드 1개 / 나머지=컴파일러 포착 / 크로스서비스 0건)**, "완결" 과잉표현 축소. 컴파일 파손하는 비스케줄러 코드 `filters.go:12`만 콕 집어 §11 추가(구현자 착각 방지). 나머지는 `go build` 위임 |
+| **execute 제거 체인 나열 (해석 갈림)** | 표준: §11이 filters.go/listenhandler/cmd/test 미열거 → "완결 주장" 거짓 = CHANGES. 적대: 이들은 **전부 `Execute` 타입 제거 시 컴파일러 강제 노출**, silent-risk는 struct 필드뿐(iter-12 반영됨), 크로스서비스 소비 0건(self-RPC) = **APPROVE, 치명 결함 없음** | **적대 해석 채택(제품 담당자 판단)**: 설계 문서 목적은 전수 파일 나열이 아니라 silent-risk 식별. §10 step2에 **스코프 성격 명시(silent-risk=struct 필드 1개 / 나머지=컴파일러 포착 / 크로스서비스 0건)**, "완결" 과잉표현 축소. 컴파일 파손하는 비스케줄러 코드 `filters.go:12`만 콕 집어 §11 추가(구현자 착각 방지). 나머지는 `go build` 위임 |
 | **APPROVE (적대)** | execute struct 필드가 유일 non-compile-caught SELECT 구동체 정확 겨냥, 미열거 소비처 전부 컴파일러 포착, 크로스서비스 0건, iter-9~12 핵심 CAS 무회귀 | 착수 준비 확정 |
 | **비차단 관찰 (적대)** | prod execute 컬럼 NOT NULL이면 step5 이전 INSERT 실패 가능하나 테스트 스키마 nullable(queues.sql:18) 시사 | Alembic 작성 시 nullable 확인 권고(비차단) |
 
-iter-13 적대 리뷰어 APPROVE(구현 착수 막는 치명 결함 없음 확증: silent-risk 정확 겨냥+컴파일러 포착+크로스서비스 0건), 표준 리뷰어는 전수 나열 미비를 CHANGES로 봄. CPO 판단: 컴파일러가 잡는 파일 전수 나열은 문서 비대화(오버엔지니어링)이므로, 스코프 성격 규정+silent-risk(filters.go 포함) 명시로 대체. iter-14 fresh 재검토.
+iter-13 적대 리뷰어 APPROVE(구현 착수 막는 치명 결함 없음 확증: silent-risk 정확 겨냥+컴파일러 포착+크로스서비스 0건), 표준 리뷰어는 전수 나열 미비를 CHANGES로 봄. 제품 담당자 판단: 컴파일러가 잡는 파일 전수 나열은 문서 비대화(오버엔지니어링)이므로, 스코프 성격 규정+silent-risk(filters.go 포함) 명시로 대체. iter-14 fresh 재검토.
 
 ### iter-14 (둘 다 APPROVE ✓ — 첫 양쪽 APPROVE) → v10
 | ID | 지적 | 반영 |
@@ -380,7 +380,7 @@ iter-15 적대 리뷰어 APPROVE(코드 대조 6항목 전부 일치, 신규 치
 - (표준) 모든 라인 앵커(queue.go:28/58/62-63, filters.go:7/12, field.go:19, GetDBFields queue.go:135/193, db.go 6전이 부수효과 소비처, kick.go TOCTOU, subscribehandler 4종 구독)가 코드와 일치. 구현 착수 가능. 비차단: iter-16 로그의 "6 blind setter" 앵커 5개 표기는 Waiting 분리로 6종 되는 구조라 실질 오류 아님.
 - (적대) execute 크래시 방어·크로스서비스 0건·6 blind setter·confbridge delete 부수효과·agent ringing 라이브 발행 전부 코드 실측 일치. 배포 순서 단방향 expand/contract 준수. 배포/데이터손실/런타임 크래시급 신규 결함 0.
 
-**설계 확정: iter-16·17 2연속 양쪽 APPROVE 달성(정책 요건 충족). v10 APPROVED.** 핵심 설계는 iter-9~17 아홉 라운드 건전. 구현 착수는 대표님 승인 후.
+**설계 확정: iter-16·17 2연속 양쪽 APPROVE 달성(정책 요건 충족). v10 APPROVED.** 핵심 설계는 iter-9~17 아홉 라운드 건전. 구현 착수는 담당자 승인 후.
 
 ## 리뷰 여정 총괄 (17 라운드)
 - iter-1~6: 동시성 근본 결함(방법 A→B 전환, 라이브 콜 teardown 등 correctness 버그).

@@ -284,7 +284,7 @@ dbhandler `QueuecallListWaitingFIFO(queueID, size)`(`ORDER BY tm_create ASC`, `s
 
 ## 15. Open Questions
 
-| # | 질문 | CPO 권고 | 우선순위 |
+| # | 질문 | 제품 담당자 권고 | 우선순위 |
 |---|---|---|---|
 | Q1 | Phase 1+2 한 PR vs 분리 | 커밋 분리, diff 크면 별도 PR | 즉시 |
 | Q2 | 안전망(Wake 60초) 유지 vs 이벤트만 | 유지(대기콜 있을 때만) | 즉시 |
@@ -293,7 +293,7 @@ dbhandler `QueuecallListWaitingFIFO(queueID, size)`(`ORDER BY tm_create ASC`, `s
 | Q5 | cross-call race(Phase 3) | Phase 3. Phase 1 진입 CAS로 같은 큐 중복배정 차단 | 트리거 도달 시 |
 | Q6 | connecting 타임아웃 기본값(30초) | 30초 시작 | Phase 2 |
 | Q7 | 이벤트/wake 부하 실측 문제 시 경량 이벤트/tag 사전필터 | 계측 먼저 | 트리거 도달 시 |
-| Q8 | execute run/stop을 고객 webhook에서 빼는 것 영향 | 없음(WebhookMessage에 없음). 대표님 확인 요망 | 즉시 |
+| Q8 | execute run/stop을 고객 webhook에서 빼는 것 영향 | 없음(WebhookMessage에 없음). 담당자 확인 요망 | 즉시 |
 | Q9 | CAS-크래시/hangup-during-dial 고아(현행 존재) reaping | 본 PR 범위 밖, 별도 이슈 | 트리거 도달 시 |
 | Q10 | dial 성공前 실패 시 waiting 복귀(재시도) vs 즉시 재라우팅 | waiting 복귀(단순, 현행 보존). 재라우팅은 Phase 3 | 결정됨 |
 | Q11 | **[iter-6·7]** poison 선두 콜 head-of-line | Phase 1 **사이클 내 다음 후보 진행으로 해결(§5.4)**. poison 콜 능동 제거(실패 카운트 상한)는 실측 신호 시 Phase 3 | 결정됨(구조) / 완화 Phase 3 |

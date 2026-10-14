@@ -60,7 +60,7 @@ No inconsistency found between §3's design and the actual shipped page_url impl
 
 ## 6. §4.3 scope boundary + §6 open questions as review material (관점 6, 7)
 
-§4.3's decision to exclude Case/Interaction from this round is well-reasoned (cites the real generated-column dependency chain, the real broader blast radius across bin-flow-manager/bin-ai-manager/bin-conversation-manager, and pchero's own standing CPO principle against consistency-only schema changes) and appropriately left as a documented, explicit non-goal rather than silently dropped. This is acceptable as-is; no changes requested on §4.3 itself.
+§4.3's decision to exclude Case/Interaction from this round is well-reasoned (cites the real generated-column dependency chain, the real broader blast radius across bin-flow-manager/bin-ai-manager/bin-conversation-manager, and pchero's own standing product owner principle against consistency-only schema changes) and appropriately left as a documented, explicit non-goal rather than silently dropped. This is acceptable as-is; no changes requested on §4.3 itself.
 
 **However, §6 is the deciding issue for this round's verdict.** The doc explicitly lists three open questions and, in two of the three (§6.1 the `"web_session"` string-literal choice, §6.3 NOT NULL-vs-nullable), the body text ALREADY states a recommendation ("Recommend resolving this explicitly in round 1" / "Recommendation to simplify, flagged for round 1 discussion"). This is a document that self-identifies as incomplete — by its own words it is asking the round-1 reviewer to make design decisions that are properly the author's to make BEFORE the design is submitted for implementation sign-off, not decisions to be resolved live during code review.
 

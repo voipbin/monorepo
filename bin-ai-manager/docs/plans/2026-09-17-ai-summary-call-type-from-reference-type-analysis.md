@@ -1,7 +1,7 @@
 # 이슈 분석: AI Summary Call Type이 Unknown으로 나오는 문제 (VOIP-1533)
 
 작성일: 2026-09-17
-작성자: Hermes (CPO)
+작성자: Hermes (제품 담당자)
 브랜치: VOIP-1533-AI-summary-call-type-from-reference-type
 상태: Draft (이슈 분석 리뷰 대기)
 성격: hardening / minimal-change (신규 엔티티/테이블/goroutine 없음)
@@ -123,7 +123,7 @@ enum → 사람이 읽는 라벨 매핑 (코드가 아니라 프롬프트 규칙
 | transcribe | Transcribed Call |
 | "" (None) 또는 미지정 | Unknown |
 
-recording → "Recorded Call"은 대표님이 이전에 정상으로 보셨던 값(§2 실측)과 일치한다.
+recording → "Recorded Call"은 담당자가 이전에 정상으로 본 값(§2 실측)과 일치한다.
 call/conference/transcribe의 라벨(Call/Conference/Transcribed Call)은 이전 관측 정상값
 대조 근거가 없는 **신규 제품 결정**이다. reference_type 값을 사람이 읽기 쉬운 형태로
 매핑한 것으로, 필요 시 추후 문구 조정 가능.

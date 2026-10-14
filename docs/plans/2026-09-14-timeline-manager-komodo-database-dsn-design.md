@@ -37,7 +37,7 @@ panel) has been fully unavailable in production for 11+ days.
 
 ## Precondition gate (Gate 1) — PASSED via live measurement
 
-Measured directly against production MariaDB (172.24.128.1:3306 over VPN,
+Measured directly against production MariaDB (<db-host>,
 2026-09-14):
 
 - `SHOW TABLES LIKE 'timeline_analyses'` -> table exists.

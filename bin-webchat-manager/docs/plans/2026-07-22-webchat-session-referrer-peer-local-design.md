@@ -1,7 +1,7 @@
 # bin-webchat-manager: Session Referrer + Peer/Local address capture
 
 Status: CLOSED (rounds 0-3, 2 consecutive APPROVE) -- see §8 Revision 1 (round 2 -- fixes revision1-round1 review finding, see docs/plans/2026-07-22-webchat-session-referrer-peer-local-design-review-revision1-round1.md) for a post-closure change to §4.1's type-string decision
-Author: Hermes (CPO)
+Author: Hermes (product owner)
 Date: 2026-07-22
 
 ## 1. Problem
@@ -20,7 +20,7 @@ webchat `Session`:
    `TypeWebSession` -- for the Peer role, rather than reusing the existing
    `TypeWebchat` for both roles.
 
-This design doc supersedes the CPO's earlier verbal rejection of a
+This design doc supersedes the product owner's earlier verbal rejection of a
 webchat-Session Peer/Local (recorded in the `page_url` design doc's §6,
 "Rejected alternative: Peer/Local on Session"). That rejection was based on
 both roles sharing the same `TypeWebchat` value, making Peer a tautology of
@@ -286,7 +286,7 @@ explicit rather than silently dropped:
   (`bin-api-manager`) scope.
 - No concrete consumer need for the unification was identified in the
   conversation beyond "consistency for its own sake" -- which conflicts
-  with pchero's own standing principle (CPO memory) against schema
+  with pchero's own standing principle (product owner memory) against schema
   changes whose only justification is looking like another table's
   pattern.
 
