@@ -37,7 +37,7 @@ func normalizeE164(e164, number string) string {
 // reject anything else rather than relying on the switch statements
 // below to silently no-op on an unrecognized type.
 //
-// web_session (VOIP-1270 follow-up, 대표님 지시) is intentionally
+// web_session (VOIP-1270 follow-up, maintainer decision) is intentionally
 // writable here but deliberately NOT added to contact.ReachableAddressTypes
 // -- it functions as a temporary/internal attribution address (a webchat
 // visitor's continuity token) that lets a Case's Peer be reconciled into

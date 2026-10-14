@@ -69,7 +69,7 @@ Useful flags (after `-args`): `-only s1,s2b` (scenario ids or group names), `-ef
 
 ## Pass rule (design 2.5)
 
-Every automatic item passes. Scenarios 2b, 3, 4-A1, 4-A2 and 6: at least 2 of 3 runs good. B1 and B2: both runs good. 9, 13 and 14: every variant good. The rest: their single run good. If a single-run scenario fails, re-run it once with the same prompt before changing the prompt, so a noisy run does not drive overfitting. If three attempts still fail, report to the CEO instead of continuing.
+Every automatic item passes. Scenarios 2b, 3, 4-A1, 4-A2 and 6: at least 2 of 3 runs good. B1 and B2: both runs good. 9, 13 and 14: every variant good. The rest: their single run good. If a single-run scenario fails, re-run it once with the same prompt before changing the prompt, so a noisy run does not drive overfitting. If three attempts still fail, report to the maintainer instead of continuing.
 
 ## Comparison axes (design 2.5)
 
