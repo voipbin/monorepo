@@ -247,7 +247,8 @@ end
 
 # The exact auto-run shape (VOIP-1597): a verify-only workflow whose job runs on
 # main without approval. No deploy, no build, no production context, no push.
-AUTORUN_FORBIDDEN = /komodo-api-deploy\.sh|docker\s+(push|login|build)|gcloud/.freeze
+AUTORUN_STEPS = %w[checkout run go-test store_test_results].freeze
+AUTORUN_FORBIDDEN = /komodo-api-deploy\.sh|docker(\s|-)+(image\s+)?(push|login|build|tag)|buildx|kubectl|skopeo|gcloud/.freeze
 
 def check_autorun_workflow(svc, js, jobs, errors)
   where = "workflow #{svc}"
@@ -288,6 +289,14 @@ def check_autorun_workflow(svc, js, jobs, errors)
     errors << "#{where}: job #{j[:id]} must not use a context" if j[:attrs].key?('context')
     if j[:id].end_with?('-deploy') || j[:key].end_with?('-deploy') || j[:id].end_with?('-build') || j[:key].end_with?('-build')
       errors << "#{where}: job #{j[:id]} must not be a build or deploy job"
+    end
+    # Steps allowlist: any other command call (docker-build, setup_remote_docker,
+    # an orb command, ...) could hide a build, push or deploy, so it is rejected.
+    Array(jobs[j[:key]] && jobs[j[:key]]['steps']).each do |step|
+      name = step.is_a?(Hash) ? step.keys.first : step.to_s
+      next if AUTORUN_STEPS.include?(name)
+
+      errors << "#{where}: job definition #{j[:key]} uses a step that is not allowed in a verify-only job: #{name}"
     end
     if logical_lines(jobs[j[:key]]).any? { |l| AUTORUN_FORBIDDEN.match?(l) }
       errors << "#{where}: job definition #{j[:key]} must not run a deploy, a docker push, login or build, or gcloud"

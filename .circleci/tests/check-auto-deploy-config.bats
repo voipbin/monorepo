@@ -518,6 +518,24 @@ expect_fail() {
     expect_fail "job definition bin-openapi-manager-validate must not run a deploy, a docker push, login or build, or gcloud"
 }
 
+@test "a docker-build command step in an auto-run job fails" {
+    mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            go mod download\n      - docker-build:\n          source-directory: x'
+    run_checker
+    expect_fail "uses a step that is not allowed in a verify-only job: docker-build"
+}
+
+@test "a setup_remote_docker step in an auto-run job fails" {
+    mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            go mod download\n      - setup_remote_docker'
+    run_checker
+    expect_fail "uses a step that is not allowed in a verify-only job: setup_remote_docker"
+}
+
+@test "kubectl or docker image push in an auto-run job fails" {
+    mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            kubectl apply -f x\n            go mod download'
+    run_checker
+    expect_fail "must not run a deploy, a docker push"
+}
+
 @test "a komodo deploy call in an auto-run job definition fails" {
     mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            .circleci/scripts/komodo-api-deploy.sh bin-openapi-manager x\n            go mod download'
     run_checker
