@@ -7,7 +7,9 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -196,7 +198,11 @@ func (h *groupcallHandler) getDialDestinationsAddressTypeExtension(ctx context.C
 
 	if len(contacts) == 0 {
 		log.Errorf("Could not find any registered contact for the extension. target_name: %s", destination.TargetName)
-		return nil, fmt.Errorf("no registered contact found for extension %s", destination.TargetName)
+		return nil, cerrors.FailedPrecondition(
+			commonoutline.ServiceNameCallManager,
+			"EXTENSION_NOT_REGISTERED",
+			fmt.Sprintf("The destination extension %q is not currently registered.", destination.TargetName),
+		)
 	}
 
 	res := []commonaddress.Address{}

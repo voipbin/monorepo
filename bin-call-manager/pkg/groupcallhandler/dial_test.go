@@ -2,11 +2,14 @@ package groupcallhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -384,9 +387,63 @@ func Test_getDialDestinationsAddressTypeExtension_noContacts(t *testing.T) {
 			mockReq.EXPECT().RegistrarV1ContactList(ctx, gomock.Any()).Return(tt.responseContacts, nil)
 			res, err := h.getDialDestinationsAddressTypeExtension(ctx, tt.cusotmerID, tt.destination)
 			if err == nil {
-				t.Errorf("Wrong match. expect: error, got: ok, res: %v", res)
+				t.Fatalf("Wrong match. expect: error, got: ok, res: %v", res)
+			}
+
+			var ve *cerrors.VoipbinError
+			if !stderrors.As(err, &ve) || ve.Status != cerrors.StatusFailedPrecondition || ve.Reason != "EXTENSION_NOT_REGISTERED" {
+				t.Errorf("Wrong match. expect: FAILED_PRECONDITION EXTENSION_NOT_REGISTERED, got: %v", err)
 			}
 		})
+	}
+}
+
+func Test_Start_extensionNotRegistered_typedError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &groupcallHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("20b8c8aa-41cd-438e-8fd3-4bb18b72db67")
+	destination := commonaddress.Address{
+		Type:       commonaddress.TypeExtension,
+		TargetName: "jay-home",
+		Target:     "jay-home",
+	}
+
+	mockReq.EXPECT().RegistrarV1ContactList(ctx, gomock.Any()).Return([]rmastcontact.AstContact{}, nil)
+
+	_, err := h.Start(ctx, uuid.FromStringOrNil("5a1b8f64-7d0e-4d6c-9a52-0b1d3a4f6c11"), customerID, uuid.Nil, &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551230001"}, []commonaddress.Address{destination}, uuid.Nil, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "", nil)
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error, got: ok")
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("Wrong match. expect: typed VoipbinError, got: %v", err)
+	}
+	if ve.Status != cerrors.StatusFailedPrecondition {
+		t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusFailedPrecondition, ve.Status)
+	}
+	if ve.Reason != "EXTENSION_NOT_REGISTERED" {
+		t.Errorf("Wrong reason. expect: EXTENSION_NOT_REGISTERED, got: %s", ve.Reason)
+	}
+	if !strings.Contains(ve.Message, "jay-home") {
+		t.Errorf("Message must name the unregistered extension. message: %s", ve.Message)
+	}
+	if strings.Contains(ve.Message, "no registered contact found") || strings.Contains(err.Error(), "no registered contact found") {
+		t.Errorf("Error must not expose the internal error text. err: %v", err)
 	}
 }
 

@@ -707,6 +707,10 @@ This process will continue until one of the destinations answers the call, at wh
 <p>With <code class="docutils literal notranslate"><span class="pre">linear</span></code> ring method, the total time to reach the last destination is the sum of all individual dial timeouts. For example, with 5 destinations and a 30-second timeout each, the last destination will not be tried until up to 150 seconds have elapsed. Plan your destination order and timeouts accordingly.</p>
 </div>
 </section>
+<section id="unregistered-extension-destination">
+<h2>Unregistered extension destination<a class="headerlink" href="#unregistered-extension-destination" title="Link to this heading">¶</a></h2>
+<p>When <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/groupcalls</span></code> is called with a single <code class="docutils literal notranslate"><span class="pre">extension</span></code> destination and the <code class="docutils literal notranslate"><span class="pre">ringall</span></code> method, and no SIP phone is currently registered for that extension, the API returns <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code> with the reason <code class="docutils literal notranslate"><span class="pre">EXTENSION_NOT_REGISTERED</span></code> and no groupcall is created. Register a SIP phone for the extension and retry. A groupcall with multiple destinations, or with the <code class="docutils literal notranslate"><span class="pre">linear</span></code> ring method, starts asynchronously and still returns <code class="docutils literal notranslate"><span class="pre">200</span></code>; unregistered extensions in it are skipped.</p>
+</section>
 <section id="nested-groupcall">
 <h2>Nested groupcall<a class="headerlink" href="#nested-groupcall" title="Link to this heading">¶</a></h2>
 <p>A nested groupcall is a groupcall that is included as one of the destinations in another groupcall. When a groupcall with a nested groupcall is initiated, the nested groupcall is also initiated, creating a “nested” groupcall within the main groupcall.</p>
@@ -800,6 +804,7 @@ This process will continue until one of the destinations answers the call, at wh
 <li><a class="reference internal" href="#">Groupcall</a><ul>
 <li><a class="reference internal" href="#ringall">Ringall</a></li>
 <li><a class="reference internal" href="#linear">Linear</a></li>
+<li><a class="reference internal" href="#unregistered-extension-destination">Unregistered extension destination</a></li>
 <li><a class="reference internal" href="#nested-groupcall">Nested groupcall</a></li>
 </ul>
 </li>

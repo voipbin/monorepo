@@ -11,7 +11,9 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -27,6 +29,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
+	pkgerrors "github.com/pkg/errors"
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/call"
@@ -1220,6 +1223,185 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseGroupcall, res)
 			}
 		})
+	}
+}
+
+func Test_CreateCallsOutgoing_groupcallStartFailure(t *testing.T) {
+
+	typedErr := cerrors.FailedPrecondition(commonoutline.ServiceNameCallManager, "EXTENSION_NOT_REGISTERED", "The destination extension is not currently registered.")
+
+	tests := []struct {
+		name string
+
+		destinations []commonaddress.Address
+		startErrs    []error
+
+		expectTyped  bool
+		expectReason string
+	}{
+		{
+			name: "single extension destination, typed error is propagated",
+
+			destinations: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "test-exten"}},
+			startErrs:    []error{pkgerrors.Wrap(typedErr, "could not get dial addresses")},
+
+			expectTyped:  true,
+			expectReason: "EXTENSION_NOT_REGISTERED",
+		},
+		{
+			name: "all destinations fail, first typed error is propagated",
+
+			destinations: []commonaddress.Address{
+				{Type: commonaddress.TypeExtension, Target: "plain-fail"},
+				{Type: commonaddress.TypeExtension, Target: "test-exten"},
+			},
+			startErrs: []error{fmt.Errorf("plain error"), typedErr},
+
+			expectTyped:  true,
+			expectReason: "EXTENSION_NOT_REGISTERED",
+		},
+		{
+			name: "typed error in the first destination wins over a later typed error",
+
+			destinations: []commonaddress.Address{
+				{Type: commonaddress.TypeExtension, Target: "test-exten"},
+				{Type: commonaddress.TypeExtension, Target: "other-exten"},
+			},
+			startErrs: []error{typedErr, cerrors.NotFound(commonoutline.ServiceNameCallManager, "OTHER_REASON", "other")},
+
+			expectTyped:  true,
+			expectReason: "EXTENSION_NOT_REGISTERED",
+		},
+		{
+			name: "untyped error only, stays a plain error",
+
+			destinations: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "test-exten"}},
+			startErrs:    []error{fmt.Errorf("plain error")},
+
+			expectTyped: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+
+			h := &callHandler{
+				groupcallHandler: mockGroupcall,
+			}
+			ctx := context.Background()
+
+			customerID := uuid.FromStringOrNil("e9a6c252-b5c4-11ed-8431-0f528880d39a")
+			source := commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551230001"}
+
+			for i := range tt.destinations {
+				mockGroupcall.EXPECT().IsGroupcallTypeAddress(&tt.destinations[i]).Return(true).AnyTimes()
+				mockGroupcall.EXPECT().Start(ctx, uuid.Nil, customerID, uuid.Nil, gomock.Any(), []commonaddress.Address{tt.destinations[i]}, uuid.Nil, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "", gomock.Any()).Return(nil, tt.startErrs[i])
+			}
+
+			_, _, err := h.CreateCallsOutgoing(ctx, customerID, uuid.Nil, uuid.Nil, source, tt.destinations, false, false, "", nil, nil)
+			if err == nil {
+				t.Fatalf("Wrong match. expect: error, got: ok")
+			}
+
+			var ve *cerrors.VoipbinError
+			isTyped := stderrors.As(err, &ve)
+			if isTyped != tt.expectTyped {
+				t.Fatalf("Wrong match. expect typed: %v, got: %v, err: %v", tt.expectTyped, isTyped, err)
+			}
+			if tt.expectTyped && ve.Reason != tt.expectReason {
+				t.Errorf("Wrong reason. expect: %s, got: %s", tt.expectReason, ve.Reason)
+			}
+		})
+	}
+}
+
+func Test_CreateCallsOutgoing_groupcallPartialSuccess(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+	h := &callHandler{
+		groupcallHandler: mockGroupcall,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("e9a6c252-b5c4-11ed-8431-0f528880d39a")
+	source := commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551230001"}
+	destinations := []commonaddress.Address{
+		{Type: commonaddress.TypeExtension, Target: "not-registered"},
+		{Type: commonaddress.TypeExtension, Target: "registered"},
+	}
+	responseGroupcall := &groupcall.Groupcall{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a14f3af-68cd-4b64-b6db-856cb15cc1cc"),
+		},
+	}
+	typedErr := cerrors.FailedPrecondition(commonoutline.ServiceNameCallManager, "EXTENSION_NOT_REGISTERED", "The destination extension is not currently registered.")
+
+	for i := range destinations {
+		mockGroupcall.EXPECT().IsGroupcallTypeAddress(&destinations[i]).Return(true).AnyTimes()
+	}
+	mockGroupcall.EXPECT().Start(ctx, uuid.Nil, customerID, uuid.Nil, gomock.Any(), []commonaddress.Address{destinations[0]}, uuid.Nil, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "", gomock.Any()).Return(nil, typedErr)
+	mockGroupcall.EXPECT().Start(ctx, uuid.Nil, customerID, uuid.Nil, gomock.Any(), []commonaddress.Address{destinations[1]}, uuid.Nil, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "", gomock.Any()).Return(responseGroupcall, nil)
+
+	resCalls, resGroupcalls, err := h.CreateCallsOutgoing(ctx, customerID, uuid.Nil, uuid.Nil, source, destinations, false, false, "", nil, nil)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if len(resCalls) != 0 || len(resGroupcalls) != 1 || resGroupcalls[0] != responseGroupcall {
+		t.Errorf("Wrong match. expect: only the registered groupcall, got calls: %v, groupcalls: %v", resCalls, resGroupcalls)
+	}
+}
+
+func Test_CreateCallsOutgoing_sipFailureStaysPlainError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockChannel := channelhandler.NewMockChannelHandler(mc)
+	mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+	h := &callHandler{
+		utilHandler:           mockUtil,
+		reqHandler:            mockReq,
+		notifyHandler:         mockNotify,
+		db:                    mockDB,
+		channelHandler:        mockChannel,
+		outboundConfigHandler: mockOutboundConfig,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("b1b2c3d4-0000-4000-8000-0000000000c1")
+	source := commonaddress.Address{Type: commonaddress.TypeSIP, Target: "testsrc@test.com"}
+	destinations := []commonaddress.Address{
+		{Type: commonaddress.TypeSIP, Target: "testoutgoing@test.com"},
+	}
+
+	// the sip branch fails with a typed error. the typed error must NOT be propagated from this branch.
+	typedErr := cerrors.PermissionDenied(commonoutline.ServiceNameCallManager, "SOME_REASON", "some message")
+
+	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("5a1b8f64-7d0e-4d6c-9a52-0b1d3a4f6c11")).AnyTimes()
+	mockReq.EXPECT().CustomerV1CustomerGet(ctx, customerID).Return(&cucustomer.Customer{
+		ID:                         customerID,
+		Status:                     cucustomer.StatusActive,
+		IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+	}, nil)
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+	mockOutboundConfig.EXPECT().GetByCustomerID(ctx, customerID).Return(nil, typedErr)
+
+	_, _, err := h.CreateCallsOutgoing(ctx, customerID, uuid.Nil, uuid.Nil, source, destinations, false, false, "", nil, nil)
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error, got: ok")
+	}
+	var ve *cerrors.VoipbinError
+	if stderrors.As(err, &ve) {
+		t.Errorf("Wrong match. expect: plain error for the sip branch, got typed: %v", err)
 	}
 }
 

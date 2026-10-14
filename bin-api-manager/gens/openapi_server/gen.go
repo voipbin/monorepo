@@ -31174,6 +31174,20 @@ func (response PostCalls402JSONResponse) VisitPostCallsResponse(w http.ResponseW
 	return err
 }
 
+type PostCalls409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCalls409JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type PostCalls500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostCalls500JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
@@ -41489,6 +41503,20 @@ func (response PostGroupcalls402JSONResponse) VisitPostGroupcallsResponse(w http
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(402)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostGroupcalls409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostGroupcalls409JSONResponse) VisitPostGroupcallsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
 	_, err := buf.WriteTo(w)
 	return err
 }

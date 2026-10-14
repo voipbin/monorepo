@@ -712,6 +712,21 @@ When the destination answers the call, it will speak the given text message.</p>
 </div>
 <p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
 </section>
+<section id="calling-an-extension-that-is-not-registered">
+<h3>Calling an extension that is not registered<a class="headerlink" href="#calling-an-extension-that-is-not-registered" title="Link to this heading">¶</a></h3>
+<p>When a destination has <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;extension&quot;</span></code> and no SIP phone is currently registered for that extension, the call cannot be placed. If every destination in the request fails this way, the API returns <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code> with the reason <code class="docutils literal notranslate"><span class="pre">EXTENSION_NOT_REGISTERED</span></code> instead of a server error, and no call is created. If at least one destination in the request is created successfully, the request succeeds and only the created calls are returned.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;FAILED_PRECONDITION&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;EXTENSION_NOT_REGISTERED&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;The destination extension </span><span class="se">\&quot;</span><span class="s2">&lt;your-extension&gt;</span><span class="se">\&quot;</span><span class="s2"> is not currently registered.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;request_id&quot;</span><span class="p">:</span> <span class="s2">&quot;req_01HXYZ...&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Register a SIP phone for the extension and retry the request. Retrying without registering the phone returns the same error.</p>
+</section>
 <section id="passing-custom-variables-into-the-call-s-flow">
 <h3>Passing custom variables into the call’s flow<a class="headerlink" href="#passing-custom-variables-into-the-call-s-flow" title="Link to this heading">¶</a></h3>
 <p>You can seed per-call context into the flow by adding an optional <code class="docutils literal notranslate"><span class="pre">variables</span></code> object to the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request. Each key becomes referenceable inside the flow as <code class="docutils literal notranslate"><span class="pre">${&lt;key&gt;}</span></code> (for example, in a <code class="docutils literal notranslate"><span class="pre">talk</span></code> action’s text or a <code class="docutils literal notranslate"><span class="pre">webhook</span></code> action’s body).</p>
@@ -1896,6 +1911,7 @@ $ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/calls/&l
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-an-existing-flow">Simple outbound call with an existing flow</a></li>
+<li><a class="reference internal" href="#calling-an-extension-that-is-not-registered">Calling an extension that is not registered</a></li>
 <li><a class="reference internal" href="#passing-custom-variables-into-the-call-s-flow">Passing custom variables into the call’s flow</a></li>
 <li><a class="reference internal" href="#anonymous-outbound-call-api-initiated">Anonymous outbound call (API-initiated)</a></li>
 <li><a class="reference internal" href="#anonymous-outbound-call-within-a-flow-connect-action">Anonymous outbound call within a flow (connect action)</a></li>

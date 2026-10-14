@@ -73,6 +73,10 @@ For example, you might use the linear method for a sales team to call potential 
 
    With ``linear`` ring method, the total time to reach the last destination is the sum of all individual dial timeouts. For example, with 5 destinations and a 30-second timeout each, the last destination will not be tried until up to 150 seconds have elapsed. Plan your destination order and timeouts accordingly.
 
+Unregistered extension destination
+----------------------------------
+When ``POST /groupcalls`` is called with a single ``extension`` destination and the ``ringall`` method, and no SIP phone is currently registered for that extension, the API returns ``409 Conflict`` with the reason ``EXTENSION_NOT_REGISTERED`` and no groupcall is created. Register a SIP phone for the extension and retry. A groupcall with multiple destinations, or with the ``linear`` ring method, starts asynchronously and still returns ``200``; unregistered extensions in it are skipped.
+
 Nested groupcall
 ----------------
 A nested groupcall is a groupcall that is included as one of the destinations in another groupcall. When a groupcall with a nested groupcall is initiated, the nested groupcall is also initiated, creating a "nested" groupcall within the main groupcall.
