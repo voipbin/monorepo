@@ -333,6 +333,19 @@ expect_fail() {
     expect_fail 'workflow bin-agent-manager: unsupported when form'
 }
 
+@test "build-approval no longer of type approval fails" {
+    mutate "$CFG" $'      - build-approval:\n          type: approval\n          <<: *non_main_filters\n      - bin-agent-manager-test:' $'      - build-approval:\n          type: build\n          <<: *non_main_filters\n      - bin-agent-manager-test:'
+    run_checker
+    expect_fail "workflow bin-agent-manager: build-approval must be type: approval"
+}
+
+@test "a when parameter that is not a run-bin parameter fails even if mapped and present" {
+    mutate "$SETUP" 'bin-openapi-manager/.*      run-bin-openapi-manager true' 'bin-openapi-manager/.*      run-voip-openapi-manager true'
+    mutate "$CFG" 'run-bin-openapi-manager >>]' 'run-voip-openapi-manager >>]'
+    run_checker
+    expect_fail "when references run-voip-openapi-manager that is not a mapped service directory"
+}
+
 # ---- (c) anchors ----
 
 @test "deploy_filters anchor widened beyond main fails" {
