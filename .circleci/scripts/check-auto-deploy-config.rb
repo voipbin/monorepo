@@ -250,6 +250,17 @@ end
 AUTORUN_STEPS = %w[checkout run go-test store_test_results].freeze
 AUTORUN_FORBIDDEN = /komodo-api-deploy\.sh|docker\b[^\n]*\b(push|login|build|tag)\b|docker-(push|build)|buildx|kubectl|skopeo|crane|git\s+push|gcloud/.freeze
 
+# Step names that are not allowed in the shared go-test command (nested included).
+def deep_bad_steps(steps)
+  Array(steps).flat_map do |step|
+    name = step.is_a?(Hash) ? step.keys.first : step.to_s
+    next [name] unless %w[checkout run when unless store_test_results].include?(name)
+
+    inner = step.is_a?(Hash) && step[name].is_a?(Hash) ? deep_bad_steps(step[name]['steps']) : []
+    inner
+  end
+end
+
 # Command lines of every run step, including steps nested in when/unless.
 def deep_run_lines(steps)
   Array(steps).flat_map do |step|
@@ -273,7 +284,7 @@ def check_autorun_workflow(svc, js, jobs, errors, commands = {})
 
   # The allowed go-test command is scanned like a run step (same forbidden list).
   gt = commands['go-test']
-  if gt.nil? || deep_run_lines(gt['steps']).any? { |l| AUTORUN_FORBIDDEN.match?(l) }
+  if gt.nil? || deep_bad_steps(gt['steps']).any? || deep_run_lines(gt['steps']).any? { |l| AUTORUN_FORBIDDEN.match?(l) }
     errors << "#{where}: command go-test is missing or runs a deploy, push, login, build, tag or gcloud"
   end
 

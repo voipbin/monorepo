@@ -555,6 +555,12 @@ expect_fail() {
     [ "$status" -eq 1 ]
 }
 
+@test "a command step inside the go-test command fails for an auto-run workflow" {
+    mutate "$CFG" $'      - run: echo working on << parameters.source-directory >>' $'      - run: echo working on << parameters.source-directory >>\n      - setup_remote_docker'
+    run_checker
+    expect_fail "command go-test is missing or runs a deploy"
+}
+
 @test "a komodo deploy call in an auto-run job definition fails" {
     mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            .circleci/scripts/komodo-api-deploy.sh bin-openapi-manager x\n            go mod download'
     run_checker
