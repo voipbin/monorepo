@@ -124,7 +124,7 @@ Files and steps, each with its check.
 
 Not touched: frontend, billing, the Ollama constant, Layer 2 code and schema.
 
-### 9.1 Plan additions (review round 1)
+### 9.1 Plan additions 
 - Registry concurrency: the registry is an `atomic.Pointer` to an immutable slice, so `SetLocalModels` and reads are race-free (pipecat-manager tests use `t.Parallel()`); `go test -race` runs for the touched packages.
 - Call order: `ConfigureLocalModels` runs right after `LoadGlobalConfig` and before the listen handler or any session start, in `cmd/ai-manager`, `cmd/ai-control`, `cmd/pipecat-manager` and `cmd/pipecat-control`. Negative test: without the call, a `local.` model is rejected.
 - pipecat-manager logs its `Config` struct at start (`cmd/pipecat-manager/main.go`), so `LOCAL_LLM_MODELS` is read through a `config.LocalLLMModels()` function from viper and is not a `Config` field. `LOCAL_LLM_ENDPOINTS` is never read by any Go code.
@@ -135,8 +135,8 @@ Not touched: frontend, billing, the Ollama constant, Layer 2 code and schema.
 - Service docs: `bin-ai-manager/docs/operations.md` and `domain.md`, `bin-pipecat-manager/docs/operations.md` and `dependencies.md`.
 - Real run adds a stopped server and a 404 response to see what text reaches logs and `pipeline_error`.
 
-### 9.2 Plan additions (review round 2)
-- Komodo precondition (reported in the PR body and the card, not solvable in code): the compose files reference new `[[BIN_MANAGER__...]]` variables, and a missing variable stops the container from starting (see the `GCP_SA_JSON` note in the pipecat compose). The variables must exist in Komodo before the merge; whether an empty value is accepted is not verified here. Deployment order for enabling models: set the endpoint variable, redeploy the runner/pipecat-manager stack, then set the models variable and redeploy ai-manager last (documented in `operations.md`).
+### 9.2 Plan additions 
+- Komodo precondition (reported in the PR body, not solvable in code): the compose files reference new `[[BIN_MANAGER__...]]` variables, and a missing variable stops the container from starting (see the `GCP_SA_JSON` note in the pipecat compose). The variables must exist in Komodo before the merge; whether an empty value is accepted is not verified here. Deployment order for enabling models: set the endpoint variable, redeploy the runner/pipecat-manager stack, then set the models variable and redeploy ai-manager last (documented in `operations.md`).
 - Runner entry point tests: FastAPI `TestClient` against `/run` (or the request-model path in `main.py`) for malformed `LOCAL_LLM_ENDPOINTS`, a missing endpoint and a rule-violating `base_url`; the response body and captured log must not contain the URL, key or JSON fragments.
 - Team member path: `llm_type=None` with `engine_model="local.x.y"` is rejected at the team pipeline level; `engine_key` is not forwarded and the runner key is never `None`. SDK environment fallbacks: `OPENAI_API_KEY` must not be used; an explicit `base_url` wins over `OPENAI_BASE_URL`. `OPENAI_ORG_ID` and `OPENAI_PROJECT_ID` are not set in the compose files; the operator docs say not to set them on the runner.
 - Call order: `ConfigureLocalModels` is the first statement after `LoadGlobalConfig`/`Validate` and before `runDaemon` in each of the four entry points; each entry point is checked by reading the code and by the build.
@@ -145,13 +145,13 @@ Not touched: frontend, billing, the Ollama constant, Layer 2 code and schema.
 - Known limitation: a notice text for authentication errors (`pipeline_error`) mentions a custom engine key; a local server that answers 401 would show that text although local models use no customer key. Recorded for the notice text work in Layer 2.
 - The atomic registry is for safety; the race rationale does not rely on `t.Parallel()` in `llmresolve_test.go`.
 
-### 9.3 Plan additions (review round 3)
-- Komodo variables are a merge gate, not an option: no code path makes the stack independent of a missing `[[BIN_MANAGER__...]]` variable (the `environment.env` route has the same dependency). The PR body states that QA must not merge until the three variables (`BIN_MANAGER__LOCAL_LLM_MODELS` used by ai-manager and pipecat-manager, `BIN_MANAGER__LOCAL_LLM_ENDPOINTS` used by the runners) exist in Komodo; this is reported as a human action. One shared models variable keeps the two services identical; the enable order is in the operations docs: endpoints variable first, then redeploy the pipecat stack (pipecat-manager and runners, same image), then set the models value and redeploy ai-manager last. Section 3.1 is the single source for this order.
+### 9.3 Plan additions 
+- Komodo variables are a merge gate, not an option: no code path makes the stack independent of a missing `[[BIN_MANAGER__...]]` variable (the `environment.env` route has the same dependency). The PR body states that the PR must not be merged until the two variables (`BIN_MANAGER__LOCAL_LLM_MODELS` used by ai-manager and pipecat-manager, `BIN_MANAGER__LOCAL_LLM_ENDPOINTS` used by the runners) exist in Komodo. One shared models variable keeps the two services identical; the enable order is in the operations docs: endpoints variable first, then redeploy the pipecat stack (pipecat-manager and runners, same image), then set the models value and redeploy ai-manager last. Section 3.1 is the single source for this order.
 - Compose value format: compact JSON with no space after a colon or comma, `$` written as `$$`; documented in operations docs; the compose check uses samples containing quotes, `$` and a key.
 - Runner: every failure in the `local` branch (missing or non-object endpoints value, JSON decode error, missing endpoint, wrong types, rule-violating `base_url`) is converted to a `ValueError` with a fixed message and `from None`, so no traceback frame shows locals. loguru `diagnose=False` is set in `main.py` for the sink (the runner logs through loguru with serialization). Tests use the loguru sink, not only `caplog`. Mid-session exceptions are covered by the real run: the stub server is stopped during a session and the log is searched for the URL and key.
 - Entry point wiring: a small test in each config package checks that `LocalLLMModels()` reads the env value; the four `cmd` call sites are checked in the review by reading and by building.
 
-### 9.4 Plan additions (review round 4)
+### 9.4 Plan additions 
 - Enable order (single source, supersedes the wording in 9.3): (1) create or update the two Komodo variables, (2) redeploy the pipecat stack (pipecat-manager and the runners together), (3) redeploy ai-manager last. Check at rollout: the pipecat-manager startup summary shows the expected loaded count before ai-manager is redeployed.
 - Before the merge the variables are created with non-empty neutral values, `BIN_MANAGER__LOCAL_LLM_MODELS=[]` and `BIN_MANAGER__LOCAL_LLM_ENDPOINTS={}`, so the unverified empty-value question does not arise; the parser treats `[]` and `{}` as empty. The first deploy checks the real container environment (`docker exec ... env`), not only `docker compose config`.
 - Signatures: `ConfigureLocalModels(raw string) (LocalParseResult, error)`; `SetLocalModels(entries []ModelEntry)`; `LocalModelsForTest() []ModelEntry` is not added, tests save and restore through `SetLocalModels` with a copy taken from `CatalogView`-independent test helper `snapshotLocalModels`, which is an unexported function in the package tests. The registry is an `atomic.Pointer`; the parallel-test remark is dropped.
@@ -159,15 +159,15 @@ Not touched: frontend, billing, the Ollama constant, Layer 2 code and schema.
 - Runner: `base_url` rule also rejects an empty host and a fragment. A Go/Python contract test feeds the Go-produced runner type (including an id with a dot such as `qwen2.5-7b`) to the Python splitter. The real run goes through the `/run` handler.
 - Test data for configured catalogs uses ids without banned words; existing banned-term scans keep running with an empty registry.
 
-### 9.5 Plan additions (review round 5, minor items)
+### 9.5 Plan additions 
 - Step 1 checks include the size limits: input over 64 KiB returns an error and no models; the 200th model is accepted and the 201st counts as skipped.
 - Tests that call `SetLocalModels` do not use `t.Parallel()` and restore the registry with `t.Cleanup` (the atomic pointer protects memory, not test isolation).
 - The real run searches the runner log and the pipecat-manager Go log (`runnerHandlePipelineError` logs up to 2000 characters of the runner text) for the endpoint URL and key.
 - Operator docs carry only the 9.4 enable order; the earlier wording in 9.2 and 9.3 is superseded.
 
-### 9.6 Plan additions (review round 6, minor items)
+### 9.6 Plan additions 
 - The runner parses `LOCAL_LLM_ENDPOINTS` once at module start and logs the loaded count only; a parse failure does not stop startup (it leaves zero endpoints and logs a fixed line), and the branch fails the session with the fixed message. A reset function serves tests. This supersedes the lazy wording in 9.1.
 - Operator docs add: do not merge ai-manager while the variables are changed but the pipecat stack is not yet redeployed; removal order is the reverse (ai-manager first, pipecat after, after moving AIs).
 - Other-package tests clear the registry with `t.Cleanup(func(){ SetLocalModels(nil) })`; no test helper is exported.
 - Runner `local` branch rejects a model name without a dot with the fixed message (pytest case).
-- Billing for self-hosted models is out of scope until separately instructed; the admin form change is tracked separately (SQUARE-103).
+- Billing for self-hosted models is out of scope until separately instructed; the admin form change is tracked separately.
