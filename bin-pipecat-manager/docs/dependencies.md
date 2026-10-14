@@ -70,6 +70,8 @@ a day until someone noticed and triggered a manual redeploy.
 | Deepgram API | STT |
 | Cartesia / ElevenLabs / Google TTS | TTS providers |
 
+Operator-hosted OpenAI-compatible LLM servers (vLLM, llama.cpp, Ollama): reached from the Python runner at the `base_url` of an endpoint in `LOCAL_LLM_ENDPOINTS`, only for `local.<endpoint>.<id>` models.
+
 ## RabbitMQ Queue Names
 
 | Queue | Direction | Notes |

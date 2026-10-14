@@ -27351,7 +27351,7 @@
           },
           "tags": {
             "type": "array",
-            "description": "Model tags. Currently `low-cost` only.",
+            "description": "Model tags. `low-cost`, and `tool-calling` for operator-registered local models that support tool calling.",
             "items": {
               "type": "string"
             },
@@ -27366,7 +27366,7 @@
           },
           "platform_managed": {
             "type": "boolean",
-            "description": "If true, the platform supplies the credentials and `engine_key` is not needed.",
+            "description": "If true, the platform supplies the credentials and `engine_key` is not needed. This does not imply a particular routing provider.",
             "example": false
           },
           "key_mode": {

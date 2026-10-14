@@ -4026,13 +4026,13 @@ type AIManagerAIModel struct {
 	// ModelIdPrefix Present only for entries where you type the model ID yourself. Send engine_model as this prefix followed by the model ID.
 	ModelIdPrefix *string `json:"model_id_prefix,omitempty"`
 
-	// PlatformManaged If true, the platform supplies the credentials and `engine_key` is not needed.
+	// PlatformManaged If true, the platform supplies the credentials and `engine_key` is not needed. This does not imply a particular routing provider.
 	PlatformManaged bool `json:"platform_managed"`
 
 	// Recommended Whether the platform recommends this model.
 	Recommended bool `json:"recommended"`
 
-	// Tags Model tags. Currently `low-cost` only.
+	// Tags Model tags. `low-cost`, and `tool-calling` for operator-registered local models that support tool calling.
 	Tags []string `json:"tags"`
 
 	// Vendor Model vendor used to group models.

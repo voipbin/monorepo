@@ -61,6 +61,9 @@ func initCommand() *cobra.Command {
 				return errors.Wrap(errValidate, "invalid configuration")
 			}
 
+			// Without this, local models would be rejected as invalid.
+			config.ConfigureLocalModels()
+
 			return nil
 		},
 	}

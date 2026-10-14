@@ -1,6 +1,7 @@
 import asyncio
 import importlib
 import os
+import re
 import sys
 import json
 import common
@@ -580,7 +581,7 @@ def _member_llm_type(ai: dict) -> str:
     if resolved is None:
         fallback = ai.get("engine_model") or ""
         svc = fallback.replace(":", ".", 1).split(".", 1)[0].lower() if fallback else ""
-        if svc in ("platform_openrouter", "openrouter"):
+        if svc in ("platform_openrouter", "openrouter", "local"):
             raise ValueError("engine model is not available")
         return fallback
     if resolved == "":
@@ -602,6 +603,73 @@ def _build_openrouter_llm(api_key: str, model_name: str):
             extra={"extra_body": {"provider": dict(_OPENROUTER_PROVIDER)}},
         ),
     )
+
+
+# --- Operator-registered local (self-hosted OpenAI-compatible) endpoints ---
+# LOCAL_LLM_ENDPOINTS is a secret JSON object injected into this container only:
+#   {"<endpoint>": {"base_url": "http://host:8000/v1", "api_key": ""}}
+# Every failure below raises or logs a FIXED message: the URL, the key and any JSON
+# fragment must never reach an exception text (main.py returns str(e) to the caller
+# and the Go side logs it) or a log line.
+_LOCAL_ENDPOINT_NAME = re.compile(r"^[a-z0-9][a-z0-9-]{0,31}$")
+_LOCAL_PLACEHOLDER_KEY = "local-no-key"  # never None/"": the SDK would fall back to OPENAI_API_KEY
+_LOCAL_ERROR = "local engine model is not available"
+_local_endpoints: dict = {}
+
+
+def _valid_local_base_url(value) -> bool:
+    from urllib.parse import urlsplit
+
+    if not isinstance(value, str):
+        return False
+    try:
+        parts = urlsplit(value)
+        parts.port  # raises ValueError on an invalid port
+    except ValueError:
+        return False
+    return (
+        parts.scheme in ("http", "https")
+        and bool(parts.hostname)
+        and "@" not in parts.netloc
+        and not parts.query
+        and not parts.fragment
+    )
+
+
+def load_local_endpoints(raw=None) -> int:
+    """Parse LOCAL_LLM_ENDPOINTS (default: the environment) into the module registry.
+
+    Returns the number of loaded endpoints. Never raises and never logs the value."""
+    global _local_endpoints
+    if raw is None:
+        raw = os.getenv("LOCAL_LLM_ENDPOINTS", "")
+    loaded: dict = {}
+    skipped = 0
+    if raw and raw.strip():
+        try:
+            data = json.loads(raw)
+        except ValueError:
+            data = None
+        if not isinstance(data, dict):
+            logger.error("LOCAL_LLM_ENDPOINTS is not a valid json object. No local endpoint is available.")
+            data = {}
+        for name, item in data.items():
+            if (
+                isinstance(name, str)
+                and _LOCAL_ENDPOINT_NAME.match(name)
+                and isinstance(item, dict)
+                and _valid_local_base_url(item.get("base_url"))
+                and isinstance(item.get("api_key", ""), str)
+            ):
+                loaded[name] = {"base_url": item["base_url"], "api_key": item.get("api_key", "")}
+            else:
+                skipped += 1
+    _local_endpoints = loaded
+    logger.info(f"Local llm endpoints loaded: {len(loaded)}, skipped: {skipped}")
+    return len(loaded)
+
+
+load_local_endpoints()
 
 
 def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], pipeline_id: str = "", **options):
@@ -695,6 +763,26 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         if not api_key:
             raise ValueError("An API key is required for custom OpenRouter models.")
         llm = _build_openrouter_llm(api_key, model_name)
+
+        standard_tools = _openai_tools_to_standard(tools)
+        tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
+        ctx = LLMContext(messages=valid_messages, tools=tools_schema)
+        aggregator = _make_aggregator(ctx)
+
+        return llm, aggregator
+
+    elif service_name == "local":
+        # Operator-registered local endpoint (local.<endpoint>.<model id>). The key
+        # argument is ignored: only the operator-configured key is used.
+        endpoint_name, _, local_model = model_name.partition(".")
+        endpoint = _local_endpoints.get(endpoint_name)
+        if endpoint is None or not local_model:
+            raise ValueError(_LOCAL_ERROR)
+        llm = OpenAILLMService(
+            api_key=endpoint["api_key"] or _LOCAL_PLACEHOLDER_KEY,
+            model=local_model,
+            base_url=endpoint["base_url"],
+        )
 
         standard_tools = _openai_tools_to_standard(tools)
         tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN

@@ -65,6 +65,8 @@ var rootCmd = &cobra.Command{
 			return errValidate
 		}
 
+		config.ConfigureLocalModels()
+
 		config.InitPrometheus()
 		return runDaemon()
 	},

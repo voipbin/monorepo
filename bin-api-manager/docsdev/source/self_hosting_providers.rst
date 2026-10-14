@@ -32,6 +32,10 @@ AI voice agent providers
        and Mistral models that ``GET /ai_models`` lists with
        ``platform_managed`` set to ``true``)
      - ``OPENROUTER_API_KEY`` (restart ``pipecat-script-runner``)
+   * - LLM / conversation (real-time voice pipeline, local models)
+     - Self-hosted OpenAI-compatible servers (vLLM, llama.cpp, Ollama, and similar)
+     - ``LOCAL_LLM_MODELS`` (restart ``ai-manager`` and ``pipecat-manager``),
+       ``LOCAL_LLM_ENDPOINTS`` (restart ``pipecat-script-runner``)
    * - Speech-to-text
      - Deepgram, AWS Transcribe, Google Cloud Speech-to-Text
      - ``DEEPGRAM_API_KEY``; ``AWS_ACCESS_KEY``/``AWS_SECRET_KEY``;
@@ -101,6 +105,50 @@ on how it behaves in this installer's Docker Compose stack:
   runner image that contains the platform-managed model support is
   adopted (for example with ``scripts/sync-compose-images.sh``). Setting the key
   while the pinned image is older does nothing.
+
+Local models (self-hosted OpenAI-compatible servers)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can register models that run on your own server, such as vLLM,
+llama.cpp or Ollama, as long as the server implements the OpenAI chat
+completions API. Registered models appear in ``GET /ai_models`` with vendor
+``Local`` and an ``id`` of ``local.<endpoint>.<model>``. Users only pick the
+model; the server address and key are never shown. Private network
+addresses and plain ``http`` are allowed, because the server is inside your
+trust boundary. Nothing is listed until you set the variables below. There is
+no separate on/off switch. This is not the same as the OpenRouter models above:
+``platform_managed`` only says that you, the operator, supply the connection.
+
+Two variables, kept apart on purpose so that the secret stays in the runner
+only. Write each value as compact JSON (no space after a colon or comma) and
+write a ``$`` character as ``$$`` in Docker Compose.
+
+- ``LOCAL_LLM_ENDPOINTS`` (secret, ``pipecat-script-runner`` only): a JSON
+  object that maps an endpoint name to its connection, for example
+  ``{"vllm-a":{"base_url":"http://llm.internal:8000/v1","api_key":""}}``.
+  The name is lower case letters, digits and ``-`` (up to 32 characters).
+  ``base_url`` is ``http`` or ``https`` without user information, query or
+  fragment. An empty ``api_key`` is allowed.
+- ``LOCAL_LLM_MODELS`` (no secret, ``ai-manager`` and ``pipecat-manager``): a
+  JSON list, for example
+  ``[{"endpoint":"vllm-a","id":"qwen3-8b","label":"Qwen3 8B","capabilities":["tool-calling"],"default":false}]``.
+  ``id`` may contain letters, digits and ``. _ : / -``. ``label`` is ASCII
+  only (up to 64 characters). ``capabilities`` may contain ``tool-calling``
+  and ``low-cost``; they are informational. At most one entry should set
+  ``default`` to ``true``; it becomes the only ``recommended`` model. At most
+  200 models are read. Invalid entries are skipped and logged as an error
+  (counts only); the service still starts, so check the log after a change.
+  The endpoint name, ``id`` and ``label`` are shown to users, so do not put
+  internal host names in them.
+
+To enable: set both variables, redeploy ``pipecat-manager`` and
+``pipecat-script-runner`` together (same image), then redeploy
+``ai-manager`` last. To remove a model: move the AIs that use it to another
+model first, then redeploy ``ai-manager`` first and the pipecat services
+afterwards. A session that uses a removed or unreachable model fails. Do not set
+``OPENAI_ORG_ID`` or ``OPENAI_PROJECT_ID`` on the runner: the OpenAI client
+would send them to your server. If the server is down, a voice session does
+not tell the caller; the failure is visible only in the logs.
 
 After setting an AI provider key, restart the service(s) that actually
 consume that specific variable, per the tables above:

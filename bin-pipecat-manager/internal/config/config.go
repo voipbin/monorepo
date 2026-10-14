@@ -8,6 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	amai "monorepo/bin-ai-manager/models/ai"
 )
 
 // Config holds the application configuration
@@ -48,6 +50,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
+	f.String("local_llm_models", "", "JSON list of operator-registered local (self-hosted OpenAI-compatible) models; no URL or key")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -57,6 +60,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+		"local_llm_models":          "LOCAL_LLM_MODELS",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -98,4 +102,26 @@ func LoadGlobalConfig() {
 func initLog() {
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
+}
+
+// LocalLLMModels returns the LOCAL_LLM_MODELS value. It is read from viper and is not a
+// Config field because the daemon logs the whole Config struct at start.
+func LocalLLMModels() string {
+	return viper.GetString("local_llm_models")
+}
+
+// ConfigureLocalModels registers the local models from LOCAL_LLM_MODELS. Call it right
+// after LoadGlobalConfig and before anything serves. A bad value never stops the
+// service: it logs an error (counts only, never the value) and local models stay empty.
+func ConfigureLocalModels() {
+	res, err := amai.ConfigureLocalModels(LocalLLMModels())
+	log := logrus.WithFields(res.LogFields())
+	switch {
+	case err != nil:
+		log.WithError(err).Error("Could not load local llm models. No local model is available.")
+	case res.Skipped > 0 || res.DuplicateDefaults > 0:
+		log.Error("Some local llm model entries were skipped.")
+	default:
+		log.Info("Local llm models loaded.")
+	}
 }

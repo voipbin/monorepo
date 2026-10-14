@@ -86,6 +86,14 @@ func ResolveEngine(m EngineModel) (Resolved, Outcome) {
 		return Resolved{Entry: e, RunnerType: string(m)}, OutcomeCatalog
 	}
 
+	// Local models: operator-registered, never the customer key.
+	local := localModels()
+	for i := range local {
+		if local[i].ID == m {
+			return Resolved{Entry: &local[i], RunnerType: string(m), BlankKey: true}, OutcomeCatalog
+		}
+	}
+
 	// Custom OpenRouter: exact, case-sensitive prefix. The runner type keeps the "openrouter."
 	// prefix and never becomes platform_openrouter, so the platform key stays unreachable.
 	if strings.HasPrefix(string(m), EngineModelPrefixCustomOpenRouter) {
