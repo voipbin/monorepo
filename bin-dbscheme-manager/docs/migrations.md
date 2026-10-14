@@ -1,6 +1,6 @@
 # Migrations
 
-This document covers how to create, name, and verify Alembic migration files for the `voipbin` and `asterisk` databases.
+This document covers how to create, name, and verify Alembic migration files for the `bin_manager` and `asterisk` databases.
 
 ## Creating a Migration
 
@@ -9,7 +9,7 @@ Always use `alembic revision` to generate migration files. Never create them by 
 **Step-by-step:**
 
 ```bash
-# For the voipbin database (most service tables)
+# For the bin_manager database (most service tables)
 cd bin-dbscheme-manager/bin-manager
 alembic -c alembic.ini revision -m "customers_add_column_email"
 # → creates main/versions/<id>_customers_add_column_email.py
@@ -130,7 +130,7 @@ main-only `migration-applied-checkpoint` approval and runs independently of
 it.
 
 **What it checks**, for both migration streams (`bin-manager/` for the
-`voipbin` database, `asterisk_config/` for the `asterisk` database):
+`bin_manager` database, `asterisk_config/` for the `asterisk` database):
 
 1. Python syntax/import validity of every migration file in `versions/`.
 2. Exactly one head per stream (`alembic heads`) — more than one head means
@@ -152,3 +152,26 @@ this document), a Python import/syntax traceback from `alembic heads`, or an
 `alembic.util.exc.CommandError` citing the broken `down_revision` reference.
 No VPN access or database credential is needed to diagnose any of these; fix
 the migration file(s) locally and push again.
+
+## Writing migrations that can be applied automatically
+
+A revision is applied without a person only when it is provably additive. Anything else is not rejected by CI; it is classified as needing a person to apply it. To stay in the automatic path:
+
+- `upgrade()` calls `op.execute()` with raw SQL, one statement per call, built only from constants (string literals, `+`, `%s`/`%d` formatting, f-strings of constants, `for` and `if` over constants).
+- Allowed statements:
+  - `CREATE TABLE [IF NOT EXISTS]` with column definitions, `PRIMARY KEY`, `KEY`/`INDEX`, `UNIQUE KEY`, `CONSTRAINT <name> UNIQUE|PRIMARY KEY`, and the table options `ENGINE=InnoDB`, `ROW_FORMAT`, `CHARSET`, `COLLATE`, `COMMENT`.
+  - `CREATE INDEX <name> ON <table> (<columns>)`.
+  - `ALTER TABLE <table> ADD [COLUMN] [IF NOT EXISTS] <name> <type> <attributes>` and `ALTER TABLE <table> ADD INDEX|KEY <name> (<columns>)`.
+- A new `NOT NULL` column needs a `DEFAULT` other than `NULL`. Attributes are `NULL`/`NOT NULL`, `DEFAULT`, `COMMENT`, `UNSIGNED`, `CHARACTER SET`, `COLLATE` and `AFTER <column>`, each at most once. Defaults are `NULL`, numbers, quoted strings, `true`/`false`, `0x...`, `CURRENT_TIMESTAMP[(n)]`, `now()`, `(JSON_OBJECT())`, `(JSON_ARRAY())` and `(UNHEX('<hex>'))`.
+- Write a unique index on a new table as `UNIQUE KEY` inside `CREATE TABLE`; a separate `CREATE UNIQUE INDEX` needs a person.
+- A SQL comment is `-- ` followed by a space, and it must end with a line feed inside the statement. Do not put a comment at the very end of a statement, and do not use `#` or `/* */`.
+- Do not write a colon followed by a word (`:name`) outside a word, for example a bind parameter. A colon after a word character, as in `'12:30:00'` or `'ratio 1:2'`, is fine.
+- Keep the generated file shape: the template imports, a docstring, plain assignments of `revision`, `down_revision` (a single revision) and `depends_on = None`, `branch_labels = None`, then `upgrade()` and `downgrade()`. `downgrade()` is never run by the classifier.
+
+The source gate rejects these constructs (the revision then needs a person): `get_bind`, `get_context`, `inspect`/`Inspector`, `batch_alter_table`, `op.alter_column`, `op.drop_*`, `op.create_foreign_key`, `op.create_unique_constraint`, `os`/`getenv`, `getattr`/`setattr`, `eval`/`exec`/`compile`/`__import__`, raw DBAPI cursors, sessions, `print`, `sa.func`, `sa.true`/`sa.false`, `sa.PrimaryKeyConstraint`, `sa.UniqueConstraint`, `sa.ForeignKey`, `try`, `with`, `lambda`, comprehensions, nested functions, helper functions, `class`, `global`, `branch_labels`, a tuple `down_revision`, `depends_on`, decorators, and any call or statement at module level. Source files must be UTF-8 without a byte order mark or a coding declaration, with ASCII identifiers; non-ASCII text is allowed inside comments, docstrings and string literals when it is visible text.
+
+Revision files that predate these rules are listed by sha256 in `classifier/module_level_exceptions.txt`. The list exempts an already applied file from the import-time rules only; a changed file is not covered, and a listed file that becomes pending is still treated as needing a person. A new revision must satisfy the rules instead of being added to the list.
+
+## Classifier tests
+
+`pytest bin-dbscheme-manager/tests` covers the tokenizer, `normalize()`, the statement allow-list, the source gate (accepted and rejected forms), the per-stream classification, the runtime replay guard, and the real revision files. The real-revision tests apply both streams to a scratch MariaDB 12.3 server and check that the offline render equals what is executed, and that every statement classified additive only adds to the schema. See `CLAUDE.md` for how to run them. CI runs them in the `bin-dbscheme-manager-test` job on every branch.

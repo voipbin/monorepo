@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-`bin-dbscheme-manager` is the canonical home for database schema management in VoIPbin using Alembic migrations. It owns two independent MySQL schemas: the `voipbin` core database (managed under `bin-manager/`) and the Asterisk PJSIP config database (managed under `asterisk_config/`).
+`bin-dbscheme-manager` is the canonical home for database schema management in VoIPbin using Alembic migrations. It owns two independent MySQL schemas: the `bin_manager` core database (managed under `bin-manager/`) and the Asterisk PJSIP config database (managed under `asterisk_config/`).
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktree usage, RST sync, the general "Database via Alembic only" rule) live in the root [CLAUDE.md](../CLAUDE.md). This file is the authoritative reference for Alembic-specific procedures.
 
@@ -60,7 +60,7 @@ alembic -c alembic.ini revision -m "ai_aicalls_add_column_current_member_id"
 # --- Setup (one-time per environment) ---
 cd bin-manager
 cp alembic.ini.sample alembic.ini
-# Edit alembic.ini: set sqlalchemy.url = mysql://user:pass@host/voipbin
+# Edit alembic.ini: set sqlalchemy.url = mysql://user:pass@host/bin_manager
 
 cd asterisk_config
 cp alembic.ini.sample alembic.ini
@@ -85,12 +85,12 @@ alembic -c alembic.ini downgrade -1
 ## Architecture
 
 **Two independent migration streams:**
-- `bin-manager/` → manages `voipbin` MySQL database; migrations in `main/versions/`
+- `bin-manager/` → manages `bin_manager` MySQL database; migrations in `main/versions/`
 - `asterisk_config/` → manages `asterisk` MySQL database; migrations in `config/versions/`
 
 Never mix migrations between the two streams. Always `cd` into the correct subdirectory and pass `-c alembic.ini`.
 
-**No packaged/deployed image.** This project previously shipped a `Dockerfile` that baked a temporary-MariaDB-built schema dump into a `mysql:8.0`-based image via `/docker-entrypoint-initdb.d/`, plus a `k8s/` Job manifest to run it — both removed in VOIP-1398 as dead: no CircleCI job ever built or pushed the image, and `voipbin/voipbin`'s `install/scripts/migrate.sh` never referenced it (it sparse-checks-out this directory's alembic *source* at a pinned commit and runs `alembic upgrade head` directly, in its own container). This directory's actual consumers are: `migrate.sh` (source checkout), CircleCI's `migration-lint` job (structural validation only), and humans running `alembic` manually per `docs/operations.md`.
+**No packaged/deployed image.** This project previously shipped a `Dockerfile` that baked a temporary-MariaDB-built schema dump into a `mysql:8.0`-based image via `/docker-entrypoint-initdb.d/`, plus a `k8s/` Job manifest to run it — both removed in VOIP-1398 as dead: no CircleCI job ever built or pushed the image, and `voipbin/voipbin`'s `install/scripts/migrate.sh` never referenced it (it sparse-checks-out this directory's alembic *source* at a pinned commit and runs `alembic upgrade head` directly, in its own container). This directory's actual consumers are: `migrate.sh` (source checkout), CircleCI's `migration-lint` job (structural validation only), the `bin-dbscheme-manager-test` job (see "Classifier and tests" below), and humans running `alembic` manually per `docs/operations.md`.
 
 ## CRITICAL: UUID columns must be `BINARY(16)`
 
@@ -101,3 +101,16 @@ Go's MySQL driver sends `uuid.UUID` values as 16 raw bytes. `VARCHAR(36)` silent
 ## Monorepo Context
 
 Every Go manager service that uses MySQL relies on the schema produced here. When adding a `db:` tag to a Go model, you MUST also create a corresponding Alembic migration here. Updating schema in `scripts/database_scripts/table_*.sql` (used in tests) without a migration breaks production.
+
+## Classifier and tests
+
+`classifier/` decides whether a pending Alembic range is provably additive. It is a library plus tests; nothing here connects to or changes a real database.
+
+- `source_gate.py`: default-deny gate over the revision files (directory listing, encoding, import-time code, the body of `upgrade()`).
+- `render.py`, `sqltext.py`, `statements.py`: offline render of one step, a quote-aware tokenizer with `normalize()`, and the statement allow-list.
+- `replay.py`: a guard that lets only the classified statements, in order, reach a server.
+- `classify.py`: ties them together per stream. `module_level_exceptions.txt` lists, by sha256, files that predate the import-time rules; a changed file is not covered.
+
+Anything outside the allow-list is reported as not provably additive (a person applies it); it is never guessed at. The authoring rules are in `docs/migrations.md`.
+
+Tests: `pip install --require-hashes -r requirements-dev.txt`, start a MariaDB 12.3 server, export `DBSCHEME_TEST_DB_URL=mariadb+pymysql://root@127.0.0.1:3306`, then `pytest bin-dbscheme-manager/tests`. Without the variable the server tests are skipped. `requirements.txt` is hash pinned (`alembic`, `sqlalchemy<2.0`, `pymysql`); regenerate it with `uv pip compile requirements.in --generate-hashes --universal --python-version 3.11 -o requirements.txt`.

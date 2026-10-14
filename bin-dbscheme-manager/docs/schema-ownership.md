@@ -2,7 +2,7 @@
 
 This document maps each database table to the service that owns it. "Owns" means the service is the authoritative writer for that table — it creates, updates, and deletes rows. Other services may read but should not write to tables they do not own.
 
-All tables below are in the `voipbin` MySQL database managed by `bin-manager/`. For Asterisk PJSIP tables (in the `asterisk` database), see the bottom section.
+All tables below are in the `bin_manager` MySQL database managed by `bin-manager/`. For Asterisk PJSIP tables (in the `asterisk` database), see the bottom section.
 
 ## Table Ownership
 

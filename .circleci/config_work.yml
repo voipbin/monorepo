@@ -513,6 +513,7 @@ workflows:
     when: << pipeline.parameters.run-bin-dbscheme-manager >>
     jobs:
       - migration-lint
+      - bin-dbscheme-manager-test
       - migration-applied-checkpoint:
           type: approval
           filters:
@@ -1590,10 +1591,53 @@ jobs:
   # migration-applied-checkpoint in the workflow definition above (main-only
   # approval attesting a migration was manually applied).
   #
-  # migration-lint is the one automated CI job this service has: a
-  # lightweight, DB-connection-free structural validation of the Alembic
-  # migration chain, run on every branch. See
+  # migration-lint is a lightweight, DB-connection-free structural validation
+  # of the Alembic migration chain, run on every branch. See
   # bin-dbscheme-manager/docs/migrations.md.
+  #
+  # bin-dbscheme-manager-test runs `pytest bin-dbscheme-manager/tests` by
+  # directory against a throwaway MariaDB secondary container, so new test
+  # files need no change here. The server is only a scratch database that
+  # exists for the duration of the job.
+  bin-dbscheme-manager-test:
+    docker:
+      - image: python:3.11-slim
+      - image: mariadb:12.3
+        command: ["--innodb-flush-log-at-trx-commit=0", "--skip-log-bin"]
+        environment:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "1"
+    steps:
+      - checkout
+      - run:
+          name: Install pinned test requirements
+          no_output_timeout: 5m
+          command: pip install --no-cache-dir --require-hashes -r bin-dbscheme-manager/requirements-dev.txt
+      - run:
+          name: Wait until the scratch database accepts connections
+          command: |
+            python -c '
+            import sys, time
+            import pymysql
+            deadline = time.time() + 120
+            while True:
+                try:
+                    pymysql.connect(host="127.0.0.1", port=3306, user="root", password="").close()
+                    print("scratch database is ready")
+                    break
+                except pymysql.err.OperationalError as exc:
+                    if time.time() > deadline:
+                        print("scratch database did not become ready:", exc)
+                        sys.exit(1)
+                    time.sleep(2)
+            '
+      - run:
+          name: Run bin-dbscheme-manager tests
+          no_output_timeout: 15m
+          environment:
+            DBSCHEME_TEST_DB_URL: mariadb+pymysql://root@127.0.0.1:3306
+            DBSCHEME_TEST_REQUIRE_DB: "1"
+          command: python -m pytest bin-dbscheme-manager/tests -q -p no:cacheprovider -p no:warnings
+
   migration-lint:
     docker:
       - image: python:3.11-slim
