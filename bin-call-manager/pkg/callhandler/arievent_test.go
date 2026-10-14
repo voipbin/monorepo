@@ -209,6 +209,27 @@ func Test_answerCallBridgePeers(t *testing.T) {
 			expectAnswer:  true,
 		},
 		{
+			// an external media channel in the call bridge is already Up → skipped, no answer called
+			name: "external media peer already up - skip",
+			channel: &channel.Channel{
+				ID:       "call-out-channel-id-3",
+				State:    ari.ChannelStateUp,
+				BridgeID: "bridge-eee",
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-eee",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"call-out-channel-id-3", "external-media-channel-id"},
+			},
+			responsePeer: &channel.Channel{
+				ID:    "external-media-channel-id",
+				Type:  channel.TypeExternal,
+				State: ari.ChannelStateUp,
+			},
+			expectGetPeer: true,
+			expectAnswer:  false,
+		},
+		{
 			// guard check: confbridge bridge → no answer called
 			name: "confbridge bridge - no answer",
 			channel: &channel.Channel{
@@ -589,6 +610,152 @@ func Test_ARIPlaybackFinished(t *testing.T) {
 
 			if errFin := h.ARIPlaybackFinished(ctx, tt.channel, tt.e); errFin != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errFin)
+			}
+		})
+	}
+}
+
+func Test_ARIChannelLeftBridge_callChannel(t *testing.T) {
+	tests := []struct {
+		name string
+
+		channel *channel.Channel
+		bridge  *bridge.Bridge
+
+		responseChannels map[string]*channel.Channel
+
+		expectHangupIDs []string
+	}{
+		{
+			name:    "call channel left the call bridge: external member is hung up",
+			channel: &channel.Channel{ID: "call-channel", Type: channel.TypeCall},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"ext-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"ext-channel": {ID: "ext-channel", Type: channel.TypeExternal},
+			},
+			expectHangupIDs: []string{"ext-channel"},
+		},
+		{
+			name:    "call channel left mid-call (echo continue): same handling",
+			channel: &channel.Channel{ID: "call-channel", Type: channel.TypeCall},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"join-channel", "ext-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"join-channel": {ID: "join-channel", Type: channel.TypeJoin},
+				"ext-channel":  {ID: "ext-channel", Type: channel.TypeExternal},
+			},
+			expectHangupIDs: []string{"ext-channel"},
+		},
+		{
+			name:    "only non-external members: no hangup",
+			channel: &channel.Channel{ID: "call-channel", Type: channel.TypeCall},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"join-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"join-channel": {ID: "join-channel", Type: channel.TypeJoin},
+			},
+			expectHangupIDs: []string{},
+		},
+		{
+			name:    "no remaining channel: nothing to do",
+			channel: &channel.Channel{ID: "call-channel", Type: channel.TypeCall},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{},
+			},
+			expectHangupIDs: []string{},
+		},
+		{
+			name:    "call channel left a snoop bridge: no action",
+			channel: &channel.Channel{ID: "call-channel", Type: channel.TypeCall},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCallSnoop,
+				ChannelIDs:    []string{"ext-channel"},
+			},
+			expectHangupIDs: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{channelHandler: mockChannel}
+			ctx := context.Background()
+
+			if tt.bridge.ReferenceType == bridge.ReferenceTypeCall {
+				for _, channelID := range tt.bridge.ChannelIDs {
+					mockChannel.EXPECT().Get(ctx, channelID).Return(tt.responseChannels[channelID], nil)
+				}
+			}
+			for _, channelID := range tt.expectHangupIDs {
+				mockChannel.EXPECT().HangingUp(ctx, channelID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
+			}
+
+			if err := h.ARIChannelLeftBridge(ctx, tt.channel, tt.bridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_ARIChannelLeftBridge_externalChannel(t *testing.T) {
+	tests := []struct {
+		name string
+
+		channel *channel.Channel
+		bridge  *bridge.Bridge
+	}{
+		{
+			name:    "external channel left the call bridge: hangup only, even with zero remaining channels",
+			channel: &channel.Channel{ID: "ext-channel", Type: channel.TypeExternal},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{},
+			},
+		},
+		{
+			name:    "external channel left the call bridge with the call channel remaining: no kick",
+			channel: &channel.Channel{ID: "ext-channel", Type: channel.TypeExternal},
+			bridge: &bridge.Bridge{
+				ID:            "543a1b3a-151e-11ec-ac2a-ef955db1beeb",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"call-channel"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &callHandler{channelHandler: mockChannel, bridgeHandler: mockBridge}
+			ctx := context.Background()
+
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNormalClearing).Return(&channel.Channel{}, nil)
+
+			if err := h.ARIChannelLeftBridge(ctx, tt.channel, tt.bridge); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

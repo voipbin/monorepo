@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-call-manager/pkg/testhelper"
+	"strings"
 	"testing"
 	"time"
 
@@ -26,6 +27,8 @@ import (
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
+	logrustest "github.com/sirupsen/logrus/hooks/test"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/ari"
@@ -1175,6 +1178,7 @@ func Test_Start_ContextJoinCall(t *testing.T) {
 			ctx := context.Background()
 
 			mockBridge.EXPECT().ChannelJoin(ctx, tt.expectBridgeID, tt.channel.ID, "", false, false).Return(nil)
+			mockBridge.EXPECT().Get(ctx, tt.expectBridgeID).Return(&bridge.Bridge{ID: tt.expectBridgeID}, nil)
 			mockChannel.EXPECT().Dial(ctx, tt.channel.ID, "", defaultDialTimeout).Return(nil)
 
 			if err := h.Start(context.Background(), tt.channel); err != nil {
@@ -1317,4 +1321,116 @@ func Test_getAddressOwner(t *testing.T) {
 func mustNormalizeStart(addressType commonaddress.Type, target string) string {
 	res, _ := commonaddress.NormalizeTarget(addressType, target)
 	return res
+}
+
+func Test_warnExternalMembersInCallBridge(t *testing.T) {
+	tests := []struct {
+		name string
+
+		callID   string
+		bridgeID string
+
+		responseBridge    *bridge.Bridge
+		responseBridgeErr error
+		responseChannels  map[string]*channel.Channel
+
+		expectWarn string
+	}{
+		{
+			name:     "call bridge holding an external member",
+			callID:   "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+			bridgeID: "ed08cbf8-4319-11ec-a768-23af5da287d4",
+			responseBridge: &bridge.Bridge{
+				ID:            "ed08cbf8-4319-11ec-a768-23af5da287d4",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"call-channel", "ext-channel", "missing-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"call-channel": {ID: "call-channel", Type: channel.TypeCall},
+				"ext-channel":  {ID: "ext-channel", Type: channel.TypeExternal},
+			},
+			expectWarn: "external_channels: [ext-channel]",
+		},
+		{
+			name:     "call bridge holding no external member",
+			callID:   "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+			bridgeID: "ed08cbf8-4319-11ec-a768-23af5da287d4",
+			responseBridge: &bridge.Bridge{
+				ID:            "ed08cbf8-4319-11ec-a768-23af5da287d4",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"call-channel"},
+			},
+			responseChannels: map[string]*channel.Channel{
+				"call-channel": {ID: "call-channel", Type: channel.TypeCall},
+			},
+		},
+		{
+			name:     "not a call bridge",
+			callID:   "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+			bridgeID: "ed08cbf8-4319-11ec-a768-23af5da287d4",
+			responseBridge: &bridge.Bridge{
+				ID:            "ed08cbf8-4319-11ec-a768-23af5da287d4",
+				ReferenceType: bridge.ReferenceTypeConfbridge,
+				ChannelIDs:    []string{"ext-channel"},
+			},
+		},
+		{
+			name:     "nil bridge without an error is ignored",
+			callID:   "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+			bridgeID: "ed08cbf8-4319-11ec-a768-23af5da287d4",
+		},
+		{
+			name:              "bridge lookup error is ignored",
+			callID:            "ed4ba266-4319-11ec-80b7-9f3d3acb4aa0",
+			bridgeID:          "ed08cbf8-4319-11ec-a768-23af5da287d4",
+			responseBridgeErr: fmt.Errorf("not found"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &callHandler{
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+			ctx := context.Background()
+
+			mockBridge.EXPECT().Get(ctx, tt.bridgeID).Return(tt.responseBridge, tt.responseBridgeErr)
+			if tt.responseBridge != nil && tt.responseBridge.ReferenceType == bridge.ReferenceTypeCall {
+				for _, channelID := range tt.responseBridge.ChannelIDs {
+					if c, ok := tt.responseChannels[channelID]; ok {
+						mockChannel.EXPECT().Get(ctx, channelID).Return(c, nil)
+					} else {
+						mockChannel.EXPECT().Get(ctx, channelID).Return(nil, fmt.Errorf("not found"))
+					}
+				}
+			}
+
+			hook := logrustest.NewGlobal()
+			defer logrus.StandardLogger().ReplaceHooks(make(logrus.LevelHooks))
+
+			// log only: no return value and no further calls
+			h.warnExternalMembersInCallBridge(ctx, tt.callID, tt.bridgeID)
+
+			warns := []string{}
+			for _, entry := range hook.AllEntries() {
+				if entry.Level == logrus.WarnLevel {
+					warns = append(warns, entry.Message)
+				}
+			}
+			if tt.expectWarn == "" {
+				if len(warns) != 0 {
+					t.Errorf("Wrong match. expect: no warning, got: %v", warns)
+				}
+			} else if len(warns) != 1 || !strings.Contains(warns[0], tt.expectWarn) {
+				t.Errorf("Wrong match. expect one warning containing: %s, got: %v", tt.expectWarn, warns)
+			}
+		})
+	}
 }
