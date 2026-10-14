@@ -124,6 +124,19 @@ func Test_SetLocalModelsCopies(t *testing.T) {
 	}
 }
 
+func Test_CatalogViewTagsAreCopies(t *testing.T) {
+	resetLocal(t)
+	SetLocalModels(mustParseLocal(t, `[{"endpoint":"a","id":"m","label":"M","capabilities":["low-cost"]}]`))
+
+	view := CatalogView()
+	view[len(view)-1].Tags[0] = "changed"
+
+	again := CatalogView()
+	if again[len(again)-1].Tags[0] != TagLowCost {
+		t.Error("changing a returned view must not change the registry")
+	}
+}
+
 func Test_LocalResolve(t *testing.T) {
 	resetLocal(t)
 
