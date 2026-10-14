@@ -25,6 +25,11 @@ func (h *recordingHandler) Start(
 
 	promRecordingStartTotal.WithLabelValues(string(referenceType)).Inc()
 
+	// an empty format produces extension-less filenames and an unknown-format error from asterisk.
+	if format == "" {
+		format = recording.FormatWAV
+	}
+
 	switch referenceType {
 	case recording.ReferenceTypeCall:
 		return h.recordingReferenceTypeCall(ctx, activeflowID, referenceID, format, endOfSilence, endOfKey, duration, onEndFlowID)
