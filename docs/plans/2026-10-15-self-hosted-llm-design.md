@@ -1,6 +1,6 @@
 # Self-hosted OpenAI-compatible LLM support (VOIP-1599)
 
-Status: design, revision 17 (design review loop closed). This change implements Layer 1 only; Layer 2 is an unimplemented gate (proof of concept, its own design round and an earlier schema change come first, section 4). Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-openapi-manager, bin-api-manager docs.
+Status: design, revision 18 (design review loop closed). This change implements Layer 1 only; Layer 2 is an unimplemented gate (proof of concept, its own design round and an earlier schema change come first, section 4). Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-openapi-manager, bin-api-manager docs.
 
 ## 1. Issue analysis (current state, verified on main)
 
@@ -67,7 +67,7 @@ No billing code references `platform_managed` or the catalog routes (grep). Loca
 ### 3.7 Operations
 - Existing contract tests: `Test_CatalogViewPlatformManagedMatchesRoute` compares the view with `catalog` by index and length, `Test_CatalogKeyModeMatchesRoute` and `Test_CatalogInvariants` enumerate routes, `Test_CatalogViewShape` asserts `len(view)==len(catalog)` and exactly one recommended model (both assertions are handled: the length assertion is updated to include registry entries, and the single-recommended assertion gets an unconfigured case unchanged and a configured case), `Test_ResolveEngineAllOpenRouterEntriesBlankKey` walks `catalog`. Because local entries are not in `catalog`, these keep their meaning; they are updated to compare against `catalog` plus the registry where the view length is asserted, and local entries get their own contract tests (platform managed, key mode `platform`, blank key). The `wantKeys` test is unchanged. Python tests that expect `Unsupported LLM service` use non-local values and are unaffected.
 - A running call keeps the engine model snapshotted in its aicall, so catalog changes do not affect calls in progress.
-- If the operator removes or renames a model, existing AIs that store it still save (unchanged value) but session start fails closed with `engine model is not available`. The operator procedure: list AIs using the model before removal (`ai-control` list) and move them first. No automatic migration.
+- If the operator removes or renames a model, existing AIs that store it still save (unchanged value) but session start fails closed with `engine model is not available`. The operator procedure: find AIs using the model before removal (a read-only database query on `ai_ais.engine_model`, because `ai-control list` filters by customer only) and move them first. No automatic migration.
 - `ai-control` runs where the ai-manager environment is available and reads `LOCAL_LLM_MODELS` the same way; `bin-ai-manager/docs/operations.md` documents it.
 - The runner logs the number of loaded endpoints at start. A missing endpoint variable with models configured shows up as that count being 0 plus session start failures; no health flag is added.
 
@@ -134,3 +134,13 @@ Not touched: frontend, billing, the Ollama constant, Layer 2 code and schema.
 - Verification per service (bin-ai-manager, bin-pipecat-manager, bin-openapi-manager, bin-api-manager): `go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run`; Python `pytest` in `bin-pipecat-manager/scripts/pipecat`; docsdev clean rebuild and `git add -f` of the build output.
 - Service docs: `bin-ai-manager/docs/operations.md` and `domain.md`, `bin-pipecat-manager/docs/operations.md` and `dependencies.md`.
 - Real run adds a stopped server and a 404 response to see what text reaches logs and `pipeline_error`.
+
+### 9.2 Plan additions (review round 2)
+- Komodo precondition (reported in the PR body and the card, not solvable in code): the compose files reference new `[[BIN_MANAGER__...]]` variables, and a missing variable stops the container from starting (see the `GCP_SA_JSON` note in the pipecat compose). The variables must exist in Komodo before the merge; whether an empty value is accepted is not verified here. Deployment order for enabling models: set the endpoint variable, redeploy the runner/pipecat-manager stack, then set the models variable and redeploy ai-manager last (documented in `operations.md`).
+- Runner entry point tests: FastAPI `TestClient` against `/run` (or the request-model path in `main.py`) for malformed `LOCAL_LLM_ENDPOINTS`, a missing endpoint and a rule-violating `base_url`; the response body and captured log must not contain the URL, key or JSON fragments.
+- Team member path: `llm_type=None` with `engine_model="local.x.y"` is rejected at the team pipeline level; `engine_key` is not forwarded and the runner key is never `None`. SDK environment fallbacks: `OPENAI_API_KEY` must not be used; an explicit `base_url` wins over `OPENAI_BASE_URL`. `OPENAI_ORG_ID` and `OPENAI_PROJECT_ID` are not set in the compose files; the operator docs say not to set them on the runner.
+- Call order: `ConfigureLocalModels` is the first statement after `LoadGlobalConfig`/`Validate` and before `runDaemon` in each of the four entry points; each entry point is checked by reading the code and by the build.
+- `SetLocalModels` copies the entries and their tags. Limits: input up to 64 KiB and up to 200 models (the rest counts as skipped).
+- Build check also covers the other importers of `monorepo/bin-ai-manager/models/ai`: `go build ./... && go vet ./...` in `bin-api-manager`, `bin-common-handler`, `bin-call-manager`.
+- Known limitation: a notice text for authentication errors (`pipeline_error`) mentions a custom engine key; a local server that answers 401 would show that text although local models use no customer key. Recorded for the notice text work in Layer 2.
+- The atomic registry is for safety; the race rationale does not rely on `t.Parallel()` in `llmresolve_test.go`.
