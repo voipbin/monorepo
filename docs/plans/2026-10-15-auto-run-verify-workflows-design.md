@@ -15,7 +15,7 @@ Follows `2026-10-13-main-auto-deploy-design.md`, `2026-10-14-main-auto-deploy-ph
 2. `auto-run-services.txt` (new): the two workflow names. Separate from `auto-deploy-services.txt` on purpose, so a verify-only workflow can never be mistaken for a deploying one.
 3. `check-auto-deploy-config.rb`: a new rule set for listed auto-run workflows. The jobs must be exactly `build-approval` (type approval, ignore main), one verify job named `<svc>-test` or `<svc>-validate` (ignore main, requires only `build-approval`) and its `-auto` copy (only main, no requires, same job key). The rule fails on any `context`, any job named or keyed `-deploy` or `-build`, any step other than `checkout`, `run`, `go-test` and `store_test_results` (so an orb or custom command such as `docker-build` or `setup_remote_docker` is rejected), and any `run` line that calls `komodo-api-deploy.sh`, `docker push`, `login`, `build` or `tag`, `buildx`, `kubectl`, `skopeo` or `gcloud`. Entries must not be in the deny list or in the auto-deploy allowlist, must not repeat, and must have a workflow. A `-auto` job in a workflow that is on neither list still fails.
 4. `config.yml`: the new list file arms `shell-tests`, like the existing list.
-5. `check-auto-deploy-config.bats`: the checker takes the new list as an optional fifth argument; eighteen cases pin the new rules.
+5. `check-auto-deploy-config.bats`: the checker takes the new list as an optional fifth argument; twenty-one cases pin the new rules.
 
 ## Out of scope
 
@@ -24,7 +24,7 @@ Follows `2026-10-13-main-auto-deploy-design.md`, `2026-10-14-main-auto-deploy-ph
 
 ## Risks and mitigations
 
-- A verify job now runs on every `main` merge that touches these directories. A failure is a red check on `main`, not a production change. The job definitions are scanned by the checker for anything that could publish or deploy; the allowed `go-test` command is a fixed definition in this file and changes to it are reviewed.
+- A verify job now runs on every `main` merge that touches these directories. A failure is a red check on `main`, not a production change. The job definitions are scanned by the checker for anything that could publish or deploy; the allowed `go-test` command definition is scanned too (including steps nested in `when`) with the same forbidden-command list. The command scan is a pattern check that prevents mistakes; it cannot stop a deliberately obfuscated command, so changes to these job definitions are still reviewed.
 - Hiding a deploy behind the verify shape: blocked by the checker rules above and by the separate list.
 - Rollback: remove the two names from `auto-run-services.txt` and revert the two workflow blocks. Later pipelines are approval-gated again.
 

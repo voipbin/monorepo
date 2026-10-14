@@ -165,7 +165,7 @@ def check(config_path, list_path, setup_path = DEFAULT_SETUP, repo_root = DEFAUL
     if listed && listed_run
       next # already reported as a list conflict above
     elsif listed_run
-      check_autorun_workflow(name, js, jobs, errors)
+      check_autorun_workflow(name, js, jobs, errors, cfg['commands'] || {})
     elsif listed
       paths, err = guard_paths_for(name, wf, mapping_loader, repo_root)
       errors << err if err
@@ -248,9 +248,19 @@ end
 # The exact auto-run shape (VOIP-1597): a verify-only workflow whose job runs on
 # main without approval. No deploy, no build, no production context, no push.
 AUTORUN_STEPS = %w[checkout run go-test store_test_results].freeze
-AUTORUN_FORBIDDEN = /komodo-api-deploy\.sh|docker(\s|-)+(image\s+)?(push|login|build|tag)|buildx|kubectl|skopeo|gcloud/.freeze
+AUTORUN_FORBIDDEN = /komodo-api-deploy\.sh|docker\b[^\n]*\b(push|login|build|tag)\b|docker-(push|build)|buildx|kubectl|skopeo|crane|git\s+push|gcloud/.freeze
 
-def check_autorun_workflow(svc, js, jobs, errors)
+# Command lines of every run step, including steps nested in when/unless.
+def deep_run_lines(steps)
+  Array(steps).flat_map do |step|
+    next [] unless step.is_a?(Hash)
+
+    nested = step.values.flat_map { |v| v.is_a?(Hash) ? deep_run_lines(v['steps']) : [] }
+    nested + logical_lines('steps' => [step])
+  end
+end
+
+def check_autorun_workflow(svc, js, jobs, errors, commands = {})
   where = "workflow #{svc}"
   ids = js.map { |j| j[:id] }
   by_id = js.to_h { |j| [j[:id], j] }
@@ -259,6 +269,12 @@ def check_autorun_workflow(svc, js, jobs, errors)
   unless ids.size == 3 && by_id['build-approval'] && autos.size == 1 && bases.size == 1
     errors << "#{where}: jobs must be exactly build-approval, one verify job and its -auto copy (got #{ids.join(', ')})"
     return
+  end
+
+  # The allowed go-test command is scanned like a run step (same forbidden list).
+  gt = commands['go-test']
+  if gt.nil? || deep_run_lines(gt['steps']).any? { |l| AUTORUN_FORBIDDEN.match?(l) }
+    errors << "#{where}: command go-test is missing or runs a deploy, push, login, build, tag or gcloud"
   end
 
   base = bases.first

@@ -536,6 +536,25 @@ expect_fail() {
     expect_fail "must not run a deploy, a docker push"
 }
 
+@test "a docker push with options in an auto-run job fails" {
+    mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            docker --debug push x\n            go mod download'
+    run_checker
+    expect_fail "must not run a deploy, a docker push"
+}
+
+@test "a push inside the go-test command fails for an auto-run workflow" {
+    mutate "$CFG" $'                  GCL_VERSION=2.14.0' $'                  docker push x\n                  GCL_VERSION=2.14.0'
+    run_checker
+    expect_fail "command go-test is missing or runs a deploy"
+}
+
+@test "an auto-run verify job with an unexpected name fails" {
+    mutate "$CFG" $'      - bin-common-handler-test:\n          <<: *non_main_filters' $'      - bin-common-handler-test:\n          <<: *non_main_filters'
+    mutate "$CFG" $'name: bin-common-handler-test-auto' $'name: bin-common-handler-other-auto'
+    run_checker
+    [ "$status" -eq 1 ]
+}
+
 @test "a komodo deploy call in an auto-run job definition fails" {
     mutate "$CFG" $'            cd bin-openapi-manager\n            go mod download' $'            cd bin-openapi-manager\n            .circleci/scripts/komodo-api-deploy.sh bin-openapi-manager x\n            go mod download'
     run_checker
