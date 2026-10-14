@@ -22,7 +22,7 @@ Ticket: VOIP-1579. Sibling (separate, not in scope): VOIP-1580 (action timeout p
 - Asterisk `main/audiohook.c`, `audio_audiohook_write_list` (tag 23.5.0: spy queueing at line 1229, whisper mixing at 1248): spies receive the write-direction frame BEFORE whisper audio is mixed in. A spy on a channel can never see whisper audio on the same channel. Same ordering in master.
 - Recording = two snoop channels (`spy=in`, `spy=out`) on the call channel: `bin-call-manager/pkg/recordinghandler/recording.go:73-98`.
 - Call-type external media = snoop channel `spy=<listen>`, `whisper=<speak>` plus the ExternalMedia channel in a private "snoop bridge": `bin-call-manager/pkg/externalmediahandler/start.go:104-112`.
-- Whisper frame supply is not a factor: Asterisk 23.5.0 has a whisper timer (`AST_WHISPER_TIMER_SRC`) that generates idle frames, and local tests showed noise on the original channel makes the spy record the noise but still not the whisper. (CEO confirmed 2026-10-09 that this needs no further action.)
+- Whisper frame supply is not a factor: Asterisk 23.5.0 has a whisper timer (`AST_WHISPER_TIMER_SRC`) that generates idle frames, and local tests showed noise on the original channel makes the spy record the noise but still not the whisper. (the product owner confirmed 2026-10-09 that this needs no further action.)
 - The production image is Asterisk 23.5.0: `voipbin/voip-asterisk-call:1787b415...` (the tag running on the production hosts, verified with `asterisk -V` inside the pulled image).
 
 ### 1.4 Experiments that fix the direction (call channel in a `mixing,video_sfu` bridge, the type `addCallBridge` creates)
@@ -94,7 +94,7 @@ Anything else takes the unchanged legacy snoop path (including `dialing` calls a
 
 Accepted behaviours (bounded, documented, trigger-based follow-up, not locked):
 - Several injectors on one call (for example ai_talk plus speakings) all join the call bridge and hear each other in softmix. Not seen in known flows.
-- `ConfbridgeID`, `MasterCallID` and `ChainedCallIDs` are set after the call/join channel is created (`confbridgehandler/joined.go`, chained-call linking), so an injector started in that short window is treated as eligible; a conference joined while an injector runs hears it and is heard by it. This is NOT guaranteed to be rare: the AI `connect` tool adds the `connect` action to the flow and terminates the AI call asynchronously (`bin-ai-manager` `toolHandleConnect`), so the later `confbridge_join` can overlap pipecat's `ExternalMediaStop`. (Flow `external_media_start` is no longer on the new path, so the intentional long-lived case does not exist for it.) Customer-visible effect: the joined party can hear the injected audio and the injector can hear the party. The legacy whisper path did not expose the joined party. Decision: accept now, make it observable (`Warnf` below), and treat the first occurrence as the trigger for the guard 'a TypeJoin entering a call bridge that holds external members hangs those members up' (a guard that ends platform injectors at join; since customer hosts stay legacy it does not change customer-visible media contracts). Open for the CEO: add that guard now instead? Recommendation: wait for the first logged occurrence.
+- `ConfbridgeID`, `MasterCallID` and `ChainedCallIDs` are set after the call/join channel is created (`confbridgehandler/joined.go`, chained-call linking), so an injector started in that short window is treated as eligible; a conference joined while an injector runs hears it and is heard by it. This is NOT guaranteed to be rare: the AI `connect` tool adds the `connect` action to the flow and terminates the AI call asynchronously (`bin-ai-manager` `toolHandleConnect`), so the later `confbridge_join` can overlap pipecat's `ExternalMediaStop`. (Flow `external_media_start` is no longer on the new path, so the intentional long-lived case does not exist for it.) Customer-visible effect: the joined party can hear the injected audio and the injector can hear the party. The legacy whisper path did not expose the joined party. Decision: accept now, make it observable (`Warnf` below), and treat the first occurrence as the trigger for the guard 'a TypeJoin entering a call bridge that holds external members hangs those members up' (a guard that ends platform injectors at join; since customer hosts stay legacy it does not change customer-visible media contracts). Decision (2026-10-14): the guard is not added in this PR (adding it is forbidden here). The first `Warnf` occurrence (4.2a) is the trigger for handling it afterwards.
 - Recovery (VOIP-1556) happens after the Asterisk that held the call is lost; the old bridge and anything in it disappear with it, as the old snoop did. `recoverySkipReason` skips on `ExternalMediaIDs`, which pipecat/tts do not fill; that asymmetry already exists today and is unchanged.
 
 ### 4.2 New path
@@ -116,9 +116,9 @@ Other situations: client gone (Asterisk destroys the channel at once, section 1.
 ### 4.5 Readers of call-bridge membership (audit, grep over the monorepo excluding vendor, mocks, tests, worktrees)
 `callhandler/arievent.go` `answerCallBridgePeers`, `confbridgehandler/ari_event.go` (TypeJoin Up peer answer), `callhandler/bridge.go` `bridgeLeftExternal`/`removeAllChannelsInBridge`. The answer loops skip Up channels; an external channel joins only after its client connected and was `Up` in every connected run of section 1.4. `callhandler` has no `bridgeHandler.Play` caller (only `channelHandler.Play`). Every `ChannelJoin` caller: `callhandler/start.go:165` (`startContextExternalSoop`, snoop bridge), `:193` (external media, `em.BridgeID`), `:215` (TypeJoin channel into the call's `BridgeID`), `:470` (`addCallBridge`, also used for the recovery channel), `confbridgehandler/start.go:48` (confbridge bridge). No other path adds a member to a call bridge. The recording snoops are not bridge members. Unit tests cover both loops with an external member.
 
-### 4.6 Rollout safety (decision pending with the CEO)
+### 4.6 Rollout safety (decided by the product owner on 2026-10-14)
 Mixed versions are the hazard. Old `bridgeLeftExternal` ignores the bridge type and kicks every remaining channel. Two replicas compete on one RabbitMQ queue for ARI events (`subscribehandler`, `QueueNameCallSubscribe`). If a new pod puts an ExternalMedia channel into a call bridge and an old pod handles its `ChannelLeftBridge`, the call channel is removed from its bridge (the call stays up in the database but has no media path; not measured). Rollback has the same exposure.
-Options: (1) two PRs: PR-A = 4.3 and 4.4 (with their tests), deployed and confirmed on all replicas; PR-B = 4.1, 4.2, docs, live verification. PR-A is safe alone because no ExternalMedia channel can be in a call bridge before PR-B (4.3 and 4.4 are unreachable until then), and it changes no snoop behaviour (snoop bridges are `ReferenceTypeCallSnoop`). (2) one PR with a default-off switch; weaker than it looks, because enabling it still needs the guard on every replica first, so it does not replace (1). (3) one PR, accept a window of minutes, deploy at a quiet hour, watch logs. Rollback order: revert PR-B first, let open calls finish, then PR-A (reverting only PR-A restores the old kick risk). Confirming PR-A on all replicas: `ListStacks` image SHA per call-manager replica equals the PR-A merge commit (`voipbin-prod-readonly-inspection` skill). Recommendation: (1). Needs the CEO's explicit approval because the project rules forbid splitting PRs and adding switches on my own.
+Options: (1) two PRs: PR-A = 4.3 and 4.4 (with their tests), deployed and confirmed on all replicas; PR-B = 4.1, 4.2, docs, live verification. PR-A is safe alone because no ExternalMedia channel can be in a call bridge before PR-B (4.3 and 4.4 are unreachable until then), and it changes no snoop behaviour (snoop bridges are `ReferenceTypeCallSnoop`). (2) one PR with a default-off switch; weaker than it looks, because enabling it still needs the guard on every replica first, so it does not replace (1). (3) one PR, accept a window of minutes, deploy at a quiet hour, watch logs. Rollback order: revert PR-B first, let open calls finish, then PR-A (reverting only PR-A restores the old kick risk). Confirming PR-A on all replicas: `ListStacks` image SHA per call-manager replica equals the PR-A merge commit (`voipbin-prod-readonly-inspection` skill). Decision (2026-10-14): keep a single PR, no PR split (option 1 is not used) and no default-off switch. Deployment timing and log monitoring are free to choose at any time (option 3).
 
 ### 4.7 Concrete change list
 | File | Change |
@@ -184,7 +184,7 @@ Cleanup checklist: temporary AI, virtual number, flow, recordings. Cost: about 4
 - Bridge-level ARI playback into the call bridge would be heard by the injector's listener (a snoop spy=in did not hear it). Verified by grep: `callhandler` has no `bridgeHandler.Play` caller.
 
 ## 7. Open points
-- Blocking: the CEO's rollout decision (4.6).
+- Blocking: none. The rollout decision (4.6) and the conference join exposure decision (4.1) were made on 2026-10-14.
 - Not blocking: api-manager Both/Both streams remain a documented gap; concurrent injectors (4.1).
 
 ## 8. Review history
@@ -216,7 +216,7 @@ Section numbers cited in section 8 are those of the draft being reviewed (v1-v4)
 | M2 duplicate Stop | NotFound ignored, 4.5 reworded as belt and braces |
 | M3 file list | 4.10 |
 | M4 recovery | recovery follows Asterisk loss; stale record has a different BridgeID (4.1) |
-| R2-B2 rolling deploy kick | 4.9, CEO decision requested; split plan prepared |
+| R2-B2 rolling deploy kick | 4.9, product owner decision requested; split plan prepared |
 | R2-M3 client gone/never connected | experiments added to 1.4: never-connected channel cannot join (422) and stays Down; disconnect destroys the channel |
 | R2-M4 conference after start | 4.7 policy using record lookup |
 | R2-M5 transcribe behaviour | 4.8 documented as intentional |
@@ -251,7 +251,7 @@ Section numbers cited in section 8 are those of the draft being reviewed (v1-v4)
 | Finding | Resolution |
 |---|---|
 | spec gaps: AsteriskID source, pure function, Get failure handling, test composition, docs procedure, 16 combos | 4.1, 4.2, 4.4, 4.7, 5 updated |
-| round 6: conference join after injector is not rare (AI connect tool, flow action) and exposes the joined party | statement corrected, observable (4.2a), decision recorded with trigger and an explicit open question for the CEO (4.1) |
+| round 6: conference join after injector is not rare (AI connect tool, flow action) and exposes the joined party | statement corrected, observable (4.2a), decision recorded with trigger and an explicit open question for the product owner (4.1) |
 | mid-call leave via echo/Continue | 4.4 corrected, test added |
 | triggers not observable, no review checklist, records not cleaned | 4.2a, 4.10, residual line in 4.4 |
 | stale status/history | updated |
@@ -268,7 +268,7 @@ Section numbers cited in section 8 are those of the draft being reviewed (v1-v4)
 PR assignment table 4.7a; ai-manager hangup subscription acknowledged in 4.4; internal-RPC wording, label and test corrections; unlimited session lifetime is the same as legacy.
 
 ### Round-9 (APPROVED x2) minor items applied
-Section 6 reference, rollback order, 4.3 log level. Open decisions for the CEO (non-code): PR split (4.6) and the conference-join guard timing (4.1); the reviewer advises deciding the guard before PR-B merges.
+Section 6 reference, rollback order, 4.3 log level. Open decisions for the product owner (non-code): PR split (4.6) and the conference-join guard timing (4.1); the reviewer advises deciding the guard before PR-B merges.
 
 ### Code review round 1 (2026-10-10)
-Applied: nil bridge guard and move of the join warning after `Dial`, Warn level for a failed external hangup, `answerCallBridgePeers` external peer case, `bin-call-manager/docs/domain.md` invariant 5, RST wording (media streams, pre-answer flows). Not changed: concurrent injectors hearing each other (accepted in 4.1, bounded, no known flow); rolling-deploy kick risk stays the CEO decision in 4.6 (split PR recommended).
+Applied: nil bridge guard and move of the join warning after `Dial`, Warn level for a failed external hangup, `answerCallBridgePeers` external peer case, `bin-call-manager/docs/domain.md` invariant 5, RST wording (media streams, pre-answer flows). Not changed: concurrent injectors hearing each other (accepted in 4.1, bounded, no known flow); rolling-deploy kick risk was decided in 4.6 (single PR, 2026-10-14).
