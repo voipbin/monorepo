@@ -1,6 +1,6 @@
 # Self-hosted OpenAI-compatible LLM support (VOIP-1599)
 
-Status: design, revision 16 (design review loop closed). This change implements Layer 1 only; Layer 2 is an unimplemented gate (proof of concept, its own design round and an earlier schema change come first, section 4). Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-openapi-manager, bin-api-manager docs.
+Status: design, revision 17 (design review loop closed). This change implements Layer 1 only; Layer 2 is an unimplemented gate (proof of concept, its own design round and an earlier schema change come first, section 4). Scope: bin-ai-manager, bin-pipecat-manager (Go service and Python runner), bin-openapi-manager, bin-api-manager docs.
 
 ## 1. Issue analysis (current state, verified on main)
 
@@ -123,3 +123,14 @@ Files and steps, each with its check.
 8. Real run: a stub OpenAI-compatible server and `create_llm_service` plus a streamed completion through the runner code path; real model latency and tool-call quality stay unverified.
 
 Not touched: frontend, billing, the Ollama constant, Layer 2 code and schema.
+
+### 9.1 Plan additions (review round 1)
+- Registry concurrency: the registry is an `atomic.Pointer` to an immutable slice, so `SetLocalModels` and reads are race-free (pipecat-manager tests use `t.Parallel()`); `go test -race` runs for the touched packages.
+- Call order: `ConfigureLocalModels` runs right after `LoadGlobalConfig` and before the listen handler or any session start, in `cmd/ai-manager`, `cmd/ai-control`, `cmd/pipecat-manager` and `cmd/pipecat-control`. Negative test: without the call, a `local.` model is rejected.
+- pipecat-manager logs its `Config` struct at start (`cmd/pipecat-manager/main.go`), so `LOCAL_LLM_MODELS` is read through a `config.LocalLLMModels()` function from viper and is not a `Config` field. `LOCAL_LLM_ENDPOINTS` is never read by any Go code.
+- Runner hygiene: a malformed `LOCAL_LLM_ENDPOINTS`, a rule-violating `base_url` or a missing endpoint raise a fixed message that carries no URL, key or JSON fragment (`main.py` returns `str(e)` as the 400 detail and Go logs it); a pytest case asserts the message and the captured log. The parsed value is cached lazily with a reset function used by tests. The runner logs the loaded endpoint count at first use.
+- Compose: `LOCAL_LLM_MODELS` is added to `bin-ai-manager/komodo/docker-compose.yml` and both pipecat-manager containers; `LOCAL_LLM_ENDPOINTS` only to both runner containers. Check: substitute sample values (JSON with quotes) for the `[[...]]` placeholders, run `docker compose config`, and assert the variable is present only in the intended services.
+- Test files: update `catalog_test.go` (view shape, platform managed, key mode), `listenhandler/v1_ai_models_test.go`, `llmresolve_test.go`, `test_init_pipeline.py` and `test_run.py`; new `local_test.go` and runner tests. Resolve table includes ids with `:`, `/` and upper case.
+- Verification per service (bin-ai-manager, bin-pipecat-manager, bin-openapi-manager, bin-api-manager): `go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`, `golangci-lint run`; Python `pytest` in `bin-pipecat-manager/scripts/pipecat`; docsdev clean rebuild and `git add -f` of the build output.
+- Service docs: `bin-ai-manager/docs/operations.md` and `domain.md`, `bin-pipecat-manager/docs/operations.md` and `dependencies.md`.
+- Real run adds a stopped server and a 404 response to see what text reaches logs and `pipeline_error`.
