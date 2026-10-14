@@ -340,10 +340,11 @@ expect_fail() {
 }
 
 @test "a when parameter that is not a run-bin parameter fails even if mapped and present" {
-    mutate "$SETUP" 'bin-openapi-manager/.*      run-bin-openapi-manager true' 'bin-openapi-manager/.*      run-voip-openapi-manager true'
-    mutate "$CFG" 'run-bin-openapi-manager >>]' 'run-voip-openapi-manager >>]'
+    grep -q 'voip-asterisk-proxy/.\* *run-voip-asterisk-proxy true' "$SETUP"
+    mkdir -p "$ROOT/voip-asterisk-proxy"
+    mutate "$CFG" 'run-bin-openapi-manager >>]' 'run-voip-asterisk-proxy >>]'
     run_checker
-    expect_fail "when references run-voip-openapi-manager that is not a mapped service directory"
+    expect_fail "when references run-voip-asterisk-proxy that is not a mapped service directory"
 }
 
 # ---- (c) anchors ----
