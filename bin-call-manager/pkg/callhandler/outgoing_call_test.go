@@ -1236,8 +1236,9 @@ func Test_CreateCallsOutgoing_groupcallStartFailure(t *testing.T) {
 		destinations []commonaddress.Address
 		startErrs    []error
 
-		expectTyped  bool
-		expectReason string
+		expectTyped   bool
+		expectReason  string
+		expectMessage string
 	}{
 		{
 			name: "single extension destination, typed error is propagated",
@@ -1261,16 +1262,33 @@ func Test_CreateCallsOutgoing_groupcallStartFailure(t *testing.T) {
 			expectReason: "EXTENSION_NOT_REGISTERED",
 		},
 		{
-			name: "typed error in the first destination wins over a later typed error",
+			name: "first matching error wins over a later matching error",
 
 			destinations: []commonaddress.Address{
 				{Type: commonaddress.TypeExtension, Target: "test-exten"},
 				{Type: commonaddress.TypeExtension, Target: "other-exten"},
 			},
-			startErrs: []error{typedErr, cerrors.NotFound(commonoutline.ServiceNameCallManager, "OTHER_REASON", "other")},
+			startErrs: []error{typedErr, cerrors.FailedPrecondition(commonoutline.ServiceNameCallManager, "EXTENSION_NOT_REGISTERED", "second message")},
 
-			expectTyped:  true,
-			expectReason: "EXTENSION_NOT_REGISTERED",
+			expectTyped:   true,
+			expectReason:  "EXTENSION_NOT_REGISTERED",
+			expectMessage: typedErr.Message,
+		},
+		{
+			name: "same reason from another domain, stays a plain error",
+
+			destinations: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "test-exten"}},
+			startErrs:    []error{cerrors.FailedPrecondition(commonoutline.ServiceNameAgentManager, "EXTENSION_NOT_REGISTERED", "other domain")},
+
+			expectTyped: false,
+		},
+		{
+			name: "call-manager error with another reason, stays a plain error",
+
+			destinations: []commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "test-exten"}},
+			startErrs:    []error{cerrors.FailedPrecondition(commonoutline.ServiceNameCallManager, "OTHER_REASON", "other reason")},
+
+			expectTyped: false,
 		},
 		{
 			name: "other typed error only, stays a plain error",
@@ -1322,6 +1340,9 @@ func Test_CreateCallsOutgoing_groupcallStartFailure(t *testing.T) {
 			}
 			if tt.expectTyped && ve.Reason != tt.expectReason {
 				t.Errorf("Wrong reason. expect: %s, got: %s", tt.expectReason, ve.Reason)
+			}
+			if tt.expectTyped && tt.expectMessage != "" && ve.Message != tt.expectMessage {
+				t.Errorf("Wrong message. expect: %s, got: %s", tt.expectMessage, ve.Message)
 			}
 			if tt.expectTyped && ve.Status != cerrors.StatusFailedPrecondition {
 				t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusFailedPrecondition, ve.Status)

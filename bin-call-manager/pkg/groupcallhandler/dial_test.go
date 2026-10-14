@@ -391,8 +391,8 @@ func Test_getDialDestinationsAddressTypeExtension_noContacts(t *testing.T) {
 			}
 
 			var ve *cerrors.VoipbinError
-			if !stderrors.As(err, &ve) || ve.Status != cerrors.StatusFailedPrecondition || ve.Reason != "EXTENSION_NOT_REGISTERED" {
-				t.Errorf("Wrong match. expect: FAILED_PRECONDITION EXTENSION_NOT_REGISTERED, got: %v", err)
+			if !stderrors.As(err, &ve) || ve.Status != cerrors.StatusFailedPrecondition || ve.Reason != "EXTENSION_NOT_REGISTERED" || ve.Domain != "call-manager" {
+				t.Errorf("Wrong match. expect: FAILED_PRECONDITION EXTENSION_NOT_REGISTERED of call-manager, got: %v", err)
 			}
 		})
 	}
@@ -438,6 +438,9 @@ func Test_Start_extensionNotRegistered_typedError(t *testing.T) {
 	}
 	if ve.Reason != "EXTENSION_NOT_REGISTERED" {
 		t.Errorf("Wrong reason. expect: EXTENSION_NOT_REGISTERED, got: %s", ve.Reason)
+	}
+	if ve.Domain != "call-manager" {
+		t.Errorf("Wrong domain. expect: call-manager, got: %s", ve.Domain)
 	}
 	if !strings.Contains(ve.Message, "jay-home") {
 		t.Errorf("Message must name the unregistered extension. message: %s", ve.Message)
