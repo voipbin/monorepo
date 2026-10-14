@@ -4,4 +4,8 @@
 
 # Deploy
 
-On `main`, `bin-timeline-manager-test-auto`, `bin-timeline-manager-build` and `bin-timeline-manager-deploy` run right after the merge without an approval click, and the deploy goes through Komodo. On other branches `build-approval` still gates the test and build jobs and no deploy job is created. See `.circleci/auto-deploy-services.txt`.
+`bin-timeline-manager-build` pushes the image, and a single `build-approval` gate covers
+the test -> build pipeline. The CircleCI `bin-timeline-manager-deploy` job (direct SSH
+deploy to bm-nyc-01) has been removed. Deploys to bm-nyc-01 are manual until
+this service migrates to the Komodo-managed deploy path (see bin-call-manager
+for the pattern).
